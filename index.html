@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Personal Portfolio | Kaan Balcı</title>
+    <script>
+      function openDrivePreviews() {
+        var driveFileId1 = "1jpKohRRLXX_XTXZyLjSPQ3IctInsf89J";
+        var driveFileId2 = "1gOj9Pbzh4tIkDM5-DkCWGzW3IWerfH_K";
+        var drivePreviewLink1 =
+          "https://drive.google.com/file/d/" +
+          driveFileId1 +
+          "/view?usp=sharing";
+        var drivePreviewLink2 =
+          "https://drive.google.com/file/d/" +
+          driveFileId2 +
+          "/view?usp=sharing";
+        window.open(drivePreviewLink1, "_blank");
+        window.open(drivePreviewLink2, "_blank");
+      }
+    </script>
+  </head>
+
+  <body>
+    <nav>
+      <div class="logo">
+        <img src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png" />
+        <a href="index.html">Kaan Balcı</a>
+      </div>
+      <div class="nav-links">
+        <a class="selected" href="index.html">Home</a>
+        <a href="works.html">Works</a>
+        <a href="single-work.html">Certificates</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html">About</a>
+      </div>
+    </nav>
+
+    <div class="main">
+      <div class="info">
+        <h1>Hello, I'm Kaan, <br />Creative Developer</h1>
+        <p>
+          Hello, I'm Kaan Balcı, a computer programming student. I'm interested
+          in C#, Java, and Python languages, and I'm working in the field of
+          game development. I study computer programming at Izmir University of
+          Economics and aim to gain experience in the industry.
+        </p>
+        <button onclick="openDrivePreviews()">Download Resume</button>
+      </div>
+      <img
+        src="assets/Opera Anlık Görüntü_2024-05-08_141955_www.instagram.com.png"
+      />
+    </div>
+
+    <div class="recent">
+      <div class="header">
+        <h4>Recent Posts</h4>
+        <a class="view-btn" href="blog.html">View all</a>
+      </div>
+      <div class="posts">
+        <div class="post-item">
+          <h3>Mobidictum - Experience</h3>
+          <div class="info">
+            <h5>05-06 Sep 2022</h5>
+            <h5>|</h5>
+            <h5>Professional Ticket</h5>
+          </div>
+          <p>
+            Going to Mobidictum was a great experience for me, and I gained a
+            lot of knowledge about the gaming industry and acquired many
+            experiences in game development.
+          </p>
+        </div>
+        <div class="post-item">
+          <h3>Gameathon - Experience</h3>
+          <div class="info">
+            <h5>22-23 Dec 2023</h5>
+            <h5>|</h5>
+            <h5>Game Design</h5>
+          </div>
+          <p>
+            The first environment where I encountered game development. We
+            organized this event with a fantastic team at my university and had
+            a great experience. I also designed a game and wrote the project
+            document at this event.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="separator">
+      <div class="header">
+        <h4>Featured Works</h4>
+        <a class="view-btn" href="works.html">View all</a>
+      </div>
+    </div>
+
+    <div class="featured">
+      <div class="item">
+        <img src="assets/insatagram.webp" />
+        <div class="details">
+          <h3>Instagram Clone App - My Museum</h3>
+          <div class="item-info">
+            <div class="year-badge">2023</div>
+            <h4>KOTLIN</h4>
+          </div>
+          <p>
+            This project is a copy of the Instagram logic using Kotlin language
+            in Android Studio. It includes a Firebase database.
+          </p>
+        </div>
+      </div>
+      <div class="item">
+        <img src="assets/hospital.avif" />
+        <div class="details">
+          <h3>Hospital Form App</h3>
+          <div class="item-info">
+            <div class="year-badge">2024</div>
+            <h4>C# - WINDOWS FORMS</h4>
+          </div>
+          <p>
+            A comprehensive hospital appointment automation system written in C#
+            language, with a complex structure, and using an MSSQL database. It
+            consists of a total of 16 forms.
+          </p>
+        </div>
+      </div>
+      <div class="item">
+        <img src="assets/what-is-data-analyst.jpg" />
+        <div class="details">
+          <h3>Cars - Dataset Analysis</h3>
+          <div class="item-info">
+            <div class="year-badge">2024</div>
+            <h4>PYHTON</h4>
+          </div>
+          <p>
+            I've examined the dataset named "Cars" and attempted to present a
+            detailed data analysis. I used the Python language.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="socials">
+        <a href="https://github.com/UAJOP" target="_blank"
+          ><i class="bx bxl-github"></i
+        ></a>
+        <a href="https://www.instagram.com/kaan_ba1/" target="_blank"
+          ><i class="bx bxl-instagram"></i
+        ></a>
+
+        <a
+          href="https://www.linkedin.com/in/kaan-balcı-6271311a8/"
+          target="_blank"
+          ><i class="bx bxl-linkedin-square"></i
+        ></a>
+      </div>
+      <div class="logo">
+        <a href="index.html"
+          ><img src="assets/KAAN BALCI-BÜYÜK LOGO PNG.png"
+        /></a>
+      </div>
+    </footer>
+  </body>
+</html>
