@@ -39,6 +39,7 @@ Open `index.html` directly in your browser or use a local server such as VS Code
 ## Contact
 
 - Website: [kaanbalci.com](https://kaanbalci.com)
+- Resume: [Google Drive CV](https://drive.google.com/file/d/1vihEXLism6UzQXP70XxWbJboeiaPllgH/view?usp=drive_link)
 - LinkedIn: [linkedin.com/in/balcikaan](https://www.linkedin.com/in/balcikaan/)
 - GitHub: [github.com/UAJOP](https://github.com/UAJOP)
 - Email: [kaanb8776@gmail.com](mailto:kaanb8776@gmail.com)

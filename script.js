@@ -1,6 +1,5 @@
 function openDrivePreviews() {
-  const driveFileId = "1Uvb0jqeYiesN_W2b5M7H6MIWdLtyE8oR";
-  const drivePreviewLink = `https://drive.google.com/file/d/${driveFileId}/view?usp=sharing`;
+  const drivePreviewLink = "https://drive.google.com/file/d/1vihEXLism6UzQXP70XxWbJboeiaPllgH/view?usp=drive_link";
   window.open(drivePreviewLink, "_blank", "noopener,noreferrer");
 }
 
@@ -1764,7 +1763,7 @@ function setupProjectCopyLink() {
 
 function enhanceAjoopNavigationActions() {
   if (!window.portfolioChatbotContent && typeof portfolioChatbotContent === "undefined") return;
-  const resumeUrl = "https://drive.google.com/file/d/1Uvb0jqeYiesN_W2b5M7H6MIWdLtyE8oR/view?usp=sharing";
+  const resumeUrl = "https://drive.google.com/file/d/1vihEXLism6UzQXP70XxWbJboeiaPllgH/view?usp=drive_link";
   ["en", "tr"].forEach((lang) => {
     const content = portfolioChatbotContent[lang];
     if (!content || content.__enhancedActions) return;
