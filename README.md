@@ -112,3 +112,36 @@ The Apps Script saves website form submissions into a `Website Talepleri` sheet,
 
 This version fixes the Atölye Joyday reservation workflow detail page image issue by standardizing the image references to the existing `assets/joyday-homepage-preview.webp`, `assets/joyday-reservation-preview.webp` and `assets/joyday-brand-logo.webp` files. It also includes compatibility aliases for the previous `*-clean.webp` filenames and adds a small global image fallback for broken preview images.
 
+
+
+## Final consolidated adventure polish
+
+- Merged the Adventure page with the previous contact, search, recruiter drawer and Ajoop improvements.
+- Added Adventure/Macera to every site navigation header.
+- Standardized the command/search button as `Ara` across pages while keeping the keyboard palette behavior.
+- Fixed duplicated chatbot panel markup created during iterative updates.
+- Kept the contact hub button grid balanced and the Career Merge mobile/merge fixes active.
+
+
+## GitHub repository catalog expansion
+
+- Expanded the Works page with additional public GitHub repositories from `github.com/UAJOP`.
+- Added dynamic project detail data for the newly surfaced repositories.
+- Fixed the Dunker Madness card path and removed the stray slash character before project tags.
+- Preserved Adventure mini game, Ajoop improvements, IK Mode, search palette and contact hub layout fixes.
+
+## Live-ready final polish
+
+- Standardized English header labels; `Search` is now English in EN mode and `Ara` in TR mode.
+- Aligned Outlier AI dates with the uploaded CV: Apr 2025 – Aug 2025.
+- Converted remaining relative Open Graph images to absolute `kaanbalci.com` URLs for stronger social previews.
+- Added Turkish aria-label coverage for the expanded GitHub project catalog.
+- Made request-form success copy safer for the static-site Google Apps Script `no-cors` flow.
+
+
+
+## Final repository cleanup
+
+- Updated Hospital Appointment System with accurate Python / Tkinter / MySQL case-study content and GitHub link alignment.
+- Updated Porto 25 as a Tailwind CSS portfolio / landing page UI practice project.
+- Removed extra Joyday-related cards including `Joyday Repository` and the separate Atölye Joyday Reservation Workflow card, keeping one main Atölye Joyday official website case study.
