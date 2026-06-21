@@ -17,6 +17,8 @@ The website presents Kaan Balcı as an **AI Designer & Software Developer** with
 
 - `index.html` — Modern landing page with hero, stats, services, tech stack matrix, AI workflow demo, featured case study, experience preview and featured works
 - `works.html` — Filterable project catalog with cards linking into dynamic case study pages
+- `games.html` — Playable web games catalog that groups interactive portfolio mini games such as Career Adventure
+- `adventure.html` — Career Adventure playable mini game page linked from the games catalog
 - `project-detail.html` — Single dynamic project detail page powered by query parameters and JavaScript data
 - `request.html` — Project/service request page with frontend validation, mailto fallback and Google Apps Script endpoint support
 - `request-config.js` — Request form endpoint configuration
@@ -25,7 +27,7 @@ The website presents Kaan Balcı as an **AI Designer & Software Developer** with
 - `single-work.html` — Certificates gallery; kept as `single-work.html` for existing URL compatibility
 - `about.html` — Professional profile, capability map, process and toolbox
 - `style.css` — Full responsive modern UI styling
-- `script.js` — Mobile navigation, project filters, certificate modal, language switcher, dynamic project detail rendering, Ajoop assistant, theme switching, recruiter mode, command palette, easter egg, Algorithmic 3D Lab and dynamic year
+- `script.js` — Mobile navigation, project/game filters, certificate modal, language switcher, dynamic project detail rendering, Ajoop assistant, theme switching, recruiter mode, command palette, easter egg, Algorithmic 3D Lab and dynamic year
 - `CNAME` — GitHub Pages custom domain configuration
 
 ## Notes
@@ -145,3 +147,12 @@ This version fixes the Atölye Joyday reservation workflow detail page image iss
 - Updated Hospital Appointment System with accurate Python / Tkinter / MySQL case-study content and GitHub link alignment.
 - Updated Porto 25 as a Tailwind CSS portfolio / landing page UI practice project.
 - Removed extra Joyday-related cards including `Joyday Repository` and the separate Atölye Joyday Reservation Workflow card, keeping one main Atölye Joyday official website case study.
+
+
+## Web Games catalog expansion
+
+- Added `games.html` as the main catalog for playable portfolio mini games.
+- Replaced the direct Adventure navigation item with Games/Oyunlar across the site header.
+- Kept Career Adventure as a playable game page linked from the Games catalog.
+- Added planned game cards for future AI Flow Puzzle and Interview Run concepts.
+- Added TR/EN translation polish for the new Games page and recent experience cards.

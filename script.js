@@ -607,6 +607,72 @@ Object.assign(i18nAttributeTranslations.tr, {
   "Open details for Portfolio Website": "Portfolio Website detaylarını aç"
 });
 
+
+/* Games page and TR polish translations */
+Object.assign(i18nTranslations.tr, {
+  "Games": "Oyunlar",
+  "Web games": "Web oyunları",
+  "Playable portfolio experiments about learning, projects and career growth.": "Öğrenme, projeler ve kariyer gelişimi üzerine oynanabilir portfolyo deneyleri.",
+  "This page collects small web games that turn my personal journey into interactive experiences. Each game is designed to be lightweight, portfolio-friendly and playable directly in the browser.": "Bu sayfa kişisel yolculuğumu interaktif deneyimlere dönüştüren küçük web oyunlarını toplar. Her oyun hafif, portfolyo dostu ve doğrudan tarayıcıda oynanabilir olacak şekilde tasarlanır.",
+  "Play Career Adventure": "Kariyer Macerasını Oyna",
+  "Game catalog": "Oyun kataloğu",
+  "Minimal web games with a career-story angle.": "Kariyer hikayesi açısına sahip minimal web oyunları.",
+  "The catalog starts with the Career Adventure game and can grow into a full interactive game shelf over time.": "Katalog Kariyer Macerası oyunu ile başlar ve zamanla tam bir interaktif oyun rafına dönüşebilir.",
+  "Career": "Kariyer",
+  "Portfolio": "Portfolyo",
+  "Coming Soon": "Yakında",
+  "Live": "Canlı",
+  "Concept": "Konsept",
+  "Mini Game": "Mini Oyun",
+  "Career Journey": "Kariyer Yolculuğu",
+  "Merge": "Birleştirme",
+  "Kaan's Career Adventure": "Kaan'ın Kariyer Macerası",
+  "Combine learning objects, software tools, AI workflow experience and portfolio proof until the final Job Offer object appears.": "Finalde Job Offer nesnesi görünene kadar öğrenme nesnelerini, yazılım araçlarını, AI workflow deneyimini ve portfolyo kanıtlarını birleştir.",
+  "Play Game": "Oyunu Oyna",
+  "AI Flow Puzzle": "AI Flow Puzzle",
+  "Logic Puzzle": "Mantık Bulmacası",
+  "Chatbot": "Chatbot",
+  "A planned puzzle game where users connect intent, response, fallback and automation nodes into a clean chatbot flow.": "Kullanıcıların intent, cevap, fallback ve otomasyon node'larını temiz bir chatbot akışına bağlayacağı planlanan bir bulmaca oyunu.",
+  "Planned for the next mini-game slot.": "Bir sonraki mini oyun slotu için planlandı.",
+  "Interview Run": "Interview Run",
+  "Interview": "Mülakat",
+  "Timing": "Zamanlama",
+  "Choices": "Seçimler",
+  "A planned quick decision game about answering interview questions, managing time and choosing the strongest response path.": "Mülakat sorularını cevaplama, zamanı yönetme ve en güçlü cevap yolunu seçme üzerine planlanan hızlı karar oyunu.",
+  "Ready as a future expansion idea.": "Gelecek genişleme fikri olarak hazır.",
+  "Next direction": "Sonraki yön",
+  "This page is designed to grow with new playable portfolio ideas.": "Bu sayfa yeni oynanabilir portfolyo fikirleriyle büyüyecek şekilde tasarlandı.",
+  "New games can be added as separate pages, while this catalog stays as the main entry point for all interactive web game experiments.": "Yeni oyunlar ayrı sayfalar olarak eklenebilir; bu katalog ise tüm interaktif web oyunu deneylerinin ana giriş noktası olarak kalır.",
+  "Play First Game": "İlk Oyunu Oyna",
+  "Game filters": "Oyun filtreleri",
+  "Open Career Adventure game": "Kariyer Macerası oyununu aç",
+  "Career Adventure game preview": "Kariyer Macerası oyun önizlemesi",
+  "AI Flow Puzzle game preview": "AI Flow Puzzle oyun önizlemesi",
+  "Interview Run game preview": "Interview Run oyun önizlemesi",
+  "Sep 2025 – Oct 2025": "Eyl 2025 – Eki 2025",
+  "Apr 2025 – Aug 2025": "Nis 2025 – Ağu 2025",
+  "2026 – Present": "2026 – Günümüz",
+  "CBOT – AI Designer": "CBOT – AI Tasarımcısı",
+  "Outlier AI – AI Training Specialist": "Outlier AI – AI Eğitim Uzmanı",
+  "Atölye Joyday – Co-Founder & Web Developer": "Atölye Joyday – Kurucu Ortak & Web Geliştirici",
+  "Cbot - AI Designer": "CBOT – AI Tasarımcısı",
+  "Punto Organization – Junior Software Developer": "Punto Organization – Junior Yazılım Geliştirici",
+  "Punto Organization – Database Developer Intern": "Punto Organization – Veritabanı Geliştirici Stajyeri",
+  "Punto Organization – Event Operations Supervisor": "Punto Organization – Etkinlik Operasyon Sorumlusu",
+  "Ocean’s Team – Event Operations & Website Specialist": "Ocean’s Team – Etkinlik Operasyon & Web Sitesi Uzmanı",
+  "Izmir – May 2022 | Istanbul – Sep 2022": "İzmir – Mayıs 2022 | İstanbul – Eyl 2022"
+});
+Object.assign(i18nTitleTranslations.tr, {
+  "Games | Kaan Balcı": "Oyunlar | Kaan Balcı"
+});
+Object.assign(i18nAttributeTranslations.tr, {
+  "Game filters": "Oyun filtreleri",
+  "Open Career Adventure game": "Kariyer Macerası oyununu aç",
+  "Career Adventure game preview": "Kariyer Macerası oyun önizlemesi",
+  "AI Flow Puzzle game preview": "AI Flow Puzzle oyun önizlemesi",
+  "Interview Run game preview": "Interview Run oyun önizlemesi"
+});
+
 const originalDocumentTitle = document.title;
 
 function normalizeI18nText(value) {
@@ -2305,6 +2371,27 @@ function setupProjectCardNavigation() {
 setupProjectCardNavigation();
 
 
+function setupGameCardNavigation() {
+  document.querySelectorAll("[data-game-link]").forEach((card) => {
+    const url = card.getAttribute("data-game-link");
+    if (!url) return;
+
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("a, button")) return;
+      window.location.href = url;
+    });
+
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        window.location.href = url;
+      }
+    });
+  });
+}
+
+setupGameCardNavigation();
+
 const portfolioChatbotContent = {
   en: {
     launcher: "Ask Ajoop",
@@ -2878,6 +2965,7 @@ const ultimateContent = {
     commands: [
       { id: "home", label: "Go to Home", hint: "Landing page", keywords: "home landing", type: "nav", value: "index.html" },
       { id: "works", label: "Open Works", hint: "Project catalog", keywords: "projects works portfolio", type: "nav", value: "works.html" },
+      { id: "games", label: "Open Games", hint: "Playable web game catalog", keywords: "games web games oyun mini game adventure career", type: "nav", value: "games.html" },
       { id: "adventure", label: "Open Adventure", hint: "Career merge mini game", keywords: "adventure game mini career merge job kaan", type: "nav", value: "adventure.html" },
       { id: "joyday", label: "Open Joyday Case Study", hint: "Real business website", keywords: "joyday case study reservation", type: "nav", value: "project-detail.html?project=atolye-joyday-official-website" },
       { id: "cv", label: "View Resume", hint: "Google Drive CV", keywords: "resume cv", type: "resume" },
@@ -2908,6 +2996,7 @@ const ultimateContent = {
     commands: [
       { id: "home", label: "Ana Sayfaya Git", hint: "Landing page", keywords: "home ana sayfa", type: "nav", value: "index.html" },
       { id: "works", label: "Projeleri Aç", hint: "Proje kataloğu", keywords: "projeler portfolio works", type: "nav", value: "works.html" },
+      { id: "games", label: "Oyunları Aç", hint: "Oynanabilir web oyunları kataloğu", keywords: "oyunlar web oyunları mini game macera kariyer", type: "nav", value: "games.html" },
       { id: "adventure", label: "Macera\'yı Aç", hint: "Kariyer merge mini oyunu", keywords: "macera oyun kariyer merge job iş kaan", type: "nav", value: "adventure.html" },
       { id: "joyday", label: "Joyday Case Study Aç", hint: "Gerçek işletme web sitesi", keywords: "joyday case study rezervasyon", type: "nav", value: "project-detail.html?project=atolye-joyday-official-website" },
       { id: "cv", label: "CV'yi Görüntüle", hint: "Google Drive CV", keywords: "resume cv özgeçmiş", type: "resume" },
@@ -2942,9 +3031,12 @@ function updateUltimateStaticLabels(language = currentSiteLanguage || "en") {
     if (visibleLabel) visibleLabel.textContent = content.commandsTitle;
   });
   document.querySelectorAll("[data-availability-badge] strong").forEach((node) => { node.textContent = content.availability; });
+  const isGamesCatalog = Boolean(document.querySelector(".games-grid"));
+  const catalogSearchLabel = isGamesCatalog ? (language === "tr" ? "Oyunlarda ara" : "Search games") : content.projectSearchLabel;
+  const catalogSearchPlaceholder = isGamesCatalog ? (language === "tr" ? "Oyun, teknoloji veya anahtar kelime ara..." : "Search by game, technology or keyword...") : content.projectSearchPlaceholder;
   document.querySelectorAll("[data-command-input]").forEach((node) => { node.placeholder = content.commandPlaceholder; });
-  document.querySelectorAll("[data-project-search]").forEach((node) => { node.placeholder = content.projectSearchPlaceholder; });
-  document.querySelectorAll("[data-project-search-label]").forEach((node) => { node.textContent = content.projectSearchLabel; });
+  document.querySelectorAll("[data-project-search]").forEach((node) => { node.placeholder = catalogSearchPlaceholder; });
+  document.querySelectorAll("[data-project-search-label]").forEach((node) => { node.textContent = catalogSearchLabel; });
   renderRecruiterDrawer(language);
   renderCommandPalette(language);
 }
@@ -2954,9 +3046,12 @@ function setupProjectSearch() {
   const filterBar = document.querySelector(".filter-bar");
   if (!grid || !filterBar || document.querySelector("[data-project-search]")) return;
   const content = getUltimateContent();
+  const isGamesCatalog = Boolean(document.querySelector(".games-grid"));
+  const searchLabel = isGamesCatalog ? (currentSiteLanguage === "tr" ? "Oyunlarda ara" : "Search games") : content.projectSearchLabel;
+  const searchPlaceholder = isGamesCatalog ? (currentSiteLanguage === "tr" ? "Oyun, teknoloji veya anahtar kelime ara..." : "Search by game, technology or keyword...") : content.projectSearchPlaceholder;
   const searchWrap = document.createElement("div");
   searchWrap.className = "project-search-wrap reveal";
-  searchWrap.innerHTML = `<label><span data-project-search-label>${escapeProjectHtml(content.projectSearchLabel)}</span><div><i class="bx bx-search"></i><input type="search" data-project-search placeholder="${escapeProjectHtml(content.projectSearchPlaceholder)}" /></div></label>`;
+  searchWrap.innerHTML = `<label><span data-project-search-label>${escapeProjectHtml(searchLabel)}</span><div><i class="bx bx-search"></i><input type="search" data-project-search placeholder="${escapeProjectHtml(searchPlaceholder)}" /></div></label>`;
   filterBar.insertAdjacentElement("afterend", searchWrap);
   const input = searchWrap.querySelector("[data-project-search]");
 
@@ -3169,13 +3264,13 @@ function enhanceAjoopNavigationActions() {
     if (!content || content.__enhancedActions) return;
     content.__enhancedActions = true;
     const labels = lang === "tr"
-      ? { works: "Projeler", about: "Hakkımda", cv: "CV", pdf: "Portfolyo PDF", mail: "E-posta", joyday: "Joyday Case Study", live: "Canlı Site", github: "GitHub", recruiter: "İK Modu" }
-      : { works: "Works", about: "About", cv: "Resume", pdf: "Portfolio PDF", mail: "Email", joyday: "Joyday Case Study", live: "Live Website", github: "GitHub", recruiter: "Recruiter Mode" };
+      ? { works: "Projeler", games: "Oyunlar", about: "Hakkımda", cv: "CV", pdf: "Portfolyo PDF", mail: "E-posta", joyday: "Joyday Case Study", live: "Canlı Site", github: "GitHub", recruiter: "İK Modu" }
+      : { works: "Works", games: "Games", about: "About", cv: "Resume", pdf: "Portfolio PDF", mail: "Email", joyday: "Joyday Case Study", live: "Live Website", github: "GitHub", recruiter: "Recruiter Mode" };
     if (content.answers?.who) content.answers.who.links = [{ label: labels.about, url: "about.html" }, { label: labels.cv, url: resumeUrl }];
-    if (content.answers?.projects) content.answers.projects.links = [{ label: labels.works, url: "works.html" }, { label: labels.joyday, url: "project-detail.html?project=atolye-joyday-official-website" }, { label: labels.github, url: "https://github.com/UAJOP" }];
+    if (content.answers?.projects) content.answers.projects.links = [{ label: labels.works, url: "works.html" }, { label: labels.games, url: "games.html" }, { label: labels.joyday, url: "project-detail.html?project=atolye-joyday-official-website" }, { label: labels.github, url: "https://github.com/UAJOP" }];
     if (content.answers?.joyday) content.answers.joyday.links = [{ label: labels.joyday, url: "project-detail.html?project=atolye-joyday-official-website" }, { label: labels.live, url: "https://atolyejoyday.com/" }];
     if (content.answers?.contact) content.answers.contact.links = [{ label: labels.cv, url: resumeUrl }, { label: labels.pdf, url: "assets/kaan-balci-portfolio.pdf" }, { label: labels.mail, url: "mailto:kaanb8776@gmail.com" }];
-    if (content.answers?.default) content.answers.default.links = [{ label: labels.works, url: "works.html" }, { label: labels.about, url: "about.html" }, { label: labels.mail, url: "mailto:kaanb8776@gmail.com" }];
+    if (content.answers?.default) content.answers.default.links = [{ label: labels.works, url: "works.html" }, { label: labels.games, url: "games.html" }, { label: labels.about, url: "about.html" }, { label: labels.mail, url: "mailto:kaanb8776@gmail.com" }];
   });
 }
 
@@ -3697,7 +3792,7 @@ function enhanceAdventureNavigation() {
           "The Adventure page turns Kaan's career growth into a small web game. It is built with HTML, CSS, JavaScript and Canvas, so it also works as a playful frontend proof.",
           "In the mini game, you merge books, keyboard, mouse, monitor, JavaScript, Python, C#, database, AI Flow, portfolio and interview steps until Job Offer appears."
         ],
-        links: [{ label: "Play Adventure", url: "adventure.html" }, { label: "View Works", url: "works.html" }]
+        links: [{ label: "Play Adventure", url: "adventure.html" }, { label: "View Games", url: "games.html" }, { label: "View Works", url: "works.html" }]
       };
     }
     if (tr && !tr.quicks.some((item) => item.id === "adventure")) {
@@ -3708,11 +3803,34 @@ function enhanceAdventureNavigation() {
           "Macera sayfası Kaan'ın kariyer gelişimini küçük bir web oyununa çeviriyor. HTML, CSS, JavaScript ve Canvas ile çalıştığı için eğlenceli bir frontend kanıtı gibi de duruyor.",
           "Mini oyunda kitap, klavye, mouse, monitör, JavaScript, Python, C#, veritabanı, AI Flow, portfolyo ve mülakat adımlarını birleştirerek Job Offer seviyesine ulaşıyorsun."
         ],
-        links: [{ label: "Macera'yı Oyna", url: "adventure.html" }, { label: "Projeleri Gör", url: "works.html" }]
+        links: [{ label: "Macera'yı Oyna", url: "adventure.html" }, { label: "Oyunları Gör", url: "games.html" }, { label: "Projeleri Gör", url: "works.html" }]
+      };
+    }
+    if (en && !en.quicks.some((item) => item.id === "games")) {
+      en.quicks.splice(4, 0, { id: "games", label: "Games" });
+      en.answers.games = {
+        text: [
+          "The Games page is the new catalog for Kaan's playable web experiments.",
+          "Career Adventure is the first live mini game there, and future games can be added as separate pages while staying grouped under the same catalog."
+        ],
+        links: [{ label: "Open Games", url: "games.html" }, { label: "Play Adventure", url: "adventure.html" }]
+      };
+    }
+    if (tr && !tr.quicks.some((item) => item.id === "games")) {
+      tr.quicks.splice(4, 0, { id: "games", label: "Oyunlar" });
+      tr.answers.games = {
+        text: [
+          "Oyunlar sayfası Kaan'ın oynanabilir web deneyleri için yeni ana katalog olarak eklendi.",
+          "Kariyer Macerası şu an ilk canlı mini oyun; ileride yeni oyunlar ayrı sayfalar olarak eklenip aynı katalog altında toplanabilir."
+        ],
+        links: [{ label: "Oyunları Aç", url: "games.html" }, { label: "Macera'yı Oyna", url: "adventure.html" }]
       };
     }
     if (typeof chatbotKeywordMap !== "undefined" && !chatbotKeywordMap.some((item) => item.id === "adventure")) {
       chatbotKeywordMap.unshift({ id: "adventure", keywords: ["adventure", "macera", "oyun", "game", "mini game", "merge", "kariyer oyunu", "job offer"] });
+    }
+    if (typeof chatbotKeywordMap !== "undefined" && !chatbotKeywordMap.some((item) => item.id === "games")) {
+      chatbotKeywordMap.unshift({ id: "games", keywords: ["games", "oyunlar", "web oyunları", "game catalog", "mini oyunlar", "oyun kataloğu"] });
     }
     updatePortfolioChatbotLanguage?.(currentSiteLanguage || "en");
   }

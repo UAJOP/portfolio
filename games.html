@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Playable web games by Kaan Balcı, including interactive portfolio mini games built with JavaScript and Canvas." name="description"/>
+<meta content="Kaan Balcı" name="author"/>
+<meta content="Web Games | Kaan Balcı" property="og:title"/>
+<meta content="A playful portfolio game catalog with small web games about Kaan Balcı's learning, projects, AI workflows and career journey." property="og:description"/>
+<meta content="website" property="og:type"/>
+<meta content="https://kaanbalci.com/games.html" property="og:url"/>
+<meta content="https://kaanbalci.com/assets/KAAN%20BALCI-B%C3%9CY%C3%9CK%20LOGO%20PNG.png" property="og:image"/>
+<title>Games | Kaan Balcı</title>
+<meta content="#07111f" name="theme-color"/>
+<script>
+      (function () {
+        try {
+          var savedTheme = localStorage.getItem("kaanbalci-site-theme") || "dark";
+          document.documentElement.setAttribute("data-theme", savedTheme === "light" ? "light" : "dark");
+        } catch (error) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+<link href="style.css" rel="stylesheet"/>
+<link href="assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" rel="icon" type="image/x-icon"/>
+<link href="https://kaanbalci.com/games.html" rel="canonical"/>
+<meta content="index, follow" name="robots"/>
+<meta content="Kaan Balcı Portfolio" property="og:site_name"/>
+<meta content="en_US" property="og:locale"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="Games | Kaan Balcı" name="twitter:title"/>
+<meta content="Interactive portfolio mini games by Kaan Balcı." name="twitter:description"/>
+<meta content="https://kaanbalci.com/assets/KAAN%20BALCI-B%C3%9CY%C3%9CK%20LOGO%20PNG.png" name="twitter:image"/>
+</head>
+<body>
+<header class="site-header">
+<a aria-label="Kaan Balcı home page" class="brand" href="index.html">
+<img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/>
+<span>Kaan Balcı</span>
+</a><a aria-label="Available for roles" class="availability-badge" data-availability-badge="" href="mailto:kaanb8776@gmail.com"><span></span><strong>Open for work</strong></a>
+<nav class="nav-links" data-nav="">
+<a href="index.html">Home</a>
+<a href="works.html">Works</a>
+<a class="selected" href="games.html">Games</a>
+<a href="blog.html">Experience</a>
+<a href="single-work.html">Certificates</a>
+<a href="request.html">Request</a>
+<a href="about.html">About</a>
+</nav>
+<div class="header-actions"><button aria-label="Open recruiter mode" class="recruiter-toggle" data-recruiter-toggle="" title="Recruiter Mode" type="button"><i class="bx bx-briefcase-alt-2"></i><span data-recruiter-label="">Recruiter Mode</span></button><button aria-label="Search" class="command-toggle" data-command-toggle="" title="Search" type="button"><i class="bx bx-search"></i><span data-command-label="">Search</span></button>
+<div aria-label="Language selector" class="lang-switch">
+<button class="active" data-lang-switch="en" type="button">EN</button>
+<button data-lang-switch="tr" type="button">TR</button>
+</div>
+<button aria-label="Switch theme" class="theme-toggle" data-theme-toggle="" title="Switch theme" type="button">
+<i class="bx bx-moon"></i>
+<span data-theme-label="">Dark</span>
+</button>
+<button aria-expanded="false" aria-label="Open navigation" class="nav-toggle" type="button">
+<span></span>
+<span></span>
+</button>
+</div>
+</header>
+<main>
+<section class="page-hero section-shell reveal games-hero">
+<p class="eyebrow">Web games</p>
+<h1>Playable portfolio experiments about learning, projects and career growth.</h1>
+<p>
+          This page collects small web games that turn my personal journey into interactive experiences.
+          Each game is designed to be lightweight, portfolio-friendly and playable directly in the browser.
+        </p>
+<div class="hero-actions left">
+<a class="btn primary" href="adventure.html">Play Career Adventure</a>
+<a class="btn ghost" href="works.html">View Works</a>
+</div>
+</section>
+
+<section class="section-shell section-block games-featured">
+<div class="section-heading reveal">
+<p class="eyebrow">Game catalog</p>
+<h2>Minimal web games with a career-story angle.</h2>
+<p>
+            The catalog starts with the Career Adventure game and can grow into a full interactive game shelf over time.
+          </p>
+</div>
+<div aria-label="Game filters" class="filter-bar reveal">
+<button class="filter-btn active" data-filter-btn="all" type="button">All</button>
+<button class="filter-btn" data-filter-btn="career" type="button">Career</button>
+<button class="filter-btn" data-filter-btn="ai" type="button">AI</button>
+<button class="filter-btn" data-filter-btn="portfolio" type="button">Portfolio</button>
+<button class="filter-btn" data-filter-btn="coming" type="button">Coming Soon</button>
+</div>
+<div class="project-grid catalog-grid games-grid">
+<article aria-label="Open Career Adventure game" class="project-card game-card reveal" data-category="career portfolio" data-game-link="adventure.html" role="link" tabindex="0">
+<img alt="Career Adventure game preview" loading="lazy" src="assets/KAAN BALCI-BÜYÜK LOGO PNG.png"/>
+<div class="project-content">
+<div class="game-status-row"><span class="game-status live">Live</span><span>Canvas • JavaScript</span></div>
+<div class="project-tags"><span>Mini Game</span><span>Career Journey</span><span>Merge</span></div>
+<h3>Kaan's Career Adventure</h3>
+<p>Combine learning objects, software tools, AI workflow experience and portfolio proof until the final Job Offer object appears.</p>
+<a href="adventure.html">Play Game</a>
+</div>
+</article>
+<article class="project-card game-card reveal delay-1 is-planned" data-category="ai portfolio coming">
+<img alt="AI Flow Puzzle game preview" loading="lazy" src="assets/KAAN BALCI-BÜYÜK LOGO PNG.png"/>
+<div class="project-content">
+<div class="game-status-row"><span class="game-status planned">Coming Soon</span><span>Concept</span></div>
+<div class="project-tags"><span>AI Flow</span><span>Logic Puzzle</span><span>Chatbot</span></div>
+<h3>AI Flow Puzzle</h3>
+<p>A planned puzzle game where users connect intent, response, fallback and automation nodes into a clean chatbot flow.</p>
+<span class="game-note">Planned for the next mini-game slot.</span>
+</div>
+</article>
+<article class="project-card game-card reveal delay-2 is-planned" data-category="career coming">
+<img alt="Interview Run game preview" loading="lazy" src="assets/KAAN BALCI-BÜYÜK LOGO PNG.png"/>
+<div class="project-content">
+<div class="game-status-row"><span class="game-status planned">Coming Soon</span><span>Concept</span></div>
+<div class="project-tags"><span>Interview</span><span>Timing</span><span>Choices</span></div>
+<h3>Interview Run</h3>
+<p>A planned quick decision game about answering interview questions, managing time and choosing the strongest response path.</p>
+<span class="game-note">Ready as a future expansion idea.</span>
+</div>
+</article>
+</div>
+</section>
+
+<section class="section-shell section-block games-roadmap">
+<div class="cta-panel reveal">
+<div>
+<p class="eyebrow">Next direction</p>
+<h2>This page is designed to grow with new playable portfolio ideas.</h2>
+<p>
+              New games can be added as separate pages, while this catalog stays as the main entry point for all interactive web game experiments.
+            </p>
+</div>
+<div class="cta-actions">
+<a class="btn primary" href="adventure.html">Play First Game</a>
+<a class="btn ghost" href="request.html">Send Request</a>
+</div>
+</div>
+</section>
+</main>
+<footer class="site-footer">
+<div class="footer-inner section-shell">
+<div>
+<a class="footer-brand" href="index.html">
+<img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/>
+<span>Kaan Balcı</span>
+</a>
+<p>AI Designer &amp; Software Developer building practical AI workflows and scalable software systems.</p>
+</div>
+<div aria-label="Social links" class="footer-socials">
+<a href="https://github.com/UAJOP" rel="noopener" target="_blank" title="GitHub"><i class="bx bxl-github"></i></a>
+<a href="https://www.linkedin.com/in/balcikaan/" rel="noopener" target="_blank" title="LinkedIn"><i class="bx bxl-linkedin-square"></i></a>
+<a href="https://www.instagram.com/kaan_ba1/" rel="noopener" target="_blank" title="Instagram"><i class="bx bxl-instagram"></i></a>
+<a href="https://www.youtube.com/channel/UCCoOWMoemn93OX7cHyGTZuA" rel="noopener" target="_blank" title="YouTube"><i class="bx bxl-youtube"></i></a>
+<a href="https://x.com/KaanAjop" rel="noopener" target="_blank" title="X"><i class="bx bxl-twitter"></i></a>
+</div>
+</div>
+<p class="copyright">© <span data-year=""></span> Kaan Balcı. All rights reserved.</p>
+</footer>
+<script src="script.js"></script>
+</body>
+</html>
