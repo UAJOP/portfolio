@@ -4106,104 +4106,959 @@ html[data-theme="light"] .merge-ladder article {
   }
 }
 
-/* Web games catalog page */
-.games-hero .hero-actions {
-  margin-top: 30px;
+
+/* Joyday Action Painting mini game */
+.joyday-paint-hero {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
+  align-items: center;
+  gap: 48px;
+  padding: 86px 0 42px;
 }
 
-.games-grid .game-card {
+.joyday-paint-copy h1 {
+  max-width: 850px;
+  font-size: clamp(44px, 6vw, 78px);
+  font-weight: 900;
+}
+
+.joyday-paint-copy p:not(.eyebrow) {
+  max-width: 720px;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.joyday-paint-poster {
   position: relative;
+  min-height: 460px;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 20% 28%, rgba(255, 59, 107, 0.34), transparent 11rem),
+    radial-gradient(circle at 74% 24%, rgba(34, 211, 238, 0.3), transparent 11rem),
+    radial-gradient(circle at 48% 86%, rgba(255, 210, 63, 0.28), transparent 12rem),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035));
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
-.game-status-row {
+.joyday-paint-poster::before,
+.joyday-studio-wall::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.34) 0 2px, transparent 2px),
+    radial-gradient(circle, rgba(56, 189, 248, 0.24) 0 3px, transparent 3px),
+    radial-gradient(circle, rgba(244, 114, 182, 0.22) 0 3px, transparent 3px);
+  background-size: 96px 96px, 132px 132px, 158px 158px;
+  background-position: 8px 18px, 42px 70px, 80px 20px;
+  opacity: 0.44;
+}
+
+.poster-canvas {
+  position: relative;
+  z-index: 1;
+  width: min(280px, 80%);
+  aspect-ratio: 1;
+  border: 12px solid rgba(255, 255, 255, 0.82);
+  border-radius: 28px;
+  background: #fffaf1;
+  box-shadow: 0 34px 80px rgba(0, 0, 0, 0.26);
+  overflow: hidden;
+}
+
+.poster-canvas span {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(0.2px);
+}
+
+.poster-canvas span:nth-child(1) { width: 150px; height: 150px; left: -20px; top: 28px; background: rgba(255, 59, 107, 0.8); }
+.poster-canvas span:nth-child(2) { width: 92px; height: 92px; right: 28px; top: 64px; background: rgba(34, 211, 238, 0.86); }
+.poster-canvas span:nth-child(3) { width: 130px; height: 130px; right: -18px; bottom: 20px; background: rgba(255, 210, 63, 0.82); }
+.poster-canvas strong { position: absolute; left: 22px; bottom: 18px; color: #07111f; font-weight: 900; letter-spacing: -0.05em; }
+.joyday-paint-poster p { position: relative; z-index: 1; margin-top: 20px; color: var(--muted); font-weight: 900; }
+
+.joyday-paint-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  align-items: start;
+  gap: 24px;
+}
+
+.joyday-studio-wall,
+.joyday-toolbox .detail-panel {
+  border: 1px solid var(--line);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+  box-shadow: var(--shadow);
+}
+
+.joyday-studio-wall {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  padding: 22px;
+}
+
+.joyday-wall-topbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 18px;
+  padding: 8px 4px 18px;
+}
+
+.joyday-wall-topbar h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 900;
+}
+
+
+.joyday-canvas-hint {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: -4px 4px 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(129, 140, 248, 0.08)), rgba(7, 17, 31, 0.44);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.16);
+}
+
+.joyday-canvas-hint[hidden],
+.joyday-canvas-empty[hidden] {
+  display: none !important;
+}
+
+.joyday-canvas-hint strong,
+.joyday-canvas-hint span {
+  display: block;
+}
+
+.joyday-canvas-hint strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.joyday-canvas-hint span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.joyday-canvas-hint button {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.joyday-canvas-hint button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.42);
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.joyday-canvas-hint i {
+  font-size: 22px;
+}
+
+.joyday-active-info {
+  min-width: 190px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(7, 17, 31, 0.42);
+  text-align: right;
+}
+
+.joyday-active-info span,
+.joyday-active-info strong {
+  display: block;
+}
+
+.joyday-active-info span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.joyday-active-info strong {
+  margin-top: 4px;
+  color: var(--brand);
+}
+
+.joyday-wall-scene {
+  position: relative;
+  min-height: 640px;
+  display: grid;
+  place-items: center;
+  border-radius: 30px;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 16% 20%, rgba(255, 59, 107, 0.28), transparent 14rem),
+    radial-gradient(circle at 82% 18%, rgba(255, 210, 63, 0.22), transparent 13rem),
+    radial-gradient(circle at 84% 82%, rgba(34, 211, 238, 0.22), transparent 15rem),
+    linear-gradient(145deg, rgba(8, 20, 36, 0.74), rgba(14, 35, 58, 0.84));
+  overflow: hidden;
+}
+
+.joyday-wall-dots,
+.joyday-wall-dots::before,
+.joyday-wall-dots::after {
+  position: absolute;
+  content: "";
+  border-radius: 999px;
+  opacity: 0.7;
+}
+
+.joyday-wall-dots { width: 80px; height: 80px; left: 10%; top: 28%; background: rgba(255, 59, 107, 0.42); }
+.joyday-wall-dots::before { width: 52px; height: 52px; left: 52vw; top: 40px; background: rgba(255, 210, 63, 0.44); }
+.joyday-wall-dots::after { width: 110px; height: 110px; left: 44vw; top: 380px; background: rgba(34, 211, 238, 0.34); }
+
+.joyday-canvas-frame {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: min(74%, 520px);
+  border: 12px solid rgba(255, 255, 255, 0.82);
+  background: #fffaf1;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(7, 17, 31, 0.12);
+  transition: 0.25s ease;
+  overflow: hidden;
+}
+
+.joyday-canvas-frame.is-square { aspect-ratio: 1; border-radius: 26px; }
+.joyday-canvas-frame.is-circle { aspect-ratio: 1; border-radius: 999px; }
+.joyday-canvas-frame.is-rect { width: min(58%, 420px); aspect-ratio: 2 / 3; border-radius: 26px; }
+
+#joyday-art-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.joyday-canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  color: #07111f;
+  background: rgba(255, 250, 241, 0.74);
+  pointer-events: none;
+}
+
+.joyday-canvas-empty strong { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; }
+.joyday-canvas-empty span { color: rgba(7, 17, 31, 0.7); font-weight: 700; }
+
+.joyday-game-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding-top: 18px;
+}
+
+.joyday-game-actions .btn {
+  gap: 8px;
+}
+
+.joyday-game-actions .btn:disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.joyday-toolbelt-panel {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(7, 17, 31, 0.44);
+  backdrop-filter: blur(18px);
+}
+
+.joyday-toolbelt-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.joyday-toolbelt-heading .eyebrow {
+  margin-bottom: 0;
+}
+
+.joyday-toolbelt-heading span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.joyday-tool-grid-inline {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.joyday-tool-grid-inline button {
+  grid-template-columns: 42px 1fr;
+  min-height: 78px;
+}
+
+.joyday-thickness-control {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.joyday-thickness-head,
+.joyday-thickness-scale {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
-  color: var(--muted-2);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
-.game-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
+.joyday-thickness-head strong {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+  font-weight: 900;
 }
 
-.game-status::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--muted-2);
+.joyday-thickness-head span,
+.joyday-thickness-scale span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
 }
 
-.game-status.live::before {
-  background: var(--success);
-  box-shadow: 0 0 18px rgba(52, 211, 153, 0.65);
+.joyday-thickness-control input[type="range"] {
+  width: 100%;
+  margin: 12px 0 6px;
+  accent-color: var(--brand);
+  cursor: pointer;
 }
 
-.game-status.planned::before {
-  background: var(--warning);
-  box-shadow: 0 0 18px rgba(251, 191, 36, 0.48);
+.joyday-toolbox {
+  position: sticky;
+  top: 110px;
+  display: grid;
+  gap: 16px;
 }
 
-.game-note {
-  display: inline-flex;
-  margin-top: 18px;
+.joyday-canvas-options,
+.joyday-tool-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.joyday-canvas-options button,
+.joyday-tool-grid button {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 72px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  text-align: left;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.joyday-canvas-options button:hover,
+.joyday-canvas-options button.is-active,
+.joyday-tool-grid button:hover,
+.joyday-tool-grid button.is-active {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.42);
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.joyday-canvas-options button > span,
+.joyday-tool-grid i {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: rgba(56, 189, 248, 0.13);
   color: var(--brand);
+}
+
+.joyday-canvas-options [data-joyday-canvas="square"] > span { border-radius: 10px; background: #fffaf1; border: 2px solid rgba(56, 189, 248, 0.7); }
+.joyday-canvas-options [data-joyday-canvas="circle"] > span { border-radius: 999px; background: #fffaf1; border: 2px solid rgba(244, 114, 182, 0.7); }
+.joyday-canvas-options [data-joyday-canvas="rect"] > span { width: 34px; height: 48px; margin-inline: auto; border-radius: 10px; background: #fffaf1; border: 2px solid rgba(255, 210, 63, 0.74); }
+
+.joyday-canvas-options strong,
+.joyday-canvas-options small,
+.joyday-tool-grid strong,
+.joyday-tool-grid small {
+  display: block;
+}
+
+.joyday-canvas-options small,
+.joyday-tool-grid small,
+.joyday-tips p:not(.eyebrow) {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.joyday-color-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 9px;
+}
+
+.joyday-color-grid button {
+  aspect-ratio: 1;
+  min-height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  background: var(--swatch);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.joyday-color-grid button.is-active,
+.joyday-color-grid button:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.13);
+}
+
+.joyday-custom-color {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  color: var(--muted);
   font-size: 13px;
   font-weight: 800;
 }
 
-.game-card.is-planned {
-  opacity: 0.86;
+.joyday-custom-color input {
+  width: 54px;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
 }
 
 .game-card[data-game-link] {
   cursor: pointer;
 }
 
-.game-card[data-game-link]::after {
-  content: "↗";
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  color: #06111f;
-  background: linear-gradient(135deg, var(--brand), var(--accent));
+.game-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.game-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
   font-weight: 900;
-  opacity: 0;
-  transform: translateY(6px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.game-status.live { color: #06111f; background: linear-gradient(135deg, var(--brand), var(--accent)); }
+.game-status.planned { color: var(--warning); background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.22); }
+.game-note { display: inline-flex; margin-top: 18px; color: var(--muted-2); font-size: 13px; font-weight: 800; }
+
+html[data-theme="light"] .joyday-studio-wall,
+html[data-theme="light"] .joyday-canvas-hint,
+html[data-theme="light"] .joyday-toolbox .detail-panel,
+html[data-theme="light"] .joyday-toolbelt-panel,
+html[data-theme="light"] .joyday-thickness-control,
+html[data-theme="light"] .joyday-active-info,
+html[data-theme="light"] .joyday-paint-poster {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72));
+}
+
+html[data-theme="light"] .joyday-wall-scene {
+  background:
+    radial-gradient(circle at 16% 20%, rgba(255, 59, 107, 0.18), transparent 14rem),
+    radial-gradient(circle at 82% 18%, rgba(255, 210, 63, 0.2), transparent 13rem),
+    radial-gradient(circle at 84% 82%, rgba(34, 211, 238, 0.18), transparent 15rem),
+    linear-gradient(145deg, rgba(239, 246, 255, 0.94), rgba(255, 255, 255, 0.88));
+}
+
+@media screen and (max-width: 1100px) {
+  .joyday-paint-hero,
+  .joyday-paint-layout {
+    grid-template-columns: 1fr;
+  }
+  .joyday-toolbox {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 820px) {
+  .joyday-paint-hero {
+    min-height: auto;
+    padding-top: 72px;
+  }
+  .joyday-paint-poster {
+    min-height: 320px;
+  }
+  .joyday-wall-topbar {
+    flex-direction: column;
+  }
+  .joyday-canvas-hint {
+    align-items: flex-start;
+  }
+  .joyday-active-info {
+    width: 100%;
+    text-align: left;
+  }
+  .joyday-wall-scene {
+    min-height: 520px;
+  }
+  .joyday-canvas-frame {
+    width: min(86%, 480px);
+  }
+  .joyday-canvas-frame.is-rect {
+    width: min(68%, 360px);
+  }
+  .joyday-toolbox {
+    grid-template-columns: 1fr;
+  }
+  .joyday-tool-grid-inline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .joyday-toolbelt-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .joyday-toolbelt-heading span {
+    text-align: left;
+  }
+}
+
+@media screen and (max-width: 560px) {
+  .joyday-studio-wall {
+    padding: 12px;
+    border-radius: 24px;
+  }
+  .joyday-wall-scene {
+    min-height: 430px;
+    border-radius: 22px;
+  }
+  .joyday-canvas-hint {
+    margin: 0 0 12px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+  .joyday-canvas-frame {
+    border-width: 8px;
+    width: min(92%, 390px);
+  }
+  .joyday-canvas-frame.is-rect {
+    width: min(70%, 300px);
+  }
+  .joyday-game-actions .btn {
+    flex: 1 1 calc(50% - 10px);
+    padding-inline: 12px;
+  }
+  .joyday-color-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .joyday-toolbelt-panel {
+    padding: 12px;
+    border-radius: 20px;
+  }
+  .joyday-tool-grid-inline {
+    grid-template-columns: 1fr;
+  }
+  .joyday-tool-grid-inline button {
+    min-height: 66px;
+  }
+}
+
+/* Joyday Action Painting expansion polish */
+.joyday-control-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.joyday-control-row .joyday-thickness-control {
+  margin-top: 14px;
+}
+
+.joyday-palette-tools,
+.joyday-mini-actions,
+.joyday-finish-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.joyday-palette-tools .btn,
+.joyday-mini-actions .btn {
+  min-height: 40px;
+  padding-inline: 12px;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.joyday-palette-tools small {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.joyday-creative-panel h3,
+.joyday-mission-panel h3 {
+  margin-bottom: 8px;
+  font-size: 24px;
+}
+
+.joyday-creative-panel p:not(.eyebrow),
+.joyday-mission-panel p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.joyday-progress {
+  height: 10px;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.joyday-progress span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  transition: width 0.3s ease;
+}
+
+.joyday-mission-panel small {
+  display: inline-flex;
+  margin-top: 8px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.joyday-sound-toggle {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 900;
+  cursor: pointer;
   transition: 0.25s ease;
 }
 
-.game-card[data-game-link]:hover::after,
-.game-card[data-game-link]:focus-visible::after {
-  opacity: 1;
-  transform: translateY(0);
+.joyday-sound-toggle[aria-pressed="true"],
+.joyday-sound-toggle:hover {
+  color: #06111f;
+  border-color: rgba(56, 189, 248, 0.36);
+  background: linear-gradient(135deg, var(--brand), var(--accent));
 }
 
-html[data-theme="light"] .game-status {
-  background: rgba(2, 132, 199, 0.08);
+.joyday-sound-toggle i {
+  font-size: 22px;
 }
 
-@media screen and (max-width: 640px) {
-  .game-status-row {
-    align-items: flex-start;
-    flex-direction: column;
+.joyday-canvas-frame.is-painting {
+  transform: translateY(-2px) scale(1.006);
+  box-shadow: 0 36px 100px rgba(0, 0, 0, 0.38), 0 0 0 6px rgba(56, 189, 248, 0.12), inset 0 0 0 1px rgba(7, 17, 31, 0.12);
+}
+
+.joyday-tool-grid button.is-used {
+  animation: joydayToolPop 0.36s ease;
+}
+
+@keyframes joydayToolPop {
+  0% { transform: translateY(0) scale(1); }
+  42% { transform: translateY(-4px) scale(1.035); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.is-pulsing {
+  animation: joydayPulse 0.36s ease;
+}
+
+@keyframes joydayPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.joyday-modal-open {
+  overflow: hidden;
+}
+
+.joyday-finish-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.joyday-finish-modal[hidden] {
+  display: none !important;
+}
+
+.joyday-finish-card {
+  position: relative;
+  width: min(100%, 1120px);
+  max-height: min(88vh, 900px);
+  display: grid;
+  grid-template-columns: minmax(280px, 0.92fr) minmax(320px, 1fr);
+  gap: 22px;
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 14% 24%, rgba(255, 59, 107, 0.2), transparent 16rem),
+    radial-gradient(circle at 88% 16%, rgba(34, 211, 238, 0.18), transparent 15rem),
+    linear-gradient(155deg, rgba(12, 25, 43, 0.98), rgba(7, 17, 31, 0.96));
+  box-shadow: var(--shadow);
+}
+
+.joyday-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.joyday-modal-close i {
+  font-size: 26px;
+}
+
+.joyday-finish-preview {
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 210, 63, 0.14), transparent 14rem),
+    radial-gradient(circle at 76% 72%, rgba(244, 114, 182, 0.14), transparent 13rem),
+    rgba(255, 255, 255, 0.045);
+}
+
+.joyday-finish-preview img {
+  max-height: 560px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 24px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+}
+
+.joyday-finish-copy {
+  align-self: center;
+  padding: 14px 10px;
+}
+
+.joyday-finish-copy h2 {
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 900;
+}
+
+.joyday-finish-copy > p:not(.eyebrow) {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.joyday-art-name {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.joyday-art-name input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.065);
+  font: inherit;
+  font-weight: 800;
+}
+
+.joyday-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.joyday-check-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand);
+}
+
+.joyday-export-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.joyday-export-switch button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.joyday-export-switch button.is-active,
+.joyday-export-switch button:hover {
+  color: #06111f;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+}
+
+.joyday-finish-actions .btn {
+  gap: 8px;
+}
+
+html[data-theme="light"] .joyday-creative-panel,
+html[data-theme="light"] .joyday-mission-panel,
+html[data-theme="light"] .joyday-sound-panel,
+html[data-theme="light"] .joyday-intensity-control,
+html[data-theme="light"] .joyday-finish-card,
+html[data-theme="light"] .joyday-finish-preview,
+html[data-theme="light"] .joyday-art-name input,
+html[data-theme="light"] .joyday-export-switch {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72));
+}
+
+html[data-theme="light"] .joyday-finish-card {
+  color: var(--text);
+}
+
+@media screen and (max-width: 1100px) {
+  .joyday-control-row {
+    grid-template-columns: 1fr;
+  }
+  .joyday-finish-card {
+    grid-template-columns: 1fr;
+  }
+  .joyday-finish-preview {
+    min-height: 320px;
+  }
+}
+
+@media screen and (max-width: 560px) {
+  .joyday-finish-modal {
+    padding: 12px;
+  }
+  .joyday-finish-card {
+    padding: 14px;
+    border-radius: 24px;
+  }
+  .joyday-export-switch {
+    grid-template-columns: 1fr;
+  }
+  .joyday-finish-actions .btn {
+    width: 100%;
   }
 }

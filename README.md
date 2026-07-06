@@ -156,3 +156,60 @@ This version fixes the Atölye Joyday reservation workflow detail page image iss
 - Kept Career Adventure as a playable game page linked from the Games catalog.
 - Added planned game cards for future AI Flow Puzzle and Interview Run concepts.
 - Added TR/EN translation polish for the new Games page and recent experience cards.
+
+
+## Joyday Action Painting Game
+
+This update adds a virtual Atölye Joyday-style action painting experience. Users can choose 50x50 square, 52 cm circle or 40x60 rectangle canvas formats, select colors, use four tools (throw bottle, spray, brush and water balloon), undo/redo changes, clear the canvas and download the final artwork as PNG.
+
+
+## Joyday Action Painting UI Polish
+
+- Moved the action painting equipment selector into the main studio area under the canvas so tools are closer to the painting surface.
+- Hid the center onboarding overlay after canvas initialization/selection to keep the artwork area clean.
+- Kept canvas type, color palette, undo/redo, clear and PNG export controls active with TR/EN text support.
+
+## Joyday Action Painting UI Fix
+
+- Removed the in-canvas instructional overlay so selected canvases stay clean while painting.
+- Added a dismissible top info banner with TR/EN text and a close button.
+- Kept the equipment toolbelt directly under the canvas for faster interaction.
+
+
+## Joyday bottle line polish
+
+- Updated the Joyday Action Painting bottle tool from splash behavior to a straight paint-line stream.
+- Bottle now supports drag-based line drawing with small natural drips, while balloon remains the large burst/splash tool.
+- Updated Joyday tool labels and TR/EN helper copy accordingly.
+
+
+## Joyday bottle one-shot paint throw polish
+
+- Updated the Joyday Action Painting bottle tool from continuous drag drawing into a release-based one-shot straight paint throw.
+- The bottle now behaves differently from the brush: press to aim, release to place a cleaner straight paint stream with light natural drips.
+
+
+## Joyday Action Painting thickness polish
+
+- Added a stroke thickness control to the Joyday Action Painting toolbelt.
+- Thickness now affects the throw bottle paint line, brush stroke size, spray intensity and water balloon burst size.
+- Added TR/EN labels for thin, medium and thick settings.
+
+## Joyday Action Painting feature expansion
+
+This pass expands `joyday-paint.html` into a more complete interactive studio experience:
+
+- Artwork finish modal with preview
+- Artwork naming before export
+- Optional Joyday signature
+- Clean canvas export and branded Joyday card export
+- Random creative prompt / theme card
+- Suggested color palettes
+- Starter stains button
+- Mini mission system
+- Remix paint-flow effect
+- Paint intensity slider
+- Optional studio sound toggle powered by Web Audio
+- Small tool interaction animations
+- Real Atölye Joyday CTA from the export screen
+
