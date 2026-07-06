@@ -17,8 +17,10 @@ The website presents Kaan Balcı as an **AI Designer & Software Developer** with
 
 - `index.html` — Modern landing page with hero, stats, services, tech stack matrix, AI workflow demo, featured case study, experience preview and featured works
 - `works.html` — Filterable project catalog with cards linking into dynamic case study pages
-- `games.html` — Playable web games catalog that groups interactive portfolio mini games such as Career Adventure
+- `games.html` — Playable web games catalog that groups interactive portfolio mini games such as Career Adventure, Joyday Action Painting and AI Flow Puzzle
 - `adventure.html` — Career Adventure playable mini game page linked from the games catalog
+- `joyday-paint.html` — Joyday Action Painting virtual canvas mini game with canvas selection, virtual painting tools and PNG export
+- `ai-flow-puzzle.html` — n8n-inspired chatbot workflow puzzle game with draggable nodes, validation goals and JSON export
 - `project-detail.html` — Single dynamic project detail page powered by query parameters and JavaScript data
 - `request.html` — Project/service request page with frontend validation, mailto fallback and Google Apps Script endpoint support
 - `request-config.js` — Request form endpoint configuration
@@ -26,6 +28,8 @@ The website presents Kaan Balcı as an **AI Designer & Software Developer** with
 - `blog.html` — Experience timeline page; kept as `blog.html` for existing URL compatibility
 - `single-work.html` — Certificates gallery; kept as `single-work.html` for existing URL compatibility
 - `about.html` — Professional profile, capability map, process and toolbox
+- `joyday-paint.js` — Joyday Action Painting game engine powered by Canvas API
+- `ai-flow-puzzle.js` — AI Flow Puzzle logic for scenarios, node placement, connections, validation and JSON export
 - `style.css` — Full responsive modern UI styling
 - `script.js` — Mobile navigation, project/game filters, certificate modal, language switcher, dynamic project detail rendering, Ajoop assistant, theme switching, recruiter mode, command palette, easter egg, Algorithmic 3D Lab and dynamic year
 - `CNAME` — GitHub Pages custom domain configuration
@@ -213,3 +217,30 @@ This pass expands `joyday-paint.html` into a more complete interactive studio ex
 - Small tool interaction animations
 - Real Atölye Joyday CTA from the export screen
 
+
+
+## AI Flow Puzzle expansion
+
+This version turns the planned AI Flow Puzzle card into a live playable mini game. The game uses an n8n-inspired visual workflow board where users add chatbot automation nodes, drag them into place, connect source and target nodes, validate required scenario objectives, get hints and export the created workflow as JSON.
+
+Included scenarios:
+
+- Joyday Reservation Bot
+- Enterprise Support Bot
+- Lead Capture Automation
+
+The game is designed as a portfolio-friendly demonstration of chatbot flow logic, fallback handling, branching and automation thinking.
+
+## AI Flow Puzzle expansion
+
+This version expands `ai-flow-puzzle.html` into a stronger n8n-inspired workflow simulator:
+
+- Run Flow execution mode with animated node highlighting
+- Scenario-based test messages and execution log panel
+- Node configuration inspector for trigger, intent, route, LLM, response and automation nodes
+- Template system with blank, happy-path and full-solution starts
+- Flow quality scoring across logic, automation, UX, safety and efficiency
+- Debug notes for missing nodes, missing connections and weak safety paths
+- Connection labels for route logic and branch readability
+- JSON export/import, flow summary copy, TXT report download and PNG board export
+- Wider two-column desktop layout to reduce board crowding

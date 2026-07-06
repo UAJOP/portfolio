@@ -717,6 +717,23 @@ Object.assign(i18nAttributeTranslations.tr, {
   "Close hint": "İpucunu kapat"
 });
 
+
+Object.assign(i18nTranslations.tr, {
+  "Play AI Flow Puzzle": "AI Flow Puzzle Oyna",
+  "The catalog now includes Career Adventure, Joyday Action Painting and AI Flow Puzzle, and it can grow into a full interactive game shelf over time.": "Katalog artık Career Adventure, Joyday Action Painting ve AI Flow Puzzle oyunlarını içeriyor; zamanla tam bir interaktif oyun rafına dönüşebilir.",
+  "Build n8n-inspired chatbot workflows by placing trigger, intent, response, fallback and automation nodes on a visual board.": "Trigger, intent, response, fallback ve otomasyon node'larını görsel board üzerine yerleştirerek n8n mantıklı chatbot workflow'ları kur.",
+  "n8n Logic • JavaScript": "n8n Mantığı • JavaScript",
+  "Open AI Flow Puzzle game": "AI Flow Puzzle oyununu aç",
+  "AI Flow Puzzle game preview": "AI Flow Puzzle oyun önizlemesi"
+});
+Object.assign(i18nTitleTranslations.tr, {
+  "AI Flow Puzzle | Kaan Balcı": "AI Flow Puzzle | Kaan Balcı"
+});
+Object.assign(i18nAttributeTranslations.tr, {
+  "Open AI Flow Puzzle game": "AI Flow Puzzle oyununu aç",
+  "AI Flow Puzzle game preview": "AI Flow Puzzle oyun önizlemesi"
+});
+
 const originalDocumentTitle = document.title;
 
 function normalizeI18nText(value) {
@@ -807,6 +824,10 @@ function applyLanguage(language) {
 
   if (typeof updatePortfolioChatbotLanguage === "function") {
     updatePortfolioChatbotLanguage(activeLanguage);
+  }
+
+  if (typeof updateAiFlowPuzzleLanguage === "function") {
+    updateAiFlowPuzzleLanguage(activeLanguage);
   }
 }
 
@@ -2990,6 +3011,7 @@ const ultimateContent = {
       { id: "works", label: "Open Works", hint: "Project catalog", keywords: "projects works portfolio", type: "nav", value: "works.html" },
       { id: "games", label: "Open Games", hint: "Playable mini games", keywords: "games oyun mini web canvas", type: "nav", value: "games.html" },
       { id: "joyday-paint", label: "Open Joyday Painting", hint: "Virtual action painting game", keywords: "joyday painting action canvas paint game png", type: "nav", value: "joyday-paint.html" },
+      { id: "ai-flow-puzzle", label: "Open AI Flow Puzzle", hint: "n8n-style chatbot workflow game", keywords: "ai flow puzzle n8n chatbot workflow automation game", type: "nav", value: "ai-flow-puzzle.html" },
       { id: "adventure", label: "Open Adventure", hint: "Career merge mini game", keywords: "adventure game mini career merge job kaan", type: "nav", value: "adventure.html" },
       { id: "joyday", label: "Open Joyday Case Study", hint: "Real business website", keywords: "joyday case study reservation", type: "nav", value: "project-detail.html?project=atolye-joyday-official-website" },
       { id: "cv", label: "View Resume", hint: "Google Drive CV", keywords: "resume cv", type: "resume" },
@@ -3022,6 +3044,7 @@ const ultimateContent = {
       { id: "works", label: "Projeleri Aç", hint: "Proje kataloğu", keywords: "projeler portfolio works", type: "nav", value: "works.html" },
       { id: "games", label: "Oyunları Aç", hint: "Oynanabilir mini oyunlar", keywords: "oyunlar oyun mini web canvas", type: "nav", value: "games.html" },
       { id: "joyday-paint", label: "Joyday Painting Aç", hint: "Sanal action painting oyunu", keywords: "joyday painting action canvas boya oyun png", type: "nav", value: "joyday-paint.html" },
+      { id: "ai-flow-puzzle", label: "AI Flow Puzzle Aç", hint: "n8n tarzı chatbot workflow oyunu", keywords: "ai flow puzzle n8n chatbot workflow otomasyon oyun", type: "nav", value: "ai-flow-puzzle.html" },
       { id: "adventure", label: "Macera\'yı Aç", hint: "Kariyer merge mini oyunu", keywords: "macera oyun kariyer merge job iş kaan", type: "nav", value: "adventure.html" },
       { id: "joyday", label: "Joyday Case Study Aç", hint: "Gerçek işletme web sitesi", keywords: "joyday case study rezervasyon", type: "nav", value: "project-detail.html?project=atolye-joyday-official-website" },
       { id: "cv", label: "CV'yi Görüntüle", hint: "Google Drive CV", keywords: "resume cv özgeçmiş", type: "resume" },
@@ -3880,9 +3903,9 @@ function enhanceJoydayGameNavigation() {
       en.answers.games = {
         text: [
           "The Games page collects small playable web experiments in the portfolio.",
-          "It includes Kaan's Career Adventure and Joyday Action Painting, a browser-based virtual action painting experience with PNG export."
+          "It includes Kaan's Career Adventure, Joyday Action Painting and AI Flow Puzzle, an n8n-style chatbot workflow logic game."
         ],
-        links: [{ label: "Open Games", url: "games.html" }, { label: "Play Joyday Painting", url: "joyday-paint.html" }]
+        links: [{ label: "Open Games", url: "games.html" }, { label: "Play AI Flow Puzzle", url: "ai-flow-puzzle.html" }, { label: "Play Joyday Painting", url: "joyday-paint.html" }]
       };
     }
     if (tr && !tr.quicks.some((item) => item.id === "games")) {
@@ -3890,13 +3913,13 @@ function enhanceJoydayGameNavigation() {
       tr.answers.games = {
         text: [
           "Oyunlar sayfası portfolyodaki küçük oynanabilir web deneylerini topluyor.",
-          "İçinde Kaan'ın Kariyer Macerası ve PNG çıktı alabilen sanal action painting deneyimi Joyday Action Painting yer alıyor."
+          "İçinde Kaan'ın Kariyer Macerası, PNG çıktı alabilen Joyday Action Painting ve n8n mantıklı chatbot workflow oyunu AI Flow Puzzle yer alıyor."
         ],
-        links: [{ label: "Oyunları Aç", url: "games.html" }, { label: "Joyday Painting Oyna", url: "joyday-paint.html" }]
+        links: [{ label: "Oyunları Aç", url: "games.html" }, { label: "AI Flow Puzzle Oyna", url: "ai-flow-puzzle.html" }, { label: "Joyday Painting Oyna", url: "joyday-paint.html" }]
       };
     }
     if (typeof chatbotKeywordMap !== "undefined" && !chatbotKeywordMap.some((item) => item.id === "games")) {
-      chatbotKeywordMap.unshift({ id: "games", keywords: ["games", "oyunlar", "oyun", "joyday painting", "action painting", "paint", "canvas", "png"] });
+      chatbotKeywordMap.unshift({ id: "games", keywords: ["games", "oyunlar", "oyun", "joyday painting", "action painting", "paint", "canvas", "png", "ai flow puzzle", "n8n", "workflow", "chatbot"] });
     }
     updatePortfolioChatbotLanguage?.(currentSiteLanguage || "en");
   }
