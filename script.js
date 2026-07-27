@@ -923,6 +923,8 @@ Object.assign(i18nTranslations.tr, {
 Object.assign(i18nAttributeTranslations.tr, {
   "Open details for Atölye Joyday Official Website":
     "Atölye Joyday Resmi Web Sitesi detaylarını aç",
+  "Open Atölye Joyday case study":
+    "Atölye Joyday vaka çalışmasını aç",
 
   "AI workflow scenarios": "AI workflow senaryoları",
   "Atölye Joyday package selection preview":
@@ -1391,6 +1393,10 @@ const projectDetailData = {
       "Reservation CTA",
     ],
     links: [
+      {
+        label: { en: "View Case Study", tr: "Vaka Çalışmasını Gör" },
+        url: "atolye-joyday-case-study.html",
+      },
       {
         label: { en: "Open Live Website", tr: "Canlı Siteyi Aç" },
         url: "https://atolyejoyday.com/",
@@ -3334,8 +3340,8 @@ const portfolioChatbotContent = {
         links: [
           { label: "View Works", url: "works.html" },
           {
-            label: "Joyday Case",
-            url: "project-detail.html?project=atolye-joyday-official-website",
+            label: "View Atölye Joyday Case Study",
+            url: "atolye-joyday-case-study.html",
           },
         ],
       },
@@ -3343,10 +3349,10 @@ const portfolioChatbotContent = {
         text: "Atölye Joyday is a real business project. Kaan designed and developed the website experience, service pages, package flow and reservation journey. It shows practical product thinking because it connects customer experience with operational tracking.",
         links: [
           {
-            label: "Official Website Case",
-            url: "project-detail.html?project=atolye-joyday-official-website",
+            label: "View Atölye Joyday Case Study",
+            url: "atolye-joyday-case-study.html",
           },
-          { label: "Open Website", url: "https://atolyejoyday.com/" },
+          { label: "Open Atölye Joyday Website", url: "https://atolyejoyday.com/" },
         ],
       },
       stack: {
@@ -3426,19 +3432,19 @@ const portfolioChatbotContent = {
         links: [
           { label: "Projeleri Gör", url: "works.html" },
           {
-            label: "Joyday Case",
-            url: "project-detail.html?project=atolye-joyday-official-website",
+            label: "Atölye Joyday Vaka Çalışmasını Gör",
+            url: "atolye-joyday-case-study.html",
           },
         ],
       },
       joyday: {
-        text: "Atölye Joyday gerçek bir işletme projesi. Kaan web deneyimini, hizmet sayfalarını, paket akışını ve rezervasyon yolculuğunu tasarlayıp geliştirdi. Müşteri deneyimini operasyon takibiyle bağladığı için güçlü bir real-time business case olarak duruyor.",
+        text: "Atölye Joyday gerçek bir işletme projesi. Kaan web deneyimini, hizmet sayfalarını, paket akışını ve rezervasyon yolculuğunu tasarlayıp geliştirdi. Müşteri deneyimini operasyon takibiyle bağladığı için güçlü bir canlı işletme vaka çalışması olarak duruyor.",
         links: [
           {
-            label: "Official Website Case",
-            url: "project-detail.html?project=atolye-joyday-official-website",
+            label: "Atölye Joyday Vaka Çalışmasını Gör",
+            url: "atolye-joyday-case-study.html",
           },
-          { label: "Canlı Site", url: "https://atolyejoyday.com/" },
+          { label: "Atölye Joyday Canlı Sitesini Aç", url: "https://atolyejoyday.com/" },
         ],
       },
       stack: {
@@ -3596,8 +3602,8 @@ function enhanceAjoopDialogDepth() {
       projects: [
         { label: "View Works", url: "works.html" },
         {
-          label: "Joyday Case",
-          url: "project-detail.html?project=atolye-joyday-official-website",
+          label: "View Atölye Joyday Case Study",
+          url: "atolye-joyday-case-study.html",
         },
         { label: "GitHub", url: "https://github.com/UAJOP" },
       ],
@@ -3622,8 +3628,8 @@ function enhanceAjoopDialogDepth() {
       projects: [
         { label: "Projeleri Gör", url: "works.html" },
         {
-          label: "Joyday Case",
-          url: "project-detail.html?project=atolye-joyday-official-website",
+          label: "Atölye Joyday Vaka Çalışmasını Gör",
+          url: "atolye-joyday-case-study.html",
         },
         { label: "GitHub", url: "https://github.com/UAJOP" },
       ],
@@ -3965,10 +3971,10 @@ enhanceAjoopDialogDepth();
       ],
       links: [
         {
-          label: "Official Website Case",
-          url: "project-detail.html?project=atolye-joyday-official-website",
+          label: "View Atölye Joyday Case Study",
+          url: "atolye-joyday-case-study.html",
         },
-        { label: "Open Website", url: "https://atolyejoyday.com/" },
+        { label: "Open Atölye Joyday Website", url: "https://atolyejoyday.com/" },
       ],
     },
     stack: {
@@ -4036,10 +4042,10 @@ enhanceAjoopDialogDepth();
       ],
       links: [
         {
-          label: "Resmi Web Sitesi Case",
-          url: "project-detail.html?project=atolye-joyday-official-website",
+          label: "Atölye Joyday Vaka Çalışmasını Gör",
+          url: "atolye-joyday-case-study.html",
         },
-        { label: "Canlı Site", url: "https://atolyejoyday.com/" },
+        { label: "Atölye Joyday Canlı Sitesini Aç", url: "https://atolyejoyday.com/" },
       ],
     },
     stack: {
@@ -4350,12 +4356,21 @@ const ultimateContent = {
         value: "adventure.html",
       },
       {
-        id: "joyday",
-        label: "Open Joyday Case Study",
-        hint: "Real business website",
-        keywords: "joyday case study reservation",
+        id: "joyday-case-study",
+        label: "View Atölye Joyday Case Study",
+        hint: "Live business and digital product case study",
+        keywords: "atolye joyday case study reservation digital product",
         type: "nav",
-        value: "project-detail.html?project=atolye-joyday-official-website",
+        value: "atolye-joyday-case-study.html",
+      },
+      {
+        id: "joyday-live",
+        label: "Open Atölye Joyday Website",
+        hint: "Live creative workshop website",
+        keywords: "atolye joyday live website business",
+        type: "nav",
+        value: "https://atolyejoyday.com/",
+        external: true,
       },
       {
         id: "cv",
@@ -4499,12 +4514,21 @@ const ultimateContent = {
         value: "adventure.html",
       },
       {
-        id: "joyday",
-        label: "Joyday Case Study Aç",
-        hint: "Gerçek işletme web sitesi",
-        keywords: "joyday case study rezervasyon",
+        id: "joyday-case-study",
+        label: "Atölye Joyday Vaka Çalışmasını Gör",
+        hint: "Canlı işletme ve dijital ürün vaka çalışması",
+        keywords: "atölye joyday vaka çalışması rezervasyon dijital ürün",
         type: "nav",
-        value: "project-detail.html?project=atolye-joyday-official-website",
+        value: "atolye-joyday-case-study.html",
+      },
+      {
+        id: "joyday-live",
+        label: "Atölye Joyday Canlı Sitesini Aç",
+        hint: "Canlı yaratıcı atölye web sitesi",
+        keywords: "atölye joyday canlı site işletme",
+        type: "nav",
+        value: "https://atolyejoyday.com/",
+        external: true,
       },
       {
         id: "cv",
@@ -4725,7 +4749,8 @@ const recruiterItems = {
       [
         "Atölye Joyday Official Website",
         "Live digital product and reservation journey",
-        "project-detail.html?project=atolye-joyday-official-website",
+        "atolye-joyday-case-study.html",
+        "View Case Study",
       ],
       [
         "Hospital Form App",
@@ -4784,7 +4809,8 @@ const recruiterItems = {
       [
         "Atölye Joyday Resmi Web Sitesi",
         "Canlı dijital ürün ve rezervasyon yolculuğu",
-        "project-detail.html?project=atolye-joyday-official-website",
+        "atolye-joyday-case-study.html",
+        "Vaka Çalışmasını Gör",
       ],
       [
         "Hospital Form App",
@@ -5016,8 +5042,8 @@ function enhanceAjoopNavigationActions() {
             about: "Hakkımda",
             cv: "CV",
             mail: "E-posta",
-            joyday: "Joyday Case Study",
-            live: "Canlı Site",
+            joyday: "Atölye Joyday Vaka Çalışmasını Gör",
+            live: "Atölye Joyday Canlı Sitesini Aç",
             github: "GitHub",
             recruiter: "İK Modu",
           }
@@ -5026,8 +5052,8 @@ function enhanceAjoopNavigationActions() {
             about: "About",
             cv: "Resume",
             mail: "Email",
-            joyday: "Joyday Case Study",
-            live: "Live Website",
+            joyday: "View Atölye Joyday Case Study",
+            live: "Open Atölye Joyday Website",
             github: "GitHub",
             recruiter: "Recruiter Mode",
           };
@@ -5041,7 +5067,7 @@ function enhanceAjoopNavigationActions() {
         { label: labels.works, url: "works.html" },
         {
           label: labels.joyday,
-          url: "project-detail.html?project=atolye-joyday-official-website",
+          url: "atolye-joyday-case-study.html",
         },
         { label: labels.github, url: "https://github.com/UAJOP" },
       ];
@@ -5049,7 +5075,7 @@ function enhanceAjoopNavigationActions() {
       content.answers.joyday.links = [
         {
           label: labels.joyday,
-          url: "project-detail.html?project=atolye-joyday-official-website",
+          url: "atolye-joyday-case-study.html",
         },
         { label: labels.live, url: "https://atolyejoyday.com/" },
       ];

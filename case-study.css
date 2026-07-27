@@ -60,6 +60,16 @@
   object-fit: cover;
 }
 
+.case-hero-visual-contain {
+  background: #07111f;
+}
+
+.case-hero-visual-contain img {
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
 .case-meta-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -263,6 +273,136 @@
   font-weight: 800;
 }
 
+.case-service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.case-service-card {
+  min-width: 0;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
+}
+
+.case-service-card h3 {
+  color: var(--brand);
+  font-size: 23px;
+}
+
+.case-service-card > p,
+.case-muted {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.case-detail-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  list-style: none;
+}
+
+.case-detail-list li {
+  position: relative;
+  padding-left: 22px;
+  color: var(--muted);
+}
+
+.case-detail-list li::before {
+  content: "";
+  position: absolute;
+  top: 0.65em;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--brand);
+}
+
+.case-journey {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  list-style: none;
+}
+
+.case-journey li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.case-journey strong {
+  flex: 0 0 auto;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 999px;
+  color: #07111f;
+  background: var(--brand);
+}
+
+.case-journey span {
+  font-weight: 800;
+}
+
+.case-section-support {
+  margin-top: 20px;
+}
+
+.case-flow-panel {
+  margin-top: 18px;
+}
+
+.case-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.case-flow-step {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 16px 10px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  text-align: center;
+}
+
+.case-flow-step i {
+  color: var(--brand);
+  font-size: 26px;
+}
+
+.case-flow-step span {
+  font-size: 12px;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.case-flow-connector {
+  flex: 0 0 auto;
+  align-self: center;
+  color: var(--brand);
+  font-size: 20px;
+  font-weight: 900;
+}
+
 .case-score-list,
 .case-limitations,
 .case-tech-list {
@@ -436,9 +576,17 @@ body.case-modal-open {
   outline-offset: 3px;
 }
 
-html[data-theme="light"] :is(.case-hero-visual, .case-panel, .case-scenario, .case-node-group, .case-gallery-card, .case-related-card, .case-proof) {
+html[data-theme="light"] :is(.case-hero-visual, .case-panel, .case-scenario, .case-node-group, .case-gallery-card, .case-related-card, .case-proof, .case-service-card) {
   background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72));
   box-shadow: 0 20px 70px rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] :is(.case-journey li, .case-flow-step) {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme="light"] .case-hero-visual-contain {
+  background: #f8fbff;
 }
 
 @media screen and (max-width: 980px) {
@@ -452,12 +600,23 @@ html[data-theme="light"] :is(.case-hero-visual, .case-panel, .case-scenario, .ca
   }
 
   .case-node-grid,
-  .case-scenario-grid {
+  .case-scenario-grid,
+  .case-journey {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .case-score-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .case-flow {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .case-flow-connector {
+    transform: rotate(90deg);
+    justify-self: center;
   }
 }
 
@@ -475,6 +634,8 @@ html[data-theme="light"] :is(.case-hero-visual, .case-panel, .case-scenario, .ca
   .case-split,
   .case-node-grid,
   .case-scenario-grid,
+  .case-service-grid,
+  .case-journey,
   .case-gallery,
   .case-related-grid {
     grid-template-columns: 1fr;
