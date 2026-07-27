@@ -4698,6 +4698,7 @@ const recruiterItems = {
         "AI Flow Puzzle",
         "Live node-logic, fallback and validation demo",
         "ai-flow-puzzle-case-study.html",
+        "View Case Study",
       ],
       [
         "Atölye Joyday Official Website",
@@ -4756,6 +4757,7 @@ const recruiterItems = {
         "AI Flow Puzzle",
         "Canlı node mantığı, fallback ve doğrulama demosu",
         "ai-flow-puzzle-case-study.html",
+        "Vaka Çalışmasını Gör",
       ],
       [
         "Atölye Joyday Resmi Web Sitesi",
@@ -4800,7 +4802,7 @@ function renderRecruiterDrawer(language = currentSiteLanguage || "en") {
       <h3>${language === "tr" ? "Deneyim kanıtları" : "Experience evidence"}</h3>
       <ul class="recruiter-proof-list">${data.proof.map((item) => `<li>${escapeProjectHtml(item)}</li>`).join("")}</ul>
       <h3>${escapeProjectHtml(content.projectsTitle)}</h3>
-      <div class="recruiter-links">${data.projects.map((item) => `<a href="${escapeProjectHtml(item[2])}">${escapeProjectHtml(item[0])}<small>${escapeProjectHtml(item[1])}</small></a>`).join("")}</div>
+      <div class="recruiter-links">${data.projects.map((item) => `<a href="${escapeProjectHtml(item[2])}">${escapeProjectHtml(item[0])}<small>${escapeProjectHtml(item[1])}</small>${item[3] ? `<span>${escapeProjectHtml(item[3])}</span>` : ""}</a>`).join("")}</div>
       <div class="recruiter-actions">
         <button class="btn primary" type="button" onclick="openDrivePreviews()">${escapeProjectHtml(data.buttons.cv)}</button>
         <a class="btn ghost" href="mailto:kaanb8776@gmail.com">${escapeProjectHtml(data.buttons.contact)}</a>

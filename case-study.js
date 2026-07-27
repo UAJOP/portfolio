@@ -16,6 +16,7 @@
       "actions.caseStudy": "View Case Study",
       "actions.resume": "View Resume",
       "actions.contact": "Contact Me",
+      "skip.content": "Skip to content",
       "proof.scenarios": "Workflow Scenarios",
       "proof.nodes": "Node Types",
       "proof.dimensions": "Quality Dimensions",
@@ -25,6 +26,8 @@
         "Chatbot workflows can be difficult to communicate through static diagrams alone. AI Flow Puzzle turns triggers, intent paths, branching, responses, fallback safety and automation steps into an interactive browser experience.",
       "overview.body2":
         "The project is designed as a portfolio demonstration rather than a production chatbot platform. Users can build, inspect, validate and simulate different workflow structures directly in the browser.",
+      "overview.definition":
+        "A live n8n-inspired browser experience demonstrating chatbot flow structure, node validation, fallback paths and user journey thinking.",
       "role.eyebrow": "My Role",
       "role.title": "Solo Project",
       "role.subtitle": "AI Flow Designer & Frontend Developer",
@@ -122,6 +125,7 @@
       "actions.caseStudy": "Vaka Çalışmasını Gör",
       "actions.resume": "CV’yi Görüntüle",
       "actions.contact": "İletişime Geç",
+      "skip.content": "İçeriğe geç",
       "proof.scenarios": "Workflow Senaryosu",
       "proof.nodes": "Node Türü",
       "proof.dimensions": "Kalite Boyutu",
@@ -131,6 +135,8 @@
         "Chatbot workflow’larını yalnızca statik diyagramlarla anlatmak zor olabilir. AI Flow Puzzle; trigger, intent yolları, dallanma, yanıt, fallback güvenliği ve otomasyon adımlarını interaktif bir tarayıcı deneyimine dönüştürür.",
       "overview.body2":
         "Proje production chatbot platformu değil, bir portfolyo demonstrasyonu olarak tasarlanmıştır. Kullanıcılar farklı workflow yapılarını doğrudan tarayıcıda kurabilir, inceleyebilir, doğrulayabilir ve simüle edebilir.",
+      "overview.definition":
+        "Chatbot akış yapısını, node doğrulamasını, fallback yollarını ve kullanıcı yolculuğu düşüncesini gösteren n8n ilhamlı canlı tarayıcı deneyimi.",
       "role.eyebrow": "Rolüm",
       "role.title": "Solo Proje",
       "role.subtitle": "AI Flow Designer & Frontend Developer",
@@ -227,6 +233,10 @@
     document.querySelectorAll("[data-case-i18n-alt]").forEach((element) => {
       const key = element.dataset.caseI18nAlt;
       if (active[key]) element.alt = active[key];
+    });
+    document.querySelectorAll("[data-case-i18n-aria-label]").forEach((element) => {
+      const key = element.dataset.caseI18nAriaLabel;
+      if (active[key]) element.setAttribute("aria-label", active[key]);
     });
   }
 
