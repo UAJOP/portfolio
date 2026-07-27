@@ -133,6 +133,10 @@
   gap: 16px;
 }
 
+.case-proof-strip.is-four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .case-proof {
   padding: 24px;
   border-radius: var(--radius-lg);
@@ -361,6 +365,10 @@
 }
 
 .case-flow-panel {
+  margin-top: 18px;
+}
+
+.case-flow-group + .case-flow-group {
   margin-top: 18px;
 }
 
@@ -605,6 +613,10 @@ html[data-theme="light"] .case-hero-visual-contain {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .case-proof-strip.is-four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .case-score-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -631,6 +643,7 @@ html[data-theme="light"] .case-hero-visual-contain {
 
   .case-meta-grid,
   .case-proof-strip,
+  .case-proof-strip.is-four,
   .case-split,
   .case-node-grid,
   .case-scenario-grid,
