@@ -826,6 +826,11 @@ h3 {
   height: 330px;
 }
 
+.project-card img.project-cover-contain {
+  object-fit: contain;
+  background: #07111f;
+}
+
 .project-content {
   padding: 22px;
 }

@@ -1159,6 +1159,24 @@ Object.assign(i18nAttributeTranslations.tr, {
   "AI Flow Puzzle game preview": "AI Flow Puzzle oyun önizlemesi",
   "Open AI Flow Puzzle case study": "AI Flow Puzzle vaka çalışmasını aç",
   "AI Flow Puzzle case study preview": "AI Flow Puzzle vaka çalışması önizlemesi",
+  "AI Chatbot Flow Design multi-channel conversational workflow cover":
+    "AI Chatbot Flow Design çok kanallı conversational workflow kapağı",
+  "AI Flow Puzzle node-based chatbot workflow cover":
+    "AI Flow Puzzle node tabanlı chatbot workflow kapağı",
+  "Hospital Form App appointment management interface cover":
+    "Hospital Form App randevu yönetimi arayüz kapağı",
+  "Control Panel PHP and MySQL administration dashboard cover":
+    "Control Panel PHP ve MySQL yönetim paneli kapağı",
+  "Agency DB relational database schema cover":
+    "Agency DB ilişkisel veritabanı şeması kapağı",
+  "Kaan Balcı portfolio website homepage cover":
+    "Kaan Balcı portfolyo web sitesi ana sayfa kapağı",
+  "Porto 25 responsive Tailwind landing page cover":
+    "Porto 25 responsive Tailwind açılış sayfası kapağı",
+  "IC Supply inventory tracking data system cover":
+    "IC Supply envanter takip veri sistemi kapağı",
+  "Kaan's Career Adventure career workflow cover":
+    "Kaan’ın Kariyer Macerası kariyer workflow kapağı",
   "Certificate preview": "Sertifika önizlemesi",
   "Close preview": "Önizlemeyi kapat",
 });
@@ -1293,8 +1311,8 @@ const projectDetailData = {
     year: "2025",
     type: { en: "Professional Experience", tr: "Profesyonel Deneyim" },
     status: { en: "Case Study", tr: "Vaka Çalışması" },
-    image: "assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
-    gallery: ["assets/KAAN BALCI-BÜYÜK LOGO PNG.png"],
+    image: "assets/ai_flow_chatbot_design_cover.webp",
+    gallery: ["assets/ai_flow_chatbot_design_cover.webp"],
     stack: [
       "AI Flow",
       "n8n",
@@ -1711,8 +1729,11 @@ const projectDetailData = {
     year: "2024",
     type: { en: "Desktop Automation", tr: "Masaüstü Otomasyon" },
     status: { en: "Repository", tr: "Repository" },
-    image: "assets/hospital-form-app-preview.png",
-    gallery: ["assets/hospital-form-app-preview.png"],
+    image: "assets/hospital_form_app_cover.webp",
+    gallery: [
+      "assets/hospital_form_app_cover.webp",
+      "assets/hospital-form-app-preview.png",
+    ],
     stack: ["C#", ".NET", "Windows Forms", "MSSQL", "Database Design"],
     links: [
       {
@@ -1936,8 +1957,8 @@ const githubRepositoryProjectDetails = {
       en: "Repository",
       tr: "Repository",
     },
-    image: "assets/item-3.jpg",
-    gallery: ["assets/item-3.jpg"],
+    image: "assets/control_panel_cover.webp",
+    gallery: ["assets/control_panel_cover.webp"],
     stack: ["PHP", "MySQL", "CSS", "JavaScript", "Dashboard"],
     links: [
       {
@@ -2451,11 +2472,8 @@ const githubRepositoryProjectDetails = {
       en: "Repository",
       tr: "Repository",
     },
-    image: "assets/1_6ooq0R60ba3UT5c-QVemA.png",
-    gallery: [
-      "assets/1_6ooq0R60ba3UT5c-QVemA.png",
-      "assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
-    ],
+    image: "assets/porto_25_cover.webp",
+    gallery: ["assets/porto_25_cover.webp"],
     stack: [
       "HTML",
       "Tailwind CSS",
@@ -2594,8 +2612,8 @@ const githubRepositoryProjectDetails = {
       en: "Repository",
       tr: "Repository",
     },
-    image: "assets/database-cartoon-style_78370-3596.avif",
-    gallery: ["assets/database-cartoon-style_78370-3596.avif"],
+    image: "assets/agency_db_cover.webp",
+    gallery: ["assets/agency_db_cover.webp"],
     stack: ["SQL", "Database Design", "Data Modeling", "ER Logic"],
     links: [
       {
@@ -2795,8 +2813,8 @@ const githubRepositoryProjectDetails = {
       en: "Repository",
       tr: "Repository",
     },
-    image: "assets/indir.jpeg",
-    gallery: ["assets/indir.jpeg"],
+    image: "assets/ic_supply_cover.webp",
+    gallery: ["assets/ic_supply_cover.webp"],
     stack: ["Database", "Backend Logic", "Inventory Flow", "Data Tracking"],
     links: [
       {
@@ -2863,8 +2881,8 @@ const githubRepositoryProjectDetails = {
       en: "Repository",
       tr: "Repository",
     },
-    image: "assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
-    gallery: ["assets/KAAN BALCI-BÜYÜK LOGO PNG.png"],
+    image: "assets/portfolio_website_cover.webp",
+    gallery: ["assets/portfolio_website_cover.webp"],
     stack: ["HTML", "CSS", "JavaScript", "Static Site", "Ajoop", "Mini Game"],
     links: [
       {
@@ -3023,7 +3041,7 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
         </div>
       </div>
       <div class="project-detail-visual reveal delay-1">
-        <img src="${escapeProjectHtml(project.image)}" alt="${escapeProjectHtml(title)} preview" decoding="async" fetchpriority="high" />
+        <img src="${escapeProjectHtml(project.image)}" alt="${escapeProjectHtml(title)} ${language === "tr" ? "proje önizlemesi" : "preview"}" decoding="async" fetchpriority="high" />
       </div>
     </section>
 
@@ -3093,7 +3111,7 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
         <p>${language === "tr" ? "Şimdilik mevcut portfolio görselleri kullanılıyor. Yeni ekran görüntüleri ekledikçe bu alan otomatik daha güçlü hale gelir." : "Current portfolio assets are used for now. As new screenshots are added, this area becomes stronger automatically."}</p>
       </div>
       <div class="detail-gallery">
-        ${gallery.map((image) => `<img class="reveal" src="${escapeProjectHtml(image)}" alt="${escapeProjectHtml(title)} gallery image" loading="lazy" decoding="async" />`).join("")}
+        ${gallery.map((image) => `<img class="reveal" src="${escapeProjectHtml(image)}" alt="${escapeProjectHtml(title)} ${language === "tr" ? "galeri görseli" : "gallery image"}" loading="lazy" decoding="async" />`).join("")}
       </div>
     </section>
 
