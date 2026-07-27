@@ -1,6 +1,10 @@
 const resumeLink =
   "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing";
 
+document.querySelectorAll("[data-resume-link]").forEach((link) => {
+  link.href = resumeLink;
+});
+
 function openDrivePreviews() {
   window.open(resumeLink, "_blank", "noopener,noreferrer");
 }
