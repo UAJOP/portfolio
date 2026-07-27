@@ -1,243 +1,38 @@
 (function () {
-  const translations = {
-    en: {
-      "hero.eyebrow": "Interactive AI Workflow Project",
-      "hero.lead":
-        "A live browser experience that turns chatbot workflow design into an interactive logic challenge with scenarios, configurable nodes, validation feedback and export tools.",
-      "hero.statusLabel": "Status",
-      "hero.status": "Live",
-      "hero.yearLabel": "Year",
-      "hero.roleLabel": "Role",
-      "hero.role": "AI Flow Designer & Frontend Developer",
-      "hero.typeLabel": "Project type",
-      "hero.type": "Solo Project",
-      "actions.play": "Play Live",
-      "actions.source": "View Source",
-      "actions.caseStudy": "View Case Study",
-      "actions.resume": "View Resume",
-      "actions.contact": "Contact Me",
-      "skip.content": "Skip to content",
-      "proof.scenarios": "Workflow Scenarios",
-      "proof.nodes": "Node Types",
-      "proof.dimensions": "Quality Dimensions",
-      "overview.eyebrow": "Overview & Problem",
-      "overview.title": "Making workflow thinking visible through interaction.",
-      "overview.body1":
-        "Chatbot workflows can be difficult to communicate through static diagrams alone. AI Flow Puzzle turns triggers, intent paths, branching, responses, fallback safety and automation steps into an interactive browser experience.",
-      "overview.body2":
-        "The project is designed as a portfolio demonstration rather than a production chatbot platform. Users can build, inspect, validate and simulate different workflow structures directly in the browser.",
-      "overview.definition":
-        "A live n8n-inspired browser experience demonstrating chatbot flow structure, node validation, fallback paths and user journey thinking.",
-      "role.eyebrow": "My Role",
-      "role.title": "Solo Project",
-      "role.subtitle": "AI Flow Designer & Frontend Developer",
-      "role.body":
-        "I designed the scenarios, node vocabulary, required workflow paths, validation rules, bilingual interface and browser-side implementation. The project combines conversational-flow thinking with frontend interaction design.",
-      "interaction.eyebrow": "Interaction & Node System",
-      "interaction.title": "A configurable workflow board built around clear functional groups.",
-      "interaction.body":
-        "Users choose a scenario, add nodes from a palette, position them with pointer controls and connect a source to a target. SVG Bézier paths visualize the graph, while Blank, Happy Path and Full Solution templates support different starting points.",
-      "interaction.note":
-        "The simulated run, execution log, hints, reset and JSON import/export make the structure inspectable. Nodes represent workflow concepts and do not call external services.",
-      "nodes.input": "Input",
-      "nodes.logic": "Logic",
-      "nodes.reasoning": "Knowledge / Reasoning",
-      "nodes.automation": "Automation",
-      "nodes.safety": "Safety",
-      "nodes.output": "Output",
-      "nodes.llmNote":
-        "LLM Reasoning represents a conceptual reasoning step inside the workflow; it does not execute a real LLM call.",
-      "scenarios.eyebrow": "Three Workflow Scenarios",
-      "scenarios.title": "Different goals, paths and safety decisions.",
-      "scenarios.goal": "Goal",
-      "scenarios.main": "Main path",
-      "scenarios.safety": "Fallback / safety",
-      "scenarios.joyday.goal": "Handle a reservation request, check availability, record it and respond.",
-      "scenarios.joyday.main": "Trigger → Intent → Condition → Sheets → Response → End",
-      "scenarios.joyday.safety": "Condition → Fallback → End",
-      "scenarios.support.goal": "Route a support request through trusted context and a response path.",
-      "scenarios.support.main": "Trigger → Intent → Router → Knowledge Base → LLM Reasoning → Response → End",
-      "scenarios.support.safety": "Router → Fallback or Human Handoff → End",
-      "scenarios.support.note": "Fictional workflow scenario created for this interactive demonstration.",
-      "scenarios.lead.goal": "Capture a sales request, record the lead, notify the team and respond.",
-      "scenarios.lead.main": "Trigger → Intent → CRM → Email → Response → End",
-      "scenarios.lead.safety": "Intent → Fallback → End",
-      "validation.eyebrow": "Validation & Scoring",
-      "validation.title": "Rule-based feedback with explicit boundaries.",
-      "validation.body":
-        "A browser-side rule-based validation system checks required node types and required type-to-type connections. Missing nodes and connections are reported, while duplicate and self-links are prevented.",
-      "validation.score":
-        "Successful and incomplete flows receive simulated feedback across Logic, Automation, UX, Safety and Efficiency.",
-      "limitations.title": "Current limitations",
-      "limitations.semantic": "This is not full semantic graph validation.",
-      "limitations.extra": "Some additional connections may not invalidate a flow.",
-      "limitations.cycles": "Cycles can be created, although execution avoids infinite revisits.",
-      "limitations.backend": "Execution is simulated and does not run a backend.",
-      "limitations.fallback": "Fallback behavior is not driven by a real confidence score.",
-      "technical.eyebrow": "Technical Implementation",
-      "technical.title": "Vanilla browser APIs, explicit state and portable exports.",
-      "technical.body":
-        "The application uses closure-scoped browser state for scenarios, nodes, links, selection, validation and run status. Nodes use percentage-based positioning, while connections are rendered as SVG Bézier paths between DOM elements.",
-      "technical.json":
-        "JSON import/export includes the scenario, nodes, configuration, coordinates, connections and quality summary. Canvas, FileReader, Blob downloads, Clipboard and Local Storage support additional browser-side tools.",
-      "technical.storage": "Local Storage is used for score only.",
-      "technical.schema": "JSON export shape",
-      "testing.eyebrow": "Testing, Iteration & Limitations",
-      "testing.title": "Designed for repeated exploration across input methods and screen sizes.",
-      "testing.body":
-        "Incomplete-flow feedback, templates, hints, reset and repeated validation let users iterate without leaving the page. The interface supports EN/TR, dark/light themes, responsive breakpoints and mouse or touch pointer interaction.",
-      "testing.keyboard":
-        "Nodes can be selected and deleted with the keyboard, but their board position cannot currently be changed through keyboard controls.",
-      "testing.mobile":
-        "Dense workflows remain usable but can require more careful positioning on small screens.",
-      "result.eyebrow": "Result & Gallery",
-      "result.title": "A live demonstration of workflow structure and fallback thinking.",
-      "result.body":
-        "The result is a live portfolio demonstration that makes chatbot workflow thinking visible, interactive and testable. It provides three scenarios, configurable nodes, rule-based feedback, quality scoring and export tools without requiring a backend.",
-      "gallery.builder": "The desktop builder with a complete Joyday workflow.",
-      "gallery.validation": "Successful validation with five quality dimensions.",
-      "gallery.fallback": "Incomplete-flow feedback identifying a missing fallback path.",
-      "gallery.mobile": "The responsive single-column experience at mobile width.",
-      "related.eyebrow": "Related Projects",
-      "related.title": "Continue through the conversational AI and product work.",
-      "related.chatbot": "AI Chatbot Flow Design",
-      "related.chatbotBody": "Enterprise conversational-AI evidence across QA, stabilization and workflow restructuring.",
-      "related.joyday": "Atölye Joyday Official Website",
-      "related.joydayBody": "A live reservation journey and operational workflow for a creative workshop studio.",
-      "cta.eyebrow": "Resume & Contact",
-      "cta.title": "Looking for clear workflow thinking and practical frontend execution?",
-      "cta.body": "Review my resume or get in touch to discuss AI design, conversational flows and software opportunities.",
-      "modal.close": "Close image preview"
-    },
-    tr: {
-      "hero.eyebrow": "İnteraktif AI Workflow Projesi",
-      "hero.lead":
-        "Chatbot workflow tasarımını senaryolar, yapılandırılabilir node’lar, doğrulama geri bildirimi ve export araçlarıyla interaktif bir mantık deneyimine dönüştüren canlı tarayıcı projesi.",
-      "hero.statusLabel": "Durum",
-      "hero.status": "Canlı",
-      "hero.yearLabel": "Yıl",
-      "hero.roleLabel": "Rol",
-      "hero.role": "AI Flow Designer & Frontend Developer",
-      "hero.typeLabel": "Proje türü",
-      "hero.type": "Solo Proje",
-      "actions.play": "Canlı Oyna",
-      "actions.source": "Kaynak Kodu Gör",
-      "actions.caseStudy": "Vaka Çalışmasını Gör",
-      "actions.resume": "CV’yi Görüntüle",
-      "actions.contact": "İletişime Geç",
-      "skip.content": "İçeriğe geç",
-      "proof.scenarios": "Workflow Senaryosu",
-      "proof.nodes": "Node Türü",
-      "proof.dimensions": "Kalite Boyutu",
-      "overview.eyebrow": "Genel Bakış & Problem",
-      "overview.title": "Workflow düşüncesini etkileşim yoluyla görünür kılmak.",
-      "overview.body1":
-        "Chatbot workflow’larını yalnızca statik diyagramlarla anlatmak zor olabilir. AI Flow Puzzle; trigger, intent yolları, dallanma, yanıt, fallback güvenliği ve otomasyon adımlarını interaktif bir tarayıcı deneyimine dönüştürür.",
-      "overview.body2":
-        "Proje production chatbot platformu değil, bir portfolyo demonstrasyonu olarak tasarlanmıştır. Kullanıcılar farklı workflow yapılarını doğrudan tarayıcıda kurabilir, inceleyebilir, doğrulayabilir ve simüle edebilir.",
-      "overview.definition":
-        "Chatbot akış yapısını, node doğrulamasını, fallback yollarını ve kullanıcı yolculuğu düşüncesini gösteren n8n ilhamlı canlı tarayıcı deneyimi.",
-      "role.eyebrow": "Rolüm",
-      "role.title": "Solo Proje",
-      "role.subtitle": "AI Flow Designer & Frontend Developer",
-      "role.body":
-        "Senaryoları, node sözlüğünü, gerekli workflow yollarını, doğrulama kurallarını, çift dilli arayüzü ve tarayıcı tarafındaki uygulamayı tasarlayıp geliştirdim. Proje conversational-flow düşüncesini frontend etkileşim tasarımıyla birleştiriyor.",
-      "interaction.eyebrow": "Etkileşim & Node Sistemi",
-      "interaction.title": "Net işlev grupları etrafında kurulan yapılandırılabilir workflow board’u.",
-      "interaction.body":
-        "Kullanıcılar bir senaryo seçer, palette üzerinden node ekler, pointer kontrolleriyle konumlandırır ve kaynak ile hedef seçerek bağlantı kurar. SVG Bézier yolları graph’ı görselleştirirken Blank, Happy Path ve Full Solution şablonları farklı başlangıç noktaları sunar.",
-      "interaction.note":
-        "Simüle edilmiş çalışma, execution log, ipuçları, reset ve JSON import/export yapıyı incelenebilir kılar. Node’lar workflow kavramlarını temsil eder ve dış servis çağrısı yapmaz.",
-      "nodes.input": "Input",
-      "nodes.logic": "Mantık",
-      "nodes.reasoning": "Bilgi / Reasoning",
-      "nodes.automation": "Otomasyon",
-      "nodes.safety": "Güvenlik",
-      "nodes.output": "Output",
-      "nodes.llmNote":
-        "LLM Reasoning workflow içindeki kavramsal reasoning adımını temsil eder; gerçek bir LLM çağrısı çalıştırmaz.",
-      "scenarios.eyebrow": "Üç Workflow Senaryosu",
-      "scenarios.title": "Farklı hedefler, yollar ve güvenlik kararları.",
-      "scenarios.goal": "Hedef",
-      "scenarios.main": "Ana yol",
-      "scenarios.safety": "Fallback / güvenlik",
-      "scenarios.joyday.goal": "Rezervasyon isteğini yönetmek, müsaitliği kontrol etmek, kaydetmek ve yanıtlamak.",
-      "scenarios.joyday.main": "Trigger → Intent → Condition → Sheets → Response → End",
-      "scenarios.joyday.safety": "Condition → Fallback → End",
-      "scenarios.support.goal": "Destek isteğini güvenilir bağlam ve yanıt yolu üzerinden route etmek.",
-      "scenarios.support.main": "Trigger → Intent → Router → Knowledge Base → LLM Reasoning → Response → End",
-      "scenarios.support.safety": "Router → Fallback veya Human Handoff → End",
-      "scenarios.support.note": "Bu interaktif demonstrasyon için oluşturulmuş kurgusal workflow senaryosu.",
-      "scenarios.lead.goal": "Satış talebini yakalamak, lead’i kaydetmek, ekibi bilgilendirmek ve yanıtlamak.",
-      "scenarios.lead.main": "Trigger → Intent → CRM → Email → Response → End",
-      "scenarios.lead.safety": "Intent → Fallback → End",
-      "validation.eyebrow": "Doğrulama & Puanlama",
-      "validation.title": "Açık sınırları olan kural tabanlı geri bildirim.",
-      "validation.body":
-        "Zorunlu node türlerini ve türler arası gerekli bağlantıları kontrol eden tarayıcı taraflı kural tabanlı doğrulama sistemi kullanılır. Eksik node ve bağlantılar raporlanırken duplicate ve self-link girişimleri engellenir.",
-      "validation.score":
-        "Başarılı ve eksik akışlar Logic, Automation, UX, Safety ve Efficiency boyutlarında simüle edilmiş geri bildirim alır.",
-      "limitations.title": "Mevcut sınırlamalar",
-      "limitations.semantic": "Bu sistem tam semantik graph doğrulaması değildir.",
-      "limitations.extra": "Bazı fazladan bağlantılar akışı geçersiz kılmayabilir.",
-      "limitations.cycles": "Cycle oluşturulabilir; execution sonsuz tekrarları önler.",
-      "limitations.backend": "Execution simüle edilir ve backend çalıştırmaz.",
-      "limitations.fallback": "Fallback davranışı gerçek confidence score ile tetiklenmez.",
-      "technical.eyebrow": "Teknik Uygulama",
-      "technical.title": "Vanilla browser API’leri, açık state ve taşınabilir çıktılar.",
-      "technical.body":
-        "Uygulama senaryolar, node’lar, bağlantılar, seçim, doğrulama ve çalışma durumu için closure-scope tarayıcı state’i kullanır. Node’lar yüzde tabanlı konumlanır; bağlantılar DOM elementleri arasında SVG Bézier yolları olarak çizilir.",
-      "technical.json":
-        "JSON import/export senaryo, node, yapılandırma, koordinat, bağlantı ve kalite özetini içerir. Canvas, FileReader, Blob indirme, Clipboard ve Local Storage ek tarayıcı araçlarını destekler.",
-      "technical.storage": "Local Storage yalnızca skor için kullanılır.",
-      "technical.schema": "JSON export yapısı",
-      "testing.eyebrow": "Test, İterasyon & Sınırlamalar",
-      "testing.title": "Farklı giriş yöntemleri ve ekran boyutlarında tekrar keşif için tasarlandı.",
-      "testing.body":
-        "Eksik akış geri bildirimi, şablonlar, ipuçları, reset ve tekrar doğrulama kullanıcıların sayfadan ayrılmadan iterasyon yapmasını sağlar. Arayüz EN/TR, dark/light tema, responsive kırılımlar ve mouse veya touch pointer etkileşimini destekler.",
-      "testing.keyboard":
-        "Node’lar klavyeyle seçilebilir ve silinebilir; ancak board üzerindeki konumları şu anda klavye kontrolleriyle değiştirilemez.",
-      "testing.mobile":
-        "Yoğun workflow’lar kullanılabilir kalır ancak küçük ekranlarda daha dikkatli konumlandırma gerektirebilir.",
-      "result.eyebrow": "Sonuç & Galeri",
-      "result.title": "Workflow yapısı ve fallback düşüncesinin canlı demonstrasyonu.",
-      "result.body":
-        "Sonuç, chatbot workflow düşüncesini görünür, interaktif ve test edilebilir hâle getiren canlı bir portfolyo demonstrasyonudur. Backend gerektirmeden üç senaryo, yapılandırılabilir node’lar, kural tabanlı geri bildirim, kalite puanlama ve export araçları sunar.",
-      "gallery.builder": "Tam Joyday workflow’u ile masaüstü builder görünümü.",
-      "gallery.validation": "Beş kalite boyutuyla başarılı doğrulama durumu.",
-      "gallery.fallback": "Eksik fallback yolunu belirten tamamlanmamış akış geri bildirimi.",
-      "gallery.mobile": "Mobil genişlikte responsive tek kolon deneyimi.",
-      "related.eyebrow": "İlgili Projeler",
-      "related.title": "Conversational AI ve ürün çalışmalarını incelemeye devam edin.",
-      "related.chatbot": "AI Chatbot Akış Tasarımı",
-      "related.chatbotBody": "QA, stabilizasyon ve workflow yeniden yapılandırmayı kapsayan kurumsal conversational-AI kanıtı.",
-      "related.joyday": "Atölye Joyday Resmi Web Sitesi",
-      "related.joydayBody": "Yaratıcı atölye için canlı rezervasyon yolculuğu ve operasyonel workflow.",
-      "cta.eyebrow": "CV & İletişim",
-      "cta.title": "Net workflow düşüncesi ve pratik frontend uygulaması mı arıyorsunuz?",
-      "cta.body": "CV’mi inceleyin veya AI tasarımı, conversational flow ve yazılım fırsatlarını konuşmak için iletişime geçin.",
-      "modal.close": "Görsel önizlemesini kapat"
-    }
-  };
+  const pageData = window.caseStudyPageData || {};
 
   function language() {
     return document.documentElement.lang === "tr" ? "tr" : "en";
   }
 
   function applyTranslations() {
-    const active = translations[language()] || translations.en;
-    document.querySelectorAll("[data-case-i18n]").forEach((element) => {
-      const key = element.dataset.caseI18n;
-      if (active[key]) element.textContent = active[key];
-    });
-    document.querySelectorAll("[data-case-i18n-alt]").forEach((element) => {
-      const key = element.dataset.caseI18nAlt;
-      if (active[key]) element.alt = active[key];
-    });
-    document.querySelectorAll("[data-case-i18n-aria-label]").forEach((element) => {
-      const key = element.dataset.caseI18nAriaLabel;
-      if (active[key]) element.setAttribute("aria-label", active[key]);
-    });
+    const activeLanguage = language();
+    const translations = pageData.translations;
+    const active = translations?.[activeLanguage] || translations?.en;
+
+    if (active) {
+      document.querySelectorAll("[data-case-i18n]").forEach((element) => {
+        const value = active[element.dataset.caseI18n];
+        if (value) element.textContent = value;
+      });
+      document.querySelectorAll("[data-case-i18n-alt]").forEach((element) => {
+        const value = active[element.dataset.caseI18nAlt];
+        if (value) element.alt = value;
+      });
+      document.querySelectorAll("[data-case-i18n-aria-label]").forEach((element) => {
+        const value = active[element.dataset.caseI18nAriaLabel];
+        if (value) element.setAttribute("aria-label", value);
+      });
+    }
+
+    const title = pageData.titles?.[activeLanguage] || pageData.titles?.en;
+    if (title) document.title = title;
+
+    const openModalImage = document.querySelector("[data-case-modal].is-open [data-case-modal-image]");
+    const openModalTrigger = document.querySelector("[data-case-gallery][aria-expanded='true']");
+    if (openModalImage && openModalTrigger) {
+      openModalImage.alt = openModalTrigger.querySelector("img")?.alt || "";
+    }
   }
 
   const observer = new MutationObserver((mutations) => {
@@ -257,6 +52,7 @@
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("case-modal-open");
+    modalTrigger?.setAttribute("aria-expanded", "false");
     if (modalImage) {
       modalImage.src = "";
       modalImage.alt = "";
@@ -265,6 +61,7 @@
   }
 
   document.querySelectorAll("[data-case-gallery]").forEach((button) => {
+    button.setAttribute("aria-expanded", "false");
     button.addEventListener("click", () => {
       if (!modal || !modalImage) return;
       modalTrigger = button;
@@ -274,6 +71,7 @@
       modal.classList.add("is-open");
       modal.setAttribute("aria-hidden", "false");
       document.body.classList.add("case-modal-open");
+      button.setAttribute("aria-expanded", "true");
       modalClose?.focus();
     });
   });
