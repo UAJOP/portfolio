@@ -140,6 +140,15 @@ setupPortfolioImageFallbacks();
 const filterButtons = document.querySelectorAll("[data-filter-btn]");
 const projectCards = document.querySelectorAll(".project-card[data-category]");
 
+function updateProjectSectionVisibility() {
+  document.querySelectorAll("[data-project-section]").forEach((section) => {
+    const hasVisibleCard = Array.from(
+      section.querySelectorAll(".project-card[data-category]"),
+    ).some((card) => !card.classList.contains("is-hidden"));
+    section.classList.toggle("is-hidden", !hasVisibleCard);
+  });
+}
+
 if (filterButtons.length && projectCards.length) {
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -154,6 +163,7 @@ if (filterButtons.length && projectCards.length) {
           selectedCategory === "all" || categories.includes(selectedCategory);
         card.classList.toggle("is-hidden", !shouldShow);
       });
+      updateProjectSectionVisibility();
     });
   });
 }
@@ -479,11 +489,6 @@ const i18nTranslations = {
       "C# ve MSSQL ile geliştirilmiş, karmaşık çok formlu yapıya sahip kapsamlı randevu otomasyon sistemi.",
     "A Python-based dataset analysis project built to explore, process and present insights from automotive data.":
       "Otomotiv verilerini keşfetmek, işlemek ve içgörü sunmak için geliştirilmiş Python tabanlı veri analizi projesi.",
-    "Instagram Clone App – My Museum": "Instagram Clone App – My Museum",
-    "An Android application built with Kotlin and Firebase to replicate core Instagram-style content features.":
-      "Instagram tarzı temel içerik özelliklerini yeniden oluşturan Kotlin ve Firebase ile geliştirilmiş Android uygulaması.",
-    "A detailed e-commerce control panel project designed with a team for a school project using web and database tools.":
-      "Web ve veritabanı araçları kullanılarak ekip ile okul projesi kapsamında tasarlanmış detaylı e-ticaret kontrol paneli.",
     "A JavaScript weather application that fetches forecast data and presents location-based weather information.":
       "Hava durumu verilerini çeken ve konuma göre hava bilgisi sunan JavaScript uygulaması.",
     "More code": "Daha fazla kod",
@@ -664,6 +669,88 @@ Object.assign(i18nTranslations.tr, {
   "Parametric Mesh": "Parametrik Mesh",
   "Mouse Interaction": "Mouse Etkileşimi",
 });
+Object.assign(i18nTranslations.tr, {
+  "Selected Work": "Seçili Projeler",
+  "Projects across AI, automation and software products.":
+    "AI, otomasyon ve yazılım ürünleri alanındaki projeler.",
+  "A focused selection of projects that demonstrate my work in conversational AI, workflow automation, software development, digital products and interactive systems.":
+    "Conversational AI, workflow otomasyonu, yazılım geliştirme, dijital ürünler ve interaktif sistemler alanındaki çalışmalarımı gösteren seçili bir proje koleksiyonu.",
+  "Selected Projects": "Seçili Projeler",
+  "Additional Projects": "Ek Projeler",
+  "Project Archive & Learning Builds": "Proje Arşivi ve Öğrenme Çalışmaları",
+  "Focused evidence across AI, software and digital products.":
+    "AI, yazılım ve dijital ürünler alanındaki odaklı çalışmalar.",
+  "More product, database and interactive work.":
+    "Diğer ürün, veritabanı ve interaktif çalışmalar.",
+  "Earlier university projects, technical exercises and small prototypes that document my learning process.":
+    "Öğrenme sürecimi belgeleyen önceki üniversite projeleri, teknik alıştırmalar ve küçük prototipler.",
+  Software: "Yazılım",
+  "Web & Product": "Web & Ürün",
+  Data: "Veri",
+  "Games & Interactive": "Oyunlar & İnteraktif",
+  Live: "Canlı",
+  Completed: "Tamamlandı",
+  Prototype: "Prototip",
+  "Learning Project": "Öğrenme Projesi",
+  Archive: "Arşiv",
+  "Play Live": "Canlı Oyna",
+  "Open GitHub": "GitHub'da Aç",
+  "Open Live Website": "Canlı Siteyi Aç",
+  "AI & Interactive": "AI & İnteraktif",
+  "AI Flow Puzzle": "AI Flow Puzzle",
+  "MyMuseum — Mobile Content App": "MyMuseum — Mobil İçerik Uygulaması",
+  "A case study based on enterprise conversational AI work involving chatbot QA, stabilization, large-scale flow restructuring, channel configuration and multi-channel automation logic.":
+    "Chatbot QA, stabilizasyon, büyük ölçekli akış yeniden yapılandırma, kanal yapılandırması ve çok kanallı otomasyon mantığını kapsayan kurumsal conversational AI çalışmalarına dayalı bir vaka çalışması.",
+  "A live n8n-inspired browser experience demonstrating chatbot flow structure, node validation, fallback paths and user journey thinking.":
+    "Chatbot akış yapısını, node doğrulamasını, fallback yollarını ve kullanıcı yolculuğu düşüncesini gösteren n8n ilhamlı canlı tarayıcı deneyimi.",
+  "A live digital product for a creative workshop studio combining service presentation, package-based reservation journeys, automated notifications and operational workflows.":
+    "Hizmet sunumu, paket bazlı rezervasyon yolculukları, otomatik bildirimler ve operasyonel akışları birleştiren yaratıcı atölye stüdyosu için canlı dijital ürün.",
+  "A C#/.NET Windows Forms application designed to manage hospital appointment and operational workflows through a database-backed multi-form structure.":
+    "Veritabanı destekli çok formlu yapı üzerinden hastane randevu ve operasyon akışlarını yönetmek için tasarlanmış C#/.NET Windows Forms uygulaması.",
+  "A Python and Tkinter hospital appointment application with patient, doctor and staff workflows, appointment-slot logic and MySQL-backed data operations.":
+    "Hasta, doktor ve personel akışları, randevu slot mantığı ve MySQL destekli veri işlemleri içeren Python ve Tkinter hastane randevu uygulaması.",
+  "A Python data project combining exploratory analysis and visualization with a small linear-regression experiment for car-price estimation.":
+    "Keşifsel analiz ve görselleştirmeyi araç fiyatı tahmini için küçük bir doğrusal regresyon deneyiyle birleştiren Python veri projesi.",
+  "A first-person environmental puzzle prototype featuring object manipulation, pressure plates, physics-based interactions and modular level design.":
+    "Nesne manipülasyonu, basınç plakaları, fizik tabanlı etkileşimler ve modüler bölüm tasarımı içeren birinci şahıs çevresel bulmaca prototipi.",
+  "An Android content-sharing application built with Kotlin and Firebase around mobile user flows and database-backed interactions.":
+    "Mobil kullanıcı akışları ve veritabanı destekli etkileşimler etrafında Kotlin ve Firebase ile geliştirilen Android içerik paylaşım uygulaması.",
+  "A PHP and MySQL based administration dashboard with database-backed management screens and operational control flows.":
+    "Veritabanı destekli yönetim ekranları ve operasyonel kontrol akışları içeren PHP ve MySQL tabanlı yönetim paneli.",
+  "A solo third-person platforming and escape prototype built with Unreal Engine 5, C++ and Blueprints.":
+    "Unreal Engine 5, C++ ve Blueprints ile geliştirilen solo üçüncü şahıs platform ve kaçış prototipi.",
+  "A relational database project covering normalized agency records, data modeling, stored procedures and triggers.":
+    "Normalize edilmiş ajans kayıtları, veri modelleme, stored procedure ve trigger yapılarını kapsayan ilişkisel veritabanı projesi.",
+  "A hyper-casual 3D mobile driving prototype focused on obstacle avoidance, score and reflex-based gameplay.":
+    "Engellerden kaçınma, skor ve refleks odaklı hyper-casual 3D mobil sürüş prototipi.",
+  "A third-person action shooter prototype with enemy behavior, health management and combat-focused gameplay systems.":
+    "Düşman davranışı, sağlık yönetimi ve savaş odaklı oynanış sistemleri içeren üçüncü şahıs aksiyon shooter prototipi.",
+  "A third-person tank combat prototype built with Unreal Engine, C++, Blueprints and physics-based gameplay.":
+    "Unreal Engine, C++, Blueprints ve fizik tabanlı oynanışla geliştirilen üçüncü şahıs tank savaş prototipi.",
+  "A 2D physics-based projectile learning prototype.":
+    "2D fizik tabanlı fırlatma mekaniğine odaklanan öğrenme prototipi.",
+  "Multiple scenes exploring gameplay fundamentals and mechanics.":
+    "Oynanış temellerini ve mekaniklerini keşfeden çoklu sahneler.",
+  "A location-based weather API learning application.":
+    "Konum tabanlı hava durumu API öğrenme uygulaması.",
+  "A mobile calculator exercise focused on interface structure and app logic.":
+    "Arayüz yapısı ve uygulama mantığına odaklanan mobil hesap makinesi alıştırması.",
+  "A DOM interaction and frontend state exercise.":
+    "DOM etkileşimi ve frontend durum yönetimi alıştırması.",
+  "A warehouse-themed combat and environment prototype.":
+    "Depo temalı savaş ve çevre prototipi.",
+  "A responsive portfolio and landing-page experiment.":
+    "Responsive portfolyo ve landing page deneyi.",
+  "A collection of Java programming exercises and console applications.":
+    "Java programlama alıştırmaları ve konsol uygulamaları koleksiyonu.",
+  "A static website and frontend layout exercise.":
+    "Statik web sitesi ve frontend layout alıştırması.",
+  "A repository of programming, automation and data-oriented exercises.":
+    "Programlama, otomasyon ve veri odaklı alıştırmalar içeren repository.",
+  "An inventory-style data structure and tracking exercise.":
+    "Envanter tarzı veri yapısı ve takip alıştırması.",
+});
+
 const i18nTitleTranslations = {
   tr: {
     "Kaan Balcı | AI Designer & Software Developer":
@@ -697,9 +784,6 @@ const i18nAttributeTranslations = {
     "Open details for Hospital Form App": "Hospital Form App detaylarını aç",
     "Open details for Cars Dataset Analysis":
       "Cars Veri Seti Analizi detaylarını aç",
-    "Open details for Instagram Clone App – My Museum":
-      "Instagram Clone App – My Museum detaylarını aç",
-    "Open details for Dashboard V2": "Dashboard V2 detaylarını aç",
     "Open details for Weather App": "Weather App detaylarını aç",
     "Language selector": "Dil seçici",
     "Profile highlight card": "Profil öne çıkan kartı",
@@ -1461,8 +1545,8 @@ const projectDetailData = {
     category: { en: "Game Development", tr: "Oyun Geliştirme" },
     title: { en: "Extract Shoot: Zero", tr: "Extract Shoot: Zero" },
     subtitle: {
-      en: "A third-person action shooter prototype with enemy AI, health management and combat-focused gameplay systems.",
-      tr: "Düşman AI, sağlık yönetimi ve savaş odaklı gameplay sistemleri içeren üçüncü şahıs aksiyon shooter prototipi.",
+      en: "A third-person action shooter prototype with enemy behavior, health management and combat-focused gameplay systems.",
+      tr: "Düşman davranışı, sağlık yönetimi ve savaş odaklı gameplay sistemleri içeren üçüncü şahıs aksiyon shooter prototipi.",
     },
     role: { en: "Unreal Engine Developer", tr: "Unreal Engine Developer" },
     year: "2024",
@@ -1470,7 +1554,13 @@ const projectDetailData = {
     status: { en: "Repository", tr: "Repository" },
     image: "assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg",
     gallery: ["assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg"],
-    stack: ["Unreal Engine", "C++", "Blueprints", "Enemy AI", "Combat Systems"],
+    stack: [
+      "Unreal Engine",
+      "C++",
+      "Blueprints",
+      "Enemy Behavior",
+      "Combat Systems",
+    ],
     links: [
       {
         label: { en: "Open GitHub", tr: "GitHub'da Aç" },
@@ -1478,8 +1568,8 @@ const projectDetailData = {
       },
     ],
     overview: {
-      en: "Extract Shoot: Zero is a third-person action shooter prototype built to practice combat systems, AI behavior and player health logic.",
-      tr: "Extract Shoot: Zero; savaş sistemleri, AI davranışı ve oyuncu sağlık mantığını çalışmak için geliştirilmiş üçüncü şahıs aksiyon shooter prototipidir.",
+      en: "Extract Shoot: Zero is a third-person action shooter prototype built to practice combat systems, enemy behavior and player health logic.",
+      tr: "Extract Shoot: Zero; savaş sistemleri, düşman davranışı ve oyuncu sağlık mantığını çalışmak için geliştirilmiş üçüncü şahıs aksiyon shooter prototipidir.",
     },
     challenge: {
       en: "A shooter prototype requires multiple systems to work together: movement, enemy behavior, health, damage and combat feedback.",
@@ -1492,14 +1582,14 @@ const projectDetailData = {
     features: {
       en: [
         "Third-person combat",
-        "Enemy AI logic",
+        "Enemy behavior logic",
         "Health and damage systems",
         "Unreal Engine workflow",
         "Blueprint and C++ usage",
       ],
       tr: [
         "Üçüncü şahıs savaş",
-        "Düşman AI mantığı",
+        "Düşman davranış mantığı",
         "Sağlık ve hasar sistemleri",
         "Unreal Engine iş akışı",
         "Blueprint ve C++ kullanımı",
@@ -1566,8 +1656,8 @@ const projectDetailData = {
     year: "2024",
     type: { en: "Desktop Automation", tr: "Masaüstü Otomasyon" },
     status: { en: "Repository", tr: "Repository" },
-    image: "assets/hospital.avif",
-    gallery: ["assets/hospital.avif"],
+    image: "assets/hospital-form-app-preview.png",
+    gallery: ["assets/hospital-form-app-preview.png"],
     stack: ["C#", ".NET", "Windows Forms", "MSSQL", "Database Design"],
     links: [
       {
@@ -1608,8 +1698,8 @@ const projectDetailData = {
     category: { en: "Data Analysis", tr: "Veri Analizi" },
     title: { en: "Cars Dataset Analysis", tr: "Cars Veri Seti Analizi" },
     subtitle: {
-      en: "A Python-based data analysis project built to explore, process and present insights from automotive data.",
-      tr: "Otomotiv verilerini keşfetmek, işlemek ve içgörü sunmak için geliştirilmiş Python tabanlı veri analizi projesi.",
+      en: "A Python data project combining exploratory analysis and visualization with a small linear-regression experiment for car-price estimation.",
+      tr: "Keşifsel analiz ve görselleştirmeyi araç fiyatı tahmini için küçük bir doğrusal regresyon deneyiyle birleştiren Python veri projesi.",
     },
     role: { en: "Python Developer", tr: "Python Developer" },
     year: "2024",
@@ -1619,10 +1709,12 @@ const projectDetailData = {
     gallery: ["assets/what-is-data-analyst.jpg"],
     stack: [
       "Python",
-      "Data Analysis",
       "Pandas",
-      "Exploration",
-      "Visualization",
+      "NumPy",
+      "Matplotlib",
+      "Seaborn",
+      "scikit-learn",
+      "Linear Regression",
     ],
     links: [
       {
@@ -1631,43 +1723,43 @@ const projectDetailData = {
       },
     ],
     overview: {
-      en: "This project focuses on exploring a Cars dataset with Python and presenting meaningful observations through data analysis steps.",
-      tr: "Bu proje, Cars veri setini Python ile incelemeye ve veri analizi adımlarıyla anlamlı gözlemler sunmaya odaklanır.",
+      en: "The project primarily explores, cleans and visualizes automotive data. It also includes a small scikit-learn Linear Regression experiment to examine basic car-price estimation in a controlled notebook workflow.",
+      tr: "Proje öncelikle otomotiv verilerini keşfeder, temizler ve görselleştirir. Ayrıca kontrollü bir notebook akışında temel araç fiyatı tahminini incelemek için küçük bir scikit-learn Linear Regression deneyi içerir.",
     },
     challenge: {
       en: "A data project needs clean exploration, understandable outputs and a structure that makes the analysis easy to follow.",
       tr: "Bir veri projesi temiz keşif, anlaşılır çıktılar ve analizin kolay takip edilebilir olduğu bir yapı gerektirir.",
     },
     solution: {
-      en: "I used Python-based analysis logic to inspect the data, understand patterns and present findings in a readable way.",
-      tr: "Veriyi incelemek, kalıpları anlamak ve bulguları okunabilir şekilde sunmak için Python tabanlı analiz mantığı kullandım.",
+      en: "I used Pandas, NumPy, Matplotlib and Seaborn for the main exploratory workflow, then added a small scikit-learn Linear Regression experiment as a secondary technical exercise.",
+      tr: "Ana keşifsel analiz akışında Pandas, NumPy, Matplotlib ve Seaborn kullandım; ardından ikincil bir teknik çalışma olarak küçük bir scikit-learn Linear Regression deneyi ekledim.",
     },
     features: {
       en: [
-        "Dataset exploration",
-        "Python analysis workflow",
-        "Data cleaning mindset",
-        "Insight presentation",
-        "Automotive data context",
+        "Exploratory data analysis",
+        "Data cleaning and preparation",
+        "Matplotlib and Seaborn visualizations",
+        "Automotive data observations",
+        "Small Linear Regression experiment",
       ],
       tr: [
-        "Veri seti keşfi",
-        "Python analiz iş akışı",
-        "Veri temizleme bakış açısı",
-        "İçgörü sunumu",
-        "Otomotiv verisi bağlamı",
+        "Keşifsel veri analizi",
+        "Veri temizleme ve hazırlama",
+        "Matplotlib ve Seaborn görselleştirmeleri",
+        "Otomotiv verisi gözlemleri",
+        "Küçük Linear Regression deneyi",
       ],
     },
   },
   "my-museum": {
     category: { en: "Mobile Development", tr: "Mobil Geliştirme" },
     title: {
-      en: "Instagram Clone App – My Museum",
-      tr: "Instagram Clone App – My Museum",
+      en: "MyMuseum — Mobile Content App",
+      tr: "MyMuseum — Mobil İçerik Uygulaması",
     },
     subtitle: {
-      en: "An Android application built with Kotlin and Firebase to recreate core Instagram-style content features.",
-      tr: "Instagram tarzı temel içerik özelliklerini yeniden oluşturmak için Kotlin ve Firebase ile geliştirilmiş Android uygulaması.",
+      en: "An Android content-sharing application built with Kotlin and Firebase around mobile user flows and database-backed interactions.",
+      tr: "Mobil kullanıcı akışları ve veritabanı destekli etkileşimler etrafında Kotlin ve Firebase ile geliştirilen Android içerik paylaşım uygulaması.",
     },
     role: { en: "Android Developer", tr: "Android Developer" },
     year: "2023",
@@ -1683,8 +1775,8 @@ const projectDetailData = {
       },
     ],
     overview: {
-      en: "My Museum is an Android application project inspired by Instagram-style content sharing and mobile database usage.",
-      tr: "My Museum, Instagram tarzı içerik paylaşımı ve mobil veritabanı kullanımından ilham alan Android uygulama projesidir.",
+      en: "MyMuseum is an Android content-sharing application focused on mobile user flows and Firebase-backed interactions.",
+      tr: "MyMuseum, mobil kullanıcı akışlarına ve Firebase destekli etkileşimlere odaklanan Android içerik paylaşım uygulamasıdır.",
     },
     challenge: {
       en: "The project required connecting mobile UI screens with Firebase-backed content logic.",
@@ -1698,65 +1790,16 @@ const projectDetailData = {
       en: [
         "Kotlin Android app",
         "Firebase database",
-        "Instagram-style concept",
+        "Content-sharing flow",
         "Mobile content flow",
         "Android Studio workflow",
       ],
       tr: [
         "Kotlin Android uygulaması",
         "Firebase veritabanı",
-        "Instagram tarzı konsept",
+        "İçerik paylaşım akışı",
         "Mobil içerik akışı",
         "Android Studio iş akışı",
-      ],
-    },
-  },
-  "dashboard-v2": {
-    category: { en: "Web & Data", tr: "Web & Veri" },
-    title: { en: "Dashboard V2", tr: "Dashboard V2" },
-    subtitle: {
-      en: "A detailed e-commerce control panel project designed with a team using web and database tools.",
-      tr: "Web ve veritabanı araçları kullanılarak ekip ile tasarlanmış detaylı e-ticaret kontrol paneli projesi.",
-    },
-    role: { en: "Web Developer", tr: "Web Developer" },
-    year: "2023",
-    type: { en: "Dashboard", tr: "Dashboard" },
-    status: { en: "Repository", tr: "Repository" },
-    image: "assets/Energy_Dashboard_2x.jpg.png",
-    gallery: ["assets/Energy_Dashboard_2x.jpg.png"],
-    stack: ["HTML", "CSS", "JavaScript", "JSON", "MySQL", "Dashboard UI"],
-    links: [
-      {
-        label: { en: "Open GitHub", tr: "GitHub'da Aç" },
-        url: "https://github.com/UAJOP/Control-Panel",
-      },
-    ],
-    overview: {
-      en: "Dashboard V2 is a control panel project focused on representing e-commerce style data and management screens.",
-      tr: "Dashboard V2, e-ticaret tarzı veri ve yönetim ekranlarını temsil etmeye odaklanan kontrol paneli projesidir.",
-    },
-    challenge: {
-      en: "Dashboard projects require information hierarchy, readable UI and a layout that supports management tasks.",
-      tr: "Dashboard projeleri bilgi hiyerarşisi, okunabilir UI ve yönetim görevlerini destekleyen düzen gerektirir.",
-    },
-    solution: {
-      en: "The project uses web technologies and database thinking to present a management-oriented interface.",
-      tr: "Proje, yönetim odaklı bir arayüz sunmak için web teknolojileri ve veritabanı bakış açısı kullanır.",
-    },
-    features: {
-      en: [
-        "Dashboard layout",
-        "E-commerce control panel concept",
-        "Web interface",
-        "MySQL awareness",
-        "Team project structure",
-      ],
-      tr: [
-        "Dashboard düzeni",
-        "E-ticaret kontrol paneli konsepti",
-        "Web arayüzü",
-        "MySQL farkındalığı",
-        "Ekip projesi yapısı",
       ],
     },
   },
@@ -1822,12 +1865,12 @@ const githubRepositoryProjectDetails = {
       tr: "Control Panel",
     },
     subtitle: {
-      en: "A web-based control panel project focused on admin screens, interface structure and dashboard-style management flows.",
-      tr: "Admin ekranları, arayüz yapısı ve dashboard tarzı yönetim akışlarına odaklanan web tabanlı kontrol paneli projesi.",
+      en: "A PHP and MySQL based administration dashboard with database-backed management screens and operational control flows.",
+      tr: "Veritabanı destekli yönetim ekranları ve operasyonel kontrol akışları içeren PHP ve MySQL tabanlı yönetim paneli.",
     },
     role: {
-      en: "Frontend / Web Developer",
-      tr: "Frontend / Web Developer",
+      en: "Full-Stack Developer",
+      tr: "Full-Stack Developer",
     },
     year: "2024",
     type: {
@@ -1840,7 +1883,7 @@ const githubRepositoryProjectDetails = {
     },
     image: "assets/item-3.jpg",
     gallery: ["assets/item-3.jpg"],
-    stack: ["HTML", "CSS", "JavaScript", "Dashboard UI", "Admin Panel"],
+    stack: ["PHP", "MySQL", "CSS", "JavaScript", "Dashboard"],
     links: [
       {
         label: {
@@ -1851,8 +1894,8 @@ const githubRepositoryProjectDetails = {
       },
     ],
     overview: {
-      en: "A web-based control panel project focused on admin screens, interface structure and dashboard-style management flows.",
-      tr: "Admin ekranları, arayüz yapısı ve dashboard tarzı yönetim akışlarına odaklanan web tabanlı kontrol paneli projesi.",
+      en: "Control Panel is a PHP and MySQL administration dashboard with database-backed management screens and operational flows.",
+      tr: "Control Panel, veritabanı destekli yönetim ekranları ve operasyonel akışlar içeren PHP ve MySQL tabanlı yönetim panelidir.",
     },
     challenge: {
       en: "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
@@ -1866,14 +1909,16 @@ const githubRepositoryProjectDetails = {
       en: [
         "Dashboard-style interface",
         "Admin panel structure",
-        "Frontend layout practice",
+        "PHP management screens",
+        "MySQL-backed operations",
         "Reusable UI sections",
         "School/project-based web workflow",
       ],
       tr: [
         "Dashboard tarzı arayüz",
         "Admin panel yapısı",
-        "Frontend layout pratiği",
+        "PHP yönetim ekranları",
+        "MySQL destekli işlemler",
         "Tekrar kullanılabilir UI bölümleri",
         "Okul/proje bazlı web iş akışı",
       ],
@@ -2000,8 +2045,8 @@ const githubRepositoryProjectDetails = {
       tr: "Escape Island",
     },
     subtitle: {
-      en: "A game prototype focused on island escape mechanics, environment setup and gameplay exploration.",
-      tr: "Ada kaçış mekanikleri, çevre kurulumu ve oynanış denemelerine odaklanan oyun prototipi.",
+      en: "A solo third-person platforming and escape prototype built with Unreal Engine 5, C++ and Blueprints.",
+      tr: "Unreal Engine 5, C++ ve Blueprints ile geliştirilen solo üçüncü şahıs platform ve kaçış prototipi.",
     },
     role: {
       en: "Game Developer",
@@ -2013,12 +2058,12 @@ const githubRepositoryProjectDetails = {
       tr: "Oyun Prototipi",
     },
     status: {
-      en: "Repository",
-      tr: "Repository",
+      en: "Prototype",
+      tr: "Prototip",
     },
     image: "assets/escape.jpg",
     gallery: ["assets/escape.jpg"],
-    stack: ["Unity", "Game Design", "Level Design", "Gameplay Logic"],
+    stack: ["Unreal Engine 5.4.4", "C++", "Blueprints", "Platforming"],
     links: [
       {
         label: {
@@ -2029,8 +2074,8 @@ const githubRepositoryProjectDetails = {
       },
     ],
     overview: {
-      en: "A game prototype focused on island escape mechanics, environment setup and gameplay exploration.",
-      tr: "Ada kaçış mekanikleri, çevre kurulumu ve oynanış denemelerine odaklanan oyun prototipi.",
+      en: "Escape Island is a solo Unreal Engine 5.4.4 prototype combining C++ and Blueprints in a timed third-person platforming flow.",
+      tr: "Escape Island, zaman odaklı üçüncü şahıs platform akışında C++ ve Blueprints'i birleştiren solo Unreal Engine 5.4.4 prototipidir.",
     },
     challenge: {
       en: "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
@@ -2042,18 +2087,18 @@ const githubRepositoryProjectDetails = {
     },
     features: {
       en: [
-        "Island escape concept",
-        "Environment-focused game scene",
-        "Gameplay loop practice",
-        "Prototype structure",
-        "Game design experimentation",
+        "Unreal Engine 5.4.4",
+        "C++ and Blueprints integration",
+        "Timed platforming flow",
+        "Moving and rotating obstacles",
+        "Solo prototype",
       ],
       tr: [
-        "Ada kaçış konsepti",
-        "Çevre odaklı oyun sahnesi",
-        "Gameplay döngüsü pratiği",
-        "Prototip yapısı",
-        "Oyun tasarımı denemesi",
+        "Unreal Engine 5.4.4",
+        "C++ ve Blueprints entegrasyonu",
+        "Zaman odaklı platform akışı",
+        "Hareketli ve dönen engeller",
+        "Solo prototip",
       ],
     },
   },
@@ -2085,7 +2130,7 @@ const githubRepositoryProjectDetails = {
     },
     image: "assets/calculator-cartoon-illustration-png.webp",
     gallery: ["assets/calculator-cartoon-illustration-png.webp"],
-    stack: ["Android Studio", "Java/Kotlin", "Mobile UI", "App Logic"],
+    stack: ["Android Studio", "Mobile UI", "App Logic", "Input Handling"],
     links: [
       {
         label: {
@@ -3155,7 +3200,7 @@ function setupProjectCardNavigation() {
   document.querySelectorAll("[data-project-link]").forEach((card) => {
     const slug = card.getAttribute("data-project-link");
     if (!slug) return;
-    const url = createProjectDetailUrl(slug);
+    const url = slug.endsWith(".html") ? slug : createProjectDetailUrl(slug);
 
     card.addEventListener("click", (event) => {
       if (event.target.closest("a, button")) return;
@@ -3163,6 +3208,7 @@ function setupProjectCardNavigation() {
     });
 
     card.addEventListener("keydown", (event) => {
+      if (event.target.closest("a, button")) return;
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         window.location.href = url;
@@ -4533,6 +4579,7 @@ function setupProjectSearch() {
         (card.dataset.gameLink || "").includes(query);
       card.classList.toggle("is-hidden", !(categoryMatch && keywordMatch));
     });
+    updateProjectSectionVisibility();
   }
 
   input.addEventListener("input", applyEnhancedProjectFilter);
@@ -5750,6 +5797,7 @@ function setupGameCards() {
       openGame();
     });
     card.addEventListener("keydown", (event) => {
+      if (event.target.closest("a, button")) return;
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         openGame();
