@@ -171,21 +171,29 @@ if (filterButtons.length && projectCards.length) {
 const modal = document.querySelector("[data-modal]");
 const modalImg = document.querySelector("[data-modal-img]");
 const modalClose = document.querySelector("[data-modal-close]");
-const certificateCards = document.querySelectorAll("[data-cert]");
+const certificatePreviewButtons = document.querySelectorAll("[data-cert]");
+let lastModalTrigger = null;
 
 function closeModal() {
-  if (!modal || !modalImg) return;
+  if (!modal || !modalImg || !modal.classList.contains("is-open")) return;
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
   modalImg.src = "";
+  modalImg.alt = "Certificate preview";
+  lastModalTrigger?.focus();
 }
 
-if (modal && modalImg && certificateCards.length) {
-  certificateCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      modalImg.src = card.dataset.cert;
+if (modal && modalImg && certificatePreviewButtons.length) {
+  certificatePreviewButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      lastModalTrigger = button;
+      modalImg.src = button.dataset.cert;
+      modalImg.alt = button.dataset.certTitle || "Certificate preview";
       modal.classList.add("is-open");
       modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      modalClose?.focus();
     });
   });
 
@@ -198,7 +206,16 @@ if (modal && modalImg && certificateCards.length) {
   }
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeModal();
+    if (!modal.classList.contains("is-open")) return;
+
+    if (event.key === "Escape") {
+      closeModal();
+    }
+
+    if (event.key === "Tab" && modalClose) {
+      event.preventDefault();
+      modalClose.focus();
+    }
   });
 }
 
@@ -751,6 +768,33 @@ Object.assign(i18nTranslations.tr, {
     "Envanter tarzı veri yapısı ve takip alıştırması.",
 });
 
+Object.assign(i18nTranslations.tr, {
+  Training: "Eğitimler",
+  "Training and course completions across software, AI-adjacent systems and interactive technologies.":
+    "Yazılım, teknik sistemler ve interaktif teknolojiler alanındaki eğitimler ve kurs tamamlamaları.",
+  "A selection of completed courses and technical training that support my work in software development, databases, web technologies, game development, cybersecurity and networking fundamentals.":
+    "Yazılım geliştirme, veritabanları, web teknolojileri, oyun geliştirme, siber güvenlik ve ağ temelleri alanındaki çalışmalarımı destekleyen tamamlanmış kurs ve teknik eğitimlerden oluşan bir seçki.",
+  "Software Development": "Yazılım Geliştirme",
+  "Data & Database": "Veri & Veritabanı",
+  "Web Development": "Web Geliştirme",
+  "Game Development": "Oyun Geliştirme",
+  Cybersecurity: "Siber Güvenlik",
+  "Networking & Systems": "Ağ & Sistemler",
+  "Course Completion": "Kurs Tamamlama",
+  Instructor: "Eğitmen",
+  Instructors: "Eğitmenler",
+  Provider: "Sağlayıcı",
+  Academy: "Akademi",
+  Completed: "Tamamlanma",
+  Preview: "Önizle",
+  "View Credential": "Doğrulamayı Gör",
+  "Jan 24, 2025": "24 Ocak 2025",
+  "Jan 11, 2025": "11 Ocak 2025",
+  "Mar 29, 2024": "29 Mart 2024",
+  "Jan 3, 2024": "3 Ocak 2024",
+  "Dec 1, 2023": "1 Aralık 2023",
+});
+
 const i18nTitleTranslations = {
   tr: {
     "Kaan Balcı | AI Designer & Software Developer":
@@ -1106,10 +1150,14 @@ Object.assign(i18nTranslations.tr, {
 });
 Object.assign(i18nTitleTranslations.tr, {
   "AI Flow Puzzle | Kaan Balcı": "AI Flow Puzzle | Kaan Balcı",
+  "Training & Course Certifications | Kaan Balcı":
+    "Eğitimler ve Kurs Sertifikaları | Kaan Balcı",
 });
 Object.assign(i18nAttributeTranslations.tr, {
   "Open AI Flow Puzzle game": "AI Flow Puzzle oyununu aç",
   "AI Flow Puzzle game preview": "AI Flow Puzzle oyun önizlemesi",
+  "Certificate preview": "Sertifika önizlemesi",
+  "Close preview": "Önizlemeyi kapat",
 });
 
 const originalDocumentTitle = document.title;
@@ -1184,6 +1232,10 @@ function applyLanguage(language) {
         ? i18nAttributeTranslations.tr[item.key]
         : item.key;
     item.element.setAttribute(item.attributeName, nextValue);
+  });
+
+  document.querySelectorAll("[data-training-type]").forEach((element) => {
+    element.textContent = activeLanguage === "tr" ? "Eğitim" : "Training";
   });
 
   document.title =
