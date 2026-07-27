@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="A C# and .NET Framework Windows Forms case study covering patient, doctor and secretary workflows with a SQL Server data model." name="description"/>
+<meta content="Kaan Balcı" name="author"/>
+<meta content="#07111f" name="theme-color"/>
+<meta content="index, follow" name="robots"/>
+<title>Hospital System Case Study | Kaan Balcı</title>
+<link href="https://kaanbalci.com/hospital-system-case-study.html" rel="canonical"/>
+<meta content="Kaan Balcı Portfolio" property="og:site_name"/>
+<meta content="en_US" property="og:locale"/>
+<meta content="Hospital System Case Study | Kaan Balcı" property="og:title"/>
+<meta content="A C# and .NET Framework Windows Forms case study covering patient, doctor and secretary workflows with a SQL Server data model." property="og:description"/>
+<meta content="https://kaanbalci.com/hospital-system-case-study.html" property="og:url"/>
+<meta content="article" property="og:type"/>
+<meta content="https://kaanbalci.com/assets/hospital-system-social.webp" property="og:image"/>
+<meta content="1200" property="og:image:width"/>
+<meta content="630" property="og:image:height"/>
+<meta content="Hospital System C# Windows Forms case study cover" property="og:image:alt"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="Hospital System Case Study | Kaan Balcı" name="twitter:title"/>
+<meta content="A C# and .NET Framework Windows Forms case study covering patient, doctor and secretary workflows with a SQL Server data model." name="twitter:description"/>
+<meta content="https://kaanbalci.com/assets/hospital-system-social.webp" name="twitter:image"/>
+<meta content="Hospital System C# Windows Forms case study cover" name="twitter:image:alt"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": "Hospital System",
+  "headline": "Hospital System Case Study",
+  "description": "A C# and .NET Framework Windows Forms case study covering patient, doctor and secretary workflows with a SQL Server data model.",
+  "url": "https://kaanbalci.com/hospital-system-case-study.html",
+  "image": "https://kaanbalci.com/assets/hospital-system-social.webp",
+  "author": {
+    "@type": "Person",
+    "name": "Kaan Balcı",
+    "url": "https://kaanbalci.com/"
+  },
+  "dateCreated": "2024",
+  "inLanguage": ["en", "tr"],
+  "keywords": [
+    "C# desktop application",
+    "Windows Forms",
+    "ADO.NET",
+    "SQL Server",
+    "appointment workflow",
+    "academic software project"
+  ],
+  "programmingLanguage": "C#",
+  "sameAs": "https://github.com/UAJOP/Hospital-System",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Kaan Balcı Portfolio",
+    "url": "https://kaanbalci.com/"
+  },
+  "mainEntityOfPage": "https://kaanbalci.com/hospital-system-case-study.html"
+}
+</script>
+<script>
+  (function () {
+    try {
+      var savedTheme = localStorage.getItem("kaanbalci-site-theme");
+      var preferredTheme = savedTheme || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      document.documentElement.setAttribute("data-theme", preferredTheme);
+    } catch (error) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  })();
+</script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+<link href="style.css" rel="stylesheet"/>
+<link href="case-study.css" rel="stylesheet"/>
+<link href="assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" rel="icon" type="image/x-icon"/>
+</head>
+<body class="case-study-page">
+<a class="skip-link" data-case-i18n="skip.content" href="#main-content">Skip to content</a>
+<header class="site-header">
+<a aria-label="Kaan Balcı home page" class="brand" href="index.html">
+<img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/>
+<span>Kaan Balcı</span>
+</a>
+<a aria-label="Available for roles" class="availability-badge" data-availability-badge="" href="mailto:kaanb8776@gmail.com"><span></span><strong>Open for work</strong></a>
+<nav class="nav-links" data-nav="">
+<a href="index.html">Home</a>
+<a class="selected" href="works.html">Works</a>
+<a href="games.html">Games</a>
+<a href="blog.html">Experience</a>
+<a href="single-work.html">Certificates</a>
+<a href="request.html">Request</a>
+<a href="about.html">About</a>
+</nav>
+<div class="header-actions">
+<button aria-label="Open recruiter mode" class="recruiter-toggle" data-recruiter-toggle="" title="Recruiter Mode" type="button"><i class="bx bx-briefcase-alt-2"></i><span data-recruiter-label="">Recruiter Mode</span></button>
+<button aria-label="Search" class="command-toggle" data-command-toggle="" title="Search" type="button"><i class="bx bx-search"></i><span data-command-label="">Search</span></button>
+<div aria-label="Language selector" class="lang-switch">
+<button class="active" data-lang-switch="en" type="button">EN</button>
+<button data-lang-switch="tr" type="button">TR</button>
+</div>
+<button aria-label="Switch theme" class="theme-toggle" data-theme-toggle="" title="Switch theme" type="button"><i class="bx bx-moon"></i><span data-theme-label="">Dark</span></button>
+<button aria-expanded="false" aria-label="Open navigation" class="nav-toggle" type="button"><span></span><span></span></button>
+</div>
+</header>
+
+<main id="main-content">
+<section class="case-hero section-shell">
+<div>
+<p class="eyebrow" data-case-i18n="hero.eyebrow">Desktop Software &amp; Database Project</p>
+<h1>Hospital System</h1>
+<p class="case-hero-lead" data-case-i18n="hero.lead">A multi-role Windows Forms application built with C#, .NET Framework and SQL Server to demonstrate patient registration, appointment scheduling and hospital staff workflows. The repository preserves code excerpts, a database schema and interface evidence from the original 2024 academic build.</p>
+<dl class="case-meta-grid">
+<div><dt data-case-i18n="hero.statusLabel">Status</dt><dd data-case-i18n="hero.status">Source Archive</dd></div>
+<div><dt data-case-i18n="hero.yearLabel">Year</dt><dd>2024</dd></div>
+<div><dt data-case-i18n="hero.roleLabel">Role</dt><dd data-case-i18n="hero.role">Software Developer</dd></div>
+<div><dt data-case-i18n="hero.typeLabel">Project type</dt><dd data-case-i18n="hero.type">Academic / Personal Software Project</dd></div>
+</dl>
+<div aria-label="Project technologies" class="case-stack" data-case-i18n-aria-label="aria.technologies">
+<span>C#</span><span>.NET Framework</span><span>Windows Forms</span><span>SQL Server</span><span>ADO.NET</span><span>Database Design</span>
+</div>
+<div class="case-actions">
+<a class="btn primary" data-case-i18n="actions.source" href="https://github.com/UAJOP/Hospital-System" rel="noopener noreferrer" target="_blank"><i class="bx bxl-github"></i>View Source Archive</a>
+</div>
+</div>
+<figure class="case-hero-visual case-hero-visual-contain">
+<img alt="Hospital System appointment management interface cover" data-case-i18n-alt="alt.hero" decoding="async" fetchpriority="high" src="assets/hospital_form_app_cover.webp"/>
+</figure>
+</section>
+
+<section class="case-proof-section section-shell">
+<div aria-label="Project proof" class="case-proof-strip is-four" data-case-i18n-aria-label="aria.proof">
+<article class="case-proof"><strong>3</strong><span data-case-i18n="proof.roles">User Roles</span></article>
+<article class="case-proof"><strong>15</strong><span data-case-i18n="proof.forms">Windows Forms</span></article>
+<article class="case-proof"><strong>6</strong><span data-case-i18n="proof.tables">SQL Server Tables</span></article>
+<article class="case-proof"><strong>4</strong><span data-case-i18n="proof.crud">CRUD Operation Types</span></article>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-section-heading">
+<p class="eyebrow" data-case-i18n="context.eyebrow">Project Context</p>
+<h2 data-case-i18n="context.title">Building a database-backed desktop workflow around three user roles.</h2>
+<p data-case-i18n="context.body">The project was created as an individual Visual Programming course assignment focused on database-backed registration, login and CRUD operations. Its domain was modeled around a simplified appointment workflow for patients, doctors and secretaries rather than a production hospital environment.</p>
+</div>
+<div class="case-panel">
+<p data-case-i18n="context.scope">The repository preserves 17 code excerpts, a database schema and interface evidence, but not the original solution, project, Designer, resource or build files. It is presented as a source archive rather than a runnable or deployed product.</p>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-split">
+<div>
+<p class="eyebrow" data-case-i18n="role.eyebrow">My Role</p>
+<h2 data-case-i18n="role.title">Software Developer</h2>
+<p data-case-i18n="role.body">I designed and implemented the application as the software developer responsible for the forms, database operations and documented project delivery. The work covered interface flow, ADO.NET queries, SQL Server schema preparation and the patient, doctor and secretary journeys.</p>
+</div>
+<div class="case-panel">
+<h3 data-case-i18n="role.contributionsTitle">Verified contributions</h3>
+<ul class="case-limitations">
+<li data-case-i18n="role.contribution1">Windows Forms interface flow</li>
+<li data-case-i18n="role.contribution2">Multi-form navigation</li>
+<li data-case-i18n="role.contribution3">Patient workflow</li>
+<li data-case-i18n="role.contribution4">Doctor workflow</li>
+<li data-case-i18n="role.contribution5">Secretary workflow</li>
+<li data-case-i18n="role.contribution6">ADO.NET database operations</li>
+<li data-case-i18n="role.contribution7">SQL Server schema</li>
+<li data-case-i18n="role.contribution8">CRUD implementation</li>
+<li data-case-i18n="role.contribution9">Project documentation</li>
+</ul>
+</div>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-section-heading">
+<p class="eyebrow" data-case-i18n="roles.eyebrow">User Roles</p>
+<h2 data-case-i18n="roles.title">Three dedicated forms-based workflows</h2>
+<p data-case-i18n="roles.body">Patient, doctor and secretary journeys are separated through dedicated forms and database credential checks.</p>
+</div>
+<div class="case-scenario-grid">
+<article class="case-scenario">
+<i aria-hidden="true" class="bx bx-user"></i>
+<h3 data-case-i18n="roles.patientTitle">Patient</h3>
+<p data-case-i18n="roles.patient">Registration, database credential check, profile editing, branch and doctor selection, available-slot filtering, appointment booking and appointment-list viewing.</p>
+</article>
+<article class="case-scenario">
+<i aria-hidden="true" class="bx bx-clipboard"></i>
+<h3 data-case-i18n="roles.secretaryTitle">Secretary</h3>
+<p data-case-i18n="roles.secretary">Database credential check, appointment-slot creation, doctor management, branch management, announcement creation and full appointment-list access.</p>
+</article>
+<article class="case-scenario">
+<i aria-hidden="true" class="bx bx-plus-medical"></i>
+<h3 data-case-i18n="roles.doctorTitle">Doctor</h3>
+<p data-case-i18n="roles.doctor">Database credential check, profile information, assigned appointment listing, complaint detail viewing, announcement access and profile editing.</p>
+</article>
+</div>
+<div class="case-panel case-section-support">
+<p data-case-i18n="roles.limit">The separation is implemented through dedicated forms and credential checks, not a centralized role-based authorization framework.</p>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-section-heading">
+<p class="eyebrow" data-case-i18n="appointment.eyebrow">Appointment Journey</p>
+<h2 data-case-i18n="appointment.title">From secretary-created availability to patient booking.</h2>
+<p data-case-i18n="appointment.body">The verified flow moves through dedicated forms and shared rows in Tbl_Randevular.</p>
+</div>
+<div class="case-panel case-flow-group">
+<h3 data-case-i18n="appointment.secretaryTitle">Secretary setup</h3>
+<div aria-label="Secretary appointment setup flow" class="case-flow" data-case-i18n-aria-label="aria.secretaryFlow">
+<div class="case-flow-step"><i class="bx bx-calendar-plus"></i><span data-case-i18n="appointment.secretary1">Select date, time, branch and doctor</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-table"></i><span data-case-i18n="appointment.secretary2">Create an available appointment row</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-data"></i><span data-case-i18n="appointment.secretary3">Store the slot in Tbl_Randevular</span></div>
+</div>
+</div>
+<div class="case-panel case-flow-group">
+<h3 data-case-i18n="appointment.patientTitle">Patient booking</h3>
+<div aria-label="Patient appointment booking flow" class="case-flow" data-case-i18n-aria-label="aria.patientFlow">
+<div class="case-flow-step"><i class="bx bx-filter-alt"></i><span data-case-i18n="appointment.patient1">Select branch</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-user-check"></i><span data-case-i18n="appointment.patient2">Select doctor</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-search"></i><span data-case-i18n="appointment.patient3">Filter rows with RandevuDurum = 0</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-check-circle"></i><span data-case-i18n="appointment.patient4">Select a slot</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-note"></i><span data-case-i18n="appointment.patient5">Associate patient identifier and complaint</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-bookmark-check"></i><span data-case-i18n="appointment.patient6">Update appointment status to booked</span></div>
+</div>
+</div>
+<div class="case-panel case-flow-group">
+<h3 data-case-i18n="appointment.doctorTitle">Doctor follow-up</h3>
+<div aria-label="Doctor appointment follow-up flow" class="case-flow" data-case-i18n-aria-label="aria.doctorFlow">
+<div class="case-flow-step"><i class="bx bx-log-in-circle"></i><span data-case-i18n="appointment.doctor1">Sign in</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-list-ul"></i><span data-case-i18n="appointment.doctor2">View appointments matched to the doctor</span></div>
+<span aria-hidden="true" class="case-flow-connector">→</span>
+<div class="case-flow-step"><i class="bx bx-detail"></i><span data-case-i18n="appointment.doctor3">Inspect the selected appointment and complaint detail</span></div>
+</div>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-section-heading">
+<p class="eyebrow" data-case-i18n="database.eyebrow">Database Design</p>
+<h2 data-case-i18n="database.title">Six SQL Server tables supporting direct form-to-database operations.</h2>
+<p data-case-i18n="database.body">The SQL Server model contains six tables covering patients, doctors, secretaries, branches, appointments and announcements. Forms access these tables directly through ADO.NET commands and adapters, with appointment relationships represented mainly through TC, doctor-name and branch-name values.</p>
+</div>
+<div class="case-service-grid">
+<article class="case-service-card"><h3>Tbl_Hastalar</h3><p data-case-i18n="database.patients">Patients</p></article>
+<article class="case-service-card"><h3>Tbl_Doktorlar</h3><p data-case-i18n="database.doctors">Doctors</p></article>
+<article class="case-service-card"><h3>Tbl_Sekreter</h3><p data-case-i18n="database.secretaries">Secretaries</p></article>
+<article class="case-service-card"><h3>Tbl_Branslar</h3><p data-case-i18n="database.branches">Branches</p></article>
+<article class="case-service-card"><h3>Tbl_Randevular</h3><p data-case-i18n="database.appointments">Appointments</p></article>
+<article class="case-service-card"><h3>Tbl_Duyurular</h3><p data-case-i18n="database.announcements">Announcements</p></article>
+</div>
+<div class="case-panel case-section-support">
+<h3 data-case-i18n="database.boundariesTitle">Verified boundaries</h3>
+<ul class="case-limitations">
+<li data-case-i18n="database.boundary1">Date and time values are stored as strings.</li>
+<li data-case-i18n="database.boundary2">Doctor and branch relationships are stored by text.</li>
+<li data-case-i18n="database.boundary3">Patient association uses a TC string.</li>
+<li data-case-i18n="database.boundary4">PK/FK/unique/check constraints are not present in the archived schema.</li>
+<li data-case-i18n="database.boundary5">RandevuDurum has a default value of 0.</li>
+</ul>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-split">
+<div>
+<p class="eyebrow" data-case-i18n="implementation.eyebrow">Windows Forms Implementation</p>
+<h2 data-case-i18n="implementation.title">Fifteen forms combining event-driven UI and ADO.NET operations.</h2>
+<p data-case-i18n="implementation.body">Fifteen user-facing forms handle navigation, registration, login, profile editing, appointment operations and secretary administration. The implementation demonstrates event-driven WinForms development, DataGridView binding and mostly parameterized SQL commands.</p>
+</div>
+<div class="case-panel">
+<h3 data-case-i18n="implementation.technologiesTitle">Implementation evidence</h3>
+<ul class="case-tech-list">
+<li>Event handlers</li><li>Form navigation</li><li>DataGridView</li><li>SqlConnection</li><li>SqlCommand</li><li>SqlDataReader</li><li>SqlDataAdapter</li><li>Parameterized commands</li><li>MessageBox feedback</li><li>Direct CRUD operations</li>
+</ul>
+</div>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-section-heading">
+<p class="eyebrow" data-case-i18n="testing.eyebrow">Testing &amp; Limitations</p>
+<h2 data-case-i18n="testing.title">Useful workflow evidence with clear archival and technical limits.</h2>
+<p data-case-i18n="testing.body">The archived code includes required-field checks and user-facing success or error messages in several forms. Runtime verification is currently blocked because the repository does not include the original solution, project, Designer or resource files, and the implementation also lacks transaction, exception and secure password-handling layers.</p>
+</div>
+<div class="case-split">
+<div class="case-panel">
+<h3 data-case-i18n="testing.evidenceTitle">Verified in the archive</h3>
+<ul class="case-limitations">
+<li data-case-i18n="testing.evidence1">Required-field checks in several forms</li>
+<li data-case-i18n="testing.evidence2">User-facing success and error messages</li>
+<li data-case-i18n="testing.evidence3">Database-backed credential checks</li>
+<li data-case-i18n="testing.evidence4">Parameterized commands in most write operations</li>
+<li data-case-i18n="testing.evidence5">CRUD and appointment workflow code excerpts</li>
+</ul>
+</div>
+<div class="case-panel">
+<h3 data-case-i18n="testing.limitationsTitle">Limitations</h3>
+<ul class="case-limitations">
+<li data-case-i18n="testing.limit1">The repository is a source archive, not a runnable build.</li>
+<li data-case-i18n="testing.limit2">Original solution and Designer files are unavailable.</li>
+<li data-case-i18n="testing.limit3">Passwords are stored and compared as plain text in the archived implementation.</li>
+<li data-case-i18n="testing.limit4">No centralized authorization layer is present.</li>
+<li data-case-i18n="testing.limit5">Some SQL filters use string concatenation.</li>
+<li data-case-i18n="testing.limit6">Connection lifecycle management is incomplete.</li>
+<li data-case-i18n="testing.limit7">Exception handling and transactions are not implemented.</li>
+<li data-case-i18n="testing.limit8">Appointment cancellation and rescheduling are not implemented.</li>
+<li data-case-i18n="testing.limit9">Database constraints and relationships are limited.</li>
+<li data-case-i18n="testing.limit10">Runtime behavior cannot currently be reverified from this repository.</li>
+</ul>
+<p class="case-section-support" data-case-i18n="testing.security">The project demonstrates role-specific desktop workflows and database-backed credential checks, while password security, authorization and privacy controls remain outside the completed scope.</p>
+</div>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-section-heading">
+<p class="eyebrow" data-case-i18n="result.eyebrow">Result &amp; Interface Evidence</p>
+<h2 data-case-i18n="result.title">A multi-role desktop workflow preserved as technical project evidence.</h2>
+<p data-case-i18n="result.body">The project demonstrates an end-to-end desktop workflow spanning multiple user roles, form navigation and relational-data operations. Its main portfolio value is the combination of C# UI logic, ADO.NET access and a concrete appointment domain, while the gallery preserves privacy-safe evidence of the original interface.</p>
+</div>
+<div class="case-gallery">
+<article class="case-gallery-card">
+<button aria-label="Open patient workflow screenshot" data-case-gallery="assets/hospital-system-patient-workflow.webp" data-case-i18n-aria-label="aria.patientImage" type="button">
+<img alt="Privacy-safe patient appointment workflow in Hospital System" data-case-i18n-alt="gallery.patientAlt" decoding="async" loading="lazy" src="assets/hospital-system-patient-workflow.webp"/>
+</button>
+<p data-case-i18n="gallery.patientCaption">Patient detail screen with appointment selection and history areas.</p>
+</article>
+<article class="case-gallery-card">
+<button aria-label="Open secretary workflow screenshot" data-case-gallery="assets/hospital-system-secretary-workflow.webp" data-case-i18n-aria-label="aria.secretaryImage" type="button">
+<img alt="Privacy-safe secretary management workflow in Hospital System" data-case-i18n-alt="gallery.secretaryAlt" decoding="async" loading="lazy" src="assets/hospital-system-secretary-workflow.webp"/>
+</button>
+<p data-case-i18n="gallery.secretaryCaption">Secretary detail screen for appointment, doctor and announcement operations.</p>
+</article>
+<article class="case-gallery-card">
+<button aria-label="Open doctor workflow screenshot" data-case-gallery="assets/hospital-system-doctor-workflow.webp" data-case-i18n-aria-label="aria.doctorImage" type="button">
+<img alt="Privacy-safe doctor appointment workflow in Hospital System" data-case-i18n-alt="gallery.doctorAlt" decoding="async" loading="lazy" src="assets/hospital-system-doctor-workflow.webp"/>
+</button>
+<p data-case-i18n="gallery.doctorCaption">Doctor detail screen with the assigned appointment list and detail area.</p>
+</article>
+<article class="case-gallery-card">
+<button aria-label="Open database screenshot" data-case-gallery="assets/hospital-system-database.webp" data-case-i18n-aria-label="aria.databaseImage" type="button">
+<img alt="Privacy-safe SQL Server table view for Hospital System" data-case-i18n-alt="gallery.databaseAlt" decoding="async" loading="lazy" src="assets/hospital-system-database.webp"/>
+</button>
+<p data-case-i18n="gallery.databaseCaption">Cropped SQL Server table view showing the application data structure.</p>
+</article>
+<article class="case-gallery-card">
+<button aria-label="Open registration screenshot" data-case-gallery="assets/hospital-system-registration.webp" data-case-i18n-aria-label="aria.registrationImage" type="button">
+<img alt="Privacy-safe patient registration form in Hospital System" data-case-i18n-alt="gallery.registrationAlt" decoding="async" loading="lazy" src="assets/hospital-system-registration.webp"/>
+</button>
+<p data-case-i18n="gallery.registrationCaption">Cropped patient registration form with identity, contact and account inputs.</p>
+</article>
+</div>
+</section>
+
+<section class="case-section section-shell">
+<div class="case-section-heading">
+<p class="eyebrow" data-case-i18n="related.eyebrow">Related Work</p>
+<h2 data-case-i18n="related.title">Continue with another software case study</h2>
+</div>
+<div class="case-related-grid">
+<a class="case-related-card" href="project-detail.html?project=hospital-appointment-system">
+<span>Python / Tkinter</span>
+<h3>Hospital Appointment System</h3>
+<p data-case-i18n="related.pythonBody">A separate appointment-system implementation built with Python, Tkinter and MySQL.</p>
+<strong data-case-i18n="related.pythonNote">Separate project · View details →</strong>
+</a>
+<a class="case-related-card" href="atolye-joyday-case-study.html">
+<span>Web / Automation</span>
+<h3>Atölye Joyday</h3>
+<p data-case-i18n="related.joydayBody">A completed and live digital product combining customer journeys and operational automation.</p>
+<strong data-case-i18n="related.caseStudy">View case study →</strong>
+</a>
+</div>
+</section>
+
+<section class="case-cta section-shell">
+<div>
+<p class="eyebrow" data-case-i18n="cta.eyebrow">Resume &amp; Contact</p>
+<h2 data-case-i18n="cta.title">Building practical software around clear users, workflows and data.</h2>
+<p data-case-i18n="cta.body">Review the source archive, view my resume or get in touch to discuss software development, database systems and workflow-oriented products.</p>
+</div>
+<div class="cta-actions">
+<a class="btn primary" data-case-i18n="actions.source" href="https://github.com/UAJOP/Hospital-System" rel="noopener noreferrer" target="_blank">View Source Archive</a>
+<a class="btn ghost" data-case-i18n="actions.resume" data-resume-link="" href="#" rel="noopener" target="_blank">View Resume</a>
+<a class="btn ghost" data-case-i18n="actions.contact" href="mailto:kaanb8776@gmail.com">Contact Me</a>
+</div>
+</section>
+</main>
+
+<div aria-hidden="true" aria-label="Image preview" aria-modal="true" class="case-modal" data-case-i18n-aria-label="aria.modal" data-case-modal="" role="dialog">
+<button aria-label="Close image preview" class="case-modal-close" data-case-i18n-aria-label="modal.close" data-case-modal-close="" type="button"><i aria-hidden="true" class="bx bx-x"></i></button>
+<img alt="" data-case-modal-image="" src=""/>
+</div>
+
+<footer class="site-footer">
+<div class="footer-inner section-shell">
+<div><a class="footer-brand" href="index.html"><img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/><span>Kaan Balcı</span></a><p>AI Designer &amp; Software Developer building practical AI workflows and scalable software systems.</p></div>
+<div aria-label="Social links" class="footer-socials"><a href="https://github.com/UAJOP" rel="noopener" target="_blank" title="GitHub"><i class="bx bxl-github"></i></a><a href="https://www.linkedin.com/in/balcikaan/" rel="noopener" target="_blank" title="LinkedIn"><i class="bx bxl-linkedin-square"></i></a></div>
+</div>
+<p class="copyright">© <span data-year=""></span> Kaan Balcı. All rights reserved.</p>
+</footer>
+<script src="script.js"></script>
+<script src="hospital-system-case-study.data.js"></script>
+<script src="case-study.js"></script>
+</body>
+</html>

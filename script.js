@@ -337,6 +337,11 @@ const i18nTranslations = {
       "Paket bazlı rezervasyon yolculukları, başvuru formları ve operasyonel otomasyon içeren canlı, müşteriye dönük web sitesi.",
     "A database-backed desktop appointment automation system with multi-form workflows and operational logic.":
       "Çok formlu iş akışları ve operasyonel mantık içeren veritabanı destekli masaüstü randevu otomasyon sistemi.",
+    "A database-backed C# Windows Forms project demonstrating patient, doctor, secretary and appointment workflows.":
+      "Hasta, doktor, sekreter ve randevu iş akışlarını gösteren veritabanı destekli C# Windows Forms projesi.",
+    "View Source Archive": "Kaynak Arşivini Gör",
+    "Desktop Application": "Masaüstü Uygulama",
+    "Source Archive": "Kaynak Arşivi",
     "A Python-based analysis project focused on processing, exploring and presenting insights from automotive data.":
       "Otomotiv verilerini işleme, keşfetme ve içgörüleri sunmaya odaklanan Python tabanlı analiz projesi.",
     "Co-Founder & Digital Product Developer":
@@ -1167,6 +1172,8 @@ Object.assign(i18nAttributeTranslations.tr, {
     "AI Flow Puzzle node tabanlı chatbot workflow kapağı",
   "Hospital Form App appointment management interface cover":
     "Hospital Form App randevu yönetimi arayüz kapağı",
+  "Open Hospital System case study":
+    "Hospital System vaka çalışmasını aç",
   "Control Panel PHP and MySQL administration dashboard cover":
     "Control Panel PHP ve MySQL yönetim paneli kapağı",
   "Agency DB relational database schema cover":
@@ -1725,54 +1732,74 @@ const projectDetailData = {
     },
   },
   "hospital-form-app": {
-    category: { en: "Data / Backend", tr: "Veri / Backend" },
+    category: { en: "Software / Database", tr: "Yazılım / Veritabanı" },
     title: { en: "Hospital Form App", tr: "Hospital Form App" },
     subtitle: {
-      en: "A C# Windows Forms hospital appointment automation system with MSSQL and a complex multi-form structure.",
-      tr: "C# Windows Forms, MSSQL ve çok formlu yapı içeren hastane randevu otomasyon sistemi.",
+      en: "A 2024 academic C# Windows Forms project demonstrating patient, doctor, secretary and appointment workflows through SQL Server and ADO.NET. The repository is preserved as a source archive.",
+      tr: "SQL Server ve ADO.NET üzerinden hasta, doktor, sekreter ve randevu iş akışlarını gösteren 2024 tarihli akademik C# Windows Forms projesi. Repository bir kaynak arşivi olarak korunuyor.",
     },
-    role: { en: "C# Developer", tr: "C# Developer" },
+    role: { en: "Software Developer", tr: "Yazılım Geliştirici" },
     year: "2024",
-    type: { en: "Desktop Automation", tr: "Masaüstü Otomasyon" },
-    status: { en: "Repository", tr: "Repository" },
+    type: {
+      en: "Academic / Personal Software Project",
+      tr: "Akademik / Kişisel Yazılım Projesi",
+    },
+    status: { en: "Source Archive", tr: "Kaynak Arşivi" },
     image: "assets/hospital_form_app_cover.webp",
     gallery: [
-      "assets/hospital_form_app_cover.webp",
-      "assets/hospital-form-app-preview.png",
+      "assets/hospital-system-patient-workflow.webp",
+      "assets/hospital-system-secretary-workflow.webp",
+      "assets/hospital-system-doctor-workflow.webp",
+      "assets/hospital-system-database.webp",
+      "assets/hospital-system-registration.webp",
     ],
-    stack: ["C#", ".NET", "Windows Forms", "MSSQL", "Database Design"],
+    stack: [
+      "C#",
+      ".NET Framework",
+      "Windows Forms",
+      "SQL Server",
+      "ADO.NET",
+      "Database Design",
+    ],
     links: [
       {
-        label: { en: "Open GitHub", tr: "GitHub'da Aç" },
+        label: { en: "View Case Study", tr: "Vaka Çalışmasını Gör" },
+        url: "hospital-system-case-study.html",
+      },
+      {
+        label: {
+          en: "View Source Archive",
+          tr: "Kaynak Arşivini Gör",
+        },
         url: "https://github.com/UAJOP/Hospital-System",
       },
     ],
     overview: {
-      en: "Hospital Form App is a desktop automation system built to manage appointment-related workflows through multiple Windows Forms screens and a relational database.",
-      tr: "Hospital Form App, randevu odaklı iş akışlarını çoklu Windows Forms ekranları ve ilişkisel veritabanı ile yönetmek için geliştirilen masaüstü otomasyon sistemidir.",
+      en: "Hospital Form App is the portfolio card name for Hospital System, an individual Visual Programming course project that combines three role-specific Windows Forms journeys with direct SQL Server operations. The repository preserves code excerpts, schema and interface evidence rather than a runnable build.",
+      tr: "Hospital Form App, üç role özel Windows Forms yolculuğunu doğrudan SQL Server işlemleriyle birleştiren bireysel Görsel Programlama dersi projesi Hospital System'ın portfolio kart adıdır. Repository çalıştırılabilir build yerine kod dökümlerini, şemayı ve arayüz kanıtlarını korur.",
     },
     challenge: {
-      en: "The project required organizing many forms, user actions and database operations without losing clarity in the application flow.",
-      tr: "Proje; çok sayıda form, kullanıcı aksiyonu ve veritabanı işlemini uygulama akışındaki netliği kaybetmeden organize etmeyi gerektirdi.",
+      en: "The project required organizing 15 forms, three user journeys and direct database operations while keeping the patient, doctor and secretary workflows understandable.",
+      tr: "Proje; hasta, doktor ve sekreter iş akışlarını anlaşılır tutarken 15 formu, üç kullanıcı yolculuğunu ve doğrudan veritabanı işlemlerini düzenlemeyi gerektirdi.",
     },
     solution: {
-      en: "I structured the application around clear form responsibilities, MSSQL-backed data operations and practical desktop automation logic.",
-      tr: "Uygulamayı net form sorumlulukları, MSSQL destekli veri işlemleri ve pratik masaüstü otomasyon mantığı etrafında yapılandırdım.",
+      en: "I structured the academic desktop application around dedicated role forms, event-driven navigation and ADO.NET commands operating on a six-table SQL Server model.",
+      tr: "Akademik masaüstü uygulamayı role özel formlar, event-driven navigation ve altı tabloluk SQL Server modeli üzerinde çalışan ADO.NET komutları etrafında yapılandırdım.",
     },
     features: {
       en: [
-        "C# Windows Forms",
-        "MSSQL database usage",
-        "Multi-form structure",
-        "Appointment automation logic",
-        "Desktop application workflow",
+        "Three dedicated user workflows",
+        "Fifteen Windows Forms",
+        "Six SQL Server tables",
+        "Create, read, update and delete operations",
+        "Archived interface and schema evidence",
       ],
       tr: [
-        "C# Windows Forms",
-        "MSSQL veritabanı kullanımı",
-        "Çok formlu yapı",
-        "Randevu otomasyon mantığı",
-        "Masaüstü uygulama akışı",
+        "Üç ayrı kullanıcı iş akışı",
+        "On beş Windows Formu",
+        "Altı SQL Server tablosu",
+        "Oluşturma, okuma, güncelleme ve silme işlemleri",
+        "Arşivlenmiş arayüz ve şema kanıtları",
       ],
     },
   },
@@ -3529,6 +3556,8 @@ const chatbotKeywordMap = [
       "portfolio",
       "portfolyo",
       "github",
+      "hospital",
+      "hastane",
     ],
   },
   {
@@ -3605,6 +3634,14 @@ function enhanceAjoopDialogDepth() {
           label: "View Atölye Joyday Case Study",
           url: "atolye-joyday-case-study.html",
         },
+        {
+          label: "View Hospital System Case Study",
+          url: "hospital-system-case-study.html",
+        },
+        {
+          label: "Open Hospital System Source Archive",
+          url: "https://github.com/UAJOP/Hospital-System",
+        },
         { label: "GitHub", url: "https://github.com/UAJOP" },
       ],
       ai: [
@@ -3630,6 +3667,14 @@ function enhanceAjoopDialogDepth() {
         {
           label: "Atölye Joyday Vaka Çalışmasını Gör",
           url: "atolye-joyday-case-study.html",
+        },
+        {
+          label: "Hospital System Vaka Çalışmasını Gör",
+          url: "hospital-system-case-study.html",
+        },
+        {
+          label: "Hospital System Kaynak Arşivini Aç",
+          url: "https://github.com/UAJOP/Hospital-System",
         },
         { label: "GitHub", url: "https://github.com/UAJOP" },
       ],
@@ -3712,9 +3757,10 @@ function enhanceAjoopDialogDepth() {
     projects: {
       text: [
         "The strongest projects are AI Chatbot Flow Design, Atölye Joyday Official Website, Hospital Appointment System, Hospital Form App, Drivenfinity and Cars Dataset Analysis.",
-        "For recruiters, I would open these first: Joyday Official Website for real product value, AI Chatbot Flow Design for AI direction, and Hospital Form App for C#/.NET logic.",
-        "The Works page is the project hub. It includes AI, web, backend/data, mobile and game projects with dynamic detail pages.",
-        "Kaan's projects show range: enterprise chatbot logic, a live business website, reservation workflows, C# automation, Python data analysis, Unity and Unreal prototypes.",
+        "Hospital System, shown on the portfolio card as Hospital Form App, is a 2024 academic C# Windows Forms and SQL Server project preserved as a source archive.",
+        "Hospital Appointment System is a separate Python, Tkinter and MySQL implementation; it is not evidence for the C# Hospital System case study.",
+        "For recruiters, I would open these first: Joyday Official Website for real product value, AI Chatbot Flow Design for AI direction, and Hospital System for C#/.NET desktop and database logic.",
+        "Kaan's projects show range: enterprise chatbot logic, a live business website, reservation workflows, C# desktop/database workflows, Python data analysis, Unity and Unreal prototypes.",
         "Best project evidence depends on the role: AI role → Chatbot Flow Design; web/product role → Joyday; software/backend role → Hospital Form App and dashboard/data projects.",
       ],
       links: linkSets.en.projects,
@@ -3814,9 +3860,10 @@ function enhanceAjoopDialogDepth() {
     projects: {
       text: [
         "En güçlü projeler: AI Chatbot Akış Tasarımı, Atölye Joyday Resmi Web Sitesi, Hospital Appointment System, Hospital Form App, Drivenfinity ve Cars Dataset Analysis.",
-        "İK gözüyle ilk açılacak üçlü: gerçek ürün değeri için Joyday, AI yönü için Chatbot Flow Design, C#/.NET mantığı için Hospital Form App.",
-        "Projeler sayfası ana merkez. AI, web, backend/veri, mobil ve oyun projeleri dinamik detay sayfalarıyla listeleniyor.",
-        "Kaan'ın projeleri genişlik gösteriyor: kurumsal chatbot mantığı, canlı işletme sitesi, rezervasyon akışı, C# otomasyon, Python veri analizi, Unity ve Unreal prototipleri.",
+        "Portfolio kartında Hospital Form App adıyla gösterilen Hospital System, kaynak arşivi olarak korunan 2024 tarihli akademik C# Windows Forms ve SQL Server projesidir.",
+        "Hospital Appointment System ayrı bir Python, Tkinter ve MySQL uygulamasıdır; C# Hospital System vaka çalışmasının kanıtı değildir.",
+        "İK gözüyle ilk açılacak üçlü: gerçek ürün değeri için Joyday, AI yönü için Chatbot Flow Design, C#/.NET masaüstü ve veritabanı mantığı için Hospital System.",
+        "Kaan'ın projeleri genişlik gösteriyor: kurumsal chatbot mantığı, canlı işletme sitesi, rezervasyon akışı, C# masaüstü/veritabanı iş akışları, Python veri analizi, Unity ve Unreal prototipleri.",
         "Rol bazlı en iyi kanıt değişir: AI rolü için Chatbot Flow Design, web/product için Joyday, yazılım/backend için Hospital Form App ve dashboard/veri projeleri.",
       ],
       links: linkSets.tr.projects,
@@ -4373,6 +4420,23 @@ const ultimateContent = {
         external: true,
       },
       {
+        id: "hospital-system-case-study",
+        label: "View Hospital System Case Study",
+        hint: "2024 C# Windows Forms source-archive case study",
+        keywords: "hospital system form app c# windows forms sql server case study",
+        type: "nav",
+        value: "hospital-system-case-study.html",
+      },
+      {
+        id: "hospital-system-source",
+        label: "Open Hospital System Source Archive",
+        hint: "Public C# project archive",
+        keywords: "hospital system source archive github c# windows forms",
+        type: "nav",
+        value: "https://github.com/UAJOP/Hospital-System",
+        external: true,
+      },
+      {
         id: "cv",
         label: "View Resume",
         hint: "Google Drive CV",
@@ -4528,6 +4592,23 @@ const ultimateContent = {
         keywords: "atölye joyday canlı site işletme",
         type: "nav",
         value: "https://atolyejoyday.com/",
+        external: true,
+      },
+      {
+        id: "hospital-system-case-study",
+        label: "Hospital System Vaka Çalışmasını Gör",
+        hint: "2024 C# Windows Forms kaynak arşivi vaka çalışması",
+        keywords: "hospital system form app c# windows forms sql server vaka çalışması",
+        type: "nav",
+        value: "hospital-system-case-study.html",
+      },
+      {
+        id: "hospital-system-source",
+        label: "Hospital System Kaynak Arşivini Aç",
+        hint: "Herkese açık C# proje arşivi",
+        keywords: "hospital system kaynak arşivi github c# windows forms",
+        type: "nav",
+        value: "https://github.com/UAJOP/Hospital-System",
         external: true,
       },
       {
@@ -4754,8 +4835,9 @@ const recruiterItems = {
       ],
       [
         "Hospital Form App",
-        "C#/.NET and MSSQL desktop automation",
-        "project-detail.html?project=hospital-form-app",
+        "C# Windows Forms and SQL Server workflow project preserved as a source archive.",
+        "hospital-system-case-study.html",
+        "View Case Study",
       ],
     ],
     buttons: {
@@ -4814,8 +4896,9 @@ const recruiterItems = {
       ],
       [
         "Hospital Form App",
-        "C#/.NET ve MSSQL masaüstü otomasyonu",
-        "project-detail.html?project=hospital-form-app",
+        "Kaynak arşivi olarak korunan C# Windows Forms ve SQL Server iş akışı projesi.",
+        "hospital-system-case-study.html",
+        "Vaka Çalışmasını Gör",
       ],
     ],
     buttons: {
@@ -5044,6 +5127,8 @@ function enhanceAjoopNavigationActions() {
             mail: "E-posta",
             joyday: "Atölye Joyday Vaka Çalışmasını Gör",
             live: "Atölye Joyday Canlı Sitesini Aç",
+            hospitalCase: "Hospital System Vaka Çalışmasını Gör",
+            hospitalSource: "Hospital System Kaynak Arşivini Aç",
             github: "GitHub",
             recruiter: "İK Modu",
           }
@@ -5054,6 +5139,8 @@ function enhanceAjoopNavigationActions() {
             mail: "Email",
             joyday: "View Atölye Joyday Case Study",
             live: "Open Atölye Joyday Website",
+            hospitalCase: "View Hospital System Case Study",
+            hospitalSource: "Open Hospital System Source Archive",
             github: "GitHub",
             recruiter: "Recruiter Mode",
           };
@@ -5068,6 +5155,14 @@ function enhanceAjoopNavigationActions() {
         {
           label: labels.joyday,
           url: "atolye-joyday-case-study.html",
+        },
+        {
+          label: labels.hospitalCase,
+          url: "hospital-system-case-study.html",
+        },
+        {
+          label: labels.hospitalSource,
+          url: "https://github.com/UAJOP/Hospital-System",
         },
         { label: labels.github, url: "https://github.com/UAJOP" },
       ];
