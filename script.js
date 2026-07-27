@@ -1545,8 +1545,8 @@ const projectDetailData = {
     category: { en: "Game Development", tr: "Oyun Geliştirme" },
     title: { en: "Extract Shoot: Zero", tr: "Extract Shoot: Zero" },
     subtitle: {
-      en: "A third-person action shooter prototype with enemy AI, health management and combat-focused gameplay systems.",
-      tr: "Düşman AI, sağlık yönetimi ve savaş odaklı gameplay sistemleri içeren üçüncü şahıs aksiyon shooter prototipi.",
+      en: "A third-person action shooter prototype with enemy behavior, health management and combat-focused gameplay systems.",
+      tr: "Düşman davranışı, sağlık yönetimi ve savaş odaklı gameplay sistemleri içeren üçüncü şahıs aksiyon shooter prototipi.",
     },
     role: { en: "Unreal Engine Developer", tr: "Unreal Engine Developer" },
     year: "2024",
@@ -1554,7 +1554,13 @@ const projectDetailData = {
     status: { en: "Repository", tr: "Repository" },
     image: "assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg",
     gallery: ["assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg"],
-    stack: ["Unreal Engine", "C++", "Blueprints", "Enemy AI", "Combat Systems"],
+    stack: [
+      "Unreal Engine",
+      "C++",
+      "Blueprints",
+      "Enemy Behavior",
+      "Combat Systems",
+    ],
     links: [
       {
         label: { en: "Open GitHub", tr: "GitHub'da Aç" },
@@ -1562,8 +1568,8 @@ const projectDetailData = {
       },
     ],
     overview: {
-      en: "Extract Shoot: Zero is a third-person action shooter prototype built to practice combat systems, AI behavior and player health logic.",
-      tr: "Extract Shoot: Zero; savaş sistemleri, AI davranışı ve oyuncu sağlık mantığını çalışmak için geliştirilmiş üçüncü şahıs aksiyon shooter prototipidir.",
+      en: "Extract Shoot: Zero is a third-person action shooter prototype built to practice combat systems, enemy behavior and player health logic.",
+      tr: "Extract Shoot: Zero; savaş sistemleri, düşman davranışı ve oyuncu sağlık mantığını çalışmak için geliştirilmiş üçüncü şahıs aksiyon shooter prototipidir.",
     },
     challenge: {
       en: "A shooter prototype requires multiple systems to work together: movement, enemy behavior, health, damage and combat feedback.",
@@ -1576,14 +1582,14 @@ const projectDetailData = {
     features: {
       en: [
         "Third-person combat",
-        "Enemy AI logic",
+        "Enemy behavior logic",
         "Health and damage systems",
         "Unreal Engine workflow",
         "Blueprint and C++ usage",
       ],
       tr: [
         "Üçüncü şahıs savaş",
-        "Düşman AI mantığı",
+        "Düşman davranış mantığı",
         "Sağlık ve hasar sistemleri",
         "Unreal Engine iş akışı",
         "Blueprint ve C++ kullanımı",
@@ -1650,8 +1656,8 @@ const projectDetailData = {
     year: "2024",
     type: { en: "Desktop Automation", tr: "Masaüstü Otomasyon" },
     status: { en: "Repository", tr: "Repository" },
-    image: "assets/hospital.avif",
-    gallery: ["assets/hospital.avif"],
+    image: "assets/hospital-form-app-preview.png",
+    gallery: ["assets/hospital-form-app-preview.png"],
     stack: ["C#", ".NET", "Windows Forms", "MSSQL", "Database Design"],
     links: [
       {
@@ -1692,8 +1698,8 @@ const projectDetailData = {
     category: { en: "Data Analysis", tr: "Veri Analizi" },
     title: { en: "Cars Dataset Analysis", tr: "Cars Veri Seti Analizi" },
     subtitle: {
-      en: "A Python-based data analysis project built to explore, process and present insights from automotive data.",
-      tr: "Otomotiv verilerini keşfetmek, işlemek ve içgörü sunmak için geliştirilmiş Python tabanlı veri analizi projesi.",
+      en: "A Python data project combining exploratory analysis and visualization with a small linear-regression experiment for car-price estimation.",
+      tr: "Keşifsel analiz ve görselleştirmeyi araç fiyatı tahmini için küçük bir doğrusal regresyon deneyiyle birleştiren Python veri projesi.",
     },
     role: { en: "Python Developer", tr: "Python Developer" },
     year: "2024",
@@ -1703,10 +1709,12 @@ const projectDetailData = {
     gallery: ["assets/what-is-data-analyst.jpg"],
     stack: [
       "Python",
-      "Data Analysis",
       "Pandas",
-      "Exploration",
-      "Visualization",
+      "NumPy",
+      "Matplotlib",
+      "Seaborn",
+      "scikit-learn",
+      "Linear Regression",
     ],
     links: [
       {
@@ -1715,31 +1723,31 @@ const projectDetailData = {
       },
     ],
     overview: {
-      en: "This project focuses on exploring a Cars dataset with Python and presenting meaningful observations through data analysis steps.",
-      tr: "Bu proje, Cars veri setini Python ile incelemeye ve veri analizi adımlarıyla anlamlı gözlemler sunmaya odaklanır.",
+      en: "The project primarily explores, cleans and visualizes automotive data. It also includes a small scikit-learn Linear Regression experiment to examine basic car-price estimation in a controlled notebook workflow.",
+      tr: "Proje öncelikle otomotiv verilerini keşfeder, temizler ve görselleştirir. Ayrıca kontrollü bir notebook akışında temel araç fiyatı tahminini incelemek için küçük bir scikit-learn Linear Regression deneyi içerir.",
     },
     challenge: {
       en: "A data project needs clean exploration, understandable outputs and a structure that makes the analysis easy to follow.",
       tr: "Bir veri projesi temiz keşif, anlaşılır çıktılar ve analizin kolay takip edilebilir olduğu bir yapı gerektirir.",
     },
     solution: {
-      en: "I used Python-based analysis logic to inspect the data, understand patterns and present findings in a readable way.",
-      tr: "Veriyi incelemek, kalıpları anlamak ve bulguları okunabilir şekilde sunmak için Python tabanlı analiz mantığı kullandım.",
+      en: "I used Pandas, NumPy, Matplotlib and Seaborn for the main exploratory workflow, then added a small scikit-learn Linear Regression experiment as a secondary technical exercise.",
+      tr: "Ana keşifsel analiz akışında Pandas, NumPy, Matplotlib ve Seaborn kullandım; ardından ikincil bir teknik çalışma olarak küçük bir scikit-learn Linear Regression deneyi ekledim.",
     },
     features: {
       en: [
-        "Dataset exploration",
-        "Python analysis workflow",
-        "Data cleaning mindset",
-        "Insight presentation",
-        "Automotive data context",
+        "Exploratory data analysis",
+        "Data cleaning and preparation",
+        "Matplotlib and Seaborn visualizations",
+        "Automotive data observations",
+        "Small Linear Regression experiment",
       ],
       tr: [
-        "Veri seti keşfi",
-        "Python analiz iş akışı",
-        "Veri temizleme bakış açısı",
-        "İçgörü sunumu",
-        "Otomotiv verisi bağlamı",
+        "Keşifsel veri analizi",
+        "Veri temizleme ve hazırlama",
+        "Matplotlib ve Seaborn görselleştirmeleri",
+        "Otomotiv verisi gözlemleri",
+        "Küçük Linear Regression deneyi",
       ],
     },
   },
@@ -2122,7 +2130,7 @@ const githubRepositoryProjectDetails = {
     },
     image: "assets/calculator-cartoon-illustration-png.webp",
     gallery: ["assets/calculator-cartoon-illustration-png.webp"],
-    stack: ["Android Studio", "Java/Kotlin", "Mobile UI", "App Logic"],
+    stack: ["Android Studio", "Mobile UI", "App Logic", "Input Handling"],
     links: [
       {
         label: {
