@@ -1043,10 +1043,6 @@ Object.assign(i18nTranslations.tr, {
   "Action Painting": "Action Painting",
   "PNG Export": "PNG Çıktı",
   "AI Flow Puzzle": "AI Flow Puzzle",
-  "A planned puzzle game where users connect intent, response, fallback and automation nodes into a clean chatbot flow.":
-    "Kullanıcıların intent, cevap, fallback ve otomasyon node'larını temiz bir chatbot akışına bağladığı planlanan puzzle oyunu.",
-  "Planned for the next mini-game slot.":
-    "Sonraki mini oyun alanı için planlandı.",
   "Interview Run": "Interview Run",
   "A planned quick decision game about answering interview questions, managing time and choosing the strongest response path.":
     "Mülakat sorularını cevaplama, zamanı yönetme ve en güçlü cevap yolunu seçme üzerine planlanan hızlı karar oyunu.",
@@ -1140,6 +1136,7 @@ Object.assign(i18nAttributeTranslations.tr, {
 
 Object.assign(i18nTranslations.tr, {
   "Play AI Flow Puzzle": "AI Flow Puzzle Oyna",
+  "View AI Flow Puzzle Case Study": "AI Flow Puzzle Vaka Çalışmasını Gör",
   "The catalog now includes Career Adventure, Joyday Action Painting and AI Flow Puzzle, and it can grow into a full interactive game shelf over time.":
     "Katalog artık Career Adventure, Joyday Action Painting ve AI Flow Puzzle oyunlarını içeriyor; zamanla tam bir interaktif oyun rafına dönüşebilir.",
   "Build n8n-inspired chatbot workflows by placing trigger, intent, response, fallback and automation nodes on a visual board.":
@@ -1156,6 +1153,8 @@ Object.assign(i18nTitleTranslations.tr, {
 Object.assign(i18nAttributeTranslations.tr, {
   "Open AI Flow Puzzle game": "AI Flow Puzzle oyununu aç",
   "AI Flow Puzzle game preview": "AI Flow Puzzle oyun önizlemesi",
+  "Open AI Flow Puzzle case study": "AI Flow Puzzle vaka çalışmasını aç",
+  "AI Flow Puzzle case study preview": "AI Flow Puzzle vaka çalışması önizlemesi",
   "Certificate preview": "Sertifika önizlemesi",
   "Close preview": "Önizlemeyi kapat",
 });
@@ -4305,12 +4304,20 @@ const ultimateContent = {
         value: "joyday-paint.html",
       },
       {
-        id: "ai-flow-puzzle",
-        label: "Open AI Flow Puzzle",
+        id: "ai-flow-puzzle-play",
+        label: "Play AI Flow Puzzle",
         hint: "n8n-style chatbot workflow game",
         keywords: "ai flow puzzle n8n chatbot workflow automation game",
         type: "nav",
         value: "ai-flow-puzzle.html",
+      },
+      {
+        id: "ai-flow-puzzle-case-study",
+        label: "View AI Flow Puzzle Case Study",
+        hint: "Design and technical case study",
+        keywords: "ai flow puzzle case study node validation fallback",
+        type: "nav",
+        value: "ai-flow-puzzle-case-study.html",
       },
       {
         id: "adventure",
@@ -4446,12 +4453,20 @@ const ultimateContent = {
         value: "joyday-paint.html",
       },
       {
-        id: "ai-flow-puzzle",
-        label: "AI Flow Puzzle Aç",
+        id: "ai-flow-puzzle-play",
+        label: "AI Flow Puzzle Oyna",
         hint: "n8n tarzı chatbot workflow oyunu",
         keywords: "ai flow puzzle n8n chatbot workflow otomasyon oyun",
         type: "nav",
         value: "ai-flow-puzzle.html",
+      },
+      {
+        id: "ai-flow-puzzle-case-study",
+        label: "AI Flow Puzzle Vaka Çalışmasını Gör",
+        hint: "Tasarım ve teknik vaka çalışması",
+        keywords: "ai flow puzzle vaka çalışması node doğrulama fallback",
+        type: "nav",
+        value: "ai-flow-puzzle-case-study.html",
       },
       {
         id: "adventure",
@@ -4682,7 +4697,8 @@ const recruiterItems = {
       [
         "AI Flow Puzzle",
         "Live node-logic, fallback and validation demo",
-        "ai-flow-puzzle.html",
+        "ai-flow-puzzle-case-study.html",
+        "View Case Study",
       ],
       [
         "Atölye Joyday Official Website",
@@ -4740,7 +4756,8 @@ const recruiterItems = {
       [
         "AI Flow Puzzle",
         "Canlı node mantığı, fallback ve doğrulama demosu",
-        "ai-flow-puzzle.html",
+        "ai-flow-puzzle-case-study.html",
+        "Vaka Çalışmasını Gör",
       ],
       [
         "Atölye Joyday Resmi Web Sitesi",
@@ -4785,7 +4802,7 @@ function renderRecruiterDrawer(language = currentSiteLanguage || "en") {
       <h3>${language === "tr" ? "Deneyim kanıtları" : "Experience evidence"}</h3>
       <ul class="recruiter-proof-list">${data.proof.map((item) => `<li>${escapeProjectHtml(item)}</li>`).join("")}</ul>
       <h3>${escapeProjectHtml(content.projectsTitle)}</h3>
-      <div class="recruiter-links">${data.projects.map((item) => `<a href="${escapeProjectHtml(item[2])}">${escapeProjectHtml(item[0])}<small>${escapeProjectHtml(item[1])}</small></a>`).join("")}</div>
+      <div class="recruiter-links">${data.projects.map((item) => `<a href="${escapeProjectHtml(item[2])}">${escapeProjectHtml(item[0])}<small>${escapeProjectHtml(item[1])}</small>${item[3] ? `<span>${escapeProjectHtml(item[3])}</span>` : ""}</a>`).join("")}</div>
       <div class="recruiter-actions">
         <button class="btn primary" type="button" onclick="openDrivePreviews()">${escapeProjectHtml(data.buttons.cv)}</button>
         <a class="btn ghost" href="mailto:kaanb8776@gmail.com">${escapeProjectHtml(data.buttons.contact)}</a>
@@ -5873,6 +5890,7 @@ function enhanceJoydayGameNavigation() {
         links: [
           { label: "Open Games", url: "games.html" },
           { label: "Play AI Flow Puzzle", url: "ai-flow-puzzle.html" },
+          { label: "View AI Flow Puzzle Case Study", url: "ai-flow-puzzle-case-study.html" },
           { label: "Play Joyday Painting", url: "joyday-paint.html" },
         ],
       };
@@ -5887,6 +5905,7 @@ function enhanceJoydayGameNavigation() {
         links: [
           { label: "Oyunları Aç", url: "games.html" },
           { label: "AI Flow Puzzle Oyna", url: "ai-flow-puzzle.html" },
+          { label: "AI Flow Puzzle Vaka Çalışmasını Gör", url: "ai-flow-puzzle-case-study.html" },
           { label: "Joyday Painting Oyna", url: "joyday-paint.html" },
         ],
       };
