@@ -60,6 +60,16 @@
   object-fit: cover;
 }
 
+.case-hero-visual-contain {
+  background: #07111f;
+}
+
+.case-hero-visual-contain img {
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
 .case-meta-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -573,6 +583,10 @@ html[data-theme="light"] :is(.case-hero-visual, .case-panel, .case-scenario, .ca
 
 html[data-theme="light"] :is(.case-journey li, .case-flow-step) {
   background: rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme="light"] .case-hero-visual-contain {
+  background: #f8fbff;
 }
 
 @media screen and (max-width: 980px) {

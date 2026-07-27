@@ -88,7 +88,7 @@ window.caseStudyPageData = {
       "automation.applicationForm": "Application form",
       "automation.followUp": "Application follow-up",
       "automation.note":
-        "This is a practical Google-services workflow, not a custom backend, CRM or real-time booking engine.",
+        "This practical workflow uses managed Google services and keeps availability and final confirmation in direct business communication.",
       "technical.eyebrow": "Technical Implementation",
       "technical.title": "A lightweight multi-page product built around practical business needs.",
       "technical.body":
@@ -252,7 +252,7 @@ window.caseStudyPageData = {
       "automation.applicationForm": "Başvuru formu",
       "automation.followUp": "Başvuru takibi",
       "automation.note":
-        "Bu yapı; özel backend, CRM veya gerçek zamanlı rezervasyon motoru değil, Google servisleriyle kurulan pratik bir operasyon akışıdır.",
+        "Bu pratik akış yönetilen Google servislerini kullanır; uygunluk ve nihai onay doğrudan işletme iletişimiyle devam eder.",
       "technical.eyebrow": "Teknik Uygulama",
       "technical.title":
         "Pratik işletme ihtiyaçları etrafında geliştirilen hafif çok sayfalı ürün.",
