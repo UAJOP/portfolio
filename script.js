@@ -770,7 +770,7 @@ Object.assign(i18nTranslations.tr, {
 
 Object.assign(i18nTranslations.tr, {
   Training: "Eğitimler",
-  "Training and course completions across software, AI-adjacent systems and interactive technologies.":
+  "Training and course completions across software, technical systems and interactive technologies.":
     "Yazılım, teknik sistemler ve interaktif teknolojiler alanındaki eğitimler ve kurs tamamlamaları.",
   "A selection of completed courses and technical training that support my work in software development, databases, web technologies, game development, cybersecurity and networking fundamentals.":
     "Yazılım geliştirme, veritabanları, web teknolojileri, oyun geliştirme, siber güvenlik ve ağ temelleri alanındaki çalışmalarımı destekleyen tamamlanmış kurs ve teknik eğitimlerden oluşan bir seçki.",
