@@ -5127,6 +5127,8 @@ function enhanceAjoopNavigationActions() {
             mail: "E-posta",
             joyday: "Atölye Joyday Vaka Çalışmasını Gör",
             live: "Atölye Joyday Canlı Sitesini Aç",
+            hospitalCase: "Hospital System Vaka Çalışmasını Gör",
+            hospitalSource: "Hospital System Kaynak Arşivini Aç",
             github: "GitHub",
             recruiter: "İK Modu",
           }
@@ -5137,6 +5139,8 @@ function enhanceAjoopNavigationActions() {
             mail: "Email",
             joyday: "View Atölye Joyday Case Study",
             live: "Open Atölye Joyday Website",
+            hospitalCase: "View Hospital System Case Study",
+            hospitalSource: "Open Hospital System Source Archive",
             github: "GitHub",
             recruiter: "Recruiter Mode",
           };
@@ -5151,6 +5155,14 @@ function enhanceAjoopNavigationActions() {
         {
           label: labels.joyday,
           url: "atolye-joyday-case-study.html",
+        },
+        {
+          label: labels.hospitalCase,
+          url: "hospital-system-case-study.html",
+        },
+        {
+          label: labels.hospitalSource,
+          url: "https://github.com/UAJOP/Hospital-System",
         },
         { label: labels.github, url: "https://github.com/UAJOP" },
       ];
