@@ -6167,3 +6167,20 @@ html[data-theme="light"] .ai-node-config textarea {
     min-height: 580px;
   }
 }
+
+/* Career alignment 2026 */
+.recruiter-primary-profile {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 18px;
+  color: var(--text);
+  background: rgba(56, 189, 248, 0.08);
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+html[data-theme="light"] .recruiter-primary-profile {
+  background: rgba(2, 132, 199, 0.08);
+}

@@ -1,246 +1,54 @@
-# Kaan Balcı - Modern Portfolio
+# Kaan Balcı — Portfolio
 
-This repository contains the source code for **[kaanbalci.com](https://kaanbalci.com)**, a modern personal portfolio website for Kaan Balcı.
+Source code for [kaanbalci.com](https://kaanbalci.com), the professional portfolio of **Kaan Balcı — AI Designer & Software Developer**.
 
-## Focus
+## Professional focus
 
-The website presents Kaan Balcı as an **AI Designer & Software Developer** with experience in:
+- Conversational AI and chatbot flow design
+- Solution engineering
+- LLM response, reasoning, code and multimodal evaluation
+- Workflow automation and n8n-style logic
+- User-centered software products
+- Python, C#/.NET, JavaScript, PHP and SQL
 
-- AI workflow and chatbot design
-- n8n-based automation logic
-- LLM response, prompt and code output evaluation
-- Backend, web and mobile development
-- Python, C#, JavaScript, PHP, MySQL and Firebase projects
-- Unity and Unreal Engine game development
+Game development, mobile development and interactive projects remain part of the wider portfolio, while the main public positioning is centered on AI and software roles.
 
-## Pages
+## Main pages
 
-- `index.html` — Modern landing page with hero, stats, services, tech stack matrix, AI workflow demo, featured case study, experience preview and featured works
-- `works.html` — Filterable project catalog with cards linking into dynamic case study pages
-- `games.html` — Playable web games catalog that groups interactive portfolio mini games such as Career Adventure, Joyday Action Painting and AI Flow Puzzle
-- `adventure.html` — Career Adventure playable mini game page linked from the games catalog
-- `joyday-paint.html` — Joyday Action Painting virtual canvas mini game with canvas selection, virtual painting tools and PNG export
-- `ai-flow-puzzle.html` — n8n-inspired chatbot workflow puzzle game with draggable nodes, validation goals and JSON export
-- `project-detail.html` — Single dynamic project detail page powered by query parameters and JavaScript data
-- `request.html` — Project/service request page with frontend validation, mailto fallback and Google Apps Script endpoint support
-- `request-config.js` — Request form endpoint configuration
-- `google-apps-script-request-form.gs` — Optional Google Apps Script handler for direct email sending and confirmation emails
-- `blog.html` — Experience timeline page; kept as `blog.html` for existing URL compatibility
-- `single-work.html` — Certificates gallery; kept as `single-work.html` for existing URL compatibility
-- `about.html` — Professional profile, capability map, process and toolbox
-- `joyday-paint.js` — Joyday Action Painting game engine powered by Canvas API
-- `ai-flow-puzzle.js` — AI Flow Puzzle logic for scenarios, node placement, connections, validation and JSON export
-- `style.css` — Full responsive modern UI styling
-- `script.js` — Mobile navigation, project/game filters, certificate modal, language switcher, dynamic project detail rendering, Ajoop assistant, theme switching, recruiter mode, command palette, easter egg, Algorithmic 3D Lab and dynamic year
-- `CNAME` — GitHub Pages custom domain configuration
+- `index.html` — Landing page, focus areas, recent experience, selected work and contact hub
+- `works.html` — Filterable project catalog
+- `games.html` — Interactive web games catalog
+- `adventure.html` — Career Adventure mini game
+- `joyday-paint.html` — Joyday Action Painting experience
+- `ai-flow-puzzle.html` — n8n-inspired chatbot workflow puzzle
+- `project-detail.html` — Dynamic project detail page
+- `blog.html` — Professional experience timeline
+- `single-work.html` — Training and course certificate gallery
+- `about.html` — Professional profile and capability map
+- `request.html` — Project request form
+- `script.js` — Navigation, EN/TR translation, Ajoop, Recruiter Mode, Command Palette and dynamic project content
+- `style.css` — Responsive site styling
 
-## Notes
+## Resume
 
-The ZIP contains code files only. Keep the existing `assets` folder in the repository unchanged, because the pages reference the current portfolio images, certificates and logo files from that folder.
+All public resume actions use one centralized resume URL in `script.js`:
 
-## Local Usage
+```js
+const resumeLink = "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing";
+```
 
-Open `index.html` directly in your browser or use a local server such as VS Code Live Server.
+Public buttons use labels such as **View Resume** or **Download Resume**. Role-specific application CVs are intentionally not exposed on the website.
 
-## Contact
+## Current links
 
-- Website: [kaanbalci.com](https://kaanbalci.com)
-- Resume: [Google Drive CV](https://drive.google.com/file/d/1vihEXLism6UzQXP70XxWbJboeiaPllgH/view?usp=drive_link)
+- Portfolio: [kaanbalci.com](https://kaanbalci.com)
+- Resume: [View Resume](https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing)
 - LinkedIn: [linkedin.com/in/balcikaan](https://www.linkedin.com/in/balcikaan/)
 - GitHub: [github.com/UAJOP](https://github.com/UAJOP)
 - Email: [kaanb8776@gmail.com](mailto:kaanb8776@gmail.com)
 
+## Deployment
 
-## Final enhancement pass
+The repository is configured for GitHub Pages with the custom domain in `CNAME`.
 
-This version also adds:
-
-- Featured Atölye Joyday case study on the homepage
-- Tech stack matrix and Currently Building sections
-- Interactive AI workflow demo
-- GitHub experiments section
-- Stronger contact hub
-- Result / Impact and Process Timeline blocks for dynamic project details
-- Dedicated Atölye Joyday Official Website project card and case study
-- Additional Joyday preview images under `assets/`
-
-
-## Latest polish
-
-- Added persistent dark/light theme toggle.
-- Renamed the frontend portfolio chatbot to **Ajoop**.
-- Removed the visible intent/rule-based subtitle from the chatbot header.
-- Added small frontend performance polish while keeping the site static and GitHub Pages friendly.
-
-
-## Ultimate additions
-
-- Recruiter Mode drawer for a compact hiring-focused profile view
-- Ctrl/Cmd + K command palette for fast site navigation
-- Project search on the Works page
-- Downloadable portfolio PDF at `assets/kaan-balci-portfolio.pdf`
-- Custom `404.html`, `robots.txt`, `sitemap.xml` and JSON-LD SEO metadata
-- Copy Project Link action on dynamic project detail pages
-- Availability badge in the header
-- Milestone Journey section on the About page
-- Ajoop chatbot navigation actions with direct links to key pages and files
-
-
-## Latest Creative Enhancements
-
-- Hidden Ajoop-style easter egg with fireworks, screen shake and congratulation message.
-- Homepage Algorithmic 3D Lab built with vanilla JavaScript canvas, triangular mesh generation, perspective projection and mouse interaction.
-- Small optimization pass using lazy images, async decoding, content-visibility and IntersectionObserver-based rendering.
-
-
-## Request Form Email Setup
-
-The request page is static-site friendly. By default it opens a mail draft as a fallback. To make it send email directly from the website, deploy `google-apps-script-request-form.gs` as a Google Apps Script Web App and paste the Web App URL into `request-config.js` as `window.KAAN_REQUEST_FORM_ENDPOINT`.
-
-## Request Form Connection
-
-This version connects the portfolio request page to the provided Google Apps Script Web App endpoint and adds a Google Forms fallback button.
-
-- Website form endpoint: configured in `request-config.js`
-- Google Forms fallback: configured in `request-config.js`
-- Apps Script file: `google-apps-script-request-form.gs`
-
-The Apps Script saves website form submissions into a `Website Talepleri` sheet, sends a notification email to the owner, and sends a confirmation email to the requester. The optional `onFormSubmit` trigger supports Google Forms submissions as a fallback flow.
-
-
-## Visual QA Fixes
-
-- Joyday project images replaced with clean official website/reservation visuals.
-- Contact hub layout adjusted to prevent oversized text wrapping.
-- Joyday gallery images use contain-fit to avoid cropping.
-
-## Publish-ready visual fix pass
-
-This version fixes the Atölye Joyday reservation workflow detail page image issue by standardizing the image references to the existing `assets/joyday-homepage-preview.webp`, `assets/joyday-reservation-preview.webp` and `assets/joyday-brand-logo.webp` files. It also includes compatibility aliases for the previous `*-clean.webp` filenames and adds a small global image fallback for broken preview images.
-
-
-
-## Final consolidated adventure polish
-
-- Merged the Adventure page with the previous contact, search, recruiter drawer and Ajoop improvements.
-- Added Adventure/Macera to every site navigation header.
-- Standardized the command/search button as `Ara` across pages while keeping the keyboard palette behavior.
-- Fixed duplicated chatbot panel markup created during iterative updates.
-- Kept the contact hub button grid balanced and the Career Merge mobile/merge fixes active.
-
-
-## GitHub repository catalog expansion
-
-- Expanded the Works page with additional public GitHub repositories from `github.com/UAJOP`.
-- Added dynamic project detail data for the newly surfaced repositories.
-- Fixed the Dunker Madness card path and removed the stray slash character before project tags.
-- Preserved Adventure mini game, Ajoop improvements, IK Mode, search palette and contact hub layout fixes.
-
-## Live-ready final polish
-
-- Standardized English header labels; `Search` is now English in EN mode and `Ara` in TR mode.
-- Aligned Outlier AI dates with the uploaded CV: Apr 2025 – Aug 2025.
-- Converted remaining relative Open Graph images to absolute `kaanbalci.com` URLs for stronger social previews.
-- Added Turkish aria-label coverage for the expanded GitHub project catalog.
-- Made request-form success copy safer for the static-site Google Apps Script `no-cors` flow.
-
-
-
-## Final repository cleanup
-
-- Updated Hospital Appointment System with accurate Python / Tkinter / MySQL case-study content and GitHub link alignment.
-- Updated Porto 25 as a Tailwind CSS portfolio / landing page UI practice project.
-- Removed extra Joyday-related cards including `Joyday Repository` and the separate Atölye Joyday Reservation Workflow card, keeping one main Atölye Joyday official website case study.
-
-
-## Web Games catalog expansion
-
-- Added `games.html` as the main catalog for playable portfolio mini games.
-- Replaced the direct Adventure navigation item with Games/Oyunlar across the site header.
-- Kept Career Adventure as a playable game page linked from the Games catalog.
-- Added planned game cards for future AI Flow Puzzle and Interview Run concepts.
-- Added TR/EN translation polish for the new Games page and recent experience cards.
-
-
-## Joyday Action Painting Game
-
-This update adds a virtual Atölye Joyday-style action painting experience. Users can choose 50x50 square, 52 cm circle or 40x60 rectangle canvas formats, select colors, use four tools (throw bottle, spray, brush and water balloon), undo/redo changes, clear the canvas and download the final artwork as PNG.
-
-
-## Joyday Action Painting UI Polish
-
-- Moved the action painting equipment selector into the main studio area under the canvas so tools are closer to the painting surface.
-- Hid the center onboarding overlay after canvas initialization/selection to keep the artwork area clean.
-- Kept canvas type, color palette, undo/redo, clear and PNG export controls active with TR/EN text support.
-
-## Joyday Action Painting UI Fix
-
-- Removed the in-canvas instructional overlay so selected canvases stay clean while painting.
-- Added a dismissible top info banner with TR/EN text and a close button.
-- Kept the equipment toolbelt directly under the canvas for faster interaction.
-
-
-## Joyday bottle line polish
-
-- Updated the Joyday Action Painting bottle tool from splash behavior to a straight paint-line stream.
-- Bottle now supports drag-based line drawing with small natural drips, while balloon remains the large burst/splash tool.
-- Updated Joyday tool labels and TR/EN helper copy accordingly.
-
-
-## Joyday bottle one-shot paint throw polish
-
-- Updated the Joyday Action Painting bottle tool from continuous drag drawing into a release-based one-shot straight paint throw.
-- The bottle now behaves differently from the brush: press to aim, release to place a cleaner straight paint stream with light natural drips.
-
-
-## Joyday Action Painting thickness polish
-
-- Added a stroke thickness control to the Joyday Action Painting toolbelt.
-- Thickness now affects the throw bottle paint line, brush stroke size, spray intensity and water balloon burst size.
-- Added TR/EN labels for thin, medium and thick settings.
-
-## Joyday Action Painting feature expansion
-
-This pass expands `joyday-paint.html` into a more complete interactive studio experience:
-
-- Artwork finish modal with preview
-- Artwork naming before export
-- Optional Joyday signature
-- Clean canvas export and branded Joyday card export
-- Random creative prompt / theme card
-- Suggested color palettes
-- Starter stains button
-- Mini mission system
-- Remix paint-flow effect
-- Paint intensity slider
-- Optional studio sound toggle powered by Web Audio
-- Small tool interaction animations
-- Real Atölye Joyday CTA from the export screen
-
-
-
-## AI Flow Puzzle expansion
-
-This version turns the planned AI Flow Puzzle card into a live playable mini game. The game uses an n8n-inspired visual workflow board where users add chatbot automation nodes, drag them into place, connect source and target nodes, validate required scenario objectives, get hints and export the created workflow as JSON.
-
-Included scenarios:
-
-- Joyday Reservation Bot
-- Enterprise Support Bot
-- Lead Capture Automation
-
-The game is designed as a portfolio-friendly demonstration of chatbot flow logic, fallback handling, branching and automation thinking.
-
-## AI Flow Puzzle expansion
-
-This version expands `ai-flow-puzzle.html` into a stronger n8n-inspired workflow simulator:
-
-- Run Flow execution mode with animated node highlighting
-- Scenario-based test messages and execution log panel
-- Node configuration inspector for trigger, intent, route, LLM, response and automation nodes
-- Template system with blank, happy-path and full-solution starts
-- Flow quality scoring across logic, automation, UX, safety and efficiency
-- Debug notes for missing nodes, missing connections and weak safety paths
-- Connection labels for route logic and branch readability
-- JSON export/import, flow summary copy, TXT report download and PNG board export
-- Wider two-column desktop layout to reduce board crowding
+Keep the existing `assets` directory unchanged when replacing the updated code files, because the HTML pages reference the current portfolio images, certificates and logos from that directory.
