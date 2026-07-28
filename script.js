@@ -928,8 +928,7 @@ Object.assign(i18nTranslations.tr, {
 Object.assign(i18nAttributeTranslations.tr, {
   "Open details for Atölye Joyday Official Website":
     "Atölye Joyday Resmi Web Sitesi detaylarını aç",
-  "Open Atölye Joyday case study":
-    "Atölye Joyday vaka çalışmasını aç",
+  "Open Atölye Joyday case study": "Atölye Joyday vaka çalışmasını aç",
 
   "AI workflow scenarios": "AI workflow senaryoları",
   "Atölye Joyday package selection preview":
@@ -1165,15 +1164,15 @@ Object.assign(i18nAttributeTranslations.tr, {
   "Open AI Flow Puzzle game": "AI Flow Puzzle oyununu aç",
   "AI Flow Puzzle game preview": "AI Flow Puzzle oyun önizlemesi",
   "Open AI Flow Puzzle case study": "AI Flow Puzzle vaka çalışmasını aç",
-  "AI Flow Puzzle case study preview": "AI Flow Puzzle vaka çalışması önizlemesi",
+  "AI Flow Puzzle case study preview":
+    "AI Flow Puzzle vaka çalışması önizlemesi",
   "AI Chatbot Flow Design multi-channel conversational workflow cover":
     "AI Chatbot Flow Design çok kanallı conversational workflow kapağı",
   "AI Flow Puzzle node-based chatbot workflow cover":
     "AI Flow Puzzle node tabanlı chatbot workflow kapağı",
   "Hospital Form App appointment management interface cover":
     "Hospital Form App randevu yönetimi arayüz kapağı",
-  "Open Hospital System case study":
-    "Hospital System vaka çalışmasını aç",
+  "Open Hospital System case study": "Hospital System vaka çalışmasını aç",
   "Control Panel PHP and MySQL administration dashboard cover":
     "Control Panel PHP ve MySQL yönetim paneli kapağı",
   "Agency DB relational database schema cover":
@@ -3379,7 +3378,10 @@ const portfolioChatbotContent = {
             label: "View Atölye Joyday Case Study",
             url: "atolye-joyday-case-study.html",
           },
-          { label: "Open Atölye Joyday Website", url: "https://atolyejoyday.com/" },
+          {
+            label: "Open Atölye Joyday Website",
+            url: "https://atolyejoyday.com/",
+          },
         ],
       },
       stack: {
@@ -3471,7 +3473,10 @@ const portfolioChatbotContent = {
             label: "Atölye Joyday Vaka Çalışmasını Gör",
             url: "atolye-joyday-case-study.html",
           },
-          { label: "Atölye Joyday Canlı Sitesini Aç", url: "https://atolyejoyday.com/" },
+          {
+            label: "Atölye Joyday Canlı Sitesini Aç",
+            url: "https://atolyejoyday.com/",
+          },
         ],
       },
       stack: {
@@ -4021,7 +4026,10 @@ enhanceAjoopDialogDepth();
           label: "View Atölye Joyday Case Study",
           url: "atolye-joyday-case-study.html",
         },
-        { label: "Open Atölye Joyday Website", url: "https://atolyejoyday.com/" },
+        {
+          label: "Open Atölye Joyday Website",
+          url: "https://atolyejoyday.com/",
+        },
       ],
     },
     stack: {
@@ -4092,7 +4100,10 @@ enhanceAjoopDialogDepth();
           label: "Atölye Joyday Vaka Çalışmasını Gör",
           url: "atolye-joyday-case-study.html",
         },
-        { label: "Atölye Joyday Canlı Sitesini Aç", url: "https://atolyejoyday.com/" },
+        {
+          label: "Atölye Joyday Canlı Sitesini Aç",
+          url: "https://atolyejoyday.com/",
+        },
       ],
     },
     stack: {
@@ -4423,7 +4434,8 @@ const ultimateContent = {
         id: "hospital-system-case-study",
         label: "View Hospital System Case Study",
         hint: "2024 C# Windows Forms source-archive case study",
-        keywords: "hospital system form app c# windows forms sql server case study",
+        keywords:
+          "hospital system form app c# windows forms sql server case study",
         type: "nav",
         value: "hospital-system-case-study.html",
       },
@@ -4598,7 +4610,8 @@ const ultimateContent = {
         id: "hospital-system-case-study",
         label: "Hospital System Vaka Çalışmasını Gör",
         hint: "2024 C# Windows Forms kaynak arşivi vaka çalışması",
-        keywords: "hospital system form app c# windows forms sql server vaka çalışması",
+        keywords:
+          "hospital system form app c# windows forms sql server vaka çalışması",
         type: "nav",
         value: "hospital-system-case-study.html",
       },
@@ -6033,7 +6046,10 @@ function enhanceJoydayGameNavigation() {
         links: [
           { label: "Open Games", url: "games.html" },
           { label: "Play AI Flow Puzzle", url: "ai-flow-puzzle.html" },
-          { label: "View AI Flow Puzzle Case Study", url: "ai-flow-puzzle-case-study.html" },
+          {
+            label: "View AI Flow Puzzle Case Study",
+            url: "ai-flow-puzzle-case-study.html",
+          },
           { label: "Play Joyday Painting", url: "joyday-paint.html" },
         ],
       };
@@ -6048,7 +6064,10 @@ function enhanceJoydayGameNavigation() {
         links: [
           { label: "Oyunları Aç", url: "games.html" },
           { label: "AI Flow Puzzle Oyna", url: "ai-flow-puzzle.html" },
-          { label: "AI Flow Puzzle Vaka Çalışmasını Gör", url: "ai-flow-puzzle-case-study.html" },
+          {
+            label: "AI Flow Puzzle Vaka Çalışmasını Gör",
+            url: "ai-flow-puzzle-case-study.html",
+          },
           { label: "Joyday Painting Oyna", url: "joyday-paint.html" },
         ],
       };
