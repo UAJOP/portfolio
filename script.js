@@ -922,9 +922,12 @@ const i18nTitleTranslations = {
     "Kaan Balcı | AI Designer & Software Developer":
       "Kaan Balcı | AI Designer & Software Developer",
     "Works | Kaan Balcı": "Projeler | Kaan Balcı",
+    "Projects | Kaan Balcı": "Projeler | Kaan Balcı",
     "Adventure | Kaan Balcı": "Macera | Kaan Balcı",
     "Experience | Kaan Balcı": "Deneyim | Kaan Balcı",
     "About | Kaan Balcı": "Hakkımda | Kaan Balcı",
+    "About Kaan Balcı | AI Designer & Software Developer":
+      "Kaan Balcı Hakkında | AI Designer & Software Developer",
     "Certificates | Kaan Balcı": "Sertifikalar | Kaan Balcı",
     "Project Detail | Kaan Balcı": "Proje Detayı | Kaan Balcı",
     "Request a Project | Kaan Balcı": "Proje Talebi | Kaan Balcı",
@@ -1305,11 +1308,11 @@ Object.assign(i18nAttributeTranslations.tr, {
 /* Final bilingual content and accessibility consistency */
 Object.assign(i18nTranslations.tr, {
   "A live digital product combining package-based reservation journeys, automated notifications and operational workflows.":
-    "Paket bazlı rezervasyon yolculuklarını, otomatik bildirimleri ve operasyonel iş akışlarını birleştiren canlı bir dijital ürün.",
+    "Paket bazlı rezervasyon yolculuklarını, otomatik bildirimleri ve operasyonel iş akışlarını birleştiren canlı dijital ürün.",
   "A Python data project combining exploratory analysis and visualization with a small linear-regression experiment.":
-    "Keşifsel analiz ve görselleştirmeyi küçük bir doğrusal regresyon deneyiyle birleştiren Python veri projesi.",
+    "Keşifsel analiz ve veri görselleştirmeyi küçük bir doğrusal regresyon deneyiyle birleştiren Python veri projesi.",
   "AI Designer & Software Developer building practical AI workflows and software products.":
-    "Pratik AI iş akışları ve yazılım ürünleri geliştiren AI Designer & Software Developer.",
+    "Pratik yapay zekâ iş akışları ve yazılım ürünleri geliştiren AI Designer & Software Developer.",
 });
 
 Object.assign(i18nAttributeTranslations.tr, {
