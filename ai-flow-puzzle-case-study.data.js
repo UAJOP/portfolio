@@ -8,6 +8,7 @@ window.caseStudyPageData = {
       "hero.eyebrow": "Interactive AI Workflow Project",
       "hero.lead":
         "A live browser experience that turns chatbot workflow design into an interactive logic challenge with scenarios, configurable nodes, validation feedback and export tools.",
+      "alt.hero": "AI Flow Puzzle full workflow builder preview",
       "hero.statusLabel": "Status",
       "hero.status": "Live",
       "hero.yearLabel": "Year",
@@ -128,6 +129,7 @@ window.caseStudyPageData = {
       "hero.eyebrow": "İnteraktif AI Workflow Projesi",
       "hero.lead":
         "Chatbot workflow tasarımını senaryolar, yapılandırılabilir node’lar, doğrulama geri bildirimi ve export araçlarıyla interaktif bir mantık deneyimine dönüştüren canlı tarayıcı projesi.",
+      "alt.hero": "AI Flow Puzzle tam workflow builder önizlemesi",
       "hero.statusLabel": "Durum",
       "hero.status": "Canlı",
       "hero.yearLabel": "Yıl",

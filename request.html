@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Submit a project, website, AI workflow or automation request to Kaan Balcı." />
+  <meta name="description" content="Send a structured project request to Kaan Balcı for web development, workflow automation, conversational AI or digital product work." />
   <meta name="keywords" content="Kaan Balcı, project request, website request, AI workflow, automation, software development" />
   <meta name="author" content="Kaan Balcı" />
   <meta property="og:title" content="Request a Project | Kaan Balcı" />
-  <meta property="og:description" content="Send a project request for AI workflows, automation, web products and software development." />
+  <meta property="og:description" content="Send a structured project request to Kaan Balcı for web development, workflow automation, conversational AI or digital product work." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://kaanbalci.com/request.html" />
-  <meta property="og:image" content="https://kaanbalci.com/assets/KAAN%20BALCI-B%C3%9CY%C3%9CK%20LOGO%20PNG.png" />
+  <meta property="og:image" content="https://kaanbalci.com/assets/portfolio_website_cover.webp" />
+  <meta property="og:image:alt" content="Kaan Balcı AI Designer and Software Developer portfolio website" />
   <title>Request a Project | Kaan Balcı</title>
   <meta name="theme-color" content="#07111f" />
   <script>
@@ -35,7 +36,9 @@
   <meta content="en_US" property="og:locale" />
   <meta content="summary_large_image" name="twitter:card" />
   <meta content="Request a Project | Kaan Balcı" name="twitter:title" />
-  <meta content="Project request form for AI, automation and software work." name="twitter:description" />
+  <meta content="Send a structured project request to Kaan Balcı for web development, workflow automation, conversational AI or digital product work." name="twitter:description" />
+  <meta content="https://kaanbalci.com/assets/portfolio_website_cover.webp" name="twitter:image" />
+  <meta content="Kaan Balcı AI Designer and Software Developer portfolio website" name="twitter:image:alt" />
 </head>
 <body>
 <header class="site-header">
@@ -43,7 +46,7 @@
 <img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/>
 <span>Kaan Balcı</span>
 </a><a aria-label="Available for roles" class="availability-badge" data-availability-badge="" href="mailto:kaanb8776@gmail.com"><span></span><strong>Open for work</strong></a>
-<nav class="nav-links" data-nav="">
+<nav class="nav-links" data-nav="" id="site-navigation">
 <a href="index.html">Home</a>
 <a href="works.html">Works</a>
 <a href="games.html">Games</a>
@@ -61,7 +64,7 @@
 <i class="bx bx-moon"></i>
 <span data-theme-label="">Dark</span>
 </button>
-<button aria-expanded="false" aria-label="Open navigation" class="nav-toggle" type="button">
+<button aria-controls="site-navigation" aria-expanded="false" aria-label="Open navigation" class="nav-toggle" type="button">
 <span></span>
 <span></span>
 </button>
@@ -100,6 +103,10 @@
 
     <form class="request-form reveal delay-1" data-request-form>
       <input type="hidden" name="source" value="kaanbalci.com request page" />
+      <div class="request-honeypot" aria-hidden="true">
+        <label for="company-website">Company website</label>
+        <input id="company-website" name="company_website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      </div>
       <div class="form-grid two">
         <label>Full Name *<input name="name" type="text" autocomplete="name" placeholder="Your name" required /></label>
         <label>Email *<input name="email" type="email" autocomplete="email" placeholder="you@example.com" required /></label>
@@ -173,14 +180,14 @@
 <img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/>
 <span>Kaan Balcı</span>
 </a>
-<p>AI Designer &amp; Software Developer building practical AI workflows and scalable software systems.</p>
+<p>AI Designer &amp; Software Developer building practical AI workflows and software products.</p>
 </div>
 <div aria-label="Social links" class="footer-socials">
-<a href="https://github.com/UAJOP" rel="noopener" target="_blank" title="GitHub"><i class="bx bxl-github"></i></a>
-<a href="https://www.linkedin.com/in/balcikaan/" rel="noopener" target="_blank" title="LinkedIn"><i class="bx bxl-linkedin-square"></i></a>
-<a href="https://www.instagram.com/kaan_ba1/" rel="noopener" target="_blank" title="Instagram"><i class="bx bxl-instagram"></i></a>
-<a href="https://www.youtube.com/channel/UCCoOWMoemn93OX7cHyGTZuA" rel="noopener" target="_blank" title="YouTube"><i class="bx bxl-youtube"></i></a>
-<a href="https://x.com/KaanAjop" rel="noopener" target="_blank" title="X"><i class="bx bxl-twitter"></i></a>
+<a aria-label="Open GitHub profile" href="https://github.com/UAJOP" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="bx bxl-github"></i></a>
+<a aria-label="Open LinkedIn profile" href="https://www.linkedin.com/in/balcikaan/" rel="noopener" target="_blank" title="LinkedIn"><i aria-hidden="true" class="bx bxl-linkedin-square"></i></a>
+<a aria-label="Open Instagram profile" href="https://www.instagram.com/kaan_ba1/" rel="noopener" target="_blank" title="Instagram"><i aria-hidden="true" class="bx bxl-instagram"></i></a>
+<a aria-label="Open YouTube channel" href="https://www.youtube.com/channel/UCCoOWMoemn93OX7cHyGTZuA" rel="noopener" target="_blank" title="YouTube"><i aria-hidden="true" class="bx bxl-youtube"></i></a>
+<a aria-label="Open X profile" href="https://x.com/KaanAjop" rel="noopener" target="_blank" title="X"><i aria-hidden="true" class="bx bxl-twitter"></i></a>
 </div>
 </div>
 <p class="copyright">© <span data-year=""></span> Kaan Balcı. All rights reserved.</p>

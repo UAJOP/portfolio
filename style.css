@@ -1408,6 +1408,10 @@ body.modal-open {
   overflow: hidden;
 }
 
+body.overlay-modal-open {
+  overflow: hidden;
+}
+
 .image-modal {
   position: fixed;
   inset: 0;
@@ -3363,6 +3367,14 @@ html[data-theme="light"] .easter-message {
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 8px;
+}
+
+.request-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 .request-status {
