@@ -359,9 +359,9 @@ const i18nTranslations = {
     "I review the scope": "Kapsamı incelerim",
     "I check the technical direction, project type and possible next steps.":
       "Teknik yönü, proje türünü ve olası sonraki adımları kontrol ederim.",
-    "You get a reply": "Dönüş alırsın",
-    "Your request is sent by email, and you receive a confirmation message.":
-      "Talebin e-posta ile iletilir ve sana onay mesajı gelir.",
+    "You get a follow-up": "Geri dönüş alırsınız",
+    "After submission, I review your request and follow up using your preferred contact method.":
+      "Gönderimden sonra talebinizi inceler ve tercih ettiğiniz iletişim yöntemiyle geri dönüş yaparım.",
     "Good for": "Uygun alanlar",
     "For urgent requests, you can also use the email and LinkedIn buttons after submitting the form.":
       "Acil talepler için formu gönderdikten sonra e-posta ve LinkedIn butonlarını da kullanabilirsin.",
@@ -468,8 +468,8 @@ const i18nTranslations = {
       "Etkinlik Operasyonları Uzmanı — Yarı Zamanlı",
     "Co-founded a creative workshop studio and developed its digital product and operational experience. Built the responsive website, package-based reservation journey, application forms and automated notification workflows using HTML, CSS, JavaScript, Google Forms, Google Sheets and Apps Script.":
       "Yaratıcı bir workshop stüdyosunun kurucu ortağı oldum ve dijital ürün ile operasyon deneyimini geliştirdim. HTML, CSS, JavaScript, Google Forms, Google Sheets ve Apps Script kullanarak responsive web sitesini, paket bazlı rezervasyon yolculuğunu, başvuru formlarını ve otomatik bildirim akışlarını oluşturdum.",
-    "Worked on enterprise conversational AI projects across banking, insurance, municipal services and employee benefits. Contributed to live-chat QA, chatbot stabilization, channel configuration, large-scale flow restructuring and multi-channel automation processes. Designed, built, tested and presented an insurance claims intake POC involving voice interaction, phone verification, WhatsApp handoff, photo and document collection, and tool orchestration.":
-      "Bankacılık, sigorta, belediye hizmetleri ve çalışan yan hakları alanlarındaki kurumsal conversational AI projelerinde çalıştım. Live-chat QA, chatbot stabilizasyonu, kanal yapılandırması, büyük ölçekli akış yeniden yapılandırma ve çok kanallı otomasyon süreçlerine katkı sağladım. Sesli etkileşim, telefon doğrulama, WhatsApp aktarımı, fotoğraf ve belge toplama ile tool orchestration içeren bir sigorta hasar başvuru POC’sini tasarladım, geliştirdim, test ettim ve sundum.",
+    "Worked on enterprise conversational AI projects across banking, insurance, municipal services and employee benefits. Contributed to live-chat QA, chatbot stabilization, channel configuration, large-scale flow restructuring and multi-channel automation processes. Designed, built, tested and presented an insurance claims intake POC involving voice interaction, phone verification, WhatsApp handoff, photo and document collection, and workflow coordination.":
+      "Bankacılık, sigorta, belediye hizmetleri ve çalışan yan hakları alanlarındaki kurumsal conversational AI projelerinde çalıştım. Live-chat QA, chatbot stabilizasyonu, kanal yapılandırması, büyük ölçekli akış yeniden yapılandırma ve çok kanallı otomasyon süreçlerine katkı sağladım. Sesli etkileşim, telefon doğrulama, WhatsApp aktarımı, fotoğraf ve belge toplama ile workflow koordinasyonu içeren bir sigorta hasar başvuru POC’sini tasarladım, geliştirdim, test ettim ve sundum.",
     "Evaluated LLM responses, reasoning, code outputs and multimodal interactions through structured AI training and quality-assessment tasks, focusing on correctness, clarity, instruction following and user relevance.":
       "Yapılandırılmış AI eğitim ve kalite değerlendirme görevleriyle LLM yanıtlarını, akıl yürütmeyi, kod çıktılarını ve multimodal etkileşimleri; doğruluk, açıklık, talimat takibi ve kullanıcıya uygunluk açısından değerlendirdim.",
     "Developed a web-based event-management dashboard using PHP, JavaScript, HTML, CSS and MySQL. Built a database-backed interface for event creation, editing, tracking and reporting during a software development internship.":
@@ -491,8 +491,8 @@ const i18nTranslations = {
       "Pratik AI iş akışları ve kullanıcı odaklı yazılım ürünleri geliştiriyorum.",
     "I am an AI Designer and Software Developer focused on conversational AI, workflow automation, LLM evaluation and user-centered software products. My background combines software development with AI flow design, product thinking and practical digital operations.":
       "Conversational AI, workflow otomasyonu, LLM değerlendirme ve kullanıcı odaklı yazılım ürünlerine odaklanan bir AI Designer ve Software Developer’ım. Yazılım geliştirme altyapımı AI akış tasarımı, ürün düşüncesi ve pratik dijital operasyon deneyimiyle birleştiriyorum.",
-    "At CBOT, I worked on enterprise conversational AI projects involving chatbot QA, flow restructuring, multi-channel automation and an insurance claims intake POC. My work included testing, stabilization, channel configuration, voice and WhatsApp transitions, document collection and tool-based workflow logic.":
-      "CBOT’ta chatbot QA, akış yeniden yapılandırma, çok kanallı otomasyon ve sigorta hasar başvuru POC’si içeren kurumsal conversational AI projelerinde çalıştım. Çalışmalarım test, stabilizasyon, kanal yapılandırması, ses ve WhatsApp geçişleri, belge toplama ve tool tabanlı workflow mantığını kapsadı.",
+    "At CBOT, I worked on enterprise conversational AI projects involving chatbot QA, flow restructuring, multi-channel automation and an insurance claims intake POC. My work included testing, stabilization, channel configuration, voice and WhatsApp transitions, document collection and multi-step workflow logic.":
+      "CBOT’ta chatbot QA, akış yeniden yapılandırma, çok kanallı otomasyon ve sigorta hasar başvuru POC’si içeren kurumsal conversational AI projelerinde çalıştım. Çalışmalarım test, stabilizasyon, kanal yapılandırması, ses ve WhatsApp geçişleri, belge toplama ve çok adımlı workflow mantığını kapsadı.",
     "Through project-based AI training work, I evaluated LLM responses, reasoning, code and multimodal outputs. As a co-founder of Atölye Joyday, I also built a live website, package-based reservation journey and automated operational workflows for a real customer-facing business.":
       "Proje bazlı AI eğitim çalışmalarında LLM yanıtlarını, akıl yürütmeyi, kod ve multimodal çıktıları değerlendirdim. Atölye Joyday’in kurucu ortağı olarak gerçek müşterilere hizmet veren bir işletme için canlı web sitesi, paket bazlı rezervasyon yolculuğu ve otomatik operasyon akışları geliştirdim.",
     "I am currently interested in AI Designer, Conversational AI, Solution Engineering, LLM Evaluation, Workflow Automation and software development opportunities.":
@@ -1010,7 +1010,19 @@ Object.assign(i18nTranslations.tr, {
   "A real business project where I designed and built the website experience for a creative workshop studio. The project connects service presentation, package selection, reservation flow and operational tracking into one usable customer journey.":
     "Yaratıcı atölye stüdyosu için web deneyimini tasarlayıp geliştirdiğim gerçek bir işletme projesi. Proje; hizmet anlatımı, paket seçimi, rezervasyon akışı ve operasyon takibini tek kullanılabilir müşteri yolculuğunda birleştirir.",
   "Business website": "İşletme web sitesi",
-  "Frontend stack": "Frontend stack",
+  Reservation: "Rezervasyon",
+  "Responsive Design": "Responsive Tasarım",
+  "UX Flow": "Kullanıcı Akışı",
+  "SEO Basics": "Temel SEO",
+  "Reservation CTA": "Rezervasyon CTA’sı",
+  "Test and polish": "Test ve İyileştirme",
+  "Frontend stack": "Frontend Teknolojileri",
+  "Project Type": "Proje Türü",
+  "Live Business Website": "Canlı İşletme Web Sitesi",
+  "Workflow Design": "Akış Tasarımı",
+  "Testing & Validation": "Test ve Doğrulama",
+  "Human Handoff": "İnsan Temsilciye Aktarım",
+  "Multi-channel Automation": "Çok Kanallı Otomasyon",
   "Customer flow": "Müşteri akışı",
   "View Case Study": "Vaka Çalışmasını Gör",
   "Open Live Website": "Canlı Siteyi Aç",
@@ -1517,11 +1529,12 @@ const projectDetailData = {
     gallery: ["assets/ai_flow_chatbot_design_cover.webp"],
     stack: [
       "AI Flow",
-      "n8n",
       "Chatbot Logic",
       "IVR",
       "Testing & Validation",
       "Workflow Design",
+      "Human Handoff",
+      "Multi-channel Automation",
     ],
     links: [
       {
@@ -1530,33 +1543,75 @@ const projectDetailData = {
       },
     ],
     overview: {
-      en: "This case study summarizes my contributions to enterprise conversational AI work across banking, insurance, municipal services and employee benefits without exposing confidential customer names.",
-      tr: "Bu case study, gizli müşteri isimlerini paylaşmadan bankacılık, sigorta, belediye hizmetleri ve çalışan yan hakları alanlarındaki kurumsal conversational AI çalışmalarına katkılarımı özetler.",
+      en: "Professional conversational AI experience covering chatbot and live-chat QA, intent and response organization, flow restructuring, human-handoff paths and multi-channel automation support.",
+      tr: "Chatbot ve live-chat QA, intent ve yanıt düzeni, akışların yeniden yapılandırılması, insan temsilciye aktarım yolları ve çok kanallı otomasyon desteğini kapsayan profesyonel conversational AI deneyimi.",
     },
     challenge: {
       en: "Enterprise chatbot transitions require reliable testing, stable channel configuration, maintainable large-scale flows and safe multi-channel handoffs.",
       tr: "Kurumsal chatbot geçişleri güvenilir test, kararlı kanal yapılandırması, sürdürülebilir büyük ölçekli akışlar ve güvenli çok kanallı aktarımlar gerektirir.",
     },
     solution: {
-      en: "I contributed to live-chat QA and stabilization, identified a channel configuration issue during a municipal transition, helped restructure the majority of a 500+ node flow, and designed, built, tested and presented an insurance claims intake POC.",
-      tr: "Live-chat QA ve stabilizasyona katkı sağladım, belediye geçişinde bir kanal yapılandırma sorununu tespit ettim, 500+ node içeren akışın büyük bölümünün yeniden yapılandırılmasına katkı sağladım ve sigorta hasar başvuru POC'sini tasarlayıp geliştirdim, test ettim ve sundum.",
+      en: "I contributed to live-chat QA and stabilization, identified a channel configuration issue during a municipal transition, supported the restructuring of a large multi-step conversational workflow, and designed, built, tested and presented an insurance claims intake POC.",
+      tr: "Live-chat QA ve stabilizasyona katkı sağladım, belediye geçişinde bir kanal yapılandırma sorununu tespit ettim, büyük ve çok adımlı bir konuşma akışının yeniden yapılandırılmasına katkı sağladım ve sigorta hasar başvuru POC'sini tasarlayıp geliştirdim, test ettim ve sundum.",
+    },
+    impact: {
+      en: "The experience strengthened my practical approach to conversational QA, workflow organization and safe human-handoff design.",
+      tr: "Bu deneyim conversational QA, akış organizasyonu ve güvenli insan temsilciye aktarım tasarımı konularındaki pratik yaklaşımımı güçlendirdi.",
+    },
+    process: {
+      en: [
+        {
+          title: "Workflow Analysis",
+          text: "Reviewed conversation goals, channel behavior and existing flow structure.",
+        },
+        {
+          title: "Flow Restructuring",
+          text: "Supported the organization of intents, transitions, fallback behavior and human handoff paths.",
+        },
+        {
+          title: "QA & Validation",
+          text: "Tested response behavior, routing logic and multi-channel conversational scenarios.",
+        },
+        {
+          title: "Iteration Support",
+          text: "Contributed to issue tracking, flow improvements and transition processes.",
+        },
+      ],
+      tr: [
+        {
+          title: "Akış Analizi",
+          text: "Konuşma hedeflerini, kanal davranışlarını ve mevcut akış yapısını inceledim.",
+        },
+        {
+          title: "Akışın Yeniden Yapılandırılması",
+          text: "Intent, geçiş, fallback ve insan temsilciye aktarım yollarının düzenlenmesine katkı sağladım.",
+        },
+        {
+          title: "QA ve Doğrulama",
+          text: "Yanıt davranışını, yönlendirme mantığını ve çok kanallı konuşma senaryolarını test ettim.",
+        },
+        {
+          title: "İyileştirme Desteği",
+          text: "Issue takibi, akış geliştirmeleri ve geçiş süreçlerine katkı sağladım.",
+        },
+      ],
     },
     features: {
       en: [
         "Live-chat QA, validation and issue follow-up",
         "Channel configuration and chatbot transition support",
-        "Large-scale flow restructuring across 500+ nodes",
-        "Voice interaction and phone verification",
-        "WhatsApp handoff, photo and document collection",
-        "Tool orchestration and n8n-style workflow logic",
+        "Supported the restructuring of a large multi-step conversational workflow",
+        "Voice interaction and phone verification for an insurance claims intake POC",
+        "WhatsApp handoff, photo and document collection for the same POC",
+        "Workflow coordination and multi-step workflow logic",
       ],
       tr: [
         "Live-chat QA, doğrulama ve issue takibi",
         "Kanal yapılandırması ve chatbot geçiş desteği",
-        "500+ node içeren büyük ölçekli akış yeniden yapılandırma",
-        "Sesli etkileşim ve telefon doğrulama",
-        "WhatsApp aktarımı, fotoğraf ve belge toplama",
-        "Tool orchestration ve n8n tarzı workflow mantığı",
+        "Büyük ve çok adımlı bir konuşma akışının yeniden yapılandırılmasına katkı",
+        "Sigorta hasar başvuru POC'si için sesli etkileşim ve telefon doğrulama",
+        "Aynı POC için WhatsApp aktarımı, fotoğraf ve belge toplama",
+        "Workflow koordinasyonu ve çok adımlı akış mantığı",
       ],
     },
   },
@@ -1587,6 +1642,7 @@ const projectDetailData = {
       "HTML",
       "CSS",
       "JavaScript",
+      "Google Apps Script",
       "Responsive Design",
       "UX Flow",
       "SEO Basics",
@@ -1621,38 +1677,38 @@ const projectDetailData = {
     process: {
       en: [
         {
-          title: "Service mapping",
-          text: "Structured the main service categories and decided how each one should be presented.",
+          title: "Service Architecture",
+          text: "Structured the studio’s experience areas, package information and customer entry points.",
         },
         {
-          title: "UX and layout",
-          text: "Designed page sections, navigation, package cards and reservation CTAs around customer decisions.",
+          title: "Reservation Journey",
+          text: "Designed the journey from service discovery to package, date and contact selection.",
         },
         {
-          title: "Frontend build",
-          text: "Implemented responsive pages with HTML, CSS and JavaScript.",
+          title: "Frontend & Automation",
+          text: "Developed the responsive website and Google-based submission and notification workflows.",
         },
         {
-          title: "Testing and polish",
-          text: "Checked desktop, mobile, package flow and reservation entry points before launch.",
+          title: "Launch & Operations",
+          text: "Tested the customer journey, deployed the website and supported ongoing digital operations.",
         },
       ],
       tr: [
         {
-          title: "Hizmet haritalama",
-          text: "Ana hizmet kategorilerini yapılandırdım ve her birinin nasıl sunulacağını netleştirdim.",
+          title: "Hizmet Mimarisi",
+          text: "Atölyenin deneyim alanlarını, paket bilgilerini ve müşteri giriş noktalarını yapılandırdım.",
         },
         {
-          title: "UX ve layout",
-          text: "Sayfa bölümlerini, navigasyonu, paket kartlarını ve rezervasyon CTA'larını müşteri kararlarına göre tasarladım.",
+          title: "Rezervasyon Yolculuğu",
+          text: "Hizmet keşfinden paket, tarih ve iletişim seçimine uzanan yolculuğu tasarladım.",
         },
         {
-          title: "Frontend geliştirme",
-          text: "HTML, CSS ve JavaScript ile responsive sayfaları geliştirdim.",
+          title: "Frontend ve Otomasyon",
+          text: "Responsive web sitesini ve Google tabanlı başvuru/bildirim akışlarını geliştirdim.",
         },
         {
-          title: "Test ve polish",
-          text: "Yayından önce masaüstü, mobil, paket akışı ve rezervasyon giriş noktalarını kontrol ettim.",
+          title: "Yayın ve Operasyon",
+          text: "Müşteri yolculuğunu test ettim, siteyi yayına aldım ve dijital operasyonları destekledim.",
         },
       ],
     },
@@ -1978,6 +2034,44 @@ const projectDetailData = {
     solution: {
       en: "I structured the academic desktop application around dedicated role forms, event-driven navigation and ADO.NET commands operating on a six-table SQL Server model.",
       tr: "Akademik masaüstü uygulamayı role özel formlar, event-driven navigation ve altı tabloluk SQL Server modeli üzerinde çalışan ADO.NET komutları etrafında yapılandırdım.",
+    },
+    process: {
+      en: [
+        {
+          title: "Form Architecture",
+          text: "Structured the interface around dedicated patient, doctor and secretary forms.",
+        },
+        {
+          title: "Role Workflows",
+          text: "Connected appointment and profile actions across the three role-specific journeys.",
+        },
+        {
+          title: "ADO.NET Operations",
+          text: "Organized SQL Server create, read, update and delete operations through ADO.NET commands.",
+        },
+        {
+          title: "Archive Documentation",
+          text: "Preserved code excerpts, schema and interface evidence for repository review.",
+        },
+      ],
+      tr: [
+        {
+          title: "Form Mimarisi",
+          text: "Arayüzü hasta, doktor ve sekreter için ayrılmış formlar etrafında yapılandırdım.",
+        },
+        {
+          title: "Rol Akışları",
+          text: "Randevu ve profil işlemlerini role özel üç kullanıcı yolculuğu boyunca bağladım.",
+        },
+        {
+          title: "ADO.NET İşlemleri",
+          text: "SQL Server oluşturma, okuma, güncelleme ve silme işlemlerini ADO.NET komutlarıyla düzenledim.",
+        },
+        {
+          title: "Arşiv Dokümantasyonu",
+          text: "Repository incelemesi için kod dökümlerini, şemayı ve arayüz kanıtlarını korudum.",
+        },
+      ],
     },
     features: {
       en: [
@@ -3158,6 +3252,11 @@ function translateProjectField(field, language) {
   return field[language] || field.en || "";
 }
 
+function translateProjectDisplayLabel(label, language) {
+  if (language !== "tr") return label;
+  return i18nTranslations.tr[label] || label;
+}
+
 function createProjectDetailUrl(slug) {
   return `project-detail.html?project=${encodeURIComponent(slug)}`;
 }
@@ -3274,7 +3373,7 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
     <section class="section-shell project-detail-meta reveal delay-2">
       <article><span>${language === "tr" ? "Rol" : "Role"}</span><strong>${escapeProjectHtml(role)}</strong></article>
       <article><span>${language === "tr" ? "Yıl" : "Year"}</span><strong>${escapeProjectHtml(project.year)}</strong></article>
-      <article><span>${language === "tr" ? "Tür" : "Type"}</span><strong>${escapeProjectHtml(type)}</strong></article>
+      <article><span>${language === "tr" ? "Proje Türü" : "Project Type"}</span><strong>${escapeProjectHtml(type)}</strong></article>
       <article><span>${language === "tr" ? "Durum" : "Status"}</span><strong>${escapeProjectHtml(status)}</strong></article>
     </section>
 
@@ -3282,7 +3381,7 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
       <div class="project-detail-main">
         <article class="detail-panel reveal">
           <p class="eyebrow">${language === "tr" ? "Genel Bakış" : "Overview"}</p>
-          <h2>${language === "tr" ? "Projenin olayı" : "What this project is about"}</h2>
+          <h2>${language === "tr" ? "Proje Özeti" : "Project Overview"}</h2>
           <p>${escapeProjectHtml(overview)}</p>
         </article>
 
@@ -3317,7 +3416,7 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
         <div class="detail-panel compact-panel">
           <h3>${language === "tr" ? "Teknolojiler" : "Tech Stack"}</h3>
           <div class="project-tags detail-tags">
-            ${project.stack.map((item) => `<span>${escapeProjectHtml(item)}</span>`).join("")}
+            ${project.stack.map((item) => `<span>${escapeProjectHtml(translateProjectDisplayLabel(item, language))}</span>`).join("")}
           </div>
         </div>
 
@@ -3470,10 +3569,9 @@ function renderAiWorkflowDemo(language = currentSiteLanguage || "en") {
   const steps = scenario.steps?.[language] || scenario.steps?.en || [];
 
   document.querySelectorAll("[data-ai-demo]").forEach((button) => {
-    button.classList.toggle(
-      "active",
-      button.dataset.aiDemo === selectedAiWorkflowScenario,
-    );
+    const isSelected = button.dataset.aiDemo === selectedAiWorkflowScenario;
+    button.classList.toggle("active", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
   });
 
   stage.innerHTML = `
