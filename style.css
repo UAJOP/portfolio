@@ -2443,8 +2443,8 @@ body.overlay-modal-open {
 /* Rule-based portfolio chatbot */
 .portfolio-chatbot {
   position: fixed;
-  right: 22px;
-  bottom: 22px;
+  right: max(22px, calc(env(safe-area-inset-right) + 16px));
+  bottom: max(24px, calc(env(safe-area-inset-bottom) + 18px));
   z-index: 120;
   display: grid;
   justify-items: end;
@@ -2702,8 +2702,8 @@ body.overlay-modal-open {
 
 @media screen and (max-width: 560px) {
   .portfolio-chatbot {
-    right: 14px;
-    bottom: 14px;
+    right: max(14px, calc(env(safe-area-inset-right) + 10px));
+    bottom: max(18px, calc(env(safe-area-inset-bottom) + 14px));
   }
 
   .chatbot-launcher {
@@ -2722,7 +2722,7 @@ body.overlay-modal-open {
 
   .chatbot-panel {
     width: calc(100vw - 28px);
-    max-height: calc(100vh - 96px);
+    max-height: calc(100dvh - 112px - env(safe-area-inset-bottom));
     border-radius: 24px;
   }
 }
