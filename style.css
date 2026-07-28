@@ -149,10 +149,22 @@ html[data-theme="light"] .project-detail-grid .detail-panel {
 
 html[data-theme="light"] .ai-demo-summary,
 html[data-theme="light"] .flow-step,
-html[data-theme="light"] .project-detail-meta article {
+html[data-theme="light"] .project-detail-meta article,
+html[data-theme="light"] .process-steps article,
+html[data-theme="light"] .case-study-stats article {
   border-color: var(--light-card-border);
   background: var(--light-card-surface);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .process-steps h3,
+html[data-theme="light"] .case-study-stats strong {
+  color: #0f172a;
+}
+
+html[data-theme="light"] .process-steps p,
+html[data-theme="light"] .case-study-stats span {
+  color: #475569;
 }
 
 html[data-theme="light"] .ai-demo-controls button:not(.active):not(:hover) {
@@ -1753,6 +1765,10 @@ body.overlay-modal-open {
   .cta-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .case-study-contact-hub .cta-actions {
+    width: 100%;
   }
 
   .btn {
