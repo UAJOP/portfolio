@@ -359,9 +359,9 @@ const i18nTranslations = {
     "I review the scope": "Kapsamı incelerim",
     "I check the technical direction, project type and possible next steps.":
       "Teknik yönü, proje türünü ve olası sonraki adımları kontrol ederim.",
-    "You get a reply": "Dönüş alırsın",
-    "Your request is sent by email, and you receive a confirmation message.":
-      "Talebin e-posta ile iletilir ve sana onay mesajı gelir.",
+    "You get a follow-up": "Geri dönüş alırsınız",
+    "After submission, I review your request and follow up using your preferred contact method.":
+      "Gönderimden sonra talebinizi inceler ve tercih ettiğiniz iletişim yöntemiyle geri dönüş yaparım.",
     "Good for": "Uygun alanlar",
     "For urgent requests, you can also use the email and LinkedIn buttons after submitting the form.":
       "Acil talepler için formu gönderdikten sonra e-posta ve LinkedIn butonlarını da kullanabilirsin.",
