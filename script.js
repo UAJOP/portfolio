@@ -3569,10 +3569,9 @@ function renderAiWorkflowDemo(language = currentSiteLanguage || "en") {
   const steps = scenario.steps?.[language] || scenario.steps?.en || [];
 
   document.querySelectorAll("[data-ai-demo]").forEach((button) => {
-    button.classList.toggle(
-      "active",
-      button.dataset.aiDemo === selectedAiWorkflowScenario,
-    );
+    const isSelected = button.dataset.aiDemo === selectedAiWorkflowScenario;
+    button.classList.toggle("active", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
   });
 
   stage.innerHTML = `

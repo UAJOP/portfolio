@@ -2731,6 +2731,18 @@ body.overlay-modal-open {
   display: none;
 }
 
+@media screen and (max-width: 820px) {
+  .chatbot-launcher {
+    min-width: 54px;
+    min-height: 54px;
+    padding: 5px;
+  }
+
+  .chatbot-launcher [data-chatbot-launcher-text] {
+    display: none;
+  }
+}
+
 @media screen and (max-width: 560px) {
   .theme-toggle span {
     display: none;
