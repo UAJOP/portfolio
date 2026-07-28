@@ -1302,6 +1302,88 @@ Object.assign(i18nAttributeTranslations.tr, {
   "Close preview": "Önizlemeyi kapat",
 });
 
+/* Final bilingual content and accessibility consistency */
+Object.assign(i18nTranslations.tr, {
+  "A live digital product combining package-based reservation journeys, automated notifications and operational workflows.":
+    "Paket bazlı rezervasyon yolculuklarını, otomatik bildirimleri ve operasyonel iş akışlarını birleştiren canlı bir dijital ürün.",
+  "A Python data project combining exploratory analysis and visualization with a small linear-regression experiment.":
+    "Keşifsel analiz ve görselleştirmeyi küçük bir doğrusal regresyon deneyiyle birleştiren Python veri projesi.",
+  "AI Designer & Software Developer building practical AI workflows and software products.":
+    "Pratik AI iş akışları ve yazılım ürünleri geliştiren AI Designer & Software Developer.",
+});
+
+Object.assign(i18nAttributeTranslations.tr, {
+  "Available for roles": "Rollere açık",
+  "Core specialties": "Ana uzmanlık alanları",
+  "Project filters": "Proje filtreleri",
+  "Game filters": "Oyun filtreleri",
+  "Game themes": "Oyun temaları",
+  "Search palette": "Arama paleti",
+  "Open navigation": "Navigasyonu aç",
+  "Close navigation": "Navigasyonu kapat",
+  "Open recruiter mode": "Recruiter Mode’u aç",
+  "Close recruiter mode": "Recruiter Mode’u kapat",
+  "Kaan Balcı profile photo": "Kaan Balcı profil fotoğrafı",
+  "Open Career Adventure game": "Career Adventure oyununu aç",
+  "Interview Run game preview": "Interview Run oyun önizlemesi",
+  "Python Hospital Appointment System preview":
+    "Python Hospital Appointment System önizlemesi",
+  "Cars dataset analysis project preview":
+    "Cars veri seti analizi proje önizlemesi",
+  "Legacy of the Lost environmental puzzle preview":
+    "Legacy of the Lost çevresel bulmaca önizlemesi",
+  "Open details for MyMuseum Mobile Content App":
+    "MyMuseum mobil içerik uygulaması detaylarını aç",
+  "My Museum app preview": "My Museum uygulama önizlemesi",
+  "Open details for Extract Shoot Zero":
+    "Extract Shoot Zero detaylarını aç",
+  "Extract Shoot Zero project preview":
+    "Extract Shoot Zero proje önizlemesi",
+  "Escape Island Unreal Engine platforming preview":
+    "Escape Island Unreal Engine platform önizlemesi",
+  "Tank Savage Unreal Engine combat preview":
+    "Tank Savage Unreal Engine savaş önizlemesi",
+  "Dunker Madness project preview": "Dunker Madness proje önizlemesi",
+  "Unity Essentials project preview": "Unity Essentials proje önizlemesi",
+  "Weather App project preview": "Weather App proje önizlemesi",
+  "Calculator Android Studio project preview":
+    "Calculator Android Studio proje önizlemesi",
+  "Calculator JavaScript project preview":
+    "Calculator JavaScript proje önizlemesi",
+  "Warehouse War project preview": "Warehouse War proje önizlemesi",
+  "My Java Projects preview": "My Java Projects önizlemesi",
+  "Mandelas Website Project preview":
+    "Mandelas Website Project önizlemesi",
+  "Python Projects preview": "Python Projects önizlemesi",
+  "C sharp Udemy course completion certificate":
+    "C Sharp Udemy kurs tamamlama sertifikası",
+  "SQL Udemy course completion certificate":
+    "SQL Udemy kurs tamamlama sertifikası",
+  "HTML and CSS Udemy course completion certificate":
+    "HTML ve CSS Udemy kurs tamamlama sertifikası",
+  "Java Udemy course completion certificate":
+    "Java Udemy kurs tamamlama sertifikası",
+  "Ethical Hacker Udemy course completion certificate":
+    "Etik Hacker Udemy kurs tamamlama sertifikası",
+  "Unreal Engine Udemy course completion certificate":
+    "Unreal Engine Udemy kurs tamamlama sertifikası",
+  "Cisco Networking Essentials course completion certificate":
+    "Cisco Networking Essentials eğitim tamamlama sertifikası",
+  "Cisco Introduction to Packet Tracer course completion certificate":
+    "Cisco Introduction to Packet Tracer eğitim tamamlama sertifikası",
+  "NDG Linux Essentials training certificate":
+    "NDG Linux Essentials eğitim sertifikası",
+  "Open Kaan Balcı's GitHub profile":
+    "Kaan Balcı’nın GitHub profilini aç",
+  "Open Kaan Balcı's LinkedIn profile":
+    "Kaan Balcı’nın LinkedIn profilini aç",
+  "Open Kaan Balcı's Instagram profile":
+    "Kaan Balcı’nın Instagram profilini aç",
+  "Open Kaan Balcı's YouTube channel":
+    "Kaan Balcı’nın YouTube kanalını aç",
+  "Open Kaan Balcı's X profile": "Kaan Balcı’nın X profilini aç",
+});
+
 const originalDocumentTitle = document.title;
 
 function normalizeI18nText(value) {
