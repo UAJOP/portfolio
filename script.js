@@ -1317,7 +1317,7 @@ Object.assign(i18nTranslations.tr, {
 
 Object.assign(i18nAttributeTranslations.tr, {
   "Available for roles": "Rollere açık",
-  "Core specialties": "Ana uzmanlık alanları",
+  "Core specialties": "Temel uzmanlıklar",
   "Project filters": "Proje filtreleri",
   "Game filters": "Oyun filtreleri",
   "Game themes": "Oyun temaları",
@@ -1376,15 +1376,11 @@ Object.assign(i18nAttributeTranslations.tr, {
     "Cisco Introduction to Packet Tracer eğitim tamamlama sertifikası",
   "NDG Linux Essentials training certificate":
     "NDG Linux Essentials eğitim sertifikası",
-  "Open Kaan Balcı's GitHub profile":
-    "Kaan Balcı’nın GitHub profilini aç",
-  "Open Kaan Balcı's LinkedIn profile":
-    "Kaan Balcı’nın LinkedIn profilini aç",
-  "Open Kaan Balcı's Instagram profile":
-    "Kaan Balcı’nın Instagram profilini aç",
-  "Open Kaan Balcı's YouTube channel":
-    "Kaan Balcı’nın YouTube kanalını aç",
-  "Open Kaan Balcı's X profile": "Kaan Balcı’nın X profilini aç",
+  "Open GitHub profile": "GitHub profilini aç",
+  "Open LinkedIn profile": "LinkedIn profilini aç",
+  "Open Instagram profile": "Instagram profilini aç",
+  "Open YouTube channel": "YouTube kanalını aç",
+  "Open X profile": "X profilini aç",
 });
 
 const originalDocumentTitle = document.title;
