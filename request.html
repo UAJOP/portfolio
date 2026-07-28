@@ -103,6 +103,10 @@
 
     <form class="request-form reveal delay-1" data-request-form>
       <input type="hidden" name="source" value="kaanbalci.com request page" />
+      <div class="request-honeypot" aria-hidden="true">
+        <label for="company-website">Company website</label>
+        <input id="company-website" name="company_website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      </div>
       <div class="form-grid two">
         <label>Full Name *<input name="name" type="text" autocomplete="name" placeholder="Your name" required /></label>
         <label>Email *<input name="email" type="email" autocomplete="email" placeholder="you@example.com" required /></label>

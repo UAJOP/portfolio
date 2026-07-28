@@ -3369,6 +3369,14 @@ html[data-theme="light"] .easter-message {
   margin-top: 8px;
 }
 
+.request-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .request-status {
   display: none;
   margin-top: 18px;

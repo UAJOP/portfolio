@@ -6051,7 +6051,8 @@ function getRequestFormText() {
     ? {
         sending: "Talep gönderiliyor...",
         success:
-          "Talebin gönderildi. Apps Script isteği işlendi; birkaç dakika içinde onay maili gelmezse e-posta/Online Form alternatifini kullanabilirsin.",
+          "Talebiniz form uç noktasına gönderildi. Tarayıcı bu cross-origin isteğin sunucu tarafında işlendiğini doğrulayamadığı için acil taleplerde e-posta kullanın.",
+        neutral: "Teşekkürler.",
         fallback:
           "Mail gönderim endpointi henüz bağlanmadığı için e-posta taslağı açıldı. Google Apps Script URL'si request-config.js içine eklenince form direkt mail atacak.",
         error:
@@ -6063,7 +6064,8 @@ function getRequestFormText() {
     : {
         sending: "Sending request...",
         success:
-          "Your request has been submitted. The Apps Script request was triggered; if a confirmation email does not arrive in a few minutes, please use the email or Online Form fallback.",
+          "Your request was submitted to the form endpoint. Because the browser cannot verify server-side processing for this cross-origin request, use email for urgent enquiries.",
+        neutral: "Thank you.",
         fallback:
           "The direct email endpoint is not connected yet, so an email draft was opened. After adding the Google Apps Script URL into request-config.js, the form will send emails directly.",
         error:
@@ -6074,11 +6076,18 @@ function getRequestFormText() {
       };
 }
 
-function setRequestStatus(type, message) {
+function setRequestStatus(type, message, { showEmail = false } = {}) {
   const status = document.querySelector("[data-request-status]");
   if (!status) return;
   status.className = `request-status is-visible ${type || ""}`.trim();
-  status.textContent = message;
+  status.replaceChildren(document.createTextNode(message));
+  if (showEmail) {
+    const email = window.KAAN_REQUEST_FORM_EMAIL || "kaanb8776@gmail.com";
+    const link = document.createElement("a");
+    link.href = `mailto:${email}`;
+    link.textContent = email;
+    status.append(document.createTextNode(" "), link);
+  }
 }
 
 function buildRequestMailto(payload) {
@@ -6106,22 +6115,44 @@ function setupProjectRequestForm() {
   const form = document.querySelector("[data-request-form]");
   if (!form || form.__requestFormReady) return;
   form.__requestFormReady = true;
+  form.__requestFormStartedAt = Date.now();
   const submit = form.querySelector("[data-request-submit]");
+  let requestSubmitting = false;
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (requestSubmitting) return;
     const text = getRequestFormText();
-    const formData = new FormData(form);
-    const payload = Object.fromEntries(formData.entries());
-    payload.pageUrl = window.location.href;
-    payload.submittedAt = new Date().toISOString();
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
 
     if (!form.querySelector('input[name="consent"]')?.checked) {
       setRequestStatus("warning", text.consent);
       return;
     }
 
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+    const honeypot = String(payload.company_website || "").trim();
+    const completedTooQuickly = Date.now() - form.__requestFormStartedAt < 3000;
+    delete payload.company_website;
+
+    if (honeypot || completedTooQuickly) {
+      form.reset();
+      form.__requestFormStartedAt = Date.now();
+      setRequestStatus("success", text.neutral);
+      return;
+    }
+
+    payload.pageUrl = window.location.href;
+    payload.submittedAt = new Date().toISOString();
+
     const endpoint = String(window.KAAN_REQUEST_FORM_ENDPOINT || "").trim();
+    requestSubmitting = true;
+    form.setAttribute("aria-busy", "true");
     if (submit) {
       submit.disabled = true;
       submit.textContent = text.sending;
@@ -6142,7 +6173,8 @@ function setupProjectRequestForm() {
           body: new URLSearchParams(payload).toString(),
         });
         form.reset();
-        setRequestStatus("success", text.success);
+        form.__requestFormStartedAt = Date.now();
+        setRequestStatus("success", text.success, { showEmail: true });
       } else {
         window.location.href = buildRequestMailto(payload);
         setRequestStatus("warning", text.fallback);
@@ -6151,6 +6183,8 @@ function setupProjectRequestForm() {
       console.error("Request form error", error);
       setRequestStatus("error", text.error);
     } finally {
+      requestSubmitting = false;
+      form.removeAttribute("aria-busy");
       if (submit) {
         submit.disabled = false;
         submit.textContent = text.button;
