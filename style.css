@@ -169,6 +169,11 @@ html[data-theme="light"] .ai-demo-controls button:not(.active):not(:hover) {
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 112px;
+}
+
+[id] {
+  scroll-margin-top: 112px;
 }
 
 body {
@@ -4245,6 +4250,25 @@ html[data-theme="light"] .merge-ladder article {
   background: linear-gradient(155deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.7));
 }
 
+html[data-theme="light"] .adventure-win {
+  background: rgba(241, 245, 249, 0.78);
+}
+
+html[data-theme="light"] .adventure-win > div {
+  color: #0f172a;
+  border-color: rgba(2, 132, 199, 0.28);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+}
+
+html[data-theme="light"] .adventure-win h3 {
+  color: #0f172a;
+}
+
+html[data-theme="light"] .adventure-win p {
+  color: #475569;
+}
+
 @media screen and (max-width: 1100px) {
   .adventure-hero,
   .adventure-layout {
@@ -4258,6 +4282,16 @@ html[data-theme="light"] .merge-ladder article {
 
   .adventure-side {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media screen and (max-width: 820px) {
+  html {
+    scroll-padding-top: 96px;
+  }
+
+  [id] {
+    scroll-margin-top: 96px;
   }
 }
 
