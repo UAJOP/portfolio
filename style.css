@@ -1408,6 +1408,10 @@ body.modal-open {
   overflow: hidden;
 }
 
+body.overlay-modal-open {
+  overflow: hidden;
+}
+
 .image-modal {
   position: fixed;
   inset: 0;

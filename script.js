@@ -12,19 +12,132 @@ function openDrivePreviews() {
 const navToggle = document.querySelector(".nav-toggle");
 const navLinks = document.querySelector("[data-nav]");
 
+const overlayTriggerMap = new WeakMap();
+let inertedBackgroundElements = [];
+
+function getFocusableElements(container) {
+  if (!container) return [];
+  return Array.from(
+    container.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter(
+    (element) =>
+      element.getAttribute("aria-hidden") !== "true" &&
+      (element.offsetParent !== null || element === document.activeElement),
+  );
+}
+
+function trapFocus(event, container) {
+  if (event.key !== "Tab" || !container) return;
+  const focusableElements = getFocusableElements(container);
+  if (!focusableElements.length) {
+    event.preventDefault();
+    container.focus?.();
+    return;
+  }
+
+  const first = focusableElements[0];
+  const last = focusableElements[focusableElements.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function rememberOverlayTrigger(container, trigger = document.activeElement) {
+  if (container && trigger instanceof HTMLElement) {
+    overlayTriggerMap.set(container, trigger);
+  }
+}
+
+function restoreOverlayFocus(container) {
+  const trigger = container ? overlayTriggerMap.get(container) : null;
+  if (trigger?.isConnected) trigger.focus();
+  if (container) overlayTriggerMap.delete(container);
+}
+
+function setBackgroundInert(activeRoot = null) {
+  inertedBackgroundElements.forEach(({ element, wasInert }) => {
+    element.inert = wasInert;
+  });
+  inertedBackgroundElements = [];
+
+  if (!activeRoot || !("inert" in HTMLElement.prototype)) return;
+  Array.from(document.body.children).forEach((element) => {
+    if (
+      element === activeRoot ||
+      element.contains(activeRoot) ||
+      activeRoot.contains(element) ||
+      element.tagName === "SCRIPT"
+    ) {
+      return;
+    }
+    inertedBackgroundElements.push({ element, wasInert: element.inert });
+    element.inert = true;
+  });
+}
+
+function setOverlayBodyState(isOpen) {
+  document.body.classList.toggle("overlay-modal-open", Boolean(isOpen));
+}
+
+function closeMobileNavigation({ restoreFocus = false } = {}) {
+  if (!navToggle || !navLinks) return;
+  const wasOpen = navLinks.classList.contains("is-open");
+  navLinks.classList.remove("is-open");
+  navToggle.classList.remove("is-open");
+  navToggle.setAttribute("aria-expanded", "false");
+  navToggle.setAttribute(
+    "aria-label",
+    document.documentElement.lang === "tr"
+      ? "Navigasyonu aç"
+      : "Open navigation",
+  );
+  if (restoreFocus && wasOpen) navToggle.focus();
+}
+
 if (navToggle && navLinks) {
+  navLinks.id = navLinks.id || "site-navigation";
+  navToggle.setAttribute("aria-controls", navLinks.id);
+
   navToggle.addEventListener("click", () => {
-    const isOpen = navLinks.classList.toggle("is-open");
+    const isOpen = !navLinks.classList.contains("is-open");
+    if (isOpen) {
+      setChatbotOpen?.(false, { restoreFocus: false });
+      setCommandPaletteOpen?.(false, { restoreFocus: false });
+      setRecruiterMode?.(false, { restoreFocus: false });
+    }
+    navLinks.classList.toggle("is-open", isOpen);
     navToggle.classList.toggle("is-open", isOpen);
     navToggle.setAttribute("aria-expanded", String(isOpen));
+    navToggle.setAttribute(
+      "aria-label",
+      document.documentElement.lang === "tr"
+        ? isOpen
+          ? "Navigasyonu kapat"
+          : "Navigasyonu aç"
+        : isOpen
+          ? "Close navigation"
+          : "Open navigation",
+    );
   });
 
   navLinks.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      navLinks.classList.remove("is-open");
-      navToggle.classList.remove("is-open");
-      navToggle.setAttribute("aria-expanded", "false");
-    });
+    link.addEventListener("click", () => closeMobileNavigation());
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && navLinks.classList.contains("is-open")) {
+      closeMobileNavigation({ restoreFocus: true });
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 820) closeMobileNavigation();
   });
 }
 
@@ -4250,7 +4363,10 @@ function updatePortfolioChatbotLanguage(
   if (launcherText) launcherText.textContent = content.launcher;
   if (title) title.textContent = content.title;
   if (subtitle) subtitle.textContent = content.subtitle;
-  if (input) input.placeholder = content.inputPlaceholder;
+  if (input) {
+    input.placeholder = content.inputPlaceholder;
+    input.setAttribute("aria-label", content.inputPlaceholder);
+  }
   if (send) send.setAttribute("aria-label", content.sendLabel);
   if (toggle) toggle.setAttribute("aria-label", content.openLabel);
   if (close) close.setAttribute("aria-label", content.closeLabel);
@@ -4258,18 +4374,37 @@ function updatePortfolioChatbotLanguage(
   resetChatbotMessages();
 }
 
-function setChatbotOpen(isOpen) {
+function setChatbotOpen(
+  isOpen,
+  { restoreFocus = true, trigger = null } = {},
+) {
   const widget = document.querySelector("[data-portfolio-chatbot]");
   const panel = document.querySelector("[data-chatbot-panel]");
   const toggle = document.querySelector("[data-chatbot-toggle]");
   if (!widget || !panel || !toggle) return;
+  const wasOpen = portfolioChatbotState.open;
+
+  if (isOpen) {
+    closeMobileNavigation();
+    setCommandPaletteOpen(false, { restoreFocus: false });
+    setRecruiterMode(false, { restoreFocus: false });
+    rememberOverlayTrigger(panel, trigger || toggle);
+  }
+
   portfolioChatbotState.open = isOpen;
   widget.classList.toggle("is-open", isOpen);
   panel.setAttribute("aria-hidden", String(!isOpen));
   toggle.setAttribute("aria-expanded", String(isOpen));
   if (isOpen) {
+    setBackgroundInert(widget);
+    setOverlayBodyState(true);
     const input = document.querySelector("[data-chatbot-input]");
     setTimeout(() => input?.focus(), 80);
+  } else if (wasOpen) {
+    setBackgroundInert();
+    setOverlayBodyState(false);
+    if (restoreFocus) restoreOverlayFocus(panel);
+    else overlayTriggerMap.delete(panel);
   }
 }
 
@@ -4285,24 +4420,24 @@ function setupPortfolioChatbot() {
   widget.className = "portfolio-chatbot";
   widget.setAttribute("data-portfolio-chatbot", "");
   widget.innerHTML = `
-    <div class="chatbot-panel" data-chatbot-panel aria-hidden="true">
+    <div class="chatbot-panel" data-chatbot-panel aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ajoop-dialog-title">
       <div class="chatbot-header">
-        <div class="chatbot-avatar"><i class="bx bx-bot"></i></div>
+        <div class="chatbot-avatar"><i class="bx bx-bot" aria-hidden="true"></i></div>
         <div>
-          <h2 data-chatbot-title>${escapeProjectHtml(content.title)}</h2>
+          <h2 id="ajoop-dialog-title" data-chatbot-title>${escapeProjectHtml(content.title)}</h2>
           <p data-chatbot-subtitle>${escapeProjectHtml(content.subtitle)}</p>
         </div>
-        <button class="chatbot-close" type="button" data-chatbot-close aria-label="${escapeProjectHtml(content.closeLabel)}"><i class="bx bx-x"></i></button>
+        <button class="chatbot-close" type="button" data-chatbot-close aria-label="${escapeProjectHtml(content.closeLabel)}"><i class="bx bx-x" aria-hidden="true"></i></button>
       </div>
       <div class="chatbot-messages" data-chatbot-messages aria-live="polite"></div>
       <div class="chatbot-quicks" data-chatbot-quicks></div>
       <form class="chatbot-form" data-chatbot-form>
-        <input type="text" data-chatbot-input autocomplete="off" placeholder="${escapeProjectHtml(content.inputPlaceholder)}" />
-        <button type="submit" data-chatbot-send aria-label="${escapeProjectHtml(content.sendLabel)}"><i class="bx bx-send"></i></button>
+        <input type="text" data-chatbot-input autocomplete="off" aria-label="${escapeProjectHtml(content.inputPlaceholder)}" placeholder="${escapeProjectHtml(content.inputPlaceholder)}" />
+        <button type="submit" data-chatbot-send aria-label="${escapeProjectHtml(content.sendLabel)}"><i class="bx bx-send" aria-hidden="true"></i></button>
       </form>
     </div>
     <button class="chatbot-launcher" type="button" data-chatbot-toggle aria-expanded="false" aria-label="${escapeProjectHtml(content.openLabel)}">
-      <span class="chatbot-launcher-icon"><i class="bx bx-message-dots"></i></span>
+      <span class="chatbot-launcher-icon"><i class="bx bx-message-dots" aria-hidden="true"></i></span>
       <span data-chatbot-launcher-text>${escapeProjectHtml(content.launcher)}</span>
     </button>
   `;
@@ -4310,8 +4445,10 @@ function setupPortfolioChatbot() {
 
   document
     .querySelector("[data-chatbot-toggle]")
-    ?.addEventListener("click", () =>
-      setChatbotOpen(!portfolioChatbotState.open),
+    ?.addEventListener("click", (event) =>
+      setChatbotOpen(!portfolioChatbotState.open, {
+        trigger: event.currentTarget,
+      }),
     );
   document
     .querySelector("[data-chatbot-close]")
@@ -4329,8 +4466,14 @@ function setupPortfolioChatbot() {
     });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && portfolioChatbotState.open)
+    const panel = document.querySelector("[data-chatbot-panel]");
+    if (!portfolioChatbotState.open || !panel) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
       setChatbotOpen(false);
+      return;
+    }
+    trapFocus(event, panel);
   });
 
   updatePortfolioChatbotLanguage(currentSiteLanguage || "en");
@@ -4344,6 +4487,8 @@ applyLanguage(localStorage.getItem("kaanbalci-site-language") || "en");
 const ultimateContent = {
   en: {
     recruiterLabel: "Recruiter Mode",
+    recruiterOpenLabel: "Open recruiter mode",
+    recruiterCloseLabel: "Close recruiter mode",
     recruiterTitle: "Recruiter snapshot",
     recruiterLead:
       "A concise, evidence-based profile for conversational AI, solution engineering, LLM evaluation, workflow automation and software opportunities.",
@@ -4351,6 +4496,7 @@ const ultimateContent = {
     skillsTitle: "Top skills",
     projectsTitle: "Best evidence",
     commandsTitle: "Search",
+    commandDialogLabel: "Search palette",
     commandPlaceholder: "Search page, project or command...",
     noResults: "No command found.",
     projectSearchPlaceholder: "Search by project, technology or keyword...",
@@ -4520,6 +4666,8 @@ const ultimateContent = {
   },
   tr: {
     recruiterLabel: "İK Modu",
+    recruiterOpenLabel: "Recruiter Mode’u aç",
+    recruiterCloseLabel: "Recruiter Mode’u kapat",
     recruiterTitle: "İK özeti",
     recruiterLead:
       "Conversational AI, solution engineering, LLM değerlendirme, workflow otomasyonu ve yazılım fırsatları için kısa ve kanıt odaklı profil özeti.",
@@ -4527,6 +4675,7 @@ const ultimateContent = {
     skillsTitle: "Ana yetkinlikler",
     projectsTitle: "Kanıt projeler",
     commandsTitle: "Ara",
+    commandDialogLabel: "Arama paleti",
     commandPlaceholder: "Sayfa, proje veya komut ara...",
     noResults: "Komut bulunamadı.",
     projectSearchPlaceholder: "Proje, teknoloji veya anahtar kelime ara...",
@@ -4727,12 +4876,22 @@ function updateUltimateStaticLabels(language = currentSiteLanguage || "en") {
     node.textContent = content.recruiterLabel;
   });
   document.querySelectorAll("[data-recruiter-toggle]").forEach((button) => {
-    button.setAttribute("aria-label", content.recruiterLabel);
-    button.setAttribute("title", content.recruiterLabel);
+    const isOpen = button.getAttribute("aria-expanded") === "true";
+    const label = isOpen
+      ? content.recruiterCloseLabel
+      : content.recruiterOpenLabel;
+    button.setAttribute("aria-label", label);
+    button.setAttribute("title", label);
   });
   document.querySelectorAll("[data-command-toggle]").forEach((button) => {
-    button.setAttribute("aria-label", content.commandsTitle);
-    button.setAttribute("title", content.commandsTitle);
+    const label =
+      button.getAttribute("aria-expanded") === "true"
+        ? language === "tr"
+          ? "Arama paletini kapat"
+          : "Close search palette"
+        : content.commandsTitle;
+    button.setAttribute("aria-label", label);
+    button.setAttribute("title", label);
     const visibleLabel =
       button.querySelector("[data-command-label]") ||
       button.querySelector("span");
@@ -4745,6 +4904,13 @@ function updateUltimateStaticLabels(language = currentSiteLanguage || "en") {
     });
   document.querySelectorAll("[data-command-input]").forEach((node) => {
     node.placeholder = content.commandPlaceholder;
+    node.setAttribute("aria-label", content.commandDialogLabel);
+  });
+  document.querySelectorAll("[data-availability-badge]").forEach((node) => {
+    node.setAttribute(
+      "aria-label",
+      language === "tr" ? "Rollere açık" : "Available for roles",
+    );
   });
   document.querySelectorAll("[data-project-search]").forEach((node) => {
     node.placeholder = catalogSearchLabels.placeholder;
@@ -4926,14 +5092,15 @@ const recruiterItems = {
 function renderRecruiterDrawer(language = currentSiteLanguage || "en") {
   const drawer = document.querySelector("[data-recruiter-drawer]");
   if (!drawer) return;
+  const hadFocus = drawer.contains(document.activeElement);
   const content = getUltimateContent(language);
   const data = recruiterItems[language === "tr" ? "tr" : "en"];
   drawer.innerHTML = `
     <div class="recruiter-card">
-      <button class="recruiter-close" type="button" data-recruiter-close aria-label="${escapeProjectHtml(data.buttons.close)}"><i class="bx bx-x"></i></button>
+      <button class="recruiter-close" type="button" data-recruiter-close aria-label="${escapeProjectHtml(data.buttons.close)}"><i class="bx bx-x" aria-hidden="true"></i></button>
       <p class="eyebrow">${escapeProjectHtml(content.recruiterLabel)}</p>
-      <h2>${escapeProjectHtml(content.recruiterTitle)}</h2>
-      <p>${escapeProjectHtml(content.recruiterLead)}</p>
+      <h2 id="recruiter-dialog-title">${escapeProjectHtml(content.recruiterTitle)}</h2>
+      <p id="recruiter-dialog-description">${escapeProjectHtml(content.recruiterLead)}</p>
       <div class="recruiter-status"><span></span>${escapeProjectHtml(content.availability)}</div>
       <h3>${language === "tr" ? "Ana kimlik" : "Primary profile"}</h3>
       <div class="recruiter-primary-profile">${escapeProjectHtml(data.profile)}</div>
@@ -4956,34 +5123,83 @@ function renderRecruiterDrawer(language = currentSiteLanguage || "en") {
   drawer
     .querySelector("[data-recruiter-close]")
     ?.addEventListener("click", () => setRecruiterMode(false));
+  if (hadFocus) drawer.querySelector("[data-recruiter-close]")?.focus();
 }
 
-function setRecruiterMode(isOpen) {
+function setRecruiterMode(
+  isOpen,
+  { restoreFocus = true, trigger = null } = {},
+) {
+  const drawer = document.querySelector("[data-recruiter-drawer]");
+  if (!drawer) return;
+  const wasOpen = document.body.classList.contains("recruiter-mode-active");
+
+  if (isOpen) {
+    closeMobileNavigation();
+    setChatbotOpen(false, { restoreFocus: false });
+    setCommandPaletteOpen(false, { restoreFocus: false });
+    rememberOverlayTrigger(
+      drawer,
+      trigger || document.querySelector("[data-recruiter-toggle]"),
+    );
+  }
+
   document.body.classList.toggle("recruiter-mode-active", Boolean(isOpen));
-  document
-    .querySelector("[data-recruiter-drawer]")
-    ?.setAttribute("aria-hidden", String(!isOpen));
+  drawer.hidden = !isOpen;
+  drawer.setAttribute("aria-hidden", String(!isOpen));
+  document.querySelectorAll("[data-recruiter-toggle]").forEach((button) => {
+    button.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  if (isOpen) {
+    setBackgroundInert(drawer);
+    setOverlayBodyState(true);
+    updateUltimateStaticLabels(currentSiteLanguage || "en");
+    setTimeout(() => drawer.querySelector("[data-recruiter-close]")?.focus(), 0);
+  } else if (wasOpen) {
+    setBackgroundInert();
+    setOverlayBodyState(false);
+    updateUltimateStaticLabels(currentSiteLanguage || "en");
+    if (restoreFocus) restoreOverlayFocus(drawer);
+    else overlayTriggerMap.delete(drawer);
+  }
 }
 
 function setupRecruiterMode() {
   if (document.querySelector("[data-recruiter-drawer]")) return;
   const drawer = document.createElement("div");
   drawer.className = "recruiter-drawer";
+  drawer.id = "recruiter-dialog";
   drawer.setAttribute("data-recruiter-drawer", "");
   drawer.setAttribute("aria-hidden", "true");
+  drawer.setAttribute("role", "dialog");
+  drawer.setAttribute("aria-modal", "true");
+  drawer.setAttribute("aria-labelledby", "recruiter-dialog-title");
+  drawer.setAttribute("aria-describedby", "recruiter-dialog-description");
+  drawer.hidden = true;
   document.body.appendChild(drawer);
   renderRecruiterDrawer();
-  document
-    .querySelectorAll("[data-recruiter-toggle]")
-    .forEach((button) =>
-      button.addEventListener("click", () =>
+  document.querySelectorAll("[data-recruiter-toggle]").forEach((button) => {
+    button.setAttribute("aria-controls", drawer.id);
+    button.setAttribute("aria-expanded", "false");
+    button.addEventListener("click", (event) =>
         setRecruiterMode(
           !document.body.classList.contains("recruiter-mode-active"),
+          { trigger: event.currentTarget },
         ),
-      ),
-    );
+      );
+  });
   drawer.addEventListener("click", (event) => {
     if (event.target === drawer) setRecruiterMode(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (!document.body.classList.contains("recruiter-mode-active")) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setRecruiterMode(false);
+      return;
+    }
+    trapFocus(event, drawer);
   });
 }
 
@@ -5030,7 +5246,10 @@ function renderCommandPalette(language = currentSiteLanguage || "en") {
   const title = palette.querySelector("[data-command-title]");
   const input = palette.querySelector("[data-command-input]");
   if (title) title.textContent = content.commandsTitle;
-  if (input) input.placeholder = content.commandPlaceholder;
+  if (input) {
+    input.placeholder = content.commandPlaceholder;
+    input.setAttribute("aria-label", content.commandDialogLabel);
+  }
   if (!list) return;
   list.innerHTML = results.length
     ? results
@@ -5049,17 +5268,44 @@ function renderCommandPalette(language = currentSiteLanguage || "en") {
   });
 }
 
-function setCommandPaletteOpen(isOpen) {
+function setCommandPaletteOpen(
+  isOpen,
+  { restoreFocus = true, trigger = null } = {},
+) {
   const palette = document.querySelector("[data-command-palette]");
   if (!palette) return;
-  palette.classList.toggle("is-open", Boolean(isOpen));
-  palette.setAttribute("aria-hidden", String(!isOpen));
+  const wasOpen = palette.classList.contains("is-open");
+
   if (isOpen) {
+    closeMobileNavigation();
+    setChatbotOpen(false, { restoreFocus: false });
+    setRecruiterMode(false, { restoreFocus: false });
+    rememberOverlayTrigger(
+      palette,
+      trigger || document.querySelector("[data-command-toggle]"),
+    );
+  }
+
+  palette.classList.toggle("is-open", Boolean(isOpen));
+  palette.hidden = !isOpen;
+  palette.setAttribute("aria-hidden", String(!isOpen));
+  document.querySelectorAll("[data-command-toggle]").forEach((button) => {
+    button.setAttribute("aria-expanded", String(isOpen));
+  });
+  if (isOpen) {
+    setBackgroundInert(palette);
+    setOverlayBodyState(true);
     const input = palette.querySelector("[data-command-input]");
     input.value = "";
     renderCommandPalette();
     setTimeout(() => input.focus(), 40);
+  } else if (wasOpen) {
+    setBackgroundInert();
+    setOverlayBodyState(false);
+    if (restoreFocus) restoreOverlayFocus(palette);
+    else overlayTriggerMap.delete(palette);
   }
+  updateUltimateStaticLabels(currentSiteLanguage || "en");
 }
 
 function setupCommandPalette() {
@@ -5067,9 +5313,11 @@ function setupCommandPalette() {
   const content = getUltimateContent();
   const palette = document.createElement("div");
   palette.className = "command-palette";
+  palette.id = "command-palette";
   palette.setAttribute("data-command-palette", "");
   palette.setAttribute("aria-hidden", "true");
-  palette.innerHTML = `<div class="command-box" role="dialog" aria-label="Search palette"><div class="command-head"><i class="bx bx-search"></i><input type="search" data-command-input placeholder="${escapeProjectHtml(content.commandPlaceholder)}" /><kbd>Esc</kbd></div><div class="command-title" data-command-title>${escapeProjectHtml(content.commandsTitle)}</div><div class="command-results" data-command-results></div></div>`;
+  palette.hidden = true;
+  palette.innerHTML = `<div class="command-box" role="dialog" aria-modal="true" aria-labelledby="command-palette-title"><div class="command-head"><i class="bx bx-search" aria-hidden="true"></i><input type="search" data-command-input aria-label="${escapeProjectHtml(content.commandDialogLabel)}" placeholder="${escapeProjectHtml(content.commandPlaceholder)}" /><kbd>Esc</kbd></div><div class="command-title" id="command-palette-title" data-command-title>${escapeProjectHtml(content.commandsTitle)}</div><div class="command-results" data-command-results></div></div>`;
   document.body.appendChild(palette);
   palette
     .querySelector("[data-command-input]")
@@ -5077,22 +5325,34 @@ function setupCommandPalette() {
   palette.addEventListener("click", (event) => {
     if (event.target === palette) setCommandPaletteOpen(false);
   });
-  document
-    .querySelectorAll("[data-command-toggle]")
-    .forEach((button) =>
-      button.addEventListener("click", () => setCommandPaletteOpen(true)),
+  document.querySelectorAll("[data-command-toggle]").forEach((button) => {
+    button.setAttribute("aria-controls", palette.id);
+    button.setAttribute("aria-expanded", "false");
+    button.addEventListener("click", (event) =>
+      setCommandPaletteOpen(true, { trigger: event.currentTarget }),
     );
+  });
   document.addEventListener("keydown", (event) => {
     const tag = document.activeElement?.tagName;
     const isTyping = ["INPUT", "TEXTAREA", "SELECT"].includes(tag);
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
-      setCommandPaletteOpen(true);
+      setCommandPaletteOpen(true, { trigger: document.activeElement });
     }
-    if (event.key === "Escape") {
+    if (
+      event.key === "Escape" &&
+      document
+        .querySelector("[data-command-palette]")
+        ?.classList.contains("is-open")
+    ) {
+      event.preventDefault();
       setCommandPaletteOpen(false);
-      setRecruiterMode(false);
+      return;
     }
+    const activePalette = document.querySelector(
+      "[data-command-palette].is-open [role='dialog']",
+    );
+    if (activePalette) trapFocus(event, activePalette);
   });
   renderCommandPalette();
 }
