@@ -46,15 +46,17 @@
   const modalImage = modal?.querySelector("[data-case-modal-image]");
   const modalClose = modal?.querySelector("[data-case-modal-close]");
   let modalTrigger = null;
+  if (modal) modal.inert = true;
 
   function closeModal() {
     if (!modal?.classList.contains("is-open")) return;
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
+    modal.inert = true;
     document.body.classList.remove("case-modal-open");
     modalTrigger?.setAttribute("aria-expanded", "false");
     if (modalImage) {
-      modalImage.src = "";
+      modalImage.removeAttribute("src");
       modalImage.alt = "";
     }
     modalTrigger?.focus();
@@ -69,6 +71,7 @@
       modalImage.src = button.dataset.caseGallery;
       modalImage.alt = image?.alt || "";
       modal.classList.add("is-open");
+      modal.inert = false;
       modal.setAttribute("aria-hidden", "false");
       document.body.classList.add("case-modal-open");
       button.setAttribute("aria-expanded", "true");

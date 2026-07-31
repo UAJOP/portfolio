@@ -47,6 +47,7 @@
   const artNameInput = document.querySelector("[data-joyday-art-name]");
   const signatureInput = document.querySelector("[data-joyday-signature]");
   const exportButtons = document.querySelectorAll("[data-joyday-export-mode]");
+  if (modal) modal.inert = true;
 
   const palettePool = [
     { key: "joydayBright", colors: ["#ffffff", "#101827", "#ff3b6b", "#ff7a1a", "#ffd23f", "#20c997", "#22d3ee", "#2563eb", "#8b5cf6", "#ec4899", "#9b5c2e", "#f5efe6"] },
@@ -685,6 +686,7 @@
     updatePreview();
     if (!modal) return;
     modal.hidden = false;
+    modal.inert = false;
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("joyday-modal-open");
   }
@@ -693,6 +695,7 @@
     if (!modal) return;
     modal.hidden = true;
     modal.setAttribute("aria-hidden", "true");
+    modal.inert = true;
     document.body.classList.remove("joyday-modal-open");
   }
 
