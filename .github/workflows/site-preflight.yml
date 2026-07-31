@@ -62,6 +62,43 @@ jobs:
         continue-on-error: true
         run: npm run qa:lighthouse 2>&1 | tee qa-results/lighthouse.txt
 
+      - name: Summarize Lighthouse scores
+        if: always()
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const directory = '.lighthouseci';
+          const score = (category) => category && typeof category.score === 'number'
+            ? Math.round(category.score * 100)
+            : null;
+          const metric = (audit, digits = 0) => audit && typeof audit.numericValue === 'number'
+            ? Number(audit.numericValue.toFixed(digits))
+            : null;
+          const files = fs.existsSync(directory)
+            ? fs.readdirSync(directory).filter((file) => /^lhr-.*\.json$/.test(file))
+            : [];
+          const summary = files.map((file) => {
+            const report = JSON.parse(fs.readFileSync(path.join(directory, file), 'utf8'));
+            const categories = report.categories || {};
+            const audits = report.audits || {};
+            const pageUrl = report.finalUrl || report.requestedUrl || file;
+            return {
+              page: pageUrl.startsWith('http') ? new URL(pageUrl).pathname : pageUrl,
+              performance: score(categories.performance),
+              accessibility: score(categories.accessibility),
+              bestPractices: score(categories['best-practices']),
+              seo: score(categories.seo),
+              fcpMs: metric(audits['first-contentful-paint']),
+              lcpMs: metric(audits['largest-contentful-paint']),
+              tbtMs: metric(audits['total-blocking-time']),
+              cls: metric(audits['cumulative-layout-shift'], 3)
+            };
+          }).sort((a, b) => a.page.localeCompare(b.page));
+          fs.writeFileSync('qa-results/lighthouse-summary.json', JSON.stringify(summary, null, 2));
+          console.table(summary);
+          NODE
+
       - name: Upload audit reports
         if: always()
         uses: actions/upload-artifact@v4
