@@ -1,0 +1,130 @@
+name: Site Preflight
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-audit:
+    name: Content, HTML, accessibility and Lighthouse
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install audit tools
+        run: npm install --no-audit --no-fund
+
+      - name: Prepare reports directory
+        run: mkdir -p qa-results
+
+      - name: Validate HTML
+        continue-on-error: true
+        run: npm run qa:html 2>&1 | tee qa-results/html-validation.txt
+
+      - name: Check English and Turkish spelling
+        continue-on-error: true
+        run: npm run qa:spelling 2>&1 | tee qa-results/spelling.txt
+
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 > qa-results/local-server.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/index.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat qa-results/local-server.log
+          exit 1
+
+      - name: Audit accessibility on mobile viewport
+        continue-on-error: true
+        run: npm run qa:a11y -- --json > qa-results/accessibility.json 2> qa-results/accessibility-errors.txt
+
+      - name: Run Lighthouse CI
+        continue-on-error: true
+        run: npm run qa:lighthouse 2>&1 | tee qa-results/lighthouse.txt
+
+      - name: Summarize Lighthouse scores
+        if: always()
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const directory = '.lighthouseci';
+          const score = (category) => category && typeof category.score === 'number'
+            ? Math.round(category.score * 100)
+            : null;
+          const metric = (audit, digits = 0) => audit && typeof audit.numericValue === 'number'
+            ? Number(audit.numericValue.toFixed(digits))
+            : null;
+          const files = fs.existsSync(directory)
+            ? fs.readdirSync(directory).filter((file) => /^lhr-.*\.json$/.test(file))
+            : [];
+          const summary = files.map((file) => {
+            const report = JSON.parse(fs.readFileSync(path.join(directory, file), 'utf8'));
+            const categories = report.categories || {};
+            const audits = report.audits || {};
+            const pageUrl = report.finalUrl || report.requestedUrl || file;
+            return {
+              page: pageUrl.startsWith('http') ? new URL(pageUrl).pathname : pageUrl,
+              performance: score(categories.performance),
+              accessibility: score(categories.accessibility),
+              bestPractices: score(categories['best-practices']),
+              seo: score(categories.seo),
+              fcpMs: metric(audits['first-contentful-paint']),
+              lcpMs: metric(audits['largest-contentful-paint']),
+              tbtMs: metric(audits['total-blocking-time']),
+              cls: metric(audits['cumulative-layout-shift'], 3)
+            };
+          }).sort((a, b) => a.page.localeCompare(b.page));
+          fs.writeFileSync('qa-results/lighthouse-summary.json', JSON.stringify(summary, null, 2));
+          console.table(summary);
+          NODE
+
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-preflight-reports
+          path: qa-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  link-audit:
+    name: Broken links
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Scan HTML and Markdown links
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --verbose
+            --no-progress
+            --root-dir "${{ github.workspace }}"
+            './**/*.html'
+            './**/*.md'
+          fail: false
+          jobSummary: true
