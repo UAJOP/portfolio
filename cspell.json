@@ -15,6 +15,7 @@
   "ignoreRegExpList": [
     "Url",
     "Email",
+    "/(?:src|href|data-[\\w-]+)=\"[^\"]*\"/g",
     "/data:image\\/[^\\s]+/g"
   ],
   "words": [
