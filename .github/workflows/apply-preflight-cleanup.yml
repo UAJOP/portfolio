@@ -1,0 +1,41 @@
+name: Apply preflight cleanup
+
+on:
+  push:
+    branches:
+      - qa/site-preflight
+    paths:
+      - .github/workflows/apply-preflight-cleanup.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    name: Apply validated QA fixes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out cleanup branch
+        uses: actions/checkout@v5
+        with:
+          ref: qa/site-preflight
+          fetch-depth: 0
+
+      - name: Apply cleanup patch
+        run: python3 scripts/apply_preflight_cleanup.py
+
+      - name: Validate patch formatting
+        run: git diff --check
+
+      - name: Commit cleanup results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html works.html ai-flow-puzzle.html script.js case-study.js joyday-paint.js '*.html'
+          if git diff --cached --quiet; then
+            echo "No cleanup changes were needed."
+            exit 0
+          fi
+          git commit -m "Fix structural and modal accessibility findings"
+          git push origin HEAD:qa/site-preflight
