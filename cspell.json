@@ -1,0 +1,52 @@
+{
+  "version": "0.2",
+  "language": "en,tr,tr-TR",
+  "import": [
+    "@cspell/dict-tr-tr/cspell-ext.json"
+  ],
+  "useGitignore": true,
+  "ignorePaths": [
+    "assets/**",
+    "node_modules/**",
+    ".git/**",
+    ".lighthouseci/**",
+    "qa-results/**"
+  ],
+  "ignoreRegExpList": [
+    "/https?:\\/\\/\\S+/g",
+    "/mailto:\\S+/g",
+    "/data:image\\/[^\\s]+/g"
+  ],
+  "words": [
+    "Atölye",
+    "Balcı",
+    "barycentric",
+    "CBOT",
+    "chatbot",
+    "chatbots",
+    "Firebase",
+    "frontend",
+    "GitHub",
+    "Istanbul",
+    "JavaScript",
+    "Joyday",
+    "Kaan",
+    "Kotlin",
+    "LinkedIn",
+    "LLM",
+    "LLMs",
+    "MSSQL",
+    "multimodal",
+    "MySQL",
+    "n8n",
+    "OOP",
+    "Outlier",
+    "parametric",
+    "recruiter",
+    "responsive",
+    "TypeScript",
+    "Unreal",
+    "workflow",
+    "workflows"
+  ]
+}
