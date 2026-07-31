@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "standard": "WCAG2AA",
+    "timeout": 30000,
+    "wait": 750,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "chromeLaunchConfig": {
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+      ]
+    }
+  },
+  "urls": [
+    "http://127.0.0.1:4173/index.html",
+    "http://127.0.0.1:4173/works.html",
+    "http://127.0.0.1:4173/games.html",
+    "http://127.0.0.1:4173/blog.html",
+    "http://127.0.0.1:4173/single-work.html",
+    "http://127.0.0.1:4173/request.html",
+    "http://127.0.0.1:4173/about.html"
+  ]
+}
