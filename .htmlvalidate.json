@@ -5,6 +5,8 @@
   "rules": {
     "void-style": "off",
     "attribute-empty-style": "off",
-    "no-inline-style": "off"
+    "no-inline-style": "off",
+    "aria-label-misuse": "warn",
+    "prefer-native-element": "warn"
   }
 }
