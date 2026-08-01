@@ -25,7 +25,7 @@ The cleanup pass also added inert modal states, safe dynamic image placeholders 
 
 The calibrated link scan checked 508 references and returned zero broken-link errors. Login-only or bot-blocked LinkedIn, Udemy and Instagram URLs are excluded from automated status checks.
 
-The homepage Weather App repository URL was corrected from `Wheather-App` to `Weather-App`.
+The homepage's misspelled Weather App repository URL was corrected.
 
 ## HTML and copy
 
