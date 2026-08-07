@@ -891,6 +891,13 @@ Object.assign(i18nTranslations.tr, {
     "Programlama, otomasyon ve veri odaklı alıştırmalar içeren repository.",
   "An inventory-style data structure and tracking exercise.":
     "Envanter tarzı veri yapısı ve takip alıştırması.",
+  "AI Agent Evaluation": "AI Agent Değerlendirme",
+  "Regression Testing": "Regression Testi",
+  "Open Live Product": "Canlı Ürünü Aç",
+  "A live Turkish-first reliability lab for customer-service AI agents, combining multi-turn scenario execution, deterministic tool-call evaluation, regression detection and inspectable failure evidence.":
+    "Müşteri hizmetleri AI agent'larını çok turlu Türkçe senaryolar, deterministik tool-call değerlendirmesi, regression tespiti ve incelenebilir hata kanıtlarıyla test eden canlı bir AI Agent Reliability Lab.",
+  "Building a Turkish-first reliability testing platform for customer-service AI agents with repeatable scenarios, tool-call evaluation and inspectable regression evidence.":
+    "Müşteri hizmetleri AI agent'ları için tekrarlanabilir senaryolar, tool-call değerlendirmesi ve incelenebilir regression kanıtlarıyla Türkçe öncelikli bir reliability test platformu geliştiriyorum.",
 });
 
 Object.assign(i18nTranslations.tr, {
@@ -1318,6 +1325,9 @@ Object.assign(i18nAttributeTranslations.tr, {
     "Kaan’ın Kariyer Macerası kariyer workflow kapağı",
   "Certificate preview": "Sertifika önizlemesi",
   "Close preview": "Önizlemeyi kapat",
+  "Open SINAMA case study": "SINAMA vaka çalışmasını aç",
+  "SINAMA wordmark on a green cover card":
+    "Yeşil kapak kartı üzerinde SINAMA logotype'ı",
 });
 
 /* Final bilingual content and accessibility consistency */
@@ -4702,6 +4712,24 @@ const ultimateContent = {
         value: "works.html",
       },
       {
+        id: "sinama-case-study",
+        label: "View SINAMA Case Study",
+        hint: "AI agent reliability lab case study",
+        keywords:
+          "sinama ai agent reliability lab regression evaluation case study",
+        type: "nav",
+        value: "sinama-case-study.html",
+      },
+      {
+        id: "sinama-live",
+        label: "Open SINAMA Live Product",
+        hint: "Live AI agent reliability lab",
+        keywords: "sinama live product ai agent reliability lab",
+        type: "nav",
+        value: "https://sinama.kaanbalci.com",
+        external: true,
+      },
+      {
         id: "games",
         label: "Open Games",
         hint: "Playable mini games",
@@ -4879,6 +4907,24 @@ const ultimateContent = {
         keywords: "projeler portfolio works",
         type: "nav",
         value: "works.html",
+      },
+      {
+        id: "sinama-case-study",
+        label: "SINAMA Vaka Çalışmasını Gör",
+        hint: "AI agent reliability lab vaka çalışması",
+        keywords:
+          "sinama ai agent reliability lab regression evaluation vaka çalışması",
+        type: "nav",
+        value: "sinama-case-study.html",
+      },
+      {
+        id: "sinama-live",
+        label: "SINAMA Canlı Ürününü Aç",
+        hint: "Canlı AI agent reliability lab",
+        keywords: "sinama canlı ürün ai agent reliability lab",
+        type: "nav",
+        value: "https://sinama.kaanbalci.com",
+        external: true,
       },
       {
         id: "games",
@@ -5178,6 +5224,12 @@ const recruiterItems = {
     ],
     projects: [
       [
+        "SINAMA — AI Agent Reliability Lab",
+        "Live Turkish-first AI agent reliability and regression testing lab",
+        "sinama-case-study.html",
+        "View Case Study",
+      ],
+      [
         "AI Chatbot Flow Design",
         "Conversational AI and enterprise workflow evidence",
         "project-detail.html?project=ai-chatbot-flow-design",
@@ -5238,6 +5290,12 @@ const recruiterItems = {
       "JavaScript, Google Forms, Sheets ve Apps Script ile Atölye Joyday canlı dijital ürünü ve rezervasyon otomasyonu.",
     ],
     projects: [
+      [
+        "SINAMA — AI Agent Reliability Lab",
+        "Canlı, Türkçe öncelikli AI agent reliability ve regression test lab'ı",
+        "sinama-case-study.html",
+        "Vaka Çalışmasını Gör",
+      ],
       [
         "AI Chatbot Akış Tasarımı",
         "Conversational AI ve kurumsal workflow kanıtı",
