@@ -3668,7 +3668,7 @@ body { overflow-x: hidden; }
   height: 340px;
 }
 
-.case-study-visual img[src*="sinama-social-cover"] {
+.case-study-visual img[src*="sinama-home-featured-case-study"] {
   width: 100%;
   min-height: 320px;
   object-fit: contain;

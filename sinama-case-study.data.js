@@ -54,10 +54,10 @@ window.caseStudyPageData = {
       "steps.step4": "Capture Transcript & Tool Trace",
       "steps.step5": "Evaluate Deterministic Contracts",
       "steps.step6": "Inspect Failure Evidence",
-      "alt.playground":
-        "SINAMA Demo Agent Playground showing the Healthy and Broken mode toggle, chat surface and live structured evidence trace",
-      "shots.playgroundCaption":
-        "The Demo Agent Playground: manual testing surface with the Healthy / Broken mode toggle and a live structured evidence trace.",
+      "alt.runsFlow":
+        "SINAMA Test Runs page showing scenario pack, agent target and agent mode configuration before running the automated evaluation",
+      "shots.runsFlowCaption":
+        "The Test Runs page: configure the scenario pack, agent target and agent mode, then run the automated evaluation.",
 
       "vertical.eyebrow": "Demo Vertical",
       "vertical.title": "A synthetic insurance claim-intake agent.",
@@ -280,10 +280,10 @@ window.caseStudyPageData = {
       "steps.step4": "Transcript & Tool Trace Yakala",
       "steps.step5": "Deterministik Kontratları Değerlendir",
       "steps.step6": "Hata Kanıtını İncele",
-      "alt.playground":
-        "Healthy ve Broken mode geçişini, chat yüzeyini ve canlı yapılandırılmış kanıt trace'ini gösteren SINAMA Demo Agent Playground",
-      "shots.playgroundCaption":
-        "Demo Agent Playground: Healthy / Broken mode geçişi ve canlı yapılandırılmış kanıt trace'i içeren manuel test yüzeyi.",
+      "alt.runsFlow":
+        "Otomatik değerlendirmeyi çalıştırmadan önce senaryo paketi, agent hedefi ve agent modu yapılandırmasını gösteren SINAMA Test Runs sayfası",
+      "shots.runsFlowCaption":
+        "Test Runs sayfası: senaryo paketini, agent hedefini ve agent modunu yapılandırıp otomatik değerlendirmeyi çalıştırın.",
 
       "vertical.eyebrow": "Demo Vertikal",
       "vertical.title": "Kurgusal bir sigorta hasar başvuru agent'ı.",
