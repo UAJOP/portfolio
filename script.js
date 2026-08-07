@@ -896,8 +896,14 @@ Object.assign(i18nTranslations.tr, {
   "Open Live Product": "Canlı Ürünü Aç",
   "A live Turkish-first reliability lab for customer-service AI agents, combining multi-turn scenario execution, deterministic tool-call evaluation, regression detection and inspectable failure evidence.":
     "Müşteri hizmetleri AI agent'larını çok turlu Türkçe senaryolar, deterministik tool-call değerlendirmesi, regression tespiti ve incelenebilir hata kanıtlarıyla test eden canlı bir AI Agent Reliability Lab.",
-  "Building a Turkish-first reliability testing platform for customer-service AI agents with repeatable scenarios, tool-call evaluation and inspectable regression evidence.":
-    "Müşteri hizmetleri AI agent'ları için tekrarlanabilir senaryolar, tool-call değerlendirmesi ve incelenebilir regression kanıtlarıyla Türkçe öncelikli bir reliability test platformu geliştiriyorum.",
+  "Expanding SINAMA with persistent run history, V1 vs V2 agent comparison and more Turkish scenario packs.":
+    "SINAMA'yı kalıcı run geçmişi, V1'e karşı V2 agent karşılaştırması ve daha fazla Türkçe senaryo paketiyle genişletiyorum.",
+  "A Turkish-first reliability testing platform for customer-service AI agents, built around repeatable multi-turn scenarios, deterministic tool-call evaluation and inspectable regression evidence.":
+    "Müşteri hizmetleri AI agent'ları için tekrarlanabilir çok turlu senaryolar, deterministik tool-call değerlendirmesi ve incelenebilir regression kanıtları etrafında kurulan Türkçe öncelikli bir reliability test platformu.",
+  "Live MVP": "Canlı MVP",
+  "Product status": "Ürün Durumu",
+  "Tech stack": "Teknoloji Yığını",
+  "Core capability": "Temel Yetenek",
 });
 
 Object.assign(i18nTranslations.tr, {
@@ -1326,8 +1332,8 @@ Object.assign(i18nAttributeTranslations.tr, {
   "Certificate preview": "Sertifika önizlemesi",
   "Close preview": "Önizlemeyi kapat",
   "Open SINAMA case study": "SINAMA vaka çalışmasını aç",
-  "SINAMA wordmark on a green cover card":
-    "Yeşil kapak kartı üzerinde SINAMA logotype'ı",
+  "SINAMA wordmark on a dark cover card":
+    "Koyu kapak kartı üzerinde SINAMA logotype'ı",
 });
 
 /* Final bilingual content and accessibility consistency */

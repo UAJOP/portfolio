@@ -510,6 +510,33 @@
   text-align: left;
 }
 
+.case-shot {
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
+}
+
+.case-shot img {
+  display: block;
+  width: 100%;
+  object-fit: contain;
+  background: #07111f;
+}
+
+.case-shot figcaption {
+  padding: 14px 18px 18px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+html[data-theme="light"] .case-shot {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72));
+  box-shadow: 0 20px 70px rgba(15, 23, 42, 0.1);
+}
+
 .case-related-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

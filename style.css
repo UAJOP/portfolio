@@ -3668,6 +3668,14 @@ body { overflow-x: hidden; }
   height: 340px;
 }
 
+.case-study-visual img[src*="sinama-home-featured-case-study"] {
+  width: 100%;
+  min-height: 320px;
+  object-fit: contain;
+  object-position: center;
+  background: #07111f;
+}
+
 .contact-hub {
   grid-template-columns: minmax(540px, 1fr) minmax(300px, 460px);
   align-items: center;

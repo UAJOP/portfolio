@@ -9,7 +9,7 @@ window.caseStudyPageData = {
       "hero.eyebrow": "AI Agent Reliability Project",
       "hero.lead":
         "A Turkish-first reliability lab for testing customer-service AI agents before release through multi-turn scenarios, tool-call validation and inspectable regression evidence.",
-      "alt.hero": "SINAMA wordmark on a green cover card",
+      "alt.hero": "SINAMA wordmark on a dark cover card",
       "hero.statusLabel": "Status",
       "hero.status": "Live MVP",
       "hero.yearLabel": "Year",
@@ -54,6 +54,10 @@ window.caseStudyPageData = {
       "steps.step4": "Capture Transcript & Tool Trace",
       "steps.step5": "Evaluate Deterministic Contracts",
       "steps.step6": "Inspect Failure Evidence",
+      "alt.runsFlow":
+        "SINAMA Test Runs page showing scenario pack, agent target and agent mode configuration before running the automated evaluation",
+      "shots.runsFlowCaption":
+        "The Test Runs page: configure the scenario pack, agent target and agent mode, then run the automated evaluation.",
 
       "vertical.eyebrow": "Demo Vertical",
       "vertical.title": "A synthetic insurance claim-intake agent.",
@@ -81,6 +85,10 @@ window.caseStudyPageData = {
       "compare.brokenListTitle": "Intentional HIGH-severity failures",
       "compare.ins001": "INS-001 — HIGH",
       "compare.ins005": "INS-005 — HIGH",
+      "alt.broken":
+        "SINAMA Test Runs results for a Broken-mode run showing 5 total, 3 passed, 2 failed, 0 errors, with scenario INS-001 flagged as a high-severity failure",
+      "shots.brokenCaption":
+        "A real Broken-mode run: 5 total, 3 passed, 2 failed, 0 errors — INS-001 flagged as a High-severity failure.",
 
       "evidence.eyebrow": "Inspectable Failure Evidence",
       "evidence.title": "Every failed scenario shows its work.",
@@ -94,6 +102,10 @@ window.caseStudyPageData = {
       "evidence.item7": "The offending event / evidence",
       "evidence.example":
         "In the current regression example, submit_claim was triggered before the required damage_photo collection step — exactly the kind of premature action the evaluator is built to catch.",
+      "alt.evidence":
+        "SINAMA Tool Trace showing submit_claim flagged as policy violation evidence because the required damage_photo had not been collected",
+      "shots.evidenceCaption":
+        "Tool Trace for INS-001: submit_claim is flagged as policy-violation evidence because the required damage_photo had not been collected yet.",
 
       "external.eyebrow": "External HTTP Agent",
       "external.title":
@@ -223,7 +235,7 @@ window.caseStudyPageData = {
       "hero.eyebrow": "AI Agent Reliability Projesi",
       "hero.lead":
         "Müşteri hizmetleri AI agent'larını yayın öncesinde çok turlu senaryolar, tool-call doğrulaması ve incelenebilir regression kanıtlarıyla test eden Türkçe öncelikli bir reliability lab.",
-      "alt.hero": "Yeşil kapak kartı üzerinde SINAMA logotype'ı",
+      "alt.hero": "Koyu kapak kartı üzerinde SINAMA logotype'ı",
       "hero.statusLabel": "Durum",
       "hero.status": "Canlı MVP",
       "hero.yearLabel": "Yıl",
@@ -268,6 +280,10 @@ window.caseStudyPageData = {
       "steps.step4": "Transcript & Tool Trace Yakala",
       "steps.step5": "Deterministik Kontratları Değerlendir",
       "steps.step6": "Hata Kanıtını İncele",
+      "alt.runsFlow":
+        "Otomatik değerlendirmeyi çalıştırmadan önce senaryo paketi, agent hedefi ve agent modu yapılandırmasını gösteren SINAMA Test Runs sayfası",
+      "shots.runsFlowCaption":
+        "Test Runs sayfası: senaryo paketini, agent hedefini ve agent modunu yapılandırıp otomatik değerlendirmeyi çalıştırın.",
 
       "vertical.eyebrow": "Demo Vertikal",
       "vertical.title": "Kurgusal bir sigorta hasar başvuru agent'ı.",
@@ -295,6 +311,10 @@ window.caseStudyPageData = {
       "compare.brokenListTitle": "Kasıtlı HIGH önem dereceli hatalar",
       "compare.ins001": "INS-001 — HIGH",
       "compare.ins005": "INS-005 — HIGH",
+      "alt.broken":
+        "5 toplam, 3 pass, 2 fail, 0 error gösteren ve INS-001 senaryosunu High önem dereceli hata olarak işaretleyen SINAMA Broken-mode test run sonuçları",
+      "shots.brokenCaption":
+        "Gerçek bir Broken-mode run'ı: 5 toplam, 3 pass, 2 fail, 0 error — INS-001 High önem dereceli hata olarak işaretlendi.",
 
       "evidence.eyebrow": "İncelenebilir Hata Kanıtı",
       "evidence.title": "Her başarısız senaryo kendi kanıtını gösterir.",
@@ -308,6 +328,10 @@ window.caseStudyPageData = {
       "evidence.item7": "Sorumlu event / kanıt",
       "evidence.example":
         "Mevcut regression örneğinde submit_claim, gerekli damage_photo toplama adımından önce tetiklendi — evaluator'ın tam olarak yakalamak üzere tasarlandığı türden erken bir aksiyon.",
+      "alt.evidence":
+        "Gerekli damage_photo henüz toplanmadığı için submit_claim'i policy violation kanıtı olarak işaretleyen SINAMA Tool Trace görünümü",
+      "shots.evidenceCaption":
+        "INS-001 için Tool Trace: submit_claim, gerekli damage_photo henüz toplanmadığı için policy-violation kanıtı olarak işaretlenir.",
 
       "external.eyebrow": "External HTTP Agent",
       "external.title":
