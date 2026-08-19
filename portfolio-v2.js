@@ -1,0 +1,360 @@
+(function () {
+  const registry = window.KAAN_PORTFOLIO;
+  if (!registry) return;
+
+  const state = {
+    role: "applied-ai",
+    evidenceScenario: "healthy"
+  };
+
+  const lang = () => (document.documentElement.lang === "tr" ? "tr" : "en");
+  const pick = (value, language = lang()) => {
+    if (value && typeof value === "object" && ("en" in value || "tr" in value)) {
+      return value[language] || value.en || value.tr || "";
+    }
+    return value ?? "";
+  };
+  const esc = (value) => String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+  function applyUnifiedCopy() {
+    const language = lang();
+    const pairs = [
+      ["pv2", "data-pv2-en", "data-pv2-tr"],
+      ["flagship", "data-flagship-en", "data-flagship-tr"],
+      ["sinama", "data-sinama-en", "data-sinama-tr"],
+      ["mr", "data-mr-en", "data-mr-tr"]
+    ];
+    pairs.forEach(([, enAttr, trAttr]) => {
+      document.querySelectorAll(`[${enAttr}][${trAttr}]`).forEach((node) => {
+        const value = node.getAttribute(language === "tr" ? trAttr : enAttr);
+        if (value !== null) node.textContent = value;
+      });
+    });
+    document.querySelectorAll("[data-pv2-aria-en][data-pv2-aria-tr]").forEach((node) => {
+      node.setAttribute("aria-label", node.getAttribute(language === "tr" ? "data-pv2-aria-tr" : "data-pv2-aria-en") || "");
+    });
+  }
+
+  function projectLinkMarkup(projectId, language = lang()) {
+    const project = registry.projects[projectId];
+    if (!project) return "";
+    const href = project.links?.caseStudy || project.links?.live || "works.html";
+    return `<a href="${esc(href)}"><strong>${esc(project.name)}</strong><small>${esc(pick(project.summary, language))}</small><span>${language === "tr" ? "Kanıtı aç" : "Open evidence"}</span></a>`;
+  }
+
+  function getRoleFromUrl() {
+    const requested = new URLSearchParams(window.location.search).get("role");
+    return requested && registry.recruiterProfiles[requested] ? requested : null;
+  }
+
+  function setRole(roleId, { updateUrl = true, rerender = true } = {}) {
+    if (!registry.recruiterProfiles[roleId]) return;
+    state.role = roleId;
+    if (updateUrl) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("role", roleId);
+      history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+    if (rerender && typeof renderRecruiterDrawer === "function") renderRecruiterDrawer(lang());
+  }
+
+  function recruiterCopy(language) {
+    return language === "tr"
+      ? {
+          label: "İK MODU V2",
+          title: "Role göre kanıt özeti",
+          lead: "Aynı portfolyoyu hedef role göre yeniden sıralar; iddia yerine ilgili proje ve deneyim kanıtını öne çıkarır.",
+          choose: "Profil odağı",
+          primary: "Ana kimlik",
+          focus: "Odak",
+          skills: "Ana yetkinlikler",
+          roles: "Rol uyumu",
+          proof: "Önerilen kanıt",
+          cv: "CV'yi Görüntüle",
+          email: "E-posta",
+          close: "Kapat",
+          updated: "Portfolyo verisi"
+        }
+      : {
+          label: "RECRUITER MODE V2",
+          title: "Evidence summary by role",
+          lead: "Reorders the same portfolio for a target role and prioritizes project evidence over generic claims.",
+          choose: "Profile focus",
+          primary: "Primary profile",
+          focus: "Focus",
+          skills: "Core capabilities",
+          roles: "Role fit",
+          proof: "Recommended evidence",
+          cv: "View Resume",
+          email: "Email Me",
+          close: "Close",
+          updated: "Portfolio data"
+        };
+  }
+
+  function renderRecruiterV2(language = lang()) {
+    const drawer = document.querySelector("[data-recruiter-drawer]");
+    if (!drawer) return;
+    const hadFocus = drawer.contains(document.activeElement);
+    const profile = registry.recruiterProfiles[state.role] || registry.recruiterProfiles["applied-ai"];
+    const copy = recruiterCopy(language);
+    drawer.innerHTML = `
+      <div class="recruiter-card recruiter-card-v2">
+        <button class="recruiter-close" type="button" data-recruiter-close aria-label="${esc(copy.close)}"><i class="bx bx-x" aria-hidden="true"></i></button>
+        <p class="eyebrow">${esc(copy.label)}</p>
+        <h2 id="recruiter-dialog-title">${esc(copy.title)}</h2>
+        <p id="recruiter-dialog-description">${esc(copy.lead)}</p>
+        <div class="recruiter-status"><span></span>${esc(pick(registry.profile.availability, language))}</div>
+        <div class="recruiter-data-note"><i class="bx bx-data"></i>${esc(copy.updated)} · ${esc(registry.updatedAt)}</div>
+        <h3>${esc(copy.choose)}</h3>
+        <div class="recruiter-role-switch" role="group" aria-label="${esc(copy.choose)}">
+          ${Object.entries(registry.recruiterProfiles).map(([id, item]) => `<button type="button" data-recruiter-role="${esc(id)}" class="${id === state.role ? "active" : ""}" aria-pressed="${id === state.role}">${esc(pick(item.label, language))}</button>`).join("")}
+        </div>
+        <h3>${esc(copy.primary)}</h3>
+        <div class="recruiter-primary-profile">${esc(pick(profile.profile, language))}</div>
+        <h3>${esc(copy.focus)}</h3>
+        <div class="mini-stack">${profile.focus.map((item) => `<span>${esc(item)}</span>`).join("")}</div>
+        <h3>${esc(copy.skills)}</h3>
+        <ul class="recruiter-proof-list recruiter-capability-list">${profile.skills.map((item) => `<li>${esc(pick(item, language))}</li>`).join("")}</ul>
+        <h3>${esc(copy.roles)}</h3>
+        <div class="recruiter-role-list">${profile.roles.map((item) => `<span>${esc(item)}</span>`).join("")}</div>
+        <h3>${esc(copy.proof)}</h3>
+        <div class="recruiter-links">${profile.evidence.map((id) => projectLinkMarkup(id, language)).join("")}</div>
+        <div class="recruiter-actions">
+          <a class="btn primary" href="${esc(registry.profile.resume)}" target="_blank" rel="noopener">${esc(copy.cv)}</a>
+          <a class="btn ghost" href="${esc(registry.profile.email)}">${esc(copy.email)}</a>
+          <a class="btn ghost" href="${esc(registry.profile.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>`;
+    drawer.querySelector("[data-recruiter-close]")?.addEventListener("click", () => setRecruiterMode(false));
+    drawer.querySelectorAll("[data-recruiter-role]").forEach((button) => {
+      button.addEventListener("click", () => setRole(button.dataset.recruiterRole));
+    });
+    if (hadFocus) drawer.querySelector("[data-recruiter-close]")?.focus();
+  }
+
+  function installRecruiterV2() {
+    if (typeof renderRecruiterDrawer !== "function" || typeof setRecruiterMode !== "function") return;
+    try {
+      renderRecruiterDrawer = renderRecruiterV2;
+      const initialRole = getRoleFromUrl();
+      if (initialRole) state.role = initialRole;
+      renderRecruiterDrawer(lang());
+      if (initialRole) setTimeout(() => setRecruiterMode(true, { restoreFocus: false }), 120);
+    } catch (error) {
+      console.warn("Recruiter Mode V2 could not replace legacy renderer", error);
+    }
+  }
+
+  function syncAjoop() {
+    if (typeof portfolioChatbotContent === "undefined" || typeof chatbotKeywordMap === "undefined") return;
+    const p = registry.projects;
+    const roleSummary = (language) => Object.values(registry.recruiterProfiles)
+      .map((item) => pick(item.label, language))
+      .join(" · ");
+
+    const copy = {
+      en: {
+        greeting: "Hey — Ajoop 3.0 here. I use the portfolio evidence registry to explain Kaan's current projects, role fit and proof. Ask about SINAMA, Merge Rush, Applied AI, Solution Engineering or the latest build.",
+        quicks: [
+          { id: "sinama", label: "SINAMA evidence" },
+          { id: "mergeRush", label: "Merge Rush evidence" },
+          { id: "roles", label: "Role fit" },
+          { id: "latestBuild", label: "Latest build" },
+          { id: "projects", label: "Best projects" },
+          { id: "cv", label: "CV & contact" }
+        ]
+      },
+      tr: {
+        greeting: "Selam — Ajoop 3.0 burada. Kaan'ın güncel projelerini, role uygunluğunu ve kanıtlarını portfolio evidence registry üzerinden anlatıyorum. SINAMA, Merge Rush, Applied AI, Solution Engineering veya son build'i sorabilirsin.",
+        quicks: [
+          { id: "sinama", label: "SINAMA kanıtı" },
+          { id: "mergeRush", label: "Merge Rush kanıtı" },
+          { id: "roles", label: "Role uygunluk" },
+          { id: "latestBuild", label: "Son build" },
+          { id: "projects", label: "En iyi projeler" },
+          { id: "cv", label: "CV & iletişim" }
+        ]
+      }
+    };
+
+    ["en", "tr"].forEach((language) => {
+      const target = portfolioChatbotContent[language];
+      if (!target) return;
+      target.greeting = copy[language].greeting;
+      target.quicks = copy[language].quicks;
+      target.answers.sinama = {
+        text: [
+          `${p.sinama.name}: ${pick(p.sinama.summary, language)} Evidence: ${p.sinama.proof.slice(0, 3).map((item) => pick(item, language)).join("; ")}.`,
+          language === "tr" ? "SINAMA'nın güçlü tarafı yalnızca chat çıktısını değil transcript + Tool Trace + workflow contract kanıtını release kararına bağlaması." : "SINAMA's strongest proof is that it connects transcript + Tool Trace + workflow-contract evidence to a release decision."
+        ],
+        links: [
+          { label: language === "tr" ? "SINAMA Vaka Çalışması" : "SINAMA Case Study", url: p.sinama.links.caseStudy },
+          { label: language === "tr" ? "Canlı Ürün" : "Live Product", url: p.sinama.links.live },
+          { label: "GitHub", url: p.sinama.links.github }
+        ]
+      };
+      target.answers.mergeRush = {
+        text: [
+          `${p.mergeRush.name}: ${pick(p.mergeRush.summary, language)} Evidence: ${p.mergeRush.proof.slice(0, 4).map((item) => pick(item, language)).join("; ")}.`,
+          language === "tr" ? "Proje aktif geliştirmede; public case study gerçek implementasyon ve QA kanıtını gösteriyor, private repo'yu açmıyor." : "The project is in active development; the public case study exposes implemented systems and QA evidence without exposing the private repository."
+        ],
+        links: [{ label: language === "tr" ? "Merge Rush Vaka Çalışması" : "Merge Rush Case Study", url: p.mergeRush.links.caseStudy }]
+      };
+      target.answers.roles = {
+        text: [
+          language === "tr" ? `Role profilleri: ${roleSummary(language)}. İK Modu V2 aynı portfolyoyu seçilen role göre kanıt sırasıyla yeniden düzenler.` : `Role profiles: ${roleSummary(language)}. Recruiter Mode V2 reorders the same portfolio by evidence for the selected role.`,
+          language === "tr" ? "Applied AI için SINAMA + CBOT yönü; Solution Engineering için CBOT + SINAMA + Joyday; Software için SINAMA backend + Hospital; Game için Merge Rush öne çıkar." : "Applied AI prioritizes SINAMA + CBOT; Solution Engineering prioritizes CBOT + SINAMA + Joyday; Software prioritizes SINAMA backend + Hospital; Game prioritizes Merge Rush."
+        ],
+        links: [{ label: language === "tr" ? "İK Modunu aç" : "Open Recruiter Mode", url: "index.html?role=applied-ai" }, { label: language === "tr" ? "Hakkımda" : "About", url: "about.html" }]
+      };
+      target.answers.latestBuild = {
+        text: registry.buildLog.slice(0, 3).map((entry) => `${entry.date} · ${entry.area} · ${pick(entry.title, language)} — ${pick(entry.detail, language)}`),
+        links: [{ label: language === "tr" ? "Build Log" : "Build Log", url: "now.html" }]
+      };
+      target.answers.projects = {
+        text: [
+          language === "tr" ? "Güncel iki flagship ürün SINAMA ve Merge Rush. SINAMA Applied AI / reliability engineering; Merge Rush game-system / interactive product engineering tarafının ana kanıtı. Joyday gerçek işletme ürünü, AI Chatbot Flow Design ise enterprise conversational-AI deneyiminin güçlü desteği." : "The two current flagship products are SINAMA and Merge Rush. SINAMA is the main Applied AI / reliability-engineering proof; Merge Rush is the main game-system / interactive-product proof. Joyday adds real-business product ownership and AI Chatbot Flow Design adds enterprise conversational-AI evidence."
+        ],
+        links: [{ label: language === "tr" ? "Projeler" : "Works", url: "works.html" }, { label: "SINAMA", url: p.sinama.links.caseStudy }, { label: "Merge Rush", url: p.mergeRush.links.caseStudy }]
+      };
+    });
+
+    const upsert = (id, keywords) => {
+      let entry = chatbotKeywordMap.find((item) => item.id === id);
+      if (!entry) {
+        entry = { id, keywords: [] };
+        chatbotKeywordMap.unshift(entry);
+      }
+      const known = new Set(entry.keywords.map((item) => item.toLowerCase()));
+      keywords.forEach((keyword) => {
+        if (!known.has(keyword.toLowerCase())) entry.keywords.push(keyword);
+      });
+    };
+    upsert("sinama", ["sinama", "reliability", "regression", "readiness", "tool trace", "agent test"]);
+    upsert("mergeRush", ["merge rush", "tiny factory", "phaser", "playables", "factory run", "endless"]);
+    upsert("roles", ["applied ai", "solution engineer", "forward deployed", "role fit", "pozisyon", "uygunluk"]);
+    upsert("latestBuild", ["latest", "build", "now", "son build", "güncel", "ne yapıyor"]);
+    if (typeof updatePortfolioChatbotLanguage === "function") updatePortfolioChatbotLanguage(lang());
+  }
+
+  function extendCommands() {
+    if (typeof ultimateContent === "undefined") return;
+    const commands = {
+      en: [
+        { id: "labs-v2", label: "Open Kaan Labs", hint: "Technical experiments", keywords: "labs experiments canvas ai flow", type: "nav", value: "labs.html" },
+        { id: "now-v2", label: "Open Build Log", hint: "What is being built now", keywords: "now build log latest status", type: "nav", value: "now.html" },
+        { id: "applied-ai-role", label: "Applied AI Recruiter View", hint: "Open role-specific evidence", keywords: "applied ai role recruiter", type: "nav", value: "index.html?role=applied-ai" }
+      ],
+      tr: [
+        { id: "labs-v2", label: "Kaan Labs'i Aç", hint: "Teknik deneyler", keywords: "labs deneyler canvas ai flow", type: "nav", value: "labs.html" },
+        { id: "now-v2", label: "Build Log'u Aç", hint: "Şu an ne geliştiriliyor", keywords: "now build log son durum güncel", type: "nav", value: "now.html" },
+        { id: "applied-ai-role", label: "Applied AI İK Görünümü", hint: "Role özel kanıt görünümü", keywords: "applied ai role ik recruiter", type: "nav", value: "index.html?role=applied-ai" }
+      ]
+    };
+    ["en", "tr"].forEach((language) => {
+      commands[language].forEach((command) => {
+        if (!ultimateContent[language].commands.some((item) => item.id === command.id)) ultimateContent[language].commands.push(command);
+      });
+    });
+    if (typeof renderCommandPalette === "function") renderCommandPalette(lang());
+  }
+
+  function buildLogMarkup(entry, language) {
+    const statusLabel = {
+      shipped: language === "tr" ? "Shipped" : "Shipped",
+      building: language === "tr" ? "Building" : "Building",
+      integration: language === "tr" ? "Integration" : "Integration"
+    }[entry.status] || entry.status;
+    return `<article class="build-log-item"><time datetime="${esc(entry.date)}">${esc(entry.date)}</time><div><div class="build-log-meta"><span>${esc(entry.area)}</span><span class="build-log-status is-${esc(entry.status)}">${esc(statusLabel)}</span></div><h3>${esc(pick(entry.title, language))}</h3><p>${esc(pick(entry.detail, language))}</p></div></article>`;
+  }
+
+  function renderBuildLogs() {
+    document.querySelectorAll("[data-build-log]").forEach((container) => {
+      const limit = Number(container.dataset.buildLogLimit || registry.buildLog.length);
+      container.innerHTML = registry.buildLog.slice(0, limit).map((entry) => buildLogMarkup(entry, lang())).join("");
+    });
+  }
+
+  function renderLabCards() {
+    document.querySelectorAll("[data-labs-grid]").forEach((container) => {
+      container.innerHTML = registry.labs.map((item) => `<article class="lab-card"><div class="lab-card-top"><span>${esc(pick(item.type))}</span><i class="bx bx-flask"></i></div><h3>${esc(item.title)}</h3><p>${esc(pick(item.description))}</p><div class="project-tags">${item.tags.map((tag) => `<span>${esc(tag)}</span>`).join("")}</div><a href="${esc(item.url)}">${lang() === "tr" ? "Deneyi aç" : "Open experiment"}<i class="bx bx-right-arrow-alt"></i></a></article>`).join("");
+    });
+  }
+
+  function renderEvidenceExplorer() {
+    const root = document.querySelector("[data-sinama-evidence]");
+    if (!root) return;
+    const language = lang();
+    const scenario = registry.sinamaEvidence[state.evidenceScenario];
+    const labels = language === "tr"
+      ? { conversation: "Conversation", tools: "Tool Trace", evaluation: "Evaluation", healthy: "Healthy Run", broken: "Broken Run", verdict: "Release verdict" }
+      : { conversation: "Conversation", tools: "Tool Trace", evaluation: "Evaluation", healthy: "Healthy Run", broken: "Broken Run", verdict: "Release verdict" };
+    root.innerHTML = `
+      <div class="evidence-toolbar" role="group" aria-label="SINAMA example run">
+        <button type="button" data-evidence-scenario="healthy" class="${state.evidenceScenario === "healthy" ? "active" : ""}" aria-pressed="${state.evidenceScenario === "healthy"}">${esc(labels.healthy)}</button>
+        <button type="button" data-evidence-scenario="broken" class="${state.evidenceScenario === "broken" ? "active" : ""}" aria-pressed="${state.evidenceScenario === "broken"}">${esc(labels.broken)}</button>
+      </div>
+      <div class="evidence-verdict is-${scenario.status.toLowerCase()}"><span>${esc(labels.verdict)}</span><strong>${esc(scenario.status)}</strong><p>${esc(pick(scenario.summary, language))}</p></div>
+      <div class="evidence-grid">
+        <article><p class="eyebrow">${esc(labels.conversation)}</p><div class="evidence-conversation">${scenario.conversation.map((turn) => `<div><strong>${esc(turn.speaker)}</strong><p>${esc(pick(turn.text, language))}</p></div>`).join("")}</div></article>
+        <article><p class="eyebrow">${esc(labels.tools)}</p><ol class="evidence-tools">${scenario.toolTrace.map((tool) => `<li><code>${esc(tool)}</code></li>`).join("")}</ol></article>
+        <article><p class="eyebrow">${esc(labels.evaluation)}</p><ul class="evidence-findings">${scenario.findings.map((finding) => `<li class="is-${finding.level.toLowerCase()}"><strong>${esc(finding.level)}</strong><span>${esc(pick(finding.text, language))}</span></li>`).join("")}</ul></article>
+      </div>`;
+    root.querySelectorAll("[data-evidence-scenario]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.evidenceScenario = button.dataset.evidenceScenario;
+        renderEvidenceExplorer();
+      });
+    });
+  }
+
+  function installRequestReceipt() {
+    const status = document.querySelector("[data-request-status]");
+    if (!status || !window.MutationObserver) return;
+    const observer = new MutationObserver(() => {
+      if (!status.classList.contains("success") || status.querySelector("[data-request-receipt]")) return;
+      const receipt = document.createElement("div");
+      receipt.className = "request-receipt";
+      receipt.dataset.requestReceipt = "";
+      const stamp = new Date();
+      const reference = `KB-${stamp.getFullYear()}${String(stamp.getMonth() + 1).padStart(2, "0")}${String(stamp.getDate()).padStart(2, "0")}-${String(stamp.getHours()).padStart(2, "0")}${String(stamp.getMinutes()).padStart(2, "0")}`;
+      receipt.innerHTML = `<strong>${lang() === "tr" ? "Tarayıcı gönderim referansı" : "Browser submission reference"}: ${esc(reference)}</strong><span>${lang() === "tr" ? "Bu referans server confirmation değildir; Apps Script no-cors akışı nedeniyle tarayıcı teslimatı doğrulayamaz." : "This is not a server confirmation; the browser cannot verify delivery through the Apps Script no-cors flow."}</span>`;
+      status.appendChild(receipt);
+    });
+    observer.observe(status, { childList: true, subtree: true, attributes: true });
+  }
+
+  function installLanguageObserver() {
+    const observer = new MutationObserver((records) => {
+      if (!records.some((record) => record.attributeName === "lang")) return;
+      applyUnifiedCopy();
+      syncAjoop();
+      renderBuildLogs();
+      renderLabCards();
+      renderEvidenceExplorer();
+      if (typeof renderRecruiterDrawer === "function") renderRecruiterDrawer(lang());
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+  }
+
+  function init() {
+    applyUnifiedCopy();
+    installRecruiterV2();
+    syncAjoop();
+    extendCommands();
+    renderBuildLogs();
+    renderLabCards();
+    renderEvidenceExplorer();
+    installRequestReceipt();
+    installLanguageObserver();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
+})();
