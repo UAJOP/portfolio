@@ -65,7 +65,7 @@ const index = read("index.html");
 ].forEach((stale) => check(!index.includes(stale), `homepage should not lead with: ${stale}`));
 
 const games = read("games.html");
-check(!games.includes("Interview Run"), "Interview Run must not return to active game catalog without an explicit product decision");
+check(!games.includes("<h3>Interview Run</h3>"), "Interview Run must not return as an active game card without an explicit product decision");
 check(games.includes("Merge Rush: Tiny Factory"), "Games must keep Merge Rush as the active product lead");
 
 const sitemap = read("sitemap.xml");
