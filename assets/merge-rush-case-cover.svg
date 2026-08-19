@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Merge Rush Tiny Factory portfolio preview</title>
+  <desc id="desc">Stylized factory merge board with orders, repair progression and responsive game HUD.</desc>
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101726"/><stop offset="1" stop-color="#23334b"/></linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbbf24"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+  </defs>
+  <rect width="1200" height="720" rx="38" fill="url(#bg2)"/>
+  <g font-family="Inter,Arial,sans-serif">
+    <text x="72" y="88" fill="#f8fbff" font-weight="900" font-size="44">MERGE RUSH</text>
+    <text x="74" y="120" fill="#9fb0c8" font-size="19" font-weight="700">TINY FACTORY • YouTube Playables prototype</text>
+
+    <rect x="70" y="154" width="780" height="508" rx="28" fill="#0b1220" stroke="#ffffff" stroke-opacity=".12"/>
+    <rect x="94" y="178" width="732" height="84" rx="20" fill="#151f30"/>
+    <text x="122" y="210" fill="#8aa0bc" font-size="14" font-weight="800">FACTORY RUN • 03:12</text>
+    <text x="122" y="242" fill="#f8fbff" font-size="24" font-weight="900">ROBOTICS BAY</text>
+    <rect x="538" y="202" width="250" height="14" rx="7" fill="#26364b"/><rect x="538" y="202" width="178" height="14" rx="7" fill="url(#orange)"/>
+    <text x="538" y="239" fill="#fbbf24" font-size="14" font-weight="800">REPAIR ENERGY 1,740 / 2,400</text>
+
+    <g transform="translate(114 288)">
+      <rect width="460" height="344" rx="22" fill="#121b29" stroke="#ffffff" stroke-opacity=".08"/>
+      <g stroke="#ffffff" stroke-opacity=".08" stroke-width="2">
+        <path d="M92 0v344M184 0v344M276 0v344M368 0v344"/>
+        <path d="M0 68.8h460M0 137.6h460M0 206.4h460M0 275.2h460"/>
+      </g>
+      <g>
+        <rect x="13" y="13" width="66" height="43" rx="12" fill="#64748b" opacity=".35"/>
+        <rect x="105" y="13" width="66" height="43" rx="12" fill="#64748b" opacity=".35"/>
+        <rect x="197" y="13" width="66" height="43" rx="12" fill="#64748b" opacity=".18"/>
+        <rect x="289" y="13" width="66" height="43" rx="12" fill="#64748b" opacity=".18"/>
+        <rect x="381" y="13" width="66" height="43" rx="12" fill="#64748b" opacity=".18"/>
+      </g>
+      <g fill="url(#blue)" stroke="#dff9ff" stroke-opacity=".5">
+        <circle cx="46" cy="103" r="25"/><circle cx="138" cy="103" r="25"/>
+      </g>
+      <g fill="url(#orange)" stroke="#fff7d6" stroke-opacity=".45">
+        <rect x="202" y="82" width="148" height="42" rx="16"/>
+      </g>
+      <g fill="#a78bfa" stroke="#ede9fe" stroke-opacity=".45"><rect x="290" y="157" width="68" height="112" rx="18"/></g>
+      <g fill="#34d399" stroke="#d1fae5" stroke-opacity=".45"><rect x="30" y="227" width="148" height="92" rx="20"/></g>
+      <g fill="#fb7185" stroke="#ffe4e6" stroke-opacity=".45"><rect x="214" y="240" width="148" height="79" rx="20"/></g>
+      <circle cx="414" cy="241" r="19" fill="#fbbf24" opacity=".9"/><path d="M405 241h18M414 232v18" stroke="#422006" stroke-width="5" stroke-linecap="round"/>
+    </g>
+
+    <rect x="596" y="288" width="230" height="158" rx="20" fill="#151f30"/>
+    <text x="620" y="322" fill="#8aa0bc" font-size="14" font-weight="800">ACTIVE ORDER</text>
+    <text x="620" y="366" fill="#f8fbff" font-size="28" font-weight="900">MACHINE</text>
+    <text x="620" y="397" fill="#fbbf24" font-size="17" font-weight="800">1 × 2 FOOTPRINT</text>
+    <rect x="620" y="416" width="174" height="10" rx="5" fill="#26364b"/><rect x="620" y="416" width="104" height="10" rx="5" fill="#fb7185"/>
+
+    <rect x="596" y="464" width="230" height="168" rx="20" fill="#151f30"/>
+    <text x="620" y="498" fill="#8aa0bc" font-size="14" font-weight="800">SYSTEMS</text>
+    <text x="620" y="532" fill="#dce7f5" font-size="16">✓ Multi-cell footprints</text>
+    <text x="620" y="562" fill="#dce7f5" font-size="16">✓ Deadlock-aware board</text>
+    <text x="620" y="592" fill="#dce7f5" font-size="16">✓ Factory Run + Endless</text>
+    <text x="620" y="622" fill="#dce7f5" font-size="16">✓ Responsive input + HUD</text>
+
+    <rect x="884" y="154" width="246" height="508" rx="28" fill="#0c1421" stroke="#ffffff" stroke-opacity=".1"/>
+    <text x="914" y="200" fill="#8aa0bc" font-size="14" font-weight="800">PRODUCT LOOP</text>
+    <g font-size="16" font-weight="800">
+      <rect x="914" y="226" width="186" height="54" rx="16" fill="#17273b"/><text x="938" y="260" fill="#e5f6ff">DROP &amp; MERGE</text>
+      <path d="M1007 283v24" stroke="#38bdf8" stroke-width="4"/>
+      <rect x="914" y="310" width="186" height="54" rx="16" fill="#17273b"/><text x="938" y="344" fill="#e5f6ff">FULFILL ORDER</text>
+      <path d="M1007 367v24" stroke="#38bdf8" stroke-width="4"/>
+      <rect x="914" y="394" width="186" height="54" rx="16" fill="#17273b"/><text x="938" y="428" fill="#e5f6ff">REPAIR FACTORY</text>
+      <path d="M1007 451v24" stroke="#38bdf8" stroke-width="4"/>
+      <rect x="914" y="478" width="186" height="54" rx="16" fill="#17273b"/><text x="938" y="512" fill="#e5f6ff">UNLOCK SPACE</text>
+    </g>
+    <rect x="914" y="568" width="186" height="52" rx="26" fill="url(#orange)"/>
+    <text x="1007" y="601" text-anchor="middle" fill="#271201" font-size="16" font-weight="900">PHASER 3 + TS</text>
+  </g>
+</svg>
