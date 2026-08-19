@@ -77,8 +77,9 @@ const request = read("request.html");
 check(request.includes("no-cors"), "request page must disclose the no-cors confirmation limitation");
 
 const architecture = read("PORTFOLIO_ARCHITECTURE.md");
-check(architecture.includes("source-of-truth"), "architecture document must keep the source-of-truth rule");
-check(architecture.includes("does not claim a live LLM"), "architecture document must keep Ajoop scope explicit");
+const normalizedArchitecture = architecture.toLowerCase();
+check(normalizedArchitecture.includes("source-of-truth"), "architecture document must keep the source-of-truth rule");
+check(normalizedArchitecture.includes("does not claim a live llm"), "architecture document must keep Ajoop scope explicit");
 
 if (failures.length) {
   console.error(`Portfolio consistency guard failed with ${failures.length} issue(s):`);
