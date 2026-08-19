@@ -2,53 +2,92 @@
 
 Source code for [kaanbalci.com](https://kaanbalci.com), the professional portfolio of **Kaan Balcı — AI Designer & Software Developer**.
 
-## Professional focus
+## Current positioning
 
-- Conversational AI and chatbot flow design
-- Solution engineering
-- LLM response, reasoning, code and multimodal evaluation
-- Workflow automation and n8n-style logic
-- User-centered software products
-- Python, C#/.NET, JavaScript, PHP and SQL
+The public portfolio is centered on:
 
-Game development, mobile development and interactive projects remain part of the wider portfolio, while the main public positioning is centered on AI and software roles.
+- Applied AI and AI Agent Reliability
+- AI Solutions / Solution Engineering
+- Conversational AI and workflow design
+- LLM evaluation and evidence-based QA
+- Python / FastAPI / PostgreSQL product work
+- TypeScript product and interactive systems
+
+Two current flagship products lead the portfolio:
+
+- **SINAMA — AI Agent Reliability Lab**
+- **Merge Rush: Tiny Factory**
+
+## Portfolio Architecture V2
+
+Current product truth is centralized in `portfolio-data.js` and consumed by `portfolio-v2.js`.
+
+This registry powers or synchronizes:
+
+- Recruiter Mode V2
+- Role-specific recruiter deep links
+- Ajoop 3.0 evidence answers
+- Build Log
+- Kaan Labs
+- SINAMA Evidence Explorer
+- Shared bilingual V2 copy
+
+See [`PORTFOLIO_ARCHITECTURE.md`](PORTFOLIO_ARCHITECTURE.md) before adding new flagship facts or recruiter evidence.
 
 ## Main pages
 
-- `index.html` — Landing page, focus areas, recent experience, selected work and contact hub
-- `works.html` — Filterable project catalog
-- `games.html` — Interactive web games catalog
-- `adventure.html` — Career Adventure mini game
-- `joyday-paint.html` — Joyday Action Painting experience
-- `ai-flow-puzzle.html` — n8n-inspired chatbot workflow puzzle
-- `project-detail.html` — Dynamic project detail page
-- `blog.html` — Professional experience timeline
-- `single-work.html` — Training and course certificate gallery
-- `about.html` — Professional profile and capability map
-- `request.html` — Project request form
-- `script.js` — Navigation, EN/TR translation, Ajoop, Recruiter Mode, Command Palette and dynamic project content
-- `style.css` — Responsive site styling
+- `index.html` — concise landing page led by flagship evidence
+- `works.html` — curated professional project catalog
+- `sinama-case-study.html` — Applied AI / reliability flagship case study + evidence explorer
+- `merge-rush-case-study.html` — game / interactive flagship case study + QA evidence
+- `blog.html` — professional experience timeline
+- `about.html` — profile and capability map
+- `request.html` — structured project inquiry
+- `now.html` — living product / engineering build log
+- `labs.html` — technical experiments separated from the main professional narrative
+- `games.html` — active game product + playable browser work
+- `single-work.html` — training and certificates
+- `project-detail.html` — dynamic archive project detail route (`noindex`)
+
+## Core files
+
+- `portfolio-data.js` — source of truth for current flagship/project/recruiter/build data
+- `portfolio-v2.js` — V2 runtime and evidence surfaces
+- `portfolio-v2.css` — V2 component styling
+- `script.js` — legacy/global site runtime: navigation, theme, existing translations, dynamic archive details, chatbot shell, command palette and interactive utilities
+- `style.css` — global styling primitives and legacy component styles
+
+`flagship-copy.js` has been retired; its responsibilities moved to the registry + V2 runtime.
+
+## Recruiter deep links
+
+- `/?role=applied-ai`
+- `/?role=solution-engineering`
+- `/?role=software`
+- `/?role=game`
+
+A valid role parameter selects the matching evidence profile and opens Recruiter Mode on V2-enabled pages.
 
 ## Resume
 
-All public resume actions use one centralized resume URL in `script.js`:
+The public resume URL is still centralized by the legacy runtime and mirrored in the V2 registry:
 
-```js
-const resumeLink = "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing";
-```
+`https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing`
 
-Public buttons use labels such as **View Resume** or **Download Resume**. Role-specific application CVs are intentionally not exposed on the website.
+Role-specific private application CVs are intentionally not exposed.
 
-## Current links
+## QA
 
-- Portfolio: [kaanbalci.com](https://kaanbalci.com)
-- Resume: [View Resume](https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing)
-- LinkedIn: [linkedin.com/in/balcikaan](https://www.linkedin.com/in/balcikaan/)
-- GitHub: [github.com/UAJOP](https://github.com/UAJOP)
-- Email: [kaanb8776@gmail.com](mailto:kaanb8776@gmail.com)
+GitHub Actions runs Site Preflight checks for:
+
+- HTML validation
+- spelling
+- mobile WCAG 2 AA with Pa11y
+- Lighthouse performance / accessibility / best practices / SEO
+- broken links
+
+V2 adds `labs.html` and `now.html` to automated accessibility and Lighthouse coverage.
 
 ## Deployment
 
 The repository is configured for GitHub Pages with the custom domain in `CNAME`.
-
-Keep the existing `assets` directory unchanged when replacing the updated code files, because the HTML pages reference the current portfolio images, certificates and logos from that directory.
