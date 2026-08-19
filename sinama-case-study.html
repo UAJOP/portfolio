@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="SINAMA is a Turkish-first AI agent reliability lab for multi-turn scenario testing, deterministic tool-call evaluation, regression detection and inspectable failure evidence." name="description"/>
+<meta content="SINAMA is a Turkish-first AI agent reliability lab for multi-turn scenario testing, deterministic workflow evaluation, cross-vertical test suites, regression trends and evidence-backed release readiness." name="description"/>
 <meta content="Kaan Balcı" name="author"/>
 <meta content="#07111f" name="theme-color"/>
 <meta content="index, follow" name="robots"/>
@@ -12,7 +12,7 @@
 <meta content="Kaan Balcı Portfolio" property="og:site_name"/>
 <meta content="en_US" property="og:locale"/>
 <meta content="SINAMA — AI Agent Reliability Lab Case Study | Kaan Balcı" property="og:title"/>
-<meta content="SINAMA is a Turkish-first AI agent reliability lab for multi-turn scenario testing, deterministic tool-call evaluation, regression detection and inspectable failure evidence." property="og:description"/>
+<meta content="A Turkish-first AI agent reliability lab with deterministic workflow evidence, cross-vertical suites, regression trends and release-readiness verdicts." property="og:description"/>
 <meta content="https://kaanbalci.com/sinama-case-study.html" property="og:url"/>
 <meta content="article" property="og:type"/>
 <meta content="https://kaanbalci.com/assets/sinama-social-cover.png" property="og:image"/>
@@ -21,54 +21,26 @@
 <meta content="SINAMA AI Agent Reliability Lab social cover" property="og:image:alt"/>
 <meta content="summary_large_image" name="twitter:card"/>
 <meta content="SINAMA — AI Agent Reliability Lab Case Study | Kaan Balcı" name="twitter:title"/>
-<meta content="SINAMA is a Turkish-first AI agent reliability lab for multi-turn scenario testing, deterministic tool-call evaluation, regression detection and inspectable failure evidence." name="twitter:description"/>
+<meta content="Turkish-first AI agent reliability testing with deterministic evidence, regression trends and release readiness." name="twitter:description"/>
 <meta content="https://kaanbalci.com/assets/sinama-social-cover.png" name="twitter:image"/>
 <meta content="SINAMA AI Agent Reliability Lab social cover" name="twitter:image:alt"/>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "CreativeWork",
-  "name": "SINAMA",
-  "headline": "SINAMA — AI Agent Reliability Lab Case Study",
-  "description": "A Turkish-first reliability lab for testing customer-service AI agents before release through multi-turn scenarios, tool-call validation and inspectable regression evidence.",
-  "url": "https://kaanbalci.com/sinama-case-study.html",
+  "@type": "SoftwareApplication",
+  "name": "SINAMA — AI Agent Reliability Lab",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "description": "A Turkish-first reliability lab for testing customer-service AI agents through repeatable multi-turn scenarios, deterministic workflow contracts, regression evidence and release-readiness policy.",
+  "url": "https://sinama.kaanbalci.com",
   "image": "https://kaanbalci.com/assets/sinama-social-cover.png",
-  "author": {
-    "@type": "Person",
-    "name": "Kaan Balcı",
-    "url": "https://kaanbalci.com/"
-  },
+  "author": {"@type":"Person","name":"Kaan Balcı","url":"https://kaanbalci.com/"},
   "dateCreated": "2026",
   "inLanguage": ["en", "tr"],
-  "keywords": [
-    "AI agent reliability",
-    "agent evaluation",
-    "multi-turn scenario testing",
-    "deterministic tool-call evaluation",
-    "regression detection",
-    "FastAPI",
-    "Next.js"
-  ],
-  "sameAs": "https://github.com/UAJOP/sinama",
-  "isPartOf": {
-    "@type": "WebSite",
-    "name": "Kaan Balcı Portfolio",
-    "url": "https://kaanbalci.com/"
-  },
-  "mainEntityOfPage": "https://kaanbalci.com/sinama-case-study.html"
+  "sameAs": "https://github.com/UAJOP/sinama"
 }
 </script>
-<script>
-  (function () {
-    try {
-      var savedTheme = localStorage.getItem("kaanbalci-site-theme");
-      var preferredTheme = savedTheme || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
-      document.documentElement.setAttribute("data-theme", preferredTheme);
-    } catch (error) {
-      document.documentElement.setAttribute("data-theme", "dark");
-    }
-  })();
-</script>
+<script>(function(){try{var savedTheme=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",savedTheme==="light"?"light":"dark");}catch(error){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
@@ -76,352 +48,91 @@
 <link href="style.css" rel="stylesheet"/>
 <link href="case-study.css" rel="stylesheet"/>
 <link href="assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" rel="icon" type="image/x-icon"/>
+<style>
+.case-release-badge{display:inline-flex;align-items:center;gap:.55rem;padding:.65rem .9rem;border:1px solid rgba(52,211,153,.3);border-radius:999px;background:rgba(52,211,153,.08);color:var(--success);font-weight:850;font-size:.82rem;margin-bottom:1rem}.case-integration-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border:1px solid rgba(251,191,36,.3);border-radius:999px;background:rgba(251,191,36,.08);color:var(--warning);font-weight:850;font-size:.78rem}.case-rule-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.case-rule-grid article{padding:1.1rem;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035)}.case-rule-grid strong{display:block;margin-bottom:.35rem}.case-note{padding:1rem 1.1rem;border-left:3px solid var(--brand);background:rgba(56,189,248,.055);border-radius:0 16px 16px 0}.case-note.warning{border-left-color:var(--warning);background:rgba(251,191,36,.055)}.case-result-good{color:var(--success);font-weight:900}.case-result-bad{color:var(--danger);font-weight:900}@media(max-width:720px){.case-rule-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body class="case-study-page">
-<a class="skip-link" data-case-i18n="skip.content" href="#main-content">Skip to content</a>
+<a class="skip-link" href="#main-content">Skip to content</a>
 <header class="site-header">
-<a aria-label="Kaan Balcı home page" class="brand" href="index.html">
-<img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/>
-<span>Kaan Balcı</span>
-</a>
+<a aria-label="Kaan Balcı home page" class="brand" href="index.html"><img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/><span>Kaan Balcı</span></a>
 <a aria-label="Available for roles" class="availability-badge" data-availability-badge="" href="mailto:kaanb8776@gmail.com"><span></span><strong>Open for work</strong></a>
-<nav class="nav-links" data-nav="" id="site-navigation">
-<a href="index.html">Home</a>
-<a class="selected" href="works.html">Works</a>
-<a href="games.html">Games</a>
-<a href="blog.html">Experience</a>
-<a href="single-work.html">Certificates</a>
-<a href="request.html">Request</a>
-<a href="about.html">About</a>
-</nav>
-<div class="header-actions">
-<button aria-label="Open recruiter mode" class="recruiter-toggle" data-recruiter-toggle="" title="Recruiter Mode" type="button"><i class="bx bx-briefcase-alt-2"></i><span data-recruiter-label="">Recruiter Mode</span></button>
-<button aria-label="Search" class="command-toggle" data-command-toggle="" title="Search" type="button"><i class="bx bx-search"></i><span data-command-label="">Search</span></button>
-<div aria-label="Language selector" class="lang-switch">
-<button class="active" data-lang-switch="en" type="button">EN</button>
-<button data-lang-switch="tr" type="button">TR</button>
-</div>
-<button aria-label="Switch theme" class="theme-toggle" data-theme-toggle="" title="Switch theme" type="button"><i class="bx bx-moon"></i><span data-theme-label="">Dark</span></button>
-<button aria-controls="site-navigation" aria-expanded="false" aria-label="Open navigation" class="nav-toggle" type="button"><span></span><span></span></button>
-</div>
+<nav class="nav-links" data-nav="" id="site-navigation"><a href="index.html">Home</a><a class="selected" href="works.html">Works</a><a href="games.html">Games</a><a href="blog.html">Experience</a><a href="single-work.html">Certificates</a><a href="request.html">Request</a><a href="about.html">About</a></nav>
+<div class="header-actions"><button aria-label="Open recruiter mode" class="recruiter-toggle" data-recruiter-toggle="" title="Recruiter Mode" type="button"><i class="bx bx-briefcase-alt-2"></i><span data-recruiter-label="">Recruiter Mode</span></button><button aria-label="Search" class="command-toggle" data-command-toggle="" title="Search" type="button"><i class="bx bx-search"></i><span data-command-label="">Search</span></button><div aria-label="Language selector" class="lang-switch"><button class="active" data-lang-switch="en" type="button">EN</button><button data-lang-switch="tr" type="button">TR</button></div><button aria-label="Switch theme" class="theme-toggle" data-theme-toggle="" title="Switch theme" type="button"><i class="bx bx-moon"></i><span data-theme-label="">Dark</span></button><button aria-controls="site-navigation" aria-expanded="false" aria-label="Open navigation" class="nav-toggle" type="button"><span></span><span></span></button></div>
 </header>
-
 <main id="main-content">
 <section class="case-hero section-shell">
 <div>
-<p class="eyebrow" data-case-i18n="hero.eyebrow">AI Agent Reliability Project</p>
+<p class="eyebrow sinama-copy" data-sinama-en="AI Agent Reliability Project" data-sinama-tr="AI Agent Güvenilirlik Projesi">AI Agent Reliability Project</p>
+<div class="case-release-badge"><i class="bx bx-check-shield"></i><span class="sinama-copy" data-sinama-en="Stable product track: Live MVP" data-sinama-tr="Stable ürün hattı: Live MVP">Stable product track: Live MVP</span></div>
 <h1>SINAMA</h1>
-<p class="case-hero-lead" data-case-i18n="hero.lead">A Turkish-first reliability lab for testing customer-service AI agents before release through multi-turn scenarios, tool-call validation and inspectable regression evidence.</p>
-<dl class="case-meta-grid">
-<div><dt data-case-i18n="hero.statusLabel">Status</dt><dd data-case-i18n="hero.status">Live MVP</dd></div>
-<div><dt data-case-i18n="hero.yearLabel">Year</dt><dd>2026</dd></div>
-<div><dt data-case-i18n="hero.roleLabel">Role</dt><dd data-case-i18n="hero.role">Product Designer &amp; Full-Stack Developer</dd></div>
-<div><dt data-case-i18n="hero.typeLabel">Project type</dt><dd data-case-i18n="hero.type">Independent Product / Portfolio Project</dd></div>
-</dl>
-<div aria-label="Project technologies" class="case-stack" data-case-i18n-aria-label="aria.technologies">
-<span>Next.js</span><span>React</span><span>Python</span><span>FastAPI</span><span>AI Evaluation</span><span>Agent Testing</span><span>REST APIs</span><span>Vercel</span><span>Railway</span>
+<p class="case-hero-lead sinama-copy" data-sinama-en="A Turkish-first reliability lab that tests customer-service AI agents through repeatable multi-turn scenarios, deterministic workflow contracts, version-aware regression evidence and release-readiness policy." data-sinama-tr="Müşteri hizmetleri AI agent'larını tekrarlanabilir çok turlu senaryolar, deterministik workflow kontratları, versiyon-aware regression kanıtları ve release-readiness politikasıyla test eden Türkçe öncelikli güvenilirlik laboratuvarı.">A Turkish-first reliability lab that tests customer-service AI agents through repeatable multi-turn scenarios, deterministic workflow contracts, version-aware regression evidence and release-readiness policy.</p>
+<dl class="case-meta-grid"><div><dt>Status</dt><dd>Live MVP</dd></div><div><dt>Year</dt><dd>2026</dd></div><div><dt>Role</dt><dd class="sinama-copy" data-sinama-en="Product Designer & Full-Stack Developer" data-sinama-tr="Product Designer & Full-Stack Developer">Product Designer &amp; Full-Stack Developer</dd></div><div><dt>Type</dt><dd class="sinama-copy" data-sinama-en="Independent Reliability Product" data-sinama-tr="Bağımsız Reliability Ürünü">Independent Reliability Product</dd></div></dl>
+<div class="case-stack" aria-label="Project technologies"><span>Next.js</span><span>React</span><span>Python</span><span>FastAPI</span><span>PostgreSQL</span><span>AI Evaluation</span><span>Vercel</span><span>Railway</span></div>
+<div class="case-actions"><a class="btn primary" href="https://sinama.kaanbalci.com" rel="noopener noreferrer" target="_blank"><i class="bx bx-play-circle"></i><span class="sinama-copy" data-sinama-en="Open Live Product" data-sinama-tr="Canlı Ürünü Aç">Open Live Product</span></a><a class="btn ghost" href="https://github.com/UAJOP/sinama" rel="noopener noreferrer" target="_blank"><i class="bx bxl-github"></i><span class="sinama-copy" data-sinama-en="View GitHub" data-sinama-tr="GitHub'ı Gör">View GitHub</span></a></div>
 </div>
-<div class="case-actions">
-<a class="btn primary" href="https://sinama.kaanbalci.com" rel="noopener noreferrer" target="_blank"><i class="bx bx-play-circle"></i><span data-case-i18n="actions.liveProduct">Open Live Product</span></a>
-<a class="btn ghost" href="https://github.com/UAJOP/sinama" rel="noopener noreferrer" target="_blank"><i class="bx bxl-github"></i><span data-case-i18n="actions.github">View GitHub</span></a>
-</div>
-</div>
-<figure class="case-hero-visual case-hero-visual-contain">
-<img alt="SINAMA wordmark on a dark cover card" data-case-i18n-alt="alt.hero" decoding="async" fetchpriority="high" src="assets/sinama-case-study-hero.webp"/>
-</figure>
+<figure class="case-hero-visual case-hero-visual-contain"><img alt="SINAMA AI Agent Reliability Lab product cover" decoding="async" fetchpriority="high" src="assets/sinama-case-study-hero.webp"/></figure>
 </section>
 
-<section aria-label="Project proof" class="case-proof-strip is-four section-shell" data-case-i18n-aria-label="aria.proof">
-<article class="case-proof"><strong>5</strong><span data-case-i18n="proof.scenarios">Turkish Test Scenarios</span></article>
-<article class="case-proof"><strong>2</strong><span data-case-i18n="proof.targets">Agent Targets</span></article>
-<article class="case-proof"><strong>5/5</strong><span data-case-i18n="proof.baseline">Healthy Baseline</span></article>
-<article class="case-proof"><strong>2</strong><span data-case-i18n="proof.regressions">Intentional Regressions Detected</span></article>
+<section aria-label="Project proof" class="case-proof-strip is-four section-shell">
+<article class="case-proof"><strong>14</strong><span class="sinama-copy" data-sinama-en="Cross-vertical suite scenarios" data-sinama-tr="Cross-vertical suite senaryosu">Cross-vertical suite scenarios</span></article>
+<article class="case-proof"><strong>2</strong><span class="sinama-copy" data-sinama-en="Proven domains" data-sinama-tr="Kanıtlanmış domain">Proven domains</span></article>
+<article class="case-proof"><strong>10/10</strong><span class="sinama-copy" data-sinama-en="Healthy insurance baseline" data-sinama-tr="Healthy sigorta baseline'ı">Healthy insurance baseline</span></article>
+<article class="case-proof"><strong>READY / WARNING / BLOCKED</strong><span class="sinama-copy" data-sinama-en="Release-readiness policy" data-sinama-tr="Release-readiness politikası">Release-readiness policy</span></article>
 </section>
 
 <section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="overview.eyebrow">Overview &amp; Problem</p>
-<h2 data-case-i18n="overview.title">AI agents need regression testing, not just prompt tweaking.</h2>
-</div>
-<div class="case-split">
-<article class="case-panel case-copy">
-<p data-case-i18n="overview.body1">Customer-facing AI agents are multi-turn systems: what they say matters, but so do the business rules and tool calls they trigger along the way.</p>
-<p data-case-i18n="overview.body2">Changing a prompt, a model or a flow can fix one behavior while quietly breaking another. Manual testing is difficult to reproduce, and a conversation that reads as successful can still contain an incorrect tool action underneath.</p>
-<p data-case-i18n="overview.body3">SINAMA was built to make these failures repeatable and inspectable: run the same Turkish customer scenarios, capture the transcript and tool trace, and evaluate the result against deterministic contracts instead of a gut feeling.</p>
-</article>
-<article class="case-panel case-copy">
-<p class="eyebrow" data-case-i18n="goal.eyebrow">Product Goal</p>
-<h3 data-case-i18n="goal.title">A simple workflow for release-time confidence.</h3>
-<p data-case-i18n="goal.body">The product hypothesis: give developers and AI teams a simple workflow where they can connect an agent, run repeatable Turkish customer scenarios and understand exactly why a release passed or failed. This is the current product direction, not a claim of proven market leadership.</p>
-</article>
-</div>
+<div class="case-section-heading"><p class="eyebrow sinama-copy" data-sinama-en="Problem" data-sinama-tr="Problem">Problem</p><h2 class="sinama-copy" data-sinama-en="A fluent agent can still behave incorrectly." data-sinama-tr="Akıcı konuşan bir agent yine de yanlış davranabilir.">A fluent agent can still behave incorrectly.</h2></div>
+<div class="case-split"><article class="case-panel case-copy"><p class="sinama-copy" data-sinama-en="Customer-service agents are not just chat interfaces. They trigger tools, move through business workflows, handle sensitive context and make decisions whose order matters." data-sinama-tr="Müşteri hizmetleri agent'ları yalnızca chat arayüzleri değildir. Tool çağırır, iş akışlarında ilerler, hassas context işler ve sırası önemli olan kararlar verir.">Customer-service agents are not just chat interfaces. They trigger tools, move through business workflows, handle sensitive context and make decisions whose order matters.</p><p class="sinama-copy" data-sinama-en="A conversation can look successful while the underlying tool trace contains a premature submission, duplicate side effect, missing prerequisite or unsafe handoff. SINAMA treats that behavior as testable evidence." data-sinama-tr="Bir konuşma başarılı görünebilir; fakat alttaki tool trace premature submission, duplicate side effect, eksik prerequisite veya güvensiz handoff içerebilir. SINAMA bu davranışı test edilebilir kanıta dönüştürür.">A conversation can look successful while the underlying tool trace contains a premature submission, duplicate side effect, missing prerequisite or unsafe handoff. SINAMA treats that behavior as testable evidence.</p></article><article class="case-panel case-copy"><p class="eyebrow sinama-copy" data-sinama-en="Product question" data-sinama-tr="Ürün sorusu">Product question</p><h3 class="sinama-copy" data-sinama-en="Is this agent version reliable enough to release?" data-sinama-tr="Bu agent versiyonu release etmek için yeterince güvenilir mi?">Is this agent version reliable enough to release?</h3><p class="sinama-copy" data-sinama-en="The product turns that question into a repeatable pipeline: collection → execution → transcript/tool trace → deterministic evaluation → regression/trends → release readiness." data-sinama-tr="Ürün bu soruyu tekrarlanabilir bir pipeline'a çeviriyor: collection → execution → transcript/tool trace → deterministic evaluation → regression/trends → release readiness.">The product turns that question into a repeatable pipeline: collection → execution → transcript/tool trace → deterministic evaluation → regression/trends → release readiness.</p></article></div>
 </section>
 
 <section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="steps.eyebrow">How SINAMA Works</p>
-<h2 data-case-i18n="steps.title">A six-step loop from agent target to failure evidence.</h2>
-</div>
-<ol aria-label="How SINAMA works" class="case-journey">
-<li><strong>01</strong><span data-case-i18n="steps.step1">Select Agent Target</span></li>
-<li><strong>02</strong><span data-case-i18n="steps.step2">Select Scenario Pack</span></li>
-<li><strong>03</strong><span data-case-i18n="steps.step3">Execute Multi-Turn Conversations</span></li>
-<li><strong>04</strong><span data-case-i18n="steps.step4">Capture Transcript &amp; Tool Trace</span></li>
-<li><strong>05</strong><span data-case-i18n="steps.step5">Evaluate Deterministic Contracts</span></li>
-<li><strong>06</strong><span data-case-i18n="steps.step6">Inspect Failure Evidence</span></li>
-</ol>
-<figure class="case-shot">
-<img alt="SINAMA Test Runs page showing scenario pack, agent target and agent mode configuration before running the automated evaluation" data-case-i18n-alt="alt.runsFlow" decoding="async" loading="lazy" src="assets/sinama-runs-flow.webp"/>
-<figcaption data-case-i18n="shots.runsFlowCaption">The Test Runs page: configure the scenario pack, agent target and agent mode, then run the automated evaluation.</figcaption>
-</figure>
+<div class="case-section-heading"><p class="eyebrow sinama-copy" data-sinama-en="How it works" data-sinama-tr="Nasıl çalışıyor">How it works</p><h2 class="sinama-copy" data-sinama-en="One evidence pipeline from target selection to release verdict." data-sinama-tr="Target seçiminden release kararına tek evidence pipeline.">One evidence pipeline from target selection to release verdict.</h2></div>
+<ol class="case-journey"><li><strong>01</strong><span class="sinama-copy" data-sinama-en="Select a scenario pack or typed suite" data-sinama-tr="Scenario pack veya typed suite seç">Select a scenario pack or typed suite</span></li><li><strong>02</strong><span class="sinama-copy" data-sinama-en="Choose the built-in demo or compatible external HTTPS agent" data-sinama-tr="Built-in demo veya uyumlu external HTTPS agent seç">Choose the built-in demo or compatible external HTTPS agent</span></li><li><strong>03</strong><span class="sinama-copy" data-sinama-en="Run repeatable multi-turn conversations" data-sinama-tr="Tekrarlanabilir multi-turn konuşmaları çalıştır">Run repeatable multi-turn conversations</span></li><li><strong>04</strong><span class="sinama-copy" data-sinama-en="Capture transcript and structured Tool Trace" data-sinama-tr="Transcript ve structured Tool Trace yakala">Capture transcript and structured Tool Trace</span></li><li><strong>05</strong><span class="sinama-copy" data-sinama-en="Evaluate deterministic behavioral contracts" data-sinama-tr="Deterministic behavioral contract'ları değerlendir">Evaluate deterministic behavioral contracts</span></li><li><strong>06</strong><span class="sinama-copy" data-sinama-en="Inspect failures, compare versions, track trends and read readiness" data-sinama-tr="Failure'ları incele, versiyonları karşılaştır, trendleri izle ve readiness sonucunu gör">Inspect failures, compare versions, track trends and read readiness</span></li></ol>
+<figure class="case-shot"><img alt="SINAMA Test Runs configuration page" decoding="async" loading="lazy" src="assets/sinama-runs-flow.webp"/><figcaption class="sinama-copy" data-sinama-en="The Test Runs surface keeps collection, target and run configuration in one workflow." data-sinama-tr="Test Runs ekranı collection, target ve run configuration'ı tek workflow'da topluyor.">The Test Runs surface keeps collection, target and run configuration in one workflow.</figcaption></figure>
 </section>
 
 <section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="vertical.eyebrow">Demo Vertical</p>
-<h2 data-case-i18n="vertical.title">A synthetic insurance claim-intake agent.</h2>
-</div>
-<div class="case-split">
-<article class="case-panel case-copy">
-<p data-case-i18n="vertical.body1">The current demo vertical is a synthetic, fictional insurance claim-intake agent. No private client or customer data is used anywhere in the scenarios or evidence.</p>
-<p data-case-i18n="vertical.body2">Its responsibilities inside the scenarios:</p>
-<ul class="case-detail-list">
-<li data-case-i18n="vertical.item1">Collect policy number</li>
-<li data-case-i18n="vertical.item2">Collect claim details</li>
-<li data-case-i18n="vertical.item3">Request required documents</li>
-<li data-case-i18n="vertical.item4">Avoid premature claim submission</li>
-<li data-case-i18n="vertical.item5">Expose structured tool events for evaluation</li>
-</ul>
-</article>
-<article class="case-panel">
-<h3 data-case-i18n="vertical.scenariosTitle">Insurance Reliability Pack v1</h3>
-<p class="case-muted" data-case-i18n="vertical.scenariosBody">Five Turkish synthetic scenarios cover the intake flow end to end:</p>
-<ul class="case-tech-list"><li>INS-001</li><li>INS-002</li><li>INS-003</li><li>INS-004</li><li>INS-005</li></ul>
-</article>
-</div>
+<div class="case-section-heading"><p class="eyebrow sinama-copy" data-sinama-en="Cross-vertical proof" data-sinama-tr="Cross-vertical kanıt">Cross-vertical proof</p><h2 class="sinama-copy" data-sinama-en="The same evaluator now proves reliability across insurance and e-commerce." data-sinama-tr="Aynı evaluator artık sigorta ve e-ticaret domain'lerinde reliability kanıtlıyor.">The same evaluator now proves reliability across insurance and e-commerce.</h2></div>
+<div class="case-service-grid"><article class="case-service-card"><h3>Insurance Reliability Pack v1</h3><p class="sinama-copy" data-sinama-en="10 hand-reviewed Turkish scenarios covering tool policy, privacy/safety, handoff, prompt injection pressure, context retention, ambiguity, noisy Turkish input, repeated requests and failed-tool recovery." data-sinama-tr="Tool policy, privacy/safety, handoff, prompt injection baskısı, context retention, ambiguity, gürültülü Türkçe input, repeated request ve failed-tool recovery kapsayan 10 hand-reviewed Türkçe senaryo.">10 hand-reviewed Turkish scenarios covering tool policy, privacy/safety, handoff, prompt injection pressure, context retention, ambiguity, noisy Turkish input, repeated requests and failed-tool recovery.</p></article><article class="case-service-card"><h3>E-commerce Reliability Pack v1</h3><p class="sinama-copy" data-sinama-en="4 hand-reviewed Turkish scenarios covering refund ordering, failed lookup recovery, high-value damaged-item escalation and duplicate-refund prevention." data-sinama-tr="Refund ordering, failed lookup recovery, high-value damaged-item escalation ve duplicate-refund prevention kapsayan 4 hand-reviewed Türkçe senaryo.">4 hand-reviewed Turkish scenarios covering refund ordering, failed lookup recovery, high-value damaged-item escalation and duplicate-refund prevention.</p></article><article class="case-service-card"><h3>Customer Service Core Suite v1</h3><p class="sinama-copy" data-sinama-en="A typed 14-scenario suite composing both packs through the same RunService, evaluator, persistence, regression, trends and readiness stack." data-sinama-tr="İki pack'i aynı RunService, evaluator, persistence, regression, trends ve readiness stack'i üzerinden birleştiren typed 14-scenario suite.">A typed 14-scenario suite composing both packs through the same RunService, evaluator, persistence, regression, trends and readiness stack.</p></article></div>
 </section>
 
 <section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="compare.eyebrow">Healthy vs. Broken</p>
-<h2 data-case-i18n="compare.title">The same evaluator, two agent behaviors.</h2>
-<p data-case-i18n="compare.body">The Broken agent intentionally violates expected behavior so SINAMA can demonstrate that the evaluator detects behavioral regressions rather than merely displaying successful-looking conversations.</p>
-</div>
-<div class="case-service-grid">
-<article class="case-service-card">
-<h3 style="color:var(--success)"><i aria-hidden="true" class="bx bx-check-circle"></i> <span data-case-i18n="compare.healthyTitle">Healthy</span></h3>
-<p style="color:var(--success);font-weight:850;" data-case-i18n="compare.healthyFigures">5 PASS · 0 FAIL · 0 ERROR</p>
-</article>
-<article class="case-service-card">
-<h3 style="color:var(--danger)"><i aria-hidden="true" class="bx bx-error-circle"></i> <span data-case-i18n="compare.brokenTitle">Broken (intentional)</span></h3>
-<p style="color:var(--danger);font-weight:850;" data-case-i18n="compare.brokenFigures">3 PASS · 2 FAIL · 0 ERROR</p>
-<p class="case-muted" data-case-i18n="compare.brokenListTitle">Intentional HIGH-severity failures</p>
-<ul class="case-detail-list">
-<li data-case-i18n="compare.ins001">INS-001 — HIGH</li>
-<li data-case-i18n="compare.ins005">INS-005 — HIGH</li>
-</ul>
-</article>
-</div>
-<figure class="case-shot">
-<img alt="SINAMA Test Runs results for a Broken-mode run showing 5 total, 3 passed, 2 failed, 0 errors, with scenario INS-001 flagged as a high-severity failure" data-case-i18n-alt="alt.broken" decoding="async" loading="lazy" src="assets/sinama-runs-broken.webp"/>
-<figcaption data-case-i18n="shots.brokenCaption">A real Broken-mode run: 5 total, 3 passed, 2 failed, 0 errors — INS-001 flagged as a High-severity failure.</figcaption>
-</figure>
+<div class="case-section-heading"><p class="eyebrow sinama-copy" data-sinama-en="Reliability proof" data-sinama-tr="Reliability kanıtı">Reliability proof</p><h2 class="sinama-copy" data-sinama-en="A controlled broken agent proves the evaluator catches behavior, not crashes." data-sinama-tr="Kontrollü broken agent evaluator'ın crash değil davranış hatası yakaladığını kanıtlıyor.">A controlled broken agent proves the evaluator catches behavior, not crashes.</h2></div>
+<div class="case-split"><article class="case-panel"><h3 class="case-result-good">Healthy</h3><p class="case-result-good">10 PASS · 0 FAIL · 0 ERROR</p><p class="sinama-copy" data-sinama-en="The healthy built-in insurance target completes the full ten-scenario pack." data-sinama-tr="Healthy built-in sigorta target'ı on senaryoluk pack'in tamamını geçiyor.">The healthy built-in insurance target completes the full ten-scenario pack.</p></article><article class="case-panel"><h3 class="case-result-bad">Broken: Premature Submission</h3><p class="case-result-bad">5 PASS · 5 FAIL · 0 ERROR</p><p class="sinama-copy" data-sinama-en="Execution still completes normally. Five scenarios fail because submit_claim appears before the required damage_photo prerequisite exists — exactly the kind of behavioral regression a fluent transcript can hide." data-sinama-tr="Execution yine normal tamamlanıyor. Beş senaryo submit_claim çağrısı gerekli damage_photo prerequisite'inden önce geldiği için fail oluyor — akıcı bir transcript'in saklayabileceği tam da bu tür behavioral regression.">Execution still completes normally. Five scenarios fail because submit_claim appears before the required damage_photo prerequisite exists — exactly the kind of behavioral regression a fluent transcript can hide.</p></article></div>
 </section>
 
 <section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="evidence.eyebrow">Inspectable Failure Evidence</p>
-<h2 data-case-i18n="evidence.title">Every failed scenario shows its work.</h2>
-</div>
-<div class="case-split">
-<article class="case-panel case-copy">
-<p data-case-i18n="evidence.body">A failed scenario exposes:</p>
-<ul class="case-detail-list">
-<li data-case-i18n="evidence.item1">Scenario result</li>
-<li data-case-i18n="evidence.item2">Failed check and category</li>
-<li data-case-i18n="evidence.item3">Severity</li>
-<li data-case-i18n="evidence.item4">Failure reason</li>
-<li data-case-i18n="evidence.item5">Full conversation transcript</li>
-<li data-case-i18n="evidence.item6">Structured tool events</li>
-<li data-case-i18n="evidence.item7">The offending event / evidence</li>
-</ul>
-</article>
-<aside aria-label="Failure evidence example" class="case-panel" data-case-i18n-aria-label="aria.evidenceExample">
-<p class="case-callout" data-case-i18n="evidence.example">In the current regression example, <code>submit_claim</code> was triggered before the required <code>damage_photo</code> collection step — exactly the kind of premature action the evaluator is built to catch.</p>
-</aside>
-</div>
-<figure class="case-shot">
-<img alt="SINAMA Tool Trace showing submit_claim flagged as policy violation evidence because the required damage_photo had not been collected" data-case-i18n-alt="alt.evidence" decoding="async" loading="lazy" src="assets/sinama-regression-evidence.webp"/>
-<figcaption data-case-i18n="shots.evidenceCaption">Tool Trace for INS-001: submit_claim is flagged as policy-violation evidence because the required damage_photo had not been collected yet.</figcaption>
-</figure>
+<div class="case-section-heading"><p class="eyebrow sinama-copy" data-sinama-en="Deterministic evaluation" data-sinama-tr="Deterministic evaluation">Deterministic evaluation</p><h2 class="sinama-copy" data-sinama-en="Workflow contracts are explicit and inspectable." data-sinama-tr="Workflow contract'ları açık ve incelenebilir.">Workflow contracts are explicit and inspectable.</h2></div>
+<div class="case-rule-grid"><article><strong class="sinama-copy" data-sinama-en="Tool policy" data-sinama-tr="Tool policy">Tool policy</strong><span class="sinama-copy" data-sinama-en="Required / forbidden tools and tool-call-count limits." data-sinama-tr="Required / forbidden tool'lar ve tool-call-count limitleri.">Required / forbidden tools and tool-call-count limits.</span></article><article><strong class="sinama-copy" data-sinama-en="Workflow ordering" data-sinama-tr="Workflow sıralaması">Workflow ordering</strong><span class="sinama-copy" data-sinama-en="Typed prerequisites ensure one action cannot happen before another." data-sinama-tr="Typed prerequisite'ler bir action'ın gerekli adımdan önce gerçekleşmesini engeller.">Typed prerequisites ensure one action cannot happen before another.</span></article><article><strong class="sinama-copy" data-sinama-en="Structured arguments" data-sinama-tr="Structured argümanlar">Structured arguments</strong><span class="sinama-copy" data-sinama-en="Exact values, required fields, one-of rules, regex full-match and numeric ranges." data-sinama-tr="Exact value, required field, one-of, regex full-match ve numeric range kuralları.">Exact values, required fields, one-of rules, regex full-match and numeric ranges.</span></article><article><strong class="sinama-copy" data-sinama-en="Response behavior" data-sinama-tr="Response davranışı">Response behavior</strong><span class="sinama-copy" data-sinama-en="Required/forbidden phrases and repeated-response detection complement tool evidence." data-sinama-tr="Required/forbidden phrase ve repeated-response detection tool evidence'ı tamamlar.">Required/forbidden phrases and repeated-response detection complement tool evidence.</span></article></div>
+<p class="case-note sinama-copy" data-sinama-en="Each failed rule can expose machine-readable evidence and a structured human-readable Failure with severity, expected vs. actual behavior and a suggested correction." data-sinama-tr="Her failed rule; severity, expected vs actual davranış ve önerilen düzeltmeyle machine-readable evidence ve structured human-readable Failure üretebilir.">Each failed rule can expose machine-readable evidence and a structured human-readable Failure with severity, expected vs. actual behavior and a suggested correction.</p>
 </section>
 
 <section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="external.eyebrow">External HTTP Agent</p>
-<h2 data-case-i18n="external.title">From a built-in demo to a reusable test surface.</h2>
-<p data-case-i18n="external.body">SINAMA evolved from a single built-in demo agent into a platform that can point the same scenario runner and evaluator at an external agent over HTTP.</p>
-</div>
-<div class="case-service-grid">
-<article class="case-service-card">
-<h3 data-case-i18n="external.demoTitle">Built-in Demo Agent</h3>
-<p data-case-i18n="external.demoBody">The synthetic insurance claim-intake agent used for the current demo vertical and scenario pack.</p>
-</article>
-<article class="case-service-card">
-<h3 data-case-i18n="external.httpTitle">External HTTP Agent</h3>
-<p data-case-i18n="external.httpBody">A conversational HTTP target you control, tested through the same runner, evaluator and evidence interface.</p>
-<ul class="case-detail-list">
-<li data-case-i18n="external.item1">Endpoint connection testing</li>
-<li data-case-i18n="external.item2">Optional runtime bearer token</li>
-<li data-case-i18n="external.item3">Response normalization</li>
-<li data-case-i18n="external.item4">Same scenario runner</li>
-<li data-case-i18n="external.item5">Same evaluator</li>
-<li data-case-i18n="external.item6">Same results / evidence interface</li>
-</ul>
-</article>
-</div>
+<div class="case-section-heading"><p class="eyebrow sinama-copy" data-sinama-en="Regression intelligence" data-sinama-tr="Regression intelligence">Regression intelligence</p><h2 class="sinama-copy" data-sinama-en="A test result becomes release evidence across versions." data-sinama-tr="Test sonucu versiyonlar arasında release evidence'a dönüşüyor.">A test result becomes release evidence across versions.</h2></div>
+<div class="case-service-grid"><article class="case-service-card"><h3 class="sinama-copy" data-sinama-en="Baseline & comparison" data-sinama-tr="Baseline & karşılaştırma">Baseline &amp; comparison</h3><p class="sinama-copy" data-sinama-en="Completed collection runs can become baselines. Later compatible runs expose score and metric deltas plus New / Resolved / Persistent failure sets." data-sinama-tr="Tamamlanan collection run'ları baseline olabilir. Sonraki uyumlu run'lar score ve metric delta'larıyla New / Resolved / Persistent failure set'lerini gösterir.">Completed collection runs can become baselines. Later compatible runs expose score and metric deltas plus New / Resolved / Persistent failure sets.</p></article><article class="case-service-card"><h3 class="sinama-copy" data-sinama-en="Version trends" data-sinama-tr="Versiyon trendleri">Version trends</h3><p class="sinama-copy" data-sinama-en="Optional agent_version metadata supports chronological reliability history without reopening full transcript payloads for every trend query." data-sinama-tr="Optional agent_version metadata chronological reliability history sağlar; trend query'lerinde her seferinde tam transcript payload'ını açmak gerekmez.">Optional agent_version metadata supports chronological reliability history without reopening full transcript payloads for every trend query.</p></article><article class="case-service-card"><h3>Release Readiness</h3><p class="sinama-copy" data-sinama-en="READY / WARNING / BLOCKED is derived from lifecycle errors, deterministic failure severity, regression evidence and baseline compatibility — not from a second opaque score." data-sinama-tr="READY / WARNING / BLOCKED; lifecycle error, deterministic failure severity, regression evidence ve baseline compatibility'den türetilir — ikinci bir opaque score'dan değil.">READY / WARNING / BLOCKED is derived from lifecycle errors, deterministic failure severity, regression evidence and baseline compatibility — not from a second opaque score.</p></article></div>
 </section>
 
 <section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="security.eyebrow">Security Design</p>
-<h2 data-case-i18n="security.title">Testing external URLs safely is part of the product.</h2>
-<p data-case-i18n="security.body">Letting SINAMA call an external agent turns SINAMA into a URL-testing surface, so these controls were built before public external-agent support shipped:</p>
-</div>
-<ul class="case-tech-list">
-<li data-case-i18n="security.item1">HTTPS enforced in production</li>
-<li data-case-i18n="security.item2">Localhost blocking</li>
-<li data-case-i18n="security.item3">Loopback blocking</li>
-<li data-case-i18n="security.item4">Private-network blocking</li>
-<li data-case-i18n="security.item5">Link-local blocking</li>
-<li data-case-i18n="security.item6">Cloud-metadata destination protection</li>
-<li data-case-i18n="security.item7">DNS validation</li>
-<li data-case-i18n="security.item8">Validated IP connection pinning</li>
-<li data-case-i18n="security.item9">Redirects disabled</li>
-<li data-case-i18n="security.item10">Bounded timeout</li>
-<li data-case-i18n="security.item11">Bounded response size</li>
-<li data-case-i18n="security.item12">Credentials not persisted</li>
-<li data-case-i18n="security.item13">Credentials not exposed in errors or logs</li>
-</ul>
-<p class="case-scenario-note" data-case-i18n="security.disclaimer">These are implemented engineering controls, not a certification. SINAMA is not described as enterprise-grade, certified, audited or SOC 2 compliant.</p>
+<div class="case-section-heading"><p class="eyebrow sinama-copy" data-sinama-en="External agents & security" data-sinama-tr="External agent & güvenlik">External agents &amp; security</p><h2 class="sinama-copy" data-sinama-en="Bring an HTTPS agent without treating the destination as trusted input." data-sinama-tr="HTTPS agent bağla; fakat destination'ı trusted input olarak kabul etme.">Bring an HTTPS agent without treating the destination as trusted input.</h2></div>
+<div class="case-split"><article class="case-panel case-copy"><p class="sinama-copy" data-sinama-en="The external adapter lets compatible customer-service agents run through the same insurance, e-commerce or suite evidence pipeline." data-sinama-tr="External adapter uyumlu müşteri hizmetleri agent'larının aynı sigorta, e-ticaret veya suite evidence pipeline'ından geçmesini sağlar.">The external adapter lets compatible customer-service agents run through the same insurance, e-commerce or suite evidence pipeline.</p><ul class="case-detail-list"><li class="sinama-copy" data-sinama-en="HTTPS required in production" data-sinama-tr="Production'da HTTPS zorunlu">HTTPS required in production</li><li class="sinama-copy" data-sinama-en="Local/private/link-local/cloud-metadata destinations blocked" data-sinama-tr="Local/private/link-local/cloud-metadata destination'lar blocked">Local/private/link-local/cloud-metadata destinations blocked</li><li class="sinama-copy" data-sinama-en="DNS validated and connection pinned to validated public address" data-sinama-tr="DNS doğrulanır ve connection doğrulanmış public address'e pinlenir">DNS validated and connection pinned to validated public address</li><li class="sinama-copy" data-sinama-en="Redirects and environment proxies disabled" data-sinama-tr="Redirect ve environment proxy'leri disabled">Redirects and environment proxies disabled</li><li class="sinama-copy" data-sinama-en="Bearer tokens remain ephemeral and are not persisted" data-sinama-tr="Bearer token'lar ephemeral kalır ve persist edilmez">Bearer tokens remain ephemeral and are not persisted</li></ul></article><article class="case-panel case-copy"><p class="eyebrow sinama-copy" data-sinama-en="Persistence" data-sinama-tr="Persistence">Persistence</p><h3>Memory + PostgreSQL</h3><p class="sinama-copy" data-sinama-en="The same run-store interface supports bounded in-memory development and durable PostgreSQL history. Railway applies Alembic migrations before deployment while runtime startup keeps schema migration out of the request-serving path." data-sinama-tr="Aynı run-store interface bounded in-memory geliştirmeyi ve durable PostgreSQL history'yi destekler. Railway Alembic migration'larını deployment öncesi uygular; runtime startup schema migration'ı request-serving path'in dışında tutar.">The same run-store interface supports bounded in-memory development and durable PostgreSQL history. Railway applies Alembic migrations before deployment while runtime startup keeps schema migration out of the request-serving path.</p></article></div>
 </section>
 
 <section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="architecture.eyebrow">Architecture</p>
-<h2 data-case-i18n="architecture.title">Next.js frontend, FastAPI backend, one evaluator for both agent types.</h2>
-</div>
-<div class="case-panel case-flow-group">
-<h3 data-case-i18n="architecture.group1">Request &amp; execution</h3>
-<div aria-label="Request and execution path" class="case-flow" data-case-i18n-aria-label="aria.architectureRequest">
-<div class="case-flow-step"><i aria-hidden="true" class="bx bx-window"></i><span data-case-i18n="architecture.step1">Browser / Next.js</span></div>
-<span aria-hidden="true" class="case-flow-connector">→</span>
-<div class="case-flow-step"><i aria-hidden="true" class="bx bx-server"></i><span data-case-i18n="architecture.step2">FastAPI API</span></div>
-<span aria-hidden="true" class="case-flow-connector">→</span>
-<div class="case-flow-step"><i aria-hidden="true" class="bx bx-play-circle"></i><span data-case-i18n="architecture.step3">Scenario Runner</span></div>
-<span aria-hidden="true" class="case-flow-connector">→</span>
-<div class="case-flow-step"><i aria-hidden="true" class="bx bx-plug"></i><span data-case-i18n="architecture.step4">AgentAdapter</span></div>
-</div>
-</div>
-<div class="case-panel case-flow-group">
-<h3 data-case-i18n="architecture.group2">Evaluation &amp; results</h3>
-<div aria-label="Evaluation and results path" class="case-flow" data-case-i18n-aria-label="aria.architectureEval">
-<div class="case-flow-step"><i aria-hidden="true" class="bx bx-git-branch"></i><span data-case-i18n="architecture.step5">Demo Agent or External HTTP Agent</span></div>
-<span aria-hidden="true" class="case-flow-connector">→</span>
-<div class="case-flow-step"><i aria-hidden="true" class="bx bx-file"></i><span data-case-i18n="architecture.step6">Transcript + Tool Events</span></div>
-<span aria-hidden="true" class="case-flow-connector">→</span>
-<div class="case-flow-step"><i aria-hidden="true" class="bx bx-check-shield"></i><span data-case-i18n="architecture.step7">Deterministic Evaluator</span></div>
-<span aria-hidden="true" class="case-flow-connector">→</span>
-<div class="case-flow-step"><i aria-hidden="true" class="bx bx-list-check"></i><span data-case-i18n="architecture.step8">Run Results + Evidence UI</span></div>
-</div>
-</div>
-<p class="case-callout" data-case-i18n="architecture.note">The current RunStore is bounded and in-memory. There is no persistent PostgreSQL or Supabase database implemented yet.</p>
+<div class="case-section-heading"><div class="case-integration-badge"><i class="bx bx-flask"></i><span class="sinama-copy" data-sinama-en="Develop / integration track" data-sinama-tr="Develop / integration hattı">Develop / integration track</span></div><p class="eyebrow sinama-copy" data-sinama-en="Semantic Judge — Shadow Mode" data-sinama-tr="Semantic Judge — Shadow Mode">Semantic Judge — Shadow Mode</p><h2 class="sinama-copy" data-sinama-en="Semantic evidence is being added without weakening deterministic ground truth." data-sinama-tr="Semantic evidence deterministic ground truth'u zayıflatmadan ekleniyor.">Semantic evidence is being added without weakening deterministic ground truth.</h2></div>
+<div class="case-split"><article class="case-panel case-copy"><p class="sinama-copy" data-sinama-en="The integration branch now contains an optional shadow judge for genuinely semantic expectations such as unsupported promises, user-intent satisfaction and internal-instruction disclosure." data-sinama-tr="Integration branch artık unsupported promise, user-intent satisfaction ve internal-instruction disclosure gibi gerçekten semantic expectation'lar için optional shadow judge içeriyor.">The integration branch now contains an optional shadow judge for genuinely semantic expectations such as unsupported promises, user-intent satisfaction and internal-instruction disclosure.</p><p class="sinama-copy" data-sinama-en="It runs only after deterministic scoring and PII masking, and it can report PASS / FAIL / UNCERTAIN with cited assistant turns and provider metadata." data-sinama-tr="Deterministic scoring ve PII masking sonrasında çalışır; cited assistant turn'leri ve provider metadata ile PASS / FAIL / UNCERTAIN raporlayabilir.">It runs only after deterministic scoring and PII masking, and it can report PASS / FAIL / UNCERTAIN with cited assistant turns and provider metadata.</p></article><article class="case-panel case-copy"><p class="case-note warning sinama-copy" data-sinama-en="Important release boundary: Semantic Shadow is advisory-only in the current integration track. A semantic fail, timeout or provider error cannot change deterministic scenario status, metrics, failures, regression direction or Release Readiness." data-sinama-tr="Önemli release sınırı: Semantic Shadow güncel integration hattında advisory-only çalışır. Semantic fail, timeout veya provider error; deterministic scenario status, metric, failure, regression direction veya Release Readiness sonucunu değiştiremez.">Important release boundary: Semantic Shadow is advisory-only in the current integration track. A semantic fail, timeout or provider error cannot change deterministic scenario status, metrics, failures, regression direction or Release Readiness.</p><p class="sinama-copy" data-sinama-en="This section is intentionally labeled as integration work rather than pretending it is already part of the stable release." data-sinama-tr="Bu bölüm stable release'in parçasıymış gibi gösterilmek yerine bilerek integration work olarak etiketleniyor.">This section is intentionally labeled as integration work rather than pretending it is already part of the stable release.</p></article></div>
 </section>
 
-<section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="decisions.eyebrow">Technical Decisions</p>
-<h2 data-case-i18n="decisions.title">Four choices that shaped the MVP.</h2>
-</div>
-<div class="case-service-grid">
-<article class="case-service-card"><h3 data-case-i18n="decisions.d1title">Deterministic evaluator first</h3><p data-case-i18n="decisions.d1why">Why: repeatable behavior and no paid LLM required for the core MVP.</p></article>
-<article class="case-service-card"><h3 data-case-i18n="decisions.d2title">AgentAdapter abstraction</h3><p data-case-i18n="decisions.d2why">Why: the same scenario runner and evaluator can test built-in and external targets.</p></article>
-<article class="case-service-card"><h3 data-case-i18n="decisions.d3title">Evidence instead of one opaque score</h3><p data-case-i18n="decisions.d3why">Why: developers need to know exactly what failed.</p></article>
-<article class="case-service-card"><h3 data-case-i18n="decisions.d4title">Security before public external-agent support</h3><p data-case-i18n="decisions.d4why">Why: a URL-testing platform must not become an SSRF or open-proxy risk.</p></article>
-</div>
-</section>
-
-<section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="limits.eyebrow">Current Limitations &amp; Next Steps</p>
-<h2 data-case-i18n="limits.title">Transparent about what the MVP does not do yet.</h2>
-</div>
-<div class="case-split">
-<aside aria-label="Current limitations" class="case-panel" data-case-i18n-aria-label="aria.currentLimitations">
-<h3 data-case-i18n="limits.currentTitle">Current limitations</h3>
-<ul class="case-limitations">
-<li data-case-i18n="limits.c1">Bounded in-memory run history</li>
-<li data-case-i18n="limits.c2">No durable persistence</li>
-<li data-case-i18n="limits.c3">No run / version comparison</li>
-<li data-case-i18n="limits.c4">Deterministic evaluator scope only</li>
-<li data-case-i18n="limits.c5">Some semantic expectations may remain unscored</li>
-<li data-case-i18n="limits.c6">No authentication</li>
-<li data-case-i18n="limits.c7">No billing</li>
-<li data-case-i18n="limits.c8">No voice-agent testing</li>
-</ul>
-</aside>
-<article class="case-panel">
-<h3 data-case-i18n="limits.nextTitle">Next product directions</h3>
-<ul class="case-detail-list">
-<li data-case-i18n="limits.n1">Persistent run history</li>
-<li data-case-i18n="limits.n2">V1 vs V2 agent comparison</li>
-<li data-case-i18n="limits.n3">Regression delta reporting</li>
-<li data-case-i18n="limits.n4">More Turkish scenario packs</li>
-<li data-case-i18n="limits.n5">Release-readiness reporting</li>
-</ul>
-</article>
-</div>
-</section>
-
-<section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="owned.eyebrow">What I Owned</p>
-<h2 data-case-i18n="owned.title">Product, architecture and delivery, end to end.</h2>
-</div>
-<div class="case-panel case-copy">
-<p data-case-i18n="owned.body">I defined the product problem and MVP scope, designed the testing workflow and failure-inspection UX, structured the synthetic Turkish scenarios, directed the agent/evaluator architecture, implemented and iterated the frontend/backend system, established regression testing and deployed the product through Vercel and Railway. Development was AI-assisted product and software development, directed and reviewed by me rather than written line by line without tools.</p>
-</div>
-<div aria-label="Ownership highlights" class="case-stack case-section-support" data-case-i18n-aria-label="aria.ownedSkills">
-<span data-case-i18n="owned.skill1">Product Thinking</span><span data-case-i18n="owned.skill2">AI Agent Evaluation</span><span data-case-i18n="owned.skill3">LLM Reliability</span><span data-case-i18n="owned.skill4">Technical Architecture</span><span data-case-i18n="owned.skill5">QA</span><span data-case-i18n="owned.skill6">Automation</span><span data-case-i18n="owned.skill7">Frontend</span><span data-case-i18n="owned.skill8">Backend</span><span data-case-i18n="owned.skill9">Deployment</span><span data-case-i18n="owned.skill10">Security Thinking</span>
-</div>
-</section>
-
-<section class="case-section section-shell">
-<div class="case-section-heading">
-<p class="eyebrow" data-case-i18n="related.eyebrow">Related Projects</p>
-<h2 data-case-i18n="related.title">Continue through the AI workflow and evaluation work.</h2>
-</div>
-<div class="case-related-grid">
-<a class="case-related-card" href="ai-flow-puzzle-case-study.html"><h3 data-case-i18n="related.puzzle">AI Flow Puzzle</h3><p data-case-i18n="related.puzzleBody">An interactive chatbot workflow and validation demonstration.</p></a>
-<a class="case-related-card" href="project-detail.html?project=ai-chatbot-flow-design"><h3 data-case-i18n="related.chatbot">AI Chatbot Flow Design</h3><p data-case-i18n="related.chatbotBody">Enterprise conversational-AI evidence across QA, stabilization and workflow restructuring.</p></a>
-</div>
-</section>
-
-<section class="cta-panel section-shell">
-<div><p class="eyebrow" data-case-i18n="cta.eyebrow">Resume &amp; Contact</p><h2 data-case-i18n="cta.title">Looking for AI agent reliability and product engineering?</h2><p data-case-i18n="cta.body">Review my resume or get in touch to discuss AI evaluation, agent testing and full-stack product work.</p></div>
-<div class="cta-actions"><a class="btn primary" data-resume-link="" href="#" rel="noopener" target="_blank" data-case-i18n="actions.resume">View Resume</a><a class="btn ghost" href="mailto:kaanb8776@gmail.com" data-case-i18n="actions.contact">Contact Me</a></div>
-</section>
+<section class="case-section section-shell"><div class="cta-panel"><div><p class="eyebrow sinama-copy" data-sinama-en="What the project demonstrates" data-sinama-tr="Projenin gösterdiği şey">What the project demonstrates</p><h2 class="sinama-copy" data-sinama-en="Applied AI work is not only model prompting — it is product logic, evaluation, evidence, security and release discipline." data-sinama-tr="Applied AI işi yalnızca model prompt'lamak değildir — product logic, evaluation, evidence, security ve release discipline birlikte gerekir.">Applied AI work is not only model prompting — it is product logic, evaluation, evidence, security and release discipline.</h2><p class="sinama-copy" data-sinama-en="SINAMA is the clearest example in my portfolio of combining AI evaluation, backend architecture, product UX and software reliability thinking in one working system." data-sinama-tr="SINAMA portfolyomda AI evaluation, backend architecture, product UX ve software reliability düşüncesini tek çalışan sistemde birleştiren en net örnek.">SINAMA is the clearest example in my portfolio of combining AI evaluation, backend architecture, product UX and software reliability thinking in one working system.</p></div><div class="cta-actions"><a class="btn primary" href="https://sinama.kaanbalci.com" rel="noopener noreferrer" target="_blank">Live Product</a><a class="btn ghost" href="https://github.com/UAJOP/sinama" rel="noopener noreferrer" target="_blank">GitHub</a></div></div></section>
 </main>
-
-<footer class="site-footer">
-<div class="footer-inner section-shell">
-<div><a class="footer-brand" href="index.html"><img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/><span>Kaan Balcı</span></a><p>AI Designer &amp; Software Developer building practical AI workflows and software products.</p></div>
-<div aria-label="Social links" class="footer-socials"><a aria-label="Open GitHub profile" href="https://github.com/UAJOP" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="bx bxl-github"></i></a><a aria-label="Open LinkedIn profile" href="https://www.linkedin.com/in/balcikaan/" rel="noopener" target="_blank" title="LinkedIn"><i aria-hidden="true" class="bx bxl-linkedin-square"></i></a><a aria-label="Open Instagram profile" href="https://www.instagram.com/kaan_ba1/" rel="noopener" target="_blank" title="Instagram"><i aria-hidden="true" class="bx bxl-instagram"></i></a><a aria-label="Open YouTube channel" href="https://www.youtube.com/channel/UCCoOWMoemn93OX7cHyGTZuA" rel="noopener" target="_blank" title="YouTube"><i aria-hidden="true" class="bx bxl-youtube"></i></a><a aria-label="Open X profile" href="https://x.com/KaanAjop" rel="noopener" target="_blank" title="X"><i aria-hidden="true" class="bx bxl-twitter"></i></a></div>
-</div>
-<p class="copyright">© <span data-year=""></span> Kaan Balcı. All rights reserved.</p>
-</footer>
+<footer class="site-footer"><div class="footer-inner section-shell"><div><a class="footer-brand" href="index.html"><img alt="Kaan Balcı logo" src="assets/KAAN BALCI-KÜÇÜK LOGO PNG.png"/><span>Kaan Balcı</span></a><p>AI Designer &amp; Software Developer building practical AI workflows and software products.</p></div><div aria-label="Social links" class="footer-socials"><a aria-label="Open GitHub profile" href="https://github.com/UAJOP" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="bx bxl-github"></i></a><a aria-label="Open LinkedIn profile" href="https://www.linkedin.com/in/balcikaan/" rel="noopener" target="_blank" title="LinkedIn"><i aria-hidden="true" class="bx bxl-linkedin-square"></i></a><a aria-label="Open Instagram profile" href="https://www.instagram.com/kaan_ba1/" rel="noopener" target="_blank" title="Instagram"><i aria-hidden="true" class="bx bxl-instagram"></i></a><a aria-label="Open YouTube channel" href="https://www.youtube.com/channel/UCCoOWMoemn93OX7cHyGTZuA" rel="noopener" target="_blank" title="YouTube"><i aria-hidden="true" class="bx bxl-youtube"></i></a><a aria-label="Open X profile" href="https://x.com/KaanAjop" rel="noopener" target="_blank" title="X"><i aria-hidden="true" class="bx bxl-twitter"></i></a></div></div><p class="copyright">© <span data-year=""></span> Kaan Balcı. All rights reserved.</p></footer>
 <script src="script.js"></script>
-<script src="sinama-case-study.data.js"></script>
-<script src="case-study.js"></script>
+<script>
+(function(){
+  function applySinamaLanguage(lang){var next=lang==="tr"?"tr":"en";document.querySelectorAll("[data-sinama-en][data-sinama-tr]").forEach(function(node){node.textContent=node.getAttribute(next==="tr"?"data-sinama-tr":"data-sinama-en")||node.textContent;});}
+  document.querySelectorAll("[data-lang-switch]").forEach(function(button){button.addEventListener("click",function(){applySinamaLanguage(button.getAttribute("data-lang-switch"));});});
+  applySinamaLanguage((document.documentElement.lang||"en")==="tr"?"tr":"en");
+})();
+</script>
 </body>
 </html>
