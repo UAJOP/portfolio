@@ -17,6 +17,17 @@
     });
   }
 
+  function addUniqueKeywords(entry, keywords) {
+    if (!entry) return;
+    const known = new Set(entry.keywords.map((keyword) => keyword.toLowerCase()));
+    keywords.forEach((keyword) => {
+      if (!known.has(keyword.toLowerCase())) {
+        entry.keywords.push(keyword);
+        known.add(keyword.toLowerCase());
+      }
+    });
+  }
+
   function syncAjoopWithFlagshipProjects() {
     if (
       typeof portfolioChatbotContent === "undefined" ||
@@ -175,14 +186,14 @@
       });
     }
 
-    const aiIntent = chatbotKeywordMap.find((entry) => entry.id === "ai");
-    if (aiIntent) {
-      aiIntent.keywords.push("agent", "agents", "applied ai", "solution engineering");
-    }
-    const stackIntent = chatbotKeywordMap.find((entry) => entry.id === "stack");
-    if (stackIntent) {
-      stackIntent.keywords.push("typescript", "fastapi", "postgresql", "phaser");
-    }
+    addUniqueKeywords(
+      chatbotKeywordMap.find((entry) => entry.id === "ai"),
+      ["agent", "agents", "applied ai", "solution engineering"],
+    );
+    addUniqueKeywords(
+      chatbotKeywordMap.find((entry) => entry.id === "stack"),
+      ["typescript", "fastapi", "postgresql", "phaser"],
+    );
 
     if (typeof updatePortfolioChatbotLanguage === "function") {
       updatePortfolioChatbotLanguage(currentLanguage());
