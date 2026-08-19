@@ -4,7 +4,7 @@
 
 The portfolio grew from a static personal site into a product with Recruiter Mode, Ajoop, Command Palette, bilingual copy, case studies, games, request intake, accessibility QA and multiple active flagship products.
 
-The previous structure duplicated current project truth across HTML pages, `script.js` and `flagship-copy.js`. That made drift likely whenever SINAMA, Merge Rush or career positioning changed.
+The previous structure duplicated current project truth across HTML pages, the monolithic runtime and `flagship-copy.js`. That made drift likely whenever SINAMA, Merge Rush or career positioning changed.
 
 ## Source-of-truth rule
 
@@ -29,7 +29,7 @@ Owns:
 Owns:
 
 - Unified EN/TR attribute copy (`data-pv2-en` / `data-pv2-tr`)
-- Runtime synchronization of legacy Ajoop with registry facts
+- Runtime synchronization of Ajoop with registry facts
 - Recruiter Mode V2 rendering
 - Role-specific URLs such as `?role=applied-ai`
 - Build Log rendering
@@ -41,6 +41,32 @@ Owns:
 ### `portfolio-v2.css`
 
 Owns UI for the V2 runtime surfaces. New V2 components should be styled here instead of growing `style.css` unless they are true global primitives.
+
+## Runtime compatibility layer
+
+The old monolithic runtime is preserved byte-for-byte as `legacy-script.js`.
+
+`script.js` is now a small bootloader.
+
+On pages explicitly migrated to V2, the HTML already declares `portfolio-data.js` before `script.js` and `portfolio-v2.js` after it. The bootloader detects that setup and synchronously inserts only `legacy-script.js`, preserving execution order.
+
+On older pages that still contain only `<script src="script.js"></script>`, the bootloader inserts:
+
+`portfolio-data.js → legacy-script.js → portfolio-v2.js`
+
+It also adds `portfolio-v2.css` when missing.
+
+This keeps current Recruiter Mode and Ajoop evidence available on older case studies, certificates, 404 and mini-game pages without forcing a risky all-at-once HTML rewrite.
+
+Future refactors can extract focused modules from `legacy-script.js`; the compatibility bootloader gives that work a stable migration boundary.
+
+## Ajoop scope
+
+Ajoop is deterministic in this release. It maps portfolio questions to curated evidence-backed answers and links.
+
+V2 improves its grounding by sourcing current SINAMA, Merge Rush, role-fit and build-status facts from the central registry, but **does not claim a live LLM, semantic retrieval or RAG backend**.
+
+A future semantic assistant should be a separate, explicit product step with source citation, safe fallbacks and clear runtime boundaries.
 
 ## Role deep links
 
@@ -55,7 +81,7 @@ Example:
 
 `https://kaanbalci.com/?role=applied-ai`
 
-On V2-enabled pages, a valid role parameter selects that evidence profile and opens Recruiter Mode.
+A valid role parameter selects that evidence profile and opens Recruiter Mode.
 
 ## Page hierarchy
 
@@ -122,19 +148,20 @@ The UI may show a **browser submission reference**, but must not call it a serve
 
 ## QA
 
-The Site Preflight workflow remains the release safety net. V2 adds `labs.html` and `now.html` to Pa11y and Lighthouse coverage.
+The Site Preflight workflow remains the release safety net and now includes JavaScript syntax validation for all root JS files. V2 adds `labs.html` and `now.html` to Pa11y and Lighthouse coverage.
 
 Before merge:
 
-1. HTML validation
-2. spelling
-3. mobile Pa11y
-4. Lighthouse
-5. broken-link scan
-6. manual smoke test for Recruiter Mode V2, language switch, Ajoop, role deep links and SINAMA Evidence Explorer
+1. JavaScript syntax validation
+2. HTML validation
+3. spelling
+4. mobile Pa11y
+5. Lighthouse
+6. broken-link scan
+7. interaction review for Recruiter Mode V2, language switch, Ajoop, role deep links and SINAMA Evidence Explorer
 
 ## Migration note
 
-`flagship-copy.js` was removed. Its responsibilities are now handled by the registry + V2 runtime. `script.js` still contains legacy data needed by older pages and dynamic archive features; V2 treats that layer as compatibility code and overwrites current flagship/recruiter/Ajoop surfaces at runtime on migrated pages.
+`flagship-copy.js` was removed. Its responsibilities are now handled by the registry + V2 runtime.
 
-Future cleanup should gradually extract remaining large legacy modules from `script.js` into focused files without changing behavior.
+`legacy-script.js` is compatibility code, not the preferred home for new product facts. New current-state logic should enter through the registry or focused V2 modules first.
