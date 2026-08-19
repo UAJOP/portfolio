@@ -34,6 +34,16 @@ jobs:
       - name: Prepare reports directory
         run: mkdir -p qa-results
 
+      - name: Check JavaScript syntax
+        run: |
+          set -e
+          for file in ./*.js; do
+            node --check "$file"
+          done
+
+      - name: Check portfolio architecture consistency
+        run: npm run qa:portfolio
+
       - name: Validate HTML
         continue-on-error: true
         run: npm run qa:html 2>&1 | tee qa-results/html-validation.txt

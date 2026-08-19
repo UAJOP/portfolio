@@ -3,6 +3,7 @@
   "private": true,
   "description": "Automated preflight checks for kaanbalci.com",
   "scripts": {
+    "qa:portfolio": "node qa-portfolio-consistency.js",
     "qa:html": "html-validate \"*.html\"",
     "qa:spelling": "cspell \"*.{html,md}\" --config cspell.json --no-progress --show-suggestions",
     "qa:a11y": "pa11y-ci --config .pa11yci",
