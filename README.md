@@ -26,13 +26,27 @@ This registry powers or synchronizes:
 
 - Recruiter Mode V2
 - Role-specific recruiter deep links
-- Ajoop 3.0 evidence answers
+- Ajoop evidence answers
 - Build Log
 - Kaan Labs
 - SINAMA Evidence Explorer
 - Shared bilingual V2 copy
 
 See [`PORTFOLIO_ARCHITECTURE.md`](PORTFOLIO_ARCHITECTURE.md) before adding new flagship facts or recruiter evidence.
+
+## Runtime boot sequence
+
+`script.js` is now a small compatibility bootloader rather than the monolithic application runtime.
+
+On pages already migrated to V2 it keeps parser order intact and loads the legacy runtime between the registry and the explicit V2 runtime:
+
+`portfolio-data.js → script.js bootloader → legacy-script.js → portfolio-v2.js`
+
+On older pages that still include only `script.js`, the bootloader injects the full stack automatically:
+
+`portfolio-data.js → legacy-script.js → portfolio-v2.js`
+
+It also injects `portfolio-v2.css` when a legacy page does not already include it. This keeps Recruiter Mode, Ajoop and current portfolio evidence synchronized across older case studies, certificates, 404 and mini-game pages without rewriting every HTML file at once.
 
 ## Main pages
 
@@ -54,7 +68,8 @@ See [`PORTFOLIO_ARCHITECTURE.md`](PORTFOLIO_ARCHITECTURE.md) before adding new f
 - `portfolio-data.js` — source of truth for current flagship/project/recruiter/build data
 - `portfolio-v2.js` — V2 runtime and evidence surfaces
 - `portfolio-v2.css` — V2 component styling
-- `script.js` — legacy/global site runtime: navigation, theme, existing translations, dynamic archive details, chatbot shell, command palette and interactive utilities
+- `script.js` — global compatibility bootloader
+- `legacy-script.js` — preserved pre-V2 global runtime: navigation, theme, historical translations, dynamic archive details, chatbot shell, command palette, request/game utilities and other established interactions
 - `style.css` — global styling primitives and legacy component styles
 
 `flagship-copy.js` has been retired; its responsibilities moved to the registry + V2 runtime.
@@ -66,11 +81,15 @@ See [`PORTFOLIO_ARCHITECTURE.md`](PORTFOLIO_ARCHITECTURE.md) before adding new f
 - `/?role=software`
 - `/?role=game`
 
-A valid role parameter selects the matching evidence profile and opens Recruiter Mode on V2-enabled pages.
+A valid role parameter selects the matching evidence profile and opens Recruiter Mode.
+
+## Ajoop scope
+
+Ajoop remains deterministic and portfolio-focused. V2 grounds its current SINAMA, Merge Rush, role-fit and build-status answers in the central registry. It is **not** presented as a live LLM/RAG assistant in this release.
 
 ## Resume
 
-The public resume URL is still centralized by the legacy runtime and mirrored in the V2 registry:
+The public resume URL is mirrored in the registry and in the preserved legacy runtime:
 
 `https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing`
 
@@ -78,8 +97,9 @@ Role-specific private application CVs are intentionally not exposed.
 
 ## QA
 
-GitHub Actions runs Site Preflight checks for:
+GitHub Actions Site Preflight checks:
 
+- JavaScript syntax for every root `.js` file
 - HTML validation
 - spelling
 - mobile WCAG 2 AA with Pa11y
