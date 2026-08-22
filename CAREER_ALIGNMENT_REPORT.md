@@ -13,7 +13,7 @@
 
 ## What this pass did (2026)
 
-- Repositioned the public profile around **AI Designer & Software Developer**.
+- Consolidated the public target profile around **Forward Deployed Engineer**, with **AI Designer & Software Developer** retained as professional background.
 - Prioritized Conversational AI, Solution Engineering, LLM Evaluation, Workflow Automation and user-centered software products.
 - Removed GPA/GNO from visible and hidden website content.
 - Contextualized the 50+ project statement as academic, personal, freelance and team-based contributions.
@@ -28,7 +28,7 @@
 
 | Item from this pass | Current state |
 |---|---|
-| Recruiter Mode single profile | Replaced by Recruiter Mode V2 with four role profiles and `?role=` deep links, sourced from `portfolio-data.js`. |
+| Recruiter Mode single profile | Replaced by Recruiter Mode V2 with four capability-focused evidence views and backward-compatible `?role=` deep links, all sharing the same Forward Deployed Engineer target. |
 | Resume centralized in a script constant | Now also mirrored in the registry as `profile.resume`. |
 | "Reorganize Works into Selected Work and Project Archive" | Done: Works is tiered flagship → supporting evidence → archive. |
 | "Create stronger static case-study pages" | Done: SINAMA and Merge Rush have dedicated case studies. |

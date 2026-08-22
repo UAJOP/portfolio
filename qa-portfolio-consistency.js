@@ -6,6 +6,7 @@ const check = (condition, message) => {
   if (!condition) failures.push(message);
 };
 const read = (path) => fs.readFileSync(path, "utf8");
+const normalizeWhitespace = (value) => String(value || "").replace(/\s+/g, " ").trim();
 
 const sandbox = { window: {} };
 vm.createContext(sandbox);
@@ -26,6 +27,29 @@ check(/^\d{4}-\d{2}-\d{2}$/.test(registry?.updatedAt || ""), "registry updatedAt
   check(registry?.recruiterProfiles?.[id], `missing recruiter profile: ${id}`);
   check((registry?.recruiterProfiles?.[id]?.evidence || []).length >= 2, `recruiter profile ${id} needs at least two evidence links`);
 });
+
+// --- Canonical career identity ---------------------------------------------
+// Recruiter URLs are evidence-focus views, not separate target identities.
+const canonicalTargetTitle = "Forward Deployed Engineer";
+check(registry?.profile?.primaryTitle?.en === canonicalTargetTitle, "canonical EN primary target title must be Forward Deployed Engineer");
+check(registry?.profile?.primaryTitle?.tr === canonicalTargetTitle, "canonical TR primary target title must be Forward Deployed Engineer");
+check(registry?.profile?.backgroundTitle?.en === "AI Designer & Software Developer", "professional background title must remain explicit and separate from the primary target");
+
+Object.entries(registry?.recruiterProfiles || {}).forEach(([id, profile]) => {
+  check(!Object.prototype.hasOwnProperty.call(profile, "primaryTitle"), `recruiter focus ${id} must not override the canonical primary title`);
+  check(!Object.prototype.hasOwnProperty.call(profile, "profile"), `recruiter focus ${id} must not reintroduce a competing profile title`);
+  check(!Object.prototype.hasOwnProperty.call(profile, "roles"), `recruiter focus ${id} must not reintroduce alternate target-role arrays`);
+  check(Boolean(profile.focusTitle?.en && profile.focusTitle?.tr), `recruiter focus ${id} needs a bilingual focusTitle`);
+  check(Array.isArray(profile.capabilities) && profile.capabilities.length > 0, `recruiter focus ${id} needs capability evidence`);
+});
+
+const careerRuntime = read("portfolio-v2.js");
+check(/registry\.profile\.primaryTitle/.test(careerRuntime), "Recruiter Mode must render the canonical registry primary title");
+check(!/profile\.roles\s*\.map/.test(careerRuntime), "Recruiter Mode must not render alternate target-role chips");
+check(!/pick\(profile\.profile/.test(careerRuntime), "Recruiter Mode focus switching must not replace the primary target title");
+check(careerRuntime.includes("Kaan is currently positioning primarily as a Forward Deployed Engineer"), "Ajoop EN role-fit answer must identify Forward Deployed Engineer as the primary direction");
+check(careerRuntime.includes("Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor"), "Ajoop TR role-fit answer must identify Forward Deployed Engineer as the primary direction");
+check(!/target\.answers\.roles\s*=\s*\{\s*text:\s*\[/.test(careerRuntime), "Ajoop role-fit answer must not randomly omit the canonical primary target");
 
 check((registry?.buildLog || []).length >= 3, "build log needs at least three checkpoints");
 check((registry?.labs || []).length >= 3, "Labs needs at least three experiments");
@@ -63,6 +87,9 @@ const index = read("index.html");
   "AI workflow demo",
   "Algorithmic 3D lab",
 ].forEach((stale) => check(!index.includes(stale), `homepage should not lead with: ${stale}`));
+const normalizedIndex = normalizeWhitespace(index);
+check(normalizedIndex.includes("Hiring a Forward Deployed Engineer?"), "homepage recruiter CTA must use the canonical target identity");
+check(/"jobTitle"\s*:\s*"Forward Deployed Engineer"/.test(index), "homepage structured data must use the canonical current target title");
 
 const games = read("games.html");
 check(!games.includes("<h3>Interview Run</h3>"), "Interview Run must not return as an active game card without an explicit product decision");
@@ -232,9 +259,12 @@ check(Object.keys(canonicalSocials).length === 5, "registry profile.socials must
 
 const canonicalTagline = registry?.profile?.footerTagline?.en || "";
 check(Boolean(canonicalTagline), "registry profile.footerTagline must define the canonical footer positioning copy");
+check(canonicalTagline === "Forward Deployed Engineer building reliable AI systems and product-minded software.", "canonical EN footer positioning must reflect the Forward Deployed Engineer target");
+check(registry?.profile?.footerTagline?.tr === "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren Forward Deployed Engineer.", "canonical TR footer positioning must reflect the Forward Deployed Engineer target");
 
 // Wordings that previously drifted across page families and must not return.
 const retiredFooterCopy = [
+  "AI Designer &amp; Software Developer building reliable AI systems and product-minded software.",
   "AI Designer &amp; Software Developer building practical AI workflows and software products.",
   "AI Designer &amp; Software Developer building practical AI workflows and scalable software systems.",
 ];
@@ -282,6 +312,13 @@ const shippedArchitecture = buildLog.find((entry) => /Portfolio Architecture V2$
 check(Boolean(shippedArchitecture), "build log must record Portfolio Architecture V2");
 if (shippedArchitecture) {
   check(shippedArchitecture.status === "shipped", "Portfolio Architecture V2 has shipped and must not still read as building");
+}
+
+const consistencyPass = buildLog.find((entry) => /Consistency, footer and QA hardening/.test(entry.title?.en || ""));
+check(Boolean(consistencyPass), "build log must record the consistency, footer and QA hardening pass");
+if (consistencyPass) {
+  check(consistencyPass.status === "shipped", "the completed consistency, footer and QA hardening pass must be shipped");
+  check(/^Standardized\b/.test(normalizeWhitespace(consistencyPass.detail?.en)), "the completed consistency pass must use past-tense EN detail copy");
 }
 
 const buildDates = buildLog.map((entry) => entry.date);

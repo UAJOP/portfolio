@@ -19,7 +19,7 @@ Owns:
 - Profile and contact truth
 - Flagship project summaries
 - Project status / stack / proof
-- Role-specific recruiter profiles
+- One canonical target title plus capability-focused recruiter evidence profiles
 - Build log entries
 - Labs catalog
 - Sanitized SINAMA Evidence Explorer examples
@@ -31,7 +31,7 @@ Owns:
 - Unified EN/TR attribute copy (`data-pv2-en` / `data-pv2-tr`)
 - Runtime synchronization of Ajoop with registry facts
 - Recruiter Mode V2 rendering
-- Role-specific URLs such as `?role=applied-ai`
+- Backward-compatible evidence-focus URLs such as `?role=applied-ai`
 - Build Log rendering
 - Labs rendering
 - SINAMA Evidence Explorer rendering
@@ -70,7 +70,7 @@ A future semantic assistant should be a separate, explicit product step with sou
 
 ## Role deep links
 
-Supported role ids:
+Supported evidence-focus ids (the legacy `role` query key remains stable):
 
 - `applied-ai`
 - `solution-engineering`
@@ -81,7 +81,7 @@ Example:
 
 `https://kaanbalci.com/?role=applied-ai`
 
-A valid role parameter selects that evidence profile and opens Recruiter Mode.
+A valid parameter selects that evidence focus and opens Recruiter Mode. It must never replace the canonical `profile.primaryTitle` value: **Forward Deployed Engineer**. `profile.backgroundTitle` stores **AI Designer & Software Developer** as professional background, not as a competing target.
 
 ## Page hierarchy
 

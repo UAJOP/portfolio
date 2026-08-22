@@ -1,6 +1,6 @@
 # Kaan Balcı — Portfolio
 
-Source code for [kaanbalci.com](https://kaanbalci.com), the professional portfolio of **Kaan Balcı — AI Designer & Software Developer**.
+Source code for [kaanbalci.com](https://kaanbalci.com), the professional portfolio of **Kaan Balcı — Forward Deployed Engineer**. **AI Designer & Software Developer** is retained as the background/professional description.
 
 ## Current positioning
 
@@ -25,7 +25,7 @@ Current product truth is centralized in `portfolio-data.js` and consumed by `por
 This registry powers or synchronizes:
 
 - Recruiter Mode V2
-- Role-specific recruiter deep links
+- Capability-focused recruiter deep links with one canonical target title
 - Ajoop evidence answers
 - Build Log
 - Kaan Labs
@@ -81,7 +81,7 @@ It also injects `portfolio-v2.css` when a legacy page does not already include i
 - `/?role=software`
 - `/?role=game`
 
-A valid role parameter selects the matching evidence profile and opens Recruiter Mode.
+A valid legacy `role` parameter selects the matching evidence focus and opens Recruiter Mode. Every focus keeps **Forward Deployed Engineer** as the primary target.
 
 ## Ajoop scope
 
