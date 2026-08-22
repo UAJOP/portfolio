@@ -3,9 +3,10 @@
   "private": true,
   "description": "Automated preflight checks for kaanbalci.com",
   "scripts": {
-    "qa": "npm run qa:js && npm run qa:portfolio && npm run qa:links && npm run qa:html && npm run qa:spelling",
+    "qa": "npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
     "qa:js": "node qa-js-syntax.js",
     "qa:portfolio": "node qa-portfolio-consistency.js",
+    "qa:assets": "node qa-assets.js",
     "qa:links": "node qa-internal-links.js",
     "qa:html": "html-validate \"*.html\"",
     "qa:spelling": "cspell \"*.{html,md}\" --config cspell.json --no-progress --show-suggestions",

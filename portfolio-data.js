@@ -3,7 +3,7 @@
 
   window.KAAN_PORTFOLIO = Object.freeze({
     version: "2.0.0",
-    updatedAt: "2026-08-22",
+    updatedAt: "2026-08-23",
     profile: {
       name: "Kaan Balcı",
       primaryTitle: t("Forward Deployed Engineer", "Forward Deployed Engineer"),
@@ -179,6 +179,13 @@
       }
     },
     buildLog: [
+      {
+        date: "2026-08-23",
+        area: "Portfolio",
+        title: t("Asset and LCP optimization V1", "Asset ve LCP optimizasyonu V1"),
+        detail: t("Reduced critical image transfer, added intrinsic dimensions and established blocking asset regression coverage without changing the visual system.", "Görsel sistemi değiştirmeden kritik görsel transferi azaltıldı, intrinsic boyutlar eklendi ve blocking asset regression kapsamı oluşturuldu."),
+        status: "shipped"
+      },
       {
         date: "2026-08-22",
         area: "Portfolio",

@@ -321,6 +321,13 @@ if (consistencyPass) {
   check(/^Standardized\b/.test(normalizeWhitespace(consistencyPass.detail?.en)), "the completed consistency pass must use past-tense EN detail copy");
 }
 
+const assetPass = buildLog.find((entry) => /Asset and LCP optimization V1/.test(entry.title?.en || ""));
+check(Boolean(assetPass), "build log must record Asset and LCP optimization V1");
+if (assetPass) {
+  check(assetPass.status === "shipped", "the completed Asset and LCP optimization pass must be shipped");
+  check(/^Reduced\b/.test(normalizeWhitespace(assetPass.detail?.en)), "the completed Asset and LCP pass must use past-tense EN detail copy");
+}
+
 const buildDates = buildLog.map((entry) => entry.date);
 check(
   buildDates.every((date, index) => index === 0 || buildDates[index - 1] >= date),
@@ -333,10 +340,13 @@ const manifest = JSON.parse(read("package.json"));
 Object.entries(manifest.devDependencies || {}).forEach(([name, range]) => {
   check(range !== "latest", `QA dependency ${name} must be pinned, not "latest"`);
 });
+check(manifest.scripts?.["qa:assets"] === "node qa-assets.js", "package scripts must expose the deterministic asset policy");
+check(/qa:assets/.test(manifest.scripts?.qa || ""), "the aggregate QA command must include the asset policy");
 
 const workflow = read(".github/workflows/site-preflight.yml");
 check(/npm ci --no-audit --no-fund/.test(workflow), "CI must install with npm ci so the lockfile is honoured");
 check(!/npm install --no-audit/.test(workflow), "CI must not fall back to npm install");
+check(/name: Check asset performance policy[\s\S]*npm run qa:assets/.test(workflow), "CI must run the blocking asset policy");
 
 // Deterministic checks must stay real gates; only network-dependent steps may
 // be report-only.

@@ -42,6 +42,13 @@ jobs:
       - name: Check portfolio architecture consistency
         run: npm run qa:portfolio
 
+      # BLOCKING: guards critical image delivery, intrinsic dimensions and
+      # referenced asset existence without relying on network timing.
+      - name: Check asset performance policy
+        run: |
+          set -o pipefail
+          npm run qa:assets 2>&1 | tee qa-results/asset-policy.txt
+
       # BLOCKING: fully determined by the repository, so it cannot flake.
       - name: Validate internal links
         run: npm run qa:links 2>&1 | tee qa-results/internal-links.txt
