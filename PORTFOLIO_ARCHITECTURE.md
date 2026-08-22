@@ -170,7 +170,7 @@ Each icon-only link carries an accessible name and an `aria-hidden` icon, and ex
 
 The Site Preflight workflow is the release gate. Checks whose outcome is fully determined by the repository block a merge; checks that depend on the network or runner load are report-only.
 
-Blocking: JavaScript syntax, portfolio consistency, internal links, structural HTML errors, spelling, Pa11y WCAG 2 AA.
+Blocking: JavaScript syntax, portfolio consistency, asset performance policy, internal links, structural HTML errors, spelling, Pa11y WCAG 2 AA.
 
 Report-only: Lighthouse, external link availability.
 
