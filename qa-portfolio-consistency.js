@@ -158,6 +158,71 @@ check(
   );
 });
 
+// --- Card and ARIA semantics ------------------------------------------------
+// Project/game cards must stay containers with real anchors inside. A card that
+// simulates a link (role="link" + tabindex) while containing its own links is
+// invalid ARIA, adds a redundant tab stop and makes Enter/Space ambiguous.
+const hasNestedAnchors = (source) => {
+  const re = /<a\b|<\/a>/g;
+  let depth = 0;
+  let match;
+  while ((match = re.exec(source))) {
+    if (match[0] === "</a>") depth = Math.max(0, depth - 1);
+    else if (++depth > 1) return true;
+  }
+  return false;
+};
+
+htmlFiles.forEach((file) => {
+  const source = read(file);
+
+  check(!hasNestedAnchors(source), `${file} must not nest anchors inside anchors`);
+
+  (source.match(/<div\b[^>]*>/g) || []).forEach((tag) => {
+    if (!/\saria-label="/.test(tag) || /\srole="/.test(tag)) return;
+    const label = (tag.match(/aria-label="([^"]*)"/) || [])[1];
+    check(false, `${file}: <div aria-label="${label}"> has the generic role, which drops the accessible name; give it a role that supports naming`);
+  });
+
+  (source.match(/<article\b[^>]*>[\s\S]*?<\/article>/g) || []).forEach((card) => {
+    const open = card.match(/^<article\b[^>]*>/)[0];
+    if (!/class="[^"]*project-card[^"]*"/.test(open)) return;
+
+    check(!/\srole="link"/.test(open), `${file}: project card must not simulate a link with role="link"`);
+    check(!/\stabindex=/.test(open), `${file}: project card must not carry tabindex; its real anchors provide keyboard access`);
+
+    const target = (open.match(/data-(?:project|game)-link="([^"]*)"/) || [])[1];
+    if (!target) return;
+    const expected = target.endsWith(".html") || target.includes(".html?")
+      ? target
+      : `project-detail.html?project=${encodeURIComponent(target)}`;
+    const titleHref = (card.match(/<h3[^>]*>\s*<a[^>]+href="([^"]*)"/) || [])[1];
+    check(titleHref === expected, `${file}: card targeting "${target}" must expose that destination as a real title anchor (found ${titleHref || "none"})`);
+  });
+});
+
+// Whole-card navigation stays a mouse convenience only: keyboard users move
+// through the real anchors, so simulated key handlers must not come back.
+const functionBody = (source, name) => {
+  const start = source.indexOf(`function ${name}(`);
+  if (start === -1) return "";
+  const open = source.indexOf("{", start);
+  let depth = 0;
+  for (let i = open; i < source.length; i += 1) {
+    if (source[i] === "{") depth += 1;
+    else if (source[i] === "}" && --depth === 0) return source.slice(open, i + 1);
+  }
+  return "";
+};
+
+check(/function shouldIgnoreCardActivation\b/.test(legacyRuntime), "the shared card activation guard is missing");
+["setupProjectCardNavigation", "setupGameCards"].forEach((name) => {
+  const body = functionBody(legacyRuntime, name);
+  check(Boolean(body), `${name} is missing from the legacy runtime`);
+  check(!body.includes("keydown"), `${name} must not simulate keyboard activation on cards`);
+  check(body.includes("shouldIgnoreCardActivation"), `${name} must route card clicks through the shared activation guard`);
+});
+
 if (failures.length) {
   console.error(`Portfolio consistency guard failed with ${failures.length} issue(s):`);
   failures.forEach((failure) => console.error(`- ${failure}`));
