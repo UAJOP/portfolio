@@ -3,20 +3,35 @@
 
   window.KAAN_PORTFOLIO = Object.freeze({
     version: "2.0.0",
-    updatedAt: "2026-08-20",
+    updatedAt: "2026-08-22",
     profile: {
       name: "Kaan Balcı",
-      title: t("AI Designer & Software Developer", "AI Designer & Software Developer"),
+      primaryTitle: t("Forward Deployed Engineer", "Forward Deployed Engineer"),
+      backgroundTitle: t("AI Designer & Software Developer", "AI Designer & Software Developer"),
       location: t("Istanbul / Remote", "İstanbul / Remote"),
       availability: t("Open for work", "İşe açık"),
       direction: t(
-        "Applied AI, AI Solutions, Forward Deployed / Solution Engineering and product-minded software engineering.",
-        "Applied AI, AI Solutions, Forward Deployed / Solution Engineering ve ürün odaklı yazılım mühendisliği."
+        "Forward Deployed Engineer with evidence across Applied AI, AI reliability, solution engineering and product-minded software delivery.",
+        "Applied AI, AI reliability, solution engineering ve ürün odaklı yazılım geliştirme alanlarında kanıt sunan Forward Deployed Engineer."
       ),
       resume: "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing",
       linkedin: "https://www.linkedin.com/in/balcikaan/",
       github: "https://github.com/UAJOP",
-      email: "mailto:kaanb8776@gmail.com"
+      email: "mailto:kaanb8776@gmail.com",
+      // Canonical public social destinations. The footer keeps these as static
+      // hrefs so it still works without JavaScript; the consistency guard
+      // verifies every rendered footer against these values.
+      socials: {
+        github: "https://github.com/UAJOP",
+        linkedin: "https://www.linkedin.com/in/balcikaan/",
+        instagram: "https://www.instagram.com/kaan_ba1/",
+        youtube: "https://www.youtube.com/channel/UCCoOWMoemn93OX7cHyGTZuA",
+        x: "https://x.com/KaanAjop"
+      },
+      footerTagline: t(
+        "Forward Deployed Engineer building reliable AI systems and product-minded software.",
+        "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren Forward Deployed Engineer."
+      )
     },
     projects: {
       sinama: {
@@ -112,9 +127,8 @@
     recruiterProfiles: {
       "applied-ai": {
         label: t("Applied AI", "Applied AI"),
-        profile: t("Applied AI / AI Reliability Engineer", "Applied AI / AI Reliability Engineer"),
-        focus: ["AI Agent Reliability", "LLM Evaluation", "Conversational AI", "Python / FastAPI", "Regression Testing"],
-        roles: ["Applied AI Engineer", "AI Solutions Engineer", "Forward Deployed Engineer", "AI Product Engineer", "Solution Engineer"],
+        focusTitle: t("Applied AI / AI Reliability", "Applied AI / AI Reliability"),
+        capabilities: ["AI Agent Reliability", "LLM Evaluation", "Conversational AI", "Python / FastAPI", "Regression Testing"],
         skills: [
           t("Multi-turn scenario and agent evaluation", "Multi-turn senaryo ve agent değerlendirme"),
           t("Deterministic tool/workflow contracts and regression evidence", "Deterministik tool/workflow contract'ları ve regression kanıtı"),
@@ -126,9 +140,8 @@
       },
       "solution-engineering": {
         label: t("Solution Engineering", "Solution Engineering"),
-        profile: t("AI Solutions / Solution Engineer", "AI Solutions / Solution Engineer"),
-        focus: ["Customer Workflows", "Conversational AI", "Automation", "API Integration", "Product Delivery"],
-        roles: ["Solution Engineer", "Technical Solutions Engineer", "Forward Deployed Engineer", "AI Solutions Engineer", "Implementation Engineer"],
+        focusTitle: t("Solution Engineering", "Solution Engineering"),
+        capabilities: ["Customer Workflows", "Conversational AI", "Automation", "API Integration", "Product Delivery"],
         skills: [
           t("Translating business requirements into testable workflows", "İş gereksinimlerini test edilebilir workflow'lara çevirme"),
           t("Chatbot QA, stabilization and multi-channel handoffs", "Chatbot QA, stabilizasyon ve multi-channel handoff'lar"),
@@ -140,9 +153,8 @@
       },
       software: {
         label: t("Software", "Yazılım"),
-        profile: t("Software / Product Engineer", "Software / Product Engineer"),
-        focus: ["Python", "FastAPI", "TypeScript", "C#/.NET", "Databases"],
-        roles: ["Software Developer", "Backend Developer", "Product Engineer", "Junior Full-Stack Developer", "Technical Product Engineer"],
+        focusTitle: t("Software / Product Engineering", "Yazılım / Ürün Mühendisliği"),
+        capabilities: ["Python", "FastAPI", "TypeScript", "C#/.NET", "Databases"],
         skills: [
           t("Backend APIs and persistence", "Backend API'ler ve persistence"),
           t("TypeScript and responsive product interfaces", "TypeScript ve responsive ürün arayüzleri"),
@@ -154,9 +166,8 @@
       },
       game: {
         label: t("Game / Interactive", "Oyun / İnteraktif"),
-        profile: t("Game / Interactive Product Developer", "Oyun / İnteraktif Ürün Geliştirici"),
-        focus: ["Phaser 3", "TypeScript", "Gameplay State", "Responsive UI", "Platform Architecture"],
-        roles: ["Game Developer", "Gameplay Programmer", "Interactive Developer", "Web Game Developer", "Technical Game Designer"],
+        focusTitle: t("Interactive Systems", "İnteraktif Sistemler"),
+        capabilities: ["Phaser 3", "TypeScript", "Gameplay State", "Responsive UI", "Platform Architecture"],
         skills: [
           t("Merge-game state, progression and timed-order systems", "Merge-game state, progression ve timed-order sistemleri"),
           t("Footprint-aware placement and deadlock logic", "Footprint-aware placement ve deadlock mantığı"),
@@ -169,17 +180,31 @@
     },
     buildLog: [
       {
+        date: "2026-08-22",
+        area: "Portfolio",
+        title: t("Consistency, footer and QA hardening", "Consistency, footer ve QA hardening"),
+        detail: t("Standardized the canonical site footer, refreshed portfolio truth and hardened the reproducible QA pipeline.", "Canonical site footer standartlaştırıldı, portfolyo verisi tazelendi ve tekrarlanabilir QA pipeline güçlendirildi."),
+        status: "shipped"
+      },
+      {
+        date: "2026-08-22",
+        area: "Portfolio",
+        title: t("Semantic card and accessibility cleanup", "Semantic card ve erişilebilirlik temizliği"),
+        detail: t("Replaced simulated project-card links with native semantics and fixed accessible names that were being dropped.", "Simüle edilmiş project-card link'leri native semantics ile değiştirildi ve düşen accessible name'ler düzeltildi."),
+        status: "shipped"
+      },
+      {
+        date: "2026-08-22",
+        area: "Portfolio",
+        title: t("Architecture V2 production audit", "Architecture V2 production audit"),
+        detail: t("Audited the V2 bootloader, both boot paths and the V2 runtime surfaces, then fixed the regressions found and added guards.", "V2 bootloader'ı, her iki boot path'i ve V2 runtime yüzeyleri denetlendi; bulunan regression'lar düzeltildi ve guard'lar eklendi."),
+        status: "shipped"
+      },
+      {
         date: "2026-08-20",
         area: "Portfolio",
         title: t("Portfolio Architecture V2", "Portfolio Architecture V2"),
-        detail: t("Centralizing project truth, recruiter profiles, evidence and build status into one registry.", "Project truth, recruiter profilleri, evidence ve build status tek registry'de merkezileştiriliyor."),
-        status: "building"
-      },
-      {
-        date: "2026-08-19",
-        area: "Portfolio",
-        title: t("SINAMA + Merge Rush flagship refresh", "SINAMA + Merge Rush flagship yenilemesi"),
-        detail: t("Refreshed the public portfolio around the two current flagship products.", "Public portfolyo iki güncel flagship ürün etrafında yenilendi."),
+        detail: t("Centralized project truth, recruiter profiles, evidence and build status into one registry behind a compatibility bootloader.", "Project truth, recruiter profilleri, evidence ve build status, uyumluluk bootloader'ı arkasında tek registry'de merkezileştirildi."),
         status: "shipped"
       },
       {

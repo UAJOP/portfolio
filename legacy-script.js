@@ -3707,7 +3707,7 @@ const portfolioChatbotContent = {
         ],
       },
       cv: {
-        text: "You can view Kaan's CV, contact him by email, or reach him through LinkedIn and GitHub from the site footer. For AI Designer or Software Developer roles, the fastest path is CV + LinkedIn.",
+        text: "You can view Kaan's CV, contact him by email, or reach him through LinkedIn and GitHub from the site footer. For Forward Deployed Engineer opportunities, the fastest path is CV + LinkedIn.",
         links: [
           { label: "View Resume", url: resumeLink },
           { label: "Email", url: "mailto:kaanb8776@gmail.com" },
@@ -3716,7 +3716,7 @@ const portfolioChatbotContent = {
         ],
       },
       availability: {
-        text: "Kaan is positioned for AI Designer, Software Developer, AI Workflow Designer, Chatbot Designer, Automation Builder, Web Developer and junior/mid-level software roles depending on the scope.",
+        text: "Kaan is currently positioning primarily as a Forward Deployed Engineer, supported by evidence across Applied AI, AI reliability, solution engineering, automation and product-minded software delivery.",
         links: [
           { label: "Contact", url: "mailto:kaanb8776@gmail.com" },
           { label: "Experience", url: "blog.html" },
@@ -3802,7 +3802,7 @@ const portfolioChatbotContent = {
         ],
       },
       cv: {
-        text: "Kaan'ın CV'sini görüntüleyebilir, mail atabilir veya LinkedIn/GitHub üzerinden ulaşabilirsin. AI Designer ya da Software Developer rolleri için en hızlı yol CV + LinkedIn.",
+        text: "Kaan'ın CV'sini görüntüleyebilir, mail atabilir veya LinkedIn/GitHub üzerinden ulaşabilirsin. Forward Deployed Engineer fırsatları için en hızlı yol CV + LinkedIn.",
         links: [
           { label: "CV'yi Görüntüle", url: resumeLink },
           { label: "E-posta", url: "mailto:kaanb8776@gmail.com" },
@@ -3811,7 +3811,7 @@ const portfolioChatbotContent = {
         ],
       },
       availability: {
-        text: "Kaan; AI Designer, Software Developer, AI Workflow Designer, Chatbot Designer, Automation Builder, Web Developer ve kapsamına göre junior/mid-level yazılım rolleri için konumlanıyor.",
+        text: "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor; Applied AI, AI reliability, solution engineering, otomasyon ve ürün odaklı yazılım geliştirme kanıtları bu yönü destekliyor.",
         links: [
           { label: "İletişim", url: "mailto:kaanb8776@gmail.com" },
           { label: "Deneyim", url: "blog.html" },
@@ -4103,7 +4103,7 @@ function enhanceAjoopDialogDepth() {
     },
     roles: {
       text: [
-        "Strong role fit: AI Designer, Software Developer, AI Workflow Designer, Automation Builder, Chatbot Designer, Web Developer and junior/mid-level product-focused software roles.",
+        "Kaan's primary target is Forward Deployed Engineer, with capability evidence across Applied AI, AI reliability, solution engineering, automation and product engineering.",
         "Kaan is especially strong for roles that require both technical logic and communication with business/client teams.",
         "For a pure backend senior role he would need deeper production-scale proof, but for AI workflow, solution engineering, chatbot and automation roles the match is much stronger.",
         "Best-fit environments: AI product teams, chatbot/agent platforms, automation teams, solution engineering teams and small product teams where broad execution matters.",
@@ -4131,7 +4131,7 @@ function enhanceAjoopDialogDepth() {
       text: [
         "You can view Kaan's CV, reach him by email, or check LinkedIn and GitHub. For hiring, CV + LinkedIn + Joyday case study is the fastest review path.",
         "Best contact route: email for direct reach, LinkedIn for professional profile, GitHub for code/projects, and the CV button for full background.",
-        "For AI Designer or Software Developer roles, I recommend reviewing the CV, AI Chatbot Flow Design and Joyday project together.",
+        "For Forward Deployed Engineer opportunities, I recommend reviewing the CV, SINAMA, AI Chatbot Flow Design and Joyday together.",
         "Kaan's CV highlights AI Designer work, LLM evaluation, 50+ academic, personal, freelance and team-based projects, C#/.NET, Python, JavaScript, PHP/MySQL, Unity and Unreal Engine.",
         "Need the shortest route? Open CV, then Works, then email Kaan. That gives both proof and contact.",
       ],
@@ -4206,7 +4206,7 @@ function enhanceAjoopDialogDepth() {
     },
     roles: {
       text: [
-        "Güçlü rol uyumu: AI Designer, Software Developer, AI Workflow Designer, Automation Builder, Chatbot Designer, Web Developer ve ürün odaklı junior/mid-level yazılım rolleri.",
+        "Kaan'ın ana hedefi Forward Deployed Engineer; Applied AI, AI reliability, solution engineering, otomasyon ve product engineering kanıtları bu yönü destekliyor.",
         "Kaan özellikle teknik mantık ile iş/müşteri iletişiminin birlikte gerektiği rollerde güçlü duruyor.",
         "Saf senior backend rolü için daha derin production-scale kanıt gerekebilir; ama AI workflow, solution engineering, chatbot ve otomasyon rolleri için eşleşme daha güçlü.",
         "En uygun ortamlar: AI ürün ekipleri, chatbot/agent platformları, otomasyon ekipleri, solution engineering takımları ve geniş sorumluluk isteyen küçük ürün ekipleri.",
@@ -4234,7 +4234,7 @@ function enhanceAjoopDialogDepth() {
       text: [
         "Kaan'ın CV'sini görebilir, mail atabilir veya LinkedIn/GitHub üzerinden ulaşabilirsin. İşe alım için en hızlı inceleme yolu CV + LinkedIn + Joyday case study.",
         "En iyi iletişim rotası: direkt ulaşmak için e-posta, profesyonel profil için LinkedIn, kod/projeler için GitHub, tam geçmiş için CV butonu.",
-        "AI Designer ya da Software Developer rolleri için CV, AI Chatbot Flow Design ve Joyday projesini birlikte incelemeni öneririm.",
+        "Forward Deployed Engineer fırsatları için CV, SINAMA, AI Chatbot Flow Design ve Joyday'i birlikte incelemeni öneririm.",
         "Kaan'ın CV'sinde AI Designer deneyimi, LLM değerlendirme, 50+ akademik, kişisel, freelance ve ekip projesi, C#/.NET, Python, JavaScript, PHP/MySQL, Unity ve Unreal Engine öne çıkıyor.",
         "En kısa yol: CV'yi aç, sonra Projeler'e bak, sonra e-posta gönder. Hem kanıtı hem iletişimi hızlı alırsın.",
       ],
@@ -4362,7 +4362,7 @@ enhanceAjoopDialogDepth();
     },
     availability: {
       text: [
-        "Kaan is open for AI Designer, Software Developer, AI Workflow Designer, Chatbot Designer, Automation Builder and web/software roles depending on scope.",
+        "Kaan is currently positioning primarily as a Forward Deployed Engineer, with capability evidence across Applied AI, AI reliability, solution engineering, automation and product engineering.",
         "The strongest fit is a role mixing AI flows, user needs, automation logic and practical software development.",
         "Kaan is positioned for opportunities where business needs must be translated into chatbot, automation or software workflows.",
         "For pure senior-only roles, more production-scale proof may be needed; for AI/product/solution-oriented junior-mid roles, the profile is strong.",
@@ -4436,7 +4436,7 @@ enhanceAjoopDialogDepth();
     },
     availability: {
       text: [
-        "Kaan; AI Designer, Software Developer, AI Workflow Designer, Chatbot Designer, Automation Builder ve web/yazılım rolleri için kapsamına göre açık.",
+        "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor; Applied AI, AI reliability, solution engineering, otomasyon ve product engineering kanıtları bu yönü destekliyor.",
         "En güçlü uyum; AI akışları, müşteri gereksinimleri, otomasyon mantığı ve pratik yazılım geliştirmenin birleştiği roller.",
         "Kaan iş ihtiyaçlarını chatbot, otomasyon veya yazılım workflow'una çevirmek gereken fırsatlar için konumlanıyor.",
         "Sadece senior backend isteyen roller için daha fazla production-scale kanıt gerekebilir; AI/product/solution odaklı junior-mid roller için profil güçlü.",
@@ -5204,7 +5204,7 @@ function setupProjectSearch() {
 
 const recruiterItems = {
   en: {
-    profile: "AI Designer & Software Developer",
+    profile: "Forward Deployed Engineer",
     focus: [
       "Conversational AI",
       "Solution Engineering",
@@ -5218,13 +5218,13 @@ const recruiterItems = {
       "Python, C#/.NET, JavaScript, PHP and SQL",
       "User-centered digital product development",
     ],
-    roles: [
-      "AI Designer",
-      "Conversational AI Designer",
-      "Solution Engineer",
-      "LLM Evaluator",
-      "Workflow Automation Specialist",
-      "Software Developer",
+    capabilities: [
+      "Applied AI",
+      "AI Reliability",
+      "Solution Engineering",
+      "Conversational AI",
+      "Automation",
+      "Product Engineering",
     ],
     proof: [
       "Enterprise conversational AI experience at CBOT across QA, stabilization, channel configuration and large-scale flow restructuring.",
@@ -5271,7 +5271,7 @@ const recruiterItems = {
     },
   },
   tr: {
-    profile: "AI Designer & Software Developer",
+    profile: "Forward Deployed Engineer",
     focus: [
       "Conversational AI",
       "Solution Engineering",
@@ -5285,13 +5285,13 @@ const recruiterItems = {
       "Python, C#/.NET, JavaScript, PHP ve SQL",
       "Kullanıcı odaklı dijital ürün geliştirme",
     ],
-    roles: [
-      "AI Designer",
-      "Conversational AI Designer",
-      "Solution Engineer",
-      "LLM Evaluator",
-      "Workflow Automation Specialist",
-      "Software Developer",
+    capabilities: [
+      "Applied AI",
+      "AI Reliability",
+      "Solution Engineering",
+      "Conversational AI",
+      "Automation",
+      "Product Engineering",
     ],
     proof: [
       "CBOT'ta QA, stabilizasyon, kanal yapılandırması ve büyük ölçekli akış yeniden yapılandırmayı kapsayan kurumsal conversational AI deneyimi.",
@@ -5358,8 +5358,8 @@ function renderRecruiterDrawer(language = currentSiteLanguage || "en") {
       <div class="mini-stack">${data.focus.map((item) => `<span>${escapeProjectHtml(item)}</span>`).join("")}</div>
       <h3>${escapeProjectHtml(content.skillsTitle)}</h3>
       <div class="mini-stack">${data.skills.map((item) => `<span>${escapeProjectHtml(item)}</span>`).join("")}</div>
-      <h3>${language === "tr" ? "Rol uyumu" : "Role fit"}</h3>
-      <div class="recruiter-role-list">${data.roles.map((item) => `<span>${escapeProjectHtml(item)}</span>`).join("")}</div>
+      <h3>${language === "tr" ? "Yetkinlik alanları" : "Capability areas"}</h3>
+      <div class="recruiter-role-list">${data.capabilities.map((item) => `<span>${escapeProjectHtml(item)}</span>`).join("")}</div>
       <h3>${language === "tr" ? "Deneyim kanıtları" : "Experience evidence"}</h3>
       <ul class="recruiter-proof-list">${data.proof.map((item) => `<li>${escapeProjectHtml(item)}</li>`).join("")}</ul>
       <h3>${escapeProjectHtml(content.projectsTitle)}</h3>

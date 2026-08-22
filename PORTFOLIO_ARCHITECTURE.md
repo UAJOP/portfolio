@@ -19,7 +19,7 @@ Owns:
 - Profile and contact truth
 - Flagship project summaries
 - Project status / stack / proof
-- Role-specific recruiter profiles
+- One canonical target title plus capability-focused recruiter evidence profiles
 - Build log entries
 - Labs catalog
 - Sanitized SINAMA Evidence Explorer examples
@@ -31,7 +31,7 @@ Owns:
 - Unified EN/TR attribute copy (`data-pv2-en` / `data-pv2-tr`)
 - Runtime synchronization of Ajoop with registry facts
 - Recruiter Mode V2 rendering
-- Role-specific URLs such as `?role=applied-ai`
+- Backward-compatible evidence-focus URLs such as `?role=applied-ai`
 - Build Log rendering
 - Labs rendering
 - SINAMA Evidence Explorer rendering
@@ -70,7 +70,7 @@ A future semantic assistant should be a separate, explicit product step with sou
 
 ## Role deep links
 
-Supported role ids:
+Supported evidence-focus ids (the legacy `role` query key remains stable):
 
 - `applied-ai`
 - `solution-engineering`
@@ -81,7 +81,7 @@ Example:
 
 `https://kaanbalci.com/?role=applied-ai`
 
-A valid role parameter selects that evidence profile and opens Recruiter Mode.
+A valid parameter selects that evidence focus and opens Recruiter Mode. It must never replace the canonical `profile.primaryTitle` value: **Forward Deployed Engineer**. `profile.backgroundTitle` stores **AI Designer & Software Developer** as professional background, not as a competing target.
 
 ## Page hierarchy
 
@@ -146,19 +146,42 @@ The current direct request endpoint uses Google Apps Script with `no-cors` brows
 
 The UI may show a **browser submission reference**, but must not call it a server confirmation until the endpoint returns a verifiable response with appropriate CORS handling.
 
+## Canonical site footer
+
+Every public page renders one footer component. It is intentionally plain HTML, not a JS-rendered component, so it survives a JavaScript failure.
+
+Contract:
+
+- Kaan Balcı logo and name, linked to `index.html`
+- the current positioning sentence, translated through the V2 `data-pv2-en` / `data-pv2-tr` pattern
+- exactly five public social destinations: GitHub, LinkedIn, Instagram, YouTube, X
+- the copyright line
+
+Canonical truth lives in `portfolio-data.js`:
+
+- `profile.socials` — the five canonical URLs
+- `profile.footerTagline` — the bilingual positioning sentence
+
+The HTML keeps static `href`s; `qa-portfolio-consistency.js` verifies every rendered footer against the registry. Change the registry first, then the footers, so drift is caught rather than merged.
+
+Each icon-only link carries an accessible name and an `aria-hidden` icon, and external links use `target="_blank"` with `rel="noopener noreferrer"`.
+
 ## QA
 
-The Site Preflight workflow remains the release safety net and now includes JavaScript syntax validation for all root JS files. V2 adds `labs.html` and `now.html` to Pa11y and Lighthouse coverage.
+The Site Preflight workflow is the release gate. Checks whose outcome is fully determined by the repository block a merge; checks that depend on the network or runner load are report-only.
+
+Blocking: JavaScript syntax, portfolio consistency, internal links, structural HTML errors, spelling, Pa11y WCAG 2 AA.
+
+Report-only: Lighthouse, external link availability.
+
+The QA toolchain is pinned in `package.json` with a committed `package-lock.json`, and CI installs with `npm ci`, so a given revision reproduces the same checks later. See `SITE_PREFLIGHT.md` for the rationale and `QA_BASELINE.md` for the current measured baseline.
 
 Before merge:
 
-1. JavaScript syntax validation
-2. HTML validation
-3. spelling
-4. mobile Pa11y
-5. Lighthouse
-6. broken-link scan
-7. interaction review for Recruiter Mode V2, language switch, Ajoop, role deep links and SINAMA Evidence Explorer
+1. `npm ci`
+2. `npm run qa`
+3. Pa11y and Lighthouse against a locally served copy
+4. interaction review for Recruiter Mode V2, language switch, Ajoop, role deep links and the SINAMA Evidence Explorer
 
 ## Migration note
 

@@ -3,17 +3,20 @@
   "private": true,
   "description": "Automated preflight checks for kaanbalci.com",
   "scripts": {
+    "qa": "npm run qa:js && npm run qa:portfolio && npm run qa:links && npm run qa:html && npm run qa:spelling",
+    "qa:js": "node qa-js-syntax.js",
     "qa:portfolio": "node qa-portfolio-consistency.js",
+    "qa:links": "node qa-internal-links.js",
     "qa:html": "html-validate \"*.html\"",
     "qa:spelling": "cspell \"*.{html,md}\" --config cspell.json --no-progress --show-suggestions",
     "qa:a11y": "pa11y-ci --config .pa11yci",
     "qa:lighthouse": "lhci autorun --config=lighthouserc.json"
   },
   "devDependencies": {
-    "@cspell/dict-tr-tr": "latest",
-    "@lhci/cli": "latest",
-    "cspell": "latest",
-    "html-validate": "latest",
-    "pa11y-ci": "latest"
+    "@cspell/dict-tr-tr": "3.0.6",
+    "@lhci/cli": "0.15.1",
+    "cspell": "10.0.1",
+    "html-validate": "11.6.2",
+    "pa11y-ci": "4.1.1"
   }
 }

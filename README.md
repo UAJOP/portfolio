@@ -1,6 +1,6 @@
 # Kaan Balcı — Portfolio
 
-Source code for [kaanbalci.com](https://kaanbalci.com), the professional portfolio of **Kaan Balcı — AI Designer & Software Developer**.
+Source code for [kaanbalci.com](https://kaanbalci.com), the professional portfolio of **Kaan Balcı — Forward Deployed Engineer**. **AI Designer & Software Developer** is retained as the background/professional description.
 
 ## Current positioning
 
@@ -25,7 +25,7 @@ Current product truth is centralized in `portfolio-data.js` and consumed by `por
 This registry powers or synchronizes:
 
 - Recruiter Mode V2
-- Role-specific recruiter deep links
+- Capability-focused recruiter deep links with one canonical target title
 - Ajoop evidence answers
 - Build Log
 - Kaan Labs
@@ -81,7 +81,7 @@ It also injects `portfolio-v2.css` when a legacy page does not already include i
 - `/?role=software`
 - `/?role=game`
 
-A valid role parameter selects the matching evidence profile and opens Recruiter Mode.
+A valid legacy `role` parameter selects the matching evidence focus and opens Recruiter Mode. Every focus keeps **Forward Deployed Engineer** as the primary target.
 
 ## Ajoop scope
 
@@ -95,18 +95,36 @@ The public resume URL is mirrored in the registry and in the preserved legacy ru
 
 Role-specific private application CVs are intentionally not exposed.
 
+## Site footer
+
+Every public page renders the same footer component: the Kaan Balcı brand linked to the homepage, the current positioning sentence, the canonical set of five public social destinations (GitHub, LinkedIn, Instagram, YouTube, X) and the copyright line.
+
+Canonical social URLs and the footer positioning copy live in `portfolio-data.js` under `profile.socials` and `profile.footerTagline`. The HTML keeps static `href`s so the footer still works without JavaScript, and the consistency guard verifies every rendered footer against the registry values. Add or change a social destination in the registry first, then update the footers.
+
 ## QA
 
-GitHub Actions Site Preflight checks:
+Run everything locally with the pinned toolchain:
 
-- JavaScript syntax for every root `.js` file
-- HTML validation
-- spelling
-- mobile WCAG 2 AA with Pa11y
+```bash
+npm ci
+npm run qa
+```
+
+GitHub Actions Site Preflight enforces these as **blocking** checks:
+
+- JavaScript syntax for every root `.js` file (`qa:js`)
+- portfolio architecture, footer and truth consistency (`qa:portfolio`)
+- deterministic internal links, anchors, role deep links and project slugs (`qa:links`)
+- structural HTML errors (`qa:html`)
+- English and Turkish spelling (`qa:spelling`)
+- mobile WCAG 2 AA across 11 pages with Pa11y (`qa:a11y`)
+
+These stay **report-only** because they depend on the network or runner load:
+
 - Lighthouse performance / accessibility / best practices / SEO
-- broken links
+- external link availability
 
-V2 adds `labs.html` and `now.html` to automated accessibility and Lighthouse coverage.
+See [`SITE_PREFLIGHT.md`](SITE_PREFLIGHT.md) for the enforcement rationale and [`QA_BASELINE.md`](QA_BASELINE.md) for the current measured baseline.
 
 ## Deployment
 

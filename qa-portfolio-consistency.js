@@ -6,6 +6,7 @@ const check = (condition, message) => {
   if (!condition) failures.push(message);
 };
 const read = (path) => fs.readFileSync(path, "utf8");
+const normalizeWhitespace = (value) => String(value || "").replace(/\s+/g, " ").trim();
 
 const sandbox = { window: {} };
 vm.createContext(sandbox);
@@ -26,6 +27,29 @@ check(/^\d{4}-\d{2}-\d{2}$/.test(registry?.updatedAt || ""), "registry updatedAt
   check(registry?.recruiterProfiles?.[id], `missing recruiter profile: ${id}`);
   check((registry?.recruiterProfiles?.[id]?.evidence || []).length >= 2, `recruiter profile ${id} needs at least two evidence links`);
 });
+
+// --- Canonical career identity ---------------------------------------------
+// Recruiter URLs are evidence-focus views, not separate target identities.
+const canonicalTargetTitle = "Forward Deployed Engineer";
+check(registry?.profile?.primaryTitle?.en === canonicalTargetTitle, "canonical EN primary target title must be Forward Deployed Engineer");
+check(registry?.profile?.primaryTitle?.tr === canonicalTargetTitle, "canonical TR primary target title must be Forward Deployed Engineer");
+check(registry?.profile?.backgroundTitle?.en === "AI Designer & Software Developer", "professional background title must remain explicit and separate from the primary target");
+
+Object.entries(registry?.recruiterProfiles || {}).forEach(([id, profile]) => {
+  check(!Object.prototype.hasOwnProperty.call(profile, "primaryTitle"), `recruiter focus ${id} must not override the canonical primary title`);
+  check(!Object.prototype.hasOwnProperty.call(profile, "profile"), `recruiter focus ${id} must not reintroduce a competing profile title`);
+  check(!Object.prototype.hasOwnProperty.call(profile, "roles"), `recruiter focus ${id} must not reintroduce alternate target-role arrays`);
+  check(Boolean(profile.focusTitle?.en && profile.focusTitle?.tr), `recruiter focus ${id} needs a bilingual focusTitle`);
+  check(Array.isArray(profile.capabilities) && profile.capabilities.length > 0, `recruiter focus ${id} needs capability evidence`);
+});
+
+const careerRuntime = read("portfolio-v2.js");
+check(/registry\.profile\.primaryTitle/.test(careerRuntime), "Recruiter Mode must render the canonical registry primary title");
+check(!/profile\.roles\s*\.map/.test(careerRuntime), "Recruiter Mode must not render alternate target-role chips");
+check(!/pick\(profile\.profile/.test(careerRuntime), "Recruiter Mode focus switching must not replace the primary target title");
+check(careerRuntime.includes("Kaan is currently positioning primarily as a Forward Deployed Engineer"), "Ajoop EN role-fit answer must identify Forward Deployed Engineer as the primary direction");
+check(careerRuntime.includes("Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor"), "Ajoop TR role-fit answer must identify Forward Deployed Engineer as the primary direction");
+check(!/target\.answers\.roles\s*=\s*\{\s*text:\s*\[/.test(careerRuntime), "Ajoop role-fit answer must not randomly omit the canonical primary target");
 
 check((registry?.buildLog || []).length >= 3, "build log needs at least three checkpoints");
 check((registry?.labs || []).length >= 3, "Labs needs at least three experiments");
@@ -63,6 +87,9 @@ const index = read("index.html");
   "AI workflow demo",
   "Algorithmic 3D lab",
 ].forEach((stale) => check(!index.includes(stale), `homepage should not lead with: ${stale}`));
+const normalizedIndex = normalizeWhitespace(index);
+check(normalizedIndex.includes("Hiring a Forward Deployed Engineer?"), "homepage recruiter CTA must use the canonical target identity");
+check(/"jobTitle"\s*:\s*"Forward Deployed Engineer"/.test(index), "homepage structured data must use the canonical current target title");
 
 const games = read("games.html");
 check(!games.includes("<h3>Interview Run</h3>"), "Interview Run must not return as an active game card without an explicit product decision");
@@ -222,6 +249,105 @@ check(/function shouldIgnoreCardActivation\b/.test(legacyRuntime), "the shared c
   check(!body.includes("keydown"), `${name} must not simulate keyboard activation on cards`);
   check(body.includes("shouldIgnoreCardActivation"), `${name} must route card clicks through the shared activation guard`);
 });
+
+// --- Canonical site footer ---------------------------------------------------
+// Every public page must render the same footer component. Social URLs live in
+// the registry; the HTML keeps static hrefs so the footer still works without
+// JavaScript, and this guard is what keeps the two in step.
+const canonicalSocials = registry?.profile?.socials || {};
+check(Object.keys(canonicalSocials).length === 5, "registry profile.socials must define the five canonical destinations");
+
+const canonicalTagline = registry?.profile?.footerTagline?.en || "";
+check(Boolean(canonicalTagline), "registry profile.footerTagline must define the canonical footer positioning copy");
+check(canonicalTagline === "Forward Deployed Engineer building reliable AI systems and product-minded software.", "canonical EN footer positioning must reflect the Forward Deployed Engineer target");
+check(registry?.profile?.footerTagline?.tr === "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren Forward Deployed Engineer.", "canonical TR footer positioning must reflect the Forward Deployed Engineer target");
+
+// Wordings that previously drifted across page families and must not return.
+const retiredFooterCopy = [
+  "AI Designer &amp; Software Developer building reliable AI systems and product-minded software.",
+  "AI Designer &amp; Software Developer building practical AI workflows and software products.",
+  "AI Designer &amp; Software Developer building practical AI workflows and scalable software systems.",
+];
+
+htmlFiles.forEach((file) => {
+  const source = read(file);
+  const footer = (source.match(/<footer[\s\S]*?<\/footer>/) || [])[0];
+  check(Boolean(footer), `${file} must render the site footer`);
+  if (!footer) return;
+
+  const brand = footer.match(/<a[^>]*class="footer-brand"[^>]*>/);
+  check(Boolean(brand), `${file} footer must expose the Kaan Balcı brand link`);
+  if (brand) check(/href="index\.html"/.test(brand[0]), `${file} footer brand must link back to index.html`);
+
+  const socialAnchors = [...footer.matchAll(/<a\b([^>]*)>/g)]
+    .map((match) => match[1])
+    .filter((attrs) => /href="https?:/.test(attrs));
+
+  Object.entries(canonicalSocials).forEach(([platform, url]) => {
+    const matches = socialAnchors.filter((attrs) => attrs.includes(`href="${url}"`));
+    check(matches.length === 1, `${file} footer must link ${platform} exactly once with the canonical URL (found ${matches.length})`);
+  });
+
+  socialAnchors.forEach((attrs) => {
+    const href = (attrs.match(/href="([^"]*)"/) || [])[1];
+    check(Object.values(canonicalSocials).includes(href), `${file} footer links a non-canonical external URL: ${href}`);
+    check(/target="_blank"/.test(attrs), `${file} footer external link must open in a new tab: ${href}`);
+    check(/rel="[^"]*noopener/.test(attrs), `${file} footer external link must set rel="noopener": ${href}`);
+    check(/aria-label="/.test(attrs), `${file} footer icon-only link needs an accessible name: ${href}`);
+  });
+
+  check(footer.includes(canonicalTagline.replace(/&/g, "&amp;")), `${file} footer must use the canonical positioning copy`);
+  retiredFooterCopy.forEach((stale) => {
+    check(!footer.includes(stale), `${file} footer still uses retired positioning copy`);
+  });
+  check(/All rights reserved/.test(footer), `${file} footer must keep the copyright line`);
+});
+
+// --- Portfolio truth freshness ----------------------------------------------
+const buildLog = registry?.buildLog || [];
+const newestEntry = buildLog.map((entry) => entry.date).sort().pop();
+check(registry.updatedAt >= newestEntry, `registry updatedAt (${registry.updatedAt}) is older than the newest build log entry (${newestEntry})`);
+
+const shippedArchitecture = buildLog.find((entry) => /Portfolio Architecture V2$/.test(entry.title?.en || ""));
+check(Boolean(shippedArchitecture), "build log must record Portfolio Architecture V2");
+if (shippedArchitecture) {
+  check(shippedArchitecture.status === "shipped", "Portfolio Architecture V2 has shipped and must not still read as building");
+}
+
+const consistencyPass = buildLog.find((entry) => /Consistency, footer and QA hardening/.test(entry.title?.en || ""));
+check(Boolean(consistencyPass), "build log must record the consistency, footer and QA hardening pass");
+if (consistencyPass) {
+  check(consistencyPass.status === "shipped", "the completed consistency, footer and QA hardening pass must be shipped");
+  check(/^Standardized\b/.test(normalizeWhitespace(consistencyPass.detail?.en)), "the completed consistency pass must use past-tense EN detail copy");
+}
+
+const buildDates = buildLog.map((entry) => entry.date);
+check(
+  buildDates.every((date, index) => index === 0 || buildDates[index - 1] >= date),
+  "build log entries must stay in descending date order"
+);
+
+// --- QA toolchain reproducibility -------------------------------------------
+check(fs.existsSync("package-lock.json"), "package-lock.json must be committed so npm ci can reproduce the QA toolchain");
+const manifest = JSON.parse(read("package.json"));
+Object.entries(manifest.devDependencies || {}).forEach(([name, range]) => {
+  check(range !== "latest", `QA dependency ${name} must be pinned, not "latest"`);
+});
+
+const workflow = read(".github/workflows/site-preflight.yml");
+check(/npm ci --no-audit --no-fund/.test(workflow), "CI must install with npm ci so the lockfile is honoured");
+check(!/npm install --no-audit/.test(workflow), "CI must not fall back to npm install");
+
+// Deterministic checks must stay real gates; only network-dependent steps may
+// be report-only.
+const workflowSteps = workflow.split(/\n\s*- name: /).slice(1);
+const reportOnlyAllowed = ["Run Lighthouse CI"];
+workflowSteps.forEach((step) => {
+  const name = step.split("\n")[0].trim();
+  if (!/continue-on-error:\s*true/.test(step)) return;
+  check(reportOnlyAllowed.includes(name), `CI step "${name}" must block; only ${reportOnlyAllowed.join(", ")} may be report-only`);
+});
+
 
 if (failures.length) {
   console.error(`Portfolio consistency guard failed with ${failures.length} issue(s):`);

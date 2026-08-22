@@ -67,13 +67,13 @@
     return language === "tr"
       ? {
           label: "İK MODU V2",
-          title: "Role göre kanıt özeti",
-          lead: "Aynı portfolyoyu hedef role göre yeniden sıralar; iddia yerine ilgili proje ve deneyim kanıtını öne çıkarır.",
-          choose: "Profil odağı",
-          primary: "Ana kimlik",
-          focus: "Odak",
+          title: "Yetkinlik odağına göre kanıt özeti",
+          lead: "Forward Deployed Engineer hedefini sabit tutar; aynı portfolyoda seçilen yetkinliğe ait proje ve deneyim kanıtını öne çıkarır.",
+          choose: "Kanıt odağı",
+          primary: "Ana hedef",
+          focus: "Kanıt odağı",
+          capabilities: "Yetkinlik alanları",
           skills: "Ana yetkinlikler",
-          roles: "Rol uyumu",
           proof: "Önerilen kanıt",
           cv: "CV'yi Görüntüle",
           email: "E-posta",
@@ -82,13 +82,13 @@
         }
       : {
           label: "RECRUITER MODE V2",
-          title: "Evidence summary by role",
-          lead: "Reorders the same portfolio for a target role and prioritizes project evidence over generic claims.",
-          choose: "Profile focus",
-          primary: "Primary profile",
-          focus: "Focus",
+          title: "Evidence summary by capability focus",
+          lead: "Keeps the Forward Deployed Engineer target fixed while prioritizing project and experience evidence for the selected capability.",
+          choose: "Evidence focus",
+          primary: "Primary target",
+          focus: "Evidence focus",
+          capabilities: "Capability areas",
           skills: "Core capabilities",
-          roles: "Role fit",
           proof: "Recommended evidence",
           cv: "View Resume",
           email: "Email Me",
@@ -116,13 +116,13 @@
           ${Object.entries(registry.recruiterProfiles).map(([id, item]) => `<button type="button" data-recruiter-role="${esc(id)}" class="${id === state.role ? "active" : ""}" aria-pressed="${id === state.role}">${esc(pick(item.label, language))}</button>`).join("")}
         </div>
         <h3>${esc(copy.primary)}</h3>
-        <div class="recruiter-primary-profile">${esc(pick(profile.profile, language))}</div>
+        <div class="recruiter-primary-profile">${esc(pick(registry.profile.primaryTitle, language))}</div>
         <h3>${esc(copy.focus)}</h3>
-        <div class="mini-stack">${profile.focus.map((item) => `<span>${esc(item)}</span>`).join("")}</div>
+        <div class="recruiter-primary-profile recruiter-focus-title">${esc(pick(profile.focusTitle, language))}</div>
+        <h3>${esc(copy.capabilities)}</h3>
+        <div class="mini-stack">${profile.capabilities.map((item) => `<span>${esc(item)}</span>`).join("")}</div>
         <h3>${esc(copy.skills)}</h3>
         <ul class="recruiter-proof-list recruiter-capability-list">${profile.skills.map((item) => `<li>${esc(pick(item, language))}</li>`).join("")}</ul>
-        <h3>${esc(copy.roles)}</h3>
-        <div class="recruiter-role-list">${profile.roles.map((item) => `<span>${esc(item)}</span>`).join("")}</div>
         <h3>${esc(copy.proof)}</h3>
         <div class="recruiter-links">${profile.evidence.map((id) => projectLinkMarkup(id, language)).join("")}</div>
         <div class="recruiter-actions">
@@ -154,8 +154,8 @@
   function syncAjoop() {
     if (typeof portfolioChatbotContent === "undefined" || typeof chatbotKeywordMap === "undefined") return;
     const p = registry.projects;
-    const roleSummary = (language) => Object.values(registry.recruiterProfiles)
-      .map((item) => pick(item.label, language))
+    const focusSummary = (language) => Object.values(registry.recruiterProfiles)
+      .map((item) => pick(item.focusTitle, language))
       .join(" · ");
 
     const copy = {
@@ -188,6 +188,18 @@
       if (!target) return;
       target.greeting = copy[language].greeting;
       target.quicks = copy[language].quicks;
+      target.answers.about = {
+        ...target.answers.about,
+        text: language === "tr"
+          ? "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor; AI Designer & Software Developer geçmişi Applied AI, AI reliability, conversational AI, automation ve ürün odaklı yazılım geliştirme kanıtlarını bir araya getiriyor."
+          : "Kaan is currently positioning primarily as a Forward Deployed Engineer; his AI Designer & Software Developer background brings together evidence across Applied AI, AI reliability, conversational AI, automation and product-minded software delivery."
+      };
+      target.answers.cv = {
+        ...target.answers.cv,
+        text: language === "tr"
+          ? "Kaan'ın CV'sini görüntüleyebilir veya LinkedIn ve e-posta üzerinden iletişime geçebilirsiniz. Ana hedef Forward Deployed Engineer; yetkinlik odakları ilgili proje kanıtına yönlendirir."
+          : "You can review Kaan's CV or contact him through LinkedIn and email. The primary target is Forward Deployed Engineer; capability focuses lead to the relevant project evidence."
+      };
       target.answers.sinama = {
         text: [
           `${p.sinama.name}: ${pick(p.sinama.summary, language)} Evidence: ${p.sinama.proof.slice(0, 3).map((item) => pick(item, language)).join("; ")}.`,
@@ -207,12 +219,12 @@
         links: [{ label: language === "tr" ? "Merge Rush Vaka Çalışması" : "Merge Rush Case Study", url: p.mergeRush.links.caseStudy }]
       };
       target.answers.roles = {
-        text: [
-          language === "tr" ? `Role profilleri: ${roleSummary(language)}. İK Modu V2 aynı portfolyoyu seçilen role göre kanıt sırasıyla yeniden düzenler.` : `Role profiles: ${roleSummary(language)}. Recruiter Mode V2 reorders the same portfolio by evidence for the selected role.`,
-          language === "tr" ? "Applied AI için SINAMA + CBOT yönü; Solution Engineering için CBOT + SINAMA + Joyday; Software için SINAMA backend + Hospital; Game için Merge Rush öne çıkar." : "Applied AI prioritizes SINAMA + CBOT; Solution Engineering prioritizes CBOT + SINAMA + Joyday; Software prioritizes SINAMA backend + Hospital; Game prioritizes Merge Rush."
-        ],
+        text: language === "tr"
+          ? `Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor. Kanıt odakları: ${focusSummary(language)}. Applied AI ve AI reliability için SINAMA + CBOT; solution engineering için CBOT + SINAMA + Joyday; software / product engineering için SINAMA backend + Hospital; interactive systems için Merge Rush öne çıkar.`
+          : `Kaan is currently positioning primarily as a Forward Deployed Engineer. Evidence focuses: ${focusSummary(language)}. SINAMA + CBOT lead for Applied AI and AI reliability; CBOT + SINAMA + Joyday for solution engineering; SINAMA backend + Hospital for software / product engineering; and Merge Rush for interactive systems.`,
         links: [{ label: language === "tr" ? "İK Modunu aç" : "Open Recruiter Mode", url: "index.html?role=applied-ai" }, { label: language === "tr" ? "Hakkımda" : "About", url: "about.html" }]
       };
+      target.answers.availability = target.answers.roles;
       target.answers.latestBuild = {
         text: registry.buildLog.slice(0, 3).map((entry) => `${entry.date} · ${entry.area} · ${pick(entry.title, language)} — ${pick(entry.detail, language)}`),
         links: [{ label: language === "tr" ? "Build Log" : "Build Log", url: "now.html" }]
@@ -225,7 +237,7 @@
       };
     });
 
-    const upsert = (id, keywords) => {
+    const upsert = (id, keywords, { priority = false } = {}) => {
       let entry = chatbotKeywordMap.find((item) => item.id === id);
       if (!entry) {
         entry = { id, keywords: [] };
@@ -235,10 +247,14 @@
       keywords.forEach((keyword) => {
         if (!known.has(keyword.toLowerCase())) entry.keywords.push(keyword);
       });
+      if (priority) {
+        const currentIndex = chatbotKeywordMap.indexOf(entry);
+        if (currentIndex > 0) chatbotKeywordMap.unshift(...chatbotKeywordMap.splice(currentIndex, 1));
+      }
     };
     upsert("sinama", ["sinama", "reliability", "regression", "readiness", "tool trace", "agent test"]);
     upsert("mergeRush", ["merge rush", "tiny factory", "phaser", "playables", "factory run", "endless"]);
-    upsert("roles", ["applied ai", "solution engineer", "forward deployed", "role fit", "pozisyon", "uygunluk"]);
+    upsert("roles", ["forward deployed", "ai engineer", "solution engineer", "software engineer", "role fit", "career fit", "hiring fit", "pozisyon", "rol uyumu", "uygunluk"], { priority: true });
     upsert("latestBuild", ["latest", "build", "now", "son build", "güncel", "ne yapıyor"]);
     if (typeof updatePortfolioChatbotLanguage === "function") updatePortfolioChatbotLanguage(lang());
   }
@@ -249,12 +265,12 @@
       en: [
         { id: "labs-v2", label: "Open Kaan Labs", hint: "Technical experiments", keywords: "labs experiments canvas ai flow", type: "nav", value: "labs.html" },
         { id: "now-v2", label: "Open Build Log", hint: "What is being built now", keywords: "now build log latest status", type: "nav", value: "now.html" },
-        { id: "applied-ai-role", label: "Applied AI Recruiter View", hint: "Open role-specific evidence", keywords: "applied ai role recruiter", type: "nav", value: "index.html?role=applied-ai" }
+        { id: "applied-ai-role", label: "Applied AI Evidence View", hint: "Open capability-focused evidence", keywords: "applied ai evidence recruiter", type: "nav", value: "index.html?role=applied-ai" }
       ],
       tr: [
         { id: "labs-v2", label: "Kaan Labs'i Aç", hint: "Teknik deneyler", keywords: "labs deneyler canvas ai flow", type: "nav", value: "labs.html" },
         { id: "now-v2", label: "Build Log'u Aç", hint: "Şu an ne geliştiriliyor", keywords: "now build log son durum güncel", type: "nav", value: "now.html" },
-        { id: "applied-ai-role", label: "Applied AI İK Görünümü", hint: "Role özel kanıt görünümü", keywords: "applied ai role ik recruiter", type: "nav", value: "index.html?role=applied-ai" }
+        { id: "applied-ai-role", label: "Applied AI Kanıt Görünümü", hint: "Yetkinlik odaklı kanıt görünümü", keywords: "applied ai kanıt ik recruiter", type: "nav", value: "index.html?role=applied-ai" }
       ]
     };
     ["en", "tr"].forEach((language) => {
