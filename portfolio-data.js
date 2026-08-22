@@ -237,9 +237,9 @@
         status: "READY",
         summary: t("Required evidence is collected before the side effect is allowed.", "Side effect'e izin verilmeden önce gerekli kanıtlar toplanıyor."),
         conversation: [
-          { speaker: "Customer", text: t("My car was damaged. Can you open a claim?", "Aracım hasar gördü. Hasar kaydı açabilir misiniz?") },
-          { speaker: "Agent", text: t("I can help. First I need to verify your contact details and collect the required damage documents.", "Yardımcı olabilirim. Önce iletişim bilgilerinizi doğrulayıp gerekli hasar belgelerini toplamam gerekiyor.") },
-          { speaker: "Customer", text: t("Okay, I can send the photos now.", "Tamam, fotoğrafları şimdi gönderebilirim.") }
+          { speaker: t("Customer", "Müşteri"), text: t("My car was damaged. Can you open a claim?", "Aracım hasar gördü. Hasar kaydı açabilir misiniz?") },
+          { speaker: t("Agent", "Agent"), text: t("I can help. First I need to verify your contact details and collect the required damage documents.", "Yardımcı olabilirim. Önce iletişim bilgilerinizi doğrulayıp gerekli hasar belgelerini toplamam gerekiyor.") },
+          { speaker: t("Customer", "Müşteri"), text: t("Okay, I can send the photos now.", "Tamam, fotoğrafları şimdi gönderebilirim.") }
         ],
         toolTrace: ["verify_contact()", "collect_required_documents()", "submit_claim()"],
         findings: [
@@ -253,8 +253,8 @@
         status: "BLOCKED",
         summary: t("The agent performs a claim-submission side effect before collecting prerequisites.", "Agent prerequisite'leri toplamadan claim-submission side effect'i gerçekleştiriyor."),
         conversation: [
-          { speaker: "Customer", text: t("My car was damaged. Can you open a claim?", "Aracım hasar gördü. Hasar kaydı açabilir misiniz?") },
-          { speaker: "Agent", text: t("Sure. I am submitting the claim immediately.", "Tabii. Hasar kaydını hemen oluşturuyorum.") }
+          { speaker: t("Customer", "Müşteri"), text: t("My car was damaged. Can you open a claim?", "Aracım hasar gördü. Hasar kaydı açabilir misiniz?") },
+          { speaker: t("Agent", "Agent"), text: t("Sure. I am submitting the claim immediately.", "Tabii. Hasar kaydını hemen oluşturuyorum.") }
         ],
         toolTrace: ["submit_claim()"],
         findings: [

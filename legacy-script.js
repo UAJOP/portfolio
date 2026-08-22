@@ -3294,8 +3294,8 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
   if (!root) return;
 
   const params = new URLSearchParams(window.location.search);
-  const slug = params.get("project") || "drivenfinity";
-  const project = projectDetailData[slug];
+  const slug = params.get("project");
+  const project = slug ? projectDetailData[slug] : null;
 
   if (!project) {
     root.innerHTML = `
@@ -4868,8 +4868,8 @@ const ultimateContent = {
         label: "Open 3D Math Lab",
         hint: "Interactive canvas model",
         keywords: "3d math canvas model rotate",
-        type: "scroll",
-        value: "algorithmic-3d-lab",
+        type: "nav",
+        value: "labs.html#algorithmic-3d-lab",
       },
       {
         id: "easter",
@@ -5065,8 +5065,8 @@ const ultimateContent = {
         label: "3D Matematik Labını Aç",
         hint: "İnteraktif canvas modeli",
         keywords: "3d matematik canvas model döndür",
-        type: "scroll",
-        value: "algorithmic-3d-lab",
+        type: "nav",
+        value: "labs.html#algorithmic-3d-lab",
       },
       {
         id: "easter",
@@ -6171,8 +6171,8 @@ function extendCreativeCommands() {
       label: "Open 3D Math Lab",
       hint: "Interactive canvas model",
       keywords: "3d math canvas model rotate",
-      type: "scroll",
-      value: "algorithmic-3d-lab",
+      type: "nav",
+      value: "labs.html#algorithmic-3d-lab",
     });
   if (!hasCommand("en", "easter"))
     ultimateContent.en.commands.push({
@@ -6188,8 +6188,8 @@ function extendCreativeCommands() {
       label: "3D Matematik Labını Aç",
       hint: "İnteraktif canvas modeli",
       keywords: "3d matematik canvas model döndür",
-      type: "scroll",
-      value: "algorithmic-3d-lab",
+      type: "nav",
+      value: "labs.html#algorithmic-3d-lab",
     });
   if (!hasCommand("tr", "easter"))
     ultimateContent.tr.commands.push({

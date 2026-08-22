@@ -81,6 +81,83 @@ const normalizedArchitecture = architecture.toLowerCase();
 check(normalizedArchitecture.includes("source-of-truth"), "architecture document must keep the source-of-truth rule");
 check(normalizedArchitecture.includes("does not claim a live llm"), "architecture document must keep Ajoop scope explicit");
 
+// --- Runtime boot integrity -------------------------------------------------
+// The bootloader is the highest-risk part of V2: a page either declares the
+// registry + V2 runtime itself, or relies on script.js to inject them. Both
+// paths must stay unambiguous and free of duplicate runtime loads.
+const runtimeFiles = ["portfolio-data.js", "script.js", "legacy-script.js", "portfolio-v2.js"];
+const htmlFiles = fs.readdirSync(".").filter((file) => file.endsWith(".html"));
+
+htmlFiles.forEach((file) => {
+  const source = read(file);
+  const scriptSrcs = [...source.matchAll(/<script[^>]+src="([^"]+)"/g)].map((match) => match[1]);
+
+  runtimeFiles.forEach((runtime) => {
+    const occurrences = scriptSrcs.filter((src) => src === runtime).length;
+    check(occurrences <= 1, `${file} declares ${runtime} ${occurrences} times (duplicate runtime load)`);
+  });
+
+  check(
+    !scriptSrcs.includes("legacy-script.js"),
+    `${file} must not load legacy-script.js directly; the bootloader owns that execution order`,
+  );
+
+  const dataIndex = scriptSrcs.indexOf("portfolio-data.js");
+  const bootIndex = scriptSrcs.indexOf("script.js");
+  const v2Index = scriptSrcs.indexOf("portfolio-v2.js");
+
+  if (dataIndex !== -1 || v2Index !== -1) {
+    // Migrated page: registry before the bootloader, V2 runtime after it.
+    check(dataIndex !== -1 && v2Index !== -1, `${file} must declare both portfolio-data.js and portfolio-v2.js, or neither`);
+    check(bootIndex !== -1, `${file} must still load script.js between the registry and the V2 runtime`);
+    check(dataIndex < bootIndex, `${file} must declare portfolio-data.js before script.js`);
+    check(bootIndex < v2Index, `${file} must declare portfolio-v2.js after script.js`);
+    check(source.includes("portfolio-v2.css"), `${file} declares the V2 runtime but never links portfolio-v2.css`);
+  }
+
+  check((source.match(/portfolio-v2\.css/g) || []).length <= 1, `${file} links portfolio-v2.css more than once`);
+
+  // Unified EN/TR copy must stay paired, otherwise one language silently wins.
+  const enCopy = (source.match(/data-pv2-en=/g) || []).length;
+  const trCopy = (source.match(/data-pv2-tr=/g) || []).length;
+  check(enCopy === trCopy, `${file} has ${enCopy} data-pv2-en vs ${trCopy} data-pv2-tr attributes; unified copy must stay paired`);
+});
+
+// --- Dynamic archive route --------------------------------------------------
+const legacyRuntime = read("legacy-script.js");
+check(
+  !/params\.get\("project"\)\s*\|\|/.test(legacyRuntime),
+  "project-detail must not fall back to a hardcoded slug; a missing or unknown project belongs in the not-found state",
+);
+
+// --- Command palette targets ------------------------------------------------
+// Experiments moved to labs.html in V2, so same-page scroll commands would
+// silently no-op on every other page.
+check(
+  !legacyRuntime.includes('value: "algorithmic-3d-lab"'),
+  "the 3D lab command must navigate to labs.html#algorithmic-3d-lab instead of scrolling to a section that no longer exists on most pages",
+);
+check(read("labs.html").includes('id="algorithmic-3d-lab"'), "labs.html must keep the algorithmic-3d-lab anchor target");
+check(
+  (registry?.labs || []).some((item) => (item.url || "").includes("algorithmic-3d-lab")),
+  "registry Labs must keep the Algorithmic 3D Lab entry that the command palette points at",
+);
+
+// --- SINAMA Evidence Explorer -----------------------------------------------
+const v2Runtime = read("portfolio-v2.js");
+check(
+  /sinamaEvidence\[[^\]]+\]\.label/.test(v2Runtime),
+  "the Evidence Explorer must read scenario labels from the registry instead of duplicating product truth",
+);
+["healthy", "broken"].forEach((id) => {
+  const conversation = registry?.sinamaEvidence?.[id]?.conversation || [];
+  check(conversation.length > 0, `sinamaEvidence.${id} needs conversation turns`);
+  check(
+    conversation.every((turn) => turn.speaker && typeof turn.speaker === "object" && turn.speaker.en && turn.speaker.tr),
+    `sinamaEvidence.${id} speaker names must be bilingual so the explorer is not half-English in TR`,
+  );
+});
+
 if (failures.length) {
   console.error(`Portfolio consistency guard failed with ${failures.length} issue(s):`);
   failures.forEach((failure) => console.error(`- ${failure}`));
