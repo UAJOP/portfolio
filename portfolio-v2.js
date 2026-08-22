@@ -266,11 +266,8 @@
   }
 
   function buildLogMarkup(entry, language) {
-    const statusLabel = {
-      shipped: language === "tr" ? "Shipped" : "Shipped",
-      building: language === "tr" ? "Building" : "Building",
-      integration: language === "tr" ? "Integration" : "Integration"
-    }[entry.status] || entry.status;
+    // Release-state names are product terms and stay identical in both languages.
+    const statusLabel = { shipped: "Shipped", building: "Building", integration: "Integration" }[entry.status] || entry.status;
     return `<article class="build-log-item"><time datetime="${esc(entry.date)}">${esc(entry.date)}</time><div><div class="build-log-meta"><span>${esc(entry.area)}</span><span class="build-log-status is-${esc(entry.status)}">${esc(statusLabel)}</span></div><h3>${esc(pick(entry.title, language))}</h3><p>${esc(pick(entry.detail, language))}</p></div></article>`;
   }
 
@@ -292,17 +289,24 @@
     if (!root) return;
     const language = lang();
     const scenario = registry.sinamaEvidence[state.evidenceScenario];
+    // Keep focus inside the explorer when a scenario switch re-renders the markup.
+    const hadFocus = root.contains(document.activeElement);
     const labels = language === "tr"
-      ? { conversation: "Conversation", tools: "Tool Trace", evaluation: "Evaluation", healthy: "Healthy Run", broken: "Broken Run", verdict: "Release verdict" }
-      : { conversation: "Conversation", tools: "Tool Trace", evaluation: "Evaluation", healthy: "Healthy Run", broken: "Broken Run", verdict: "Release verdict" };
+      ? { conversation: "Konuşma", tools: "Tool Trace", evaluation: "Değerlendirme", verdict: "Release kararı", group: "SINAMA örnek çalıştırması" }
+      : { conversation: "Conversation", tools: "Tool Trace", evaluation: "Evaluation", verdict: "Release verdict", group: "SINAMA example run" };
+    // Scenario button labels stay registry-owned so the explorer cannot drift from portfolio-data.js.
+    const scenarioButton = (id) => {
+      const isActive = state.evidenceScenario === id;
+      return `<button type="button" data-evidence-scenario="${esc(id)}" class="${isActive ? "active" : ""}" aria-pressed="${isActive}">${esc(pick(registry.sinamaEvidence[id].label, language))}</button>`;
+    };
     root.innerHTML = `
-      <div class="evidence-toolbar" role="group" aria-label="SINAMA example run">
-        <button type="button" data-evidence-scenario="healthy" class="${state.evidenceScenario === "healthy" ? "active" : ""}" aria-pressed="${state.evidenceScenario === "healthy"}">${esc(labels.healthy)}</button>
-        <button type="button" data-evidence-scenario="broken" class="${state.evidenceScenario === "broken" ? "active" : ""}" aria-pressed="${state.evidenceScenario === "broken"}">${esc(labels.broken)}</button>
+      <div class="evidence-toolbar" role="group" aria-label="${esc(labels.group)}">
+        ${scenarioButton("healthy")}
+        ${scenarioButton("broken")}
       </div>
       <div class="evidence-verdict is-${scenario.status.toLowerCase()}"><span>${esc(labels.verdict)}</span><strong>${esc(scenario.status)}</strong><p>${esc(pick(scenario.summary, language))}</p></div>
       <div class="evidence-grid">
-        <article><p class="eyebrow">${esc(labels.conversation)}</p><div class="evidence-conversation">${scenario.conversation.map((turn) => `<div><strong>${esc(turn.speaker)}</strong><p>${esc(pick(turn.text, language))}</p></div>`).join("")}</div></article>
+        <article><p class="eyebrow">${esc(labels.conversation)}</p><div class="evidence-conversation">${scenario.conversation.map((turn) => `<div><strong>${esc(pick(turn.speaker, language))}</strong><p>${esc(pick(turn.text, language))}</p></div>`).join("")}</div></article>
         <article><p class="eyebrow">${esc(labels.tools)}</p><ol class="evidence-tools">${scenario.toolTrace.map((tool) => `<li><code>${esc(tool)}</code></li>`).join("")}</ol></article>
         <article><p class="eyebrow">${esc(labels.evaluation)}</p><ul class="evidence-findings">${scenario.findings.map((finding) => `<li class="is-${finding.level.toLowerCase()}"><strong>${esc(finding.level)}</strong><span>${esc(pick(finding.text, language))}</span></li>`).join("")}</ul></article>
       </div>`;
@@ -312,6 +316,7 @@
         renderEvidenceExplorer();
       });
     });
+    if (hadFocus) root.querySelector(`[data-evidence-scenario="${state.evidenceScenario}"]`)?.focus();
   }
 
   function installRequestReceipt() {
