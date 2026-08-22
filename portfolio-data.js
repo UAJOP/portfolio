@@ -3,7 +3,7 @@
 
   window.KAAN_PORTFOLIO = Object.freeze({
     version: "2.0.0",
-    updatedAt: "2026-08-20",
+    updatedAt: "2026-08-22",
     profile: {
       name: "Kaan Balcı",
       title: t("AI Designer & Software Developer", "AI Designer & Software Developer"),
@@ -16,7 +16,21 @@
       resume: "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing",
       linkedin: "https://www.linkedin.com/in/balcikaan/",
       github: "https://github.com/UAJOP",
-      email: "mailto:kaanb8776@gmail.com"
+      email: "mailto:kaanb8776@gmail.com",
+      // Canonical public social destinations. The footer keeps these as static
+      // hrefs so it still works without JavaScript; the consistency guard
+      // verifies every rendered footer against these values.
+      socials: {
+        github: "https://github.com/UAJOP",
+        linkedin: "https://www.linkedin.com/in/balcikaan/",
+        instagram: "https://www.instagram.com/kaan_ba1/",
+        youtube: "https://www.youtube.com/channel/UCCoOWMoemn93OX7cHyGTZuA",
+        x: "https://x.com/KaanAjop"
+      },
+      footerTagline: t(
+        "AI Designer & Software Developer building reliable AI systems and product-minded software.",
+        "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren AI Designer & Software Developer."
+      )
     },
     projects: {
       sinama: {
@@ -169,17 +183,31 @@
     },
     buildLog: [
       {
-        date: "2026-08-20",
+        date: "2026-08-22",
         area: "Portfolio",
-        title: t("Portfolio Architecture V2", "Portfolio Architecture V2"),
-        detail: t("Centralizing project truth, recruiter profiles, evidence and build status into one registry.", "Project truth, recruiter profilleri, evidence ve build status tek registry'de merkezileştiriliyor."),
+        title: t("Consistency, footer and QA hardening", "Consistency, footer ve QA hardening"),
+        detail: t("Standardizing the canonical site footer, refreshing portfolio truth and making the QA toolchain reproducible and enforceable.", "Canonical site footer standartlaştırılıyor, portfolyo verisi tazeleniyor ve QA toolchain tekrarlanabilir ve zorunlu hâle getiriliyor."),
         status: "building"
       },
       {
-        date: "2026-08-19",
+        date: "2026-08-22",
         area: "Portfolio",
-        title: t("SINAMA + Merge Rush flagship refresh", "SINAMA + Merge Rush flagship yenilemesi"),
-        detail: t("Refreshed the public portfolio around the two current flagship products.", "Public portfolyo iki güncel flagship ürün etrafında yenilendi."),
+        title: t("Semantic card and accessibility cleanup", "Semantic card ve erişilebilirlik temizliği"),
+        detail: t("Replaced simulated project-card links with native semantics and fixed accessible names that were being dropped.", "Simüle edilmiş project-card link'leri native semantics ile değiştirildi ve düşen accessible name'ler düzeltildi."),
+        status: "shipped"
+      },
+      {
+        date: "2026-08-22",
+        area: "Portfolio",
+        title: t("Architecture V2 production audit", "Architecture V2 production audit"),
+        detail: t("Audited the V2 bootloader, both boot paths and the V2 runtime surfaces, then fixed the regressions found and added guards.", "V2 bootloader'ı, her iki boot path'i ve V2 runtime yüzeyleri denetlendi; bulunan regression'lar düzeltildi ve guard'lar eklendi."),
+        status: "shipped"
+      },
+      {
+        date: "2026-08-20",
+        area: "Portfolio",
+        title: t("Portfolio Architecture V2", "Portfolio Architecture V2"),
+        detail: t("Centralized project truth, recruiter profiles, evidence and build status into one registry behind a compatibility bootloader.", "Project truth, recruiter profilleri, evidence ve build status, uyumluluk bootloader'ı arkasında tek registry'de merkezileştirildi."),
         status: "shipped"
       },
       {
