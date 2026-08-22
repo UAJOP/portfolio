@@ -114,6 +114,7 @@ GitHub Actions Site Preflight enforces these as **blocking** checks:
 
 - JavaScript syntax for every root `.js` file (`qa:js`)
 - portfolio architecture, footer and truth consistency (`qa:portfolio`)
+- critical asset existence, budgets, intrinsic dimensions and loading policy (`qa:assets`)
 - deterministic internal links, anchors, role deep links and project slugs (`qa:links`)
 - structural HTML errors (`qa:html`)
 - English and Turkish spelling (`qa:spelling`)

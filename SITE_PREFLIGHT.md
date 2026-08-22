@@ -12,6 +12,7 @@ The workflow was originally report-first so a clean baseline could be establishe
 |---|---|---|
 | JavaScript syntax | `npm run qa:js` | The compatibility bootloader loads these files at runtime; there is no build step to catch a syntax error. |
 | Portfolio consistency | `npm run qa:portfolio` | Guards the V2 architecture, boot order, canonical footer, portfolio truth and QA reproducibility. |
+| Asset performance policy | `npm run qa:assets` | Guards referenced asset existence, intrinsic image dimensions, critical image budgets and intentional loading priority. |
 | Internal links | `npm run qa:links` | Page targets, anchors, footer brand links, recruiter role deep links and project slugs are all decided by this repository, so it cannot flake. |
 | HTML structural errors | `npm run qa:html` | `html-validate` exits non-zero only on structural errors, so this gates real breakage while intentional warnings still print. |
 | Spelling | `npm run qa:spelling` | The baseline is genuinely clean, so any new issue is a real mistake. |
@@ -34,6 +35,7 @@ Download the `site-preflight-reports` artifact from a workflow run. It contains:
 
 - `html-validation.txt`
 - `spelling.txt`
+- `asset-policy.txt`
 - `internal-links.txt`
 - `accessibility.json`
 - `accessibility-errors.txt`
@@ -50,7 +52,7 @@ npm ci
 npm run qa
 ```
 
-`npm run qa` runs every blocking check that does not need a server: JS syntax, portfolio consistency, internal links, HTML and spelling.
+`npm run qa` runs every blocking check that does not need a server: JS syntax, portfolio consistency, asset policy, internal links, HTML and spelling.
 
 The accessibility and Lighthouse checks need the site served first:
 

@@ -1,6 +1,6 @@
 # Portfolio QA Baseline
 
-Current measured baseline, captured on the `fix/portfolio-consistency-qa-v1` branch after the canonical-footer and QA-hardening pass.
+Current measured baseline, extended on `perf/asset-lcp-v1` after the canonical-footer, QA-hardening and Asset/LCP V1 passes.
 
 All numbers below are actual local runs of the committed checks against the pinned toolchain in `package-lock.json`. Lighthouse performance is reported from a local run and is CDN-bound; see the note under Lighthouse.
 
@@ -8,11 +8,12 @@ All numbers below are actual local runs of the committed checks against the pinn
 
 | Check | Result |
 |---|---|
-| JavaScript syntax | 16/16 files pass |
+| JavaScript syntax | 17/17 files pass |
 | Portfolio consistency guard | pass |
+| Asset performance policy | pass: 63 references, 81 intrinsic image dimensions, critical budgets met |
 | Internal links | 0 broken across 453 references |
 | HTML validation | **0 errors**, 3 accepted warnings |
-| Spelling | 0 issues across 25 files |
+| Spelling | 0 issues across 26 files |
 | Pa11y (WCAG 2 AA, 390×844) | **11/11 pages pass, 0 errors** |
 | Lighthouse accessibility / best practices / SEO | **100 / 100 / 100** on all 11 pages |
 
@@ -39,9 +40,18 @@ External availability is scanned by Lychee in a separate report-only job, becaus
 
 ## Lighthouse
 
-Accessibility, best practices and SEO score **100 on all 11 configured pages**. Cumulative layout shift is ≤ 0.017 everywhere.
+Accessibility, best practices and SEO score **100 on all 11 configured pages**. Targeted Index/About CLS remains 0.000079. The full Lighthouse run still reports the pre-existing Labs CLS value of 0.130 (unchanged from the production baseline); the next-highest value is Merge Rush at 0.01658, also unchanged.
 
-Local performance measures 62–67. That is a property of the measurement environment, not a regression: a controlled experiment during the V2 production audit showed that removing the two third-party stylesheets (Google Fonts, unpkg Boxicons) moves `index.html` from 62 to 92, while removing the entire V2 JavaScript runtime moves it only from 62 to 67. Render-blocking is four CSS files and zero JS. GitHub Actions runners report noticeably higher performance for the same commits. Self-hosting fonts and icons is deliberately deferred to a dedicated asset/performance pass.
+Asset/LCP V1 uses three local LHCI desktop runs per page and compares medians under the same static-server configuration:
+
+| Page | Performance | FCP | LCP | CLS | Image transfer | Total transfer |
+|---|---:|---:|---:|---:|---:|---:|
+| Index before | 93 | 819 ms | 1,666 ms | 0.000079 | 1,010,286 B | 1,438,157 B |
+| Index after | 98 | 840 ms | 931 ms | 0.000079 | 66,798 B | 494,649 B |
+| About before | 93 | 857 ms | 1,626 ms | 0.000079 | 1,010,286 B | 1,437,391 B |
+| About after | 98 | 820 ms | 912 ms | 0.000079 | 66,798 B | 493,985 B |
+
+The LCP element remains the page heading on both pages. Index FCP changed by +21 ms, which is normal run noise; no FCP improvement is claimed there. Image transfer fell 93.4% and total transfer fell 65.6%. Google Fonts and unpkg Boxicons remain externally hosted and are deliberately deferred to a separate pass.
 
 ## Toolchain
 
