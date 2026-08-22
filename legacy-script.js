@@ -3612,6 +3612,18 @@ document.querySelectorAll("[data-ai-demo]").forEach((button) => {
   });
 });
 
+// Project/game cards are containers, not links. Nested links and buttons own
+// their own activation and keyboard users navigate through those real anchors.
+// This guard keeps the whole-card click purely as a mouse convenience for
+// clicks on inert card areas, without hijacking modifier clicks or text selection.
+function shouldIgnoreCardActivation(event) {
+  if (event.button !== 0) return true;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return true;
+  if (event.target.closest('a, button, input, select, textarea, summary, label, [role="button"]')) return true;
+  const selection = window.getSelection();
+  return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
+}
+
 function setupProjectCardNavigation() {
   document.querySelectorAll("[data-project-link]").forEach((card) => {
     const slug = card.getAttribute("data-project-link");
@@ -3619,16 +3631,8 @@ function setupProjectCardNavigation() {
     const url = slug.endsWith(".html") ? slug : createProjectDetailUrl(slug);
 
     card.addEventListener("click", (event) => {
-      if (event.target.closest("a, button")) return;
+      if (shouldIgnoreCardActivation(event)) return;
       window.location.href = url;
-    });
-
-    card.addEventListener("keydown", (event) => {
-      if (event.target.closest("a, button")) return;
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        window.location.href = url;
-      }
     });
   });
 }
@@ -6553,20 +6557,10 @@ function setupGameCards() {
   document.querySelectorAll("[data-game-link]").forEach((card) => {
     if (card.dataset.gameCardReady === "true") return;
     card.dataset.gameCardReady = "true";
-    const openGame = () => {
+    card.addEventListener("click", (event) => {
+      if (shouldIgnoreCardActivation(event)) return;
       const url = card.dataset.gameLink;
       if (url) window.location.href = url;
-    };
-    card.addEventListener("click", (event) => {
-      if (event.target.closest("a, button")) return;
-      openGame();
-    });
-    card.addEventListener("keydown", (event) => {
-      if (event.target.closest("a, button")) return;
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openGame();
-      }
     });
   });
 }

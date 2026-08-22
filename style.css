@@ -886,6 +886,15 @@ h3 {
   margin-top: 16px;
 }
 
+.project-content h3 a {
+  display: inline;
+  margin-top: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
+}
+
 .project-content a,
 .experience-card a {
   display: inline-flex;
@@ -1837,13 +1846,9 @@ body.overlay-modal-open {
 
 
 /* Dynamic project detail page */
-.project-card[role="link"] {
+.project-card[data-project-link],
+.project-card[data-game-link] {
   cursor: pointer;
-}
-
-.project-card[role="link"]:focus-visible {
-  outline: 3px solid rgba(56, 189, 248, 0.55);
-  outline-offset: 6px;
 }
 
 .back-link {
