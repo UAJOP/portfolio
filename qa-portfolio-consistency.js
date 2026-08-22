@@ -223,6 +223,95 @@ check(/function shouldIgnoreCardActivation\b/.test(legacyRuntime), "the shared c
   check(body.includes("shouldIgnoreCardActivation"), `${name} must route card clicks through the shared activation guard`);
 });
 
+// --- Canonical site footer ---------------------------------------------------
+// Every public page must render the same footer component. Social URLs live in
+// the registry; the HTML keeps static hrefs so the footer still works without
+// JavaScript, and this guard is what keeps the two in step.
+const canonicalSocials = registry?.profile?.socials || {};
+check(Object.keys(canonicalSocials).length === 5, "registry profile.socials must define the five canonical destinations");
+
+const canonicalTagline = registry?.profile?.footerTagline?.en || "";
+check(Boolean(canonicalTagline), "registry profile.footerTagline must define the canonical footer positioning copy");
+
+// Wordings that previously drifted across page families and must not return.
+const retiredFooterCopy = [
+  "AI Designer &amp; Software Developer building practical AI workflows and software products.",
+  "AI Designer &amp; Software Developer building practical AI workflows and scalable software systems.",
+];
+
+htmlFiles.forEach((file) => {
+  const source = read(file);
+  const footer = (source.match(/<footer[\s\S]*?<\/footer>/) || [])[0];
+  check(Boolean(footer), `${file} must render the site footer`);
+  if (!footer) return;
+
+  const brand = footer.match(/<a[^>]*class="footer-brand"[^>]*>/);
+  check(Boolean(brand), `${file} footer must expose the Kaan Balcı brand link`);
+  if (brand) check(/href="index\.html"/.test(brand[0]), `${file} footer brand must link back to index.html`);
+
+  const socialAnchors = [...footer.matchAll(/<a\b([^>]*)>/g)]
+    .map((match) => match[1])
+    .filter((attrs) => /href="https?:/.test(attrs));
+
+  Object.entries(canonicalSocials).forEach(([platform, url]) => {
+    const matches = socialAnchors.filter((attrs) => attrs.includes(`href="${url}"`));
+    check(matches.length === 1, `${file} footer must link ${platform} exactly once with the canonical URL (found ${matches.length})`);
+  });
+
+  socialAnchors.forEach((attrs) => {
+    const href = (attrs.match(/href="([^"]*)"/) || [])[1];
+    check(Object.values(canonicalSocials).includes(href), `${file} footer links a non-canonical external URL: ${href}`);
+    check(/target="_blank"/.test(attrs), `${file} footer external link must open in a new tab: ${href}`);
+    check(/rel="[^"]*noopener/.test(attrs), `${file} footer external link must set rel="noopener": ${href}`);
+    check(/aria-label="/.test(attrs), `${file} footer icon-only link needs an accessible name: ${href}`);
+  });
+
+  check(footer.includes(canonicalTagline.replace(/&/g, "&amp;")), `${file} footer must use the canonical positioning copy`);
+  retiredFooterCopy.forEach((stale) => {
+    check(!footer.includes(stale), `${file} footer still uses retired positioning copy`);
+  });
+  check(/All rights reserved/.test(footer), `${file} footer must keep the copyright line`);
+});
+
+// --- Portfolio truth freshness ----------------------------------------------
+const buildLog = registry?.buildLog || [];
+const newestEntry = buildLog.map((entry) => entry.date).sort().pop();
+check(registry.updatedAt >= newestEntry, `registry updatedAt (${registry.updatedAt}) is older than the newest build log entry (${newestEntry})`);
+
+const shippedArchitecture = buildLog.find((entry) => /Portfolio Architecture V2$/.test(entry.title?.en || ""));
+check(Boolean(shippedArchitecture), "build log must record Portfolio Architecture V2");
+if (shippedArchitecture) {
+  check(shippedArchitecture.status === "shipped", "Portfolio Architecture V2 has shipped and must not still read as building");
+}
+
+const buildDates = buildLog.map((entry) => entry.date);
+check(
+  buildDates.every((date, index) => index === 0 || buildDates[index - 1] >= date),
+  "build log entries must stay in descending date order"
+);
+
+// --- QA toolchain reproducibility -------------------------------------------
+check(fs.existsSync("package-lock.json"), "package-lock.json must be committed so npm ci can reproduce the QA toolchain");
+const manifest = JSON.parse(read("package.json"));
+Object.entries(manifest.devDependencies || {}).forEach(([name, range]) => {
+  check(range !== "latest", `QA dependency ${name} must be pinned, not "latest"`);
+});
+
+const workflow = read(".github/workflows/site-preflight.yml");
+check(/npm ci --no-audit --no-fund/.test(workflow), "CI must install with npm ci so the lockfile is honoured");
+check(!/npm install --no-audit/.test(workflow), "CI must not fall back to npm install");
+
+// Deterministic checks must stay real gates; only network-dependent steps may
+// be report-only.
+const workflowSteps = workflow.split(/\n\s*- name: /).slice(1);
+const reportOnlyAllowed = ["Run Lighthouse CI"];
+workflowSteps.forEach((step) => {
+  const name = step.split("\n")[0].trim();
+  if (!/continue-on-error:\s*true/.test(step)) return;
+  check(reportOnlyAllowed.includes(name), `CI step "${name}" must block; only ${reportOnlyAllowed.join(", ")} may be report-only`);
+});
+
+
 if (failures.length) {
   console.error(`Portfolio consistency guard failed with ${failures.length} issue(s):`);
   failures.forEach((failure) => console.error(`- ${failure}`));
