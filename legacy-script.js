@@ -1759,8 +1759,8 @@ const projectDetailData = {
     year: "2025",
     type: { en: "Mobile Game", tr: "Mobil Oyun" },
     status: { en: "Repository", tr: "Repository" },
-    image: "assets/DrivenfinityPng.png",
-    gallery: ["assets/DrivenfinityPng.png"],
+    image: "assets/drivenfinity-cover.webp",
+    gallery: ["assets/drivenfinity-cover.webp"],
     stack: ["Unity", "C#", "3D", "Mobile", "Gameplay Logic"],
     links: [
       {
@@ -1857,8 +1857,8 @@ const projectDetailData = {
     year: "2025",
     type: { en: "Learning Project", tr: "Öğrenme Projesi" },
     status: { en: "Repository", tr: "Repository" },
-    image: "assets/converted_image.png",
-    gallery: ["assets/converted_image.png"],
+    image: "assets/unity-essentials-cover.webp",
+    gallery: ["assets/unity-essentials-cover.webp"],
     stack: ["Unity 6", "C#", "Scenes", "Gameplay Fundamentals"],
     links: [
       {
@@ -2476,8 +2476,8 @@ const githubRepositoryProjectDetails = {
       en: "Prototype",
       tr: "Prototip",
     },
-    image: "assets/escape.jpg",
-    gallery: ["assets/escape.jpg"],
+    image: "assets/escape-island-cover.webp",
+    gallery: ["assets/escape-island-cover.webp"],
     stack: ["Unreal Engine 5.4.4", "C++", "Blueprints", "Platforming"],
     links: [
       {
@@ -2677,8 +2677,8 @@ const githubRepositoryProjectDetails = {
       en: "Repository",
       tr: "Repository",
     },
-    image: "assets/WarehouseWreckage main pp.png",
-    gallery: ["assets/WarehouseWreckage main pp.png"],
+    image: "assets/warehouse-wreckage-cover.webp",
+    gallery: ["assets/warehouse-wreckage-cover.webp"],
     stack: ["Unreal Engine", "Game Design", "Combat Logic", "Environment"],
     links: [
       {
@@ -2744,8 +2744,8 @@ const githubRepositoryProjectDetails = {
       en: "Repository",
       tr: "Repository",
     },
-    image: "assets/111266f6-5226-4f00-aacc-efde413516ed.jpg",
-    gallery: ["assets/111266f6-5226-4f00-aacc-efde413516ed.jpg"],
+    image: "assets/legacy-of-the-lost-cover.webp",
+    gallery: ["assets/legacy-of-the-lost-cover.webp"],
     stack: ["Game Design", "Level Design", "Atmosphere", "Prototype"],
     links: [
       {
@@ -5739,11 +5739,15 @@ document
 
 /* Creative final add-ons: easter egg, interactive 3D model and tiny performance pass */
 (function setupPortfolioOptimizationPass() {
-  document.querySelectorAll("img").forEach((img, index) => {
+  document.querySelectorAll("img").forEach((img) => {
     if (!img.hasAttribute("decoding")) img.setAttribute("decoding", "async");
-    if (!img.hasAttribute("loading") && !img.closest(".hero"))
+    if (
+      !img.hasAttribute("loading") &&
+      !img.closest(".hero") &&
+      img.getAttribute("fetchpriority") !== "high"
+    )
       img.setAttribute("loading", "lazy");
-    if (index === 0 || img.closest(".hero"))
+    if (!img.hasAttribute("fetchpriority") && img.closest(".hero"))
       img.setAttribute("fetchpriority", "high");
   });
 })();
