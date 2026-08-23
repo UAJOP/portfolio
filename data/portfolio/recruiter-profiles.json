@@ -1,0 +1,177 @@
+{
+  "applied-ai": {
+    "label": {
+      "en": "Applied AI",
+      "tr": "Applied AI"
+    },
+    "focusTitle": {
+      "en": "Applied AI / AI Reliability",
+      "tr": "Applied AI / AI Reliability"
+    },
+    "capabilities": [
+      "AI Agent Reliability",
+      "LLM Evaluation",
+      "Conversational AI",
+      "Python / FastAPI",
+      "Regression Testing"
+    ],
+    "skills": [
+      {
+        "en": "Multi-turn scenario and agent evaluation",
+        "tr": "Multi-turn senaryo ve agent değerlendirme"
+      },
+      {
+        "en": "Deterministic tool/workflow contracts and regression evidence",
+        "tr": "Deterministik tool/workflow contract'ları ve regression kanıtı"
+      },
+      {
+        "en": "Python / FastAPI services and PostgreSQL persistence",
+        "tr": "Python / FastAPI servisleri ve PostgreSQL persistence"
+      },
+      {
+        "en": "LLM response, reasoning, code and multimodal evaluation",
+        "tr": "LLM yanıt, reasoning, code ve multimodal değerlendirme"
+      },
+      {
+        "en": "Enterprise conversational-AI workflow design",
+        "tr": "Kurumsal conversational-AI workflow tasarımı"
+      }
+    ],
+    "evidence": [
+      "sinama",
+      "chatbotFlow",
+      "joyday"
+    ]
+  },
+  "solution-engineering": {
+    "label": {
+      "en": "Solution Engineering",
+      "tr": "Solution Engineering"
+    },
+    "focusTitle": {
+      "en": "Solution Engineering",
+      "tr": "Solution Engineering"
+    },
+    "capabilities": [
+      "Customer Workflows",
+      "Conversational AI",
+      "Automation",
+      "API Integration",
+      "Product Delivery"
+    ],
+    "skills": [
+      {
+        "en": "Translating business requirements into testable workflows",
+        "tr": "İş gereksinimlerini test edilebilir workflow'lara çevirme"
+      },
+      {
+        "en": "Chatbot QA, stabilization and multi-channel handoffs",
+        "tr": "Chatbot QA, stabilizasyon ve multi-channel handoff'lar"
+      },
+      {
+        "en": "External-agent and API integration thinking",
+        "tr": "External-agent ve API integration düşüncesi"
+      },
+      {
+        "en": "Customer-facing product ownership",
+        "tr": "Müşteriye dönük ürün sahipliği"
+      },
+      {
+        "en": "Release-readiness and evidence-based delivery",
+        "tr": "Release-readiness ve kanıt odaklı delivery"
+      }
+    ],
+    "evidence": [
+      "chatbotFlow",
+      "sinama",
+      "joyday"
+    ]
+  },
+  "software": {
+    "label": {
+      "en": "Software",
+      "tr": "Yazılım"
+    },
+    "focusTitle": {
+      "en": "Software / Product Engineering",
+      "tr": "Yazılım / Ürün Mühendisliği"
+    },
+    "capabilities": [
+      "Python",
+      "FastAPI",
+      "TypeScript",
+      "C#/.NET",
+      "Databases"
+    ],
+    "skills": [
+      {
+        "en": "Backend APIs and persistence",
+        "tr": "Backend API'ler ve persistence"
+      },
+      {
+        "en": "TypeScript and responsive product interfaces",
+        "tr": "TypeScript ve responsive ürün arayüzleri"
+      },
+      {
+        "en": "C#/.NET and database-backed desktop workflows",
+        "tr": "C#/.NET ve veritabanı destekli desktop workflow'lar"
+      },
+      {
+        "en": "Automated quality gates and regression testing",
+        "tr": "Automated quality gate'ler ve regression testing"
+      },
+      {
+        "en": "Stateful product architecture",
+        "tr": "Stateful ürün mimarisi"
+      }
+    ],
+    "evidence": [
+      "sinama",
+      "hospital",
+      "joyday"
+    ]
+  },
+  "game": {
+    "label": {
+      "en": "Game / Interactive",
+      "tr": "Oyun / İnteraktif"
+    },
+    "focusTitle": {
+      "en": "Interactive Systems",
+      "tr": "İnteraktif Sistemler"
+    },
+    "capabilities": [
+      "Phaser 3",
+      "TypeScript",
+      "Gameplay State",
+      "Responsive UI",
+      "Platform Architecture"
+    ],
+    "skills": [
+      {
+        "en": "Merge-game state, progression and timed-order systems",
+        "tr": "Merge-game state, progression ve timed-order sistemleri"
+      },
+      {
+        "en": "Footprint-aware placement and deadlock logic",
+        "tr": "Footprint-aware placement ve deadlock mantığı"
+      },
+      {
+        "en": "Responsive browser-game UI",
+        "tr": "Responsive browser-game UI"
+      },
+      {
+        "en": "Platform lifecycle, save, language and audio abstractions",
+        "tr": "Platform lifecycle, save, language ve audio abstraction'ları"
+      },
+      {
+        "en": "Playtesting-driven iteration",
+        "tr": "Playtesting odaklı iterasyon"
+      }
+    ],
+    "evidence": [
+      "mergeRush",
+      "hospital"
+    ]
+  }
+}

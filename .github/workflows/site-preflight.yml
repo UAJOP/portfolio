@@ -34,6 +34,15 @@ jobs:
       - name: Prepare reports directory
         run: mkdir -p qa-results
 
+      # BLOCKING: the canonical JSON is the source of portfolio truth and
+      # portfolio-data.js is generated from it. This FAILS on a stale artifact
+      # rather than regenerating it — the committed file is what GitHub Pages
+      # serves, so it has to be correct in the repository, not in CI.
+      - name: Check portfolio data contract
+        run: |
+          set -o pipefail
+          npm run qa:data 2>&1 | tee qa-results/portfolio-data.txt
+
       # BLOCKING: the bootloader loads these at runtime with no build step.
       - name: Check JavaScript syntax
         run: npm run qa:js

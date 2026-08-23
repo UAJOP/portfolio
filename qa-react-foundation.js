@@ -44,14 +44,14 @@ const prerenderedRoutes = [
   {
     file: `${OUT_DIR}/index.html`,
     route: BASE,
-    heading: "React migration foundation",
-    title: "React migration foundation | Kaan Balcı engineering preview",
+    heading: "The design system behind the next portfolio.",
+    title: "V3 design system | Kaan Balcı engineering preview",
   },
   {
     file: `${OUT_DIR}/about/index.html`,
     route: `${BASE}about`,
-    heading: "How the migration proceeds",
-    title: "Migration approach | Kaan Balcı engineering preview",
+    heading: "How the system is built",
+    title: "System principles | Kaan Balcı engineering preview",
   },
   {
     file: `${OUT_DIR}/404.html`,
@@ -105,7 +105,12 @@ prerenderedRoutes.forEach(({ file, route, heading, title }) => {
   );
   check(!/<div id="root"><\/div>/.test(html), `${file} ships an empty root container instead of pre-rendered HTML`);
   check(rendered.length > 1000, `${file} holds only ${rendered.length} B inside #root; that is not a real render`);
-  check(html.includes(`<h1>${heading}</h1>`), `${file} does not pre-render its heading: ${heading}`);
+  // Attribute-tolerant: the V3 heading carries design-system classes, but the
+  // text still has to be in the file before any JavaScript runs.
+  check(
+    new RegExp(`<h1[^>]*>${escapeRegExp(heading)}</h1>`).test(html),
+    `${file} does not pre-render its heading: ${heading}`,
+  );
 
   // Semantics have to survive the build, not merely appear at runtime.
   check(/<header\b/.test(html), `${file} pre-rendered HTML is missing a header landmark`);
@@ -137,19 +142,24 @@ prerenderedRoutes.forEach(({ file, route, heading, title }) => {
   // ("Forward Deployed Engineer building reliable AI systems...") and would
   // therefore not notice an invented job title in the header.
   check(
-    html.includes(`<p class="rf-title">${canonicalTitle}</p>`),
+    html.includes(`<span class="v3-brand-title">${canonicalTitle}</span>`),
     `${file} does not render the canonical primary title in the header`,
-  );
-  check(
-    html.includes(`<p class="rf-background">${canonicalBackground.replace(/&/g, "&amp;")}</p>`),
-    `${file} does not render the canonical background title in the header`,
   );
   check(html.includes(canonicalTagline), `${file} does not render the canonical footer positioning copy`);
 
+  // The exactly-once rule belongs to the FOOTER, which has a fixed contract of
+  // five destinations. A page body may legitimately link a canonical
+  // destination as well, so scoping this to the footer keeps the real invariant
+  // without forbidding an ordinary call to action.
+  const footer = (html.match(/<footer[\s\S]*?<\/footer>/) || [])[0] || "";
+  check(Boolean(footer), `${file} must render the site footer`);
   canonicalSocials.forEach(([platform, url]) => {
     const pattern = new RegExp(`href="${escapeRegExp(url)}"`, "g");
-    const occurrences = (html.match(pattern) || []).length;
-    check(occurrences === 1, `${file} must link ${platform} exactly once with the canonical URL (found ${occurrences})`);
+    const occurrences = (footer.match(pattern) || []).length;
+    check(
+      occurrences === 1,
+      `${file} footer must link ${platform} exactly once with the canonical URL (found ${occurrences})`,
+    );
   });
 
   const externalLinks = [...html.matchAll(/<a\b([^>]*href="https?:[^"]*"[^>]*)>/g)].map((match) => match[1]);
@@ -162,30 +172,59 @@ prerenderedRoutes.forEach(({ file, route, heading, title }) => {
 
 check(seenTitles.size === prerenderedRoutes.length, "each pre-rendered route must have its own <title>");
 
-// --- Parity fixture ---------------------------------------------------------
-const fixture = "src/react/data/foundation.js";
-check(exists(fixture), `${fixture} is missing`);
-if (exists(fixture)) {
-  const source = read(fixture);
-  // Field-scoped, for the same reason as above: the tagline also contains the
-  // primary title, so a whole-file search cannot detect an invented one.
+// --- Canonical data, not a fixture ------------------------------------------
+// #23 shipped a temporary parity fixture because a Vite module graph could not
+// import the browser-global registry. #24 replaced it with real JSON, so the
+// fixture must be gone and React must read the canonical files. Drift inside the
+// data layer itself is qa-portfolio-data.js's job; this guard only proves the
+// React build consumes it and that the output carries the truth.
+check(
+  !exists("src/react/data/foundation.js"),
+  "the temporary #23 parity fixture must be deleted now that React reads canonical JSON",
+);
+
+const reactData = "src/react/data/portfolio.js";
+check(exists(reactData), `${reactData} is missing`);
+if (exists(reactData)) {
+  const source = read(reactData);
+  check(source.includes("@data/portfolio/"), `${reactData} must import the canonical JSON`);
   check(
-    source.includes(`primaryTitle: "${canonicalTitle}"`),
-    `${fixture} has drifted from the canonical primary title`,
-  );
-  check(
-    source.includes(`backgroundTitle: "${canonicalBackground}"`),
-    `${fixture} has drifted from the canonical background title`,
-  );
-  check(source.includes(canonicalTagline), `${fixture} has drifted from the canonical footer positioning copy`);
-  canonicalSocials.forEach(([platform, url]) => {
-    check(source.includes(url), `${fixture} has drifted from the canonical ${platform} URL`);
-  });
-  check(
-    source.includes("NOT a production source of truth"),
-    `${fixture} must stay explicitly marked as a temporary migration fixture`,
+    !/\bfetch\s*\(/.test(source),
+    `${reactData} must not fetch at runtime; the pre-render step needs this data at build time`,
   );
 }
+
+// The background title is registry truth but only appears where a page chooses
+// to render it, so it is asserted on the route that does rather than globally.
+const homeHtml = exists(prerenderedRoutes[0].file) ? read(prerenderedRoutes[0].file) : "";
+check(
+  homeHtml.includes(canonicalBackground.replace(/&/g, "&amp;")),
+  "the preview home route must render the canonical background title",
+);
+
+// --- Shared shell is production-intended ------------------------------------
+// The whole point of #24's shell is that #25 can mount real pages in it. That
+// only holds while the shell carries no preview assumptions.
+const shellFiles = ["SiteShell.jsx", "SiteHeader.jsx", "SiteFooter.jsx"];
+shellFiles.forEach((name) => {
+  const file = `src/react/components/shell/${name}`;
+  check(exists(file), `shared shell component is missing: ${file}`);
+  if (!exists(file)) return;
+  const source = read(file);
+  check(
+    !source.includes("react-preview"),
+    `${file} must not hard-code the preview base; navigation arrives through props`,
+  );
+  check(
+    !source.includes("PreviewNotice"),
+    `${file} must not import preview-only chrome; it is passed in through the banner slot`,
+  );
+});
+
+check(
+  exists("src/react/components/preview/PreviewNotice.jsx"),
+  "preview-only chrome must stay outside components/shell/",
+);
 
 // --- Production isolation ---------------------------------------------------
 // The single most important property of this pass: the live site is untouched.

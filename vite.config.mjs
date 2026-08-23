@@ -27,6 +27,15 @@ export const REACT_OUT_DIR = path.join(here, "dist-react");
 export const REACT_BASE = "/react-preview/";
 
 /**
+ * Canonical portfolio JSON, which lives outside the Vite root because the legacy
+ * generator reads it too. React imports it at BUILD time through this alias —
+ * never by fetching at runtime — so the data is bundled and pre-rendering can
+ * see it.
+ */
+export const DATA_ROOT = path.join(here, "data");
+export const ASSETS_ROOT = path.join(here, "assets");
+
+/**
  * Makes `vite preview` resolve URLs the way a plain static host does.
  *
  * A request under the preview base is answered by exactly one of three outcomes,
@@ -55,9 +64,14 @@ function staticHostingEmulation() {
       // static and fallback middleware, so this decides the outcome first.
       server.middlewares.use((req, res, next) => {
         const requestPath = decodeURIComponent((req.url || "/").split("?")[0]);
-        if (!requestPath.startsWith(REACT_BASE)) return next();
+        // React Router normalizes the basename without a trailing slash for a
+        // link to "/". Treat that URL as the preview root too, or a reload after
+        // using the System link falls through to Vite's base-URL warning page.
+        const baseWithoutTrailingSlash = REACT_BASE.slice(0, -1);
+        const isPreviewRoot = requestPath === baseWithoutTrailingSlash;
+        if (!isPreviewRoot && !requestPath.startsWith(REACT_BASE)) return next();
 
-        const relative = requestPath.slice(REACT_BASE.length);
+        const relative = isPreviewRoot ? "" : requestPath.slice(REACT_BASE.length);
         const isFile = (candidate) => {
           const resolved = path.join(REACT_OUT_DIR, candidate);
           // Refuse anything that escapes the build output.
@@ -108,6 +122,19 @@ export default defineConfig(({ isPreview }) => ({
    */
   appType: isPreview ? "mpa" : "spa",
 
+  resolve: {
+    alias: {
+      "@data": DATA_ROOT,
+      /*
+       * Only the already-optimized assets approved in #22 are imported this way,
+       * and only the ones actually referenced get emitted — Vite copies imported
+       * files, never the whole directory, so the preview cannot drag the
+       * production asset folder into dist-react/.
+       */
+      "@assets": ASSETS_ROOT,
+    },
+  },
+
   build: {
     outDir: REACT_OUT_DIR,
     emptyOutDir: true,
@@ -117,6 +144,11 @@ export default defineConfig(({ isPreview }) => ({
   server: {
     port: 5183,
     strictPort: true,
+    fs: {
+      // The Vite root is src/react/, so the dev server needs explicit permission
+      // to read the canonical JSON and the approved assets above it.
+      allow: [REACT_ROOT, DATA_ROOT, ASSETS_ROOT],
+    },
   },
   preview: {
     port: 4174,

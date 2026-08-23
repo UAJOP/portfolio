@@ -20,7 +20,9 @@ Two current flagship products lead the portfolio:
 
 ## Portfolio Architecture V2
 
-Current product truth is centralized in `portfolio-data.js` and consumed by `portfolio-v2.js`.
+Current product truth is centralized in canonical JSON under `data/portfolio/`. `portfolio-data.js` is **generated** from it by `npm run data:generate` and committed, so the legacy runtime keeps getting `window.KAAN_PORTFOLIO` synchronously with no build step. It is consumed by `portfolio-v2.js` exactly as before.
+
+Edit the JSON, regenerate, commit both. Never edit `portfolio-data.js` by hand — `npm run qa:data` fails on a stale or hand-edited artifact.
 
 This registry powers or synchronizes:
 
@@ -65,7 +67,10 @@ It also injects `portfolio-v2.css` when a legacy page does not already include i
 
 ## Core files
 
-- `portfolio-data.js` — source of truth for current flagship/project/recruiter/build data
+- `data/portfolio/*.json` — **canonical source of truth** for flagship/project/recruiter/build/labs data
+- `data/i18n/react-shell.json` — React-shell UI strings
+- `portfolio-data.js` — generated legacy compatibility artifact (do not edit by hand)
+- `scripts/generate-portfolio-data.mjs` — regenerates it deterministically from the JSON
 - `portfolio-v2.js` — V2 runtime and evidence surfaces
 - `portfolio-v2.css` — V2 component styling
 - `script.js` — global compatibility bootloader
@@ -112,6 +117,7 @@ npm run qa
 
 GitHub Actions Site Preflight enforces these as **blocking** checks:
 
+- canonical data contract and generated-registry parity (`qa:data`)
 - JavaScript syntax for every root `.js` file (`qa:js`)
 - portfolio architecture, footer and truth consistency (`qa:portfolio`)
 - critical asset existence, budgets, intrinsic dimensions and loading policy (`qa:assets`)
@@ -156,7 +162,7 @@ npm run qa:react
 
 `npm run build:react`, `npm run qa:react` and `npm run qa:a11y:react` are **blocking** in CI. The React build doubles as the JSX syntax gate, because `qa:js` parses root files as classic scripts and cannot represent JSX.
 
-See [`REACT_MIGRATION_PLAN.md`](REACT_MIGRATION_PLAN.md) for the phase plan, the parity rules and the static/pre-render policy.
+See [`REACT_MIGRATION_PLAN.md`](REACT_MIGRATION_PLAN.md) for the phase plan, the parity rules and the static/pre-render policy, and [`V3_DESIGN_SYSTEM.md`](V3_DESIGN_SYSTEM.md) for the design system the shared shell is built from.
 
 ## Deployment
 

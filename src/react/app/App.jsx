@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
-import SiteHeader from "../components/SiteHeader.jsx";
-import SiteFooter from "../components/SiteFooter.jsx";
+import SiteShell from "../components/shell/SiteShell.jsx";
+import PreviewNotice from "../components/preview/PreviewNotice.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import { previewRoutes, notFoundRoute } from "../routing/routes.jsx";
-import { PreferencesProvider } from "../state/PreferencesContext.jsx";
-import "../styles/react-foundation.css";
+import { PreferencesProvider, usePreferences } from "../state/PreferencesContext.jsx";
+import "../styles/index.css";
 
 /**
  * Layout + routes. The Router itself is supplied by the entry: BrowserRouter in
@@ -29,23 +29,35 @@ function DocumentTitle() {
   return null;
 }
 
-function Layout() {
+/**
+ * The preview supplies its own navigation to the shared shell. #25 will supply
+ * production routes to the same component — this is the seam that makes the
+ * shell reusable rather than preview-specific.
+ */
+function PreviewShell() {
+  const { t } = usePreferences();
+
+  const navItems = previewRoutes.map((route) => ({
+    to: route.path,
+    label: t(route.navKey),
+    end: route.path === "/",
+  }));
+
   return (
-    <div className="rf-shell">
-      <a className="rf-skip-link" href="#rf-main">
-        Skip to preview content
-      </a>
-      <SiteHeader />
-      <main className="rf-main" id="rf-main">
-        <Routes>
-          {previewRoutes.map((route) => (
-            <Route key={route.id} path={route.path} element={<route.Component />} />
-          ))}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-      <SiteFooter />
-    </div>
+    <SiteShell
+      navItems={navItems}
+      navLabel={t("nav.label")}
+      brandTo="/"
+      banner={<PreviewNotice />}
+      footerNote={t("footer.note")}
+    >
+      <Routes>
+        {previewRoutes.map((route) => (
+          <Route key={route.id} path={route.path} element={<route.Component />} />
+        ))}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </SiteShell>
   );
 }
 
@@ -53,7 +65,7 @@ export default function App() {
   return (
     <PreferencesProvider>
       <DocumentTitle />
-      <Layout />
+      <PreviewShell />
     </PreferencesProvider>
   );
 }

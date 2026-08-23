@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, translate } from "../data/translations.js";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, translate } from "../i18n/translate.js";
 
 /**
  * Theme and language state for the React preview.

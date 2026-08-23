@@ -1,0 +1,132 @@
+{
+  "healthy": {
+    "label": {
+      "en": "Healthy run",
+      "tr": "Healthy run"
+    },
+    "status": "READY",
+    "summary": {
+      "en": "Required evidence is collected before the side effect is allowed.",
+      "tr": "Side effect'e izin verilmeden önce gerekli kanıtlar toplanıyor."
+    },
+    "conversation": [
+      {
+        "speaker": {
+          "en": "Customer",
+          "tr": "Müşteri"
+        },
+        "text": {
+          "en": "My car was damaged. Can you open a claim?",
+          "tr": "Aracım hasar gördü. Hasar kaydı açabilir misiniz?"
+        }
+      },
+      {
+        "speaker": {
+          "en": "Agent",
+          "tr": "Agent"
+        },
+        "text": {
+          "en": "I can help. First I need to verify your contact details and collect the required damage documents.",
+          "tr": "Yardımcı olabilirim. Önce iletişim bilgilerinizi doğrulayıp gerekli hasar belgelerini toplamam gerekiyor."
+        }
+      },
+      {
+        "speaker": {
+          "en": "Customer",
+          "tr": "Müşteri"
+        },
+        "text": {
+          "en": "Okay, I can send the photos now.",
+          "tr": "Tamam, fotoğrafları şimdi gönderebilirim."
+        }
+      }
+    ],
+    "toolTrace": [
+      "verify_contact()",
+      "collect_required_documents()",
+      "submit_claim()"
+    ],
+    "findings": [
+      {
+        "level": "PASS",
+        "text": {
+          "en": "Prerequisite order respected",
+          "tr": "Prerequisite sırası korundu"
+        }
+      },
+      {
+        "level": "PASS",
+        "text": {
+          "en": "No forbidden early submission",
+          "tr": "Yasak erken submission yok"
+        }
+      },
+      {
+        "level": "PASS",
+        "text": {
+          "en": "Required tool evidence present",
+          "tr": "Gerekli tool kanıtı mevcut"
+        }
+      }
+    ]
+  },
+  "broken": {
+    "label": {
+      "en": "Broken run",
+      "tr": "Broken run"
+    },
+    "status": "BLOCKED",
+    "summary": {
+      "en": "The agent performs a claim-submission side effect before collecting prerequisites.",
+      "tr": "Agent prerequisite'leri toplamadan claim-submission side effect'i gerçekleştiriyor."
+    },
+    "conversation": [
+      {
+        "speaker": {
+          "en": "Customer",
+          "tr": "Müşteri"
+        },
+        "text": {
+          "en": "My car was damaged. Can you open a claim?",
+          "tr": "Aracım hasar gördü. Hasar kaydı açabilir misiniz?"
+        }
+      },
+      {
+        "speaker": {
+          "en": "Agent",
+          "tr": "Agent"
+        },
+        "text": {
+          "en": "Sure. I am submitting the claim immediately.",
+          "tr": "Tabii. Hasar kaydını hemen oluşturuyorum."
+        }
+      }
+    ],
+    "toolTrace": [
+      "submit_claim()"
+    ],
+    "findings": [
+      {
+        "level": "FAIL",
+        "text": {
+          "en": "Missing prerequisite: verify_contact",
+          "tr": "Eksik prerequisite: verify_contact"
+        }
+      },
+      {
+        "level": "FAIL",
+        "text": {
+          "en": "Missing prerequisite: collect_required_documents",
+          "tr": "Eksik prerequisite: collect_required_documents"
+        }
+      },
+      {
+        "level": "FAIL",
+        "text": {
+          "en": "Forbidden premature side effect",
+          "tr": "Yasak premature side effect"
+        }
+      }
+    ]
+  }
+}

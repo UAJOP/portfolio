@@ -1,6 +1,6 @@
 # Portfolio QA Baseline
 
-Current measured baseline, extended on `feat/react-foundation-v1` after the canonical-footer, QA-hardening, Asset/LCP V1 and React foundation passes.
+Current measured baseline, extended on `feat/shared-shell-json-data-v1` after the canonical-footer, QA-hardening, Asset/LCP V1, React foundation and shared-shell/JSON-data passes.
 
 All numbers below are actual local runs of the committed checks against the pinned toolchain in `package-lock.json`. Lighthouse performance is reported from a local run and is CDN-bound; see the note under Lighthouse.
 
@@ -8,12 +8,13 @@ All numbers below are actual local runs of the committed checks against the pinn
 
 | Check | Result |
 |---|---|
-| JavaScript syntax | 18/18 files pass |
+| Portfolio data contract | pass: 8 canonical files, generated adapter in step |
+| JavaScript syntax | 19/19 files pass |
 | Portfolio consistency guard | pass |
 | Asset performance policy | pass: 63 references, 81 intrinsic image dimensions, critical budgets met |
 | Internal links | 0 broken across 453 references |
 | HTML validation | **0 errors**, 3 accepted warnings |
-| Spelling | 0 issues across 26 files |
+| Spelling | 0 issues across 28 files |
 | Pa11y (WCAG 2 AA, 390×844) | **11/11 pages pass, 0 errors** |
 | Lighthouse accessibility / best practices / SEO | **100 / 100 / 100** on all 11 pages |
 | React foundation build + guard | pass: 3 routes pre-rendered, production isolation verified |
@@ -144,3 +145,117 @@ Production Lighthouse, measured locally before the change on the same static ser
 | `labs.html` | 91 | 100 | 100 | 100 | 0.129998 |
 
 The Labs CLS value is the known pre-existing figure recorded in the Asset/LCP V1 pass and is unchanged. Since this pass edits no production page, no production performance change is expected or claimed.
+
+## Shared shell and JSON data foundation (#24)
+
+Measured on `feat/shared-shell-json-data-v1`.
+
+### Data migration parity
+
+The canonical JSON was extracted **programmatically** from the live registry, then composed back and compared to the pre-migration object from baseline `23345d6`:
+
+```
+baseline JSON bytes: 17347
+composed JSON bytes: 17347
+semantic differences: 0
+```
+
+Zero differences, **key order included**, before the intentional edits below. The comparison walks values, array lengths, key sets and key order.
+
+Intentional differences after that check:
+
+| Difference | Reason |
+|---|---|
+| build log gains the #24 entry | this pass, recorded truthfully |
+| build log length 8 → 9 | consequence of the above |
+
+Nothing else changed. No wording was "cleaned up" during the migration.
+
+### Generated adapter
+
+| Property | Result |
+|---|---|
+| Deterministic | byte-identical across repeated runs (27,012 B) |
+| Evaluates as classic script | yes |
+| `window.KAAN_PORTFOLIO` synchronous | yes |
+| Top-level frozen | yes, matching the previous artifact |
+| Deep-equals composed JSON | yes |
+
+### Failure injection
+
+Five deliberate regressions, each reverted immediately. All exited non-zero:
+
+| Injected failure | Caught by |
+|---|---|
+| stale generated `portfolio-data.js` | staleness comparison |
+| wrong `primaryTitle` | protected truth check |
+| non-canonical social URL | canonical socials check |
+| recruiter evidence citing a missing project | reference integrity check |
+| malformed JSON | parse check |
+
+### React preview build output
+
+| File | Raw | Gzip |
+|---|---:|---:|
+| `assets/index-[hash].js` | 263,416 B | 82,849 B |
+| `assets/index-[hash].css` | 14,365 B | 3,648 B |
+| `assets/kaan-balci-logo-128-[hash].webp` | 16,534 B | — |
+| `index.html` (pre-rendered) | 15,061 B | 3,677 B |
+| `about/index.html` (pre-rendered) | 8,545 B | 2,777 B |
+| `404.html` (pre-rendered) | 6,200 B | 2,126 B |
+| **Total** | **324,121 B** (316.5 KB) | **111,639 B** (109.0 KB) |
+
+One JS chunk, one CSS chunk, three HTML files, one imported image.
+
+Against #23, as architecture-cost context only — the preview gained a full design system, a shared shell and real canonical data:
+
+| | #23 | #24 | Δ |
+|---|---:|---:|---:|
+| JS gzip | 76,368 B | 82,849 B | +6,481 B |
+| CSS gzip | 1,685 B | 3,648 B | +1,963 B |
+| Pre-rendered markup (home) | 3,452 B | 13,261 B | +9,809 B |
+
+The JS increase is the data layer plus the larger component tree; no dependency was added. This is not production bundle cost — no public page is React.
+
+### Pre-render
+
+| Route | Pre-rendered markup |
+|---|---:|
+| `/react-preview/` | 13,261 B |
+| `/react-preview/about` | 6,800 B |
+| `404.html` | 4,518 B |
+
+### Accessibility and contrast
+
+| Check | Result |
+|---|---|
+| Pa11y production, 11 pages | **11/11, 0 errors** |
+| Pa11y React preview, 3 routes | **3/3, 0 errors** |
+| Contrast minimum, dark | **5.10:1** |
+| Contrast minimum, light | **4.61:1** |
+
+Every text/background pair was measured with alpha compositing against the real backdrop, in both themes, after a genuine page load. Three light-theme near-misses found this way were fixed rather than accepted: the primary action fill (4.33:1), the accent chip (4.43:1) and the warning chip (4.38:1). The light accent and warning tokens were deepened accordingly.
+
+### Production regression
+
+No public page, stylesheet or runtime file changed. Verified in-browser across `index`, `works`, `games`, `labs`, `now`, `sinama-case-study` and `merge-rush-case-study`:
+
+- generated registry boots synchronously and frozen, with 5 projects / 4 recruiter profiles / 9 build checkpoints / 4 labs
+- Recruiter Mode renders registry-backed capabilities
+- Build Log renders the new #24 entry alongside the existing history
+- Labs renders all four entries
+- SINAMA Evidence Explorer renders from `sinamaEvidence`
+- Command Palette opens
+- theme toggle and EN/TR switching behave as before
+- 5 canonical footer destinations on every page; 0 broken images; **0 console errors**
+
+Production Lighthouse, same static server:
+
+| Page | Performance | Accessibility | Best practices | SEO |
+|---|---:|---:|---:|---:|
+| `index.html` | 95 | 100 | 100 | 100 |
+| `about.html` | 96 | 100 | 100 | 100 |
+| `works.html` | 95 | 100 | 100 | 100 |
+| `labs.html` | 98 | 100 | 100 | 100 |
+
+Unchanged within run-to-run noise, as expected — no public page was migrated.

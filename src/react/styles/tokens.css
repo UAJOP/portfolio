@@ -1,0 +1,169 @@
+/*
+ * V3 design tokens.
+ *
+ * Semantic names only. A component asks for `--surface-elevated`, never for a
+ * hex value, which is what lets both themes be designed independently rather
+ * than one being the other with the lightness flipped.
+ *
+ * Light is NOT inverted dark. Dark builds depth by lifting surfaces toward the
+ * light; light builds it with white surfaces, real borders and restrained
+ * shadow. The two palettes were tuned separately and measured separately.
+ */
+
+:root {
+  /* --- Canvas and surfaces (dark: the flagship identity) ----------------- */
+  --canvas: #060d17;
+  --canvas-raised: #0a1524;
+  --surface: #0e1b2d;
+  --surface-elevated: #142438;
+  --surface-interactive: #1a2d45;
+  --surface-inset: #08111d;
+
+  /* --- Text -------------------------------------------------------------- */
+  --text-primary: #f4f8fd;
+  --text-secondary: #b6c6da;
+  --text-muted: #8195ad;
+  /* Ink for text sitting ON an accent fill. */
+  --text-on-accent: #041018;
+
+  /* --- Accent ------------------------------------------------------------ */
+  /* --accent is for fills, borders and focus rings, where contrast rules do
+     not apply. --accent-text is the only accent safe for text on the canvas. */
+  --accent: #3db8f5;
+  --accent-strong: #7dd3fc;
+  --accent-text: #5cc4f7;
+  --accent-soft: rgba(61, 184, 245, 0.14);
+  --accent-line: rgba(61, 184, 245, 0.34);
+
+  /* Secondary accent, used sparingly for category separation. */
+  --accent-alt: #6366f1;
+  --accent-alt-soft: rgba(99, 102, 241, 0.18);
+
+  /* --- Status ------------------------------------------------------------ */
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.14);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.14);
+  --danger: #fb7185;
+  --danger-soft: rgba(251, 113, 133, 0.14);
+
+  /* --- Borders ----------------------------------------------------------- */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.24);
+
+  /* --- Depth ------------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.36);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.46);
+  /* A hairline highlight along the top edge; reads as a lit surface in dark. */
+  --sheen: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  /* --- Radius ------------------------------------------------------------ */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* --- Spacing scale ----------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  /* --- Layout ------------------------------------------------------------ */
+  --width-content: 1200px;
+  --width-text: 68ch;
+  --gutter: 1.5rem;
+
+  /* --- Type scale (fluid) ------------------------------------------------ */
+  --text-display: clamp(2.75rem, 1.6rem + 4.6vw, 5rem);
+  --text-h1: clamp(2.1rem, 1.4rem + 2.9vw, 3.5rem);
+  --text-h2: clamp(1.55rem, 1.2rem + 1.5vw, 2.25rem);
+  --text-h3: clamp(1.2rem, 1.05rem + 0.7vw, 1.5rem);
+  --text-body-lg: clamp(1.05rem, 1rem + 0.3vw, 1.2rem);
+  --text-body: 1rem;
+  --text-small: 0.9rem;
+  --text-label: 0.78rem;
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.28;
+  --leading-normal: 1.65;
+
+  --tracking-tight: -0.022em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.08em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 800;
+
+  /* --- Fonts -------------------------------------------------------------
+     System stacks only. Introducing a webfont belongs to #32, where font and
+     CDN delivery are dealt with as one measured change. */
+  --font-sans: Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  /* --- Motion ------------------------------------------------------------ */
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+  --duration-slow: 320ms;
+  --easing-standard: cubic-bezier(0.2, 0, 0.2, 1);
+  --easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+}
+
+html[data-theme="light"] {
+  /* Light is a designed surface system: a faintly cool paper canvas with white
+     cards lifted off it, not a bleached copy of the dark palette. */
+  --canvas: #f4f7fb;
+  --canvas-raised: #eef3f9;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-interactive: #f4f8fc;
+  --surface-inset: #eaf0f7;
+
+  --text-primary: #0a1626;
+  --text-secondary: #3d4f66;
+  --text-muted: #5b6d85;
+  --text-on-accent: #ffffff;
+
+  /*
+   * Deeper than the dark theme's accent, and deeper than it first looks it
+   * needs to be. These three values are set by measurement, not by eye:
+   * white on #0b7fc4 reaches only 4.33:1 as a button fill, and the accent and
+   * warning chips landed at 4.43:1 and 4.38:1 — all just under AA.
+   */
+  --accent: #0a6ba6;
+  --accent-strong: #075e93;
+  --accent-text: #075e93;
+  --accent-soft: rgba(10, 107, 166, 0.1);
+  --accent-line: rgba(10, 107, 166, 0.3);
+
+  --accent-alt: #4f46e5;
+  --accent-alt-soft: rgba(79, 70, 229, 0.1);
+
+  --success: #047857;
+  --success-soft: rgba(4, 120, 87, 0.1);
+  --warning: #92400e;
+  --warning-soft: rgba(146, 64, 14, 0.1);
+  --danger: #be123c;
+  --danger-soft: rgba(190, 18, 60, 0.1);
+
+  --border-subtle: rgba(10, 22, 38, 0.08);
+  --border-default: rgba(10, 22, 38, 0.14);
+  --border-strong: rgba(10, 22, 38, 0.26);
+
+  /* Softer and cooler than dark: heavy shadow on a light canvas reads as dirt. */
+  --shadow-sm: 0 1px 2px rgba(10, 22, 38, 0.06);
+  --shadow-md: 0 8px 24px rgba(10, 22, 38, 0.08);
+  --shadow-lg: 0 24px 56px rgba(10, 22, 38, 0.1);
+  --sheen: none;
+}

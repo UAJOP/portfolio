@@ -1,0 +1,13 @@
+/*
+ * V3 design system entry point.
+ *
+ * Import order is the cascade order: tokens define the vocabulary, base sets the
+ * canvas, then typography, layout, components and motion build on it. Components
+ * import this one file rather than reaching for individual sheets.
+ */
+@import "./tokens.css";
+@import "./base.css";
+@import "./typography.css";
+@import "./layout.css";
+@import "./components.css";
+@import "./motion.css";

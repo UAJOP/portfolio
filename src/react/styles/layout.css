@@ -1,0 +1,104 @@
+/*
+ * Layout primitives.
+ *
+ * The point of this file is that a future page — hero, bento evidence grid,
+ * case study — composes these instead of inventing one-off CSS. #25 should be
+ * able to build Home without adding a new container or spacing rule.
+ */
+
+.v3-container {
+  width: 100%;
+  max-width: var(--width-content);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.v3-container--narrow {
+  max-width: 860px;
+}
+
+/* Vertical rhythm between major page sections. */
+.v3-section {
+  padding-block: var(--space-8);
+}
+
+.v3-section--tight {
+  padding-block: var(--space-7);
+}
+
+.v3-section + .v3-section {
+  padding-top: 0;
+}
+
+/* A hairline divider that reads on both themes without a hard line. */
+.v3-section--divided {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-8);
+}
+
+.v3-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.v3-stack--sm { gap: var(--space-2); }
+.v3-stack--lg { gap: var(--space-6); }
+
+.v3-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.v3-cluster--sm { gap: var(--space-2); }
+
+/*
+ * Auto-fitting grid. `minmax(min(<floor>, 100%), 1fr)` is what keeps it from
+ * overflowing on narrow screens, which a bare minmax() floor would do.
+ */
+.v3-grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+}
+
+.v3-grid--wide {
+  grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr));
+}
+
+.v3-grid--compact {
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+}
+
+/*
+ * Restrained bento: an emphasized lead cell beside supporting cells. Collapses
+ * to a single column before the cells get too narrow to hold real content.
+ */
+.v3-bento {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 60rem) {
+  .v3-bento {
+    grid-template-columns: 1.35fr 1fr;
+    align-items: start;
+  }
+}
+
+.v3-split {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 52rem) {
+  .v3-split {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
