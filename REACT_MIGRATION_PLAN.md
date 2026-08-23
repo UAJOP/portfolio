@@ -2,7 +2,9 @@
 
 How `kaanbalci.com` moves from its current static HTML/CSS/JS architecture to React, without a rewrite and without a period where the public site is worse than it is today.
 
-This document is the contract for phases #23 through #33. #23 established the foundation described in "Current state"; everything after it is planned work.
+This document is the contract for Portfolio Modernization V3, phases #23 through #33. The phase list in §4 is the **locked master roadmap** agreed with the owner; §4 is authoritative and no other document or pull request may reorder or renumber it.
+
+#23 established the foundation described in "Current state"; everything after it is planned work.
 
 ## 1. Target stack
 
@@ -30,31 +32,37 @@ Deliberately rejected:
 - **Tailwind** — the visual system is already expressed as CSS custom properties that work in both themes. Converting it would be churn with no user-visible result.
 - **Redux / Zustand** — the only shared client state is theme and language.
 
-## 3. Why JavaScript/JSX rather than TypeScript
+## 3. Why JavaScript/JSX
 
-TypeScript is the right long-term answer and is explicitly deferred, not rejected.
+**JavaScript with JSX is the intentional language of Portfolio Modernization V3.** It is the choice for every phase from #23 to #33, not a placeholder for something else.
 
-The reason is sequencing. Migrating a page and introducing a type system are separate risks, and running them together makes a failure ambiguous: when a migrated page misbehaves, it must be obvious whether the cause is the migration or the tooling. The existing codebase has no types and no build step, so every type would be newly authored during the same pass that moves the markup.
+The reason is that migrating a page and introducing a type system are separate risks, and running them together makes a failure ambiguous: when a migrated page misbehaves, it must be obvious whether the cause is the migration or the tooling. The existing codebase has no types and no build step, so every type would be newly authored during the very pass that moves the markup.
 
-TypeScript is adopted after the data layer is JSON (#24), where types have real work to do: describing the registry shape and catching drift at build time rather than in a guard script. Adopting it earlier means typing a data structure that is about to change.
+Correctness in V3 comes from executable guards instead: `qa-react-foundation.js` checks the pre-render output and the canonical truth, the pre-render step fails on an empty render, and Pa11y covers both architectures. Those catch the failures this project actually has.
+
+**TypeScript is outside the scope of V3.** No phase in #23–#33 adopts it, and no adoption date is promised. It may be reevaluated after #33 if the owner chooses to; that is a future decision and is not made here.
 
 ## 4. Migration phases
 
-| Phase | Scope | Removes legacy? |
+This is the locked master roadmap for Portfolio Modernization V3, agreed with the owner. **It is not to be reordered, renumbered or reinterpreted by an implementation pass.** A phase's scope may be clarified; its number and subject may not change.
+
+| Phase | Title | Scope |
 |---|---|---|
-| **#23** | React/Vite/Router foundation, pre-render proof, isolated preview | No |
-| #24 | Portfolio registry becomes JSON; single source of truth for both architectures | No |
-| #25 | Design tokens and real Header/Footer parity components | No |
-| #26 | Home migrated and published at `/` | Home only |
-| #27 | About and Works migrated | Those pages |
-| #28 | Case studies migrated (SINAMA, Merge Rush, hospital, Joyday, AI Flow Puzzle) | Those pages |
-| #29 | Blog, Now, Labs, Games, Certificates, Request migrated | Those pages |
-| #30 | Recruiter Mode V2 and Command Palette migrated | Those features |
-| #31 | Ajoop migrated, deterministic behavior preserved exactly | Ajoop shell |
-| #32 | Mini-games integrated (see §10) | Game page shells |
-| #33 | `legacy-script.js` deleted, Boxicons and font delivery resolved, final QA baseline | Remainder |
+| **#23** | React Migration Foundation V1 | React + Vite + Router + isolated pre-render foundation. |
+| #24 | Shared Shell + JSON Data Foundation | Header/Footer/shared shell, central JSON data foundation, profile/socials/projects/experience/build-log/i18n migration strategy and parity with `portfolio-data.js`. |
+| #25 | Home + About React Migration | First real public React pages with visual/content/behavior/SEO parity. |
+| #26 | Works + Games React Migration | ProjectCard, JSON-driven rendering, filters/search and data-driven project UI. |
+| #27 | Recruiter Mode + Build Log React Migration | Recruiter Mode V2, role/evidence deep links and Build Log. |
+| #28 | Ajoop + Command Palette React Migration | Deterministic Ajoop and Command Palette. |
+| #29 | Case Studies + Dynamic Project Routes | SINAMA, Merge Rush, Joyday, Hospital, AI Flow Puzzle and shared case-study architecture. |
+| #30 | Labs + Mini-game Shell Migration | Labs plus React shells around Adventure / Joyday Paint / AI Flow Puzzle. Gameplay may remain vanilla JS/canvas. |
+| #31 | Legacy Runtime Removal | Only after the migration matrix reaches zero legacy usage: `legacy-script.js`, compatibility layers and duplicate legacy implementations. |
+| #32 | External Dependency + Bundle Cleanup | Fonts, Boxicons, remaining CDN/dependency/bundle cleanup, based on measurement. |
+| #33 | React Architecture Hardening + V3 Final | Final routes, SEO, metadata, accessibility, bundle budgets, visual QA, documentation and the Portfolio Modernization V3 completion checkpoint. |
 
 Each phase is one pull request, reviewed and merged on its own.
+
+Note the shape of this order: **all migration happens before any removal.** Phases #24–#30 move things; #31 is the first phase that deletes anything. That is deliberate, and it is what §9 depends on.
 
 ## 5. Production parity rules
 
@@ -113,10 +121,10 @@ This matters more than it first appears:
 
 Today's truth lives in `portfolio-data.js` as a frozen browser global (`window.KAAN_PORTFOLIO`). A Vite module graph cannot import a global, which is why #23 uses a small parity fixture — and why `qa-react-foundation.js` fails the build if that fixture drifts from the registry.
 
-#24 converts the registry to JSON:
+The JSON data foundation in **#24** converts the registry, alongside that phase's shared-shell work:
 
-- `data/portfolio.json` becomes the single source of truth.
-- A small adapter assigns it to `window.KAAN_PORTFOLIO` so the legacy runtime keeps working unchanged.
+- A central JSON data foundation becomes the single source of truth, covering profile, socials, projects, experience, build log and i18n.
+- A small adapter assigns it to `window.KAAN_PORTFOLIO` so the legacy runtime keeps working unchanged — parity with `portfolio-data.js` is a requirement of that phase, not a later cleanup.
 - React imports the JSON directly.
 - `src/react/data/foundation.js` is deleted.
 
@@ -132,16 +140,16 @@ The sequence for any page or feature is: build the React version → prove parit
 
 Nothing is deleted in the same change that replaces it. That keeps the revert small: if a migrated page misbehaves, restoring the previous behavior is a revert, not a reconstruction.
 
-`legacy-script.js` shrinks only when a feature has actually moved. It is deleted in #33, when nothing references it.
+The roadmap enforces this at the phase level: **#31 is the first phase that removes anything**, and it runs only after the migration matrix shows zero remaining legacy usage. `legacy-script.js`, the compatibility bootloader layers and any duplicate legacy implementation are removed there, together, once nothing references them. External dependency and bundle cleanup is separate again, in #32, so a removal that changes behavior is never mixed with one that only changes delivery.
 
 ## 10. Mini-game strategy
 
 The adventure game, Joyday Paint and AI Flow Puzzle are ~120 KB of canvas and DOM code that predate the current architecture and are not React-shaped. They are also secondary to the AI and software positioning, so they must not drive architectural decisions.
 
-They are migrated last (#32), and only as far as necessary:
+They are handled in **#30**, alongside Labs, and only as far as necessary:
 
 - The **page shell** around each game — header, footer, description, metadata — becomes React, like any other page.
-- The **game itself** stays a plain script, mounted into a container by a thin React wrapper that owns the canvas element's lifecycle.
+- **Gameplay may remain vanilla JS/canvas.** The game stays a plain script, mounted into a container by a thin React wrapper that owns the canvas element's lifecycle.
 - No game logic is rewritten. Rewriting working, self-contained game code to satisfy an architecture is churn with real regression risk and no user benefit.
 
 Merge Rush is unaffected: it is a separate product with its own repository and appears here only as a case study.

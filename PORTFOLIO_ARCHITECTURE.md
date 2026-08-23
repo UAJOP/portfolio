@@ -215,7 +215,9 @@ It renders no production content. It exists to prove the architecture works befo
 
 ### FUTURE — page-by-page migration
 
-Pages move one at a time, each in its own pull request, each preserving its existing public URL. The order and scope are set out in [`REACT_MIGRATION_PLAN.md`](REACT_MIGRATION_PLAN.md).
+Pages move one at a time, each in its own pull request, each preserving its existing public URL.
+
+The phase order is the locked master roadmap in [`REACT_MIGRATION_PLAN.md`](REACT_MIGRATION_PLAN.md) §4, which is the single authoritative statement of it. That roadmap runs every migration phase (#24–#30) before the first removal phase (#31), so the two architectures coexist for the whole migration and separate only at the end.
 
 ### The rule that governs the transition
 
@@ -223,7 +225,9 @@ Pages move one at a time, each in its own pull request, each preserving its exis
 
 Nothing is deleted in the same change that replaces it. That keeps every phase reversible by reverting one merge commit.
 
-While both architectures exist, `portfolio-data.js` stays the single source of truth. The React tree carries a small parity fixture until #24 converts the registry to JSON, and `qa-react-foundation.js` fails the build if that fixture drifts from the registry, so the two cannot diverge quietly.
+While both architectures exist, `portfolio-data.js` stays the single source of truth. The React tree carries a small parity fixture until the #24 JSON data foundation replaces it, and `qa-react-foundation.js` fails the build if that fixture drifts from the registry, so the two cannot diverge quietly.
+
+Removal is concentrated in **#31**, and only once the migration matrix shows zero remaining legacy usage: `legacy-script.js`, the compatibility layers and any duplicate legacy implementation go together, after everything has moved.
 
 ### Why the preview does not use SPA routing
 

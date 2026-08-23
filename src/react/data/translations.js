@@ -27,7 +27,7 @@ export const translations = {
   "home.title": { en: "React migration foundation", tr: "React migrasyon temeli" },
   "home.lead": {
     en: "React, Vite and React Router now run beside the live site instead of replacing it. Every public page still ships from the existing static architecture.",
-    tr: "React, Vite ve React Router artık canlı siteyi değiştirmeden onun yanında çalışıyor. Tüm herkese açık sayfalar mevcut statik mimariden yayınlanmaya devam ediyor.",
+    tr: "React, Vite ve React Router artık canlı siteyi değiştirmeden onun yanında çalışıyor. Herkese açık tüm sayfalar mevcut statik mimariden yayınlanmaya devam ediyor.",
   },
   "home.provenHeading": { en: "What this foundation proves", tr: "Bu temel neyi kanıtlıyor" },
   "home.proven.router": {

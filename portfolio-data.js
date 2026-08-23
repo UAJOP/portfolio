@@ -183,7 +183,7 @@
         date: "2026-08-23",
         area: "Portfolio",
         title: t("React migration foundation V1", "React migrasyon temeli V1"),
-        detail: t("Established a React, Vite and React Router foundation beside the existing site, proved build-time pre-rendering and left every public page unchanged.", "Mevcut sitenin yanına React, Vite ve React Router temeli kuruldu, derleme zamanı ön-render kanıtlandı ve tüm herkese açık sayfalar değiştirilmeden bırakıldı."),
+        detail: t("Established a React, Vite and React Router foundation beside the existing site, proved build-time pre-rendering and left every public page unchanged.", "Mevcut sitenin yanına React, Vite ve React Router temeli kuruldu, derleme zamanı ön-render kanıtlandı ve herkese açık tüm sayfalar değiştirilmeden bırakıldı."),
         status: "shipped"
       },
       {
