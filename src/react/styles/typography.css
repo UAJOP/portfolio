@@ -1,0 +1,80 @@
+/*
+ * Editorial/technical type scale.
+ *
+ * Two register decisions carry most of the personality:
+ *   - Headings are tight (negative tracking, snug leading) so large sizes read
+ *     as set type rather than as scaled-up body copy.
+ *   - Eyebrows and technical detail use the mono stack, which is what gives the
+ *     system its engineering register without resorting to decoration.
+ */
+
+.v3-display {
+  font-size: var(--text-display);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-black);
+}
+
+.v3-h1 {
+  font-size: var(--text-h1);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-bold);
+}
+
+.v3-h2 {
+  font-size: var(--text-h2);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-bold);
+}
+
+.v3-h3 {
+  font-size: var(--text-h3);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-semibold);
+}
+
+.v3-body-lg {
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+.v3-body {
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+.v3-small {
+  font-size: var(--text-small);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
+/* Section label. Mono + wide tracking is the system's "technical" cue. */
+.v3-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  font-weight: var(--weight-semibold);
+  color: var(--accent-text);
+}
+
+.v3-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  color: var(--text-muted);
+}
+
+/* Caps the measure for readability; never applied to layout containers. */
+.v3-measure {
+  max-width: var(--width-text);
+}
+
+.v3-text-primary { color: var(--text-primary); }
+.v3-text-secondary { color: var(--text-secondary); }
+.v3-text-muted { color: var(--text-muted); }

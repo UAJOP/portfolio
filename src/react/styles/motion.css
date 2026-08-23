@@ -1,0 +1,48 @@
+/*
+ * Motion.
+ *
+ * CSS only — no animation dependency. Everything is a state transition on hover,
+ * focus or press. There is no entrance animation, no scroll-triggered reveal and
+ * no decorative motion, because none of them survives the accessibility rule
+ * below without becoming a second, worse layout.
+ *
+ * Durations stay in the 150–320ms band. Anything slower reads as lag on a
+ * portfolio a recruiter is scanning quickly.
+ */
+
+.v3-transition-colors {
+  transition:
+    color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard);
+}
+
+.v3-transition-surface {
+  transition:
+    transform var(--duration-normal) var(--easing-emphasized),
+    box-shadow var(--duration-normal) var(--easing-standard),
+    border-color var(--duration-normal) var(--easing-standard),
+    background-color var(--duration-normal) var(--easing-standard);
+}
+
+/*
+ * The one honest accessibility rule here: no information may depend on motion.
+ * Every transition below is decoration over a state that is already expressed by
+ * color, border or aria state, so removing them removes nothing.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Lift is the only motion carrying meaning (interactive affordance), so it is
+     replaced rather than merely sped up. */
+  .v3-surface--interactive:hover {
+    transform: none;
+  }
+}
