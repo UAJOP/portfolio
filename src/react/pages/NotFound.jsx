@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
+import Container from "../components/ui/Container.jsx";
+import Action from "../components/ui/Action.jsx";
 import { usePreferences } from "../state/PreferencesContext.jsx";
-import PreviewNotice from "../components/PreviewNotice.jsx";
 
 /**
  * Rendered for any unmatched preview path, and pre-rendered to dist-react/404.html
@@ -16,18 +16,22 @@ export default function NotFound() {
   const { t } = usePreferences();
 
   return (
-    <>
-      <PreviewNotice />
+    <Container narrow>
+      <section className="v3-section">
+        <div className="v3-stack v3-stack--lg">
+          <div className="v3-stack">
+            <p className="v3-eyebrow">404</p>
+            <h1 className="v3-h1">{t("notFound.title")}</h1>
+            <p className="v3-body-lg">{t("notFound.lead")}</p>
+          </div>
 
-      <section className="rf-section">
-        <h1>{t("notFound.title")}</h1>
-        <p className="rf-lead">{t("notFound.lead")}</p>
-        <p>
-          <Link className="rf-inline-link" to="/">
-            {t("notFound.homeLink")}
-          </Link>
-        </p>
+          <div>
+            <Action to="/" variant="primary" arrow>
+              {t("notFound.homeLink")}
+            </Action>
+          </div>
+        </div>
       </section>
-    </>
+    </Container>
   );
 }

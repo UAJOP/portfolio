@@ -28,22 +28,26 @@ export const previewRoutes = [
     id: "home",
     path: "/",
     output: "index.html",
+    // Navigation label key, so the shell's nav is derived from this table
+    // rather than maintained beside it.
+    navKey: "nav.home",
     Component: MigrationHome,
     metadata: {
-      title: "React migration foundation | Kaan Balcı engineering preview",
+      title: "V3 design system | Kaan Balcı engineering preview",
       description:
-        "Engineering preview proving the React, Vite and React Router foundation running beside the existing kaanbalci.com static site.",
+        "Engineering preview of the Portfolio Modernization V3 design system: tokens, typography, surfaces and the shared React shell, rendered from canonical portfolio data.",
     },
   },
   {
     id: "about",
     path: "/about",
     output: "about/index.html",
+    navKey: "nav.about",
     Component: MigrationAbout,
     metadata: {
-      title: "Migration approach | Kaan Balcı engineering preview",
+      title: "System principles | Kaan Balcı engineering preview",
       description:
-        "How the kaanbalci.com React migration proceeds page by page, and the parity rules that must hold before any legacy implementation is removed.",
+        "The rules the V3 design system holds itself to, and the canonical JSON data architecture underneath the React shell.",
     },
   },
 ];

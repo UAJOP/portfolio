@@ -1,0 +1,182 @@
+{
+  "nav.label": {
+    "en": "Design system preview",
+    "tr": "Tasarım sistemi önizlemesi"
+  },
+  "nav.home": {
+    "en": "System",
+    "tr": "Sistem"
+  },
+  "nav.about": {
+    "en": "Principles",
+    "tr": "İlkeler"
+  },
+  "controls.language": {
+    "en": "Language",
+    "tr": "Dil"
+  },
+  "controls.theme": {
+    "en": "Theme",
+    "tr": "Tema"
+  },
+  "controls.themeDark": {
+    "en": "Dark",
+    "tr": "Koyu"
+  },
+  "controls.themeLight": {
+    "en": "Light",
+    "tr": "Açık"
+  },
+  "footer.socialsLabel": {
+    "en": "Social links",
+    "tr": "Sosyal bağlantılar"
+  },
+  "footer.note": {
+    "en": "Rendered by the V3 React shell from the same canonical data the live site uses.",
+    "tr": "V3 React shell tarafından, canlı sitenin kullandığı aynı canonical veriden render edildi."
+  },
+  "preview.badge": {
+    "en": "Engineering preview",
+    "tr": "Mühendislik önizlemesi"
+  },
+  "preview.notice": {
+    "en": "A design-system preview, not a public page. It is excluded from search engines and is not part of the live portfolio.",
+    "tr": "Herkese açık bir sayfa değil, tasarım sistemi önizlemesidir. Arama motorlarından hariç tutulur ve canlı portfolyonun parçası değildir."
+  },
+  "home.eyebrow": {
+    "en": "Portfolio Modernization V3",
+    "tr": "Portfolio Modernization V3"
+  },
+  "home.title": {
+    "en": "The design system behind the next portfolio.",
+    "tr": "Sıradaki portfolyonun arkasındaki tasarım sistemi."
+  },
+  "home.lead": {
+    "en": "Tokens, typography, surfaces and a reusable shell — built against real portfolio data so the system is proven before any public page depends on it.",
+    "tr": "Token'lar, tipografi, yüzeyler ve yeniden kullanılabilir bir shell — herkese açık hiçbir sayfa buna bağlanmadan önce sistem gerçek portfolyo verisiyle kanıtlanıyor."
+  },
+  "home.actionPrimary": {
+    "en": "See the principles",
+    "tr": "İlkeleri gör"
+  },
+  "home.actionSecondary": {
+    "en": "Switch theme to compare",
+    "tr": "Karşılaştırmak için tema değiştir"
+  },
+  "home.typographyHeading": {
+    "en": "Type scale",
+    "tr": "Tipografi ölçeği"
+  },
+  "home.typographyLead": {
+    "en": "One fluid scale drives every page. Headings are set tight; technical detail uses the mono register.",
+    "tr": "Tüm sayfaları tek bir akışkan ölçek yönetir. Başlıklar sıkı dizilir; teknik detay mono kaydı kullanır."
+  },
+  "home.actionsHeading": {
+    "en": "Actions and signals",
+    "tr": "Aksiyonlar ve sinyaller"
+  },
+  "home.actionsLead": {
+    "en": "Every action renders the element its behaviour requires — a link navigates, a button acts. Status chips carry meaning through tokens, not colour alone.",
+    "tr": "Her aksiyon davranışının gerektirdiği elemanı render eder — link gezinir, buton işlem yapar. Durum çipleri anlamı yalnızca renkle değil token'larla taşır."
+  },
+  "home.evidenceHeading": {
+    "en": "Evidence surfaces",
+    "tr": "Kanıt yüzeyleri"
+  },
+  "home.evidenceLead": {
+    "en": "The card language future project and case-study pages will use. Every fact below is read from the canonical portfolio data.",
+    "tr": "Gelecekteki proje ve vaka çalışması sayfalarının kullanacağı kart dili. Aşağıdaki her veri canonical portfolyo verisinden okunur."
+  },
+  "home.capabilitiesHeading": {
+    "en": "Capability chips",
+    "tr": "Yetkinlik çipleri"
+  },
+  "home.capabilitiesLead": {
+    "en": "Recruiter evidence focuses, straight from the registry — the same data that drives the live recruiter surfaces.",
+    "tr": "Doğrudan registry'den gelen işe alım kanıt odakları — canlı işe alım yüzeylerini besleyen veriyle aynı."
+  },
+  "home.stackLabel": {
+    "en": "Stack",
+    "tr": "Stack"
+  },
+  "type.display": {
+    "en": "Display",
+    "tr": "Display"
+  },
+  "type.heading": {
+    "en": "Heading",
+    "tr": "Başlık"
+  },
+  "type.body": {
+    "en": "Body",
+    "tr": "Gövde"
+  },
+  "type.eyebrow": {
+    "en": "Eyebrow",
+    "tr": "Üst başlık"
+  },
+  "type.sample": {
+    "en": "Reliable AI systems and product-minded software.",
+    "tr": "Güvenilir AI sistemleri ve ürün odaklı yazılım."
+  },
+  "about.title": {
+    "en": "How the system is built",
+    "tr": "Sistem nasıl kuruldu"
+  },
+  "about.lead": {
+    "en": "The rules the V3 design system holds itself to, and the data architecture underneath it.",
+    "tr": "V3 tasarım sisteminin kendine koyduğu kurallar ve altındaki veri mimarisi."
+  },
+  "about.principlesHeading": {
+    "en": "System principles",
+    "tr": "Sistem ilkeleri"
+  },
+  "about.principles.tokens": {
+    "en": "Components consume semantic tokens, never literal colours, so both themes can be designed rather than derived.",
+    "tr": "Bileşenler asla düz renk değil semantik token tüketir; böylece her iki tema türetilmek yerine tasarlanabilir."
+  },
+  "about.principles.semantics": {
+    "en": "Every control renders a real element. There are no simulated buttons and no placeholder links anywhere in the system.",
+    "tr": "Her kontrol gerçek bir eleman render eder. Sistemin hiçbir yerinde simüle buton veya yer tutucu link yoktur."
+  },
+  "about.principles.motion": {
+    "en": "Motion is state feedback only, in a 150–320 ms band, and no information ever depends on it.",
+    "tr": "Hareket yalnızca durum geri bildirimidir, 150–320 ms aralığındadır ve hiçbir bilgi ona bağlı değildir."
+  },
+  "about.principles.evidence": {
+    "en": "Visual effects never compete with portfolio evidence. Depth and accent are used to rank content, not to decorate it.",
+    "tr": "Görsel efektler portfolyo kanıtıyla asla yarışmaz. Derinlik ve vurgu içeriği süslemek için değil sıralamak için kullanılır."
+  },
+  "about.dataHeading": {
+    "en": "Data architecture",
+    "tr": "Veri mimarisi"
+  },
+  "about.data.canonical": {
+    "en": "Canonical JSON is the single source of portfolio truth for both architectures.",
+    "tr": "Canonical JSON, her iki mimari için tek portfolyo doğruluk kaynağıdır."
+  },
+  "about.data.generated": {
+    "en": "The legacy registry is generated from that JSON, so the live site keeps booting synchronously with no build step.",
+    "tr": "Legacy registry bu JSON'dan üretilir; böylece canlı site build adımı olmadan senkron açılmaya devam eder."
+  },
+  "about.data.react": {
+    "en": "React imports the same JSON at build time, which is what lets these pages pre-render with real content.",
+    "tr": "React aynı JSON'ı derleme zamanında import eder; bu sayfaların gerçek içerikle ön-render olmasını sağlayan şey budur."
+  },
+  "about.homeLink": {
+    "en": "Back to the system preview",
+    "tr": "Sistem önizlemesine dön"
+  },
+  "notFound.title": {
+    "en": "Preview route not found",
+    "tr": "Önizleme rotası bulunamadı"
+  },
+  "notFound.lead": {
+    "en": "This preview route does not exist. Use the navigation to return to a known route.",
+    "tr": "Bu önizleme rotası mevcut değil. Bilinen bir rotaya dönmek için navigasyonu kullanın."
+  },
+  "notFound.homeLink": {
+    "en": "Go to the system preview",
+    "tr": "Sistem önizlemesine git"
+  }
+}
