@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      This entry is an engineering migration proof, not a public page. It is
+      excluded from search engines, is not linked from any production surface,
+      and is not listed in sitemap.xml. Its build output goes to dist-react/,
+      which is git-ignored and therefore never published by GitHub Pages.
+    -->
+    <meta name="robots" content="noindex, nofollow" />
+    <title>React migration foundation | Kaan Balcı engineering preview</title>
+    <meta
+      name="description"
+      content="Engineering preview proving the React, Vite and React Router foundation running beside the existing kaanbalci.com static site."
+    />
+    <meta name="theme-color" content="#07111f" />
+
+    <!--
+      Same blocking theme script the production pages use, reading the same
+      storage key, so the preview cannot flash the wrong theme and cannot create
+      a competing preference. React reconciles its own state after hydration.
+    -->
+    <script>
+      (function () {
+        try {
+          var savedTheme = localStorage.getItem("kaanbalci-site-theme") || "dark";
+          document.documentElement.setAttribute("data-theme", savedTheme === "light" ? "light" : "dark");
+        } catch (error) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/main.jsx"></script>
+  </body>
+</html>
