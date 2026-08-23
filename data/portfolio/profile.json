@@ -1,0 +1,31 @@
+{
+  "name": "Kaan Balcı",
+  "primaryTitle": {
+    "en": "Forward Deployed Engineer",
+    "tr": "Forward Deployed Engineer"
+  },
+  "backgroundTitle": {
+    "en": "AI Designer & Software Developer",
+    "tr": "AI Designer & Software Developer"
+  },
+  "location": {
+    "en": "Istanbul / Remote",
+    "tr": "İstanbul / Remote"
+  },
+  "availability": {
+    "en": "Open for work",
+    "tr": "İşe açık"
+  },
+  "direction": {
+    "en": "Forward Deployed Engineer with evidence across Applied AI, AI reliability, solution engineering and product-minded software delivery.",
+    "tr": "Applied AI, AI reliability, solution engineering ve ürün odaklı yazılım geliştirme alanlarında kanıt sunan Forward Deployed Engineer."
+  },
+  "resume": "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing",
+  "linkedin": "https://www.linkedin.com/in/balcikaan/",
+  "github": "https://github.com/UAJOP",
+  "email": "mailto:kaanb8776@gmail.com",
+  "footerTagline": {
+    "en": "Forward Deployed Engineer building reliable AI systems and product-minded software.",
+    "tr": "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren Forward Deployed Engineer."
+  }
+}

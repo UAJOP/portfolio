@@ -1,0 +1,119 @@
+[
+  {
+    "date": "2026-08-23",
+    "area": "Portfolio",
+    "title": {
+      "en": "Shared shell and JSON data foundation V1",
+      "tr": "Shared shell ve JSON veri temeli V1"
+    },
+    "detail": {
+      "en": "Moved portfolio truth to a canonical JSON data layer, generated the legacy registry from the same source and established the reusable React shell and V3 design-system foundation without migrating public pages.",
+      "tr": "Portfolyo verisi canonical JSON veri katmanına taşındı, legacy registry aynı kaynaktan üretilir hale getirildi ve herkese açık sayfalar henüz taşınmadan reusable React shell ile V3 tasarım sistemi temeli kuruldu."
+    },
+    "status": "shipped"
+  },
+  {
+    "date": "2026-08-23",
+    "area": "Portfolio",
+    "title": {
+      "en": "React migration foundation V1",
+      "tr": "React migrasyon temeli V1"
+    },
+    "detail": {
+      "en": "Established a React, Vite and React Router foundation beside the existing site, proved build-time pre-rendering and left every public page unchanged.",
+      "tr": "Mevcut sitenin yanına React, Vite ve React Router temeli kuruldu, derleme zamanı ön-render kanıtlandı ve herkese açık tüm sayfalar değiştirilmeden bırakıldı."
+    },
+    "status": "shipped"
+  },
+  {
+    "date": "2026-08-23",
+    "area": "Portfolio",
+    "title": {
+      "en": "Asset and LCP optimization V1",
+      "tr": "Asset ve LCP optimizasyonu V1"
+    },
+    "detail": {
+      "en": "Reduced critical image transfer, added intrinsic dimensions and established blocking asset regression coverage without changing the visual system.",
+      "tr": "Görsel sistemi değiştirmeden kritik görsel transferi azaltıldı, intrinsic boyutlar eklendi ve blocking asset regression kapsamı oluşturuldu."
+    },
+    "status": "shipped"
+  },
+  {
+    "date": "2026-08-22",
+    "area": "Portfolio",
+    "title": {
+      "en": "Consistency, footer and QA hardening",
+      "tr": "Consistency, footer ve QA hardening"
+    },
+    "detail": {
+      "en": "Standardized the canonical site footer, refreshed portfolio truth and hardened the reproducible QA pipeline.",
+      "tr": "Canonical site footer standartlaştırıldı, portfolyo verisi tazelendi ve tekrarlanabilir QA pipeline güçlendirildi."
+    },
+    "status": "shipped"
+  },
+  {
+    "date": "2026-08-22",
+    "area": "Portfolio",
+    "title": {
+      "en": "Semantic card and accessibility cleanup",
+      "tr": "Semantic card ve erişilebilirlik temizliği"
+    },
+    "detail": {
+      "en": "Replaced simulated project-card links with native semantics and fixed accessible names that were being dropped.",
+      "tr": "Simüle edilmiş project-card link'leri native semantics ile değiştirildi ve düşen accessible name'ler düzeltildi."
+    },
+    "status": "shipped"
+  },
+  {
+    "date": "2026-08-22",
+    "area": "Portfolio",
+    "title": {
+      "en": "Architecture V2 production audit",
+      "tr": "Architecture V2 production audit"
+    },
+    "detail": {
+      "en": "Audited the V2 bootloader, both boot paths and the V2 runtime surfaces, then fixed the regressions found and added guards.",
+      "tr": "V2 bootloader'ı, her iki boot path'i ve V2 runtime yüzeyleri denetlendi; bulunan regression'lar düzeltildi ve guard'lar eklendi."
+    },
+    "status": "shipped"
+  },
+  {
+    "date": "2026-08-20",
+    "area": "Portfolio",
+    "title": {
+      "en": "Portfolio Architecture V2",
+      "tr": "Portfolio Architecture V2"
+    },
+    "detail": {
+      "en": "Centralized project truth, recruiter profiles, evidence and build status into one registry behind a compatibility bootloader.",
+      "tr": "Project truth, recruiter profilleri, evidence ve build status, uyumluluk bootloader'ı arkasında tek registry'de merkezileştirildi."
+    },
+    "status": "shipped"
+  },
+  {
+    "date": "2026-08-18",
+    "area": "SINAMA",
+    "title": {
+      "en": "Semantic Judge shadow integration",
+      "tr": "Semantic Judge shadow entegrasyonu"
+    },
+    "detail": {
+      "en": "Added an advisory semantic layer without letting it override deterministic reliability verdicts.",
+      "tr": "Deterministik reliability kararlarını değiştirmeyen advisory semantic katman eklendi."
+    },
+    "status": "integration"
+  },
+  {
+    "date": "2026-08-14",
+    "area": "Merge Rush",
+    "title": {
+      "en": "Gameplay pacing and retention pass",
+      "tr": "Gameplay pacing ve retention pass"
+    },
+    "detail": {
+      "en": "Deepened progression, board pressure and production architecture for the current game direction.",
+      "tr": "Güncel oyun yönünde progression, board pressure ve production architecture derinleştirildi."
+    },
+    "status": "building"
+  }
+]

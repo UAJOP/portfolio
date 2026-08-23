@@ -1,0 +1,233 @@
+{
+  "sinama": {
+    "id": "sinama",
+    "name": "SINAMA — AI Agent Reliability Lab",
+    "status": {
+      "en": "Live MVP",
+      "tr": "Canlı MVP"
+    },
+    "category": {
+      "en": "Applied AI / Reliability Engineering",
+      "tr": "Applied AI / Reliability Engineering"
+    },
+    "role": {
+      "en": "Product Designer & Full-Stack Developer",
+      "tr": "Product Designer & Full-Stack Developer"
+    },
+    "summary": {
+      "en": "A Turkish-first reliability lab for repeatable multi-turn agent testing, deterministic workflow evidence, regression comparison, version trends and release-readiness decisions.",
+      "tr": "Tekrarlanabilir multi-turn agent testleri, deterministik workflow kanıtı, regression karşılaştırması, version trendleri ve release-readiness kararları için Turkish-first reliability lab."
+    },
+    "stack": [
+      "Next.js",
+      "React",
+      "Python",
+      "FastAPI",
+      "PostgreSQL",
+      "AI Evaluation",
+      "Vercel",
+      "Railway"
+    ],
+    "proof": [
+      {
+        "en": "14-scenario typed cross-vertical suite",
+        "tr": "14 senaryolu typed cross-vertical suite"
+      },
+      {
+        "en": "Insurance + e-commerce reliability packs",
+        "tr": "Insurance + e-commerce reliability pack'leri"
+      },
+      {
+        "en": "Deterministic tool and workflow contracts",
+        "tr": "Deterministik tool ve workflow contract'ları"
+      },
+      {
+        "en": "Baseline/regression comparison and version trends",
+        "tr": "Baseline/regression karşılaştırması ve version trendleri"
+      },
+      {
+        "en": "READY / WARNING / BLOCKED release-readiness policy",
+        "tr": "READY / WARNING / BLOCKED release-readiness politikası"
+      },
+      {
+        "en": "Compatible external HTTPS agent testing",
+        "tr": "Uyumlu external HTTPS agent testing"
+      }
+    ],
+    "links": {
+      "caseStudy": "sinama-case-study.html",
+      "live": "https://sinama.kaanbalci.com",
+      "github": "https://github.com/UAJOP/sinama"
+    },
+    "currentFocus": {
+      "en": "Semantic-judge calibration and stabilization",
+      "tr": "Semantic-judge calibration ve stabilizasyon"
+    }
+  },
+  "mergeRush": {
+    "id": "mergeRush",
+    "name": "Merge Rush: Tiny Factory",
+    "status": {
+      "en": "Active Development",
+      "tr": "Aktif Geliştirme"
+    },
+    "category": {
+      "en": "Game Product Engineering",
+      "tr": "Oyun Ürünü Mühendisliği"
+    },
+    "role": {
+      "en": "Game Developer & Product Designer",
+      "tr": "Game Developer & Ürün Tasarımcısı"
+    },
+    "summary": {
+      "en": "A Phaser 3 + TypeScript merge-game product connecting timed orders, factory restoration, progressive board unlocks, multi-cell pieces and platform-aware architecture for a YouTube Playables direction.",
+      "tr": "Timed order'lar, fabrika onarımı, aşamalı board unlock, multi-cell parçalar ve YouTube Playables yönü için platform-aware mimariyi birleştiren Phaser 3 + TypeScript merge-game ürünü."
+    },
+    "stack": [
+      "Phaser 3",
+      "TypeScript",
+      "Vite",
+      "Vitest",
+      "Responsive UI",
+      "Game State",
+      "Platform Adapter"
+    ],
+    "proof": [
+      {
+        "en": "4-minute Factory Run target",
+        "tr": "4 dakikalık Factory Run hedefi"
+      },
+      {
+        "en": "5 restoration stages",
+        "tr": "5 fabrika onarım aşaması"
+      },
+      {
+        "en": "25 progressively unlocked board cells",
+        "tr": "Aşamalı açılan 25 board hücresi"
+      },
+      {
+        "en": "Factory Run + Endless modes",
+        "tr": "Factory Run + Endless modları"
+      },
+      {
+        "en": "Footprint-aware placement, merge and deadlock logic",
+        "tr": "Footprint-aware placement, merge ve deadlock mantığı"
+      },
+      {
+        "en": "Platform lifecycle, save, audio and language abstractions",
+        "tr": "Platform lifecycle, save, audio ve language abstraction'ları"
+      }
+    ],
+    "qaEvidence": [
+      {
+        "viewport": "1440×900",
+        "state": {
+          "en": "Wide live run",
+          "tr": "Wide canlı run"
+        }
+      },
+      {
+        "viewport": "390×844",
+        "state": {
+          "en": "Portrait mobile",
+          "tr": "Portrait mobil"
+        }
+      },
+      {
+        "viewport": "844×390",
+        "state": {
+          "en": "Landscape mobile",
+          "tr": "Landscape mobil"
+        }
+      },
+      {
+        "viewport": "768×768",
+        "state": {
+          "en": "Square / tablet",
+          "tr": "Square / tablet"
+        }
+      },
+      {
+        "viewport": "1262×624",
+        "state": {
+          "en": "Combo x2 state",
+          "tr": "Combo x2 state"
+        }
+      },
+      {
+        "viewport": "1440×900",
+        "state": {
+          "en": "Game-over state",
+          "tr": "Game-over state"
+        }
+      }
+    ],
+    "links": {
+      "caseStudy": "merge-rush-case-study.html",
+      "games": "games.html"
+    },
+    "currentFocus": {
+      "en": "Gameplay pacing, retention and production readiness",
+      "tr": "Gameplay pacing, retention ve production readiness"
+    }
+  },
+  "joyday": {
+    "id": "joyday",
+    "name": "Atölye Joyday Official Website",
+    "status": {
+      "en": "Live",
+      "tr": "Canlı"
+    },
+    "category": {
+      "en": "Real Business Product",
+      "tr": "Gerçek İşletme Ürünü"
+    },
+    "summary": {
+      "en": "A customer-facing workshop website with package discovery, reservation journeys and operational automation.",
+      "tr": "Paket keşfi, rezervasyon yolculukları ve operasyon otomasyonu içeren müşteriye dönük atölye web ürünü."
+    },
+    "links": {
+      "caseStudy": "atolye-joyday-case-study.html",
+      "live": "https://atolyejoyday.com/"
+    }
+  },
+  "chatbotFlow": {
+    "id": "chatbotFlow",
+    "name": "AI Chatbot Flow Design",
+    "status": {
+      "en": "Case Study",
+      "tr": "Case Study"
+    },
+    "category": {
+      "en": "Enterprise Conversational AI",
+      "tr": "Kurumsal Conversational AI"
+    },
+    "summary": {
+      "en": "Enterprise chatbot QA, stabilization, flow restructuring and multi-channel workflow evidence.",
+      "tr": "Kurumsal chatbot QA, stabilizasyon, flow restructuring ve multi-channel workflow kanıtı."
+    },
+    "links": {
+      "caseStudy": "project-detail.html?project=ai-chatbot-flow-design"
+    }
+  },
+  "hospital": {
+    "id": "hospital",
+    "name": "Hospital Form App",
+    "status": {
+      "en": "Source Archive",
+      "tr": "Kaynak Arşivi"
+    },
+    "category": {
+      "en": "C#/.NET Software",
+      "tr": "C#/.NET Yazılım"
+    },
+    "summary": {
+      "en": "A database-backed Windows Forms workflow project for patient, doctor, secretary and appointment operations.",
+      "tr": "Hasta, doktor, sekreter ve randevu operasyonları için veritabanı destekli Windows Forms workflow projesi."
+    },
+    "links": {
+      "caseStudy": "hospital-system-case-study.html",
+      "github": "https://github.com/UAJOP/Hospital-System"
+    }
+  }
+}
