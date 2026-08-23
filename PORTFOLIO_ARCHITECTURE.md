@@ -188,3 +188,53 @@ Before merge:
 `flagship-copy.js` was removed. Its responsibilities are now handled by the registry + V2 runtime.
 
 `legacy-script.js` is compatibility code, not the preferred home for new product facts. New current-state logic should enter through the registry or focused V2 modules first.
+
+## React Migration V3 — transitional architecture
+
+As of #23 this repository contains **two architectures at once**. That is intentional and temporary.
+
+### CURRENT — legacy static production
+
+Everything served from `kaanbalci.com` today:
+
+`portfolio-data.js → script.js bootloader → legacy-script.js → portfolio-v2.js`
+
+Flat `.html` files at the repository root, no build step, deployed by GitHub Pages. This is the production reference and remains authoritative until a page has been migrated and proven at parity.
+
+### PARALLEL — React/Vite foundation
+
+A React 19 + Vite 8 + React Router 7 foundation, isolated from production:
+
+- source in `src/react/`, with Vite rooted there so the repository root is not a Vite project
+- built by `npm run build:react` into `dist-react/`, which is git-ignored and therefore never published
+- mounted under `/react-preview/`, so it cannot resolve to a production route
+- `noindex`, absent from `sitemap.xml`, navigation, Recruiter Mode and Ajoop
+- pre-rendered to real HTML at build time, then hydrated
+
+It renders no production content. It exists to prove the architecture works before anything depends on it.
+
+### FUTURE — page-by-page migration
+
+Pages move one at a time, each in its own pull request, each preserving its existing public URL.
+
+The phase order is the locked master roadmap in [`REACT_MIGRATION_PLAN.md`](REACT_MIGRATION_PLAN.md) §4, which is the single authoritative statement of it. That roadmap runs every migration phase (#24–#30) before the first removal phase (#31), so the two architectures coexist for the whole migration and separate only at the end.
+
+### The rule that governs the transition
+
+> **A legacy implementation is removed only after the React implementation has proven parity — in content, truth, behavior, accessibility, metadata, URL and performance — and only in a separate pull request from the one that replaced it.**
+
+Nothing is deleted in the same change that replaces it. That keeps every phase reversible by reverting one merge commit.
+
+While both architectures exist, `portfolio-data.js` stays the single source of truth. The React tree carries a small parity fixture until the #24 JSON data foundation replaces it, and `qa-react-foundation.js` fails the build if that fixture drifts from the registry, so the two cannot diverge quietly.
+
+Removal is concentrated in **#31**, and only once the migration matrix shows zero remaining legacy usage: `legacy-script.js`, the compatibility layers and any duplicate legacy implementation go together, after everything has moved.
+
+### Why the preview does not use SPA routing
+
+GitHub Pages has no rewrite rules and no SPA fallback. A URL that has no file behind it returns `404.html`, whatever the client router would have done with it. Every migrated route therefore has to be pre-rendered to its own file — on this host that is what makes a route directly reachable at all, not a performance nicety.
+
+`vite dev` does answer unmatched paths with the entry HTML, which makes client-side routes look directly navigable. That is a development convenience and proves nothing about production. The preview server is deliberately configured not to do it, so it tests the real deployment behavior: exact file, directory index, or `404.html` with a genuine 404 status.
+
+### SEO under React
+
+Migrated pages keep the metadata contract the static pages already satisfy: `title`, `description`, `canonical`, OpenGraph and JSON-LD. Because these must be present in the served HTML rather than applied by script, they are emitted by the pre-render step per route, from the same route table the router uses. Client-side updates on navigation are an addition to that, never a replacement for it.

@@ -66,6 +66,21 @@ jobs:
           set -o pipefail
           npm run qa:spelling 2>&1 | tee qa-results/spelling.txt
 
+      # BLOCKING: this is also the JSX syntax and transform gate. Production JS is
+      # parsed by qa:js, but JSX cannot be checked that way, so a broken React
+      # source has to fail here instead.
+      - name: Build React migration foundation
+        run: |
+          set -o pipefail
+          npm run build:react 2>&1 | tee qa-results/react-build.txt
+
+      # BLOCKING: proves the build really pre-renders and that production files
+      # are untouched. Runs after the build because it inspects dist-react/.
+      - name: Check React foundation
+        run: |
+          set -o pipefail
+          npm run qa:react 2>&1 | tee qa-results/react-foundation.txt
+
       - name: Start local site
         run: |
           python3 -m http.server 4173 > qa-results/local-server.log 2>&1 &
@@ -78,9 +93,30 @@ jobs:
           cat qa-results/local-server.log
           exit 1
 
-      # BLOCKING: a real WCAG2AA failure must not be merged.
+      # BLOCKING: a real WCAG2AA failure must not be merged. This keeps auditing
+      # the 11 production pages; the preview is audited separately below so it
+      # adds coverage instead of displacing any.
       - name: Audit accessibility on mobile viewport
         run: npm run qa:a11y -- --json > qa-results/accessibility.json 2> qa-results/accessibility-errors.txt
+
+      - name: Start React preview server
+        run: |
+          npm run preview:react > qa-results/react-preview-server.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:4174/react-preview/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat qa-results/react-preview-server.log
+          exit 1
+
+      # BLOCKING: the new architecture must not start out less accessible than
+      # the one it will replace.
+      - name: Audit React preview accessibility
+        run: |
+          set -o pipefail
+          npm run qa:a11y:react 2>&1 | tee qa-results/react-accessibility.txt
 
       # REPORT-ONLY: performance depends on runner and third-party CDN latency,
       # so it must not gate merges. Scores are summarized and uploaded below.

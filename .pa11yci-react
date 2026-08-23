@@ -1,0 +1,14 @@
+{
+  "defaults": {
+    "standard": "WCAG2AA",
+    "timeout": 30000,
+    "wait": 750,
+    "viewport": { "width": 390, "height": 844 },
+    "chromeLaunchConfig": { "args": ["--no-sandbox", "--disable-setuid-sandbox"] }
+  },
+  "urls": [
+    "http://localhost:4174/react-preview/",
+    "http://localhost:4174/react-preview/about",
+    "http://localhost:4174/react-preview/does-not-exist"
+  ]
+}

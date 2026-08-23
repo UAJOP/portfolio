@@ -1,0 +1,389 @@
+/*
+ * Preview shell styling for the React migration foundation.
+ *
+ * Deliberately self-contained: it does NOT import style.css or portfolio-v2.css,
+ * because pulling the legacy stylesheets in would also pull in the assumptions of
+ * the legacy runtime and make the preview a poor test of isolation.
+ *
+ * The custom-property NAMES and VALUES are copied from style.css on purpose, so
+ * the preview reads as kaanbalci.com rather than a redesign, and so consolidating
+ * the two token sets in a later phase is a rename-free move.
+ */
+
+:root {
+  --bg: #07111f;
+  --bg-2: #0d1b2f;
+  --surface: rgba(12, 25, 43, 0.76);
+  --surface-2: rgba(18, 35, 58, 0.88);
+  --line: rgba(255, 255, 255, 0.12);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --text: #f8fbff;
+  --muted: #a8b7ca;
+  --brand: #38bdf8;
+  --brand-2: #818cf8;
+  /*
+   * Accent TEXT color, separate from --brand.
+   *
+   * --brand is tuned for borders, fills and focus rings, where contrast rules do
+   * not apply. Used as text on the light background it only reaches 3.9:1 and
+   * fails WCAG AA, so accent text gets its own value per theme. On dark, --brand
+   * itself is already well clear of AA.
+   */
+  --accent-ink: #38bdf8;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  /*
+   * The badge carries its own pair rather than reusing --brand-2. In dark theme
+   * --brand-2 is a light indigo (#818cf8), which gives white text only 2.87:1 and
+   * fails WCAG AA. This indigo holds ~6.1:1 against white and reads correctly on
+   * both the light and the dark page background, so it is intentionally NOT
+   * theme-dependent.
+   */
+  --badge-bg: #4f46e5;
+  --badge-ink: #f8fbff;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --max-width: 1180px;
+}
+
+html[data-theme="light"] {
+  --bg: #f7fbff;
+  --bg-2: #eef6ff;
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-2: rgba(255, 255, 255, 0.94);
+  --line: rgba(15, 23, 42, 0.12);
+  --line-strong: rgba(15, 23, 42, 0.22);
+  --text: #07111f;
+  --muted: #475569;
+  --brand: #0284c7;
+  --brand-2: #4f46e5;
+  /* 5.7:1 on the light background; #0284c7 would only reach 3.9:1. */
+  --accent-ink: #0369a1;
+  --shadow: 0 24px 80px rgba(15, 23, 42, 0.14);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34rem),
+    radial-gradient(circle at 80% 12%, rgba(129, 140, 248, 0.12), transparent 32rem),
+    linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 55%, var(--bg) 100%);
+  background-attachment: fixed;
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.rf-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Focus ---------------------------------------------------------------- */
+/* One visible focus treatment for every interactive element in the preview. */
+:where(a, button):focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.rf-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10;
+  padding: 0.75rem 1.25rem;
+  background: var(--brand);
+  color: #04121f;
+  font-weight: 700;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+
+.rf-skip-link:focus {
+  left: 0;
+}
+
+/* --- Header --------------------------------------------------------------- */
+.rf-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+}
+
+.rf-header-inner,
+.rf-main,
+.rf-footer {
+  width: min(100% - 3rem, var(--max-width));
+  margin-inline: auto;
+}
+
+.rf-header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 1.25rem;
+}
+
+.rf-identity p {
+  margin: 0;
+}
+
+.rf-brand {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.rf-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+
+.rf-background {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.rf-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rf-nav-link {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.rf-nav-link:hover {
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.rf-nav-link.is-active {
+  color: var(--text);
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+}
+
+.rf-controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rf-switch {
+  display: inline-flex;
+  padding: 3px;
+  gap: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.rf-switch-button {
+  /* Comfortably above the WCAG 2.2 24px target minimum on touch. */
+  min-height: 40px;
+  padding: 0.4rem 0.9rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rf-switch-button:hover {
+  color: var(--text);
+}
+
+.rf-switch-button.is-active {
+  background: var(--brand);
+  /* Fixed dark ink: the brand blue is light in both themes, so a token-based
+     color here would drop below AA in one of them. */
+  color: #04121f;
+}
+
+/* --- Main ----------------------------------------------------------------- */
+.rf-main {
+  flex: 1;
+  padding-block: 2.5rem 3.5rem;
+}
+
+.rf-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 2.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.rf-notice p {
+  margin: 0;
+}
+
+.rf-notice-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--badge-bg);
+  color: var(--badge-ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rf-notice-text {
+  flex: 1 1 20rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.rf-section + .rf-section {
+  margin-top: 2.75rem;
+}
+
+.rf-section h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.9rem, 4.5vw, 2.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.rf-section h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  letter-spacing: -0.01em;
+}
+
+.rf-lead {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.rf-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.rf-list li {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  max-width: 68ch;
+}
+
+.rf-inline-link {
+  color: var(--accent-ink);
+  font-weight: 700;
+  text-underline-offset: 4px;
+}
+
+/* --- Footer --------------------------------------------------------------- */
+.rf-footer {
+  padding-block: 2rem 2.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.rf-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rf-footer p {
+  margin: 0;
+}
+
+.rf-footer-brand {
+  font-weight: 800;
+}
+
+.rf-footer-tagline {
+  max-width: 46ch;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.rf-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rf-social-link {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.rf-social-link:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.rf-footer-note,
+.rf-copyright {
+  margin-top: 1.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.rf-copyright {
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 720px) {
+  .rf-header-inner,
+  .rf-footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

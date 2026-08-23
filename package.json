@@ -11,13 +11,25 @@
     "qa:html": "html-validate \"*.html\"",
     "qa:spelling": "cspell \"*.{html,md}\" --config cspell.json --no-progress --show-suggestions",
     "qa:a11y": "pa11y-ci --config .pa11yci",
-    "qa:lighthouse": "lhci autorun --config=lighthouserc.json"
+    "qa:lighthouse": "lhci autorun --config=lighthouserc.json",
+    "dev:react": "vite",
+    "build:react": "node scripts/prerender-react.mjs",
+    "preview:react": "vite preview",
+    "qa:react": "node qa-react-foundation.js",
+    "qa:a11y:react": "pa11y-ci --config .pa11yci-react"
   },
   "devDependencies": {
     "@cspell/dict-tr-tr": "3.0.6",
     "@lhci/cli": "0.15.1",
+    "@vitejs/plugin-react": "6.1.0",
     "cspell": "10.0.1",
     "html-validate": "11.6.2",
-    "pa11y-ci": "4.1.1"
+    "pa11y-ci": "4.1.1",
+    "vite": "8.2.2"
+  },
+  "dependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-router-dom": "7.18.2"
   }
 }

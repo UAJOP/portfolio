@@ -16,7 +16,10 @@ The workflow was originally report-first so a clean baseline could be establishe
 | Internal links | `npm run qa:links` | Page targets, anchors, footer brand links, recruiter role deep links and project slugs are all decided by this repository, so it cannot flake. |
 | HTML structural errors | `npm run qa:html` | `html-validate` exits non-zero only on structural errors, so this gates real breakage while intentional warnings still print. |
 | Spelling | `npm run qa:spelling` | The baseline is genuinely clean, so any new issue is a real mistake. |
-| Accessibility | `npm run qa:a11y` | A genuine WCAG 2 AA failure must not reach production. |
+| Accessibility | `npm run qa:a11y` | A genuine WCAG 2 AA failure must not reach production. Still covers the same 11 production pages. |
+| React foundation build | `npm run build:react` | Also the JSX gate: `qa:js` parses root files as classic scripts and cannot represent JSX, so a broken React source has to fail here. |
+| React foundation guard | `npm run qa:react` | Proves the build really pre-renders and that no production file was touched. |
+| React preview accessibility | `npm run qa:a11y:react` | The new architecture must not start out less accessible than the one it will replace. |
 
 ### Report-only
 
@@ -41,6 +44,10 @@ Download the `site-preflight-reports` artifact from a workflow run. It contains:
 - `accessibility-errors.txt`
 - `lighthouse.txt`
 - `lighthouse-summary.json`
+- `react-build.txt`
+- `react-foundation.txt`
+- `react-accessibility.txt`
+- `react-preview-server.log`
 - `local-server.log`
 
 The broken-link summary appears directly in the workflow run summary.
@@ -63,3 +70,23 @@ npm run qa:lighthouse
 ```
 
 Use `npm ci` rather than `npm install` so the pinned toolchain in `package-lock.json` is reproduced exactly.
+
+## React foundation checks
+
+The workflow runs the React steps in this order, after the deterministic static-site checks and before the accessibility pipeline:
+
+1. `npm run build:react` — Vite client build, SSR build, and pre-render of every preview route.
+2. `npm run qa:react` — inspects `dist-react/` and the repository.
+3. `npm run qa:a11y:react` — Pa11y against the running preview server.
+
+All three block. None of them changes an existing gate, and no existing blocking check was converted to `continue-on-error`. Lighthouse and the external link scan remain the only report-only checks.
+
+### Why the React build is the JSX gate
+
+`qa-js-syntax.js` parses every root-level `.js` file with `new vm.Script()`, because production loads those files directly with no build step. JSX is not valid script syntax, so forcing React sources through that check would be meaningless. `vite build` performs the real syntax and transform validation instead, and it blocks.
+
+For the same reason the React tooling deliberately avoids adding root-level `.js` files: `vite.config.mjs` uses the `.mjs` extension and the pre-render script lives in `scripts/`, so neither is picked up by the production glob. `qa-react-foundation.js` *is* a root `.js` file and is intentionally CommonJS, so it passes `qa:js` like every other guard.
+
+### Production coverage is not displaced
+
+`qa:a11y` and Lighthouse still audit the same 11 production pages. The preview has its own config (`.pa11yci-react`) covering its three routes, so it adds coverage rather than replacing any. `qa-react-foundation.js` asserts both URL lists still have 11 entries and that neither contains a preview URL, so this cannot regress silently.

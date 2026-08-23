@@ -127,6 +127,37 @@ These stay **report-only** because they depend on the network or runner load:
 
 See [`SITE_PREFLIGHT.md`](SITE_PREFLIGHT.md) for the enforcement rationale and [`QA_BASELINE.md`](QA_BASELINE.md) for the current measured baseline.
 
+## React migration foundation
+
+As of #23 the repository also contains a React foundation, running **beside** the production site rather than replacing any part of it.
+
+Nothing public changed. Every page listed above is still served by the existing static architecture, and the React preview is `noindex`, unlinked and absent from `sitemap.xml`.
+
+- source: `src/react/` (Vite is rooted there, so the repository root stays a plain static site)
+- output: `dist-react/`, git-ignored, so GitHub Pages cannot publish it
+- mounted under `/react-preview/`, never at a production route
+- pre-rendered to real HTML at build time, then hydrated
+
+```bash
+npm run dev:react
+```
+
+```bash
+npm run build:react
+```
+
+```bash
+npm run preview:react
+```
+
+```bash
+npm run qa:react
+```
+
+`npm run build:react`, `npm run qa:react` and `npm run qa:a11y:react` are **blocking** in CI. The React build doubles as the JSX syntax gate, because `qa:js` parses root files as classic scripts and cannot represent JSX.
+
+See [`REACT_MIGRATION_PLAN.md`](REACT_MIGRATION_PLAN.md) for the phase plan, the parity rules and the static/pre-render policy.
+
 ## Deployment
 
 The repository is configured for GitHub Pages with the custom domain in `CNAME`.
