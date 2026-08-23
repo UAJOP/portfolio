@@ -59,10 +59,6 @@
     "en": "See the principles",
     "tr": "İlkeleri gör"
   },
-  "home.actionSecondary": {
-    "en": "Switch theme to compare",
-    "tr": "Karşılaştırmak için tema değiştir"
-  },
   "home.typographyHeading": {
     "en": "Type scale",
     "tr": "Tipografi ölçeği"
@@ -178,5 +174,45 @@
   "notFound.homeLink": {
     "en": "Go to the system preview",
     "tr": "Sistem önizlemesine git"
+  },
+  "shell.skipLink": {
+    "en": "Skip to main content",
+    "tr": "Ana içeriğe geç"
+  },
+  "footer.rights": {
+    "en": "All rights reserved.",
+    "tr": "Tüm hakları saklıdır."
+  },
+  "specimen.actions": {
+    "en": "Actions",
+    "tr": "Aksiyonlar"
+  },
+  "specimen.signals": {
+    "en": "Signals",
+    "tr": "Sinyaller"
+  },
+  "specimen.actionPrimary": {
+    "en": "Primary",
+    "tr": "Birincil"
+  },
+  "specimen.actionSecondary": {
+    "en": "Secondary",
+    "tr": "İkincil"
+  },
+  "specimen.actionQuiet": {
+    "en": "Quiet",
+    "tr": "Sessiz"
+  },
+  "about.countProjects": {
+    "en": "projects",
+    "tr": "proje"
+  },
+  "about.countLabs": {
+    "en": "labs",
+    "tr": "lab"
+  },
+  "about.registryLabel": {
+    "en": "registry",
+    "tr": "registry"
   }
 }

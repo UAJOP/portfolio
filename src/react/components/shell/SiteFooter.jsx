@@ -51,7 +51,9 @@ export default function SiteFooter({ closingNote }) {
             A fixed year, not new Date(): the build and the browser can disagree
             across a year boundary, which would be a real hydration mismatch.
           */}
-          <p>© 2026 {profile.name}. All rights reserved.</p>
+          <p>
+            © 2026 {profile.name}. {t("footer.rights")}
+          </p>
           <p>{profile.location[language] || profile.location.en}</p>
         </div>
       </Container>

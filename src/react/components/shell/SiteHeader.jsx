@@ -62,7 +62,15 @@ export default function SiteHeader({ navItems = [], navLabel, brandTo = "/" }) {
           <img className="v3-brand-mark" src={logoUrl} alt="" width="128" height="128" />
           <span className="v3-brand-text">
             <span className="v3-brand-name">{profile.name}</span>
-            <span className="v3-brand-title">{profile.primaryTitle.en}</span>
+            {/*
+              Read through the active language even though both current values
+              are identical. The data contract is bilingual, so the component
+              honours it rather than pinning itself to .en and quietly breaking
+              the day a translation differs.
+            */}
+            <span className="v3-brand-title">
+              {profile.primaryTitle[language] || profile.primaryTitle.en}
+            </span>
           </span>
         </NavLink>
 

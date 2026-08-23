@@ -144,7 +144,9 @@ What shipped:
 - React imports the same JSON at build time through Vite's `@data` alias; `src/react/data/foundation.js` is deleted.
 - React-shell strings moved to `data/i18n/react-shell.json`.
 
-Both architectures now read the same bytes, so drift is structurally impossible rather than guarded against.
+Both architectures now **originate from the same canonical JSON source**. React consumes it directly; the legacy runtime consumes a deterministic generated compatibility artifact whose parity is enforced by `qa:data`.
+
+The guarantee is therefore three parts — one canonical source, a deterministic generator, and a blocking stale-artifact check — not the two runtimes literally reading the same file. That distinction matters: the artifact is committed, so it *can* be edited by hand, and `qa:data` is what makes that fail rather than ship.
 
 `experience` was **not** created. No structured experience dataset existed in the registry, and #24 did not invent one; it enters the data layer only when extracted from existing truthful content.
 

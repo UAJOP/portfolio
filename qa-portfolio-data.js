@@ -56,9 +56,14 @@ const isBilingual = (value) =>
 
 async function main() {
   // --- Canonical JSON parses -----------------------------------------------
-  const { CANONICAL_FILES, composePortfolio, renderRegistrySource, normalizeEol } = await import(
-    "./scripts/portfolio-data-model.mjs"
-  );
+  const {
+    CANONICAL_FILES,
+    COMPOSED_PROFILE_KEYS,
+    PROFILE_COMPOSITION,
+    composePortfolio,
+    renderRegistrySource,
+    normalizeEol,
+  } = await import("./scripts/portfolio-data-model.mjs");
 
   CANONICAL_FILES.forEach((name) => {
     const file = `${DATA_DIR}/${name}`;
@@ -69,6 +74,23 @@ async function main() {
     } catch (error) {
       failures.push(`${file} is not valid JSON: ${error.message}`);
     }
+  });
+
+  // The directory and the manifest must describe each other exactly. Without
+  // this, a new canonical domain file could be added and then silently ignored
+  // by both the composer and this guard.
+  const onDisk = fs
+    .readdirSync(path.join(__dirname, DATA_DIR))
+    .filter((name) => name.endsWith(".json"))
+    .sort();
+  onDisk.forEach((name) => {
+    check(
+      CANONICAL_FILES.includes(name),
+      `${DATA_DIR}/${name} is not listed in CANONICAL_FILES, so nothing composes or checks it`,
+    );
+  });
+  CANONICAL_FILES.forEach((name) => {
+    check(onDisk.includes(name), `CANONICAL_FILES lists ${name}, which does not exist on disk`);
   });
 
   check(exists(I18N_FILE), `${I18N_FILE} is missing`);
@@ -119,8 +141,67 @@ async function main() {
     }
   }
 
+  // --- Composition contract -------------------------------------------------
+  // Closes a common-mode failure. The staleness check above compares the
+  // generated artifact against composePortfolio(), so if a field were added to
+  // profile.json and the composer forgot it, both sides would agree and CI would
+  // pass while canonical data was silently dropped. These checks read the RAW
+  // JSON, which the composer does not control.
+  const rawProfile = JSON.parse(read(`${DATA_DIR}/profile.json`));
+  const rawProfileKeys = Object.keys(rawProfile);
+  const composedProfileKeys = Object.keys(composed.profile);
+  const derivedKeys = Object.keys(PROFILE_COMPOSITION.derived);
+
+  rawProfileKeys.forEach((key) => {
+    check(
+      composedProfileKeys.includes(key),
+      `profile.json defines "${key}" but composePortfolio() never places it — the field would be silently discarded`,
+    );
+    check(
+      PROFILE_COMPOSITION.passthrough.includes(key),
+      `profile.json defines "${key}", which is not in the declared composition contract; add it to PROFILE_COMPOSITION.passthrough and to the composer`,
+    );
+  });
+
+  PROFILE_COMPOSITION.passthrough.forEach((key) => {
+    check(rawProfileKeys.includes(key), `composition contract expects profile.json to define "${key}"`);
+  });
+
+  composedProfileKeys.forEach((key) => {
+    check(
+      rawProfileKeys.includes(key) || derivedKeys.includes(key),
+      `composed profile exposes "${key}", which is neither stored in profile.json nor declared as derived`,
+    );
+  });
+
+  derivedKeys.forEach((key) => {
+    check(
+      !rawProfileKeys.includes(key),
+      `"${key}" is derived from ${PROFILE_COMPOSITION.derived[key]}, so storing it in profile.json creates a second editable source`,
+    );
+    check(composedProfileKeys.includes(key), `derived profile field "${key}" is missing from the composed object`);
+  });
+
+  // Key order is part of the generated-artifact contract, not a formatting
+  // preference: the artifact is compared byte-for-byte.
+  check(
+    composedProfileKeys.join(",") === COMPOSED_PROFILE_KEYS.join(","),
+    `composed profile key order drifted from the contract:\n    expected ${COMPOSED_PROFILE_KEYS.join(",")}\n    actual   ${composedProfileKeys.join(",")}`,
+  );
+
   // --- Protected product truth ---------------------------------------------
   const profile = composed.profile;
+
+  // The legacy registry exposes these URLs twice; socials.json is the only
+  // place either is stored, so the two views must agree by construction.
+  check(
+    profile.github === profile.socials.github,
+    `profile.github (${profile.github}) must be derived from socials.github (${profile.socials.github})`,
+  );
+  check(
+    profile.linkedin === profile.socials.linkedin,
+    `profile.linkedin (${profile.linkedin}) must be derived from socials.linkedin (${profile.socials.linkedin})`,
+  );
 
   check(profile.primaryTitle?.en === CANONICAL_PRIMARY_TITLE, "profile.primaryTitle.en has drifted from the canonical target title");
   check(profile.primaryTitle?.tr === CANONICAL_PRIMARY_TITLE, "profile.primaryTitle.tr has drifted from the canonical target title");
@@ -290,6 +371,72 @@ async function main() {
   check(exists(i18nModule), `${i18nModule} is missing`);
   if (exists(i18nModule)) {
     check(read(i18nModule).includes("@data/i18n/react-shell.json"), `${i18nModule} must read the canonical i18n JSON`);
+  }
+
+  // Every i18n key the React tree asks for must exist, and every key defined
+  // must still be used. A missing key renders as the raw key in the UI; an
+  // orphan key is dead translation work that will rot.
+  if (exists(I18N_FILE)) {
+    const strings = JSON.parse(read(I18N_FILE));
+    const reactFiles = [];
+    const walk = (dir) => {
+      fs.readdirSync(path.join(__dirname, dir), { withFileTypes: true }).forEach((entry) => {
+        const next = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) walk(next);
+        else if (/\.jsx?$/.test(entry.name)) reactFiles.push(next);
+      });
+    };
+    walk("src/react");
+
+    const source = reactFiles.map(read).join("\n");
+    // Any dotted logical identifier counts as an i18n-key reference. Keys are
+    // also passed indirectly — collected in arrays and mapped through t(), or
+    // carried on the route table as navKey — so matching only t("literal")
+    // would report those as orphans. Crucially, this scan does NOT filter
+    // through the JSON first: deleting a still-used key must remain detectable.
+    // File names such as index.html are excluded from the key-shaped matches.
+    // `*` not `+`: an empty attribute such as alt="" must still match, or the
+    // quote pairing desynchronizes and every literal after it is misread.
+    const translationKey = /^[a-z][A-Za-z0-9]*(?:\.[A-Za-z][A-Za-z0-9]*)+$/;
+    const fileName = /\.(?:html|jsx?|css|json|svg|webp|png|ico)$/i;
+    const used = new Set(
+      [...source.matchAll(/"([^"\\]*)"/g)]
+        .map((match) => match[1])
+        .filter((value) => translationKey.test(value) && !fileName.test(value)),
+    );
+
+    used.forEach((key) => {
+      check(Object.hasOwn(strings, key), `React asks for i18n key "${key}", which ${I18N_FILE} does not define`);
+    });
+    Object.keys(strings).forEach((key) => {
+      check(used.has(key), `${I18N_FILE} defines "${key}", which nothing in src/react uses`);
+    });
+
+    // Human-facing shell copy must not be hard-coded. These are the literals
+    // that were found outside i18n during review; the check keeps them out.
+    const shellFiles = reactFiles.filter((file) => file.includes("/components/shell/"));
+    const untranslated = ["Skip to main content", "All rights reserved"];
+    shellFiles.forEach((file) => {
+      const text = read(file);
+      untranslated.forEach((literal) => {
+        check(
+          !text.includes(`>${literal}`) && !text.includes(`"${literal}"`),
+          `${file} hard-codes English UI copy "${literal}"; move it to ${I18N_FILE}`,
+        );
+      });
+    });
+
+    // The shell must read bilingual product truth through the active language
+    // rather than pinning itself to one side of the pair.
+    // Positive assertion rather than banning ".en": `[language] || .en` is the
+    // correct hydration-safe form, and it legitimately contains ".en".
+    const header = "src/react/components/shell/SiteHeader.jsx";
+    if (exists(header)) {
+      check(
+        read(header).includes("profile.primaryTitle[language]"),
+        `${header} must render primaryTitle through the active language, not pinned to one side of the pair`,
+      );
+    }
   }
 
   // --- Editing workflow is documented where it will be seen -----------------

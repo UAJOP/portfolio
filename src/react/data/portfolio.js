@@ -24,8 +24,20 @@ import sinamaEvidence from "@data/portfolio/sinama-evidence.json";
 
 export { meta, projects, recruiterProfiles, buildLog, labs, sinamaEvidence };
 
-/** Profile with its socials spliced back in, matching the registry shape. */
-export const profile = { ...profileFields, socials: socialUrls };
+/**
+ * Profile in the registry shape.
+ *
+ * `github` and `linkedin` are DERIVED from socials.json, exactly as the legacy
+ * composer derives them. They are not stored in profile.json: the registry
+ * exposes both URLs twice, and storing them twice would give GitHub and LinkedIn
+ * two editable sources. socials.json is the only place either is written.
+ */
+export const profile = {
+  ...profileFields,
+  github: socialUrls.github,
+  linkedin: socialUrls.linkedin,
+  socials: socialUrls,
+};
 
 /**
  * Display names for the canonical social destinations.

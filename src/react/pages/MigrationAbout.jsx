@@ -64,9 +64,15 @@ export default function MigrationAbout() {
 
         {/* Counted from the canonical data, so these cannot drift from reality. */}
         <div className="v3-cluster v3-cluster--sm" style={{ marginTop: "var(--space-5)" }}>
-          <Badge tech>registry {meta.version}</Badge>
-          <Badge tech>{projectList.length} projects</Badge>
-          <Badge tech>{labs.length} labs</Badge>
+          <Badge tech>
+            {t("about.registryLabel")} {meta.version}
+          </Badge>
+          <Badge tech>
+            {projectList.length} {t("about.countProjects")}
+          </Badge>
+          <Badge tech>
+            {labs.length} {t("about.countLabs")}
+          </Badge>
         </div>
       </section>
 

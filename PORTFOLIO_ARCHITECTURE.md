@@ -33,8 +33,8 @@ The canonical data layer. One file per domain:
 | File | Owns |
 |---|---|
 | `meta.json` | registry version and `updatedAt` |
-| `profile.json` | name, titles, location, availability, direction, resume, contact |
-| `socials.json` | the five canonical public destinations |
+| `profile.json` | name, titles, location, availability, direction, resume, email |
+| `socials.json` | the five canonical public destinations — **the only place a social URL is stored** |
 | `projects.json` | project truth: status, category, role, summary, stack, proof, links |
 | `recruiter-profiles.json` | capability-focused evidence profiles |
 | `build-log.json` | build checkpoints |
@@ -42,6 +42,20 @@ The canonical data layer. One file per domain:
 | `sinama-evidence.json` | sanitized SINAMA Evidence Explorer examples |
 
 Bilingual values keep the shape they have always had — `{ "en": …, "tr": … }` — so the migration changed the storage format and nothing else.
+
+### Derived fields
+
+The legacy registry exposes GitHub and LinkedIn **twice** — as `profile.github` / `profile.linkedin` and again inside `profile.socials`. Storing them twice in the canonical layer would have left those two URLs with two editable sources, which is the exact drift this data layer exists to remove.
+
+So they are stored **once**, in `socials.json`, and the composer derives the flat fields from it:
+
+```
+profile.github   ← socials.github
+profile.linkedin ← socials.linkedin
+profile.socials  ← socials.json
+```
+
+The generated artifact keeps its original shape and key positions; only the number of editable sources changed. `qa:data` asserts the derived fields equal their source, that `profile.json` does not reintroduce them, and that no composed field is either undeclared or silently dropped.
 
 `experience` is deliberately **absent**. No structured experience dataset existed in the registry, and #24 did not invent one. It enters the data layer only when extracted from existing truthful portfolio content.
 
@@ -258,7 +272,7 @@ The phase order is the locked master roadmap in [`REACT_MIGRATION_PLAN.md`](REAC
 
 Nothing is deleted in the same change that replaces it. That keeps every phase reversible by reverting one merge commit.
 
-While both architectures exist, `portfolio-data.js` stays the single source of truth. The React tree carries a small parity fixture until the #24 JSON data foundation replaces it, and `qa-react-foundation.js` fails the build if that fixture drifts from the registry, so the two cannot diverge quietly.
+While both architectures exist, the JSON under `data/portfolio/` stays the one editable canonical source. React imports it directly at build time; the legacy runtime reads the committed `portfolio-data.js` compatibility artifact generated from it. `qa:data` blocks a stale or semantically different artifact, so the two paths cannot diverge quietly.
 
 Removal is concentrated in **#31**, and only once the migration matrix shows zero remaining legacy usage: `legacy-script.js`, the compatibility layers and any duplicate legacy implementation go together, after everything has moved.
 
@@ -295,7 +309,9 @@ portfolio-data.js   (committed, classic script)
 window.KAAN_PORTFOLIO   (synchronous, unchanged contract)
 ```
 
-The runtime contract is byte-for-byte what it was: a classic script that assigns a frozen `window.KAAN_PORTFOLIO` before anything reads it. No consumer changed, and no page changed.
+The **runtime contract and the semantic registry shape are unchanged**: a classic script that assigns a frozen `window.KAAN_PORTFOLIO` before anything reads it, with the same object shape, the same values and the same top-level freeze behavior. No consumer changed, and no page changed.
+
+The **file itself is not** byte-for-byte what it was — it was regenerated and is now serialized rather than hand-written. What is guaranteed is semantic parity, verified by evaluating both objects and deep-comparing them, key order included.
 
 ### Generation is deterministic
 
@@ -315,7 +331,9 @@ The comparison normalizes line endings. This repository uses `* text=auto`, so a
 
 `src/react/data/portfolio.js` imports the canonical files through Vite's `@data` alias, at **build time**. Nothing in the React tree fetches portfolio data at runtime — the pre-render step has to see it while generating HTML, and a runtime fetch would produce empty pre-rendered pages.
 
-The temporary parity fixture from #23 (`src/react/data/foundation.js`) is deleted, as the migration plan promised. Both architectures now read the same bytes, so drift is structurally impossible rather than merely guarded against.
+The temporary parity fixture from #23 (`src/react/data/foundation.js`) is deleted, as the migration plan promised.
+
+Both architectures now **originate from the same canonical JSON source**. React consumes it directly; the legacy runtime consumes a deterministic generated compatibility artifact whose parity is enforced by `qa:data`. That is a guarantee built from three parts — one canonical source, a deterministic generator, and a blocking stale-artifact check — rather than the two runtimes literally reading the same file.
 
 React-shell UI strings moved the same way, into `data/i18n/react-shell.json`. This covers the React shell and its preview only — the production translation system in `legacy-script.js` is untouched, and page copy migrates with each page.
 

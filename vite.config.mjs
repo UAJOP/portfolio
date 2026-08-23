@@ -64,9 +64,14 @@ function staticHostingEmulation() {
       // static and fallback middleware, so this decides the outcome first.
       server.middlewares.use((req, res, next) => {
         const requestPath = decodeURIComponent((req.url || "/").split("?")[0]);
-        if (!requestPath.startsWith(REACT_BASE)) return next();
+        // React Router normalizes the basename without a trailing slash for a
+        // link to "/". Treat that URL as the preview root too, or a reload after
+        // using the System link falls through to Vite's base-URL warning page.
+        const baseWithoutTrailingSlash = REACT_BASE.slice(0, -1);
+        const isPreviewRoot = requestPath === baseWithoutTrailingSlash;
+        if (!isPreviewRoot && !requestPath.startsWith(REACT_BASE)) return next();
 
-        const relative = requestPath.slice(REACT_BASE.length);
+        const relative = isPreviewRoot ? "" : requestPath.slice(REACT_BASE.length);
         const isFile = (candidate) => {
           const resolved = path.join(REACT_OUT_DIR, candidate);
           // Refuse anything that escapes the build output.

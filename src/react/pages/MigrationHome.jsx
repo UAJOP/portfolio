@@ -103,16 +103,16 @@ export default function MigrationHome() {
           <div className="v3-grid">
             <Surface padding="lg">
               <div className="v3-stack">
-                <p className="v3-eyebrow">Actions</p>
+                <p className="v3-eyebrow">{t("specimen.actions")}</p>
                 <div className="v3-cluster">
                   <Action to="/about" variant="primary">
-                    Primary
+                    {t("specimen.actionPrimary")}
                   </Action>
                   <Action to="/about" variant="secondary">
-                    Secondary
+                    {t("specimen.actionSecondary")}
                   </Action>
                   <Action to="/about" variant="quiet" arrow>
-                    Quiet
+                    {t("specimen.actionQuiet")}
                   </Action>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export default function MigrationHome() {
 
             <Surface padding="lg">
               <div className="v3-stack">
-                <p className="v3-eyebrow">Signals</p>
+                <p className="v3-eyebrow">{t("specimen.signals")}</p>
                 <div className="v3-cluster v3-cluster--sm">
                   <Badge tone="success" dot>
                     {local(lead.status)}

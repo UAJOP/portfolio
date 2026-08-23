@@ -67,11 +67,14 @@ export function composePortfolio() {
       availability: profile.availability,
       direction: profile.direction,
       resume: profile.resume,
-      linkedin: profile.linkedin,
-      github: profile.github,
+      // DERIVED, not stored. The legacy registry exposes these two URLs both
+      // here and under `socials`, so storing them twice would leave GitHub and
+      // LinkedIn with two editable sources — exactly the drift this data layer
+      // exists to remove. socials.json is the single canonical source; these
+      // fields are projections of it, kept at their original key positions.
+      linkedin: socials.linkedin,
+      github: socials.github,
       email: profile.email,
-      // Kept in its own file because it is the most protected data in the
-      // registry; spliced back in at its original position here.
       socials,
       footerTagline: profile.footerTagline,
     },
@@ -84,10 +87,40 @@ export function composePortfolio() {
 }
 
 /**
- * The profile fields the composer above places by hand. The guard uses this to
- * fail if a field is added to profile.json but never reaches the composed
- * object, which is the one way this explicit ordering could silently lose data.
+ * The composition contract for `profile`, exported so the guard can enforce it
+ * rather than trust it.
+ *
+ * This exists to close a common-mode failure. `composePortfolio()` places every
+ * profile field by hand, and the guard compares the generated artifact against
+ * that same function's output — so if a field were added to profile.json and the
+ * composer forgot it, expected and actual would still agree and CI would pass
+ * while canonical data was silently discarded.
+ *
+ * `qa-portfolio-data.js` reads the raw JSON and checks it against these lists,
+ * which is a source the composer does not control.
  */
+export const PROFILE_COMPOSITION = {
+  /** Copied straight from profile.json. Every raw key must appear here. */
+  passthrough: [
+    "name",
+    "primaryTitle",
+    "backgroundTitle",
+    "location",
+    "availability",
+    "direction",
+    "resume",
+    "email",
+    "footerTagline",
+  ],
+  /** Present in the composed object but NOT stored in profile.json. */
+  derived: {
+    socials: "socials.json",
+    github: "socials.json:github",
+    linkedin: "socials.json:linkedin",
+  },
+};
+
+/** Full composed key order, which is part of the generated-artifact contract. */
 export const COMPOSED_PROFILE_KEYS = [
   "name",
   "primaryTitle",
