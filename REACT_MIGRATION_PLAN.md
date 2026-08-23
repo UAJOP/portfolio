@@ -48,8 +48,8 @@ This is the locked master roadmap for Portfolio Modernization V3, agreed with th
 
 | Phase | Title | Scope |
 |---|---|---|
-| **#23** | React Migration Foundation V1 | React + Vite + Router + isolated pre-render foundation. |
-| #24 | Shared Shell + JSON Data Foundation | Header/Footer/shared shell, central JSON data foundation, profile/socials/projects/experience/build-log/i18n migration strategy and parity with `portfolio-data.js`. |
+| #23 | React Migration Foundation V1 — **done** | React + Vite + Router + isolated pre-render foundation. |
+| **#24** | Shared Shell + JSON Data Foundation — **this phase** | Header/Footer/shared shell, central JSON data foundation, profile/socials/projects/experience/build-log/i18n migration strategy and parity with `portfolio-data.js`. |
 | #25 | Home + About React Migration | First real public React pages with visual/content/behavior/SEO parity. |
 | #26 | Works + Games React Migration | ProjectCard, JSON-driven rendering, filters/search and data-driven project UI. |
 | #27 | Recruiter Mode + Build Log React Migration | Recruiter Mode V2, role/evidence deep links and Build Log. |
@@ -119,18 +119,36 @@ This matters more than it first appears:
 
 ## 8. Data migration policy
 
-Today's truth lives in `portfolio-data.js` as a frozen browser global (`window.KAAN_PORTFOLIO`). A Vite module graph cannot import a global, which is why #23 uses a small parity fixture — and why `qa-react-foundation.js` fails the build if that fixture drifts from the registry.
+**Done in #24.** Recorded here as implemented, not as planned.
 
-The JSON data foundation in **#24** converts the registry, alongside that phase's shared-shell work:
+Before #24, truth lived in `portfolio-data.js` as a frozen browser global (`window.KAAN_PORTFOLIO`). A Vite module graph cannot import a global, which is why #23 carried a temporary parity fixture.
 
-- A central JSON data foundation becomes the single source of truth, covering profile, socials, projects, experience, build log and i18n.
-- A small adapter assigns it to `window.KAAN_PORTFOLIO` so the legacy runtime keeps working unchanged — parity with `portfolio-data.js` is a requirement of that phase, not a later cleanup.
-- React imports the JSON directly.
-- `src/react/data/foundation.js` is deleted.
+#24 inverted the direction rather than making the legacy runtime fetch JSON:
 
-Both architectures then read the same bytes, so drift becomes structurally impossible rather than guarded against. Until #24 lands, **no new portfolio fact may be added to the React tree** — it goes in `portfolio-data.js` first.
+```
+data/portfolio/*.json          canonical source
+        ↓  npm run data:generate
+portfolio-data.js              generated, committed, classic script
+        ↓
+window.KAAN_PORTFOLIO          synchronous, contract unchanged
+```
 
-Translations move the same way, and later: `legacy-script.js` holds two large lookup objects plus the `data-pv2-en` / `data-pv2-tr` attribute pattern. The preview's `src/react/data/translations.js` is shaped as a flat `key -> { en, tr }` map specifically so it can be serialized to JSON unchanged.
+A runtime fetch was rejected deliberately. GitHub Pages serves the repository directly with no build step, and every consumer — Recruiter Mode, Ajoop, Build Log, Labs, the SINAMA Evidence Explorer — reads the registry synchronously during boot. Fetching would have made the whole legacy runtime asynchronous to solve a problem the generator solves at build time.
+
+What shipped:
+
+- Eight canonical JSON files under `data/portfolio/`, one per domain, extracted **programmatically** from the live registry so no fact was re-typed.
+- `scripts/portfolio-data-model.mjs` — the single definition of how JSON composes into the legacy shape, imported by both the generator and the guard.
+- `portfolio-data.js` generated and **committed**, because the committed file is what Pages actually serves.
+- `qa-portfolio-data.js` — blocking; fails on a stale artifact and never regenerates it.
+- React imports the same JSON at build time through Vite's `@data` alias; `src/react/data/foundation.js` is deleted.
+- React-shell strings moved to `data/i18n/react-shell.json`.
+
+Both architectures now read the same bytes, so drift is structurally impossible rather than guarded against.
+
+`experience` was **not** created. No structured experience dataset existed in the registry, and #24 did not invent one; it enters the data layer only when extracted from existing truthful content.
+
+The production translation system in `legacy-script.js` is untouched. Its two large lookup objects and the `data-pv2-en` / `data-pv2-tr` attribute pattern migrate with the pages that use them, not in one sweep. The JSON i18n file uses the same flat `key -> { en, tr }` shape so that migration is a move rather than a reshape.
 
 ## 9. Legacy removal policy
 

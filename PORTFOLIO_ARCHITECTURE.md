@@ -8,11 +8,44 @@ The previous structure duplicated current project truth across HTML pages, the m
 
 ## Source-of-truth rule
 
-For new portfolio work, **current product facts, recruiter profiles, build status and evidence summaries live in `portfolio-data.js` first**.
+Since #24 the canonical source of portfolio truth is **JSON**, under `data/portfolio/`.
 
-Do not add a new SINAMA / Merge Rush fact directly to Ajoop or Recruiter Mode without first adding it to the registry.
+`portfolio-data.js` is now a **generated compatibility artifact**. Do not edit it by hand: the next generation overwrites the change, and `npm run qa:data` fails on a stale or hand-edited file.
 
-### `portfolio-data.js`
+The workflow for any product fact is:
+
+1. edit the relevant file under `data/portfolio/`
+2. regenerate the legacy registry:
+
+```bash
+npm run data:generate
+```
+
+3. commit the JSON change **and** the regenerated `portfolio-data.js`
+4. verify with `npm run qa:data`
+
+Do not add a new SINAMA / Merge Rush fact directly to Ajoop or Recruiter Mode without first adding it to the canonical JSON.
+
+### `data/portfolio/*.json`
+
+The canonical data layer. One file per domain:
+
+| File | Owns |
+|---|---|
+| `meta.json` | registry version and `updatedAt` |
+| `profile.json` | name, titles, location, availability, direction, resume, contact |
+| `socials.json` | the five canonical public destinations |
+| `projects.json` | project truth: status, category, role, summary, stack, proof, links |
+| `recruiter-profiles.json` | capability-focused evidence profiles |
+| `build-log.json` | build checkpoints |
+| `labs.json` | Labs catalog |
+| `sinama-evidence.json` | sanitized SINAMA Evidence Explorer examples |
+
+Bilingual values keep the shape they have always had — `{ "en": …, "tr": … }` — so the migration changed the storage format and nothing else.
+
+`experience` is deliberately **absent**. No structured experience dataset existed in the registry, and #24 did not invent one. It enters the data layer only when extracted from existing truthful portfolio content.
+
+### `portfolio-data.js` (generated)
 
 Owns:
 
@@ -238,3 +271,64 @@ GitHub Pages has no rewrite rules and no SPA fallback. A URL that has no file be
 ### SEO under React
 
 Migrated pages keep the metadata contract the static pages already satisfy: `title`, `description`, `canonical`, OpenGraph and JSON-LD. Because these must be present in the served HTML rather than applied by script, they are emitted by the pre-render step per route, from the same route table the router uses. Client-side updates on navigation are an addition to that, never a replacement for it.
+
+## Canonical data layer (#24)
+
+### Why the legacy registry is generated rather than fetched
+
+GitHub Pages serves this repository's files directly. There is no build step before deployment, so the legacy runtime cannot fetch its data:
+
+```js
+// Never do this in the legacy runtime.
+const data = await fetch("data/portfolio/profile.json");
+```
+
+That would make the registry asynchronous, and every consumer — Recruiter Mode, Ajoop, the Build Log, Labs, the SINAMA Evidence Explorer — currently reads `window.KAAN_PORTFOLIO` synchronously during boot.
+
+So the direction is inverted instead. JSON is the source; `portfolio-data.js` is generated from it and **committed**:
+
+```
+data/portfolio/*.json
+        ↓  npm run data:generate
+portfolio-data.js   (committed, classic script)
+        ↓
+window.KAAN_PORTFOLIO   (synchronous, unchanged contract)
+```
+
+The runtime contract is byte-for-byte what it was: a classic script that assigns a frozen `window.KAAN_PORTFOLIO` before anything reads it. No consumer changed, and no page changed.
+
+### Generation is deterministic
+
+`scripts/portfolio-data-model.mjs` is the single definition of how the JSON composes into the legacy shape, including **key order** — the generated file is compared byte-for-byte, so order is part of the contract rather than a formatting preference. Both the generator and `qa-portfolio-data.js` import that one module, so the file that ships and the file that is checked cannot disagree about what correct means.
+
+Same JSON in, byte-identical file out.
+
+### A stale artifact fails the build
+
+`npm run qa:data` verifies that the committed `portfolio-data.js` matches what the canonical JSON would generate. It **never regenerates**. If the two diverge, CI fails and a developer must run `npm run data:generate` and commit the result.
+
+Regenerating in CI and passing would defeat the point: the committed artifact is what GitHub Pages actually serves, so it is the thing that has to be correct in the repository.
+
+The comparison normalizes line endings. This repository uses `* text=auto`, so a Windows checkout is CRLF while the generator emits LF; comparing raw bytes would fail on one platform and pass on the other.
+
+### React consumes the same JSON
+
+`src/react/data/portfolio.js` imports the canonical files through Vite's `@data` alias, at **build time**. Nothing in the React tree fetches portfolio data at runtime — the pre-render step has to see it while generating HTML, and a runtime fetch would produce empty pre-rendered pages.
+
+The temporary parity fixture from #23 (`src/react/data/foundation.js`) is deleted, as the migration plan promised. Both architectures now read the same bytes, so drift is structurally impossible rather than merely guarded against.
+
+React-shell UI strings moved the same way, into `data/i18n/react-shell.json`. This covers the React shell and its preview only — the production translation system in `legacy-script.js` is untouched, and page copy migrates with each page.
+
+## Shared React shell (#24)
+
+`src/react/components/shell/` holds production-intended components, not preview proofs:
+
+- `SiteShell` — landmarks: skip link, header, `main`, footer, plus a `banner` slot
+- `SiteHeader` — brand, navigation, language and theme controls
+- `SiteFooter` — brand, positioning line, canonical destinations
+
+The shell holds **no route literals**. Navigation arrives through `navItems` and the brand destination through `brandTo`, which is the single property that lets #25 mount production routes in the same components without editing them.
+
+Preview-only chrome (`PreviewNotice`) lives in `src/react/components/preview/` and is passed through the `banner` slot, so removing the preview touches no shell component. `qa-react-foundation.js` enforces both rules.
+
+The visual system those components are built from is documented in [`V3_DESIGN_SYSTEM.md`](V3_DESIGN_SYSTEM.md).

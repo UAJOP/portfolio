@@ -10,6 +10,7 @@ The workflow was originally report-first so a clean baseline could be establishe
 
 | Check | Command | Why it blocks |
 |---|---|---|
+| Portfolio data contract | `npm run qa:data` | The canonical JSON is the source of truth and `portfolio-data.js` is generated from it. A stale artifact must fail, not be regenerated: the committed file is what GitHub Pages serves. |
 | JavaScript syntax | `npm run qa:js` | The compatibility bootloader loads these files at runtime; there is no build step to catch a syntax error. |
 | Portfolio consistency | `npm run qa:portfolio` | Guards the V2 architecture, boot order, canonical footer, portfolio truth and QA reproducibility. |
 | Asset performance policy | `npm run qa:assets` | Guards referenced asset existence, intrinsic image dimensions, critical image budgets and intentional loading priority. |
@@ -36,6 +37,7 @@ HTML validation currently reports **3 warnings and 0 errors**. All three are `ar
 
 Download the `site-preflight-reports` artifact from a workflow run. It contains:
 
+- `portfolio-data.txt`
 - `html-validation.txt`
 - `spelling.txt`
 - `asset-policy.txt`
@@ -90,3 +92,21 @@ For the same reason the React tooling deliberately avoids adding root-level `.js
 ### Production coverage is not displaced
 
 `qa:a11y` and Lighthouse still audit the same 11 production pages. The preview has its own config (`.pa11yci-react`) covering its three routes, so it adds coverage rather than replacing any. `qa-react-foundation.js` asserts both URL lists still have 11 entries and that neither contains a preview URL, so this cannot regress silently.
+
+## Portfolio data contract (#24)
+
+`npm run qa:data` runs first in the workflow, because every later check reads the registry it guards.
+
+It **verifies** the committed `portfolio-data.js` against the canonical JSON; it never regenerates it. If they diverge the build fails and a developer must run:
+
+```bash
+npm run data:generate
+```
+
+and commit the result. Regenerating inside CI and passing would defeat the purpose — GitHub Pages serves the committed artifact directly, so that file is what has to be correct in the repository.
+
+Alongside staleness it enforces the protected product truth: the Forward Deployed Engineer primary title, the background descriptor, the five canonical social URLs, the bilingual footer positioning, bilingual field structure, project id/key agreement, recruiter evidence referring only to projects that exist, unique lab ids, resolvable internal links, and that nothing resembling a local path or credential has entered the public data.
+
+The staleness comparison normalizes line endings. This repository uses `* text=auto`, so a Windows checkout is CRLF while the generator emits LF; comparing raw bytes would fail on one platform and pass on the other.
+
+Five deliberate regressions were injected to confirm the guard fails on each: a stale artifact, a wrong primary title, a non-canonical social URL, recruiter evidence citing a missing project, and malformed JSON. All five exited non-zero.
