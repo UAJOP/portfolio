@@ -74,7 +74,13 @@ for (const name of core.ANALYTICS_EVENT_NAMES) {
 ok("no duplicate custom page_view event", !core.ANALYTICS_EVENT_NAMES.has("page_view"));
 
 check("provider is Umami", config.provider, "umami");
-check("production website ID is deliberately unconfigured", config.websiteId, "");
+// The website ID is a public, non-secret identifier and is now configured for
+// production. It is asserted by shape, not by literal value, so rotating the ID
+// stays a one-line config change.
+ok(
+  "production website ID is a valid public UUIDv4",
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(config.websiteId),
+);
 check("provider script uses HTTPS", new URL(config.scriptUrl).protocol, "https:");
 check("provider is restricted to two production domains", config.domains.length, 2);
 ok("provider excludes raw search parameters", config.excludeSearch === true);
@@ -86,13 +92,39 @@ const validConfig = {
   ...config,
   websiteId: "00000000-0000-4000-8000-000000000000",
 };
+// Guarded against a synthetic config rather than the live one, so the invariant
+// keeps holding now that production is actually configured.
+for (const [label, websiteId] of [
+  ["missing", ""],
+  ["whitespace", "   "],
+  ["placeholder", "USER_CONFIG_REQUIRED"],
+  ["malformed", "bd717aec-2bde-40ff-b55a"],
+]) {
+  ok(
+    `${label} website ID keeps production disabled`,
+    !core.hasProductionAnalyticsConfiguration(
+      { ...config, websiteId },
+      { protocol: "https:", hostname: "kaanbalci.com" },
+    ),
+  );
+}
 ok(
-  "missing website ID keeps production disabled",
-  !core.hasProductionAnalyticsConfiguration(config, {
+  "the live configuration enables the production domain",
+  core.hasProductionAnalyticsConfiguration(config, {
     protocol: "https:",
     hostname: "kaanbalci.com",
   }),
 );
+for (const location of [
+  { protocol: "http:", hostname: "localhost" },
+  { protocol: "http:", hostname: "127.0.0.1" },
+  { protocol: "file:", hostname: "" },
+]) {
+  ok(
+    `${location.protocol}//${location.hostname || "file"}: live config still no-ops locally`,
+    !core.hasProductionAnalyticsConfiguration(config, location),
+  );
+}
 ok(
   "valid public website ID enables the production domain",
   core.hasProductionAnalyticsConfiguration(validConfig, {
@@ -382,5 +414,5 @@ if (failures.length) {
 
 console.log(
   `Analytics contracts passed. ${passed} assertions · ${requiredEvents.length} events · ` +
-    `${catalog.slugs.size} canonical project identifiers · production configuration required.`,
+    `${catalog.slugs.size} canonical project identifiers · production website ID configured.`,
 );
