@@ -10,6 +10,7 @@
     "qa:links": "node qa-internal-links.js",
     "qa:html": "html-validate \"*.html\"",
     "qa:spelling": "cspell \"*.{html,md}\" --config cspell.json --no-progress --show-suggestions",
+    "qa:audit": "node scripts/site-audit.mjs",
     "qa:a11y": "pa11y-ci --config .pa11yci",
     "qa:lighthouse": "lhci autorun --config=lighthouserc.json",
     "data:generate": "node scripts/generate-portfolio-data.mjs",

@@ -1,0 +1,335 @@
+# kaanbalci.com Regression Checklist
+
+Manual regression pass for the static site. Companion to [`portfolio-baseline-audit.md`](portfolio-baseline-audit.md).
+
+**Baseline captured at:** `45d477a` on branch `audit/portfolio-baseline-v1`, 2026-08-29.
+**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`).
+
+## How to use this
+
+Run the automated layer first, then walk the manual checks:
+
+```bash
+node scripts/site-audit.mjs
+```
+
+```bash
+npm run qa:ajoop
+```
+
+```bash
+npm run qa:request
+```
+
+```bash
+npm run qa
+```
+
+Serve locally for the manual checks:
+
+```bash
+npx --yes http-server -p 4173 -c-1
+```
+
+### Legend
+
+- `[ ]` — expected to pass. A failure here is a **new regression**.
+- **KNOWN BASELINE FAILURE** — fails today, on purpose. Confirm it *still fails in the same way*; do not tick it. If one starts passing, the underlying bug was fixed — update this file and the audit.
+- ~~Struck-through baseline results~~ — a former known failure that has since been fixed. The old result is kept so a re-regression is recognisable.
+- **UNVERIFIED** — not confirmed at baseline. Establish the result on first run, then treat as a normal check.
+
+Checks marked ✅ **verified at baseline** were confirmed in a browser or by script on 2026-08-29.
+
+---
+
+## Automated gate
+
+- [ ] `node scripts/site-audit.mjs` exits `0` — ✅ *0 failures, 14 warnings after BRIEF 00.1 (was 15 at baseline)*
+- [ ] Warning count is **14** or lower (social-metadata coverage only). A rise means new metadata drift.
+- [ ] `npm run qa:ajoop` passes — ✅ *294 assertions across 19 intents (added in BRIEF 00.1)*
+- [ ] `npm run qa:request` passes — ✅ *84 assertions, no network calls (added in BRIEF 00.2)*
+- [ ] `node qa-js-syntax.js` passes — ✅ *baseline: 19 files*
+- [ ] `node qa-assets.js` passes — ✅ *baseline: 63 assets*
+- [ ] `node qa-internal-links.js` passes — ✅ *baseline: 453 references*
+- [ ] `node qa-portfolio-data.js` passes (canonical JSON ↔ generated `portfolio-data.js` parity)
+- [ ] `npm run qa:html` passes — UNVERIFIED at baseline
+- [ ] `npm run qa:spelling` passes — UNVERIFIED at baseline
+- [ ] `npm run qa:a11y` (pa11y) — UNVERIFIED at baseline; establish a result
+
+> After editing any `data/portfolio/*.json`, run `npm run data:generate` and commit the regenerated `portfolio-data.js`. Never hand-edit that file.
+
+---
+
+## Global
+
+- [ ] Homepage loads — ✅ *verified at baseline*
+- [ ] No unexpected console error on `index.html` — ✅ *verified: zero errors*
+- [ ] Desktop navigation works
+- [ ] Mobile navigation opens/closes; toggle updates `aria-expanded` — ✅ *verified at 375 px*
+- [ ] TR → EN switch
+- [ ] EN → TR switch
+- [ ] Language persists across navigation (`localStorage["kaanbalci-site-language"]`)
+- [ ] `<html lang>` updates to match the active language
+- [ ] Dark/light theme toggle
+- [ ] Theme persists across navigation (`localStorage["kaanbalci-site-theme"]`)
+- [ ] **No flash of wrong theme** on reload — the pre-paint `<head>` script handles this
+- [ ] Recruiter Mode opens and closes
+- [ ] Recruiter Mode persistence — **KNOWN BASELINE FAILURE (P2-7):** it does **not** persist. Only `kaanbalci-site-theme` and `kaanbalci-site-language` are stored; the mode resets on every navigation and reload. Expected behaviour today.
+- [ ] Command Palette opens with `Ctrl/Cmd+K`
+- [ ] Command Palette: `SINAMA` (uppercase) matches the SINAMA command — ✅ *expected to PASS; the palette uses locale-independent `.toLowerCase()`*
+- [ ] Site renders with `localStorage` blocked (theme falls back to dark, no crash)
+
+### Known non-blocking baseline condition
+
+- **Flash of wrong language (P2-3):** the pre-paint script restores theme only. A returning Turkish visitor sees English content on first paint on every page, until `legacy-script.js` runs. Expected today — do not log as new.
+
+---
+
+## Ajoop assistant
+
+- [ ] Assistant launcher is visible and the panel opens
+- [ ] Panel has `role="dialog"`, `aria-modal="true"`
+- [ ] Normal intent matching works (lowercase)
+- [ ] Unknown intent returns the fallback answer
+- [ ] Quick-action buttons answer their intent
+- [ ] Assistant language follows the site language switch
+
+### Intent matrix
+
+Covered automatically:
+
+```bash
+npm run qa:ajoop
+```
+
+To spot-check the live runtime, run this in the browser console on any page:
+
+```js
+["sinama","SINAMA","ai","AI","github","GITHUB","email","hiring"].map(q => [q, detectChatbotIntent(q)])
+```
+
+> **P1-1 and P1-2 were fixed by BRIEF 00.1 — Ajoop Intent Matching Reliability Hotfix.**
+> The rows below were **KNOWN BASELINE FAILURES** at `45d477a` and are now expected to **pass**. The historical baseline result is kept in the table so a re-regression is recognisable. All rows are also asserted automatically by `npm run qa:ajoop`.
+
+| Input | Expected intent | Baseline (`45d477a`) | Now |
+|---|---|---|---|
+| `sinama` | `sinama` | `sinama` | - [ ] passes |
+| `SINAMA` | `sinama` | ~~`default`~~ *(was P1-1)* | - [ ] passes |
+| `Sinama` | `sinama` | `sinama` | - [ ] passes |
+| `ai` | `ai` | `ai` | - [ ] passes |
+| `AI` | `ai` | ~~`default`~~ *(was P1-1)* | - [ ] passes |
+| `github` | `projects` | `projects` | - [ ] passes |
+| `GITHUB` | `projects` | ~~`default`~~ *(was P1-1)* | - [ ] passes |
+| `EMAIL` | `cv` | ~~`default`~~ *(was P1-1)* | - [ ] passes |
+| `HIRING` | `availability` | ~~`default`~~ *(was P1-1)* | - [ ] passes |
+| `email` | `cv` | ~~`ai`~~ *(was P1-2)* | - [ ] passes — **must not** resolve to `ai` |
+| `hiring` | `availability` | ~~`greeting`~~ *(was P1-2)* | - [ ] passes — **must not** resolve to `greeting` |
+| `Tell me about SINAMA` | `sinama` | — | - [ ] passes |
+| `What is your GitHub?` | `projects` | — | - [ ] passes |
+| `iletişim` | `cv` | `cv` | - [ ] passes |
+| `İLETİŞİM` | `cv` | `cv` | - [ ] passes |
+| `iletisim` (no diacritics) | `cv` | *(no match)* | - [ ] passes |
+| `merge rush` | `mergeRush` | `mergeRush` | - [ ] passes |
+| `zxcvbnm qwerty` | `default` | `default` | - [ ] fallback still works |
+
+### Additional collision guards
+
+- [ ] `email` does not false-positive into `ai`
+- [ ] `hiring` does not false-positive into `greeting`
+- [ ] `robot` does not match `bot`
+- [ ] `kontrol` does not match `rol`
+- [ ] `knowledge` does not match `now`
+- [ ] `profit` does not match `fit`
+- [ ] Short keywords still match as whole words: `hi` → `greeting`, `cv` → `cv`, `telegram bot` → `ai`
+
+### Turkish normalization
+
+- [ ] `EĞİTİM` / `eğitim` / `egitim` → `education`
+- [ ] `SERTİFİKA` / `sertifika` / `sertifikalar` → `certificates`
+- [ ] `OYUN` / `oyun` / `oyunlar` → `games`
+- [ ] `HAKKINDA` / `hakkında` → `about`
+- [ ] Agglutinated forms resolve: `projeler` → `projects`, `sinamayı anlat` → `sinama`
+- [ ] English `is` does **not** trigger `availability` via the Turkish keyword `iş`
+- [ ] Turkish `iş` / `İŞ` still matches `availability`
+
+### Multi-word phrases
+
+- [ ] `merge rush`, `tiny factory` → `mergeRush`
+- [ ] `ai flow puzzle` → `games`
+- [ ] `work history` → `experience`
+- [ ] `hava durumu` → `weather`
+- [ ] `forward deployed`, `software engineer` → `roles`
+- [ ] Non-adjacent phrase words do **not** match (`factory that does merge things` ≠ `mergeRush`)
+
+**How the fix works.** `detectChatbotIntent` now normalizes and tokenizes both sides through one layer (`legacy-script.js`, marked `ajoop-intent-matching`):
+
+- `normalizeIntentText()` — case-folds without `toLocaleLowerCase`, unifying dotted/dotless i so `SINAMA` → `sinama` and `İLETİŞİM` → `iletişim`.
+- `foldIntentText()` — additionally strips combining marks so `iletisim` also agrees.
+- `matchesKeyword()` — matches whole tokens or consecutive token runs. Keywords of 1–2 chars compare diacritic-sensitively, 3 chars exactly, 4+ chars by prefix (so Turkish suffixes resolve).
+
+> **Do not "simplify" this to `.toLowerCase()`.** That maps `İ` to `i` + U+0307 and breaks every Turkish keyword. `npm run qa:ajoop` and `scripts/site-audit.mjs` both fail if `toLocaleLowerCase("tr-TR")` reappears in executable code.
+
+**Intent priority was not changed** by BRIEF 00.1. Note that the runtime keyword map is assembled across **two** files: `legacy-script.js` declares the base intents and `portfolio-v2.js` (lines 255–258) upserts `sinama`, `mergeRush`, `roles` and `latestBuild`, promoting `roles` to the front. Changes to either file can shift intent priority.
+
+---
+
+## Projects
+
+- [ ] `works.html` renders project cards
+- [ ] Category filtering works
+- [ ] Project search filters cards (locale-independent; unaffected by the Ajoop bug)
+- [ ] Project card → navigates to the correct project
+- [ ] Query-string routing: `project-detail.html?project=<slug>` resolves
+- [ ] All 11 `projectDetailData` slugs resolve
+- [ ] All 14 `githubRepositoryProjectDetails` slugs resolve
+- [ ] Unknown slug degrades gracefully (no blank page, no console error)
+- [ ] GitHub CTA present and correct on project detail
+- [ ] Live demo CTA present where the project has one
+- [ ] Translated project data switches with the site language
+- [ ] `window.KAAN_PORTFOLIO` is defined before `portfolio-v2.js` runs
+- [ ] Resume/CV links resolve through the single `resumeLink` constant (no hardcoded Drive URLs)
+
+---
+
+## Games
+
+- [ ] Games catalog (`games.html`) renders — ✅ *verified at baseline*
+- [ ] Career Adventure boots — ✅ *verified: no console errors*
+- [ ] AI Flow Puzzle boots — ✅ *verified: no console errors*
+- [ ] Joyday Paint boots — ✅ *verified: canvas 900×900, `touch-action: none`, no console errors*
+- [ ] Each game's reset/restart control works
+- [ ] Touch interaction works on a real touch device (drawing, dragging, tapping)
+- [ ] Keyboard controls work where the game offers them
+- [ ] Game layout is usable at 375 px
+- [ ] Joyday Paint: strokes land under the pointer at small viewport widths — **UNVERIFIED at baseline.** The canvas has a fixed 900×900 backing store scaled by CSS; check for coordinate mismatch after **any** CSS change near the canvas.
+- [ ] No global CSS from `style.css` visibly breaks game layout
+- [ ] Game pages still boot if the shared runtime changes (each loads the full `legacy-script.js` first)
+
+---
+
+## Request form
+
+- [ ] `request.html` loads — ✅ *verified*
+- [ ] Required-field validation blocks an empty submit (`name`, `email`, `serviceType`, `details`, `consent`) — ✅ *verified: 0 requests dispatched*
+- [ ] Unchecked consent blocks submission — ✅ *verified: 0 requests dispatched*
+- [ ] Invalid email is rejected by `type="email"`
+- [ ] Submit does not crash; button disables and relabels during flight — ✅ *verified*
+- [ ] Success path shows the success state and resets the form — ✅ *verified*
+- [ ] Error path shows the error state (see the state table below)
+- [ ] Honeypot (`company_website`) stays hidden and is not tab-reachable
+- [ ] `mailto:` fallback link works
+- [ ] Google Form fallback link works
+- [ ] Status region announces via `aria-live="polite"`
+- [ ] Missing/placeholder endpoint falls back to prefilled `mailto:` with a warning state
+
+> **P1-3 was fixed by BRIEF 00.2 — Request Submission Reliability.**
+> ~~Success was not verifiable: `mode: "no-cors"` made an Apps Script `500` resolve exactly like success.~~ The endpoint turned out to be CORS-readable, so `no-cors` was removed. Success now requires a non-opaque response, a 2xx status, parseable JSON, and an explicit `{ ok: true }`.
+
+### Submission result states
+
+Automated coverage:
+
+```bash
+npm run qa:request
+```
+
+| Scenario | Expected state | Form values |
+|---|---|---|
+| HTTP 2xx + `{"ok":true}` | **success** | cleared |
+| HTTP 500 / 4xx | **error** | preserved |
+| HTTP 200 + `{"ok":false}` | **error** | preserved |
+| HTTP 200 + malformed / HTML body | **error** | preserved |
+| Network failure (`fetch` rejects) | **error** | preserved |
+| Timeout (> 20 s) | **error** | preserved |
+| Opaque response | **error** — never success | preserved |
+
+- [ ] Confirmed server rejection does **not** show success — ✅ *verified in browser (HTTP 500 → error)*
+- [ ] Application rejection (`{ok:false}`) does **not** show success — ✅ *verified in browser*
+- [ ] Malformed response does **not** show success — ✅ *verified in browser*
+- [ ] Network error does **not** show success — ✅ *verified in browser*
+- [ ] Timeout does **not** show success — ✅ *covered by `qa:request` (browser check skipped: 20 s wait)*
+- [ ] Failed submission preserves every field including the consent checkbox — ✅ *verified in browser*
+- [ ] Confirmed success resets the form — ✅ *verified in browser (only on `{"ok":true}`)*
+- [ ] Retry after a failure works (button re-enabled, label restored) — ✅ *verified in browser*
+- [ ] Duplicate submits blocked while in flight — ✅ *verified: 3 rapid submits → 1 request*
+- [ ] Submit button enters and leaves the pending state (`aria-busy`, disabled, "Sending request...") — ✅ *verified in browser*
+- [ ] No `no-cors` false-success regression — ✅ *`qa:request` fails if `no-cors` reappears in executable code*
+- [ ] No console errors on `request.html` — ✅ *verified*
+
+> **Endpoint contract.** The deployed Apps Script returns `{ ok: true }` on success and `{ ok: false, error }` on failure, over `Content-Type: application/json` with `Access-Control-Allow-Origin: *` on both the `302` and the final `script.googleusercontent.com` hop. **If that contract changes, the form will correctly start reporting errors.** Re-verify with a safe `GET` probe, which is non-destructive (`doGet` neither writes to the sheet nor sends mail):
+
+```bash
+curl -sL "$(grep -o 'https://script.google.com[^\"]*' request-config.js)"
+```
+
+> **Do not switch the request to `mode: "no-cors"`** to "fix" a CORS error. That reintroduces P1-3 — silently confirming leads that were never stored. If CORS breaks, fix the endpoint or surface an honest error instead.
+
+---
+
+## SEO
+
+- [ ] All 19 pages have exactly one `<h1>` — ✅ *verified*
+- [ ] All 19 pages have a `<title>` — ✅ *verified*
+- [ ] All 19 pages have a meta description — ✅ *verified*
+- [ ] All 18 indexable pages have a self-referential canonical — ✅ *verified*
+- [ ] `404.html` has **no** canonical — ✅ *verified (correct)*
+- [ ] `sitemap.xml` lists 17 URLs, all resolving to real files — ✅ *verified*
+- [ ] `sitemap.xml` omits only `404.html` and `project-detail.html` — ✅ *verified (both correct)*
+- [ ] `games.html` is present in the sitemap — ✅ *verified present*
+- [ ] `robots.txt` allows crawling and declares the sitemap — ✅ *verified*
+- [ ] `project-detail.html` remains `noindex, follow`
+- [ ] Social metadata present where expected (14 coverage warnings at baseline — see the audit §6)
+- [ ] JSON-LD parses on the 6 pages that carry it (`index` + 5 case studies)
+
+---
+
+## Accessibility
+
+- [ ] Every `<img>` has an `alt` attribute — ✅ *verified: zero exceptions*
+- [ ] No duplicate element IDs on any page — ✅ *verified*
+- [ ] Keyboard: full nav reachable by Tab, focus visible
+- [ ] Ajoop panel traps focus and closes on `Escape`
+- [ ] Case-study gallery modal traps focus and closes on `Escape`
+- [ ] `prefers-reduced-motion: reduce` suppresses animation
+- [ ] Skip link present on the 5 case-study pages — ✅ *verified*
+- [ ] Skip link coverage — **KNOWN BASELINE GAP (P2-2):** only 5 of 19 pages. Absent from the homepage, all three game pages, and every other page. Expected today.
+- [ ] Touch targets meet minimum size — UNVERIFIED at baseline
+- [ ] Canvas games offer a text or keyboard alternative — UNVERIFIED at baseline
+
+---
+
+## Responsive
+
+- [ ] 320 px: no horizontal overflow — ✅ *verified on homepage*
+- [ ] 375 px: no horizontal overflow — ✅ *verified on homepage*
+- [ ] 768 px: no horizontal overflow — ✅ *verified on homepage*
+- [ ] 1024 px and desktop: no horizontal overflow
+- [ ] Hero, cards, modals and long content reflow cleanly at each width
+- [ ] Project detail pages reflow cleanly
+- [ ] Forms usable at 375 px
+- [ ] Sticky/fixed elements do not cover content at small heights
+- [ ] `.profile-glow` overflow at 320 px stays clipped (cosmetic, P3-4)
+
+---
+
+## External dependencies
+
+- [ ] Site remains usable if `unpkg.com` fails — icons disappear sitewide; **it is render-blocking in `<head>` on all 19 pages** (P2-6)
+- [ ] Site remains readable if Google Fonts fails (system-font fallback)
+- [ ] Resume link resolves — UNVERIFIED (no outbound requests made at baseline)
+- [ ] External project links resolve — UNVERIFIED
+
+---
+
+## Post-change smoke test
+
+Minimum pass after touching `legacy-script.js`, `style.css` or `script.js` — all three load on **every** page, so any edit is a sitewide edit:
+
+1. `node scripts/site-audit.mjs` → exit `0`
+2. `npm run qa` → passes
+3. Load `index.html`, `works.html`, `games.html` and all three game pages → zero console errors
+4. Toggle theme and language on two pages; reload; confirm both persist
+5. Open Ajoop, the Command Palette and Recruiter Mode on one page
+6. `npm run qa:ajoop` → passes; spot-check `SINAMA`, `email` and `hiring` in the live widget
+7. `npm run qa:request` → passes; confirm a stubbed failure shows an error and keeps the form populated
+8. Check 375 px for horizontal overflow on one content page and one game page
