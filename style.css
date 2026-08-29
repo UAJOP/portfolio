@@ -384,7 +384,11 @@ h3 {
 }
 .hero h1 {
   max-width: 820px;
-  font-size: clamp(46px, 7vw, 86px);
+  /* BRIEF 05: capped at 86px the headline occupied 451px and pushed the primary
+     CTA below the fold at 1280x800 and 1366x768 — a recruiter saw the
+     positioning but no action. Same face, weight and gradient; only the ceiling
+     moves, so the hierarchy fits the first viewport. */
+  font-size: clamp(46px, 5.4vw, 70px);
   font-weight: 900;
 }
 .hero h1 span,
@@ -3359,3 +3363,13 @@ html[data-theme="light"] .recruiter-primary-profile {
   background: rgba(2, 132, 199, 0.08);
 }
 
+
+/* BRIEF 05: recruiter-facing role line on project cards. Reuses existing
+   muted/eyebrow tokens; introduces no new visual language. */
+.project-role {
+  margin: 6px 0 0;
+  color: var(--muted-2);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}

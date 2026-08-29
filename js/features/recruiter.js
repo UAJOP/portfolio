@@ -179,6 +179,43 @@ function renderRecruiterDrawer(language = currentSiteLanguage || "en") {
   if (hadFocus) drawer.querySelector("[data-recruiter-close]")?.focus();
 }
 
+/* recruiter-intent:start
+ * Session-scoped memory of "this visitor is evaluating Kaan for a role".
+ *
+ * BRIEF 00 recorded that Recruiter Mode does not persist. It is a modal dialog
+ * (role="dialog", aria-modal), so re-opening it automatically on every page
+ * would hijack focus and behave like popup spam — explicitly out of bounds.
+ * What persists is the *intent*, not the open dialog: the toggle stays marked
+ * as active so one click resumes, and the visitor keeps control.
+ *
+ * sessionStorage, not localStorage: evaluating a candidate is a single sitting,
+ * and a flag that survived for weeks would be confusing rather than helpful.
+ *
+ * Extracted by scripts/qa-recruiter-ux.mjs — keep this block DOM-free.
+ */
+const RECRUITER_INTENT_KEY = "kaanbalci-recruiter-intent";
+
+function readRecruiterIntent(store) {
+  try {
+    return (store || sessionStorage).getItem(RECRUITER_INTENT_KEY) === "active";
+  } catch (error) {
+    /* Storage can be blocked; recruiter mode still works, it just forgets. */
+    return false;
+  }
+}
+
+function writeRecruiterIntent(isActive, store) {
+  try {
+    const target = store || sessionStorage;
+    if (isActive) target.setItem(RECRUITER_INTENT_KEY, "active");
+    else target.removeItem(RECRUITER_INTENT_KEY);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+/* recruiter-intent:end */
+
 function setRecruiterMode(
   isOpen,
   { restoreFocus = true, trigger = null } = {},
@@ -198,6 +235,9 @@ function setRecruiterMode(
   }
 
   document.body.classList.toggle("recruiter-mode-active", Boolean(isOpen));
+  /* Opening records the intent for this session; closing clears it. */
+  writeRecruiterIntent(Boolean(isOpen));
+  applyRecruiterIntentMarker(Boolean(isOpen));
   drawer.hidden = !isOpen;
   drawer.setAttribute("aria-hidden", String(!isOpen));
   document.querySelectorAll("[data-recruiter-toggle]").forEach((button) => {
@@ -216,6 +256,13 @@ function setRecruiterMode(
     if (restoreFocus) restoreOverlayFocus(drawer);
     else overlayTriggerMap.delete(drawer);
   }
+}
+
+/** Marks the toggle so a returning recruiter can see the mode is still theirs. */
+function applyRecruiterIntentMarker(isActive) {
+  document.querySelectorAll("[data-recruiter-toggle]").forEach((button) => {
+    button.classList.toggle("is-recruiter-intent", Boolean(isActive));
+  });
 }
 
 function setupRecruiterMode() {
@@ -254,5 +301,10 @@ function setupRecruiterMode() {
     }
     trapFocus(event, drawer);
   });
+
+  /* Carry the intent across navigation WITHOUT re-opening the dialog: the
+   * toggle shows the mode is still active and one click resumes it. Auto-
+   * opening a focus-trapping modal on every page would be a dark pattern. */
+  applyRecruiterIntentMarker(readRecruiterIntent());
 }
 

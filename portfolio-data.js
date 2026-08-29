@@ -239,6 +239,10 @@
         "links": {
           "caseStudy": "atolye-joyday-case-study.html",
           "live": "https://atolyejoyday.com/"
+        },
+        "role": {
+          "en": "Co-Founder & Digital Product Developer",
+          "tr": "Kurucu Ortak & Dijital Ürün Geliştirici"
         }
       },
       "chatbotFlow": {
@@ -258,6 +262,10 @@
         },
         "links": {
           "caseStudy": "projects/ai-chatbot-flow-design/"
+        },
+        "role": {
+          "en": "AI Designer",
+          "tr": "AI Designer"
         }
       },
       "hospital": {
@@ -278,6 +286,10 @@
         "links": {
           "caseStudy": "hospital-system-case-study.html",
           "github": "https://github.com/UAJOP/Hospital-System"
+        },
+        "role": {
+          "en": "Software Developer",
+          "tr": "Yazılım Geliştirici"
         }
       }
     },

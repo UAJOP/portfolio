@@ -89,6 +89,16 @@ export function composeProjects(projects, projectDetails) {
       if (key === "detailSlug") rebuilt.name = detail.title.en;
       else rebuilt[key] = value;
     }
+
+    /* BRIEF 05: recruiter-facing cards state what Kaan actually did on each
+     * project. The detail record already carries a fact-checked bilingual
+     * `role`, so linked projects project it rather than storing a second copy —
+     * the same rule as `name` above. Projects that store their own `role`
+     * (sinama, mergeRush) keep it untouched. */
+    if (!("role" in rebuilt) && detail.role) {
+      rebuilt.role = detail.role;
+    }
+
     composed[id] = rebuilt;
   }
 

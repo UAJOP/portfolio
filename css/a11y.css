@@ -160,3 +160,10 @@ summary:focus-visible,
   white-space: nowrap;
   border: 0;
 }
+
+/* BRIEF 05: a returning recruiter sees the toggle is still their mode. The
+   dialog is not re-opened automatically — one click resumes it. */
+.recruiter-toggle.is-recruiter-intent {
+  border-color: var(--brand);
+  color: var(--brand);
+}

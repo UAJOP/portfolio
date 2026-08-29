@@ -3,7 +3,7 @@
 Manual regression pass for the static site. Companion to [`portfolio-baseline-audit.md`](portfolio-baseline-audit.md).
 
 **Baseline captured at:** `45d477a` on branch `audit/portfolio-baseline-v1`, 2026-08-29.
-**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`); BRIEF 03 — Frontend Runtime Modularization (`refactor/frontend-runtime-modularization-v1`); BRIEF 04 — CSS Architecture & Accessibility (`refactor/css-accessibility-responsive-v1`).
+**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`); BRIEF 03 — Frontend Runtime Modularization (`refactor/frontend-runtime-modularization-v1`); BRIEF 04 — CSS Architecture & Accessibility (`refactor/css-accessibility-responsive-v1`); BRIEF 05 — Recruiter Conversion UX (`feat/recruiter-conversion-ux-v1`).
 
 ## How to use this
 
@@ -42,6 +42,10 @@ npm run qa:a11y:static
 ```
 
 ```bash
+npm run qa:recruiter
+```
+
+```bash
 npm run qa
 ```
 
@@ -73,6 +77,7 @@ Checks marked ✅ **verified at baseline** were confirmed in a browser or by scr
 - [ ] `npm run qa:runtime` passes — ✅ *318 assertions · 19 modules · 13 page types (added in BRIEF 03)*
 - [ ] `npm run qa:css` passes — ✅ *323 assertions · 7 stylesheets (added in BRIEF 04)*
 - [ ] `npm run qa:a11y:static` passes — ✅ *575 assertions across 44 pages (added in BRIEF 04)*
+- [ ] `npm run qa:recruiter` passes — ✅ *138 assertions · 5 flagship projects · 4 recruiter roles (added in BRIEF 05)*
 - [ ] `npm run qa:html` → **0 errors, 0 warnings** — ✅ *the 3 baseline aria warnings are fixed*
 - [ ] `node qa-js-syntax.js` passes — ✅ *37 files (root scripts + js/ modules since BRIEF 03)*
 - [ ] `node qa-assets.js` passes — ✅ *baseline: 63 assets*
@@ -100,7 +105,7 @@ Checks marked ✅ **verified at baseline** were confirmed in a browser or by scr
 - [ ] Theme persists across navigation (`localStorage["kaanbalci-site-theme"]`)
 - [ ] **No flash of wrong theme** on reload — the pre-paint `<head>` script handles this
 - [ ] Recruiter Mode opens and closes
-- [ ] Recruiter Mode persistence — **KNOWN BASELINE FAILURE (P2-7):** it does **not** persist. Only `kaanbalci-site-theme` and `kaanbalci-site-language` are stored; the mode resets on every navigation and reload. Expected behaviour today.
+- [ ] Recruiter Mode persistence — ~~**KNOWN BASELINE FAILURE (P2-7)**: does not persist.~~ **RESOLVED in BRIEF 05:** `sessionStorage["kaanbalci-recruiter-intent"]` survives navigation and marks the toggle. The dialog must **never** auto-open — that is the contract, not a bug.
 - [ ] Command Palette opens with `Ctrl/Cmd+K`
 - [ ] Command Palette: `SINAMA` (uppercase) matches the SINAMA command — ✅ *expected to PASS; the palette uses locale-independent `.toLowerCase()`*
 - [ ] Site renders with `localStorage` blocked (theme falls back to dark, no crash)
@@ -424,6 +429,44 @@ npm run qa:css && npm run qa:a11y:static && npm run qa:html
 > **Visual identity must not change.** The BRIEF 04 split was verified by comparing computed styles against `7d58e6e`: identical element counts and style hashes on all three game pages and the homepage. Re-run that comparison after any further CSS extraction.
 >
 > **Do not split `style.css` by category.** CSS cascade depends on source order; reordering changes equal-specificity ties. Only namespaced, page-scoped extraction is safe.
+
+---
+
+## Recruiter conversion (BRIEF 05)
+
+> ~~Project cards did not say what Kaan actually did; Recruiter Mode forgot itself on navigation; the hero CTA sat below the fold at common desktop sizes.~~
+> See [`recruiter-conversion-ux.md`](recruiter-conversion-ux.md).
+
+Covered automatically:
+
+```bash
+npm run qa:recruiter
+```
+
+- [ ] Homepage positioning clear (name, direction, headline) — ✅ *verified*
+- [ ] Primary recruiter CTA visible in the first viewport — ✅ *verified at 1280×800, 1366×768, 1440×900, and 320/375/768*
+- [ ] Exactly one primary CTA in the hero — ✅ *asserted*
+- [ ] Every hero CTA destination resolves — ✅ *asserted*
+- [ ] CV accessible from every page (header Recruiter Mode + palette) — ✅ *asserted*
+- [ ] Direct contact available without the request form — ✅ *asserted*
+- [ ] Selected work projects resolve in canonical data — ✅ *asserted*
+- [ ] Role label present on flagship evidence — ✅ *5/5 homepage cards*
+- [ ] Role label on every Works card — ✅ *10/10*
+- [ ] Role labels are EN/TR paired — ✅ *asserted; verified by switching language*
+- [ ] Recruiter Mode opens, traps focus, Escape closes — ✅ *verified*
+- [ ] Recruiter Mode evidence resolves — ✅ *asserted for all 4 role profiles*
+- [ ] Recruiter intent persists across navigation — ✅ *verified: `active` survives*
+- [ ] Recruiter Mode does **NOT** auto-open on a new page — ✅ *verified; this is the contract*
+- [ ] Focus is not hijacked on load — ✅ *verified*
+- [ ] Blocked storage degrades silently — ✅ *asserted*
+- [ ] Games framed as engineering, not filler — ✅ *asserted*
+- [ ] No legacy project URL reintroduced — ✅ *asserted on every page*
+- [ ] Ajoop unaffected — ✅ *294 assertions*
+- [ ] Accessibility baseline retained — ✅ *575 assertions, 0 html-validate warnings*
+
+> **Roles come from canonical data only.** `projects.json` and `project-details.json` own them; the composer projects a linked project's role from its detail record, so no role is stored twice. **Never hand-write a role into markup** — add it to canonical data and regenerate.
+>
+> **Do not make Recruiter Mode auto-open.** It is a focus-trapping modal; re-opening it on navigation is a dark pattern and `qa:recruiter` fails if `setRecruiterMode(true)` appears at load.
 
 ---
 

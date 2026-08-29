@@ -213,6 +213,12 @@ Plus 8 archive projects only in `projectDetailData` and 13 only in `githubReposi
 
 ### 5.3 Recruiter Mode
 
+> **RESOLVED in BRIEF 05** (branch `feat/recruiter-conversion-ux-v1`). Full detail in [`recruiter-conversion-ux.md`](recruiter-conversion-ux.md).
+>
+> Recruiter Mode now remembers *intent*, not the open dialog: `sessionStorage["kaanbalci-recruiter-intent"]` survives navigation and marks the toggle so one click resumes, but the modal is **never re-opened automatically**. Auto-opening a focus-trapping dialog on every page would hijack focus and read as popup spam, so the restraint is deliberate. `sessionStorage` rather than `localStorage` because evaluating a candidate is one sitting. Blocked storage degrades silently.
+>
+> The audit also noted the mode had "no JS-readable state". It still uses the body class as the source of truth for open/closed — the new flag records intent alongside it rather than replacing it, which kept the change small and left the existing focus-trap contract untouched.
+
 - Activation toggles `document.body.classList` `recruiter-mode-active` (`legacy-script.js:5385–5473`).
 - **VERIFIED IN SOURCE: it does not persist.** The only `localStorage` keys in the entire runtime are `kaanbalci-site-theme` and `kaanbalci-site-language`. Recruiter Mode resets on every navigation and reload.
 - **Coupling risk:** state lives solely in a body class, so any styling depends on `body.recruiter-mode-active` descendant selectors in the shared `style.css`. There is no JS-readable state object, making the mode hard to query or test.
@@ -552,7 +558,7 @@ Ranked by likelihood × blast radius.
 | **P2-4** | **Every page loads the entire shared runtime**, including game pages that need almost none of it. | VERIFIED IN BROWSER — §9 | **RESOLVED in BRIEF 03** |
 | **P2-5** | **25 archive projects are unindexable** behind `project-detail.html?project=` with generic canonical and `noindex`. | VERIFIED IN SOURCE — §6 | **RESOLVED in BRIEF 02** |
 | **P2-6** | **boxicons via unpkg is render-blocking** on all 19 pages — an enhancement dependency with critical-path impact. | VERIFIED IN SOURCE — §12 | **PARTIALLY RESOLVED in BRIEF 04** — preconnect added; dependency remains |
-| **P2-7** | **Recruiter Mode does not persist** and exists only as a body class with no readable state. | VERIFIED IN SOURCE — §5.3 | **OPEN** |
+| **P2-7** | **Recruiter Mode does not persist** and exists only as a body class with no readable state. | VERIFIED IN SOURCE — §5.3 | **RESOLVED in BRIEF 05** — session-scoped intent |
 | **P2-8** | **Social metadata uneven**; the two newest flagship case studies have no Twitter card. | VERIFIED IN SOURCE — §6 | **OPEN** |
 
 ### P3
@@ -666,6 +672,8 @@ This audit did not implement any part of it. What follows is only what the migra
 > **BRIEF 03 is now complete**, resolving P2-4: `legacy-script.js` is a 26-line stub, its responsibilities split into 19 page-aware modules under `js/`. See §9 and [`frontend-runtime-architecture.md`](frontend-runtime-architecture.md). The next phase is **BRIEF 04 — CSS Architecture + Accessibility & Responsive Polish**, which addresses §10 and the accessibility findings in §7.
 >
 > **BRIEF 04 is now complete**, resolving P2-2, P3-5 and the §10 CSS hotspot, partially resolving P2-6, and deliberately deferring P2-3. See §7, §10 and [`css-accessibility-architecture.md`](css-accessibility-architecture.md).
+>
+> **BRIEF 05 is now complete**, resolving P2-7 and adding project role clarity across the recruiter-facing cards. The audit for it found the site was already strongly recruiter-oriented, so only three evidence-driven gaps were changed — see [`recruiter-conversion-ux.md`](recruiter-conversion-ux.md).
 
 ### What must be preserved
 
