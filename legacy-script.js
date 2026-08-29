@@ -1563,9 +1563,55 @@ function translateProjectDisplayLabel(label, language) {
   return i18nTranslations.tr[label] || label;
 }
 
-function createProjectDetailUrl(slug) {
-  return `project-detail.html?project=${encodeURIComponent(slug)}`;
+/* project-routing:start
+ * Project URL and slug resolution for both route shapes.
+ *
+ *   canonical : /projects/<slug>/            (generated static page)
+ *   legacy    : /project-detail.html?project=<slug>
+ *
+ * Generated pages sit two directories deep, so every repo-relative URL the
+ * renderer emits needs a prefix. That prefix is declared by the page itself
+ * (`<body data-site-root="../../">`) rather than inferred from the pathname,
+ * and it stays relative rather than root-absolute so the site keeps working
+ * from a subdirectory and over file://. Root pages declare nothing and get
+ * "", which is exactly the behaviour that existed before.
+ */
+
+/** Prefix that turns a repo-relative path into one valid on the current page. */
+function siteRootPrefix() {
+  return (document.body && document.body.dataset.siteRoot) || "";
 }
+
+/** A URL is already resolved if it is absolute, root-relative or a fragment. */
+function isResolvedUrl(url) {
+  return /^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(String(url || ""));
+}
+
+/** Rebases a repo-relative path onto the current page's depth. */
+function siteUrl(path) {
+  const value = String(path || "");
+  if (!value || isResolvedUrl(value)) return value;
+  return `${siteRootPrefix()}${value}`;
+}
+
+/** The canonical URL for a project. */
+function projectUrl(slug) {
+  return `${siteRootPrefix()}projects/${encodeURIComponent(slug)}/`;
+}
+
+/**
+ * Resolves which project the current page is showing.
+ *
+ * A generated page states its slug declaratively; the legacy route carries it
+ * in the query string. Generated pages win so a stray query parameter cannot
+ * make /projects/sinama/ render a different project.
+ */
+function resolveCurrentProjectSlug() {
+  const declared = document.body && document.body.dataset.projectSlug;
+  if (declared) return declared;
+  return new URLSearchParams(window.location.search).get("project");
+}
+/* project-routing:end */
 
 function escapeProjectHtml(value) {
   return String(value || "")
@@ -1580,8 +1626,7 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
   const root = document.querySelector("[data-project-detail]");
   if (!root) return;
 
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get("project");
+  const slug = resolveCurrentProjectSlug();
   const project = slug ? projectDetailData[slug] : null;
 
   if (!project) {
@@ -1590,7 +1635,7 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
         <p class="eyebrow">${language === "tr" ? "Proje Bulunamadı" : "Project Not Found"}</p>
         <h1>${language === "tr" ? "Bu proje için detay sayfası henüz hazırlanmadı." : "This project detail page is not available yet."}</h1>
         <p>${language === "tr" ? "Projeler sayfasına dönüp başka bir çalışma seçebilirsin." : "Go back to the works page and choose another project."}</p>
-        <div class="hero-actions left"><a class="btn primary" href="works.html">${language === "tr" ? "Projelere Dön" : "Back to Works"}</a></div>
+        <div class="hero-actions left"><a class="btn primary" href="${siteUrl("works.html")}">${language === "tr" ? "Projelere Dön" : "Back to Works"}</a></div>
       </section>
     `;
     document.title =
@@ -1661,18 +1706,18 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
   root.innerHTML = `
     <section class="project-detail-hero section-shell reveal">
       <div class="project-detail-copy">
-        <a class="back-link" href="works.html"><i class="bx bx-arrow-back"></i>${language === "tr" ? "Projelere dön" : "Back to works"}</a>
+        <a class="back-link" href="${siteUrl("works.html")}"><i class="bx bx-arrow-back"></i>${language === "tr" ? "Projelere dön" : "Back to works"}</a>
         <p class="eyebrow">${escapeProjectHtml(category)}</p>
         <h1>${escapeProjectHtml(title)}</h1>
         <p>${escapeProjectHtml(subtitle)}</p>
         <div class="project-detail-actions">
-          ${links.map((link) => `<a class="btn primary" href="${escapeProjectHtml(link.url)}" ${link.url.startsWith("http") ? 'target="_blank" rel="noopener"' : ""}>${escapeProjectHtml(translateProjectField(link.label, language))}</a>`).join("")}
+          ${links.map((link) => `<a class="btn primary" href="${escapeProjectHtml(siteUrl(link.url))}" ${link.url.startsWith("http") ? 'target="_blank" rel="noopener"' : ""}>${escapeProjectHtml(translateProjectField(link.label, language))}</a>`).join("")}
           <a class="btn ghost" href="mailto:kaanb8776@gmail.com">${language === "tr" ? "Benzer Proje İçin Yaz" : "Ask for Similar Work"}</a>
           <button class="btn ghost" type="button" data-copy-project-link>${language === "tr" ? "Proje Linkini Kopyala" : "Copy Project Link"}</button>
         </div>
       </div>
       <div class="project-detail-visual reveal delay-1">
-        <img src="${escapeProjectHtml(project.image)}" alt="${escapeProjectHtml(title)} ${language === "tr" ? "proje önizlemesi" : "preview"}" decoding="async" fetchpriority="high" />
+        <img src="${escapeProjectHtml(siteUrl(project.image))}" alt="${escapeProjectHtml(title)} ${language === "tr" ? "proje önizlemesi" : "preview"}" decoding="async" fetchpriority="high" />
       </div>
     </section>
 
@@ -1747,9 +1792,9 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
     </section>
 
     <section class="section-shell detail-navigation reveal">
-      <a class="btn ghost" href="${createProjectDetailUrl(previousSlug)}"><i class="bx bx-left-arrow-alt"></i>${language === "tr" ? "Önceki Proje" : "Previous Project"}</a>
-      <a class="btn primary" href="works.html">${language === "tr" ? "Tüm Projeler" : "All Works"}</a>
-      <a class="btn ghost" href="${createProjectDetailUrl(nextSlug)}">${language === "tr" ? "Sonraki Proje" : "Next Project"}<i class="bx bx-right-arrow-alt"></i></a>
+      <a class="btn ghost" href="${projectUrl(previousSlug)}"><i class="bx bx-left-arrow-alt"></i>${language === "tr" ? "Önceki Proje" : "Previous Project"}</a>
+      <a class="btn primary" href="${siteUrl("works.html")}">${language === "tr" ? "Tüm Projeler" : "All Works"}</a>
+      <a class="btn ghost" href="${projectUrl(nextSlug)}">${language === "tr" ? "Sonraki Proje" : "Next Project"}<i class="bx bx-right-arrow-alt"></i></a>
     </section>
   `;
 }
@@ -1915,7 +1960,7 @@ function setupProjectCardNavigation() {
   document.querySelectorAll("[data-project-link]").forEach((card) => {
     const slug = card.getAttribute("data-project-link");
     if (!slug) return;
-    const url = slug.endsWith(".html") ? slug : createProjectDetailUrl(slug);
+    const url = slug.endsWith(".html") ? siteUrl(slug) : projectUrl(slug);
 
     card.addEventListener("click", (event) => {
       if (shouldIgnoreCardActivation(event)) return;
@@ -1958,7 +2003,7 @@ const portfolioChatbotContent = {
         links: [
           {
             label: "AI Case Study",
-            url: "project-detail.html?project=ai-chatbot-flow-design",
+            url: "projects/ai-chatbot-flow-design/",
           },
           { label: "Experience", url: "blog.html" },
         ],
@@ -2053,7 +2098,7 @@ const portfolioChatbotContent = {
         links: [
           {
             label: "AI Case Study",
-            url: "project-detail.html?project=ai-chatbot-flow-design",
+            url: "projects/ai-chatbot-flow-design/",
           },
           { label: "Deneyim", url: "blog.html" },
         ],
@@ -2254,7 +2299,7 @@ function enhanceAjoopDialogDepth() {
       ai: [
         {
           label: "AI Case Study",
-          url: "project-detail.html?project=ai-chatbot-flow-design",
+          url: "projects/ai-chatbot-flow-design/",
         },
         { label: "Experience", url: "blog.html" },
       ],
@@ -2288,7 +2333,7 @@ function enhanceAjoopDialogDepth() {
       ai: [
         {
           label: "AI Case Study",
-          url: "project-detail.html?project=ai-chatbot-flow-design",
+          url: "projects/ai-chatbot-flow-design/",
         },
         { label: "Deneyim", url: "blog.html" },
       ],
@@ -2889,7 +2934,7 @@ function detectChatbotIntent(message) {
 
 function createChatbotLinks(links = []) {
   if (!links.length) return "";
-  return `<div class="chatbot-message-links">${links.map((link) => `<a href="${escapeProjectHtml(link.url)}" ${link.url.startsWith("http") ? 'target="_blank" rel="noopener"' : ""}>${escapeProjectHtml(link.label)}</a>`).join("")}</div>`;
+  return `<div class="chatbot-message-links">${links.map((link) => `<a href="${escapeProjectHtml(siteUrl(link.url))}" ${link.url.startsWith("http") ? 'target="_blank" rel="noopener"' : ""}>${escapeProjectHtml(link.label)}</a>`).join("")}</div>`;
 }
 
 function addChatbotMessage(type, text, links = []) {
@@ -3635,7 +3680,7 @@ const recruiterItems = {
       [
         "AI Chatbot Flow Design",
         "Conversational AI and enterprise workflow evidence",
-        "project-detail.html?project=ai-chatbot-flow-design",
+        "projects/ai-chatbot-flow-design/",
       ],
       [
         "AI Flow Puzzle",
@@ -3702,7 +3747,7 @@ const recruiterItems = {
       [
         "AI Chatbot Akış Tasarımı",
         "Conversational AI ve kurumsal workflow kanıtı",
-        "project-detail.html?project=ai-chatbot-flow-design",
+        "projects/ai-chatbot-flow-design/",
       ],
       [
         "AI Flow Puzzle",
@@ -4005,7 +4050,12 @@ function setupProjectCopyLink() {
     const button = event.target.closest("[data-copy-project-link]");
     if (!button) return;
     const original = button.textContent;
-    const url = window.location.href;
+    // Share the canonical project URL, not whichever route the visitor used,
+    // so a link copied from the legacy query route still spreads /projects/<slug>/.
+    const currentSlug = resolveCurrentProjectSlug();
+    const url = currentSlug
+      ? new URL(projectUrl(currentSlug), window.location.href).href
+      : window.location.href;
     try {
       await navigator.clipboard.writeText(url);
     } catch (error) {

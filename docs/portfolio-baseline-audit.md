@@ -257,6 +257,22 @@ Every archive project — 25 slugs across the two legacy stores — is reachable
 
 This is a deliberate current-state tradeoff, not a bug. Unique routes belong to a future brief.
 
+> **RESOLVED in BRIEF 02** (branch `seo/unique-project-pages-v1`). Full detail in [`project-routing-seo-architecture.md`](project-routing-seo-architecture.md).
+>
+> Every archive project now has its own static page at `https://kaanbalci.com/projects/<slug>/` — **25 routes**, generated from `data/portfolio/project-details.json` by `scripts/generate-project-pages.mjs`, with a unique title, description, canonical, OpenGraph, Twitter card and JSON-LD **present in the raw HTML before any JavaScript runs**. That directly answers the third bullet: a crawler that does not execute JS now receives project-specific metadata rather than an empty shell.
+>
+> The generated shell is derived from `project-detail.html` at generation time, so there is still exactly one maintained layout and no project prose was copied into HTML — the body is still rendered at runtime from the canonical registry.
+>
+> All 25 legacy `project-detail.html?project=<slug>` URLs still resolve, unchanged, with the not-found fallback intact. `project-detail.html` keeps its `noindex, follow`, which is now exactly right: it is a compatibility route, and the generated pages are the indexable ones. Internal links across the homepage, Works, Recruiter Mode, Previous/Next and Ajoop all moved to the canonical routes.
+>
+> `sitemap.xml` is generated in the same run: 17 static pages + 25 project URLs, with the legacy query-string URLs deliberately excluded.
+>
+> **Two projects intentionally have no `/projects/` route.** `sinama` and `mergeRush` are flagship records with no detail record — they already have dedicated case-study pages with their own metadata, and generating a second page per project would recreate the duplication BRIEF 01 removed.
+>
+> One limitation remains and is documented rather than hidden: the full project body (overview, challenge, features, gallery) still renders client-side, so non-JS crawlers see metadata, title, subtitle and category but not the long-form copy.
+>
+> Guarded by `npm run qa:seo` (1,662 assertions), which validates raw HTML only, asserts the generated output is in step with canonical data, and fails on fabricated structured data.
+
 ### Social metadata is uneven
 
 15 warnings from the audit script, all social-metadata coverage:
@@ -491,7 +507,7 @@ Ranked by likelihood × blast radius.
 | **P2-2** | **Skip link on only 5 of 19 pages** — all case studies, none of the games, not the homepage. | VERIFIED IN SOURCE — §7 | **OPEN** |
 | **P2-3** | **Flash of wrong language.** Pre-paint restore covers theme but not language; Turkish visitors see English on first paint on every page. | SOURCE-LEVEL RISK — §5.1 | **OPEN** |
 | **P2-4** | **Every page loads the entire shared runtime**, including game pages that need almost none of it. | VERIFIED IN BROWSER — §9 | **OPEN** |
-| **P2-5** | **25 archive projects are unindexable** behind `project-detail.html?project=` with generic canonical and `noindex`. | VERIFIED IN SOURCE — §6 | **OPEN** |
+| **P2-5** | **25 archive projects are unindexable** behind `project-detail.html?project=` with generic canonical and `noindex`. | VERIFIED IN SOURCE — §6 | **RESOLVED in BRIEF 02** |
 | **P2-6** | **boxicons via unpkg is render-blocking** on all 19 pages — an enhancement dependency with critical-path impact. | VERIFIED IN SOURCE — §12 | **OPEN** |
 | **P2-7** | **Recruiter Mode does not persist** and exists only as a body class with no readable state. | VERIFIED IN SOURCE — §5.3 | **OPEN** |
 | **P2-8** | **Social metadata uneven**; the two newest flagship case studies have no Twitter card. | VERIFIED IN SOURCE — §6 | **OPEN** |
@@ -601,6 +617,8 @@ The handoff's core SINAMA reproduction **was accurate** and is confirmed above.
 This audit did not implement any part of it. What follows is only what the migration must preserve.
 
 > **BRIEF 01 is now complete.** Every constraint below was honoured: the no-build-step deploy guarantee, deterministic generation with CI parity, the `window.KAAN_PORTFOLIO` boot-order contract, the per-language field shape, and all 25 archive slugs. The three-way overlap was resolved deliberately rather than silently — see §4.3 and [`project-data-architecture.md`](project-data-architecture.md). The next phase is **BRIEF 02 — Unique Project Pages & SEO Architecture**, which addresses P2-5.
+>
+> **BRIEF 02 is now complete**, resolving P2-5: 25 canonical project routes exist with raw-HTML SEO metadata, all legacy URLs still resolve, and the sitemap is generated from canonical data. See §6 and [`project-routing-seo-architecture.md`](project-routing-seo-architecture.md). The next phase is **BRIEF 03 — Frontend Architecture Modularization**, which addresses P2-4 and the JavaScript/CSS risk maps in §9 and §10.
 
 ### What must be preserved
 

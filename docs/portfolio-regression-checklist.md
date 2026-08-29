@@ -3,7 +3,7 @@
 Manual regression pass for the static site. Companion to [`portfolio-baseline-audit.md`](portfolio-baseline-audit.md).
 
 **Baseline captured at:** `45d477a` on branch `audit/portfolio-baseline-v1`, 2026-08-29.
-**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`).
+**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`).
 
 ## How to use this
 
@@ -23,6 +23,10 @@ npm run qa:request
 
 ```bash
 npm run qa:projects
+```
+
+```bash
+npm run qa:seo
 ```
 
 ```bash
@@ -53,6 +57,7 @@ Checks marked ✅ **verified at baseline** were confirmed in a browser or by scr
 - [ ] `npm run qa:ajoop` passes — ✅ *294 assertions across 19 intents (added in BRIEF 00.1)*
 - [ ] `npm run qa:request` passes — ✅ *84 assertions, no network calls (added in BRIEF 00.2)*
 - [ ] `npm run qa:projects` passes — ✅ *1,139 assertions · 25 detail records · 5 flagship (added in BRIEF 01)*
+- [ ] `npm run qa:seo` passes — ✅ *1,662 assertions · 25 canonical routes · 25 sitemap project URLs (added in BRIEF 02)*
 - [ ] `node qa-js-syntax.js` passes — ✅ *baseline: 19 files*
 - [ ] `node qa-assets.js` passes — ✅ *baseline: 63 assets*
 - [ ] `node qa-internal-links.js` passes — ✅ *baseline: 453 references*
@@ -61,7 +66,7 @@ Checks marked ✅ **verified at baseline** were confirmed in a browser or by scr
 - [ ] `npm run qa:spelling` passes — UNVERIFIED at baseline
 - [ ] `npm run qa:a11y` (pa11y) — UNVERIFIED at baseline; establish a result
 
-> After editing any `data/portfolio/*.json`, run `npm run data:generate` and commit the regenerated `portfolio-data.js`. Never hand-edit that file.
+> After editing any `data/portfolio/*.json`, run `npm run data:generate && npm run generate:projects` and commit the regenerated `portfolio-data.js`, `projects/**` and `sitemap.xml`. Never hand-edit those — they are generated.
 
 ---
 
@@ -220,9 +225,55 @@ npm run qa:projects
 - [ ] Referenced local media exists — ✅ *asserted*
 - [ ] No project facts in `legacy-script.js` / `portfolio-v2.js` — ✅ *drift guard*
 
-> **After editing any `data/portfolio/*.json`:** run `npm run data:generate` and commit the regenerated `portfolio-data.js`, or `qa:data` fails on a stale artifact. A deliberate change to a title, category, link, image, year or field set also requires updating `scripts/fixtures/project-catalog-baseline.json` in the same commit — that friction is intentional, so data-shape changes are visible in review.
+> **After editing any `data/portfolio/*.json`:** run `npm run data:generate && npm run generate:projects` and commit the regenerated `portfolio-data.js`, `projects/**` and `sitemap.xml`, or `qa:data` / `qa:seo` fail on a stale artifact. A deliberate change to a title, category, link, image, year or field set also requires updating `scripts/fixtures/project-catalog-baseline.json` in the same commit — that friction is intentional, so data-shape changes are visible in review.
 >
 > **Never add project facts to `legacy-script.js` or `portfolio-v2.js`.**
+
+### Canonical project routes & SEO (BRIEF 02)
+
+> Canonical: `/projects/<slug>/` (generated, indexable). Legacy: `/project-detail.html?project=<slug>` (still works, `noindex`).
+> See [`project-routing-seo-architecture.md`](project-routing-seo-architecture.md).
+
+Covered automatically:
+
+```bash
+npm run qa:seo
+```
+
+- [ ] Canonical project URL resolves — ✅ *verified: `/projects/ai-chatbot-flow-design/`, `/projects/my-museum/`*
+- [ ] All 25 project routes generated — ✅ *verified: 25/25 return HTTP 200*
+- [ ] Legacy query route still resolves — ✅ *verified: 25/25 return HTTP 200 and render*
+- [ ] Unknown query slug fallback preserved — ✅ *verified: "Project Not Found"*
+- [ ] Unique `<title>` per page — ✅ *asserted, uniqueness enforced*
+- [ ] Unique meta description — ✅ *asserted, derived from `subtitle`*
+- [ ] Canonical unique and self-referential — ✅ *asserted; never points at `project-detail.html`*
+- [ ] `og:url` matches canonical — ✅ *asserted*
+- [ ] `og:image` absolute and resolves on disk — ✅ *asserted*
+- [ ] Twitter metadata present — ✅ *card / title / description / image*
+- [ ] JSON-LD valid, typed from canonical data, no fabricated fields — ✅ *asserted (no rating/offers/price/review)*
+- [ ] `<meta charset>` within the first 1024 bytes — ✅ *asserted (Turkish titles depend on it)*
+- [ ] Exactly one `<h1>`, carrying the project title — ✅ *asserted in raw HTML and verified after render*
+- [ ] Sitemap contains all 25 unique project pages — ✅ *asserted*
+- [ ] Sitemap excludes project query URLs — ✅ *asserted*
+- [ ] Every sitemap URL resolves on disk — ✅ *asserted*
+- [ ] Works links use canonical routes — ✅ *verified: 11 links, 0 legacy*
+- [ ] Homepage links use canonical routes — ✅ *verified*
+- [ ] Recruiter project links use canonical routes — ✅ *verified*
+- [ ] Previous/Next use canonical routes — ✅ *verified on both route shapes*
+- [ ] Ajoop project links canonical — ✅ *verified; matcher untouched*
+- [ ] TR/EN still work on generated pages — ✅ *verified: title + h1 translate, `lang` updates*
+- [ ] Theme still works on generated pages — ✅ *verified*
+- [ ] No nested-path asset failures — ✅ *asserted: every `../../` target resolves; hero image loads*
+- [ ] No console errors on generated pages — ✅ *verified in a clean tab*
+- [ ] `robots.txt` does not block `/projects/` — ✅ *asserted*
+
+> **Raw-HTML contract.** All SEO metadata must exist **before JavaScript runs** — that is why these pages are generated. `qa:seo` parses raw HTML only and never boots a browser. Verified over HTTP with `curl` as a non-JS crawler would see it.
+>
+> **Known limitation:** the full project body still renders client-side, so non-JS crawlers see metadata, title, subtitle and category but not the long-form copy.
+>
+> **`sinama` and `mergeRush` intentionally have no `/projects/` route** — they have dedicated case-study pages. Do not "fix" this by generating one.
+>
+> **After editing project data:** `npm run generate:projects`. `qa:seo` fails if generated pages or the sitemap fall out of step with canonical data.
 
 ---
 
@@ -367,5 +418,5 @@ Minimum pass after touching `legacy-script.js`, `style.css` or `script.js` — a
 5. Open Ajoop, the Command Palette and Recruiter Mode on one page
 6. `npm run qa:ajoop` → passes; spot-check `SINAMA`, `email` and `hiring` in the live widget
 7. `npm run qa:request` → passes; confirm a stubbed failure shows an error and keeps the form populated
-8. `npm run qa:projects` → passes; open one archive `project-detail.html?project=<slug>` and confirm it renders
+8. `npm run qa:projects` and `npm run qa:seo` → pass; open one `/projects/<slug>/` and one legacy `project-detail.html?project=<slug>` and confirm both render
 9. Check 375 px for horizontal overflow on one content page and one game page

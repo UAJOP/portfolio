@@ -57,6 +57,19 @@ htmlFiles.forEach((file) => {
       check(idsByFile[target].has(fragment), `${file} -> dead anchor: ${reference}`);
     }
 
+    // Canonical project route since BRIEF 02: /projects/<slug>/. The directory
+    // existing is not enough — it must be a known slug with a generated page.
+    const canonicalProject = target.match(/^projects\/([^/]+)\/$/);
+    if (canonicalProject) {
+      projectLinks += 1;
+      const slug = decodeURIComponent(canonicalProject[1]);
+      check(slugs.has(slug), `${file} -> unknown project slug: ${reference}`);
+      check(
+        fs.existsSync(`projects/${slug}/index.html`),
+        `${file} -> project route has no generated page: ${reference}`
+      );
+    }
+
     if (!query) return;
     const params = new URLSearchParams(query);
     if (params.has("role")) {

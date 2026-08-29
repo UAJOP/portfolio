@@ -257,7 +257,7 @@
           "tr": "Kurumsal chatbot QA, stabilizasyon, flow restructuring ve multi-channel workflow kanıtı."
         },
         "links": {
-          "caseStudy": "project-detail.html?project=ai-chatbot-flow-design"
+          "caseStudy": "projects/ai-chatbot-flow-design/"
         }
       },
       "hospital": {

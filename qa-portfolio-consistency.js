@@ -220,9 +220,12 @@ htmlFiles.forEach((file) => {
 
     const target = (open.match(/data-(?:project|game)-link="([^"]*)"/) || [])[1];
     if (!target) return;
+    // Canonical project route since BRIEF 02. The legacy
+    // project-detail.html?project=<slug> URL still resolves, but internal
+    // links point at the unique page.
     const expected = target.endsWith(".html") || target.includes(".html?")
       ? target
-      : `project-detail.html?project=${encodeURIComponent(target)}`;
+      : `projects/${encodeURIComponent(target)}/`;
     const titleHref = (card.match(/<h3[^>]*>\s*<a[^>]+href="([^"]*)"/) || [])[1];
     check(titleHref === expected, `${file}: card targeting "${target}" must expose that destination as a real title anchor (found ${titleHref || "none"})`);
   });

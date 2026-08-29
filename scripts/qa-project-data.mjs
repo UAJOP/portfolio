@@ -234,12 +234,20 @@ for (const id of referencedIds) {
   ok(`11/12. portfolio-v2.js project reference resolves: ${id}`, Boolean(projects[id]));
 }
 
-/* A flagship project whose caseStudy points at project-detail must resolve. */
+/* A flagship project whose caseStudy points at a project detail route must
+ * resolve, in either the canonical or the legacy URL shape. */
 for (const [id, project] of Object.entries(projects)) {
   const href = (project.links && project.links.caseStudy) || "";
-  const match = href.match(/project-detail\.html\?project=([^&]+)$/);
+  const match =
+    href.match(/^projects\/([^/]+)\/$/) ||
+    href.match(/project-detail\.html\?project=([^&]+)$/);
   if (!match) continue;
-  ok(`12. projects.${id} caseStudy slug resolves: ${match[1]}`, Boolean(details[match[1]]));
+  const slug = decodeURIComponent(match[1]);
+  ok(`12. projects.${id} caseStudy slug resolves: ${slug}`, Boolean(details[slug]));
+  ok(
+    `12. projects.${id} caseStudy uses the canonical route`,
+    href.startsWith("projects/"),
+  );
 }
 
 /* ---------- 14. categories resolve ---------- */
@@ -284,8 +292,15 @@ for (const [id, project] of Object.entries(sourceProjects)) {
 for (const [id, project] of Object.entries(sourceProjects)) {
   if (!("detailSlug" in project)) continue;
   const detailUrls = new Set((sourceDetails[project.detailSlug].links || []).map((l) => l.url));
+  /* A caseStudy link pointing at the project's own detail page is a
+   * self-reference, not a shared fact, so it has no counterpart to agree with.
+   * Both the canonical route and the legacy query URL are accepted. */
+  const ownDetailRoutes = new Set([
+    `projects/${project.detailSlug}/`,
+    `project-detail.html?project=${project.detailSlug}`,
+  ]);
   for (const [role, url] of Object.entries(project.links || {})) {
-    if (role === "caseStudy" && /project-detail\.html/.test(url)) continue;
+    if (role === "caseStudy" && ownDetailRoutes.has(url)) continue;
     ok(
       `15. projects.${id}.links.${role} agrees with ${project.detailSlug} — ${url}`,
       detailUrls.has(url),
