@@ -27,7 +27,7 @@ HTML page
   <script src="portfolio-v2.js">     V2 rendering layer (must stay last)
         │
         └─ script.js reads data-page and injects, in order:
-             12 COMMON modules  +  0–2 page modules
+             14 COMMON modules  +  0–2 page modules
 ```
 
 Modules are **classic scripts, not ES modules**. That is deliberate: classic scripts share one global lexical scope in load order, which is exactly what lets a single file be split into many without a bundler, and they keep working from a subdirectory and over `file://`. `type="module"` would have forced either a build step or an import graph, both of which the deployment contract rules out.
@@ -41,6 +41,8 @@ Modules are **classic scripts, not ES modules**. That is deliberate: classic scr
 ```
 js/
   core/
+    analytics-config.js public Umami Website ID and privacy flags
+    analytics.js        funnel taxonomy, sanitization, provider isolation
     shell.js            resume links, overlay/focus-trap utilities, mobile nav, footer year
     theme.js            dark/light state, persistence, toggle
     media.js            image fallback handling
@@ -67,7 +69,7 @@ js/
     labs.js             algorithmic 3D lab
 ```
 
-19 modules, 5,237 lines total — the same code as before, in coherent units.
+21 modules. The original 19-module split remains intact; BRIEF 06 adds two focused common infrastructure modules for analytics configuration and behavior.
 
 ---
 
@@ -92,20 +94,22 @@ Modules do **not** introduce a `KAAN.*` façade. Wrapping 5,000 verbatim lines i
 
 Loaded on every page, in this order:
 
-1. `js/core/shell.js`
-2. `js/core/theme.js`
-3. `js/core/media.js`
-4. `js/core/i18n.js`
-5. `js/portfolio/routing.js`
-6. `js/ajoop/matcher.js`
-7. `js/ajoop/assistant.js`
-8. `js/features/ultimate.js`
-9. `js/features/recruiter.js`
-10. `js/features/command-palette.js`
-11. `js/features/ajoop-nav.js`
-12. `js/features/creative.js`
+1. `js/core/analytics-config.js`
+2. `js/core/analytics.js`
+3. `js/core/shell.js`
+4. `js/core/theme.js`
+5. `js/core/media.js`
+6. `js/core/i18n.js`
+7. `js/portfolio/routing.js`
+8. `js/ajoop/matcher.js`
+9. `js/ajoop/assistant.js`
+10. `js/features/ultimate.js`
+11. `js/features/recruiter.js`
+12. `js/features/command-palette.js`
+13. `js/features/ajoop-nav.js`
+14. `js/features/creative.js`
 
-Ajoop, Recruiter Mode and the command palette are common because they **inject their own UI into every page** — that was true before this brief and is unchanged.
+Analytics is common because page views and conversion entry points span the whole site; its provider remains async and optional. Ajoop, Recruiter Mode and the command palette are common because they **inject their own UI into every page** — that was true before this brief and is unchanged.
 
 ---
 
@@ -176,7 +180,7 @@ const projectDetailData =
   (window.KAAN_PORTFOLIO && window.KAAN_PORTFOLIO.projectDetails) || {};
 ```
 
-**No module holds project facts.** `scripts/qa-project-data.mjs` scans all 19 modules plus `portfolio-v2.js` for reintroduced project literals.
+**No module holds project facts.** `scripts/qa-project-data.mjs` scans all runtime modules plus `portfolio-v2.js` for reintroduced project literals. Analytics identifiers are derived from the same registry at runtime.
 
 ## Project Routing Dependency
 
@@ -263,6 +267,8 @@ These are the only inline handlers in the site; every other binding already used
 ---
 
 ## Payload
+
+BRIEF 06 adds 13,908 bytes of local uncompressed JavaScript (`analytics-config.js` + `analytics.js`) to the common path. The configured Umami Cloud tracker measured 2,301 transferred bytes with Brotli on 2026-08-29 and loads asynchronously. The table below remains the historical BRIEF 03 before/after split.
 
 | Page type | Runtime JS before | after | change |
 |---|---:|---:|---:|

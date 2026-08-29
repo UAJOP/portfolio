@@ -238,6 +238,17 @@ function setRecruiterMode(
   /* Opening records the intent for this session; closing clears it. */
   writeRecruiterIntent(Boolean(isOpen));
   applyRecruiterIntentMarker(Boolean(isOpen));
+  if (
+    isOpen &&
+    !wasOpen &&
+    typeof trackAnalyticsEvent === "function"
+  ) {
+    const source =
+      typeof analyticsSourceForElement === "function"
+        ? analyticsSourceForElement(trigger || document.activeElement)
+        : "header";
+    trackAnalyticsEvent(ANALYTICS_EVENTS.RECRUITER_MODE_OPEN, { source });
+  }
   drawer.hidden = !isOpen;
   drawer.setAttribute("aria-hidden", String(!isOpen));
   document.querySelectorAll("[data-recruiter-toggle]").forEach((button) => {

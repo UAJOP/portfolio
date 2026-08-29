@@ -223,6 +223,14 @@ Plus 8 archive projects only in `projectDetailData` and 13 only in `githubReposi
 - **VERIFIED IN SOURCE: it does not persist.** The only `localStorage` keys in the entire runtime are `kaanbalci-site-theme` and `kaanbalci-site-language`. Recruiter Mode resets on every navigation and reload.
 - **Coupling risk:** state lives solely in a body class, so any styling depends on `body.recruiter-mode-active` descendant selectors in the shared `style.css`. There is no JS-readable state object, making the mode hard to query or test.
 
+### 5.3.1 Analytics and funnel measurement
+
+> **IMPLEMENTED in BRIEF 06 — PRODUCTION CONFIGURATION REQUIRED.** Full detail in [`analytics-recruiter-funnel.md`](analytics-recruiter-funnel.md).
+>
+> The repository previously had no analytics provider or event transport. It now has one optional Umami integration, nine recruiter/request funnel events, canonical project identifiers, local debug behavior, and a PII drift guard. The committed Website ID is deliberately blank, so no live collection is claimed until the owner configures the production property.
+>
+> No session recording, heatmap, arbitrary click tracking, user-entered text, form values, chatbot content, custom backend, or second tracker was introduced.
+
 ### 5.4 Ajoop assistant
 
 Deterministic keyword matcher — no model, no network. Architecture:
@@ -674,6 +682,8 @@ This audit did not implement any part of it. What follows is only what the migra
 > **BRIEF 04 is now complete**, resolving P2-2, P3-5 and the §10 CSS hotspot, partially resolving P2-6, and deliberately deferring P2-3. See §7, §10 and [`css-accessibility-architecture.md`](css-accessibility-architecture.md).
 >
 > **BRIEF 05 is now complete**, resolving P2-7 and adding project role clarity across the recruiter-facing cards. The audit for it found the site was already strongly recruiter-oriented, so only three evidence-driven gaps were changed — see [`recruiter-conversion-ux.md`](recruiter-conversion-ux.md).
+>
+> **BRIEF 06 is implemented but requires production configuration.** The code and QA contracts for privacy-conscious recruiter-funnel measurement are complete; live collection remains disabled until an Umami Website ID is supplied. See [`analytics-recruiter-funnel.md`](analytics-recruiter-funnel.md).
 
 ### What must be preserved
 

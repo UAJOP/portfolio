@@ -9,10 +9,16 @@ function executeCommand(command) {
   if (!command) return;
   setCommandPaletteOpen(false);
   if (command.type === "nav") {
+    if (typeof trackAnalyticsNavigation === "function") {
+      trackAnalyticsNavigation(command.value, "header");
+    }
     if (command.external)
       window.open(command.value, "_blank", "noopener,noreferrer");
     else window.location.href = command.value;
   } else if (command.type === "resume") {
+    if (typeof trackAnalyticsEvent === "function") {
+      trackAnalyticsEvent(ANALYTICS_EVENTS.CV_OPEN, { source: "header" });
+    }
     openDrivePreviews();
   } else if (command.type === "theme") {
     applySiteTheme(siteThemeState.current === "light" ? "dark" : "light");

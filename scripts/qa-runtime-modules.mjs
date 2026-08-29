@@ -94,6 +94,8 @@ for (const [page, modules] of Object.entries(PAGE_MODULES)) {
 
 /* These orderings reproduce the single-file execution order and are load-bearing. */
 const ORDER = [
+  ["js/core/analytics-config.js", "js/core/analytics.js"],
+  ["js/core/analytics.js", "js/core/shell.js"],
   ["js/core/shell.js", "js/core/theme.js"],
   ["js/core/theme.js", "js/core/i18n.js"],
   ["js/core/i18n.js", "js/portfolio/routing.js"],

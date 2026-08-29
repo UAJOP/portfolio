@@ -19,6 +19,8 @@
    */
 
   const COMMON = [
+    "js/core/analytics-config.js",
+    "js/core/analytics.js",
     "js/core/shell.js",
     "js/core/theme.js",
     "js/core/media.js",

@@ -3,7 +3,7 @@
 Manual regression pass for the static site. Companion to [`portfolio-baseline-audit.md`](portfolio-baseline-audit.md).
 
 **Baseline captured at:** `45d477a` on branch `audit/portfolio-baseline-v1`, 2026-08-29.
-**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`); BRIEF 03 — Frontend Runtime Modularization (`refactor/frontend-runtime-modularization-v1`); BRIEF 04 — CSS Architecture & Accessibility (`refactor/css-accessibility-responsive-v1`); BRIEF 05 — Recruiter Conversion UX (`feat/recruiter-conversion-ux-v1`).
+**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`); BRIEF 03 — Frontend Runtime Modularization (`refactor/frontend-runtime-modularization-v1`); BRIEF 04 — CSS Architecture & Accessibility (`refactor/css-accessibility-responsive-v1`); BRIEF 05 — Recruiter Conversion UX (`feat/recruiter-conversion-ux-v1`); BRIEF 06 — Analytics & Recruiter Funnel (`feat/recruiter-funnel-analytics-v1`).
 
 ## How to use this
 
@@ -43,6 +43,10 @@ npm run qa:a11y:static
 
 ```bash
 npm run qa:recruiter
+```
+
+```bash
+npm run qa:analytics
 ```
 
 ```bash
@@ -467,6 +471,34 @@ npm run qa:recruiter
 > **Roles come from canonical data only.** `projects.json` and `project-details.json` own them; the composer projects a linked project's role from its detail record, so no role is stored twice. **Never hand-write a role into markup** — add it to canonical data and regenerate.
 >
 > **Do not make Recruiter Mode auto-open.** It is a focus-trapping modal; re-opening it on navigation is a dark pattern and `qa:recruiter` fails if `setRecruiterMode(true)` appears at load.
+
+---
+
+## Analytics and recruiter funnel (BRIEF 06)
+
+> See [`analytics-recruiter-funnel.md`](analytics-recruiter-funnel.md). Production collection remains disabled until the owner supplies an Umami Website ID.
+
+```bash
+npm run qa:analytics
+```
+
+- [ ] Analytics unavailable does not break site behavior
+- [ ] Local development does not emit production analytics
+- [ ] `recruiter_mode_open` fires once per intentional closed-to-open transition
+- [ ] `selected_work_open` carries a valid canonical project identifier
+- [ ] `github_open` carries a valid project identifier when canonical context exists
+- [ ] `live_demo_open` carries a valid project identifier
+- [ ] `cv_open` covers intended CV links/actions
+- [ ] `contact_open` covers intentional email and Request entry actions
+- [ ] `request_start` fires once per page form
+- [ ] `request_submit` fires only after confirmed `{ ok: true }`
+- [ ] No form values are sent
+- [ ] No chatbot text is sent
+- [ ] One CTA action does not emit a duplicate event of the same type
+- [ ] Analytics config contains no secret
+- [ ] Provider script is non-blocking
+- [ ] Search parameters and hashes are excluded from provider URLs
+- [ ] Production domain allowlist and Do Not Track behavior remain enabled
 
 ---
 

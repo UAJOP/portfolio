@@ -53,6 +53,9 @@ function setupProjectCardNavigation() {
 
     card.addEventListener("click", (event) => {
       if (shouldIgnoreCardActivation(event)) return;
+      if (typeof trackAnalyticsNavigation === "function") {
+        trackAnalyticsNavigation(url, "works");
+      }
       window.location.href = url;
     });
   });

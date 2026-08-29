@@ -146,11 +146,11 @@ Verified at 320 / 375 / 768: no horizontal overflow, primary CTA inside the firs
 
 BRIEF 04's baseline is preserved: 44/44 skip links, 0 html-validate errors and warnings, shared focus trap, reduced motion, touch targets. The new role line is a plain `<p>` inside the existing card heading order, so it adds no landmark or heading noise. The recruiter-intent marker is a class on the existing toggle — no new control, no new tab stop.
 
-## Future Analytics Events
+## Recruiter Funnel Measurement
 
-Concept only — **no analytics SDK was added**, and none should be until BRIEF 06 defines consent and storage:
+BRIEF 06 implemented a privacy-conscious, production-configurable event layer for the recruiter journey. The small event model is `recruiter_mode_open`, `selected_work_open`, `project_open`, `github_open`, `live_demo_open`, `cv_open`, `contact_open`, `request_start`, and confirmed `request_submit`.
 
-`recruiter_mode_open` · `selected_work_open` · `case_study_open` · `github_open` · `live_demo_open` · `cv_open` · `contact_open` · `request_start` · `request_submit`
+It collects controlled identifiers and funnel context, never form/chat text. See [`analytics-recruiter-funnel.md`](analytics-recruiter-funnel.md) for provider choice, privacy boundaries, exact triggers, production configuration, and future metrics.
 
 ## What actually changed
 
@@ -164,7 +164,7 @@ Three canonical `role` values (joyday, chatbotFlow, hospital) were **derived** f
 
 ## Remaining UX Debt
 
-- **No analytics**, so conversion is asserted structurally, not measured. That is BRIEF 06.
+- **Production analytics configuration is pending**, so the measurement architecture is testable but no live conversion rate exists yet. See BRIEF 06.
 - **Recruiter Mode content is role-filtered but not deep-linkable** — there is no shareable URL for "the Applied AI view" beyond the existing `?role=` deep link.
 - **Case-study depth is uneven** by design: flagship studies are rich, archive projects are thin. Padding them would mean inventing content.
 - **No `hreflang`** — TR and EN share one URL (BRIEF 02 decision), so Turkish-language recruiters are not separately targetable in search.

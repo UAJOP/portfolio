@@ -84,6 +84,16 @@ function setupProjectRequestForm() {
   const submit = form.querySelector("[data-request-submit]");
   let requestSubmitting = false;
 
+  const recordRequestStart = (event) => {
+    const control = event.target?.closest?.("input, select, textarea");
+    if (!control || control.type === "hidden") return;
+    if (typeof trackRequestStartOnce === "function") {
+      trackRequestStartOnce(form);
+    }
+  };
+  form.addEventListener("focusin", recordRequestStart);
+  form.addEventListener("change", recordRequestStart);
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (requestSubmitting) return;
@@ -136,6 +146,11 @@ function setupProjectRequestForm() {
 
         if (result.state === REQUEST_SUBMISSION_STATE.SUCCESS) {
           /* Only a confirmed acceptance clears the user's work. */
+          if (typeof trackAnalyticsEvent === "function") {
+            trackAnalyticsEvent(ANALYTICS_EVENTS.REQUEST_SUBMIT, {
+              source: "request",
+            });
+          }
           form.reset();
           form.__requestFormStartedAt = Date.now();
           setRequestStatus("success", text.success, { showEmail: true });
