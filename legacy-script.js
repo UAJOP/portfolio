@@ -6326,12 +6326,14 @@ function getRequestFormText() {
     ? {
         sending: "Talep gönderiliyor...",
         success:
-          "Talebiniz form uç noktasına gönderildi. Tarayıcı bu cross-origin isteğin sunucu tarafında işlendiğini doğrulayamadığı için acil taleplerde e-posta kullanın.",
+          "Talebiniz alındı ve kaydedildi. En kısa sürede dönüş yapacağım. Dilersen doğrudan e-posta da gönderebilirsin:",
+        timeout:
+          "Talep zaman aşımına uğradı ve gönderildiği doğrulanamadı. Bilgilerin formda duruyor; tekrar deneyebilir veya e-posta ile ulaşabilirsin:",
         neutral: "Teşekkürler.",
         fallback:
           "Mail gönderim endpointi henüz bağlanmadığı için e-posta taslağı açıldı. Google Apps Script URL'si request-config.js içine eklenince form direkt mail atacak.",
         error:
-          "Talep gönderilirken bir sorun oluştu. Lütfen tekrar dene veya e-posta butonunu kullan.",
+          "Talep gönderilemedi ve kaydedildiği doğrulanamadı. Bilgilerin formda duruyor; tekrar deneyebilir veya e-posta ile ulaşabilirsin:",
         consent: "Devam etmek için iletişim iznini onaylamalısın.",
         subject: "Yeni proje talebi",
         button: "Talebi Gönder",
@@ -6339,12 +6341,14 @@ function getRequestFormText() {
     : {
         sending: "Sending request...",
         success:
-          "Your request was submitted to the form endpoint. Because the browser cannot verify server-side processing for this cross-origin request, use email for urgent enquiries.",
+          "Your request was received and recorded. I will get back to you shortly. You can also reach me directly at:",
+        timeout:
+          "The request timed out and could not be confirmed as sent. Your details are still in the form — please try again, or email:",
         neutral: "Thank you.",
         fallback:
           "The direct email endpoint is not connected yet, so an email draft was opened. After adding the Google Apps Script URL into request-config.js, the form will send emails directly.",
         error:
-          "Something went wrong while sending the request. Please try again or use the email button.",
+          "The request could not be delivered and was not confirmed as recorded. Your details are still in the form — please try again, or email:",
         consent: "Please confirm the consent checkbox to continue.",
         subject: "New project request",
         button: "Send Request",
@@ -6385,6 +6389,151 @@ function buildRequestMailto(payload) {
   ].join("\n");
   return `mailto:${encodeURIComponent(owner)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
+
+/* request-submission:start
+ * Submission transport for the project request form. Extracted verbatim by
+ * scripts/qa-request-submission.mjs, so keep the start/end markers intact and
+ * keep this block free of DOM access.
+ *
+ * The previous implementation posted with `mode: "no-cors"`, which yields an
+ * opaque response: no status, no body. A server-side 500 resolved exactly like
+ * a success, so the UI confirmed leads that were never stored.
+ *
+ * Verified 2026-08-29 against the deployed Apps Script web app: a cross-origin
+ * POST with a form-urlencoded body needs no preflight, follows the 302 to
+ * script.googleusercontent.com, and both hops send `Access-Control-Allow-Origin: *`.
+ * The final response is readable JSON, so `no-cors` is unnecessary and success
+ * can be confirmed properly.
+ *
+ * SUCCESS therefore requires ALL of: a non-opaque response, a 2xx status,
+ * a parseable JSON body, and an explicit `{ "ok": true }` from the script.
+ * Anything else is an error — never a silent success.
+ */
+
+/* Measured round trip is ~2.9s; this leaves generous headroom for an Apps
+ * Script cold start without leaving the user pending indefinitely. */
+const REQUEST_SUBMISSION_TIMEOUT_MS = 20000;
+
+const REQUEST_SUBMISSION_STATE = Object.freeze({
+  IDLE: "idle",
+  VALIDATING: "validating",
+  SUBMITTING: "submitting",
+  SUCCESS: "success",
+  ERROR: "error",
+});
+
+/** Correlates a client-side failure with a user report. */
+function createRequestId() {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+  } catch (error) {
+    /* fall through to the manual id below */
+  }
+  return `req-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/**
+ * Turns a fetch Response into a submission result. Only an explicit
+ * `{ ok: true }` over a readable 2xx response counts as success.
+ */
+function interpretRequestResponse(response, bodyText, requestId) {
+  if (!response) {
+    return { state: REQUEST_SUBMISSION_STATE.ERROR, reason: "no-response", requestId };
+  }
+
+  /* An opaque response carries neither status nor body, so it can never be
+   * evidence of acceptance. This is the exact regression being guarded. */
+  if (response.type === "opaque" || response.type === "opaqueredirect") {
+    return { state: REQUEST_SUBMISSION_STATE.ERROR, reason: "opaque", requestId };
+  }
+
+  if (!response.ok) {
+    return {
+      state: REQUEST_SUBMISSION_STATE.ERROR,
+      reason: "http-status",
+      status: response.status,
+      requestId,
+    };
+  }
+
+  let parsed = null;
+  try {
+    parsed = JSON.parse(bodyText);
+  } catch (error) {
+    return { state: REQUEST_SUBMISSION_STATE.ERROR, reason: "malformed", requestId };
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    return { state: REQUEST_SUBMISSION_STATE.ERROR, reason: "malformed", requestId };
+  }
+
+  if (parsed.ok !== true) {
+    return {
+      state: REQUEST_SUBMISSION_STATE.ERROR,
+      reason: "rejected",
+      serverError: parsed.error ? String(parsed.error) : undefined,
+      requestId,
+    };
+  }
+
+  return { state: REQUEST_SUBMISSION_STATE.SUCCESS, requestId };
+}
+
+/**
+ * POSTs the payload and resolves to a structured result. Never throws.
+ * `fetchImpl` and `timeoutMs` are injectable so the QA script can drive every
+ * branch without a network.
+ */
+async function submitRequestPayload(options) {
+  const {
+    endpoint,
+    payload,
+    fetchImpl,
+    timeoutMs = REQUEST_SUBMISSION_TIMEOUT_MS,
+    requestId = createRequestId(),
+  } = options || {};
+
+  const doFetch =
+    fetchImpl || (typeof fetch === "function" ? (...args) => fetch(...args) : null);
+  if (!doFetch) {
+    return { state: REQUEST_SUBMISSION_STATE.ERROR, reason: "no-transport", requestId };
+  }
+
+  const controller =
+    typeof AbortController === "function" ? new AbortController() : null;
+  let timer = null;
+  if (controller && timeoutMs > 0) {
+    timer = setTimeout(() => controller.abort(), timeoutMs);
+  }
+
+  try {
+    const response = await doFetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+      body: new URLSearchParams(payload || {}).toString(),
+      signal: controller ? controller.signal : undefined,
+    });
+    const bodyText = await response.text();
+    return interpretRequestResponse(response, bodyText, requestId);
+  } catch (error) {
+    const timedOut =
+      (error && error.name === "AbortError") ||
+      Boolean(controller && controller.signal.aborted);
+    return {
+      state: REQUEST_SUBMISSION_STATE.ERROR,
+      reason: timedOut ? "timeout" : "network",
+      requestId,
+      error: String((error && error.message) || error),
+    };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+/* request-submission:end */
 
 function setupProjectRequestForm() {
   const form = document.querySelector("[data-request-form]");
@@ -6439,24 +6588,38 @@ function setupProjectRequestForm() {
         !endpoint.includes("PASTE") &&
         endpoint.startsWith("http")
       ) {
-        await fetch(endpoint, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-          body: new URLSearchParams(payload).toString(),
-        });
-        form.reset();
-        form.__requestFormStartedAt = Date.now();
-        setRequestStatus("success", text.success, { showEmail: true });
+        const requestId = createRequestId();
+        payload.requestId = requestId;
+
+        const result = await submitRequestPayload({ endpoint, payload, requestId });
+
+        if (result.state === REQUEST_SUBMISSION_STATE.SUCCESS) {
+          /* Only a confirmed acceptance clears the user's work. */
+          form.reset();
+          form.__requestFormStartedAt = Date.now();
+          setRequestStatus("success", text.success, { showEmail: true });
+        } else {
+          /* Form values are deliberately left intact so the user can retry. */
+          console.error("Request form submission failed", {
+            requestId: result.requestId,
+            reason: result.reason,
+            status: result.status,
+            serverError: result.serverError,
+            error: result.error,
+          });
+          setRequestStatus(
+            "error",
+            result.reason === "timeout" ? text.timeout : text.error,
+            { showEmail: true },
+          );
+        }
       } else {
         window.location.href = buildRequestMailto(payload);
         setRequestStatus("warning", text.fallback);
       }
     } catch (error) {
       console.error("Request form error", error);
-      setRequestStatus("error", text.error);
+      setRequestStatus("error", text.error, { showEmail: true });
     } finally {
       requestSubmitting = false;
       form.removeAttribute("aria-busy");
