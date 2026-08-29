@@ -6,7 +6,7 @@
  * for submissions it could not verify, because `mode: "no-cors"` produced an
  * opaque response in which a 500 was indistinguishable from acceptance.
  *
- * The submission layer is extracted verbatim from legacy-script.js between the
+ * The submission layer is extracted verbatim from js/request/submission.js between the
  * `request-submission` markers, so this exercises the shipped code rather than
  * a copy. Transport is mocked — no network calls are made.
  *
@@ -20,8 +20,14 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const RUNTIME = join(ROOT, "legacy-script.js");
+const RUNTIME = join(ROOT, "js", "request", "submission.js");
 const source = readFileSync(RUNTIME, "utf8");
+
+/* The DOM-free transport lives in js/request/submission.js (extracted above);
+ * the form binding that consumes it lives in js/request/form.js. Handler-level
+ * assertions read the form module, and the no-cors drift guard scans both. */
+const FORM_SOURCE = readFileSync(join(ROOT, "js", "request", "form.js"), "utf8");
+const requestRuntime = [source, FORM_SOURCE].join("\n");
 
 /* ---------- extract the submission layer from the shipped runtime ---------- */
 
@@ -32,7 +38,7 @@ const endIndex = source.indexOf(END);
 
 if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
   console.error(
-    "FAIL: could not find the request-submission markers in legacy-script.js.\n" +
+    "FAIL: could not find the request-submission markers in js/request/submission.js.\n" +
       "The submission layer must stay wrapped in those markers so this test can " +
       "exercise the real implementation.",
   );
@@ -110,7 +116,7 @@ const stripComments = (code) =>
  * executable code. Comments may still discuss it when explaining the fix. */
 check(
   'no runtime code mentions no-cors outside comments',
-  /no-cors/.test(stripComments(source)),
+  /no-cors/.test(stripComments(requestRuntime)),
   false,
 );
 
@@ -123,7 +129,7 @@ check(
 /* The success path must be gated on the state constant, not a bare resolve. */
 check(
   "handler gates success on REQUEST_SUBMISSION_STATE.SUCCESS",
-  /result\.state === REQUEST_SUBMISSION_STATE\.SUCCESS/.test(source),
+  /result\.state === REQUEST_SUBMISSION_STATE\.SUCCESS/.test(FORM_SOURCE),
   true,
 );
 
@@ -268,17 +274,17 @@ check("passes an abort signal", Boolean(observed.options.signal), true);
 
 check(
   "handler guards re-entry while submitting",
-  /if \(requestSubmitting\) return;/.test(source),
+  /if \(requestSubmitting\) return;/.test(FORM_SOURCE),
   true,
 );
 check(
   "handler disables the submit button while in flight",
-  /submit\.disabled = true;/.test(source),
+  /submit\.disabled = true;/.test(FORM_SOURCE),
   true,
 );
 check(
   "handler re-enables the submit button afterwards",
-  /submit\.disabled = false;/.test(source),
+  /submit\.disabled = false;/.test(FORM_SOURCE),
   true,
 );
 
@@ -318,8 +324,8 @@ check("only one request was dispatched", inFlightCalls, 1);
 
 /* ---------- form reset timing (handler-level) ---------- */
 
-const handlerStart = source.indexOf("function setupProjectRequestForm()");
-const handler = source.slice(handlerStart, handlerStart + 4000);
+const handlerStart = FORM_SOURCE.indexOf("function setupProjectRequestForm()");
+const handler = FORM_SOURCE.slice(handlerStart, handlerStart + 4000);
 const successBranch = handler.indexOf("REQUEST_SUBMISSION_STATE.SUCCESS");
 const resetCall = handler.indexOf("form.reset()", successBranch);
 const elseBranch = handler.indexOf("} else {", successBranch);

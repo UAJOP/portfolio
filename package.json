@@ -3,7 +3,7 @@
   "private": true,
   "description": "Automated preflight checks for kaanbalci.com",
   "scripts": {
-    "qa": "npm run qa:data && npm run qa:projects && npm run qa:seo && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
+    "qa": "npm run qa:data && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
     "qa:js": "node qa-js-syntax.js",
     "qa:portfolio": "node qa-portfolio-consistency.js",
     "qa:assets": "node qa-assets.js",
@@ -15,6 +15,7 @@
     "qa:request": "node scripts/qa-request-submission.mjs",
     "qa:projects": "node scripts/qa-project-data.mjs",
     "qa:seo": "node scripts/qa-project-seo.mjs",
+    "qa:runtime": "node scripts/qa-runtime-modules.mjs",
     "qa:a11y": "pa11y-ci --config .pa11yci",
     "qa:lighthouse": "lhci autorun --config=lighthouserc.json",
     "data:generate": "node scripts/generate-portfolio-data.mjs",

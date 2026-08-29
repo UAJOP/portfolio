@@ -34,7 +34,7 @@ The material problems:
 - **P2 — Project data is fragmented across three sources** totalling ~1,700 lines, with overlapping representations of the same projects. This is the direct subject of the next brief. *(RESOLVED in BRIEF 01 — see §4.3 and docs/project-data-architecture.md.)*
 - **P2 — Skip links exist on only 5 of 19 pages** — all case studies, none of the game pages, and not the homepage.
 
-The dominant architectural risk is concentration: `legacy-script.js` (6,638 lines) and `style.css` (6,608 lines) carry nearly every cross-page behaviour and style on the site, and **every page loads both in full**, including the game pages. Any change to either file is a whole-site change. That is the modularization target for a later phase, not this one.
+The dominant architectural risk is concentration: `legacy-script.js` (6,638 lines) and `style.css` (6,608 lines) carry nearly every cross-page behaviour and style on the site, and **every page loads both in full**, including the game pages. Any change to either file is a whole-site change. That is the modularization target for a later phase, not this one. *(The JavaScript half is RESOLVED in BRIEF 03 — see §9. `style.css` remains, and is the subject of BRIEF 04.)*
 
 ---
 
@@ -365,6 +365,24 @@ Mobile nav toggle responds and updates `aria-expanded` at 375 px. One decorative
 5. **Page-specific logic in global code.** Game enhancements (`:6536+`, `:6614+`) and request-form logic live in the shared runtime rather than beside their pages.
 6. **Cross-file coupling via the DOM.** `ai-flow-puzzle.js:404` reads `document.documentElement.lang` *or* `localStorage["kaanbalci-site-language"]` directly instead of a shared accessor, duplicating the language contract.
 
+> **RESOLVED in BRIEF 03** (branch `refactor/frontend-runtime-modularization-v1`). Full detail in [`frontend-runtime-architecture.md`](frontend-runtime-architecture.md).
+>
+> `legacy-script.js` went from **5,244 lines to a 26-line inert stub**. Its responsibilities now live in **19 modules** under `js/`, loaded per page by a manifest in `script.js` keyed off a `<body data-page>` marker. The split was a verbatim slice — content was verified identical as a multiset before and after — so execution order and behaviour are unchanged.
+>
+> Each of the five structural risks above:
+>
+> 1. **One file, one scope** — now 19 modules with declared boundaries. Modules still share the global lexical scope (classic scripts, no bundler); a `KAAN.*` façade is recorded as future cleanup rather than attempted alongside a verbatim move.
+> 2. **Every page loads everything** — page-scoped now. `games.html`, `about.html` and `blog.html` no longer load the request form, project-detail renderer or certificates modal. Verified in the browser.
+> 3. **Initialization-order coupling** — the order is now explicit in the `COMMON` list plus `INSERT_BEFORE` splice points, and `npm run qa:runtime` asserts the orderings that matter instead of leaving them to memory.
+> 4. **Implicit DOM assumptions** — unchanged in behaviour (the guards were already there), but each module's gate is now visible at the top of a focused file.
+> 5. **Page-specific logic in global code** — request, works, project-detail, certificates, games and the 3D lab are page modules.
+>
+> One block was removed rather than moved: a 148-line AI-workflow demo whose `[data-ai-demo]` markers exist in **no HTML file**. Verified dead across every HTML and JS source before deletion.
+>
+> **Payload fell only 11–17%**, and that is the honest result: the two largest blocks, i18n (1,200 lines) and the Ajoop assistant (1,046 lines), are genuinely site-wide. The deliverable is the boundary, not the byte count. Extracting the i18n and Ajoop *data* to generated JSON — the BRIEF 01 pattern — is the next real payload lever and is recorded as future cleanup.
+>
+> Guarded by `npm run qa:runtime` (318 assertions): manifest/module agreement, no orphan or duplicate modules, load-order constraints, page markers, page-scoped modules absent from COMMON, generated-page script contracts, the stub staying inert, inline-handler globals, and `window.KAAN*` global hygiene.
+
 ### FUTURE responsibility map (design target — do not implement here)
 
 ```
@@ -506,7 +524,7 @@ Ranked by likelihood × blast radius.
 | **P2-1** | **Project data fragmented across three sources** (~1,700 lines) with overlapping slugs for the same projects. Direct subject of BRIEF 01. | VERIFIED IN SOURCE — §4.3 | **RESOLVED in BRIEF 01** |
 | **P2-2** | **Skip link on only 5 of 19 pages** — all case studies, none of the games, not the homepage. | VERIFIED IN SOURCE — §7 | **OPEN** |
 | **P2-3** | **Flash of wrong language.** Pre-paint restore covers theme but not language; Turkish visitors see English on first paint on every page. | SOURCE-LEVEL RISK — §5.1 | **OPEN** |
-| **P2-4** | **Every page loads the entire shared runtime**, including game pages that need almost none of it. | VERIFIED IN BROWSER — §9 | **OPEN** |
+| **P2-4** | **Every page loads the entire shared runtime**, including game pages that need almost none of it. | VERIFIED IN BROWSER — §9 | **RESOLVED in BRIEF 03** |
 | **P2-5** | **25 archive projects are unindexable** behind `project-detail.html?project=` with generic canonical and `noindex`. | VERIFIED IN SOURCE — §6 | **RESOLVED in BRIEF 02** |
 | **P2-6** | **boxicons via unpkg is render-blocking** on all 19 pages — an enhancement dependency with critical-path impact. | VERIFIED IN SOURCE — §12 | **OPEN** |
 | **P2-7** | **Recruiter Mode does not persist** and exists only as a body class with no readable state. | VERIFIED IN SOURCE — §5.3 | **OPEN** |
@@ -619,6 +637,8 @@ This audit did not implement any part of it. What follows is only what the migra
 > **BRIEF 01 is now complete.** Every constraint below was honoured: the no-build-step deploy guarantee, deterministic generation with CI parity, the `window.KAAN_PORTFOLIO` boot-order contract, the per-language field shape, and all 25 archive slugs. The three-way overlap was resolved deliberately rather than silently — see §4.3 and [`project-data-architecture.md`](project-data-architecture.md). The next phase is **BRIEF 02 — Unique Project Pages & SEO Architecture**, which addresses P2-5.
 >
 > **BRIEF 02 is now complete**, resolving P2-5: 25 canonical project routes exist with raw-HTML SEO metadata, all legacy URLs still resolve, and the sitemap is generated from canonical data. See §6 and [`project-routing-seo-architecture.md`](project-routing-seo-architecture.md). The next phase is **BRIEF 03 — Frontend Architecture Modularization**, which addresses P2-4 and the JavaScript/CSS risk maps in §9 and §10.
+>
+> **BRIEF 03 is now complete**, resolving P2-4: `legacy-script.js` is a 26-line stub, its responsibilities split into 19 page-aware modules under `js/`. See §9 and [`frontend-runtime-architecture.md`](frontend-runtime-architecture.md). The next phase is **BRIEF 04 — CSS Architecture + Accessibility & Responsive Polish**, which addresses §10 and the accessibility findings in §7.
 
 ### What must be preserved
 

@@ -244,7 +244,7 @@ ok(
   /noindex/.test(metaBy(legacy, "robots", "name") || ""),
 );
 
-const runtime = read("legacy-script.js");
+const runtime = read("js/portfolio/routing.js");
 const resolver = (runtime.match(/function resolveCurrentProjectSlug\(\)[\s\S]*?\n\}/) || [""])[0];
 ok("runtime has a single slug resolver", resolver.length > 0);
 ok(
@@ -259,7 +259,8 @@ ok(
   "resolver prefers the page marker over the query string",
   resolver.indexOf("dataset.projectSlug") < resolver.indexOf("URLSearchParams"),
 );
-ok("runtime keeps the not-found fallback", /Project Not Found|Proje Bulunamadı/.test(runtime));
+const detailModule = read("js/portfolio/project-detail.js");
+ok("runtime keeps the not-found fallback", /Project Not Found|Proje Bulunamadı/.test(detailModule));
 ok("runtime builds canonical project URLs", /function projectUrl\(slug\)/.test(runtime));
 ok("runtime rebases relative URLs by page depth", /function siteUrl\(path\)/.test(runtime));
 

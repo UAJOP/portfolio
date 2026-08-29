@@ -3,7 +3,7 @@
 Manual regression pass for the static site. Companion to [`portfolio-baseline-audit.md`](portfolio-baseline-audit.md).
 
 **Baseline captured at:** `45d477a` on branch `audit/portfolio-baseline-v1`, 2026-08-29.
-**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`).
+**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`); BRIEF 03 — Frontend Runtime Modularization (`refactor/frontend-runtime-modularization-v1`).
 
 ## How to use this
 
@@ -27,6 +27,10 @@ npm run qa:projects
 
 ```bash
 npm run qa:seo
+```
+
+```bash
+npm run qa:runtime
 ```
 
 ```bash
@@ -56,9 +60,10 @@ Checks marked ✅ **verified at baseline** were confirmed in a browser or by scr
 - [ ] Warning count is **14** or lower (social-metadata coverage only). A rise means new metadata drift.
 - [ ] `npm run qa:ajoop` passes — ✅ *294 assertions across 19 intents (added in BRIEF 00.1)*
 - [ ] `npm run qa:request` passes — ✅ *84 assertions, no network calls (added in BRIEF 00.2)*
-- [ ] `npm run qa:projects` passes — ✅ *1,139 assertions · 25 detail records · 5 flagship (added in BRIEF 01)*
+- [ ] `npm run qa:projects` passes — ✅ *1,194 assertions · 25 detail records · 5 flagship (added in BRIEF 01, extended in BRIEF 03)*
 - [ ] `npm run qa:seo` passes — ✅ *1,662 assertions · 25 canonical routes · 25 sitemap project URLs (added in BRIEF 02)*
-- [ ] `node qa-js-syntax.js` passes — ✅ *baseline: 19 files*
+- [ ] `npm run qa:runtime` passes — ✅ *318 assertions · 19 modules · 13 page types (added in BRIEF 03)*
+- [ ] `node qa-js-syntax.js` passes — ✅ *37 files (root scripts + js/ modules since BRIEF 03)*
 - [ ] `node qa-assets.js` passes — ✅ *baseline: 63 assets*
 - [ ] `node qa-internal-links.js` passes — ✅ *baseline: 453 references*
 - [ ] `node qa-portfolio-data.js` passes (canonical JSON ↔ generated `portfolio-data.js` parity)
@@ -91,7 +96,7 @@ Checks marked ✅ **verified at baseline** were confirmed in a browser or by scr
 
 ### Known non-blocking baseline condition
 
-- **Flash of wrong language (P2-3):** the pre-paint script restores theme only. A returning Turkish visitor sees English content on first paint on every page, until `legacy-script.js` runs. Expected today — do not log as new.
+- **Flash of wrong language (P2-3):** the pre-paint script restores theme only. A returning Turkish visitor sees English content on first paint on every page, until `js/core/i18n.js` runs. Expected today — do not log as new.
 
 ---
 
@@ -290,6 +295,61 @@ npm run qa:seo
 - [ ] Joyday Paint: strokes land under the pointer at small viewport widths — **UNVERIFIED at baseline.** The canvas has a fixed 900×900 backing store scaled by CSS; check for coordinate mismatch after **any** CSS change near the canvas.
 - [ ] No global CSS from `style.css` visibly breaks game layout
 - [ ] Game pages still boot if the shared runtime changes (each loads the full `legacy-script.js` first)
+
+---
+
+## Frontend runtime modules (BRIEF 03)
+
+> ~~One 5,244-line `legacy-script.js` loaded on every page.~~ The runtime is now 19 modules under `js/`, loaded per page by the manifest in `script.js` keyed off `<body data-page>`. `legacy-script.js` is a 26-line inert stub kept as a public URL.
+> See [`frontend-runtime-architecture.md`](frontend-runtime-architecture.md).
+
+Covered automatically:
+
+```bash
+npm run qa:runtime
+```
+
+- [ ] Common runtime boots on every page type — ✅ *verified: 12 common modules load*
+- [ ] Theme works on representative pages — ✅ *verified: toggles light↔dark on index*
+- [ ] TR/EN works — ✅ *verified on index, about, project pages (`lang` + nav copy switch)*
+- [ ] Desktop navigation works
+- [ ] Mobile navigation works
+- [ ] Works filters work — ✅ *verified: 10 cards → 3 on "ai" filter, restored on "all"*
+- [ ] Canonical project detail works — ✅ *verified: `/projects/my-museum/`, 1 h1, image loads, prev/next canonical*
+- [ ] Legacy project detail works — ✅ *verified: `?project=warehouse-war` renders*
+- [ ] Recruiter Mode works — ✅ *verified: opens, 3 evidence links, canonical hrefs*
+- [ ] Ajoop works — ✅ *verified: `SINAMA` → `sinama`; matcher untouched*
+- [ ] Request works — ✅ *verified: 500 → error + values kept; `{ok:true}` → success + form cleared*
+- [ ] Games boot without portfolio-module errors — ✅ *verified: adventure / ai-flow-puzzle / joyday-paint, zero console errors, canvas intact*
+- [ ] About/blog load without unrelated runtime errors — ✅ *verified*
+- [ ] Certificates modal opens and closes — ✅ *verified on single-work.html (click + Escape)*
+- [ ] Labs 3D canvas module loads only on labs.html — ✅ *verified*
+- [ ] Generated pages have correct script dependencies — ✅ *asserted for all 25*
+- [ ] No removed legacy script reference — ✅ *asserted: no page loads `js/*` directly or `legacy-script.js`*
+- [ ] No duplicate script loading — ✅ *asserted*
+- [ ] No console errors — ✅ *verified in clean tabs across every page type*
+- [ ] Page-specific feature code is not loaded globally — ✅ *asserted: request/works/project-detail/certificates/games/labs absent from COMMON*
+
+### Page-aware loading spot check
+
+| Page | Must load | Must NOT load |
+|---|---|---|
+| `index.html` | 12 common only | request, works, project-detail, labs |
+| `works.html` | + `portfolio/works.js` | request, project-detail |
+| `games.html` | + `works.js`, `pages/games.js` | request, project-detail |
+| `adventure.html` | + `pages/games.js` | request, project-detail |
+| `/projects/<slug>/` | + `portfolio/project-detail.js` | request, works |
+| `request.html` | + `request/submission.js`, `request/form.js` | project-detail |
+| `single-work.html` | + `features/certificates.js` | request, works |
+| `labs.html` | + `pages/labs.js` | request, works |
+
+> **Load order is a contract.** `i18n.js` → `routing.js` → `assistant.js` (which runs `applyLanguage()` at load), `matcher.js` before `assistant.js`, `ultimate.js` before recruiter/palette/ajoop-nav. Page modules are *spliced* via `INSERT_BEFORE`, not appended. `qa:runtime` asserts all of it.
+>
+> **Never add `<script src="js/…">` to a page.** The manifest owns load order and QA fails on a direct reference.
+>
+> **After changing `project-detail.html` script tags or its body marker:** run `npm run generate:projects`.
+>
+> **Inline handlers:** three pages use `onclick="openDrivePreviews()"`, which only resolves while `js/core/shell.js` stays in COMMON. QA asserts that pairing.
 
 ---
 

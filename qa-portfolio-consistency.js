@@ -151,7 +151,31 @@ htmlFiles.forEach((file) => {
 });
 
 // --- Dynamic archive route --------------------------------------------------
-const legacyRuntime = read("legacy-script.js");
+// BRIEF 03 split the single legacy runtime into modules under js/. These checks
+// describe shipped behaviour, so they read the concatenated module sources
+// rather than the legacy-script.js compatibility stub.
+const legacyRuntime = [
+  "js/core/shell.js",
+  "js/core/theme.js",
+  "js/core/media.js",
+  "js/core/i18n.js",
+  "js/portfolio/routing.js",
+  "js/portfolio/project-detail.js",
+  "js/portfolio/works.js",
+  "js/ajoop/matcher.js",
+  "js/ajoop/assistant.js",
+  "js/features/ultimate.js",
+  "js/features/recruiter.js",
+  "js/features/command-palette.js",
+  "js/features/ajoop-nav.js",
+  "js/features/creative.js",
+  "js/features/certificates.js",
+  "js/request/submission.js",
+  "js/request/form.js",
+  "js/pages/games.js",
+]
+  .map(read)
+  .join("\n");
 check(
   !/params\.get\("project"\)\s*\|\|/.test(legacyRuntime),
   "project-detail must not fall back to a hardcoded slug; a missing or unknown project belongs in the not-found state",

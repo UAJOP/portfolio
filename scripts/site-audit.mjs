@@ -201,7 +201,8 @@ if (!existsSync(robotsPath)) {
 const stripComments = (code) =>
   code.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
-const chatbotSrc = stripComments(readFileSync(join(ROOT, "legacy-script.js"), "utf8"));
+/* BRIEF 03 moved the matcher into js/ajoop/matcher.js. */
+const chatbotSrc = stripComments(readFileSync(join(ROOT, "js", "ajoop", "matcher.js"), "utf8"));
 const usesTurkishFold = /toLocaleLowerCase\(\s*["']tr-TR["']\s*\)/.test(chatbotSrc);
 /* ASCII "I" becomes dotless "ı" under Turkish folding, so these inputs cannot match. */
 const brokenSamples = ["SINAMA", "AI", "GITHUB", "EMAIL"].filter(

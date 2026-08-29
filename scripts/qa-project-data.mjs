@@ -138,7 +138,7 @@ for (const [slug, want] of Object.entries(baseline.records)) {
 /* ---------- 5 & 6. project-detail lookup behaviour ---------- */
 
 /* The runtime resolves `projectDetailData[slug]`, projected from the registry. */
-const runtime = read("legacy-script.js");
+const runtime = read("js/portfolio/routing.js");
 ok(
   "5. project-detail projects the catalog from the registry",
   /window\.KAAN_PORTFOLIO && window\.KAAN_PORTFOLIO\.projectDetails/.test(runtime),
@@ -313,7 +313,33 @@ for (const [id, project] of Object.entries(sourceProjects)) {
 const stripComments = (code) =>
   code.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
-for (const file of ["legacy-script.js", "portfolio-v2.js"]) {
+/* Every shipped runtime module, so project facts cannot reappear in any of
+ * them. BRIEF 03 split legacy-script.js into js/**; the stub is included so a
+ * regression that revives it is caught too. */
+const RUNTIME_FILES = [
+  "legacy-script.js",
+  "portfolio-v2.js",
+  "js/core/shell.js",
+  "js/core/theme.js",
+  "js/core/media.js",
+  "js/core/i18n.js",
+  "js/portfolio/routing.js",
+  "js/portfolio/project-detail.js",
+  "js/portfolio/works.js",
+  "js/ajoop/matcher.js",
+  "js/ajoop/assistant.js",
+  "js/features/ultimate.js",
+  "js/features/recruiter.js",
+  "js/features/command-palette.js",
+  "js/features/ajoop-nav.js",
+  "js/features/creative.js",
+  "js/features/certificates.js",
+  "js/request/submission.js",
+  "js/request/form.js",
+  "js/pages/games.js",
+];
+
+for (const file of RUNTIME_FILES) {
   const code = stripComments(read(file));
   ok(
     `drift: ${file} does not redeclare projectDetailData as a literal`,
@@ -333,8 +359,8 @@ for (const file of ["legacy-script.js", "portfolio-v2.js"]) {
 }
 
 check(
-  "drift: legacy-script.js no longer carries the inline catalog",
-  runtime.split(/\r?\n/).length < 5500,
+  "drift: the routing module carries a projection, not an inline catalog",
+  runtime.split(/\r?\n/).length < 200,
   true,
 );
 

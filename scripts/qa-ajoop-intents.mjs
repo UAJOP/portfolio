@@ -6,7 +6,7 @@
  *   1. Turkish-locale case folding broke uppercase ASCII input (SINAMA -> sınama).
  *   2. Unanchored substring matching produced false positives (email -> ai).
  *
- * The matching layer is extracted verbatim from legacy-script.js between the
+ * The matching layer is extracted verbatim from js/ajoop/matcher.js between the
  * `ajoop-intent-matching` markers, so this tests the shipped code rather than a
  * copy. The intent fixture mirrors the runtime keyword map and is drift-guarded
  * against the source below.
@@ -21,15 +21,24 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const RUNTIME = join(ROOT, "legacy-script.js");
+const RUNTIME = join(ROOT, "js", "ajoop", "matcher.js");
 const source = readFileSync(RUNTIME, "utf8");
 
-/* The runtime keyword map is assembled across two files: legacy-script.js
+/* The runtime keyword map is assembled across two files: js/ajoop/assistant.js
  * declares the base intents, then portfolio-v2.js upserts four more
  * ("sinama", "mergeRush", "roles", "latestBuild") and promotes "roles" to the
  * front. Drift guards must therefore search both. */
-const V2_SOURCE = readFileSync(join(ROOT, "portfolio-v2.js"), "utf8");
-const runtimeSources = source + "\n" + V2_SOURCE;
+/* Intents are assembled across several modules: js/ajoop/assistant.js declares
+ * the base map, js/request/form.js and js/pages/games.js upsert their own
+ * intents, and portfolio-v2.js adds four more and promotes "roles" to the
+ * front. Drift guards must search all of them. */
+const INTENT_SOURCES = [
+  join(ROOT, "js", "ajoop", "assistant.js"),
+  join(ROOT, "js", "request", "form.js"),
+  join(ROOT, "js", "pages", "games.js"),
+  join(ROOT, "portfolio-v2.js"),
+];
+const runtimeSources = [source, ...INTENT_SOURCES.map((f) => readFileSync(f, "utf8"))].join("\n");
 
 /* Comments legitimately mention the old API when explaining the fix, so strip
  * them before asserting the implementation no longer calls it. */
@@ -45,7 +54,7 @@ const endIndex = source.indexOf(END);
 
 if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
   console.error(
-    "FAIL: could not find the ajoop-intent-matching markers in legacy-script.js.\n" +
+    "FAIL: could not find the ajoop-intent-matching markers in js/ajoop/matcher.js.\n" +
       "The matching layer must stay wrapped in those markers so this test can " +
       "exercise the real implementation.",
   );
@@ -69,7 +78,7 @@ const {
  * Mirrors window.chatbotKeywordMap in runtime order (the map is assembled from
  * several unshift/upsert blocks, so order is captured here rather than
  * re-derived). Drift is guarded below: every id and keyword must still exist in
- * legacy-script.js.
+ * the runtime modules.
  */
 
 const INTENTS = [
