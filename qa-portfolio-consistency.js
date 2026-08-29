@@ -151,7 +151,31 @@ htmlFiles.forEach((file) => {
 });
 
 // --- Dynamic archive route --------------------------------------------------
-const legacyRuntime = read("legacy-script.js");
+// BRIEF 03 split the single legacy runtime into modules under js/. These checks
+// describe shipped behaviour, so they read the concatenated module sources
+// rather than the legacy-script.js compatibility stub.
+const legacyRuntime = [
+  "js/core/shell.js",
+  "js/core/theme.js",
+  "js/core/media.js",
+  "js/core/i18n.js",
+  "js/portfolio/routing.js",
+  "js/portfolio/project-detail.js",
+  "js/portfolio/works.js",
+  "js/ajoop/matcher.js",
+  "js/ajoop/assistant.js",
+  "js/features/ultimate.js",
+  "js/features/recruiter.js",
+  "js/features/command-palette.js",
+  "js/features/ajoop-nav.js",
+  "js/features/creative.js",
+  "js/features/certificates.js",
+  "js/request/submission.js",
+  "js/request/form.js",
+  "js/pages/games.js",
+]
+  .map(read)
+  .join("\n");
 check(
   !/params\.get\("project"\)\s*\|\|/.test(legacyRuntime),
   "project-detail must not fall back to a hardcoded slug; a missing or unknown project belongs in the not-found state",
@@ -220,9 +244,12 @@ htmlFiles.forEach((file) => {
 
     const target = (open.match(/data-(?:project|game)-link="([^"]*)"/) || [])[1];
     if (!target) return;
+    // Canonical project route since BRIEF 02. The legacy
+    // project-detail.html?project=<slug> URL still resolves, but internal
+    // links point at the unique page.
     const expected = target.endsWith(".html") || target.includes(".html?")
       ? target
-      : `project-detail.html?project=${encodeURIComponent(target)}`;
+      : `projects/${encodeURIComponent(target)}/`;
     const titleHref = (card.match(/<h3[^>]*>\s*<a[^>]+href="([^"]*)"/) || [])[1];
     check(titleHref === expected, `${file}: card targeting "${target}" must expose that destination as a real title anchor (found ${titleHref || "none"})`);
   });

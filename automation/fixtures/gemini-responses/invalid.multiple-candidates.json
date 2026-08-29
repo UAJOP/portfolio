@@ -1,0 +1,26 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\"schema_version\":1,\"project_slug\":\"sinama\",\"repository\":\"UAJOP/sinama\",\"event_key\":\"github:f85dc84e40428161217f0d50ec5b4c30\",\"recommendation\":\"update\",\"confidence\":\"high\",\"evidence\":[\"github_event\"],\"proposed_changes\":[{\"field\":\"currentFocus.en\",\"current\":\"Semantic-judge calibration and stabilization\",\"proposed\":\"Offline semantic-judge calibration and stabilization\",\"reason\":\"The verified commit adds a local-only offline calibration path.\",\"evidence_refs\":[\"github_event\"]},{\"field\":\"currentFocus.tr\",\"current\":\"Semantic-judge calibration ve stabilizasyon\",\"proposed\":\"Offline semantic-judge calibration ve stabilizasyon\",\"reason\":\"Doğrulanmış commit yalnızca local çalışan offline calibration yolu ekliyor.\",\"evidence_refs\":[\"github_event\"]}],\"warnings\":[\"Fixture only: this proposal must never be applied to the production checkout.\"]}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "index": 0
+    },
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\"schema_version\":1,\"project_slug\":\"sinama\",\"repository\":\"UAJOP/sinama\",\"event_key\":\"github:f85dc84e40428161217f0d50ec5b4c30\",\"recommendation\":\"update\",\"confidence\":\"high\",\"evidence\":[\"github_event\"],\"proposed_changes\":[{\"field\":\"currentFocus.en\",\"current\":\"Semantic-judge calibration and stabilization\",\"proposed\":\"Offline semantic-judge calibration and stabilization\",\"reason\":\"The verified commit adds a local-only offline calibration path.\",\"evidence_refs\":[\"github_event\"]},{\"field\":\"currentFocus.tr\",\"current\":\"Semantic-judge calibration ve stabilizasyon\",\"proposed\":\"Offline semantic-judge calibration ve stabilizasyon\",\"reason\":\"Doğrulanmış commit yalnızca local çalışan offline calibration yolu ekliyor.\",\"evidence_refs\":[\"github_event\"]}],\"warnings\":[\"Fixture only: this proposal must never be applied to the production checkout.\"]}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "index": 1
+    }
+  ]
+}

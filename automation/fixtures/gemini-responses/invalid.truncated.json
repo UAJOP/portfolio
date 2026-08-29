@@ -1,0 +1,14 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\"schema_version\": 1, \"project_slug\": \"sinama\", \"proposed_ch"
+          }
+        ]
+      },
+      "finishReason": "MAX_TOKENS"
+    }
+  ]
+}

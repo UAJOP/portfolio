@@ -21,10 +21,10 @@ const registry = sandbox.window.KAAN_PORTFOLIO;
 const roles = Object.keys(registry.recruiterProfiles);
 
 // Project slugs the dynamic archive route can actually resolve.
-const legacyRuntime = read("legacy-script.js");
-const slugs = new Set(
-  [...legacyRuntime.matchAll(/^\s{2}"([a-z0-9-]+)":\s*\{/gm)].map((match) => match[1])
-);
+// These were scraped out of legacy-script.js until BRIEF 01 moved the detail
+// records into data/portfolio/project-details.json; they now come from the
+// generated registry, which is the same object the runtime resolves against.
+const slugs = new Set(Object.keys(registry.projectDetails));
 
 const htmlFiles = fs.readdirSync(".").filter((file) => file.endsWith(".html"));
 const idsByFile = {};
@@ -55,6 +55,19 @@ htmlFiles.forEach((file) => {
 
     if (fragment && target.endsWith(".html") && idsByFile[target]) {
       check(idsByFile[target].has(fragment), `${file} -> dead anchor: ${reference}`);
+    }
+
+    // Canonical project route since BRIEF 02: /projects/<slug>/. The directory
+    // existing is not enough — it must be a known slug with a generated page.
+    const canonicalProject = target.match(/^projects\/([^/]+)\/$/);
+    if (canonicalProject) {
+      projectLinks += 1;
+      const slug = decodeURIComponent(canonicalProject[1]);
+      check(slugs.has(slug), `${file} -> unknown project slug: ${reference}`);
+      check(
+        fs.existsSync(`projects/${slug}/index.html`),
+        `${file} -> project route has no generated page: ${reference}`
+      );
     }
 
     if (!query) return;

@@ -1,0 +1,14 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\"project_slug\": \"sinama\", \"proposed_changes\": [],}"
+          }
+        ]
+      },
+      "finishReason": "STOP"
+    }
+  ]
+}

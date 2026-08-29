@@ -173,7 +173,7 @@
   },
   "joyday": {
     "id": "joyday",
-    "name": "Atölye Joyday Official Website",
+    "detailSlug": "atolye-joyday-official-website",
     "status": {
       "en": "Live",
       "tr": "Canlı"
@@ -193,7 +193,7 @@
   },
   "chatbotFlow": {
     "id": "chatbotFlow",
-    "name": "AI Chatbot Flow Design",
+    "detailSlug": "ai-chatbot-flow-design",
     "status": {
       "en": "Case Study",
       "tr": "Case Study"
@@ -207,12 +207,12 @@
       "tr": "Kurumsal chatbot QA, stabilizasyon, flow restructuring ve multi-channel workflow kanıtı."
     },
     "links": {
-      "caseStudy": "project-detail.html?project=ai-chatbot-flow-design"
+      "caseStudy": "projects/ai-chatbot-flow-design/"
     }
   },
   "hospital": {
     "id": "hospital",
-    "name": "Hospital Form App",
+    "detailSlug": "hospital-form-app",
     "status": {
       "en": "Source Archive",
       "tr": "Kaynak Arşivi"

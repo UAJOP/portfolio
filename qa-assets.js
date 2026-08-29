@@ -101,7 +101,9 @@ htmlFiles
     });
   });
 
-const legacyRuntime = read("legacy-script.js");
+// BRIEF 03 moved the runtime image policy out of legacy-script.js: fallbacks
+// live in js/core/media.js and the lazy/priority pass in js/features/creative.js.
+const legacyRuntime = [read("js/core/media.js"), read("js/features/creative.js")].join("\n");
 const siteStyles = read("style.css");
 const caseStudyStyles = read("case-study.css");
 

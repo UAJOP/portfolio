@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "event_key": "github:f85dc84e40428161217f0d50ec5b4c30",
+  "project_slug": "sinama",
+  "repository": "UAJOP/sinama",
+  "event_type": "manual",
+  "event_id": "d22e41b9a55c65416f790f5abddfa0e20b693121",
+  "meaningful_reason": "explicit-manual-trigger",
+  "ref": "d22e41b9a55c65416f790f5abddfa0e20b693121",
+  "title": "feat: add zero-cost local Ollama judge for offline calibration",
+  "summary": "Adds an offline calibration judge reachable only from the calibration CLI while leaving the production semantic provider path unchanged.",
+  "changed_files": [
+    "backend/app/config.py",
+    "backend/app/semantic_calibration_cli.py",
+    "backend/app/semantic_judge.py",
+    "backend/app/semantic_judge_local.py",
+    "backend/tests/test_semantic_local_judge.py",
+    "docs/SEMANTIC_SHADOW.md"
+  ],
+  "commit_sha": "d22e41b9a55c65416f790f5abddfa0e20b693121",
+  "repository_url": "https://github.com/UAJOP/sinama",
+  "source_url": "https://github.com/UAJOP/sinama/commit/d22e41b9a55c65416f790f5abddfa0e20b693121",
+  "collected_at": "2026-08-19T22:38:12.000Z",
+  "evidence": [
+    {
+      "ref": "github_event",
+      "type": "manual",
+      "source": "github",
+      "title": "feat: add zero-cost local Ollama judge for offline calibration",
+      "excerpt": "Adds an offline calibration judge reachable only from the calibration CLI while leaving the production semantic provider path unchanged.",
+      "url": "https://github.com/UAJOP/sinama/commit/d22e41b9a55c65416f790f5abddfa0e20b693121"
+    }
+  ]
+}

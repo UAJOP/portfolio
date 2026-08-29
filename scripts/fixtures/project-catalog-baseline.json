@@ -1,0 +1,918 @@
+{
+  "_comment": "Pre-migration contract snapshot of project-detail.html?project=<slug>, captured from legacy-script.js at 45d477a before BRIEF 01 moved the records into data/portfolio/project-details.json. Guards against silent data loss: slugs, titles, categories, link targets and the field set per record. Prose fields are intentionally not snapshotted so ordinary copy edits do not fail QA.",
+  "capturedAt": "2026-08-29",
+  "capturedFrom": "legacy-script.js projectDetailData + githubRepositoryProjectDetails (45d477a)",
+  "slugOrder": [
+    "ai-chatbot-flow-design",
+    "atolye-joyday-official-website",
+    "drivenfinity",
+    "dunker-madness",
+    "unity-essentials",
+    "extract-shoot-zero",
+    "tank-savage",
+    "hospital-form-app",
+    "cars-dataset-analysis",
+    "my-museum",
+    "weather-app",
+    "control-panel",
+    "hospital-appointment-system",
+    "escape-island",
+    "calculator-android-studio",
+    "calculator-javascript",
+    "warehouse-war",
+    "legacy-of-the-lost",
+    "porto-25",
+    "my-java-projects",
+    "agency-db",
+    "mandelas-web-site-project",
+    "pyhton-projects",
+    "ic-supply",
+    "portfolio-website"
+  ],
+  "records": {
+    "ai-chatbot-flow-design": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "impact",
+        "links",
+        "overview",
+        "process",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "AI Chatbot Flow Design",
+        "tr": "AI Chatbot Akış Tasarımı"
+      },
+      "category": {
+        "en": "AI & Automation",
+        "tr": "AI & Otomasyon"
+      },
+      "year": "2025",
+      "image": "assets/ai_flow_chatbot_design_cover.webp",
+      "linkUrls": [
+        "blog.html"
+      ],
+      "stackCount": 7,
+      "galleryCount": 1,
+      "featureCount": 6
+    },
+    "atolye-joyday-official-website": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "impact",
+        "links",
+        "overview",
+        "process",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Atölye Joyday Official Website",
+        "tr": "Atölye Joyday Resmi Web Sitesi"
+      },
+      "category": {
+        "en": "Web Development",
+        "tr": "Web Geliştirme"
+      },
+      "year": "2026",
+      "image": "assets/joyday-homepage-preview.webp",
+      "linkUrls": [
+        "atolye-joyday-case-study.html",
+        "https://atolyejoyday.com/"
+      ],
+      "stackCount": 8,
+      "galleryCount": 3,
+      "featureCount": 5
+    },
+    "drivenfinity": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Drivenfinity",
+        "tr": "Drivenfinity"
+      },
+      "category": {
+        "en": "Game Development",
+        "tr": "Oyun Geliştirme"
+      },
+      "year": "2025",
+      "image": "assets/drivenfinity-cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/Drivenfinity"
+      ],
+      "stackCount": 5,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "dunker-madness": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Dunker Madness",
+        "tr": "Dunker Madness"
+      },
+      "category": {
+        "en": "Game Development",
+        "tr": "Oyun Geliştirme"
+      },
+      "year": "2025",
+      "image": "assets/Ekran görüntüsü 2025-02-25 202336.png",
+      "linkUrls": [
+        "https://github.com/UAJOP/DunkerMadness"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "unity-essentials": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Unity Essentials",
+        "tr": "Unity Essentials"
+      },
+      "category": {
+        "en": "Game Development",
+        "tr": "Oyun Geliştirme"
+      },
+      "year": "2025",
+      "image": "assets/unity-essentials-cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/UnityEssentials"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "extract-shoot-zero": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Extract Shoot: Zero",
+        "tr": "Extract Shoot: Zero"
+      },
+      "category": {
+        "en": "Game Development",
+        "tr": "Oyun Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg",
+      "linkUrls": [
+        "https://github.com/UAJOP/ExtractShoot-Zero"
+      ],
+      "stackCount": 5,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "tank-savage": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Tank Savage",
+        "tr": "Tank Savage"
+      },
+      "category": {
+        "en": "Game Development",
+        "tr": "Oyun Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/maxresdefault.jpg",
+      "linkUrls": [
+        "https://github.com/UAJOP/TankSavage"
+      ],
+      "stackCount": 5,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "hospital-form-app": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "process",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Hospital Form App",
+        "tr": "Hospital Form App"
+      },
+      "category": {
+        "en": "Software / Database",
+        "tr": "Yazılım / Veritabanı"
+      },
+      "year": "2024",
+      "image": "assets/hospital_form_app_cover.webp",
+      "linkUrls": [
+        "hospital-system-case-study.html",
+        "https://github.com/UAJOP/Hospital-System"
+      ],
+      "stackCount": 6,
+      "galleryCount": 5,
+      "featureCount": 5
+    },
+    "cars-dataset-analysis": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Cars Dataset Analysis",
+        "tr": "Cars Veri Seti Analizi"
+      },
+      "category": {
+        "en": "Data Analysis",
+        "tr": "Veri Analizi"
+      },
+      "year": "2024",
+      "image": "assets/what-is-data-analyst.jpg",
+      "linkUrls": [
+        "https://github.com/UAJOP/Cars-Dataset-Analysis"
+      ],
+      "stackCount": 7,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "my-museum": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "MyMuseum — Mobile Content App",
+        "tr": "MyMuseum — Mobil İçerik Uygulaması"
+      },
+      "category": {
+        "en": "Mobile Development",
+        "tr": "Mobil Geliştirme"
+      },
+      "year": "2023",
+      "image": "assets/insatagram.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/MyMuseum"
+      ],
+      "stackCount": 5,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "weather-app": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Weather App",
+        "tr": "Weather App"
+      },
+      "category": {
+        "en": "Web Development",
+        "tr": "Web Geliştirme"
+      },
+      "year": "2023",
+      "image": "assets/7477790.png",
+      "linkUrls": [
+        "https://github.com/UAJOP/Wheather-App"
+      ],
+      "stackCount": 5,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "control-panel": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Control Panel",
+        "tr": "Control Panel"
+      },
+      "category": {
+        "en": "Web & Dashboard",
+        "tr": "Web & Dashboard"
+      },
+      "year": "2024",
+      "image": "assets/control_panel_cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/Control-Panel"
+      ],
+      "stackCount": 5,
+      "galleryCount": 1,
+      "featureCount": 6
+    },
+    "hospital-appointment-system": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "impact",
+        "links",
+        "overview",
+        "process",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Hospital Appointment System",
+        "tr": "Hospital Appointment System"
+      },
+      "category": {
+        "en": "Data / Backend",
+        "tr": "Veri / Backend"
+      },
+      "year": "2024",
+      "image": "assets/hastane.jpg",
+      "linkUrls": [
+        "https://github.com/UAJOP/Hospital-Appointment-System"
+      ],
+      "stackCount": 6,
+      "galleryCount": 2,
+      "featureCount": 6
+    },
+    "escape-island": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Escape Island",
+        "tr": "Escape Island"
+      },
+      "category": {
+        "en": "Game Development",
+        "tr": "Oyun Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/escape-island-cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/EscapeIsland"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "calculator-android-studio": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Calculator Android Studio",
+        "tr": "Calculator Android Studio"
+      },
+      "category": {
+        "en": "Mobile Development",
+        "tr": "Mobil Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/calculator-cartoon-illustration-png.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/Calculator-Android-Studio"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "calculator-javascript": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Calculator JavaScript",
+        "tr": "Calculator JavaScript"
+      },
+      "category": {
+        "en": "Web Development",
+        "tr": "Web Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/images.png",
+      "linkUrls": [
+        "https://github.com/UAJOP/Calculator-JavaScript"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "warehouse-war": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Warehouse War",
+        "tr": "Warehouse War"
+      },
+      "category": {
+        "en": "Game Development",
+        "tr": "Oyun Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/warehouse-wreckage-cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/Warehouse-War"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "legacy-of-the-lost": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Legacy of the Lost",
+        "tr": "Legacy of the Lost"
+      },
+      "category": {
+        "en": "Game Development",
+        "tr": "Oyun Geliştirme"
+      },
+      "year": "2025",
+      "image": "assets/legacy-of-the-lost-cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/LegacyOfTheLost"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "porto-25": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Porto 25",
+        "tr": "Porto 25"
+      },
+      "category": {
+        "en": "Web Development",
+        "tr": "Web Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/porto_25_cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/Porto-25"
+      ],
+      "stackCount": 5,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "my-java-projects": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "My Java Projects",
+        "tr": "My Java Projects"
+      },
+      "category": {
+        "en": "Software Development",
+        "tr": "Yazılım Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/java.png",
+      "linkUrls": [
+        "https://github.com/UAJOP/My-java-projects"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "agency-db": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Agency DB",
+        "tr": "Agency DB"
+      },
+      "category": {
+        "en": "Data / Backend",
+        "tr": "Veri / Backend"
+      },
+      "year": "2024",
+      "image": "assets/agency_db_cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/Agency-Db"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "mandelas-web-site-project": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Mandelas Website Project",
+        "tr": "Mandelas Website Project"
+      },
+      "category": {
+        "en": "Web Development",
+        "tr": "Web Geliştirme"
+      },
+      "year": "2024",
+      "image": "assets/images (1).png",
+      "linkUrls": [
+        "https://github.com/UAJOP/Mandelas-Web-site-Project"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "pyhton-projects": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Python Projects",
+        "tr": "Python Projects"
+      },
+      "category": {
+        "en": "Data / Automation",
+        "tr": "Veri / Otomasyon"
+      },
+      "year": "2024",
+      "image": "assets/Python-Symbol.png",
+      "linkUrls": [
+        "https://github.com/UAJOP/Pyhton-Projects"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "ic-supply": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "IC Supply",
+        "tr": "IC Supply"
+      },
+      "category": {
+        "en": "Data / Backend",
+        "tr": "Veri / Backend"
+      },
+      "year": "2024",
+      "image": "assets/ic_supply_cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/Ic-Supply"
+      ],
+      "stackCount": 4,
+      "galleryCount": 1,
+      "featureCount": 5
+    },
+    "portfolio-website": {
+      "fields": [
+        "category",
+        "challenge",
+        "features",
+        "gallery",
+        "image",
+        "links",
+        "overview",
+        "role",
+        "solution",
+        "stack",
+        "status",
+        "subtitle",
+        "title",
+        "type",
+        "year"
+      ],
+      "title": {
+        "en": "Portfolio Website",
+        "tr": "Portfolio Website"
+      },
+      "category": {
+        "en": "Web Development",
+        "tr": "Web Geliştirme"
+      },
+      "year": "2026",
+      "image": "assets/portfolio_website_cover.webp",
+      "linkUrls": [
+        "https://github.com/UAJOP/portfolio"
+      ],
+      "stackCount": 6,
+      "galleryCount": 1,
+      "featureCount": 5
+    }
+  }
+}

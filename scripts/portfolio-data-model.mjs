@@ -27,6 +27,7 @@ export const CANONICAL_FILES = [
   "profile.json",
   "socials.json",
   "projects.json",
+  "project-details.json",
   "recruiter-profiles.json",
   "build-log.json",
   "labs.json",
@@ -43,6 +44,68 @@ export function readJson(file) {
 }
 
 /**
+ * Projects that also have a full detail record, keyed by project id.
+ *
+ * A project with a detail page had its title stored twice: once as
+ * `projects.json:<id>.name` and again as
+ * `project-details.json:<slug>.title.en`. The detail record owns the title
+ * because it carries both languages, so `projects.json` stores `detailSlug`
+ * instead of `name` and the card title is projected from the detail record —
+ * the same technique already used for `profile.github` / `profile.linkedin`.
+ *
+ * Only the title is shared. `category`, `status.tr` and `summary` vs
+ * `subtitle` differ deliberately between the card and the detail page, so they
+ * stay stored separately. See docs/project-data-architecture.md.
+ */
+export const PROJECT_DETAIL_LINKS = {
+  joyday: "atolye-joyday-official-website",
+  hospital: "hospital-form-app",
+  chatbotFlow: "ai-chatbot-flow-design",
+};
+
+/**
+ * Restores the legacy `name` field for linked projects by projecting it from
+ * the detail record, keeping it at its original key position.
+ */
+export function composeProjects(projects, projectDetails) {
+  const composed = {};
+
+  for (const [id, project] of Object.entries(projects)) {
+    if (!("detailSlug" in project)) {
+      composed[id] = project;
+      continue;
+    }
+
+    const slug = project.detailSlug;
+    const detail = projectDetails[slug];
+    if (!detail) {
+      throw new Error(
+        `projects.json:${id}.detailSlug points at "${slug}", which does not exist in project-details.json`,
+      );
+    }
+
+    const rebuilt = {};
+    for (const [key, value] of Object.entries(project)) {
+      if (key === "detailSlug") rebuilt.name = detail.title.en;
+      else rebuilt[key] = value;
+    }
+
+    /* BRIEF 05: recruiter-facing cards state what Kaan actually did on each
+     * project. The detail record already carries a fact-checked bilingual
+     * `role`, so linked projects project it rather than storing a second copy —
+     * the same rule as `name` above. Projects that store their own `role`
+     * (sinama, mergeRush) keep it untouched. */
+    if (!("role" in rebuilt) && detail.role) {
+      rebuilt.role = detail.role;
+    }
+
+    composed[id] = rebuilt;
+  }
+
+  return composed;
+}
+
+/**
  * Composes the canonical JSON into the exact object the legacy runtime expects.
  *
  * Composition only — no defaulting, no coercion, no invented fields. If a value
@@ -55,6 +118,7 @@ export function composePortfolio() {
   const meta = read("meta.json");
   const profile = read("profile.json");
   const socials = read("socials.json");
+  const projectDetails = read("project-details.json");
 
   return {
     version: meta.version,
@@ -78,7 +142,8 @@ export function composePortfolio() {
       socials,
       footerTagline: profile.footerTagline,
     },
-    projects: read("projects.json"),
+    projects: composeProjects(read("projects.json"), projectDetails),
+    projectDetails,
     recruiterProfiles: read("recruiter-profiles.json"),
     buildLog: read("build-log.json"),
     labs: read("labs.json"),

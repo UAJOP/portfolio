@@ -26,8 +26,8 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
-<link href="style.css" rel="stylesheet"/>
+<link href="https://unpkg.com" rel="preconnect"/><link crossorigin="" href="https://unpkg.com" rel="preconnect"/><link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+<link href="style.css" rel="stylesheet"/><link href="css/a11y.css" rel="stylesheet"/><link href="css/games/joyday-paint.css" rel="stylesheet"/>
 <link href="assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" rel="icon" type="image/x-icon"/>
 <link href="https://kaanbalci.com/joyday-paint.html" rel="canonical"/>
 <meta content="index, follow" name="robots"/>
@@ -39,7 +39,7 @@
 <meta content="https://kaanbalci.com/assets/joyday-brand-logo.webp" name="twitter:image"/>
 <meta content="Joyday Action Painting browser game by Kaan Balcı" name="twitter:image:alt"/>
 </head>
-<body>
+<body data-page="game"><a class="skip-link" href="#main-content">Skip to content</a>
 <header class="site-header">
 <a aria-label="Kaan Balcı home page" class="brand" href="index.html">
 <img alt="Kaan Balcı logo" src="assets/kaan-balci-logo-128.webp" width="128" height="128"/>
@@ -69,7 +69,7 @@
 </button>
 </div>
 </header>
-<main>
+<main id="main-content" tabindex="-1">
 <section class="joyday-paint-hero section-shell reveal">
   <div class="joyday-paint-copy">
     <p class="eyebrow">Virtual studio game</p>
@@ -111,7 +111,7 @@
     <div class="joyday-wall-scene">
       <div class="joyday-wall-dots" aria-hidden="true"></div>
       <div class="joyday-canvas-frame is-square" data-joyday-frame>
-        <canvas id="joyday-art-canvas" width="900" height="900" aria-label="Joyday painting canvas"></canvas>
+        <canvas id="joyday-art-canvas" width="900" height="900" role="img" aria-label="Joyday painting canvas">Action painting canvas. Use the color, brush and action controls beside the canvas to paint.</canvas>
       </div>
     </div>
     <div role="group" class="joyday-toolbelt-panel" aria-label="Action painting equipment">

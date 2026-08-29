@@ -1,0 +1,14 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\n  \"schema_version\": 1,\n  \"project_slug\": \"sinama\",\n  \"repository\": \"UAJOP/sinama\",\n  \"event_key\": \"github:f85dc84e40428161217f0d50ec5b4c30\",\n  \"recommendation\": \"update\",\n  \"confidence\": \"high\",\n  \"evidence\": [\n    \"github_event\"\n  ],\n  \"proposed_changes\": [\n    {\n      \"field\": \"title.en\",\n      \"current\": \"SINAMA — AI Agent Reliability Lab\",\n      \"proposed\": \"Enterprise Production Platform\",\n      \"reason\": \"Release notes said so.\",\n      \"evidence_refs\": [\n        \"github_event\"\n      ]\n    },\n    {\n      \"field\": \"title.tr\",\n      \"current\": \"SINAMA — AI Agent Reliability Lab\",\n      \"proposed\": \"Enterprise Production Platform\",\n      \"reason\": \"Release notes said so.\",\n      \"evidence_refs\": [\n        \"github_event\"\n      ]\n    }\n  ],\n  \"warnings\": []\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP"
+    }
+  ]
+}

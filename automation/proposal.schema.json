@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaanbalci.com/schemas/portfolio-automation-proposal-v1.json",
+  "title": "Portfolio automation proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_slug",
+    "repository",
+    "event_key",
+    "recommendation",
+    "confidence",
+    "evidence",
+    "proposed_changes",
+    "warnings"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "project_slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "event_key": { "type": "string", "pattern": "^github:[a-f0-9]{32}$" },
+    "recommendation": { "enum": ["update", "no_change", "needs_review"] },
+    "confidence": { "enum": ["high", "medium", "low"] },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" }
+    },
+    "proposed_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "current", "proposed", "reason", "evidence_refs"],
+        "properties": {
+          "field": { "type": "string" },
+          "current": { "type": "string" },
+          "proposed": { "type": "string", "minLength": 1, "maxLength": 2400 },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "evidence_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 600 }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\n  \"schema_version\": 1,\n  \"project_slug\": \"sinama\",\n  \"repository\": \"UAJOP/sinama\",\n  \"event_key\": \"github:f85dc84e40428161217f0d50ec5b4c30\",\n  \"recommendation\": \"update\",\n  \"confidence\": \"high\",\n  \"evidence\": [\n    \"github_event\"\n  ],\n  \"proposed_changes\": [\n    {\n      \"field\": \"currentFocus.en\",\n      \"current\": \"Semantic-judge calibration and stabilization\",\n      \"proposed\": \"Offline semantic-judge calibration and stabilization\",\n      \"reason\": \"The verified commit adds a local-only offline calibration path.\",\n      \"evidence_refs\": [\n        \"github_event\"\n      ]\n    },\n    {\n      \"field\": \"currentFocus.tr\",\n      \"current\": \"Semantic-judge calibration ve stabilizasyon\",\n      \"proposed\": \"Offline semantic-judge calibration ve stabilizasyon\",\n      \"reason\": \"Doğrulanmış commit yalnızca local çalışan offline calibration yolu ekliyor.\",\n      \"evidence_refs\": [\n        \"github_event\"\n      ]\n    }\n  ],\n  \"warnings\": [\n    \"Fixture only: this proposal must never be applied to the production checkout.\"\n  ]\n}"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 1204,
+    "candidatesTokenCount": 388,
+    "totalTokenCount": 1592
+  },
+  "modelVersion": "USER_CONFIG_REQUIRED"
+}
