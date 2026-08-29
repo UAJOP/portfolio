@@ -8,7 +8,7 @@
 const portfolioAnalyticsConfig = Object.freeze({
   provider: "umami",
   enabled: true,
-  websiteId: "",
+  websiteId: "bd717aec-2bde-40ff-b55a-ccc18559b174",
   scriptUrl: "https://cloud.umami.is/script.js",
   domains: Object.freeze(["kaanbalci.com", "www.kaanbalci.com"]),
   excludeSearch: true,
