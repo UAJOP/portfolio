@@ -248,8 +248,8 @@ function renderProjectPage(slug, project) {
   const title = en(project.title);
   const subtitle = en(project.subtitle);
   html = html.replace(
-    /<main data-project-detail>[\s\S]*?<\/main>/i,
-    `<main data-project-detail><section class="page-hero section-shell reveal">` +
+    /<main\b[^>]*data-project-detail[^>]*>[\s\S]*?<\/main>/i,
+    `<main id="main-content" tabindex="-1" data-project-detail><section class="page-hero section-shell reveal">` +
       `<p class="eyebrow">${escapeHtml(en(project.category))}</p>` +
       `<h1>${escapeHtml(title)}</h1>` +
       `<p>${escapeHtml(subtitle)}</p>` +

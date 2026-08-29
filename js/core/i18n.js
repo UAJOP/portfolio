@@ -455,6 +455,7 @@ Object.assign(i18nTranslations.tr, {
   "Go Home": "Ana Sayfaya Git",
   "View Works": "Projeleri Gör",
   "Ask Ajoop": "Ajoop'a Sor",
+  "Skip to content": "İçeriğe geç",
   "Copy Project Link": "Proje Linkini Kopyala",
   Copied: "Kopyalandı",
 });

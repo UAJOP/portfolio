@@ -26,11 +26,11 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
-<link href="style.css" rel="stylesheet"/>
+<link href="https://unpkg.com" rel="preconnect"/><link crossorigin="" href="https://unpkg.com" rel="preconnect"/><link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+<link href="style.css" rel="stylesheet"/><link href="css/a11y.css" rel="stylesheet"/><link href="css/games/adventure.css" rel="stylesheet"/>
 <link href="assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" rel="icon" type="image/x-icon"/>
 <link href="https://kaanbalci.com/adventure.html" rel="canonical"/><meta content="index, follow" name="robots"/><meta content="Kaan Balcı Portfolio" property="og:site_name"/><meta content="en_US" property="og:locale"/><meta content="summary_large_image" name="twitter:card"/><meta content="Kaan's Career Adventure | Kaan Balcı" name="twitter:title"/><meta content="A portfolio mini game about learning, projects, AI workflows and reaching a job offer." name="twitter:description"/><meta content="https://kaanbalci.com/assets/portfolio_website_cover.webp" name="twitter:image"/><meta content="Kaan Balcı AI Designer and Software Developer portfolio website" name="twitter:image:alt"/></head>
-<body data-page="game">
+<body data-page="game"><a class="skip-link" href="#main-content">Skip to content</a>
 <header class="site-header">
 <a aria-label="Kaan Balcı home page" class="brand" href="index.html">
 <img alt="Kaan Balcı logo" src="assets/kaan-balci-logo-128.webp" width="128" height="128"/>
@@ -60,7 +60,7 @@
 </button>
 </div>
 </header>
-<main>
+<main id="main-content" tabindex="-1">
 <section class="adventure-hero section-shell reveal">
   <div class="adventure-hero-copy">
     <p class="eyebrow" data-adventure-text="heroEyebrow">Interactive portfolio game</p>
@@ -91,7 +91,7 @@
       </div>
     </div>
     <div class="adventure-canvas-wrap">
-      <canvas id="career-merge-canvas" width="900" height="720" aria-label="Kaan career merge mini game"></canvas>
+      <canvas id="career-merge-canvas" width="900" height="720" role="img" aria-label="Kaan career merge mini game">Career merge mini game board. Use the controls below the board to merge career cards and advance.</canvas>
       <div class="adventure-win" data-adventure-win hidden>
         <div>
           <span>🎉</span>

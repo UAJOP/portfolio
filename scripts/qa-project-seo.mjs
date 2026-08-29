@@ -201,7 +201,7 @@ for (const slug of slugs) {
   const body = (html.match(/<body\b[^>]*>/i) || [])[0] || "";
   check(`${label}: declares its slug`, attr(body, "data-project-slug"), slug);
   check(`${label}: declares its site-root depth`, attr(body, "data-site-root"), "../../");
-  ok(`${label}: mounts the project detail renderer`, /<main data-project-detail>/.test(html));
+  ok(`${label}: mounts the project detail renderer`, /<main[^>]*data-project-detail[^>]*>/.test(html));
   for (const dep of ["portfolio-data.js", "script.js", "portfolio-v2.js"]) {
     ok(`${label}: loads ${dep} from the site root`, html.includes(`src="../../${dep}"`));
   }
@@ -238,7 +238,7 @@ for (const slug of slugs) {
 
 const legacy = read("project-detail.html");
 ok("legacy project-detail.html still exists", legacy.length > 0);
-ok("legacy page still mounts the renderer", /<main data-project-detail>/.test(legacy));
+ok("legacy page still mounts the renderer", /<main[^>]*data-project-detail[^>]*>/.test(legacy));
 ok(
   "legacy page stays out of the index so it cannot compete with the unique routes",
   /noindex/.test(metaBy(legacy, "robots", "name") || ""),

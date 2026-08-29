@@ -3,7 +3,7 @@
 Manual regression pass for the static site. Companion to [`portfolio-baseline-audit.md`](portfolio-baseline-audit.md).
 
 **Baseline captured at:** `45d477a` on branch `audit/portfolio-baseline-v1`, 2026-08-29.
-**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`); BRIEF 03 — Frontend Runtime Modularization (`refactor/frontend-runtime-modularization-v1`).
+**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`); BRIEF 02 — Unique Project Pages & SEO (`seo/unique-project-pages-v1`); BRIEF 03 — Frontend Runtime Modularization (`refactor/frontend-runtime-modularization-v1`); BRIEF 04 — CSS Architecture & Accessibility (`refactor/css-accessibility-responsive-v1`).
 
 ## How to use this
 
@@ -31,6 +31,14 @@ npm run qa:seo
 
 ```bash
 npm run qa:runtime
+```
+
+```bash
+npm run qa:css
+```
+
+```bash
+npm run qa:a11y:static
 ```
 
 ```bash
@@ -63,6 +71,9 @@ Checks marked ✅ **verified at baseline** were confirmed in a browser or by scr
 - [ ] `npm run qa:projects` passes — ✅ *1,194 assertions · 25 detail records · 5 flagship (added in BRIEF 01, extended in BRIEF 03)*
 - [ ] `npm run qa:seo` passes — ✅ *1,662 assertions · 25 canonical routes · 25 sitemap project URLs (added in BRIEF 02)*
 - [ ] `npm run qa:runtime` passes — ✅ *318 assertions · 19 modules · 13 page types (added in BRIEF 03)*
+- [ ] `npm run qa:css` passes — ✅ *323 assertions · 7 stylesheets (added in BRIEF 04)*
+- [ ] `npm run qa:a11y:static` passes — ✅ *575 assertions across 44 pages (added in BRIEF 04)*
+- [ ] `npm run qa:html` → **0 errors, 0 warnings** — ✅ *the 3 baseline aria warnings are fixed*
 - [ ] `node qa-js-syntax.js` passes — ✅ *37 files (root scripts + js/ modules since BRIEF 03)*
 - [ ] `node qa-assets.js` passes — ✅ *baseline: 63 assets*
 - [ ] `node qa-internal-links.js` passes — ✅ *baseline: 453 references*
@@ -350,6 +361,69 @@ npm run qa:runtime
 > **After changing `project-detail.html` script tags or its body marker:** run `npm run generate:projects`.
 >
 > **Inline handlers:** three pages use `onclick="openDrivePreviews()"`, which only resolves while `js/core/shell.js` stays in COMMON. QA asserts that pairing.
+
+---
+
+## Accessibility & responsive (BRIEF 04)
+
+> ~~Skip link on 5 of 19 pages; 3 `aria-label` warnings; page-level overflow at 320 px.~~
+> See [`css-accessibility-architecture.md`](css-accessibility-architecture.md).
+
+Covered automatically:
+
+```bash
+npm run qa:css && npm run qa:a11y:static && npm run qa:html
+```
+
+### Global
+
+- [ ] Skip link is the first Tab stop and becomes visible — ✅ *verified by keyboard*
+- [ ] Skip link moves focus to `#main-content` — ✅ *verified: bypasses 15 header controls*
+- [ ] Skip link present on all pages — ✅ *44/44 (19 authored + 25 generated)*
+- [ ] `<main id="main-content" tabindex="-1">` on every page — ✅ *asserted*
+- [ ] Visible keyboard focus on interactive controls — ✅ *verified*
+- [ ] Light-theme focus visible — ring uses `var(--brand)`, which is theme-scoped
+- [ ] Dark-theme focus visible — ✅ *verified*
+- [ ] Mobile nav keyboard usable
+- [ ] No page-level overflow at 320 px — ✅ *verified on 11 pages incl. a generated route*
+- [ ] No page-level overflow at 375 px — ✅ *verified*
+- [ ] Reduced motion honored — ✅ *site-wide; `.reveal` forced visible so nothing stays hidden*
+- [ ] Touch targets ≈44 px at ≤820 px — ✅ *primary controls*
+
+### Modals
+
+- [ ] Focus enters the dialog — ✅ *verified (certificate modal)*
+- [ ] Tab stays contained — ✅ *shared `trapFocus`; previously every Tab was forced to the close button*
+- [ ] Escape closes — ✅ *verified*
+- [ ] Focus returns to trigger — ✅ *verified*
+- [ ] Background inert while open — ✅ *verified (header `inert`)*
+- [ ] Ajoop / command palette / recruiter still use the shared trap — ✅ *asserted*
+
+### Forms
+
+- [ ] Labels valid — ✅ *asserted*
+- [ ] Status region announces (`aria-live="polite"`) — ✅ *asserted*
+- [ ] Consent is a real checkbox; honeypot out of tab order — ✅ *asserted*
+- [ ] Submit behavior preserved — ✅ *Request QA still 84*
+
+### Games / canvas
+
+- [ ] Each `<canvas>` has a role, a name and fallback content — ✅ *asserted*
+- [ ] Game boot unchanged — ✅ *verified, zero console errors*
+- [ ] Game rendering unchanged — ✅ *computed-style hashes identical to `7d58e6e`*
+
+### CSS architecture
+
+- [ ] Every page loads `style.css` then `css/a11y.css` — ✅ *asserted, order enforced*
+- [ ] Game stylesheets load only on their own page — ✅ *asserted*
+- [ ] `case-study.css` only on the 5 case studies — ✅ *asserted*
+- [ ] No `overflow-x: hidden` band-aid — ✅ *asserted*
+- [ ] Colour tokens exist in both themes — ✅ *asserted*
+- [ ] Generated pages inherit the accessibility shell — ✅ *25/25*
+
+> **Visual identity must not change.** The BRIEF 04 split was verified by comparing computed styles against `7d58e6e`: identical element counts and style hashes on all three game pages and the homepage. Re-run that comparison after any further CSS extraction.
+>
+> **Do not split `style.css` by category.** CSS cascade depends on source order; reordering changes equal-specificity ties. Only namespaced, page-scoped extraction is safe.
 
 ---
 

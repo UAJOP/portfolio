@@ -49,7 +49,7 @@ The dominant architectural risk is concentration: `legacy-script.js` (6,638 line
 | `script.js` | 66 | Bootstrap shim only. Injects `portfolio-data.js` → `legacy-script.js` → `portfolio-v2.js` and ensures `portfolio-v2.css`. | High | Uses `document.write` on the parser path. Boot-order contract for the whole site. |
 | `portfolio-data.js` | 787 | **Generated.** Freezes `window.KAAN_PORTFOLIO`. | Medium | `DO NOT EDIT` header; regenerate via `npm run data:generate`. |
 | `portfolio-v2.js` | 381 | V2 rendering layer reading `window.KAAN_PORTFOLIO`. | Medium | Depends on registry being present before it runs. |
-| `portfolio-v2.css` | 0 | Empty file, still linked by every page and force-injected by `script.js`. | Low | Dead but load-bearing by convention — see §10. |
+| `portfolio-v2.css` | 0* | V2 rendering layer: 78 rules, 6.7 KB, **minified onto a single line**. | Low | *The `0` is a `wc -l` artifact of minification. **This audit originally recorded it as "empty" — that was wrong**, corrected in BRIEF 04. |
 | `case-study.js` | 96 | Shared case-study i18n + gallery modal (IIFE, properly scoped). | Low | The cleanest module in the repo; a good model for future extraction. |
 | `case-study.css` | 711 | Case-study-only styling. | Low | Correctly scoped to 5 pages. |
 | `ai-flow-puzzle.js` | 1,117 | AI Flow Puzzle game logic (DOM-based). | Medium | Reads `kaanbalci-site-language` directly. |
@@ -203,6 +203,8 @@ Plus 8 archive projects only in `projectDetailData` and 13 only in `githubReposi
 
 **SOURCE-LEVEL RISK — flash of wrong language.** The blocking `<head>` script restores *theme* only. Every page ships `<html lang="en">` with English content and does not switch to Turkish until `legacy-script.js` has parsed and run. A returning Turkish visitor sees English content on first paint on every page. Theme has this solved; language does not.
 
+> **DEFERRED in BRIEF 04, deliberately.** A pre-paint snippet could set `<html lang="tr">` early, mirroring the theme fix — but the visible text would still be English until `js/core/i18n.js` runs. That would label English content as Turkish for assistive technology, which is worse than the current honest `lang="en"` followed by a switch. A real fix needs the translation data available before paint, which means giving i18n the generated-artifact treatment BRIEF 01 used for project data. That is architectural work, not polish, so it was not attempted here.
+
 ### 5.2 Theme
 
 - Persisted under `kaanbalci-site-theme`; applied as `data-theme` on `<html>`.
@@ -289,6 +291,17 @@ Notably the two **newest and highest-priority** case studies (SINAMA and Merge R
 ---
 
 ## 7. Accessibility Baseline
+
+> **Largely RESOLVED in BRIEF 04.** Full detail in [`css-accessibility-architecture.md`](css-accessibility-architecture.md).
+>
+> - **Skip link: 5/19 → 44/44** (19 authored + 25 generated). One per page, first focusable element, targeting `<main id="main-content" tabindex="-1">`, translated EN/TR. Verified to bypass 15 header controls.
+> - **The 3 `aria-label` warnings are fixed at the semantic level**, not silenced: a bare `<canvas>` has no implicit role, so each now carries `role="img"`, keeps its name, and gains fallback content describing the surrounding controls. `html-validate` is now **0 errors, 0 warnings**.
+> - **Focus visibility** extended from links/buttons to inputs, selects, textareas, `summary`, `[tabindex]` and ARIA widget roles, via `:focus-visible`, using `var(--brand)` so contrast follows the theme.
+> - **Modal focus fixed.** The certificate dialog cancelled every Tab and forced focus to its close button, so the rest of the dialog was unreachable. It now uses the same shared trap as Ajoop, the palette and Recruiter Mode, inerts the background, and returns focus to the originating thumbnail.
+> - **Reduced motion** honoured site-wide, with `.reveal` forced visible so suppressing transitions cannot hide content permanently.
+> - **Touch targets** reach 44×44 px at ≤820 px for primary controls; below 400 px the header wraps rather than shrinking them.
+>
+> Guarded by `npm run qa:a11y:static` (575 assertions across 44 pages). **This is an improved baseline with WCAG-oriented fixes, not a WCAG conformance audit** — no conformance audit was performed, no screen reader was used, and contrast ratios were not measured.
 
 ### Confirmed strengths (VERIFIED IN SOURCE)
 
@@ -403,6 +416,18 @@ pages/games/          per-game bootstrap, loaded only by game pages
 
 ## 10. CSS Risk Map
 
+> **RESOLVED in BRIEF 04** (branch `refactor/css-accessibility-responsive-v1`). Full detail in [`css-accessibility-architecture.md`](css-accessibility-architecture.md).
+>
+> `style.css` went from **6,608 to 3,361 lines (−49%)**. The three game stylesheets (1,976 lines, 39% of the original file) are now page-scoped, and 289 lines of verified-dead CSS were removed — 34 classes referenced in no shipped HTML, JS or JSON, several of them left over from the AI-workflow demo BRIEF 03 deleted.
+>
+> **CSS payload per page: −36%** on the common pages (133 KB → 85 KB), −19% to −29% on game pages.
+>
+> Rules were assigned by class-usage evidence, not line ranges, and a block moved only if every selector in it was rooted in that game's namespace. Verified byte-identical: element counts and computed-style hashes match the pre-change build on all three game pages and the homepage.
+>
+> `style.css` deliberately remains one file. CSS cascade depends on source order, so splitting a chronologically-grown sheet by category reorders rules and changes equal-specificity ties — a visual-regression risk with no functional gain. The ~18 ad-hoc breakpoints and 33 remaining `!important` declarations are recorded as debt.
+>
+> Guarded by `npm run qa:css` (323 assertions).
+
 | Layer | Location | Notes |
 |---|---|---|
 | Global tokens, base, components, layout, responsive, themes | `style.css` (6,608 lines) | Everything, for every page. |
@@ -412,7 +437,7 @@ pages/games/          per-game bootstrap, loaded only by game pages
 
 Risks:
 
-- **`portfolio-v2.css` is an empty file that every page links and `script.js` force-injects** if absent (`ensureV2Styles`). Every page pays a request for zero bytes of CSS. Harmless today; it is either a placeholder or dead weight, and it should be a deliberate decision which.
+- ~~**`portfolio-v2.css` is an empty file** that every page links and `script.js` force-injects.~~ **CORRECTED in BRIEF 04:** it is not empty. It carries 78 rules in 6.7 KB, minified onto one line, which is why `wc -l` reported 0. The original finding measured lines instead of bytes. It is a live stylesheet and was left untouched.
 - **Specificity and override chains.** With ~6.6k lines in one cascade and page-specific behaviour keyed off body classes (`recruiter-mode-active`) and `data-theme`, overrides accumulate. Not measured in detail here.
 - **Duplicated media-query syntax** (`@media screen and (max-width: X)` vs `@media (max-width: X)` for 640, 820 and 1180 px) means a breakpoint change requires finding both forms.
 - **Likely dead/legacy blocks.** Suspected but **UNVERIFIED** — proving CSS dead requires coverage tooling across all 19 pages in both themes and both languages. Do not delete on suspicion.
@@ -522,11 +547,11 @@ Ranked by likelihood × blast radius.
 | # | Finding | Evidence | Status |
 |---|---|---|---|
 | **P2-1** | **Project data fragmented across three sources** (~1,700 lines) with overlapping slugs for the same projects. Direct subject of BRIEF 01. | VERIFIED IN SOURCE — §4.3 | **RESOLVED in BRIEF 01** |
-| **P2-2** | **Skip link on only 5 of 19 pages** — all case studies, none of the games, not the homepage. | VERIFIED IN SOURCE — §7 | **OPEN** |
-| **P2-3** | **Flash of wrong language.** Pre-paint restore covers theme but not language; Turkish visitors see English on first paint on every page. | SOURCE-LEVEL RISK — §5.1 | **OPEN** |
+| **P2-2** | **Skip link on only 5 of 19 pages** — all case studies, none of the games, not the homepage. | VERIFIED IN SOURCE — §7 | **RESOLVED in BRIEF 04** — 44/44 pages |
+| **P2-3** | **Flash of wrong language.** Pre-paint restore covers theme but not language; Turkish visitors see English on first paint on every page. | SOURCE-LEVEL RISK — §5.1 | **DEFERRED in BRIEF 04** — see §5.1 |
 | **P2-4** | **Every page loads the entire shared runtime**, including game pages that need almost none of it. | VERIFIED IN BROWSER — §9 | **RESOLVED in BRIEF 03** |
 | **P2-5** | **25 archive projects are unindexable** behind `project-detail.html?project=` with generic canonical and `noindex`. | VERIFIED IN SOURCE — §6 | **RESOLVED in BRIEF 02** |
-| **P2-6** | **boxicons via unpkg is render-blocking** on all 19 pages — an enhancement dependency with critical-path impact. | VERIFIED IN SOURCE — §12 | **OPEN** |
+| **P2-6** | **boxicons via unpkg is render-blocking** on all 19 pages — an enhancement dependency with critical-path impact. | VERIFIED IN SOURCE — §12 | **PARTIALLY RESOLVED in BRIEF 04** — preconnect added; dependency remains |
 | **P2-7** | **Recruiter Mode does not persist** and exists only as a body class with no readable state. | VERIFIED IN SOURCE — §5.3 | **OPEN** |
 | **P2-8** | **Social metadata uneven**; the two newest flagship case studies have no Twitter card. | VERIFIED IN SOURCE — §6 | **OPEN** |
 
@@ -535,10 +560,10 @@ Ranked by likelihood × blast radius.
 | # | Finding |
 |---|---|
 | **P3-1** | ~18 ad-hoc breakpoints with duplicated `@media` syntax; no breakpoint scale. |
-| **P3-2** | `portfolio-v2.css` is an empty file linked by every page and force-injected by `script.js`. |
+| **P3-2** | ~~`portfolio-v2.css` is an empty file~~ — **CORRECTED in BRIEF 04**: it holds 78 minified rules. Not dead. |
 | **P3-3** | `CLAUDE.md` is stale — describes "no build step, no package manager" and mis-attributes the runtime to `script.js`. |
-| **P3-4** | `.profile-glow` overflows the viewport edge at 320 px (clipped, cosmetic only). |
-| **P3-5** | Canvas text/keyboard alternatives for the two canvas games — UNVERIFIED. |
+| **P3-4** | `.profile-glow` overflows the viewport edge at 320 px (clipped, cosmetic only). *(Still clipped-only; page-level overflow at 320 px was a different cause and is RESOLVED in BRIEF 04.)* |
+| **P3-5** | Canvas text/keyboard alternatives for the two canvas games — UNVERIFIED. **RESOLVED in BRIEF 04**: all three canvases now carry `role="img"`, an accessible name and fallback content describing the surrounding controls. |
 | **P3-6** | No `Person` or `BreadcrumbList` structured data sitewide. |
 | **P3-7** | `ai-flow-puzzle.js` reads the language contract directly rather than through a shared accessor. |
 
@@ -639,6 +664,8 @@ This audit did not implement any part of it. What follows is only what the migra
 > **BRIEF 02 is now complete**, resolving P2-5: 25 canonical project routes exist with raw-HTML SEO metadata, all legacy URLs still resolve, and the sitemap is generated from canonical data. See §6 and [`project-routing-seo-architecture.md`](project-routing-seo-architecture.md). The next phase is **BRIEF 03 — Frontend Architecture Modularization**, which addresses P2-4 and the JavaScript/CSS risk maps in §9 and §10.
 >
 > **BRIEF 03 is now complete**, resolving P2-4: `legacy-script.js` is a 26-line stub, its responsibilities split into 19 page-aware modules under `js/`. See §9 and [`frontend-runtime-architecture.md`](frontend-runtime-architecture.md). The next phase is **BRIEF 04 — CSS Architecture + Accessibility & Responsive Polish**, which addresses §10 and the accessibility findings in §7.
+>
+> **BRIEF 04 is now complete**, resolving P2-2, P3-5 and the §10 CSS hotspot, partially resolving P2-6, and deliberately deferring P2-3. See §7, §10 and [`css-accessibility-architecture.md`](css-accessibility-architecture.md).
 
 ### What must be preserved
 
