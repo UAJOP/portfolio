@@ -3,7 +3,7 @@
 Manual regression pass for the static site. Companion to [`portfolio-baseline-audit.md`](portfolio-baseline-audit.md).
 
 **Baseline captured at:** `45d477a` on branch `audit/portfolio-baseline-v1`, 2026-08-29.
-**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`).
+**Updated:** BRIEF 00.1 — Ajoop Intent Matching (`fix/ajoop-intent-reliability-v1`); BRIEF 00.2 — Request Submission Reliability (`fix/request-submission-reliability-v1`); BRIEF 01 — Project Data Source of Truth (`refactor/project-data-source-of-truth-v1`).
 
 ## How to use this
 
@@ -19,6 +19,10 @@ npm run qa:ajoop
 
 ```bash
 npm run qa:request
+```
+
+```bash
+npm run qa:projects
 ```
 
 ```bash
@@ -48,6 +52,7 @@ Checks marked ✅ **verified at baseline** were confirmed in a browser or by scr
 - [ ] Warning count is **14** or lower (social-metadata coverage only). A rise means new metadata drift.
 - [ ] `npm run qa:ajoop` passes — ✅ *294 assertions across 19 intents (added in BRIEF 00.1)*
 - [ ] `npm run qa:request` passes — ✅ *84 assertions, no network calls (added in BRIEF 00.2)*
+- [ ] `npm run qa:projects` passes — ✅ *1,139 assertions · 25 detail records · 5 flagship (added in BRIEF 01)*
 - [ ] `node qa-js-syntax.js` passes — ✅ *baseline: 19 files*
 - [ ] `node qa-assets.js` passes — ✅ *baseline: 63 assets*
 - [ ] `node qa-internal-links.js` passes — ✅ *baseline: 453 references*
@@ -179,15 +184,45 @@ To spot-check the live runtime, run this in the browser console on any page:
 - [ ] Category filtering works
 - [ ] Project search filters cards (locale-independent; unaffected by the Ajoop bug)
 - [ ] Project card → navigates to the correct project
-- [ ] Query-string routing: `project-detail.html?project=<slug>` resolves
-- [ ] All 11 `projectDetailData` slugs resolve
-- [ ] All 14 `githubRepositoryProjectDetails` slugs resolve
-- [ ] Unknown slug degrades gracefully (no blank page, no console error)
+- [ ] Query-string routing: `project-detail.html?project=<slug>` resolves — ✅ *verified*
+- [ ] All 25 detail slugs resolve — ✅ *verified in browser; asserted by `qa:projects`*
+- [ ] Unknown slug degrades gracefully ("Project Not Found", no console error) — ✅ *verified*
 - [ ] GitHub CTA present and correct on project detail
 - [ ] Live demo CTA present where the project has one
-- [ ] Translated project data switches with the site language
+- [ ] Translated project data switches with the site language — ✅ *verified (TR title differs, reverts on EN)*
 - [ ] `window.KAAN_PORTFOLIO` is defined before `portfolio-v2.js` runs
 - [ ] Resume/CV links resolve through the single `resumeLink` constant (no hardcoded Drive URLs)
+
+### Canonical project catalog (BRIEF 01)
+
+> Project facts live in `data/portfolio/projects.json` and `data/portfolio/project-details.json`.
+> ~~The 25 detail records were two hand-maintained literals inside `legacy-script.js`.~~ They are now projected from the generated registry. See [`project-data-architecture.md`](project-data-architecture.md).
+
+Covered automatically:
+
+```bash
+npm run qa:projects
+```
+
+- [ ] Canonical project catalog loads (`window.KAAN_PORTFOLIO.projectDetails`) — ✅ *verified: 25 records*
+- [ ] Every legacy slug resolves — ✅ *verified: 25/25 against the pre-migration fixture*
+- [ ] Slug order preserved (drives Previous/Next navigation) — ✅ *asserted*
+- [ ] Homepage selected projects resolve — ✅ *verified*
+- [ ] Works cards resolve; all `project-detail` links resolve — ✅ *verified: 10 cards, 11 links, 0 unresolved*
+- [ ] Filters resolve — ✅ *verified: 7 filter controls*
+- [ ] Project detail resolves — ✅ *verified for both former structures*
+- [ ] TR project copy present — ✅ *asserted for every bilingual field*
+- [ ] EN project copy present — ✅ *asserted for every bilingual field*
+- [ ] GitHub/demo links unchanged — ✅ *asserted against the fixture*
+- [ ] Recruiter Mode project selections unchanged — ✅ *verified: 3 evidence links, 4 roles*
+- [ ] Ajoop project references unchanged — ✅ *verified*
+- [ ] Unknown project fallback unchanged — ✅ *verified*
+- [ ] Referenced local media exists — ✅ *asserted*
+- [ ] No project facts in `legacy-script.js` / `portfolio-v2.js` — ✅ *drift guard*
+
+> **After editing any `data/portfolio/*.json`:** run `npm run data:generate` and commit the regenerated `portfolio-data.js`, or `qa:data` fails on a stale artifact. A deliberate change to a title, category, link, image, year or field set also requires updating `scripts/fixtures/project-catalog-baseline.json` in the same commit — that friction is intentional, so data-shape changes are visible in review.
+>
+> **Never add project facts to `legacy-script.js` or `portfolio-v2.js`.**
 
 ---
 
@@ -332,4 +367,5 @@ Minimum pass after touching `legacy-script.js`, `style.css` or `script.js` — a
 5. Open Ajoop, the Command Palette and Recruiter Mode on one page
 6. `npm run qa:ajoop` → passes; spot-check `SINAMA`, `email` and `hiring` in the live widget
 7. `npm run qa:request` → passes; confirm a stubbed failure shows an error and keeps the form populated
-8. Check 375 px for horizontal overflow on one content page and one game page
+8. `npm run qa:projects` → passes; open one archive `project-detail.html?project=<slug>` and confirm it renders
+9. Check 375 px for horizontal overflow on one content page and one game page

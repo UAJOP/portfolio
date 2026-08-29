@@ -31,7 +31,7 @@ The material problems:
 - **P1 — Ajoop intent matching is broken for uppercase input.** Turkish-locale case folding turns ASCII `I` into dotless `ı`, so `SINAMA`, `AI`, `GITHUB`, `EMAIL` and `HIRING` all fall through to the generic fallback answer. Confirmed at runtime.
 - **P1 — Ajoop matches keywords as unanchored substrings**, so `email` answers the *AI* intent and `hiring` answers the *greeting* intent. This is a separate defect from the casing bug and is not fixed by fixing the casing.
 - **P1 — The request form reports success it cannot verify.** `fetch(..., { mode: "no-cors" })` returns an opaque response, so an Apps Script 500 is indistinguishable from success. A failed lead is silently lost. *(RESOLVED in BRIEF 00.2 — the endpoint turned out to be CORS-readable, so `no-cors` was never needed. See §11.)*
-- **P2 — Project data is fragmented across three sources** totalling ~1,700 lines, with overlapping representations of the same projects. This is the direct subject of the next brief.
+- **P2 — Project data is fragmented across three sources** totalling ~1,700 lines, with overlapping representations of the same projects. This is the direct subject of the next brief. *(RESOLVED in BRIEF 01 — see §4.3 and docs/project-data-architecture.md.)*
 - **P2 — Skip links exist on only 5 of 19 pages** — all case studies, none of the game pages, and not the homepage.
 
 The dominant architectural risk is concentration: `legacy-script.js` (6,638 lines) and `style.css` (6,608 lines) carry nearly every cross-page behaviour and style on the site, and **every page loads both in full**, including the game pages. Any change to either file is a whole-site change. That is the modularization target for a later phase, not this one.
@@ -170,6 +170,26 @@ The generated artifact is committed deliberately — GitHub Pages serves reposit
 | Merge Rush | `mergeRush` | — | — |
 
 Plus 8 archive projects only in `projectDetailData` and 13 only in `githubRepositoryProjectDetails`. Editing a project's description today may require touching up to three files with no mechanism linking them. **This is the core motivation for BRIEF 01.**
+
+> **RESOLVED in BRIEF 01** (branch `refactor/project-data-source-of-truth-v1`). Full detail in [`project-data-architecture.md`](project-data-architecture.md).
+>
+> All project facts now live in `data/portfolio/`. The 25 detail records moved from two hand-maintained literals in `legacy-script.js` (1,732 lines, merged with `Object.assign`) into `data/portfolio/project-details.json`, and the runtime projects them from the generated registry:
+>
+> ```js
+> const projectDetailData =
+>   (window.KAAN_PORTFOLIO && window.KAAN_PORTFOLIO.projectDetails) || {};
+> ```
+>
+> `legacy-script.js` went from 6,908 to 5,195 lines. `githubRepositoryProjectDetails` is gone — the split between "site" and "GitHub" projects was arbitrary: identical schema, **zero overlapping slugs**.
+>
+> Two corrections to the finding above, from re-inspecting the source:
+>
+> 1. **The overlap was smaller than it looked.** For the three double-listed projects, only the *title* was genuinely duplicated. `category`, `status.tr` and `summary` vs `subtitle` differ **deliberately** between the card and the detail page — positioning copy vs technical copy — and were correctly left separate rather than collapsed into one string. The title is now stored once in the detail record and projected into the card via `detailSlug`, the same technique already used for `profile.github` / `profile.linkedin`.
+> 2. **`hospital-appointment-system` is not a duplicate** of `hospital` / `hospital-form-app`. It is a different project with a different title and a different repository (`Hospital-Appointment-System` vs `Hospital-System`).
+>
+> Guarded by `npm run qa:projects` (1,139 assertions), including a pre-migration fixture asserting all 25 slugs, titles, categories, link targets and field sets survived, and a drift guard preventing project literals returning to `legacy-script.js` or `portfolio-v2.js`.
+>
+> One piece of guarded duplication remains: shared **link URLs** between a flagship record and its detail record are stored in both shapes, because the two link models differ (role-keyed object vs labelled array). QA asserts they agree, so they cannot drift silently.
 
 ---
 
@@ -465,16 +485,16 @@ Ranked by likelihood × blast radius.
 
 ### P2
 
-| # | Finding | Evidence |
-|---|---|---|
-| **P2-1** | **Project data fragmented across three sources** (~1,700 lines) with overlapping slugs for the same projects. Direct subject of BRIEF 01. | VERIFIED IN SOURCE — §4.3 |
-| **P2-2** | **Skip link on only 5 of 19 pages** — all case studies, none of the games, not the homepage. | VERIFIED IN SOURCE — §7 |
-| **P2-3** | **Flash of wrong language.** Pre-paint restore covers theme but not language; Turkish visitors see English on first paint on every page. | SOURCE-LEVEL RISK — §5.1 |
-| **P2-4** | **Every page loads the entire shared runtime**, including game pages that need almost none of it. | VERIFIED IN BROWSER — §9 |
-| **P2-5** | **25 archive projects are unindexable** behind `project-detail.html?project=` with generic canonical and `noindex`. | VERIFIED IN SOURCE — §6 |
-| **P2-6** | **boxicons via unpkg is render-blocking** on all 19 pages — an enhancement dependency with critical-path impact. | VERIFIED IN SOURCE — §12 |
-| **P2-7** | **Recruiter Mode does not persist** and exists only as a body class with no readable state. | VERIFIED IN SOURCE — §5.3 |
-| **P2-8** | **Social metadata uneven**; the two newest flagship case studies have no Twitter card. | VERIFIED IN SOURCE — §6 |
+| # | Finding | Evidence | Status |
+|---|---|---|---|
+| **P2-1** | **Project data fragmented across three sources** (~1,700 lines) with overlapping slugs for the same projects. Direct subject of BRIEF 01. | VERIFIED IN SOURCE — §4.3 | **RESOLVED in BRIEF 01** |
+| **P2-2** | **Skip link on only 5 of 19 pages** — all case studies, none of the games, not the homepage. | VERIFIED IN SOURCE — §7 | **OPEN** |
+| **P2-3** | **Flash of wrong language.** Pre-paint restore covers theme but not language; Turkish visitors see English on first paint on every page. | SOURCE-LEVEL RISK — §5.1 | **OPEN** |
+| **P2-4** | **Every page loads the entire shared runtime**, including game pages that need almost none of it. | VERIFIED IN BROWSER — §9 | **OPEN** |
+| **P2-5** | **25 archive projects are unindexable** behind `project-detail.html?project=` with generic canonical and `noindex`. | VERIFIED IN SOURCE — §6 | **OPEN** |
+| **P2-6** | **boxicons via unpkg is render-blocking** on all 19 pages — an enhancement dependency with critical-path impact. | VERIFIED IN SOURCE — §12 | **OPEN** |
+| **P2-7** | **Recruiter Mode does not persist** and exists only as a body class with no readable state. | VERIFIED IN SOURCE — §5.3 | **OPEN** |
+| **P2-8** | **Social metadata uneven**; the two newest flagship case studies have no Twitter card. | VERIFIED IN SOURCE — §6 | **OPEN** |
 
 ### P3
 
@@ -579,6 +599,8 @@ The handoff's core SINAMA reproduction **was accurate** and is confirmed above.
 **BRIEF 01 — Project Data Source of Truth.** *(Not implemented here.)*
 
 This audit did not implement any part of it. What follows is only what the migration must preserve.
+
+> **BRIEF 01 is now complete.** Every constraint below was honoured: the no-build-step deploy guarantee, deterministic generation with CI parity, the `window.KAAN_PORTFOLIO` boot-order contract, the per-language field shape, and all 25 archive slugs. The three-way overlap was resolved deliberately rather than silently — see §4.3 and [`project-data-architecture.md`](project-data-architecture.md). The next phase is **BRIEF 02 — Unique Project Pages & SEO Architecture**, which addresses P2-5.
 
 ### What must be preserved
 

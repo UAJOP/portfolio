@@ -21,10 +21,10 @@ const registry = sandbox.window.KAAN_PORTFOLIO;
 const roles = Object.keys(registry.recruiterProfiles);
 
 // Project slugs the dynamic archive route can actually resolve.
-const legacyRuntime = read("legacy-script.js");
-const slugs = new Set(
-  [...legacyRuntime.matchAll(/^\s{2}"([a-z0-9-]+)":\s*\{/gm)].map((match) => match[1])
-);
+// These were scraped out of legacy-script.js until BRIEF 01 moved the detail
+// records into data/portfolio/project-details.json; they now come from the
+// generated registry, which is the same object the runtime resolves against.
+const slugs = new Set(Object.keys(registry.projectDetails));
 
 const htmlFiles = fs.readdirSync(".").filter((file) => file.endsWith(".html"));
 const idsByFile = {};
