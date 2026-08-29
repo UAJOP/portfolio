@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "proposal_sha256": "3acc1096c7f53c5247ef3655ce1592c7ce6c1cec830960b5773be1a482167cde",
+  "event_key": "github:f85dc84e40428161217f0d50ec5b4c30",
+  "project_slug": "sinama",
+  "decision": "approved",
+  "reviewer": "offline-fixture-reviewer",
+  "reviewed_at": "2026-08-29T00:00:00.000Z"
+}

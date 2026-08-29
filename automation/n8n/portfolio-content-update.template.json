@@ -1,0 +1,394 @@
+{
+  "name": "kaanbalci.com — Portfolio Content Update (template)",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "description": "Credential-free export. Every secret is referenced through an n8n credential name or an environment variable that must be configured on the local instance before the workflow can run. The workflow stops for human approval and can never write to main."
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "staticData": {
+    "processedEventKeys": []
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-manual",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-960, -160]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "trigger-schedule",
+      "name": "Scheduled Poll",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-960, 60],
+      "notes": "Poll only. No public webhook, no tunnel. If this machine is off the site is unaffected; the next run simply catches up."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tracked repositories come from the repository itself, never from n8n state.\n// PORTFOLIO_REPO_ROOT must point at a local checkout of the portfolio repo.\nconst fs = require('fs');\nconst path = require('path');\nconst repoRoot = $env.PORTFOLIO_REPO_ROOT;\nif (!repoRoot) throw new Error('PORTFOLIO_REPO_ROOT is not configured on this n8n instance.');\nconst sources = JSON.parse(fs.readFileSync(path.join(repoRoot, 'automation', 'project-sources.json'), 'utf8'));\nreturn Object.entries(sources.projects)\n  .filter(([, source]) => source.enabled === true)\n  .map(([slug, source]) => ({ json: { project_slug: slug, repository: source.repository } }));"
+      },
+      "id": "load-mappings",
+      "name": "Load Tracked Mappings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-720, -50]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.repository }}/releases",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "fetch-releases",
+      "name": "Fetch GitHub Releases",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-500, -160],
+      "notes": "Attach a READ-ONLY GitHub credential in the n8n UI. No token is stored in this file.",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.repository }}/pulls?state=closed&per_page=25",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "fetch-pulls",
+      "name": "Fetch Closed Pull Requests",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-500, 60],
+      "notes": "Attach the same READ-ONLY GitHub credential. No token is stored in this file.",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "jsCode": "// Deterministic meaningful-event filter. No model call happens before this gate.\n// Eligible in V1: published releases, and merged PRs labelled 'portfolio-update'.\nconst LABEL = 'portfolio-update';\nconst out = [];\nfor (const item of $input.all()) {\n  const e = item.json;\n  if (e.tag_name && e.draft !== true) {\n    out.push({ json: { project_slug: e.project_slug, repository: e.repository, event_type: 'release', action: 'published', release: e, collected_at: new Date().toISOString() } });\n    continue;\n  }\n  const labels = (e.labels || []).map((l) => String(l.name || l).toLowerCase());\n  if (e.merged_at && labels.includes(LABEL)) {\n    out.push({ json: { project_slug: e.project_slug, repository: e.repository, event_type: 'pull_request', action: 'closed', pull_request: { ...e, merged: true }, collected_at: new Date().toISOString() } });\n  }\n}\nreturn out;"
+      },
+      "id": "meaningful-filter",
+      "name": "Meaningful Event Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-280, -50]
+    },
+    {
+      "parameters": {
+        "command": "=node scripts/normalize-github-evidence.mjs {{ $env.PORTFOLIO_WORK_DIR }}/event.json --output {{ $env.PORTFOLIO_WORK_DIR }}/evidence.json",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "normalize-evidence",
+      "name": "Normalize Evidence",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [-60, -50],
+      "notes": "Bounded evidence contract. Rejects anything the deterministic filter should already have dropped."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Idempotency. Identity is the deterministic event_key, never a timestamp.\n// State lives in n8n workflow static data, never in data/portfolio/.\nconst fs = require('fs');\nconst evidence = JSON.parse(fs.readFileSync(`${$env.PORTFOLIO_WORK_DIR}/evidence.json`, 'utf8'));\nconst store = $getWorkflowStaticData('global');\nstore.processedEventKeys = store.processedEventKeys || [];\nif (store.processedEventKeys.includes(evidence.event_key)) {\n  return [];\n}\nstore.processedEventKeys.push(evidence.event_key);\nreturn [{ json: evidence }];"
+      },
+      "id": "idempotency-gate",
+      "name": "Idempotency Gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, -50]
+    },
+    {
+      "parameters": {
+        "command": "=node scripts/build-gemini-portfolio-prompt.mjs {{ $env.PORTFOLIO_WORK_DIR }}/evidence.json",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "build-prompt",
+      "name": "Build Gemini Prompt",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [380, -50],
+      "notes": "Loads CURRENT_PORTFOLIO_FACTS from the repository and passes GitHub text as untrusted, clearly fenced data."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $env.PORTFOLIO_GEMINI_MODEL }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":{{ JSON.stringify($json.stdout) }}}]}],\"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":4096,\"responseMimeType\":\"application/json\"}}",
+        "options": {}
+      },
+      "id": "gemini-draft",
+      "name": "Gemini Draft Proposal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [600, -50],
+      "notes": "Attach a Gemini credential in the n8n UI and set PORTFOLIO_GEMINI_MODEL. No API key is stored in this file. responseMimeType is application/json so the model returns the proposal schema and nothing else. Gemini drafts only; it can never reach production.",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "jsCode": "// Persist the RAW provider response. Nothing downstream may read the model's\n// output except through the parser: raw text is never handed to patch logic.\nconst fs = require('fs');\nfs.writeFileSync(`${$env.PORTFOLIO_WORK_DIR}/gemini-response.json`, JSON.stringify($json), 'utf8');\nreturn [{ json: { written: true } }];"
+      },
+      "id": "persist-raw-response",
+      "name": "Persist Raw Model Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [820, -160]
+    },
+    {
+      "parameters": {
+        "command": "=node scripts/parse-gemini-portfolio-response.mjs {{ $env.PORTFOLIO_WORK_DIR }}/gemini-response.json --evidence {{ $env.PORTFOLIO_WORK_DIR }}/evidence.json --output {{ $env.PORTFOLIO_WORK_DIR }}/proposal.json",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "parse-response",
+      "name": "Parse Structured Response",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [820, -50],
+      "notes": "Boundary between raw model output and the workflow. Rejects malformed JSON, prose, arrays, primitives, multiple objects, provider errors, truncated output, unexpected wrappers and anything over 64 KiB. No silent JSON repair. Parsing establishes syntax only: this CLI also runs the deterministic validator before it will write a proposal file."
+    },
+    {
+      "parameters": {
+        "command": "=node scripts/validate-portfolio-proposal.mjs {{ $env.PORTFOLIO_WORK_DIR }}/proposal.json --evidence {{ $env.PORTFOLIO_WORK_DIR }}/evidence.json",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "validate-proposal",
+      "name": "Validate Proposal",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1040, -160],
+      "notes": "Deterministic gate: allowlist, protected fields, exact current-value match, evidence refs, unknown keys. A failure here ends the run. Parsing success is not authorization."
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": "={{ $env.PORTFOLIO_NOTION_DATABASE_ID }}",
+        "options": {}
+      },
+      "id": "notion-review",
+      "name": "Create Notion Review Row",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1040, -50],
+      "notes": "Editorial review only. Field shape is documented in automation/notion/review-database.schema.json. Attach a Notion credential in the n8n UI; set PORTFOLIO_NOTION_DATABASE_ID.",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "trigger-approval-poll",
+      "name": "STOP FOR HUMAN APPROVAL — Resume Poll",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-960, 400],
+      "notes": "Hard boundary. The drafting half of this workflow ends at the Notion row. Nothing downstream runs until a human has approved and an approval artifact exists."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Load the human-approved proposal + approval artifact from the review directory.\n// The approval artifact is produced by scripts/approve-portfolio-proposal.mjs and is\n// never generated by the model. A missing artifact stops the run here.\nconst fs = require('fs');\nconst dir = $env.PORTFOLIO_WORK_DIR;\nif (!fs.existsSync(`${dir}/approval.json`)) return [];\nreturn [{ json: { approved: true } }];"
+      },
+      "id": "load-approved",
+      "name": "Load Approved Proposal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-720, 400]
+    },
+    {
+      "parameters": {
+        "command": "=node scripts/apply-portfolio-proposal.mjs {{ $env.PORTFOLIO_WORK_DIR }}/proposal.json --evidence {{ $env.PORTFOLIO_WORK_DIR }}/evidence.json --dry-run",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "dry-run-patch",
+      "name": "Dry Run Patch",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [-500, 400],
+      "notes": "Writes nothing. Prints project, fields and old/new values for the operator."
+    },
+    {
+      "parameters": {
+        "command": "=node scripts/apply-portfolio-proposal.mjs {{ $env.PORTFOLIO_WORK_DIR }}/proposal.json --evidence {{ $env.PORTFOLIO_WORK_DIR }}/evidence.json --approval {{ $env.PORTFOLIO_WORK_DIR }}/approval.json",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "apply-patch",
+      "name": "Apply Canonical Patch",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [-280, 400],
+      "notes": "Revalidates current values immediately before writing. A drifted value aborts instead of overwriting. Touches only data/portfolio/*.json."
+    },
+    {
+      "parameters": {
+        "command": "npm run data:generate && npm run generate:projects",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "run-generators",
+      "name": "Run Generators",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [-60, 400],
+      "notes": "Generated files are produced here and only here. Automation never edits portfolio-data.js, projects/<slug>/index.html or sitemap.xml directly."
+    },
+    {
+      "parameters": {
+        "command": "npm run qa",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "run-qa",
+      "name": "Repository QA Gate",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [160, 400],
+      "notes": "Authoritative quality gate. A non-zero exit must abort before any branch is pushed."
+    },
+    {
+      "parameters": {
+        "command": "=node scripts/create-portfolio-pr-plan.mjs {{ $env.PORTFOLIO_WORK_DIR }}/proposal.json --evidence {{ $env.PORTFOLIO_WORK_DIR }}/evidence.json --approval {{ $env.PORTFOLIO_WORK_DIR }}/approval.json",
+        "executeIn": "={{ $env.PORTFOLIO_REPO_ROOT }}"
+      },
+      "id": "pr-plan",
+      "name": "Create Draft PR Plan",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [380, 400],
+      "notes": "Emits a plan, not a PR. Branch name is sanitized to [a-z0-9-]."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Draft PR creation is intentionally DISABLED in this template.\n// Enable only after PORTFOLIO_GITHUB_WRITE_ENABLED=true and a write-scoped\n// GitHub credential are configured, and after a human has reviewed the plan.\nif ($env.PORTFOLIO_GITHUB_WRITE_ENABLED !== 'true') {\n  return [{ json: { status: 'USER_CONFIG_REQUIRED', pr_created: false, plan: $json.stdout } }];\n}\nreturn [{ json: { status: 'READY', pr_created: false, plan: $json.stdout } }];"
+      },
+      "id": "github-write-gate",
+      "name": "GitHub Write Gate (disabled)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [600, 400],
+      "notes": "Draft PRs only, base main, auto-merge disabled. There is no path from this workflow to main."
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "options": {}
+      },
+      "id": "notion-writeback",
+      "name": "Write PR URL To Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [820, 400],
+      "notes": "Sets Status and PR URL on the existing review row, matched by Event Key.",
+      "credentials": {}
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Load Tracked Mappings", "type": "main", "index": 0 }]]
+    },
+    "Scheduled Poll": {
+      "main": [[{ "node": "Load Tracked Mappings", "type": "main", "index": 0 }]]
+    },
+    "Load Tracked Mappings": {
+      "main": [
+        [
+          { "node": "Fetch GitHub Releases", "type": "main", "index": 0 },
+          { "node": "Fetch Closed Pull Requests", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch GitHub Releases": {
+      "main": [[{ "node": "Meaningful Event Filter", "type": "main", "index": 0 }]]
+    },
+    "Fetch Closed Pull Requests": {
+      "main": [[{ "node": "Meaningful Event Filter", "type": "main", "index": 0 }]]
+    },
+    "Meaningful Event Filter": {
+      "main": [[{ "node": "Normalize Evidence", "type": "main", "index": 0 }]]
+    },
+    "Normalize Evidence": {
+      "main": [[{ "node": "Idempotency Gate", "type": "main", "index": 0 }]]
+    },
+    "Idempotency Gate": {
+      "main": [[{ "node": "Build Gemini Prompt", "type": "main", "index": 0 }]]
+    },
+    "Build Gemini Prompt": {
+      "main": [[{ "node": "Gemini Draft Proposal", "type": "main", "index": 0 }]]
+    },
+    "Gemini Draft Proposal": {
+      "main": [[{ "node": "Persist Raw Model Response", "type": "main", "index": 0 }]]
+    },
+    "Persist Raw Model Response": {
+      "main": [[{ "node": "Parse Structured Response", "type": "main", "index": 0 }]]
+    },
+    "Parse Structured Response": {
+      "main": [[{ "node": "Validate Proposal", "type": "main", "index": 0 }]]
+    },
+    "Validate Proposal": {
+      "main": [[{ "node": "Create Notion Review Row", "type": "main", "index": 0 }]]
+    },
+    "Create Notion Review Row": {
+      "main": [[]]
+    },
+    "STOP FOR HUMAN APPROVAL — Resume Poll": {
+      "main": [[{ "node": "Load Approved Proposal", "type": "main", "index": 0 }]]
+    },
+    "Load Approved Proposal": {
+      "main": [[{ "node": "Dry Run Patch", "type": "main", "index": 0 }]]
+    },
+    "Dry Run Patch": {
+      "main": [[{ "node": "Apply Canonical Patch", "type": "main", "index": 0 }]]
+    },
+    "Apply Canonical Patch": {
+      "main": [[{ "node": "Run Generators", "type": "main", "index": 0 }]]
+    },
+    "Run Generators": {
+      "main": [[{ "node": "Repository QA Gate", "type": "main", "index": 0 }]]
+    },
+    "Repository QA Gate": {
+      "main": [[{ "node": "Create Draft PR Plan", "type": "main", "index": 0 }]]
+    },
+    "Create Draft PR Plan": {
+      "main": [[{ "node": "GitHub Write Gate (disabled)", "type": "main", "index": 0 }]]
+    },
+    "GitHub Write Gate (disabled)": {
+      "main": [[{ "node": "Write PR URL To Notion", "type": "main", "index": 0 }]]
+    },
+    "Write PR URL To Notion": {
+      "main": [[]]
+    }
+  },
+  "environment_variables_required": {
+    "PORTFOLIO_REPO_ROOT": "Absolute path to a local checkout of this repository inside the n8n container.",
+    "PORTFOLIO_WORK_DIR": "Scratch directory for event/evidence/proposal/approval artifacts. Must be outside data/portfolio/.",
+    "PORTFOLIO_GEMINI_MODEL": "Gemini model id.",
+    "PORTFOLIO_NOTION_DATABASE_ID": "Notion review database id.",
+    "PORTFOLIO_GITHUB_WRITE_ENABLED": "Leave unset or 'false'. Set to 'true' only when a write-scoped GitHub credential exists and draft PR creation is intended."
+  },
+  "credentials_required": {
+    "githubApi": "Read scope for polling. A separate write-scoped credential is required only for draft PR creation.",
+    "googlePalmApi": "Gemini drafting.",
+    "notionApi": "Editorial review database."
+  }
+}

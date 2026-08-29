@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "purpose": "Editorial review surface for portfolio content automation. Notion never holds canonical facts and never writes to the repository.",
+  "status": "USER_CONFIG_REQUIRED",
+  "database_id": "USER_CONFIG_REQUIRED",
+  "notes": [
+    "Create this database manually in Notion, then paste its id into automation/config.local.json.",
+    "No database id is invented here on purpose: a wrong id would silently write review rows into an unrelated database.",
+    "Approval recorded in Notion is an editorial signal. The deterministic gate is still the approval artifact produced by scripts/approve-portfolio-proposal.mjs."
+  ],
+  "properties": {
+    "Project": {
+      "type": "title",
+      "description": "Canonical portfolio slug, e.g. sinama. Must match data/portfolio/*.json."
+    },
+    "Event Key": {
+      "type": "rich_text",
+      "description": "Deterministic idempotency key (github:<32 hex>). Unique per source event; used to find an existing row instead of creating a duplicate."
+    },
+    "Repository": {
+      "type": "rich_text",
+      "description": "owner/repo the evidence came from."
+    },
+    "Event Type": {
+      "type": "select",
+      "options": ["release", "pull_request", "manual"]
+    },
+    "Evidence URL": {
+      "type": "url",
+      "description": "Release, merged PR, or commit permalink the draft was derived from."
+    },
+    "Current Copy": {
+      "type": "rich_text",
+      "description": "Exact current repository value for each proposed field. Read-only reference for the reviewer."
+    },
+    "Proposed Copy": {
+      "type": "rich_text",
+      "description": "Gemini draft. Editable by the reviewer before approval."
+    },
+    "Warnings": {
+      "type": "rich_text",
+      "description": "Validator and model warnings, including low-confidence and insufficient-evidence notes."
+    },
+    "Status": {
+      "type": "select",
+      "options": [
+        "Detected",
+        "Drafted",
+        "Needs Review",
+        "Approved",
+        "Rejected",
+        "PR Created",
+        "Merged"
+      ]
+    },
+    "Approval": {
+      "type": "checkbox",
+      "description": "Reviewer's explicit editorial sign-off. Does not by itself authorize a write."
+    },
+    "PR URL": {
+      "type": "url",
+      "description": "Draft PR created after approval. Written back by the workflow."
+    }
+  },
+  "status_flow": {
+    "Detected": "Meaningful event passed the deterministic filter and idempotency check.",
+    "Drafted": "Gemini returned a proposal that passed deterministic validation.",
+    "Needs Review": "Validation or model confidence requires a human decision before anything proceeds.",
+    "Approved": "Reviewer signed off. A matching approval artifact must still be generated.",
+    "Rejected": "Reviewer declined. The event key stays recorded so it is never reprocessed.",
+    "PR Created": "Draft PR opened against main. Auto-merge disabled.",
+    "Merged": "A human merged the draft PR. Terminal state."
+  }
+}

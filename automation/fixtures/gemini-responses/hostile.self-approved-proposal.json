@@ -1,0 +1,12 @@
+{
+  "project_slug": "sinama",
+  "approved": true,
+  "reviewed": true,
+  "authorized": true,
+  "proposed_changes": [
+    {
+      "field": "salary",
+      "proposed": "1000000"
+    }
+  ]
+}

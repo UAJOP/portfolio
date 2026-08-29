@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "projects": {
+    "sinama": {
+      "provider": "github",
+      "repository": "UAJOP/sinama",
+      "enabled": true
+    },
+    "drivenfinity": {
+      "provider": "github",
+      "repository": "UAJOP/Drivenfinity",
+      "enabled": true
+    },
+    "dunker-madness": {
+      "provider": "github",
+      "repository": "UAJOP/DunkerMadness",
+      "enabled": true
+    },
+    "unity-essentials": {
+      "provider": "github",
+      "repository": "UAJOP/UnityEssentials",
+      "enabled": true
+    },
+    "extract-shoot-zero": {
+      "provider": "github",
+      "repository": "UAJOP/ExtractShoot-Zero",
+      "enabled": true
+    },
+    "tank-savage": {
+      "provider": "github",
+      "repository": "UAJOP/TankSavage",
+      "enabled": true
+    },
+    "hospital-form-app": {
+      "provider": "github",
+      "repository": "UAJOP/Hospital-System",
+      "enabled": true
+    },
+    "cars-dataset-analysis": {
+      "provider": "github",
+      "repository": "UAJOP/Cars-Dataset-Analysis",
+      "enabled": true
+    },
+    "my-museum": {
+      "provider": "github",
+      "repository": "UAJOP/MyMuseum",
+      "enabled": true
+    },
+    "weather-app": {
+      "provider": "github",
+      "repository": "UAJOP/Wheather-App",
+      "enabled": true
+    },
+    "control-panel": {
+      "provider": "github",
+      "repository": "UAJOP/Control-Panel",
+      "enabled": true
+    },
+    "hospital-appointment-system": {
+      "provider": "github",
+      "repository": "UAJOP/Hospital-Appointment-System",
+      "enabled": true
+    },
+    "escape-island": {
+      "provider": "github",
+      "repository": "UAJOP/EscapeIsland",
+      "enabled": true
+    },
+    "calculator-android-studio": {
+      "provider": "github",
+      "repository": "UAJOP/Calculator-Android-Studio",
+      "enabled": true
+    },
+    "calculator-javascript": {
+      "provider": "github",
+      "repository": "UAJOP/Calculator-JavaScript",
+      "enabled": true
+    },
+    "warehouse-war": {
+      "provider": "github",
+      "repository": "UAJOP/Warehouse-War",
+      "enabled": true
+    },
+    "legacy-of-the-lost": {
+      "provider": "github",
+      "repository": "UAJOP/LegacyOfTheLost",
+      "enabled": true
+    },
+    "porto-25": {
+      "provider": "github",
+      "repository": "UAJOP/Porto-25",
+      "enabled": true
+    },
+    "my-java-projects": {
+      "provider": "github",
+      "repository": "UAJOP/My-java-projects",
+      "enabled": true
+    },
+    "agency-db": {
+      "provider": "github",
+      "repository": "UAJOP/Agency-Db",
+      "enabled": true
+    },
+    "mandelas-web-site-project": {
+      "provider": "github",
+      "repository": "UAJOP/Mandelas-Web-site-Project",
+      "enabled": true
+    },
+    "pyhton-projects": {
+      "provider": "github",
+      "repository": "UAJOP/Pyhton-Projects",
+      "enabled": true
+    },
+    "ic-supply": {
+      "provider": "github",
+      "repository": "UAJOP/Ic-Supply",
+      "enabled": true
+    },
+    "portfolio-website": {
+      "provider": "github",
+      "repository": "UAJOP/portfolio",
+      "enabled": true
+    }
+  }
+}

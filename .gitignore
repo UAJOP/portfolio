@@ -8,3 +8,11 @@ node_modules
 # running `npm run qa:react`.
 dist-react
 .react-ssr-tmp
+
+# Portfolio content automation. The example config, the committed fixtures and the
+# credential-free n8n template ARE tracked; only real credentials and local run
+# artifacts are ignored.
+automation/config.local.json
+automation/proposals/
+.env
+.env.local

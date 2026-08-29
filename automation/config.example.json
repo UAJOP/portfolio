@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "trigger": {
+    "mode": "manual_or_scheduled_poll",
+    "schedule": "USER_CONFIG_REQUIRED",
+    "pull_request_label": "portfolio-update",
+    "include_published_releases": true
+  },
+  "github": {
+    "api_base_url": "https://api.github.com",
+    "read_credential": "N8N_CREDENTIAL_REQUIRED",
+    "write_credential": "N8N_CREDENTIAL_REQUIRED",
+    "base_branch": "main",
+    "draft_pull_requests_only": true,
+    "auto_merge": false
+  },
+  "gemini": {
+    "provider": "google",
+    "model": "USER_CONFIG_REQUIRED",
+    "credential": "N8N_CREDENTIAL_REQUIRED",
+    "temperature": 0.1,
+    "max_output_tokens": 4096,
+    "max_attempts": 2
+  },
+  "notion": {
+    "credential": "N8N_CREDENTIAL_REQUIRED",
+    "database_id": "USER_CONFIG_REQUIRED",
+    "approved_status": "Approved"
+  },
+  "local": {
+    "repository_root_environment_variable": "PORTFOLIO_REPO_ROOT",
+    "proposal_directory": "automation/proposals",
+    "state_store": "n8n_data_store"
+  }
+}
