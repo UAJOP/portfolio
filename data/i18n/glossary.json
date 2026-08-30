@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "protectedTerms": [
+    "GitHub",
+    "JavaScript",
+    "TypeScript",
+    "Python",
+    "React",
+    "n8n",
+    "SINAMA",
+    "Merge Rush",
+    "FastAPI",
+    "Next.js",
+    "Umami",
+    "Google Cloud",
+    "Forward Deployed Engineer",
+    "AI Engineer",
+    "Solution Engineer"
+  ],
+  "notes": {
+    "en": "Brand, product and technical names keep their canonical casing. Career terms may be localized only through reviewed locale packs.",
+    "tr": "Marka, ürün ve teknik adların özgün yazımı korunur. Kariyer terimleri yalnızca gözden geçirilmiş dil paketleriyle yerelleştirilir."
+  }
+}

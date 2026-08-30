@@ -98,12 +98,7 @@ function closeMobileNavigation({ restoreFocus = false } = {}) {
   navLinks.classList.remove("is-open");
   navToggle.classList.remove("is-open");
   navToggle.setAttribute("aria-expanded", "false");
-  navToggle.setAttribute(
-    "aria-label",
-    document.documentElement.lang === "tr"
-      ? "Navigasyonu aç"
-      : "Open navigation",
-  );
+  navToggle.setAttribute("aria-label", getUiText("nav.open"));
   if (restoreFocus && wasOpen) navToggle.focus();
 }
 
@@ -121,16 +116,7 @@ if (navToggle && navLinks) {
     navLinks.classList.toggle("is-open", isOpen);
     navToggle.classList.toggle("is-open", isOpen);
     navToggle.setAttribute("aria-expanded", String(isOpen));
-    navToggle.setAttribute(
-      "aria-label",
-      document.documentElement.lang === "tr"
-        ? isOpen
-          ? "Navigasyonu kapat"
-          : "Navigasyonu aç"
-        : isOpen
-          ? "Close navigation"
-          : "Open navigation",
-    );
+    navToggle.setAttribute("aria-label", getUiText(isOpen ? "nav.close" : "nav.open"));
   });
 
   navLinks.querySelectorAll("a").forEach((link) => {
@@ -148,6 +134,12 @@ if (navToggle && navLinks) {
   });
 }
 
+
+subscribeSiteLocale(() => {
+  if (!navToggle) return;
+  const isOpen = Boolean(navLinks?.classList.contains("is-open"));
+  navToggle.setAttribute("aria-label", getUiText(isOpen ? "nav.close" : "nav.open"));
+});
 document.querySelectorAll("[data-year]").forEach((node) => {
   node.textContent = new Date().getFullYear();
 });

@@ -401,11 +401,12 @@
   };
 
   function lang() {
-    return (document.documentElement.lang || localStorage.getItem("kaanbalci-site-language") || "en") === "tr" ? "tr" : "en";
+    return typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en");
   }
-  function t(key) { const active = copy[lang()] || copy.en; return active[key] || copy.en[key] || key; }
-  function tNode(type) { return (copy[lang()].nodeTypes && copy[lang()].nodeTypes[type]) || copy.en.nodeTypes[type]; }
-  function tScenario(id) { return (copy[lang()].scenarios && copy[lang()].scenarios[id]) || copy.en.scenarios[id]; }
+  function activeCopy() { return copy[lang()] || copy.en; }
+  function t(key) { const active = activeCopy(); return active[key] || copy.en[key] || key; }
+  function tNode(type) { const active = activeCopy(); return (active.nodeTypes && active.nodeTypes[type]) || copy.en.nodeTypes[type]; }
+  function tScenario(id) { const active = activeCopy(); return (active.scenarios && active.scenarios[id]) || copy.en.scenarios[id]; }
   function uid() { return safeCrypto.randomUUID ? safeCrypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`; }
   function currentScenario() { return scenarios[state.scenarioIndex]; }
 
@@ -463,8 +464,7 @@
     setStatus(t("connectTip"));
   }
 
-  window.updateAiFlowPuzzleLanguage = function updateAiFlowPuzzleLanguage(language) {
-    document.documentElement.lang = language === "tr" ? "tr" : "en";
+  window.updateAiFlowPuzzleLanguage = function updateAiFlowPuzzleLanguage() {
     applyText();
   };
 
@@ -525,23 +525,23 @@
   function linkKey(link) { return `${link.from}->${link.to}`; }
 
   function edgeLabel(fromType, toType) {
-    const tr = lang() === "tr";
+    const text = (en, tr) => getI18nText(en, tr, lang());
     const map = {
-      "trigger->intent": tr ? "mesaj" : "message",
-      "intent->condition": tr ? "rezervasyon" : "reservation",
+      "trigger->intent": text("message", "mesaj"),
+      "intent->condition": text("reservation", "rezervasyon"),
       "intent->router": "intent",
       "intent->crm": "lead",
-      "intent->fallback": tr ? "belirsiz" : "unknown",
-      "condition->sheet": tr ? "müsait" : "available",
-      "condition->fallback": tr ? "müsait değil" : "not available",
-      "sheet->response": tr ? "kaydedildi" : "saved",
-      "router->kb": tr ? "bilgi" : "known",
-      "router->handoff": tr ? "riskli" : "risky",
-      "router->fallback": tr ? "belirsiz" : "unknown",
+      "intent->fallback": text("unknown", "belirsiz"),
+      "condition->sheet": text("available", "müsait"),
+      "condition->fallback": text("not available", "müsait değil"),
+      "sheet->response": text("saved", "kaydedildi"),
+      "router->kb": text("known", "bilgi"),
+      "router->handoff": text("risky", "riskli"),
+      "router->fallback": text("unknown", "belirsiz"),
       "kb->llm": "context",
-      "llm->response": tr ? "cevap" : "answer",
-      "crm->email": tr ? "kayıt" : "lead saved",
-      "email->response": tr ? "bildirim" : "notified",
+      "llm->response": text("answer", "cevap"),
+      "crm->email": text("lead saved", "kayıt"),
+      "email->response": text("notified", "bildirim"),
       "response->end": tr ? "tamam" : "done",
       "fallback->end": "fallback",
       "handoff->end": tr ? "devredildi" : "assigned"
@@ -789,8 +789,8 @@
     const missingEdges = scenario.requiredEdges.filter(([from, to]) => !hasTypeEdge(from, to));
     const debug = [];
     if (!hasType("fallback")) debug.push(`${tNode("fallback").title}: ${tNode("fallback").desc}`);
-    if (state.links.some((link) => nodeById(link.from)?.type === "response" && nodeById(link.to)?.type !== "end")) debug.push(lang() === "tr" ? "Response sonrası akış genelde End ile kapanmalı." : "A response should usually close with End.");
-    if (state.nodes.length > scenario.requiredTypes.length + 5) debug.push(lang() === "tr" ? "Çok fazla node var; verimlilik düşebilir." : "Too many nodes may reduce efficiency.");
+    if (state.links.some((link) => nodeById(link.from)?.type === "response" && nodeById(link.to)?.type !== "end")) debug.push(getI18nText("A response should usually close with End.", "Response sonrası akış genelde End ile kapanmalı.", lang()));
+    if (state.nodes.length > scenario.requiredTypes.length + 5) debug.push(getI18nText("Too many nodes may reduce efficiency.", "Çok fazla node var; verimlilik düşebilir.", lang()));
     const valid = missingNodes.length === 0 && missingEdges.length === 0;
     const quality = computeQuality(missingNodes, missingEdges, debug);
     state.lastValidation = { valid, missingNodes, missingEdges, debug };

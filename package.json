@@ -3,7 +3,7 @@
   "private": true,
   "description": "Automated preflight checks for kaanbalci.com",
   "scripts": {
-    "qa": "npm run qa:data && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:css && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
+    "qa": "npm run qa:data && npm run qa:i18n && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:css && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
     "qa:js": "node qa-js-syntax.js",
     "qa:portfolio": "node qa-portfolio-consistency.js",
     "qa:assets": "node qa-assets.js",
@@ -30,7 +30,9 @@
     "build:react": "node scripts/prerender-react.mjs",
     "preview:react": "vite preview",
     "qa:react": "node qa-react-foundation.js",
-    "qa:a11y:react": "pa11y-ci --config .pa11yci-react"
+    "qa:a11y:react": "pa11y-ci --config .pa11yci-react",
+    "qa:i18n": "node scripts/qa-i18n.mjs",
+    "i18n:generate": "node scripts/generate-i18n.mjs"
   },
   "devDependencies": {
     "@cspell/dict-tr-tr": "3.0.6",

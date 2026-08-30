@@ -1093,6 +1093,20 @@ function preserveWhitespace(originalValue, translatedValue) {
   return `${leading}${translatedValue}${trailing}`;
 }
 
+function hasLegacyTextTranslation(key) {
+  if (!key) return false;
+  return getActiveLocales().some(
+    (locale) => locale.id !== siteLocaleRegistry.defaultLocale && Boolean(i18nTranslations[locale.id]?.[key]),
+  );
+}
+
+function hasLegacyAttributeTranslation(key) {
+  if (!key) return false;
+  return getActiveLocales().some(
+    (locale) => locale.id !== siteLocaleRegistry.defaultLocale && Boolean(i18nAttributeTranslations[locale.id]?.[key]),
+  );
+}
+
 function collectTranslatableTextNodes() {
   const nodes = [];
   const walker = document.createTreeWalker(
@@ -1109,7 +1123,7 @@ function collectTranslatableTextNodes() {
         }
 
         const key = normalizeI18nText(node.nodeValue);
-        if (key && i18nTranslations.tr[key]) {
+        if (key && hasLegacyTextTranslation(key)) {
           node.__i18nKey = key;
           nodes.push(node);
         }
@@ -1128,74 +1142,91 @@ const translatableAttributes = [];
 ["aria-label", "alt", "title", "placeholder"].forEach((attributeName) => {
   document.querySelectorAll(`[${attributeName}]`).forEach((element) => {
     const key = element.getAttribute(attributeName);
-    if (key && i18nAttributeTranslations.tr[key]) {
+    if (key && hasLegacyAttributeTranslation(key)) {
       translatableAttributes.push({ element, attributeName, key });
     }
   });
 });
 
-let currentSiteLanguage = "en";
+function translateLegacyText(key, locale) {
+  if (locale === siteLocaleRegistry.defaultLocale) return key;
+  return i18nTranslations[locale]?.[key] || key;
+}
 
-function applyLanguage(language) {
-  const activeLanguage = language === "tr" ? "tr" : "en";
-  currentSiteLanguage = activeLanguage;
-  document.documentElement.lang = activeLanguage;
+function translateLegacyAttribute(key, locale) {
+  if (locale === siteLocaleRegistry.defaultLocale) return key;
+  return i18nAttributeTranslations[locale]?.[key] || key;
+}
+
+function translateDocumentTitle(locale) {
+  if (locale === siteLocaleRegistry.defaultLocale) return originalDocumentTitle;
+  return i18nTitleTranslations[locale]?.[originalDocumentTitle] || originalDocumentTitle;
+}
+
+function applyProtectedTermCasing() {
+  const terms = window.KAAN_I18N?.glossary?.protectedTerms || [];
+  if (!terms.length || !document.body) return;
+  document.querySelectorAll("[data-preserve-case]").forEach((element) => element.removeAttribute("data-preserve-case"));
+  document.querySelectorAll("body *").forEach((element) => {
+    if (element.children.length) return;
+    const text = String(element.textContent || "");
+    if (!terms.some((term) => text.includes(term))) return;
+    try {
+      if (getComputedStyle(element).textTransform !== "none") element.setAttribute("data-preserve-case", "");
+    } catch (error) {
+      // Static/file:// contexts may not expose computed styles consistently.
+    }
+  });
+}
+
+function applyLanguagePresentation(locale = getCurrentLocale()) {
+  const activeLocale = isActiveLocale(locale) ? normalizeLocaleId(locale) : siteLocaleRegistry.defaultLocale;
+  currentSiteLanguage = activeLocale;
 
   translatableTextNodes.forEach((node) => {
     const key = node.__i18nKey;
-    const nextValue = activeLanguage === "tr" ? i18nTranslations.tr[key] : key;
-    node.nodeValue = preserveWhitespace(node.nodeValue, nextValue);
+    node.nodeValue = preserveWhitespace(node.nodeValue, translateLegacyText(key, activeLocale));
   });
 
   translatableAttributes.forEach((item) => {
-    const nextValue =
-      activeLanguage === "tr"
-        ? i18nAttributeTranslations.tr[item.key]
-        : item.key;
-    item.element.setAttribute(item.attributeName, nextValue);
+    item.element.setAttribute(
+      item.attributeName,
+      translateLegacyAttribute(item.key, activeLocale),
+    );
   });
 
   document.querySelectorAll("[data-training-type]").forEach((element) => {
-    element.textContent = activeLanguage === "tr" ? "Eğitim" : "Training";
+    element.textContent = getUiText("training", activeLocale);
   });
 
-  document.title =
-    activeLanguage === "tr"
-      ? i18nTitleTranslations.tr[originalDocumentTitle] || originalDocumentTitle
-      : originalDocumentTitle;
+  document.title = translateDocumentTitle(activeLocale);
+  syncLanguageSelectors(activeLocale);
 
-  document.querySelectorAll("[data-lang-switch]").forEach((button) => {
-    const isActive = button.dataset.langSwitch === activeLanguage;
-    button.classList.toggle("active", isActive);
-    button.setAttribute("aria-pressed", String(isActive));
-  });
-
-  localStorage.setItem("kaanbalci-site-language", activeLanguage);
-
-  if (typeof applySiteTheme === "function") {
-    applySiteTheme(siteThemeState.current);
+  if (typeof applySiteTheme === "function") applySiteTheme(siteThemeState.current);
+  if (typeof renderProjectDetail === "function") renderProjectDetail(activeLocale);
+  if (typeof renderAiWorkflowDemo === "function") renderAiWorkflowDemo(activeLocale);
+  if (typeof updatePortfolioChatbotLanguage === "function") updatePortfolioChatbotLanguage(activeLocale);
+  if (typeof updateAiFlowPuzzleLanguage === "function") updateAiFlowPuzzleLanguage(activeLocale);
+  if (typeof updateJoydayPaintLanguage === "function") updateJoydayPaintLanguage(activeLocale);
+  if (typeof updateCareerAdventureLanguage === "function") updateCareerAdventureLanguage(activeLocale);
+  if (typeof updateUltimateStaticLabels === "function") updateUltimateStaticLabels(activeLocale);
+  if (typeof renderCommandPalette === "function" && document.querySelector("[data-command-palette]")) {
+    renderCommandPalette(activeLocale);
+  }
+  if (typeof renderRecruiterDrawer === "function" && document.querySelector("[data-recruiter-drawer]")) {
+    renderRecruiterDrawer(activeLocale);
   }
 
-  if (typeof renderProjectDetail === "function") {
-    renderProjectDetail(activeLanguage);
-  }
-
-  if (typeof renderAiWorkflowDemo === "function") {
-    renderAiWorkflowDemo(activeLanguage);
-  }
-
-  if (typeof updatePortfolioChatbotLanguage === "function") {
-    updatePortfolioChatbotLanguage(activeLanguage);
-  }
-
-  if (typeof updateAiFlowPuzzleLanguage === "function") {
-    updateAiFlowPuzzleLanguage(activeLanguage);
-  }
+  applyProtectedTermCasing();
+  document.documentElement.dataset.localeReady = "true";
+  delete document.documentElement.dataset.localePending;
 }
 
-document.querySelectorAll("[data-lang-switch]").forEach((button) => {
-  button.addEventListener("click", () =>
-    applyLanguage(button.dataset.langSwitch),
-  );
-});
+/** Compatibility entry point used by existing UI modules. New code should call
+ * setCurrentLocale() directly. */
+function applyLanguage(language) {
+  return setCurrentLocale(language, { persist: true, source: "compat-applyLanguage" });
+}
 
+subscribeSiteLocale(({ locale }) => applyLanguagePresentation(locale));
+applyLanguagePresentation(getCurrentLocale());

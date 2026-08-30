@@ -402,11 +402,11 @@ const ultimateContent = {
   },
 };
 
-function getUltimateContent(language = currentSiteLanguage || "en") {
-  return ultimateContent[language === "tr" ? "tr" : "en"];
+function getUltimateContent(language = getCurrentLocale()) {
+  return getLocalizedCollection(ultimateContent, language);
 }
 
-function getCatalogSearchLabels(language = currentSiteLanguage || "en") {
+function getCatalogSearchLabels(language = getCurrentLocale()) {
   const base = getUltimateContent(language);
   const path = (window.location.pathname || "").toLowerCase();
   const isGamesCatalog = path.includes("games.html") || path.endsWith("/games");
@@ -415,18 +415,13 @@ function getCatalogSearchLabels(language = currentSiteLanguage || "en") {
       label: base.projectSearchLabel,
       placeholder: base.projectSearchPlaceholder,
     };
-  return language === "tr"
-    ? {
-        label: "Oyunlarda ara",
-        placeholder: "Oyun, kategori veya özellik ara...",
-      }
-    : {
-        label: "Search games",
-        placeholder: "Search by game, category or feature...",
-      };
+  return {
+    label: getI18nText("Search games", "Oyunlarda ara", language),
+    placeholder: getI18nText("Search by game, category or feature...", "Oyun, kategori veya özellik ara...", language),
+  };
 }
 
-function updateUltimateStaticLabels(language = currentSiteLanguage || "en") {
+function updateUltimateStaticLabels(language = getCurrentLocale()) {
   const content = getUltimateContent(language);
   const catalogSearchLabels = getCatalogSearchLabels(language);
   document.querySelectorAll("[data-recruiter-label]").forEach((node) => {
@@ -443,9 +438,7 @@ function updateUltimateStaticLabels(language = currentSiteLanguage || "en") {
   document.querySelectorAll("[data-command-toggle]").forEach((button) => {
     const label =
       button.getAttribute("aria-expanded") === "true"
-        ? language === "tr"
-          ? "Arama paletini kapat"
-          : "Close search palette"
+        ? getI18nText("Close search palette", "Arama paletini kapat", language)
         : content.commandsTitle;
     button.setAttribute("aria-label", label);
     button.setAttribute("title", label);
@@ -466,7 +459,7 @@ function updateUltimateStaticLabels(language = currentSiteLanguage || "en") {
   document.querySelectorAll("[data-availability-badge]").forEach((node) => {
     node.setAttribute(
       "aria-label",
-      language === "tr" ? "Rollere açık" : "Available for roles",
+      getI18nText("Available for roles", "Rollere açık", language),
     );
   });
   document.querySelectorAll("[data-project-search]").forEach((node) => {

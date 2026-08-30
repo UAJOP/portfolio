@@ -848,8 +848,8 @@ let portfolioChatbotState = {
   open: false,
 };
 
-function getPortfolioChatbotContent(language = currentSiteLanguage || "en") {
-  return portfolioChatbotContent[language === "tr" ? "tr" : "en"];
+function getPortfolioChatbotContent(language = getCurrentLocale()) {
+  return getLocalizedCollection(portfolioChatbotContent, language);
 }
 
 function createChatbotLinks(links = []) {
@@ -908,9 +908,9 @@ function resetChatbotMessages() {
 }
 
 function updatePortfolioChatbotLanguage(
-  language = currentSiteLanguage || "en",
+  language = getCurrentLocale(),
 ) {
-  portfolioChatbotState.language = language === "tr" ? "tr" : "en";
+  portfolioChatbotState.language = isActiveLocale(language) ? normalizeLocaleId(language) : siteLocaleRegistry.defaultLocale;
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
   const launcherText = document.querySelector("[data-chatbot-launcher-text]");
   const title = document.querySelector("[data-chatbot-title]");
@@ -975,7 +975,7 @@ function setupPortfolioChatbot() {
   )
     return;
   portfolioChatbotState.initialized = true;
-  const content = getPortfolioChatbotContent(currentSiteLanguage || "en");
+  const content = getPortfolioChatbotContent(getCurrentLocale());
   const widget = document.createElement("aside");
   widget.className = "portfolio-chatbot";
   widget.setAttribute("data-portfolio-chatbot", "");
@@ -1036,11 +1036,10 @@ function setupPortfolioChatbot() {
     trapFocus(event, panel);
   });
 
-  updatePortfolioChatbotLanguage(currentSiteLanguage || "en");
+  updatePortfolioChatbotLanguage(getCurrentLocale());
 }
 
 setupPortfolioChatbot();
 
-applyLanguage(localStorage.getItem("kaanbalci-site-language") || "en");
 
 /* Ultimate portfolio enhancements: recruiter mode, command palette, project search and Ajoop navigation actions */

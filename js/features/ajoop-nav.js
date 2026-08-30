@@ -107,16 +107,7 @@ setupRecruiterMode();
 setupCommandPalette();
 if (typeof setupProjectCopyLink === "function") setupProjectCopyLink();
 enhanceAjoopNavigationActions();
-updateUltimateStaticLabels(currentSiteLanguage || "en");
-document
-  .querySelectorAll("[data-lang-switch]")
-  .forEach((button) =>
-    button.addEventListener("click", () =>
-      setTimeout(
-        () => updateUltimateStaticLabels(currentSiteLanguage || "en"),
-        0,
-      ),
-    ),
-  );
+updateUltimateStaticLabels(getCurrentLocale());
+if (typeof subscribeSiteLocale === "function") subscribeSiteLocale(() => updateUltimateStaticLabels(getCurrentLocale()));
 
 /* Creative final add-ons: easter egg, interactive 3D model and tiny performance pass */

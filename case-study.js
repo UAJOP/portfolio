@@ -2,13 +2,15 @@
   const pageData = window.caseStudyPageData || {};
 
   function language() {
-    return document.documentElement.lang === "tr" ? "tr" : "en";
+    return typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en");
   }
 
   function applyTranslations() {
     const activeLanguage = language();
     const translations = pageData.translations;
-    const active = translations?.[activeLanguage] || translations?.en;
+    const active = typeof getLocalizedCollection === "function"
+      ? getLocalizedCollection(translations, activeLanguage)
+      : (translations?.[activeLanguage] || translations?.en);
 
     if (active) {
       document.querySelectorAll("[data-case-i18n]").forEach((element) => {
@@ -35,12 +37,7 @@
     }
   }
 
-  const observer = new MutationObserver((mutations) => {
-    if (mutations.some((mutation) => mutation.attributeName === "lang")) {
-      applyTranslations();
-    }
-  });
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+  if (typeof subscribeSiteLocale === "function") subscribeSiteLocale(() => applyTranslations());
 
   const modal = document.querySelector("[data-case-modal]");
   const modalImage = modal?.querySelector("[data-case-modal-image]");

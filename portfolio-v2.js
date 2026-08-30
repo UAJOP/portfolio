@@ -7,13 +7,14 @@
     evidenceScenario: "healthy"
   };
 
-  const lang = () => (document.documentElement.lang === "tr" ? "tr" : "en");
+  const lang = () => (typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en"));
   const pick = (value, language = lang()) => {
-    if (value && typeof value === "object" && ("en" in value || "tr" in value)) {
-      return value[language] || value.en || value.tr || "";
-    }
+    if (typeof getLocalizedValue === "function") return getLocalizedValue(value, language);
+    if (value && typeof value === "object") return value[language] || value.en || Object.values(value)[0] || "";
     return value ?? "";
   };
+  const lt = (english, turkish, language = lang()) =>
+    typeof getI18nText === "function" ? getI18nText(english, turkish, language) : (language === "tr" ? turkish : english);
   const esc = (value) => String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -31,12 +32,15 @@
     ];
     pairs.forEach(([, enAttr, trAttr]) => {
       document.querySelectorAll(`[${enAttr}][${trAttr}]`).forEach((node) => {
-        const value = node.getAttribute(language === "tr" ? trAttr : enAttr);
-        if (value !== null) node.textContent = value;
+        const enValue = node.getAttribute(enAttr) || "";
+        const trValue = node.getAttribute(trAttr) || enValue;
+        node.textContent = lt(enValue, trValue, language);
       });
     });
     document.querySelectorAll("[data-pv2-aria-en][data-pv2-aria-tr]").forEach((node) => {
-      node.setAttribute("aria-label", node.getAttribute(language === "tr" ? "data-pv2-aria-tr" : "data-pv2-aria-en") || "");
+      const enValue = node.getAttribute("data-pv2-aria-en") || "";
+      const trValue = node.getAttribute("data-pv2-aria-tr") || enValue;
+      node.setAttribute("aria-label", lt(enValue, trValue, language));
     });
   }
 
@@ -44,7 +48,7 @@
     const project = registry.projects[projectId];
     if (!project) return "";
     const href = project.links?.caseStudy || project.links?.live || "works.html";
-    return `<a href="${esc(href)}"><strong>${esc(project.name)}</strong><small>${esc(pick(project.summary, language))}</small><span>${language === "tr" ? "Kanıtı aç" : "Open evidence"}</span></a>`;
+    return `<a href="${esc(href)}"><strong>${esc(project.name)}</strong><small>${esc(pick(project.summary, language))}</small><span>${lt("Open evidence", "Kanıtı aç", language)}</span></a>`;
   }
 
   function getRoleFromUrl() {
@@ -64,37 +68,21 @@
   }
 
   function recruiterCopy(language) {
-    return language === "tr"
-      ? {
-          label: "İK MODU V2",
-          title: "Yetkinlik odağına göre kanıt özeti",
-          lead: "Forward Deployed Engineer hedefini sabit tutar; aynı portfolyoda seçilen yetkinliğe ait proje ve deneyim kanıtını öne çıkarır.",
-          choose: "Kanıt odağı",
-          primary: "Ana hedef",
-          focus: "Kanıt odağı",
-          capabilities: "Yetkinlik alanları",
-          skills: "Ana yetkinlikler",
-          proof: "Önerilen kanıt",
-          cv: "CV'yi Görüntüle",
-          email: "E-posta",
-          close: "Kapat",
-          updated: "Portfolyo verisi"
-        }
-      : {
-          label: "RECRUITER MODE V2",
-          title: "Evidence summary by capability focus",
-          lead: "Keeps the Forward Deployed Engineer target fixed while prioritizing project and experience evidence for the selected capability.",
-          choose: "Evidence focus",
-          primary: "Primary target",
-          focus: "Evidence focus",
-          capabilities: "Capability areas",
-          skills: "Core capabilities",
-          proof: "Recommended evidence",
-          cv: "View Resume",
-          email: "Email Me",
-          close: "Close",
-          updated: "Portfolio data"
-        };
+    const copy = {
+      en: {
+        label: "RECRUITER MODE V2", title: "Evidence summary by capability focus",
+        lead: "Keeps the Forward Deployed Engineer target fixed while prioritizing project and experience evidence for the selected capability.",
+        choose: "Evidence focus", primary: "Primary target", focus: "Evidence focus", capabilities: "Capability areas",
+        skills: "Core capabilities", proof: "Recommended evidence", cv: "View Resume", email: "Email Me", close: "Close", updated: "Portfolio data"
+      },
+      tr: {
+        label: "İK MODU V2", title: "Yetkinlik odağına göre kanıt özeti",
+        lead: "Forward Deployed Engineer hedefini sabit tutar; aynı portfolyoda seçilen yetkinliğe ait proje ve deneyim kanıtını öne çıkarır.",
+        choose: "Kanıt odağı", primary: "Ana hedef", focus: "Kanıt odağı", capabilities: "Yetkinlik alanları",
+        skills: "Ana yetkinlikler", proof: "Önerilen kanıt", cv: "CV'yi Görüntüle", email: "E-posta", close: "Kapat", updated: "Portfolyo verisi"
+      }
+    };
+    return getLocalizedCollection(copy, language);
   }
 
   function renderRecruiterV2(language = lang()) {
@@ -190,50 +178,44 @@
       target.quicks = copy[language].quicks;
       target.answers.about = {
         ...target.answers.about,
-        text: language === "tr"
-          ? "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor; AI Designer & Software Developer geçmişi Applied AI, AI reliability, conversational AI, automation ve ürün odaklı yazılım geliştirme kanıtlarını bir araya getiriyor."
-          : "Kaan is currently positioning primarily as a Forward Deployed Engineer; his AI Designer & Software Developer background brings together evidence across Applied AI, AI reliability, conversational AI, automation and product-minded software delivery."
+        text: lt("Kaan is currently positioning primarily as a Forward Deployed Engineer; his AI Designer & Software Developer background brings together evidence across Applied AI, AI reliability, conversational AI, automation and product-minded software delivery.", "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor; AI Designer & Software Developer geçmişi Applied AI, AI reliability, conversational AI, automation ve ürün odaklı yazılım geliştirme kanıtlarını bir araya getiriyor.", language)
       };
       target.answers.cv = {
         ...target.answers.cv,
-        text: language === "tr"
-          ? "Kaan'ın CV'sini görüntüleyebilir veya LinkedIn ve e-posta üzerinden iletişime geçebilirsiniz. Ana hedef Forward Deployed Engineer; yetkinlik odakları ilgili proje kanıtına yönlendirir."
-          : "You can review Kaan's CV or contact him through LinkedIn and email. The primary target is Forward Deployed Engineer; capability focuses lead to the relevant project evidence."
+        text: lt("You can review Kaan's CV or contact him through LinkedIn and email. The primary target is Forward Deployed Engineer; capability focuses lead to the relevant project evidence.", "Kaan'ın CV'sini görüntüleyebilir veya LinkedIn ve e-posta üzerinden iletişime geçebilirsiniz. Ana hedef Forward Deployed Engineer; yetkinlik odakları ilgili proje kanıtına yönlendirir.", language)
       };
       target.answers.sinama = {
         text: [
           `${p.sinama.name}: ${pick(p.sinama.summary, language)} Evidence: ${p.sinama.proof.slice(0, 3).map((item) => pick(item, language)).join("; ")}.`,
-          language === "tr" ? "SINAMA'nın güçlü tarafı yalnızca chat çıktısını değil transcript + Tool Trace + workflow contract kanıtını release kararına bağlaması." : "SINAMA's strongest proof is that it connects transcript + Tool Trace + workflow-contract evidence to a release decision."
+          lt("SINAMA's strongest proof is that it connects transcript + Tool Trace + workflow-contract evidence to a release decision.", "SINAMA'nın güçlü tarafı yalnızca chat çıktısını değil transcript + Tool Trace + workflow contract kanıtını release kararına bağlaması.", language)
         ],
         links: [
-          { label: language === "tr" ? "SINAMA Vaka Çalışması" : "SINAMA Case Study", url: p.sinama.links.caseStudy },
-          { label: language === "tr" ? "Canlı Ürün" : "Live Product", url: p.sinama.links.live },
+          { label: lt("SINAMA Case Study", "SINAMA Vaka Çalışması", language), url: p.sinama.links.caseStudy },
+          { label: lt("Live Product", "Canlı Ürün", language), url: p.sinama.links.live },
           { label: "GitHub", url: p.sinama.links.github }
         ]
       };
       target.answers.mergeRush = {
         text: [
           `${p.mergeRush.name}: ${pick(p.mergeRush.summary, language)} Evidence: ${p.mergeRush.proof.slice(0, 4).map((item) => pick(item, language)).join("; ")}.`,
-          language === "tr" ? "Proje aktif geliştirmede; public case study gerçek implementasyon ve QA kanıtını gösteriyor, private repo'yu açmıyor." : "The project is in active development; the public case study exposes implemented systems and QA evidence without exposing the private repository."
+          lt("The project is in active development; the public case study exposes implemented systems and QA evidence without exposing the private repository.", "Proje aktif geliştirmede; public case study gerçek implementasyon ve QA kanıtını gösteriyor, private repo'yu açmıyor.", language)
         ],
-        links: [{ label: language === "tr" ? "Merge Rush Vaka Çalışması" : "Merge Rush Case Study", url: p.mergeRush.links.caseStudy }]
+        links: [{ label: lt("Merge Rush Case Study", "Merge Rush Vaka Çalışması", language), url: p.mergeRush.links.caseStudy }]
       };
       target.answers.roles = {
-        text: language === "tr"
-          ? `Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor. Kanıt odakları: ${focusSummary(language)}. Applied AI ve AI reliability için SINAMA + CBOT; solution engineering için CBOT + SINAMA + Joyday; software / product engineering için SINAMA backend + Hospital; interactive systems için Merge Rush öne çıkar.`
-          : `Kaan is currently positioning primarily as a Forward Deployed Engineer. Evidence focuses: ${focusSummary(language)}. SINAMA + CBOT lead for Applied AI and AI reliability; CBOT + SINAMA + Joyday for solution engineering; SINAMA backend + Hospital for software / product engineering; and Merge Rush for interactive systems.`,
-        links: [{ label: language === "tr" ? "İK Modunu aç" : "Open Recruiter Mode", url: "index.html?role=applied-ai" }, { label: language === "tr" ? "Hakkımda" : "About", url: "about.html" }]
+        text: lt(`Kaan is currently positioning primarily as a Forward Deployed Engineer. Evidence focuses: ${focusSummary(language)}. SINAMA + CBOT lead for Applied AI and AI reliability; CBOT + SINAMA + Joyday for solution engineering; SINAMA backend + Hospital for software / product engineering; and Merge Rush for interactive systems.`, `Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor. Kanıt odakları: ${focusSummary(language)}. Applied AI ve AI reliability için SINAMA + CBOT; solution engineering için CBOT + SINAMA + Joyday; software / product engineering için SINAMA backend + Hospital; interactive systems için Merge Rush öne çıkar.`, language),
+        links: [{ label: lt("Open Recruiter Mode", "İK Modunu aç", language), url: "index.html?role=applied-ai" }, { label: lt("About", "Hakkımda", language), url: "about.html" }]
       };
       target.answers.availability = target.answers.roles;
       target.answers.latestBuild = {
         text: registry.buildLog.slice(0, 3).map((entry) => `${entry.date} · ${entry.area} · ${pick(entry.title, language)} — ${pick(entry.detail, language)}`),
-        links: [{ label: language === "tr" ? "Build Log" : "Build Log", url: "now.html" }]
+        links: [{ label: "Build Log", url: "now.html" }]
       };
       target.answers.projects = {
         text: [
-          language === "tr" ? "Güncel iki flagship ürün SINAMA ve Merge Rush. SINAMA Applied AI / reliability engineering; Merge Rush game-system / interactive product engineering tarafının ana kanıtı. Joyday gerçek işletme ürünü, AI Chatbot Flow Design ise enterprise conversational-AI deneyiminin güçlü desteği." : "The two current flagship products are SINAMA and Merge Rush. SINAMA is the main Applied AI / reliability-engineering proof; Merge Rush is the main game-system / interactive-product proof. Joyday adds real-business product ownership and AI Chatbot Flow Design adds enterprise conversational-AI evidence."
+          lt("The two current flagship products are SINAMA and Merge Rush. SINAMA is the main Applied AI / reliability-engineering proof; Merge Rush is the main game-system / interactive-product proof. Joyday adds real-business product ownership and AI Chatbot Flow Design adds enterprise conversational-AI evidence.", "Güncel iki flagship ürün SINAMA ve Merge Rush. SINAMA Applied AI / reliability engineering; Merge Rush game-system / interactive product engineering tarafının ana kanıtı. Joyday gerçek işletme ürünü, AI Chatbot Flow Design ise enterprise conversational-AI deneyiminin güçlü desteği.", language)
         ],
-        links: [{ label: language === "tr" ? "Projeler" : "Works", url: "works.html" }, { label: "SINAMA", url: p.sinama.links.caseStudy }, { label: "Merge Rush", url: p.mergeRush.links.caseStudy }]
+        links: [{ label: lt("Works", "Projeler", language), url: "works.html" }, { label: "SINAMA", url: p.sinama.links.caseStudy }, { label: "Merge Rush", url: p.mergeRush.links.caseStudy }]
       };
     });
 
@@ -296,7 +278,7 @@
 
   function renderLabCards() {
     document.querySelectorAll("[data-labs-grid]").forEach((container) => {
-      container.innerHTML = registry.labs.map((item) => `<article class="lab-card"><div class="lab-card-top"><span>${esc(pick(item.type))}</span><i class="bx bx-flask"></i></div><h3>${esc(item.title)}</h3><p>${esc(pick(item.description))}</p><div class="project-tags">${item.tags.map((tag) => `<span>${esc(tag)}</span>`).join("")}</div><a href="${esc(item.url)}">${lang() === "tr" ? "Deneyi aç" : "Open experiment"}<i class="bx bx-right-arrow-alt"></i></a></article>`).join("");
+      container.innerHTML = registry.labs.map((item) => `<article class="lab-card"><div class="lab-card-top"><span>${esc(pick(item.type))}</span><i class="bx bx-flask"></i></div><h3>${esc(item.title)}</h3><p>${esc(pick(item.description))}</p><div class="project-tags">${item.tags.map((tag) => `<span>${esc(tag)}</span>`).join("")}</div><a href="${esc(item.url)}">${lt("Open experiment", "Deneyi aç")}<i class="bx bx-right-arrow-alt"></i></a></article>`).join("");
     });
   }
 
@@ -307,9 +289,10 @@
     const scenario = registry.sinamaEvidence[state.evidenceScenario];
     // Keep focus inside the explorer when a scenario switch re-renders the markup.
     const hadFocus = root.contains(document.activeElement);
-    const labels = language === "tr"
-      ? { conversation: "Konuşma", tools: "Tool Trace", evaluation: "Değerlendirme", verdict: "Release kararı", group: "SINAMA örnek çalıştırması" }
-      : { conversation: "Conversation", tools: "Tool Trace", evaluation: "Evaluation", verdict: "Release verdict", group: "SINAMA example run" };
+    const labels = getLocalizedCollection({
+      en: { conversation: "Conversation", tools: "Tool Trace", evaluation: "Evaluation", verdict: "Release verdict", group: "SINAMA example run" },
+      tr: { conversation: "Konuşma", tools: "Tool Trace", evaluation: "Değerlendirme", verdict: "Release kararı", group: "SINAMA örnek çalıştırması" }
+    }, language);
     // Scenario button labels stay registry-owned so the explorer cannot drift from portfolio-data.js.
     const scenarioButton = (id) => {
       const isActive = state.evidenceScenario === id;
@@ -345,15 +328,15 @@
       receipt.dataset.requestReceipt = "";
       const stamp = new Date();
       const reference = `KB-${stamp.getFullYear()}${String(stamp.getMonth() + 1).padStart(2, "0")}${String(stamp.getDate()).padStart(2, "0")}-${String(stamp.getHours()).padStart(2, "0")}${String(stamp.getMinutes()).padStart(2, "0")}`;
-      receipt.innerHTML = `<strong>${lang() === "tr" ? "Tarayıcı gönderim referansı" : "Browser submission reference"}: ${esc(reference)}</strong><span>${lang() === "tr" ? "Bu referans server confirmation değildir; Apps Script no-cors akışı nedeniyle tarayıcı teslimatı doğrulayamaz." : "This is not a server confirmation; the browser cannot verify delivery through the Apps Script no-cors flow."}</span>`;
+      receipt.innerHTML = `<strong>${lt("Browser submission reference", "Tarayıcı gönderim referansı")}: ${esc(reference)}</strong><span>${lt("This is not a server confirmation; the browser cannot verify delivery through the Apps Script no-cors flow.", "Bu referans server confirmation değildir; Apps Script no-cors akışı nedeniyle tarayıcı teslimatı doğrulayamaz.")}</span>`;
       status.appendChild(receipt);
     });
     observer.observe(status, { childList: true, subtree: true, attributes: true });
   }
 
   function installLanguageObserver() {
-    const observer = new MutationObserver((records) => {
-      if (!records.some((record) => record.attributeName === "lang")) return;
+    if (typeof subscribeSiteLocale !== "function") return;
+    subscribeSiteLocale(() => {
       applyUnifiedCopy();
       syncAjoop();
       renderBuildLogs();
@@ -361,7 +344,6 @@
       renderEvidenceExplorer();
       if (typeof renderRecruiterDrawer === "function") renderRecruiterDrawer(lang());
     });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
   }
 
   function init() {

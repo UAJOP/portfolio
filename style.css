@@ -3376,3 +3376,70 @@ html[data-theme="light"] .recruiter-primary-profile {
   font-weight: 800;
   letter-spacing: 0.02em;
 }
+
+/* Multilingual foundation V1 -------------------------------------------------
+ * locale-bootstrap.js sets data-locale-pending before the body is parsed when
+ * a non-default locale must be applied. i18n.js removes it after translating.
+ * A bootstrap safety timer restores readable English if the runtime fails. */
+html[data-locale-pending="true"] body {
+  visibility: hidden;
+}
+
+.lang-switch[data-lang-selector] {
+  position: relative;
+  padding: 4px 8px;
+}
+
+.lang-selector-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+}
+
+.lang-selector-select {
+  min-width: 88px;
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 28px 0 10px;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+html[data-theme="light"] .lang-selector-select {
+  color-scheme: light;
+}
+
+.lang-selector-select:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.lang-selector-select option {
+  color: #0b1628;
+  background: #f8fbff;
+}
+
+@media screen and (max-width: 560px) {
+  .lang-switch[data-lang-selector] {
+    padding-inline: 5px;
+  }
+
+  .lang-selector-select {
+    min-width: 78px;
+    min-height: 32px;
+    padding-left: 8px;
+    font-size: 11px;
+  }
+}
+
+/* Locale-aware uppercase must never mutate canonical technical/product names
+ * (e.g. Engineer -> ENGİNEER under Turkish casing rules). */
+[data-preserve-case] {
+  text-transform: none !important;
+}

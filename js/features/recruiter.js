@@ -142,12 +142,12 @@ const recruiterItems = {
   },
 };
 
-function renderRecruiterDrawer(language = currentSiteLanguage || "en") {
+function renderRecruiterDrawer(language = getCurrentLocale()) {
   const drawer = document.querySelector("[data-recruiter-drawer]");
   if (!drawer) return;
   const hadFocus = drawer.contains(document.activeElement);
   const content = getUltimateContent(language);
-  const data = recruiterItems[language === "tr" ? "tr" : "en"];
+  const data = getLocalizedCollection(recruiterItems, language);
   drawer.innerHTML = `
     <div class="recruiter-card">
       <button class="recruiter-close" type="button" data-recruiter-close aria-label="${escapeProjectHtml(data.buttons.close)}"><i class="bx bx-x" aria-hidden="true"></i></button>
@@ -155,15 +155,15 @@ function renderRecruiterDrawer(language = currentSiteLanguage || "en") {
       <h2 id="recruiter-dialog-title">${escapeProjectHtml(content.recruiterTitle)}</h2>
       <p id="recruiter-dialog-description">${escapeProjectHtml(content.recruiterLead)}</p>
       <div class="recruiter-status"><span></span>${escapeProjectHtml(content.availability)}</div>
-      <h3>${language === "tr" ? "Ana kimlik" : "Primary profile"}</h3>
+      <h3>${getI18nText("Primary profile", "Ana kimlik", language)}</h3>
       <div class="recruiter-primary-profile">${escapeProjectHtml(data.profile)}</div>
-      <h3>${language === "tr" ? "Odak" : "Focus"}</h3>
+      <h3>${getI18nText("Focus", "Odak", language)}</h3>
       <div class="mini-stack">${data.focus.map((item) => `<span>${escapeProjectHtml(item)}</span>`).join("")}</div>
       <h3>${escapeProjectHtml(content.skillsTitle)}</h3>
       <div class="mini-stack">${data.skills.map((item) => `<span>${escapeProjectHtml(item)}</span>`).join("")}</div>
-      <h3>${language === "tr" ? "Yetkinlik alanları" : "Capability areas"}</h3>
+      <h3>${getI18nText("Capability areas", "Yetkinlik alanları", language)}</h3>
       <div class="recruiter-role-list">${data.capabilities.map((item) => `<span>${escapeProjectHtml(item)}</span>`).join("")}</div>
-      <h3>${language === "tr" ? "Deneyim kanıtları" : "Experience evidence"}</h3>
+      <h3>${getI18nText("Experience evidence", "Deneyim kanıtları", language)}</h3>
       <ul class="recruiter-proof-list">${data.proof.map((item) => `<li>${escapeProjectHtml(item)}</li>`).join("")}</ul>
       <h3>${escapeProjectHtml(content.projectsTitle)}</h3>
       <div class="recruiter-links">${data.projects.map((item) => `<a href="${escapeProjectHtml(item[2])}">${escapeProjectHtml(item[0])}<small>${escapeProjectHtml(item[1])}</small>${item[3] ? `<span>${escapeProjectHtml(item[3])}</span>` : ""}</a>`).join("")}</div>
@@ -258,12 +258,12 @@ function setRecruiterMode(
   if (isOpen) {
     setBackgroundInert(drawer);
     setOverlayBodyState(true);
-    updateUltimateStaticLabels(currentSiteLanguage || "en");
+    updateUltimateStaticLabels(getCurrentLocale());
     setTimeout(() => drawer.querySelector("[data-recruiter-close]")?.focus(), 0);
   } else if (wasOpen) {
     setBackgroundInert();
     setOverlayBodyState(false);
-    updateUltimateStaticLabels(currentSiteLanguage || "en");
+    updateUltimateStaticLabels(getCurrentLocale());
     if (restoreFocus) restoreOverlayFocus(drawer);
     else overlayTriggerMap.delete(drawer);
   }

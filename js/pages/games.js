@@ -83,7 +83,7 @@ function enhanceAdventureNavigation() {
         ],
       });
     }
-    updatePortfolioChatbotLanguage?.(currentSiteLanguage || "en");
+    updatePortfolioChatbotLanguage?.(getCurrentLocale());
   }
 }
 
@@ -165,7 +165,7 @@ function enhanceJoydayGameNavigation() {
         ],
       });
     }
-    updatePortfolioChatbotLanguage?.(currentSiteLanguage || "en");
+    updatePortfolioChatbotLanguage?.(getCurrentLocale());
   }
 }
 enhanceJoydayGameNavigation();

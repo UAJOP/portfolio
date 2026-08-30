@@ -23,7 +23,7 @@ function executeCommand(command) {
   } else if (command.type === "theme") {
     applySiteTheme(siteThemeState.current === "light" ? "dark" : "light");
   } else if (command.type === "language") {
-    applyLanguage((currentSiteLanguage || "en") === "tr" ? "en" : "tr");
+    setCurrentLocale(getNextActiveLocale(), { persist: true, source: "command-palette" });
   } else if (command.type === "chatbot") {
     setChatbotOpen(true);
   } else if (command.type === "recruiter") {
