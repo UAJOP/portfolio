@@ -15,6 +15,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -228,7 +229,118 @@ for (const slug of generated) {
   ok(`projects/${slug}/: does not inline runtime modules`, !/src="[^"]*\/js\//.test(html));
 }
 
-/* ---------- 8. legacy-script.js is an inert stub ---------- */
+/* ---------- 8. project media URLs preserve route depth contracts ---------- */
+
+const sampleProject = {
+  title: { en: "Sample" },
+  subtitle: { en: "Sample subtitle" },
+  category: { en: "Test" },
+  role: { en: "Developer" },
+  type: { en: "Website" },
+  status: { en: "Complete" },
+  overview: { en: "Overview" },
+  challenge: { en: "Challenge" },
+  solution: { en: "Solution" },
+  image: "assets/hero.webp",
+  gallery: ["assets/gallery-a.webp", "assets/gallery-b.webp"],
+  features: { en: ["Feature"] },
+  stack: ["JavaScript"],
+  links: [],
+  year: "2026",
+};
+
+const mediaSandbox = (siteRoot) => {
+  const listeners = {};
+  const root = { innerHTML: "" };
+  const document = {
+    body: { dataset: { siteRoot, projectSlug: "sample" } },
+    title: "",
+    addEventListener(type, listener) { listeners[type] = listener; },
+    querySelector(selector) { return selector === "[data-project-detail]" ? root : null; },
+  };
+  const sandbox = {
+    document,
+    window: {
+      KAAN_PORTFOLIO: { projectDetails: { sample: sampleProject } },
+      location: { search: "", href: "https://kaanbalci.com/projects/sample/" },
+    },
+    URL,
+    URLSearchParams,
+    currentSiteLanguage: "en",
+    i18nTranslations: { tr: {} },
+  };
+  vm.createContext(sandbox);
+  for (const file of ["js/core/media.js", "js/portfolio/routing.js", "js/portfolio/project-detail.js"]) {
+    vm.runInContext(read(file), sandbox, { filename: file });
+  }
+  return { sandbox, listeners, root };
+};
+
+const canonicalMedia = mediaSandbox("../../");
+canonicalMedia.sandbox.renderProjectDetail("en");
+ok(
+  "canonical project hero uses the site-root-aware URL policy",
+  canonicalMedia.root.innerHTML.includes('src="../../assets/hero.webp"'),
+);
+for (const image of sampleProject.gallery) {
+  ok(
+    `canonical gallery rebases ${image} through the site root`,
+    canonicalMedia.root.innerHTML.includes(`src="../../${image}"`),
+  );
+}
+ok(
+  "canonical media URLs resolve to /assets instead of /projects/<slug>/assets",
+  new URL("../../assets/gallery-a.webp", canonicalMedia.sandbox.window.location.href).pathname ===
+    "/assets/gallery-a.webp",
+);
+
+const brokenImage = (source) => ({
+  tagName: "IMG",
+  dataset: {},
+  assignedSource: "",
+  getAttribute(name) { return name === "src" ? source : null; },
+  set src(value) { this.assignedSource = value; },
+});
+const canonicalFallback = brokenImage("../../assets/missing.webp");
+canonicalMedia.listeners.error({ target: canonicalFallback });
+check(
+  "canonical missing media fallback is rebased through the site root",
+  canonicalFallback.assignedSource,
+  "../../assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
+);
+const canonicalJoydayFallback = brokenImage("../../assets/missing-joyday.webp");
+canonicalMedia.listeners.error({ target: canonicalJoydayFallback });
+check(
+  "canonical Joyday fallback is rebased through the site root",
+  canonicalJoydayFallback.assignedSource,
+  "../../assets/joyday-homepage-preview.webp",
+);
+
+const legacyMedia = mediaSandbox("");
+legacyMedia.sandbox.renderProjectDetail("en");
+ok(
+  "legacy project hero keeps its root-page relative URL",
+  legacyMedia.root.innerHTML.includes('src="assets/hero.webp"'),
+);
+for (const image of sampleProject.gallery) {
+  ok(
+    `legacy gallery keeps its root-page relative URL for ${image}`,
+    legacyMedia.root.innerHTML.includes(`src="${image}"`),
+  );
+}
+const legacyFallback = brokenImage("assets/missing.webp");
+legacyMedia.listeners.error({ target: legacyFallback });
+check(
+  "legacy missing media fallback keeps its root-page relative URL",
+  legacyFallback.assignedSource,
+  "assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
+);
+
+const shellSource = read("js/core/shell.js");
+ok("mobile navigation closes only above the shared 980px breakpoint", /innerWidth\s*>\s*980/.test(shellSource));
+ok("the retired 820px mobile-navigation close threshold is absent", !/innerWidth\s*>\s*820/.test(shellSource));
+
+/* ---------- 9. legacy-script.js is an inert stub ---------- */
 
 const stub = read("legacy-script.js");
 const stubCode = stub.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
@@ -245,7 +357,7 @@ for (const symbol of [
   ok(`legacy-script.js no longer defines ${symbol}`, !new RegExp(`(function|const|let)\\s+${symbol}\\b`).test(stubCode));
 }
 
-/* ---------- 9. inline handlers keep a reachable global ---------- */
+/* ---------- 10. inline handlers keep a reachable global ---------- */
 
 /* Three pages still use inline onclick="openDrivePreviews()". A function
  * declared at the top level of a classic script becomes a window property, so
@@ -269,7 +381,7 @@ for (const [fn, pages] of inlineHandlers) {
   }
 }
 
-/* ---------- 10. project-owned globals stay intentional ---------- */
+/* ---------- 11. project-owned globals stay intentional ---------- */
 
 /* Native/browser globals are out of scope; this only tracks window.KAAN_*. */
 const allSource = [...onDisk, "portfolio-v2.js", "portfolio-data.js", "script.js"].map(read).join("\n");

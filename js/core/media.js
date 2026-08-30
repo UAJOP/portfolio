@@ -22,9 +22,11 @@ function setupPortfolioImageFallbacks() {
       const fallbackSource = currentSource.toLowerCase().includes("joyday")
         ? "assets/joyday-homepage-preview.webp"
         : "assets/KAAN BALCI-BÜYÜK LOGO PNG.png";
+      const resolvedFallbackSource =
+        typeof siteUrl === "function" ? siteUrl(fallbackSource) : fallbackSource;
 
-      if (currentSource !== fallbackSource) {
-        image.src = fallbackSource;
+      if (currentSource !== resolvedFallbackSource) {
+        image.src = resolvedFallbackSource;
       }
     },
     true,
