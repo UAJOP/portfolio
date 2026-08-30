@@ -5,39 +5,33 @@
  * Source lines at 891388d: 4660-4729, 4874-5080.
  * Behaviour is unchanged; this file is a verbatim slice.
  */
-function getRequestFormText() {
-  const tr = (currentSiteLanguage || "en") === "tr";
-  return tr
-    ? {
-        sending: "Talep gönderiliyor...",
-        success:
-          "Talebiniz alındı ve kaydedildi. En kısa sürede dönüş yapacağım. Dilersen doğrudan e-posta da gönderebilirsin:",
-        timeout:
-          "Talep zaman aşımına uğradı ve gönderildiği doğrulanamadı. Bilgilerin formda duruyor; tekrar deneyebilir veya e-posta ile ulaşabilirsin:",
-        neutral: "Teşekkürler.",
-        fallback:
-          "Mail gönderim endpointi henüz bağlanmadığı için e-posta taslağı açıldı. Google Apps Script URL'si request-config.js içine eklenince form direkt mail atacak.",
-        error:
-          "Talep gönderilemedi ve kaydedildiği doğrulanamadı. Bilgilerin formda duruyor; tekrar deneyebilir veya e-posta ile ulaşabilirsin:",
-        consent: "Devam etmek için iletişim iznini onaylamalısın.",
-        subject: "Yeni proje talebi",
-        button: "Talebi Gönder",
-      }
-    : {
-        sending: "Sending request...",
-        success:
-          "Your request was received and recorded. I will get back to you shortly. You can also reach me directly at:",
-        timeout:
-          "The request timed out and could not be confirmed as sent. Your details are still in the form — please try again, or email:",
-        neutral: "Thank you.",
-        fallback:
-          "The direct email endpoint is not connected yet, so an email draft was opened. After adding the Google Apps Script URL into request-config.js, the form will send emails directly.",
-        error:
-          "The request could not be delivered and was not confirmed as recorded. Your details are still in the form — please try again, or email:",
-        consent: "Please confirm the consent checkbox to continue.",
-        subject: "New project request",
-        button: "Send Request",
-      };
+const requestFormText = {
+  tr: {
+    sending: "Talep gönderiliyor...",
+    success: "Talebiniz alındı ve kaydedildi. En kısa sürede dönüş yapacağım. Dilersen doğrudan e-posta da gönderebilirsin:",
+    timeout: "Talep zaman aşımına uğradı ve gönderildiği doğrulanamadı. Bilgilerin formda duruyor; tekrar deneyebilir veya e-posta ile ulaşabilirsin:",
+    neutral: "Teşekkürler.",
+    fallback: "Mail gönderim endpointi henüz bağlanmadığı için e-posta taslağı açıldı. Google Apps Script URL'si request-config.js içine eklenince form direkt mail atacak.",
+    error: "Talep gönderilemedi ve kaydedildiği doğrulanamadı. Bilgilerin formda duruyor; tekrar deneyebilir veya e-posta ile ulaşabilirsin:",
+    consent: "Devam etmek için iletişim iznini onaylamalısın.",
+    subject: "Yeni proje talebi",
+    button: "Talebi Gönder",
+  },
+  en: {
+    sending: "Sending request...",
+    success: "Your request was received and recorded. I will get back to you shortly. You can also reach me directly at:",
+    timeout: "The request timed out and could not be confirmed as sent. Your details are still in the form — please try again, or email:",
+    neutral: "Thank you.",
+    fallback: "The direct email endpoint is not connected yet, so an email draft was opened. After adding the Google Apps Script URL into request-config.js, the form will send emails directly.",
+    error: "The request could not be delivered and was not confirmed as recorded. Your details are still in the form — please try again, or email:",
+    consent: "Please confirm the consent checkbox to continue.",
+    subject: "New project request",
+    button: "Send Request",
+  },
+};
+
+function getRequestFormText(language = getCurrentLocale()) {
+  return getLocalizedCollection(requestFormText, language);
 }
 
 function setRequestStatus(type, message, { showEmail = false } = {}) {
@@ -281,19 +275,12 @@ function enhanceRequestCommandsAndAjoop() {
           "teklif",
         ],
       });
-    updatePortfolioChatbotLanguage?.(currentSiteLanguage || "en");
+    updatePortfolioChatbotLanguage?.(getCurrentLocale());
   }
 }
 
 enhanceRequestCommandsAndAjoop();
 setupGoogleFormLinks();
 setupProjectRequestForm();
-document
-  .querySelectorAll("[data-lang-switch]")
-  .forEach((button) =>
-    button.addEventListener("click", () =>
-      setTimeout(setupProjectRequestForm, 0),
-    ),
-  );
 
 /* Career adventure page integration */

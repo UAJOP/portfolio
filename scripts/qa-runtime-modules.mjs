@@ -61,6 +61,7 @@ if (pageBlock) {
 ok("PAGE_MODULES parsed at least one page type", Object.keys(PAGE_MODULES).length > 0);
 
 const ALL_MODULES = [...new Set([...(COMMON || []), ...Object.values(PAGE_MODULES).flat()])];
+const EARLY_BOOTSTRAP = "js/core/locale-bootstrap.js";
 
 /* ---------- 1. every referenced module exists, and every module is referenced ---------- */
 
@@ -78,7 +79,10 @@ const walk = (dir) =>
 const onDisk = exists("js") ? walk("js").sort() : [];
 ok("js/ contains runtime modules", onDisk.length > 0);
 for (const module of onDisk) {
-  ok(`module is referenced by the manifest (no orphan): ${module}`, ALL_MODULES.includes(module));
+  ok(
+    `module is referenced by the manifest or declared early bootstrap: ${module}`,
+    ALL_MODULES.includes(module) || module === EARLY_BOOTSTRAP,
+  );
 }
 
 /* ---------- 2. no duplicate loading ---------- */
@@ -95,6 +99,8 @@ for (const [page, modules] of Object.entries(PAGE_MODULES)) {
 
 /* These orderings reproduce the single-file execution order and are load-bearing. */
 const ORDER = [
+  ["i18n-data.js", "js/core/locale.js"],
+  ["js/core/locale.js", "js/core/analytics-config.js"],
   ["js/core/analytics-config.js", "js/core/analytics.js"],
   ["js/core/analytics.js", "js/core/shell.js"],
   ["js/core/shell.js", "js/core/theme.js"],
@@ -146,10 +152,14 @@ for (const file of htmlFiles) {
     !(headMatch && /src="[^"]*script\.js"/.test(headMatch[1])),
   );
 
-  /* No page may load a runtime module directly; the manifest owns order. */
+  /* No page may load a runtime module directly; the manifest owns order.
+   * The one deliberate exception is the tiny parser-blocking locale bootstrap,
+   * which must run in <head> before translated body content can paint. */
   const srcs = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1]);
   for (const src of srcs) {
-    ok(`${file}: does not bypass the manifest with ${src}`, !src.includes("js/"));
+    const normalized = src.replace(/^\.\.\/\.\.\//, "");
+    const allowedEarlyBootstrap = normalized === EARLY_BOOTSTRAP;
+    ok(`${file}: does not bypass the manifest with ${src}`, !src.includes("js/") || allowedEarlyBootstrap);
   }
   ok(`${file}: does not load legacy-script.js directly`, !srcs.includes("legacy-script.js"));
 }
@@ -226,7 +236,10 @@ for (const slug of generated) {
   const body = (html.match(/<body\b[^>]*>/i) || [""])[0];
   check(`projects/${slug}/: data-page marker`, (body.match(/data-page="([^"]*)"/) || [])[1], "projectDetail");
   ok(`projects/${slug}/: loads the bootloader`, /src="\.\.\/\.\.\/script\.js"/.test(html));
-  ok(`projects/${slug}/: does not inline runtime modules`, !/src="[^"]*\/js\//.test(html));
+  const directRuntimeSources = [...html.matchAll(/<script[^>]+src="([^"]*\/js\/[^"]+)"/g)]
+    .map((match) => match[1])
+    .filter((src) => !src.endsWith("/js/core/locale-bootstrap.js"));
+  ok(`projects/${slug}/: does not inline runtime modules`, directRuntimeSources.length === 0);
 }
 
 /* ---------- 8. project media URLs preserve route depth contracts ---------- */

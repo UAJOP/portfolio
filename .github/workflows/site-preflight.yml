@@ -43,6 +43,13 @@ jobs:
           set -o pipefail
           npm run qa:data 2>&1 | tee qa-results/portfolio-data.txt
 
+      # BLOCKING: active locale parity, locale ownership, first-paint bootstrap,
+      # protected terminology casing and future-locale activation rules.
+      - name: Check multilingual contracts
+        run: |
+          set -o pipefail
+          npm run qa:i18n 2>&1 | tee qa-results/i18n.txt
+
       # BLOCKING: the bootloader loads these at runtime with no build step.
       - name: Check JavaScript syntax
         run: npm run qa:js

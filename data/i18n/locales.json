@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "storageKey": "kaanbalci-site-language",
+  "defaultLocale": "en",
+  "locales": [
+    {
+      "id": "en",
+      "label": "English",
+      "nativeLabel": "English",
+      "active": true,
+      "default": true,
+      "dir": "ltr"
+    },
+    {
+      "id": "tr",
+      "label": "Turkish",
+      "nativeLabel": "Türkçe",
+      "active": true,
+      "default": false,
+      "dir": "ltr"
+    },
+    {
+      "id": "de",
+      "label": "German",
+      "nativeLabel": "Deutsch",
+      "active": false,
+      "default": false,
+      "dir": "ltr"
+    },
+    {
+      "id": "es",
+      "label": "Spanish",
+      "nativeLabel": "Español",
+      "active": false,
+      "default": false,
+      "dir": "ltr"
+    },
+    {
+      "id": "fr",
+      "label": "French",
+      "nativeLabel": "Français",
+      "active": false,
+      "default": false,
+      "dir": "ltr"
+    }
+  ]
+}

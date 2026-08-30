@@ -171,7 +171,7 @@
     exportMode: "clean"
   };
 
-  function lang() { return (document.documentElement.lang || "en") === "tr" ? "tr" : "en"; }
+  function lang() { return typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en"); }
   function t() { return copy[lang()] || copy.en; }
   function rand(min, max) { return min + Math.random() * (max - min); }
   function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
@@ -647,7 +647,7 @@
     cardCtx.font = "800 34px Inter, Arial, sans-serif";
     cardCtx.globalAlpha = 0.86;
     cardCtx.fillText("Created with Joyday Action Painting", 120, 1484);
-    cardCtx.fillText(new Date().toLocaleDateString(lang() === "tr" ? "tr-TR" : "en-US"), 120, 1538);
+    cardCtx.fillText(new Date().toLocaleDateString(lang()), 120, 1538);
     cardCtx.textAlign = "right";
     cardCtx.font = "900 48px Inter, Arial, sans-serif";
     cardCtx.fillText("Atölye Joyday", card.width - 120, 1538);
@@ -678,7 +678,7 @@
   }
 
   function safeArtworkName() {
-    const fallback = lang() === "tr" ? "Joyday Enerjisi" : "Joyday Energy";
+    const fallback = getI18nText("Joyday Energy", "Joyday Enerjisi", lang());
     return (artNameInput?.value || fallback).trim().replace(/[\\/:*?"<>|]/g, "-").slice(0, 42) || fallback;
   }
 
@@ -854,7 +854,9 @@
   window.addEventListener("pointerup", endPaint);
   canvas.addEventListener("pointerleave", endPaint);
   window.addEventListener("keydown", (event) => { if (event.key === "Escape") closeFinishModal(); });
-  document.querySelectorAll("[data-lang-switch]").forEach((button) => {
-    button.addEventListener("click", () => window.setTimeout(() => { updateHud(); selectRandomTheme(); updatePreview(); }, 0));
-  });
+  window.updateJoydayPaintLanguage = function updateJoydayPaintLanguage() {
+    updateHud();
+    selectRandomTheme();
+    updatePreview();
+  };
 })();

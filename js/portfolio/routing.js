@@ -25,15 +25,19 @@ const projectDetailData =
   (window.KAAN_PORTFOLIO && window.KAAN_PORTFOLIO.projectDetails) || {};
 /* project-detail-data:end */
 
-function translateProjectField(field, language) {
+function translateProjectField(field, language = (typeof getCurrentLocale === "function" ? getCurrentLocale() : "en")) {
+  if (typeof getLocalizedValue === "function") return getLocalizedValue(field, language);
   if (!field) return "";
   if (typeof field === "string") return field;
-  return field[language] || field.en || "";
+  return field[language] || field.en || Object.values(field)[0] || "";
 }
 
-function translateProjectDisplayLabel(label, language) {
-  if (language !== "tr") return label;
-  return i18nTranslations.tr[label] || label;
+function translateProjectDisplayLabel(label, language = (typeof getCurrentLocale === "function" ? getCurrentLocale() : "en")) {
+  if (!label) return "";
+  const locale = typeof normalizeLocaleId === "function" ? normalizeLocaleId(language) : String(language || "en");
+  const fallbackLocale = typeof siteLocaleRegistry !== "undefined" ? siteLocaleRegistry.defaultLocale : "en";
+  if (locale === fallbackLocale) return label;
+  return (typeof i18nTranslations !== "undefined" && i18nTranslations[locale]?.[label]) || label;
 }
 
 /* project-routing:start

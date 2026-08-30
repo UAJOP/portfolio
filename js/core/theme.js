@@ -28,42 +28,18 @@ function applySiteTheme(theme) {
     const icon = button.querySelector("i");
     const label = button.querySelector("[data-theme-label]");
     const isLight = nextTheme === "light";
-    const isTurkish = (document.documentElement.lang || "en") === "tr";
 
     if (icon) {
       icon.className = isLight ? "bx bx-sun" : "bx bx-moon";
     }
 
     if (label) {
-      label.textContent = isLight
-        ? isTurkish
-          ? "Açık"
-          : "Light"
-        : isTurkish
-          ? "Koyu"
-          : "Dark";
+      label.textContent = getUiText(isLight ? "theme.light" : "theme.dark");
     }
 
-    button.setAttribute(
-      "aria-label",
-      isLight
-        ? isTurkish
-          ? "Koyu temaya geç"
-          : "Switch to dark theme"
-        : isTurkish
-          ? "Açık temaya geç"
-          : "Switch to light theme",
-    );
-    button.setAttribute(
-      "title",
-      isLight
-        ? isTurkish
-          ? "Koyu temaya geç"
-          : "Switch to dark theme"
-        : isTurkish
-          ? "Açık temaya geç"
-          : "Switch to light theme",
-    );
+    const toggleLabel = getUiText(isLight ? "theme.switchToDark" : "theme.switchToLight");
+    button.setAttribute("aria-label", toggleLabel);
+    button.setAttribute("title", toggleLabel);
     button.setAttribute("aria-pressed", String(isLight));
   });
 
@@ -86,3 +62,5 @@ function setupSiteThemeToggle() {
 
 setupSiteThemeToggle();
 
+
+subscribeSiteLocale(() => applySiteTheme(siteThemeState.current));

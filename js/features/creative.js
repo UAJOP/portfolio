@@ -20,7 +20,7 @@
 })();
 
 function getCreativeText() {
-  const tr = (currentSiteLanguage || "en") === "tr";
+  const tr = getCurrentLocale() === "tr";
   return tr
     ? {
         surprise: "Sürpriz",

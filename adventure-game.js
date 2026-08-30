@@ -98,8 +98,8 @@
     message: ""
   };
 
-  function lang() { return (document.documentElement.lang || "en") === "tr" ? "tr" : "en"; }
-  function t(key) { return copy[lang()][key] || copy.en[key] || key; }
+  function lang() { return typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en"); }
+  function t(key) { const active = copy[lang()] || copy.en; return active[key] || copy.en[key] || key; }
 
   function applyText() {
     document.querySelectorAll("[data-adventure-text]").forEach((node) => {
@@ -116,7 +116,7 @@
     holder.innerHTML = levels.map((level, index) => `
       <article class="${index <= state.highest ? "is-unlocked" : ""}">
         <span>${level.emoji}</span>
-        <div><strong>${level[lang()]}</strong><small>${String(index + 1).padStart(2, "0")}</small></div>
+        <div><strong>${level[lang()] || level.en}</strong><small>${String(index + 1).padStart(2, "0")}</small></div>
       </article>
     `).join("");
   }
@@ -358,7 +358,7 @@
     if (item.r > 52) {
       ctx.font = `800 ${Math.max(10, item.r * 0.18)}px Inter, system-ui`;
       ctx.fillStyle = "rgba(248,251,255,0.92)";
-      ctx.fillText(data[lang()], item.x, item.y + item.r * 0.52);
+      ctx.fillText(data[lang()] || data.en, item.x, item.y + item.r * 0.52);
     }
     ctx.restore();
   }
@@ -487,7 +487,7 @@
     if (event.key === " " || event.key === "Enter") { event.preventDefault(); dropItem(); }
   });
   window.addEventListener("resize", resizeCanvas, { passive: true });
-  document.querySelectorAll("[data-lang-switch]").forEach((button) => button.addEventListener("click", () => setTimeout(applyText, 30)));
+  window.updateCareerAdventureLanguage = function updateCareerAdventureLanguage() { applyText(); };
   resizeCanvas();
   resetGame();
   applyText();

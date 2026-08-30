@@ -1,0 +1,38 @@
+{
+  "language.selectorLabel": {
+    "en": "Language",
+    "tr": "Dil"
+  },
+  "language.selectorAria": {
+    "en": "Language selector",
+    "tr": "Dil seçici"
+  },
+  "nav.open": {
+    "en": "Open navigation",
+    "tr": "Navigasyonu aç"
+  },
+  "nav.close": {
+    "en": "Close navigation",
+    "tr": "Navigasyonu kapat"
+  },
+  "theme.dark": {
+    "en": "Dark",
+    "tr": "Koyu"
+  },
+  "theme.light": {
+    "en": "Light",
+    "tr": "Açık"
+  },
+  "theme.switchToDark": {
+    "en": "Switch to dark theme",
+    "tr": "Koyu temaya geç"
+  },
+  "theme.switchToLight": {
+    "en": "Switch to light theme",
+    "tr": "Açık temaya geç"
+  },
+  "training": {
+    "en": "Training",
+    "tr": "Eğitim"
+  }
+}
