@@ -170,7 +170,7 @@ function renderProjectDetail(language = currentSiteLanguage || "en") {
         <p>${language === "tr" ? "Şimdilik mevcut portfolio görselleri kullanılıyor. Yeni ekran görüntüleri ekledikçe bu alan otomatik daha güçlü hale gelir." : "Current portfolio assets are used for now. As new screenshots are added, this area becomes stronger automatically."}</p>
       </div>
       <div class="detail-gallery">
-        ${gallery.map((image) => `<img class="reveal" src="${escapeProjectHtml(image)}" alt="${escapeProjectHtml(title)} ${language === "tr" ? "galeri görseli" : "gallery image"}" loading="lazy" decoding="async" />`).join("")}
+        ${gallery.map((image) => `<img class="reveal" src="${escapeProjectHtml(siteUrl(image))}" alt="${escapeProjectHtml(title)} ${language === "tr" ? "galeri görseli" : "gallery image"}" loading="lazy" decoding="async" />`).join("")}
       </div>
     </section>
 

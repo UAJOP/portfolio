@@ -163,6 +163,20 @@ ok(
   !/overflow-x:\s*hidden/.test(a11y),
 );
 
+/* ---------- 6. responsive header state transition ---------- */
+
+const compactHeader = shared.match(
+  /@media screen and \(max-width: 980px\)\s*\{([\s\S]*?)\n\}/,
+);
+ok("style.css declares the compact header at max-width 980px", Boolean(compactHeader));
+if (compactHeader) {
+  ok("compact header wraps its controls", /\.site-header\s*\{[\s\S]*?flex-wrap:\s*wrap/.test(compactHeader[1]));
+  ok("compact header exposes the menu trigger", /\.nav-toggle\s*\{[\s\S]*?display:\s*inline-flex/.test(compactHeader[1]));
+  ok("compact header hides the closed navigation", /\.nav-links\s*\{[\s\S]*?display:\s*none/.test(compactHeader[1]));
+  ok("compact header opens navigation through is-open", /\.nav-links\.is-open\s*\{[\s\S]*?display:\s*flex/.test(compactHeader[1]));
+  ok("compact navigation occupies its own row", /\.nav-links\s*\{[\s\S]*?width:\s*100%/.test(compactHeader[1]));
+}
+
 /* ---------- payload report ---------- */
 
 const cssFor = (file) => {
