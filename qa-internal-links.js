@@ -46,7 +46,10 @@ htmlFiles.forEach((file) => {
 
     const [pathAndQuery, fragment] = reference.split("#");
     const [path, query] = pathAndQuery.split("?");
-    const target = path || file;
+    /* 404.html addresses its assets root-absolutely because GitHub Pages serves
+     * that one document at whatever URL failed, at any depth. A leading slash
+     * names the repository root, so it resolves the same as a bare path. */
+    const target = (path || file).replace(/^\//, "");
 
     if (!fs.existsSync(decodeURIComponent(target))) {
       failures.push(`${file} -> missing target: ${reference}`);

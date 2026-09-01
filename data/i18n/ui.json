@@ -1,38 +1,65 @@
 {
   "language.selectorLabel": {
     "en": "Language",
-    "tr": "Dil"
+    "tr": "Dil",
+    "de": "Sprache",
+    "es": "Idioma",
+    "fr": "Langue"
   },
   "language.selectorAria": {
     "en": "Language selector",
-    "tr": "Dil seçici"
+    "tr": "Dil seçici",
+    "de": "Sprachauswahl",
+    "es": "Selector de idioma",
+    "fr": "Sélecteur de langue"
   },
   "nav.open": {
     "en": "Open navigation",
-    "tr": "Navigasyonu aç"
+    "tr": "Navigasyonu aç",
+    "de": "Navigation öffnen",
+    "es": "Abrir navegación",
+    "fr": "Ouvrir la navigation"
   },
   "nav.close": {
     "en": "Close navigation",
-    "tr": "Navigasyonu kapat"
+    "tr": "Navigasyonu kapat",
+    "de": "Navigation schließen",
+    "es": "Cerrar navegación",
+    "fr": "Fermer la navigation"
   },
   "theme.dark": {
     "en": "Dark",
-    "tr": "Koyu"
+    "tr": "Koyu",
+    "de": "Dunkel",
+    "es": "Oscuro",
+    "fr": "Sombre"
   },
   "theme.light": {
     "en": "Light",
-    "tr": "Açık"
+    "tr": "Açık",
+    "de": "Hell",
+    "es": "Claro",
+    "fr": "Clair"
   },
   "theme.switchToDark": {
     "en": "Switch to dark theme",
-    "tr": "Koyu temaya geç"
+    "tr": "Koyu temaya geç",
+    "de": "Zum dunklen Design wechseln",
+    "es": "Cambiar al tema oscuro",
+    "fr": "Passer au thème sombre"
   },
   "theme.switchToLight": {
     "en": "Switch to light theme",
-    "tr": "Açık temaya geç"
+    "tr": "Açık temaya geç",
+    "de": "Zum hellen Design wechseln",
+    "es": "Cambiar al tema claro",
+    "fr": "Passer au thème clair"
   },
   "training": {
     "en": "Training",
-    "tr": "Eğitim"
+    "tr": "Eğitim",
+    "de": "Weiterbildung",
+    "es": "Formación",
+    "fr": "Formation"
   }
 }

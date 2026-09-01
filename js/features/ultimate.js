@@ -403,7 +403,7 @@ const ultimateContent = {
 };
 
 function getUltimateContent(language = getCurrentLocale()) {
-  return getLocalizedCollection(ultimateContent, language);
+  return getLocalizedCollection(ultimateContent, language, "ultimate");
 }
 
 function getCatalogSearchLabels(language = getCurrentLocale()) {

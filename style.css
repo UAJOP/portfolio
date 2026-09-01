@@ -381,6 +381,7 @@ h2,
 h3 {
   letter-spacing: -0.055em;
   line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 .hero h1 {
   max-width: 820px;
@@ -1326,6 +1327,13 @@ body.overlay-modal-open {
 
   .hero {
     padding-top: 64px;
+  }
+
+  .hero > *,
+  .about-hero > *,
+  .split-section > *,
+  .experience-layout > * {
+    min-width: 0;
   }
 
   .hero-visual {

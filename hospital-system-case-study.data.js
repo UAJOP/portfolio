@@ -1,4 +1,5 @@
 window.caseStudyPageData = {
+  id: "hospital-system-case-study",
   titles: {
     en: "Hospital System Case Study | Kaan Balcı",
     tr: "Hospital System Vaka Çalışması | Kaan Balcı",

@@ -1,13 +1,31 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "storageKey": "kaanbalci-site-language",
   "defaultLocale": "en",
+  "localizedRoutes": {
+    "generate": [
+      "tr",
+      "de",
+      "es",
+      "fr"
+    ],
+    "indexable": [
+      "tr",
+      "de",
+      "es",
+      "fr"
+    ]
+  },
   "locales": [
     {
       "id": "en",
       "label": "English",
       "nativeLabel": "English",
+      "htmlLang": "en",
+      "ogLocale": "en_US",
+      "routePrefix": "",
       "active": true,
+      "activationCandidate": false,
       "default": true,
       "dir": "ltr"
     },
@@ -15,7 +33,11 @@
       "id": "tr",
       "label": "Turkish",
       "nativeLabel": "Türkçe",
+      "htmlLang": "tr",
+      "ogLocale": "tr_TR",
+      "routePrefix": "tr",
       "active": true,
+      "activationCandidate": false,
       "default": false,
       "dir": "ltr"
     },
@@ -23,7 +45,11 @@
       "id": "de",
       "label": "German",
       "nativeLabel": "Deutsch",
-      "active": false,
+      "htmlLang": "de",
+      "ogLocale": "de_DE",
+      "routePrefix": "de",
+      "active": true,
+      "activationCandidate": false,
       "default": false,
       "dir": "ltr"
     },
@@ -31,7 +57,11 @@
       "id": "es",
       "label": "Spanish",
       "nativeLabel": "Español",
-      "active": false,
+      "htmlLang": "es",
+      "ogLocale": "es_ES",
+      "routePrefix": "es",
+      "active": true,
+      "activationCandidate": false,
       "default": false,
       "dir": "ltr"
     },
@@ -39,7 +69,11 @@
       "id": "fr",
       "label": "French",
       "nativeLabel": "Français",
-      "active": false,
+      "htmlLang": "fr",
+      "ogLocale": "fr_FR",
+      "routePrefix": "fr",
+      "active": true,
+      "activationCandidate": false,
       "default": false,
       "dir": "ltr"
     }

@@ -26,6 +26,11 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import {
+  loadRegistry as loadLocaleRegistry,
+  indexableRoutes,
+  routePrefixFor,
+} from "./i18n-catalog.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SITE_ORIGIN = "https://kaanbalci.com";
@@ -52,6 +57,12 @@ if (!registry || !registry.projectDetails) {
 
 const projects = registry.projectDetails;
 const slugs = Object.keys(projects);
+const localeRegistry = loadLocaleRegistry();
+const indexableLocaleIds = (localeRegistry.localizedRoutes?.indexable || []).filter(
+  (id) => id !== localeRegistry.defaultLocale,
+);
+const sitemapLocaleIds = [localeRegistry.defaultLocale, ...indexableLocaleIds];
+const routes = indexableRoutes(registry);
 
 if (!slugs.length) throw new Error("the canonical registry contains no project detail records");
 
@@ -102,6 +113,18 @@ const absoluteUrl = (repoRelative) =>
   `${SITE_ORIGIN}/${String(repoRelative || "").replace(/^\/+/, "")}`;
 
 const canonicalFor = (slug) => `${SITE_ORIGIN}/projects/${slug}/`;
+const localizedAbsolute = (page, locale) =>
+  `${SITE_ORIGIN}/${routePrefixFor(locale, localeRegistry)}${page}`;
+
+function alternateLinks(page) {
+  if (!indexableLocaleIds.length) return "";
+  const links = sitemapLocaleIds.map((id) => {
+    const definition = localeRegistry.byId.get(id);
+    return `<link rel="alternate" hreflang="${escapeHtml(definition.htmlLang || id)}" href="${escapeHtml(localizedAbsolute(page, id))}"/>`;
+  });
+  links.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(localizedAbsolute(page, localeRegistry.defaultLocale))}"/>`);
+  return links.join("");
+}
 
 /**
  * Chooses the narrowest schema.org type the canonical data actually supports.
@@ -184,7 +207,7 @@ function buildHeadMetadata(slug, project) {
     url: canonical,
     image,
     dateCreated: String(project.year || ""),
-    inLanguage: ["en", "tr"],
+    inLanguage: "en",
     genre: en(project.category),
     creator: { "@type": "Person", name: "Kaan Balcı", url: `${SITE_ORIGIN}/` },
   };
@@ -202,6 +225,7 @@ function buildHeadMetadata(slug, project) {
     `<title>${escapeHtml(pageTitle)}</title>`,
     `<meta name="description" content="${escapeHtml(description)}"/>`,
     `<link rel="canonical" href="${escapeHtml(canonical)}"/>`,
+    alternateLinks(`projects/${slug}/`),
     `<meta name="robots" content="index, follow"/>`,
     `<meta property="og:site_name" content="Kaan Balcı Portfolio"/>`,
     `<meta property="og:type" content="article"/>`,
@@ -263,39 +287,13 @@ function renderProjectPage(slug, project) {
 
 /* ---------- sitemap ---------- */
 
-/* Static pages that are indexable, with their priorities. Project routes are
- * appended from the registry so a new project needs no manual sitemap edit. */
-const STATIC_SITEMAP_PAGES = [
-  ["", "weekly", "1.0"],
-  ["works.html", "monthly", "0.9"],
-  ["sinama-case-study.html", "monthly", "0.9"],
-  ["merge-rush-case-study.html", "monthly", "0.9"],
-  ["now.html", "weekly", "0.8"],
-  ["blog.html", "monthly", "0.8"],
-  ["about.html", "monthly", "0.8"],
-  ["games.html", "monthly", "0.7"],
-  ["labs.html", "monthly", "0.7"],
-  ["ai-flow-puzzle-case-study.html", "monthly", "0.7"],
-  ["atolye-joyday-case-study.html", "monthly", "0.7"],
-  ["hospital-system-case-study.html", "monthly", "0.7"],
-  ["single-work.html", "monthly", "0.6"],
-  ["request.html", "monthly", "0.6"],
-  ["adventure.html", "monthly", "0.5"],
-  ["joyday-paint.html", "monthly", "0.5"],
-  ["ai-flow-puzzle.html", "monthly", "0.5"],
-];
-
 function renderSitemap() {
-  const entries = [
-    ...STATIC_SITEMAP_PAGES.map(([page, changefreq, priority]) => [
-      `${SITE_ORIGIN}/${page}`,
-      changefreq,
-      priority,
-    ]),
-    /* Canonical project routes. The legacy query-string URLs are deliberately
-     * absent: they are compatibility endpoints, not indexable pages. */
-    ...slugs.map((slug) => [canonicalFor(slug), "monthly", "0.6"]),
-  ];
+  const entries = [];
+  for (const route of routes) {
+    for (const locale of sitemapLocaleIds) {
+      entries.push([localizedAbsolute(route.page, locale), route.changefreq, route.priority]);
+    }
+  }
 
   const body = entries
     .map(
@@ -374,5 +372,5 @@ fs.writeFileSync(sitemapFile, sitemap);
 console.log(
   `[projects] ${planned.size} canonical pages written to projects/` +
     (stale.length ? ` · ${stale.length} stale removed` : "") +
-    `\n[sitemap] ${STATIC_SITEMAP_PAGES.length} static + ${slugs.length} project URLs`,
+    `\n[sitemap] ${routes.length} routes × ${sitemapLocaleIds.length} locales = ${routes.length * sitemapLocaleIds.length} URLs`,
 );

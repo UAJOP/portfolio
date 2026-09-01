@@ -1,0 +1,11 @@
+{
+  "language.selectorAria": "Sélecteur de langue",
+  "language.selectorLabel": "Langue",
+  "nav.close": "Fermer la navigation",
+  "nav.open": "Ouvrir la navigation",
+  "theme.dark": "Sombre",
+  "theme.light": "Clair",
+  "theme.switchToDark": "Passer au thème sombre",
+  "theme.switchToLight": "Passer au thème clair",
+  "training": "Formation"
+}

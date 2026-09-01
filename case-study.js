@@ -8,8 +8,11 @@
   function applyTranslations() {
     const activeLanguage = language();
     const translations = pageData.translations;
+    /* The page id opts this case study into the shipped locale pack, so a
+     * locale beyond the inline EN/TR pair is not silently reset to English. */
+    const namespace = pageData.id ? `case-studies:${pageData.id}` : null;
     const active = typeof getLocalizedCollection === "function"
-      ? getLocalizedCollection(translations, activeLanguage)
+      ? getLocalizedCollection(translations, activeLanguage, namespace)
       : (translations?.[activeLanguage] || translations?.en);
 
     if (active) {
@@ -27,7 +30,7 @@
       });
     }
 
-    const title = pageData.titles?.[activeLanguage] || pageData.titles?.en;
+    const title = active?.__title || pageData.titles?.[activeLanguage] || pageData.titles?.en;
     if (title) document.title = title;
 
     const openModalImage = document.querySelector("[data-case-modal].is-open [data-case-modal-image]");

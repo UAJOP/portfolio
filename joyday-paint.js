@@ -172,7 +172,13 @@
   };
 
   function lang() { return typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en"); }
-  function t() { return copy[lang()] || copy.en; }
+  /* The shipped locale pack supplies any language beyond the inline EN/TR pair,
+   * so adding a locale never edits this file. */
+  function t() {
+    return (typeof getLocalizedCollection === "function"
+      ? getLocalizedCollection(copy, lang(), "joydayPaint")
+      : copy[lang()]) || copy.en;
+  }
   function rand(min, max) { return min + Math.random() * (max - min); }
   function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
   function thicknessRatio() { return clamp(Number(state.thickness) || 50, 1, 100) / 100; }

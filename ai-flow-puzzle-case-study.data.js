@@ -1,4 +1,5 @@
 window.caseStudyPageData = {
+  id: "ai-flow-puzzle-case-study",
   titles: {
     en: "AI Flow Puzzle Case Study | Kaan Balcı",
     tr: "AI Flow Puzzle Vaka Çalışması | Kaan Balcı"

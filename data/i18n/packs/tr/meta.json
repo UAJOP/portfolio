@@ -1,0 +1,116 @@
+{
+  "about": {
+    "description": "Kaan Balcı'nın Forward Deployed Engineer yönü ve güvenilir AI sistemleri ile ürün teslimatını kapsayan AI Designer & Software Developer geçmişi.",
+    "ogDescription": "Applied AI, AI güvenilirliği, solution engineering ve ürün odaklı yazılım alanlarında Forward Deployed Engineer kanıtları.",
+    "ogTitle": "Kaan Balcı Hakkında | Forward Deployed Engineer",
+    "title": "Kaan Balcı Hakkında | Forward Deployed Engineer"
+  },
+  "adventure": {
+    "description": "Kaan'ın interaktif kariyer merge macerasını oyna: öğrenme nesnelerini, yazılım araçlarını ve AI becerilerini birleştirip iş teklifine ulaş.",
+    "ogDescription": "Öğrenme, projeler, AI iş akışları ve bir iş teklifine ulaşma üzerine bir portfolyo mini oyunu.",
+    "ogTitle": "Kaan'ın Kariyer Macerası | Kaan Balcı",
+    "title": "Macera | Kaan Balcı"
+  },
+  "aiFlowPuzzle": {
+    "description": "Kaan Balcı'nın n8n'den ilham alan chatbot workflow mantığı oyunu AI Flow Puzzle'ı oyna.",
+    "ogDescription": "Kullanıcıların node'ları bağlayarak chatbot otomasyon akışları kurduğu, n8n'den ilham alan bir portfolyo mini oyunu.",
+    "ogTitle": "AI Flow Puzzle | Kaan Balcı",
+    "title": "AI Flow Puzzle | Kaan Balcı"
+  },
+  "aiFlowPuzzleCaseStudy": {
+    "description": "AI Flow Puzzle vaka çalışması: chatbot node mantığını, akış doğrulamasını, fallback yollarını ve kullanıcı yolculuğu tasarımını inceleyen, n8n'den ilham alan bir tarayıcı deneyimi.",
+    "ogDescription": "Chatbot node mantığı, doğrulama, fallback yolları ve kullanıcı yolculukları için n8n'den ilham alan bir tarayıcı deneyiminin tasarımını ve uygulamasını incele.",
+    "ogTitle": "AI Flow Puzzle Vaka Çalışması | Kaan Balcı",
+    "title": "AI Flow Puzzle Vaka Çalışması | Kaan Balcı"
+  },
+  "blog": {
+    "description": "Conversational AI, LLM değerlendirme, workflow otomasyonu, yazılım geliştirme ve gerçek işletme dijital ürünleri alanlarında profesyonel deneyim.",
+    "ogDescription": "Kurumsal conversational AI, yazılım ve dijital ürün çalışmalarını kapsayan profesyonel deneyim.",
+    "ogTitle": "Deneyim | Kaan Balcı",
+    "title": "Deneyim | Kaan Balcı"
+  },
+  "certificates": {
+    "description": "Kaan Balcı'nın yazılım geliştirme, yapay zekâ, veri ve dijital ürünler alanlarında tamamladığı sertifikalar ve yapılandırılmış eğitimler.",
+    "ogDescription": "Kaan Balcı'nın yazılım geliştirme, yapay zekâ, veri ve dijital ürünler alanlarında tamamladığı sertifikalar ve yapılandırılmış eğitimler.",
+    "ogTitle": "Sertifikalar | Kaan Balcı",
+    "title": "Sertifikalar | Kaan Balcı"
+  },
+  "games": {
+    "description": "Kaan Balcı'nın Merge Rush: Tiny Factory önderliğindeki interaktif tarayıcı oyunları ve oyun ürünü çalışmaları.",
+    "ogDescription": "Merge Rush: Tiny Factory ve seçilmiş oynanabilir tarayıcı denemeleri.",
+    "ogTitle": "Oyunlar | Kaan Balcı",
+    "title": "Oyunlar | Kaan Balcı"
+  },
+  "home": {
+    "description": "Kaan Balcı — güvenilir AI sistemleri, solution engineering iş akışları ve ürün odaklı yazılım geliştiren Forward Deployed Engineer.",
+    "ogDescription": "AI güvenilirliği, solution engineering ve ürün odaklı yazılım alanlarında kanıt sunan Forward Deployed Engineer portfolyosu.",
+    "ogTitle": "Kaan Balcı | Forward Deployed Engineer",
+    "title": "Kaan Balcı | Forward Deployed Engineer"
+  },
+  "hospitalCaseStudy": {
+    "description": "Hasta, doktor ve sekreter iş akışlarını SQL Server veri modeliyle ele alan bir C# ve .NET Framework Windows Forms vaka çalışması.",
+    "ogDescription": "Hasta, doktor ve sekreter iş akışlarını SQL Server veri modeliyle ele alan bir C# ve .NET Framework Windows Forms vaka çalışması.",
+    "ogTitle": "Hospital System Vaka Çalışması | Kaan Balcı",
+    "title": "Hospital System Vaka Çalışması | Kaan Balcı"
+  },
+  "joydayCaseStudy": {
+    "description": "Çok sayfalı hizmet keşfini, rezervasyon akışlarını ve Google tabanlı operasyonel otomasyonu birleştiren canlı dijital ürün Atölye Joyday'in vaka çalışması.",
+    "ogDescription": "Yaratıcı bir atölye işletmesi için çok sayfalı hizmet keşfini, rezervasyon yolculuklarını ve Google tabanlı operasyonel otomasyonu birleştiren canlı bir dijital ürün.",
+    "ogTitle": "Atölye Joyday Vaka Çalışması | Kaan Balcı",
+    "title": "Atölye Joyday Vaka Çalışması | Kaan Balcı"
+  },
+  "joydayPaint": {
+    "description": "Joyday Action Painting, Kaan Balcı'nın geliştirdiği eğlenceli, tarayıcı tabanlı sanal aksiyon boyama deneyimidir.",
+    "ogDescription": "Bir tuval seç, renkleri belirle ve aksiyon boyama araçlarıyla kendi eserini oluşturup indir.",
+    "ogTitle": "Joyday Action Painting | Kaan Balcı",
+    "title": "Joyday Action Painting | Kaan Balcı"
+  },
+  "labs": {
+    "description": "Kaan Labs — Kaan Balcı'nın AI workflow mantığı, Canvas, matematik ve tarayıcı deneyimleri alanlarındaki interaktif teknik denemeleri.",
+    "ogDescription": "Kaan Labs — Kaan Balcı'nın AI workflow mantığı, Canvas, matematik ve tarayıcı deneyimleri alanlarındaki interaktif teknik denemeleri.",
+    "ogTitle": "Kaan Labs | Teknik Denemeler",
+    "title": "Kaan Labs | Teknik Denemeler"
+  },
+  "mergeRushCaseStudy": {
+    "description": "Merge Rush: Tiny Factory; zamanlı siparişler, fabrika restorasyonu, kademeli board açılımları ve platform duyarlı mimari üzerine kurulu, aktif geliştirilen bir Phaser 3 ve TypeScript merge oyunu projesidir.",
+    "ogDescription": "Ürün döngüsü, ilerleme, duyarlı oynanış ve platform mimarisine odaklanan Phaser 3 + TypeScript merge oyunu geliştirmesi.",
+    "ogTitle": "Merge Rush: Tiny Factory Vaka Çalışması",
+    "title": "Merge Rush: Tiny Factory Vaka Çalışması | Kaan Balcı"
+  },
+  "notFound": {
+    "description": "Kaan Balcı portfolyosu için 404 sayfası.",
+    "ogDescription": "Kaan Balcı portfolyosu için 404 sayfası.",
+    "ogTitle": "404 | Kaan Balcı",
+    "title": "404 | Kaan Balcı"
+  },
+  "now": {
+    "description": "Kaan Balcı'nın güncel build log'u — SINAMA, Merge Rush ve portfolyo mühendisliğindeki aktif çalışmalar.",
+    "ogDescription": "Kaan Balcı'nın güncel build log'u — SINAMA, Merge Rush ve portfolyo mühendisliğindeki aktif çalışmalar.",
+    "ogTitle": "Now / Build Log | Kaan Balcı",
+    "title": "Now / Build Log | Kaan Balcı"
+  },
+  "projectShell": {
+    "description": "Kaan Balcı portfolyo arşivindeki projeler için detaylı proje vaka çalışması sayfası.",
+    "ogDescription": "Kaan Balcı portfolyo arşivindeki projeler için detaylı proje vaka çalışması sayfası.",
+    "ogTitle": "Proje Detayı | Kaan Balcı",
+    "title": "Proje Detayı | Kaan Balcı"
+  },
+  "request": {
+    "description": "AI iş akışları, otomasyon, web siteleri, dashboardlar veya yazılım ürünleri için Kaan Balcı'ya yapılandırılmış bir proje talebi gönder.",
+    "ogDescription": "AI iş akışları, otomasyon, web siteleri, dashboardlar veya yazılım ürünleri için Kaan Balcı'ya yapılandırılmış bir proje talebi gönder.",
+    "ogTitle": "Proje Talebi Gönder | Kaan Balcı",
+    "title": "Proje Talebi Gönder | Kaan Balcı"
+  },
+  "sinamaCaseStudy": {
+    "description": "SINAMA; multi-turn senaryo testleri, deterministik workflow değerlendirmesi, regression trendleri ve kanıta dayalı release-readiness için Turkish-first bir AI agent reliability lab'idir.",
+    "ogDescription": "Müşteri hizmetleri AI agent'ları için deterministik workflow kanıtı, regression trendleri ve release-readiness.",
+    "ogTitle": "SINAMA — AI Agent Reliability Lab Vaka Çalışması",
+    "title": "SINAMA — AI Agent Reliability Lab Vaka Çalışması | Kaan Balcı"
+  },
+  "works": {
+    "description": "Kaan Balcı'nın SINAMA ve Merge Rush: Tiny Factory önderliğindeki seçilmiş Applied AI, yazılım, web ve oyun ürünü çalışmaları.",
+    "ogDescription": "AI güvenilirliği, yazılım ürünleri ve interaktif sistemler alanlarında öne çıkan ve seçilmiş mühendislik çalışmaları.",
+    "ogTitle": "Projeler | Kaan Balcı",
+    "title": "Projeler | Kaan Balcı"
+  }
+}

@@ -1,0 +1,661 @@
+{
+  "agency-db": {
+    "category": "Données / Backend",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Modélisation de données relationnelles",
+      "Pratique du SQL",
+      "Structure des enregistrements d'agence",
+      "Notion de normalisation de base de données",
+      "Planification des opérations de données"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Un projet centré sur les bases de données pour modéliser des enregistrements de type agence, des relations et des opérations de données structurées.",
+    "role": "Développeur base de données",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Un projet centré sur les bases de données pour modéliser des enregistrements de type agence, des relations et des opérations de données structurées.",
+    "title": "Agency DB",
+    "type": "Projet de base de données"
+  },
+  "ai-chatbot-flow-design": {
+    "category": "AI et automatisation",
+    "challenge": "Les transitions de chatbots en entreprise exigent des tests fiables, une configuration de canaux stable, des flux à grande échelle maintenables et des transferts multicanaux sûrs.",
+    "features": [
+      "QA du chat en direct, validation et suivi des incidents",
+      "Configuration des canaux et accompagnement des transitions de chatbot",
+      "Appui à la restructuration d'un workflow conversationnel étendu à plusieurs étapes",
+      "Interaction vocale et vérification téléphonique pour un POC de déclaration de sinistre",
+      "Transfert vers WhatsApp et collecte de photos et documents dans le même POC",
+      "Coordination des flux et logique de workflow à plusieurs étapes"
+    ],
+    "impact": "Cette expérience a renforcé mon approche pratique de la QA conversationnelle, de l'organisation des flux et de la conception de transferts sûrs vers un humain.",
+    "links": [
+      {
+        "label": "Voir l'expérience"
+      }
+    ],
+    "overview": "Expérience professionnelle en conversational AI : QA du chatbot et du chat en direct, organisation des intentions et des réponses, restructuration des flux, chemins de transfert vers un humain et prise en charge de l'automatisation multicanale.",
+    "process": [
+      {
+        "text": "Analyse des objectifs de conversation, du comportement par canal et de la structure de flux existante.",
+        "title": "Analyse du workflow"
+      },
+      {
+        "text": "Appui à l'organisation des intentions, des transitions, du comportement de fallback et des chemins de transfert vers un humain.",
+        "title": "Restructuration du flux"
+      },
+      {
+        "text": "Tests du comportement des réponses, de la logique de routage et des scénarios conversationnels multicanaux.",
+        "title": "QA et validation"
+      },
+      {
+        "text": "Contribution au suivi des incidents, aux améliorations de flux et aux processus de transition.",
+        "title": "Appui à l'itération"
+      }
+    ],
+    "role": "AI Designer",
+    "solution": "J'ai contribué à la QA et à la stabilisation du chat en direct, identifié un problème de configuration de canal lors d'une transition municipale, appuyé la restructuration d'un workflow conversationnel étendu à plusieurs étapes, et conçu, construit, testé et présenté un POC de déclaration de sinistre en assurance.",
+    "status": "Étude de cas",
+    "subtitle": "Expérience en conversational AI en entreprise : QA, stabilisation, configuration des canaux, restructuration des flux et automatisation multicanale.",
+    "title": "AI Chatbot Flow Design",
+    "type": "Expérience professionnelle"
+  },
+  "atolye-joyday-official-website": {
+    "category": "Développement web",
+    "challenge": "Le principal enjeu était de présenter plusieurs catégories de prestations sans perdre les visiteurs, tout en gardant l'action de réservation visible et simple sur ordinateur comme sur mobile.",
+    "features": [
+      "Site web en production d'une entreprise réelle",
+      "Pages de prestations responsive",
+      "Présentation des formules d'Action Painting",
+      "Parcours client orienté réservation",
+      "Hiérarchie visuelle et de marque claire"
+    ],
+    "impact": "Le site a donné à Atölye Joyday une présence numérique professionnelle et un chemin plus fluide de la découverte à la réservation pour de vrais clients.",
+    "links": [
+      {
+        "label": "Voir l'étude de cas"
+      },
+      {
+        "label": "Ouvrir le site web"
+      }
+    ],
+    "overview": "Atölye Joyday est le site web d'un atelier créatif réel, conçu pour présenter des prestations comme l'Action Painting, le théâtre créatif, les ateliers et les événements privés. Le site traduit l'expérience physique du studio en un parcours numérique clair où l'on découvre les prestations, compare les formules et avance vers la réservation.",
+    "process": [
+      {
+        "text": "Structuration des espaces d'expérience du studio, des informations sur les formules et des points d'entrée client.",
+        "title": "Architecture des prestations"
+      },
+      {
+        "text": "Conception du parcours de la découverte de la prestation au choix de la formule, de la date et du contact.",
+        "title": "Parcours de réservation"
+      },
+      {
+        "text": "Développement du site responsive et des workflows d'envoi et de notification basés sur Google.",
+        "title": "Frontend et automatisation"
+      },
+      {
+        "text": "Tests du parcours client, mise en ligne du site et accompagnement des opérations numériques.",
+        "title": "Lancement et exploitation"
+      }
+    ],
+    "role": "Cofondateur et Digital Product Developer",
+    "solution": "J'ai construit une structure responsive sur plusieurs pages avec une navigation claire, des sections propres à chaque prestation, des cartes de formule, une hiérarchie visuelle et des appels à l'action de réservation. Le design garde une marque colorée et accueillante tout en conservant un déroulé opérationnel net.",
+    "status": "En production",
+    "subtitle": "Un site web d'entreprise en production pour un atelier créatif, construit autour de la présentation des prestations, de la découverte des formules, des appels à la réservation et d'une expérience mobile-first.",
+    "title": "Atölye Joyday Official Website",
+    "type": "Site web d'entreprise en production"
+  },
+  "calculator-android-studio": {
+    "category": "Développement mobile",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Opérations de calculatrice",
+      "Pratique de l'interface Android",
+      "Structure d'un projet mobile",
+      "Gestion des saisies",
+      "Logique applicative accessible aux débutants"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Une application de calculatrice mobile réalisée dans Android Studio pour travailler la structure d'interface et la logique applicative de base.",
+    "role": "Développeur Android",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Une application de calculatrice mobile réalisée dans Android Studio pour travailler la structure d'interface et la logique applicative de base.",
+    "title": "Calculator Android Studio",
+    "type": "Application mobile"
+  },
+  "calculator-javascript": {
+    "category": "Développement web",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Interactions basées sur le DOM",
+      "Logique de calculatrice",
+      "Pratique de l'état frontend",
+      "Structure d'interface simple",
+      "Fondamentaux de JavaScript"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Un projet de calculatrice en JavaScript centré sur l'interaction avec le DOM, l'état de l'interface et la logique frontend de base.",
+    "role": "Développeur frontend",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Un projet de calculatrice en JavaScript centré sur l'interaction avec le DOM, l'état de l'interface et la logique frontend de base.",
+    "title": "Calculator JavaScript",
+    "type": "Application frontend"
+  },
+  "cars-dataset-analysis": {
+    "category": "Analyse de données",
+    "challenge": "Un projet de données a besoin d'une exploration propre, de résultats compréhensibles et d'une structure qui rende l'analyse facile à suivre.",
+    "features": [
+      "Analyse exploratoire des données",
+      "Nettoyage et préparation des données",
+      "Visualisations avec Matplotlib et Seaborn",
+      "Observations sur des données automobiles",
+      "Petite expérimentation de régression linéaire"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Le projet explore, nettoie et visualise principalement des données automobiles. Il comprend aussi une petite expérimentation de régression linéaire avec scikit-learn pour examiner l'estimation de prix dans un notebook maîtrisé.",
+    "role": "Développeur Python",
+    "solution": "J'ai utilisé Pandas, NumPy, Matplotlib et Seaborn pour le travail exploratoire principal, puis ajouté une petite expérimentation de régression linéaire avec scikit-learn comme exercice technique complémentaire.",
+    "status": "Dépôt",
+    "subtitle": "Un projet de données en Python qui associe analyse exploratoire et visualisation à une petite expérimentation de régression linéaire pour estimer le prix des voitures.",
+    "title": "Cars Dataset Analysis",
+    "type": "Projet de données"
+  },
+  "control-panel": {
+    "category": "Web et dashboard",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Interface de type dashboard",
+      "Structure de panneau d'administration",
+      "Écrans de gestion en PHP",
+      "Opérations adossées à MySQL",
+      "Sections d'interface réutilisables",
+      "Workflow web issu d'un contexte scolaire et projet"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Control Panel est un dashboard d'administration en PHP et MySQL, avec des écrans de gestion adossés à une base de données et des flux opérationnels.",
+    "role": "Développeur full-stack",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Un dashboard d'administration en PHP et MySQL, avec des écrans de gestion adossés à une base de données et des flux de contrôle opérationnel.",
+    "title": "Control Panel",
+    "type": "Projet de dashboard"
+  },
+  "drivenfinity": {
+    "category": "Développement de jeux",
+    "challenge": "Le principal enjeu de conception était de garder une jouabilité assez simple pour le format hyper-casual tout en rendant la boucle réactive et rejouable.",
+    "features": [
+      "Jouabilité de conduite en 3D",
+      "Boucle d'évitement d'obstacles",
+      "Progression fondée sur le score",
+      "Scripts C# sous Unity",
+      "Concept de jeu pensé pour le mobile"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Drivenfinity est un jeu de conduite pensé pour le mobile, où il s'agit de survivre le plus longtemps possible et d'augmenter son score en évitant les obstacles.",
+    "role": "Développeur Unity",
+    "solution": "J'ai construit le jeu autour d'un déplacement clair, de la navigation entre obstacles, du score et d'un redémarrage rapide, adaptés à de courtes sessions mobiles.",
+    "status": "Dépôt",
+    "subtitle": "Un jeu de conduite hyper-casual en 3D sur mobile, centré sur l'évitement d'obstacles, les réflexes et l'amélioration du score.",
+    "title": "Drivenfinity",
+    "type": "Jeu mobile"
+  },
+  "dunker-madness": {
+    "category": "Développement de jeux",
+    "challenge": "Les jeux de physique demandent un retour satisfaisant, des trajectoires lisibles et un équilibre entre précision et plaisir.",
+    "features": [
+      "Jouabilité de projectiles en 2D",
+      "Interactions fondées sur la physique",
+      "Destruction de tours ennemies",
+      "Scripts de jouabilité en C#",
+      "Inspiration Angry Birds"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Dunker Madness explore une mécanique de tir fondée sur la physique, dans laquelle on lance des projectiles pour détruire des structures ennemies.",
+    "role": "Développeur Unity",
+    "solution": "Le projet se concentre sur un contrôle simple des projectiles, l'interaction avec les cibles et la logique de destruction des structures dans Unity.",
+    "status": "Dépôt",
+    "subtitle": "Un jeu de projectiles en 2D fondé sur la physique, inspiré par la visée précise, la destruction de tours et les tirs stratégiques.",
+    "title": "Dunker Madness",
+    "type": "Jeu 2D"
+  },
+  "escape-island": {
+    "category": "Développement de jeux",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Unreal Engine 5.4.4",
+      "Intégration de C++ et des Blueprints",
+      "Parcours de plateforme chronométré",
+      "Obstacles mobiles et rotatifs",
+      "Prototype solo"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Escape Island est un prototype solo sous Unreal Engine 5.4.4 qui associe C++ et Blueprints dans un parcours de plateforme chronométré à la troisième personne.",
+    "role": "Développeur de jeux",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Prototype",
+    "subtitle": "Un prototype solo de plateforme et d'évasion à la troisième personne construit avec Unreal Engine 5, C++ et les Blueprints.",
+    "title": "Escape Island",
+    "type": "Prototype de jeu"
+  },
+  "extract-shoot-zero": {
+    "category": "Développement de jeux",
+    "challenge": "Un prototype de shooter exige que plusieurs systèmes fonctionnent ensemble : déplacement, comportement ennemi, santé, dégâts et retour de combat.",
+    "features": [
+      "Combat à la troisième personne",
+      "Logique de comportement ennemi",
+      "Systèmes de santé et de dégâts",
+      "Workflow Unreal Engine",
+      "Usage des Blueprints et de C++"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Extract Shoot: Zero est un prototype de shooter d'action à la troisième personne conçu pour travailler les systèmes de combat, le comportement ennemi et la logique de santé du joueur.",
+    "role": "Développeur Unreal Engine",
+    "solution": "J'ai construit le projet sous Unreal Engine avec C++ et les Blueprints, en me concentrant sur un état de jeu clair et sur la logique d'interaction de combat.",
+    "status": "Dépôt",
+    "subtitle": "Un prototype de shooter d'action à la troisième personne avec comportement ennemi, gestion de la santé et systèmes de jouabilité centrés sur le combat.",
+    "title": "Extract Shoot: Zero",
+    "type": "Prototype de shooter"
+  },
+  "hospital-appointment-system": {
+    "category": "Données / Backend",
+    "challenge": "L'enjeu principal était de créer un parcours de rendez-vous clair, simple pour les patients, tout en couvrant les besoins des médecins, du personnel et de la gestion de la base de données.",
+    "features": [
+      "Interface Tkinter pensée pour les patients",
+      "Panneaux de rendez-vous pour médecins et personnel hospitalier",
+      "Enregistrements patients, médecins et rendez-vous adossés à MySQL",
+      "Logique automatisée de sélection des créneaux",
+      "Éléments visuels d'interface avec PIL",
+      "Opérations de planification fondées sur datetime"
+    ],
+    "impact": "Le projet illustre le développement d'interfaces graphiques en Python, l'usage de bases de données relationnelles et une réflexion pratique d'automatisation pour des parcours de rendez-vous en santé.",
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Hospital Appointment System est un projet d'automatisation bureau en Python conçu pour simplifier la prise de rendez-vous pour les patients, les médecins et le personnel hospitalier. Il s'appuie sur une interface Tkinter, une connexion MySQL et des bibliothèques Python complémentaires pour offrir un parcours de rendez-vous accessible et adossé à une base de données.",
+    "process": [
+      {
+        "text": "Conception d'une interface bureau simple sous Tkinter, rapidement compréhensible par les patients et le personnel.",
+        "title": "Conception de l'interface"
+      },
+      {
+        "text": "Structuration des tables MySQL et de la logique de connexion pour les utilisateurs, les médecins, les rendez-vous et les enregistrements persistants.",
+        "title": "Mise en place de la base de données"
+      },
+      {
+        "text": "Construction des parcours de planification autour des créneaux disponibles, des horaires choisis et des actions de l'utilisateur.",
+        "title": "Logique de rendez-vous"
+      },
+      {
+        "text": "Affinage du projet par des tests du comportement de l'interface, de la connexion à la base et des opérations de rendez-vous.",
+        "title": "Tests et améliorations"
+      }
+    ],
+    "role": "Développeur Python / base de données",
+    "solution": "J'ai structuré l'application autour d'une interface Tkinter pensée pour les patients, d'une persistance adossée à MySQL, d'une gestion des créneaux et de parcours distincts pour les patients, les médecins et le personnel. PIL soutient l'interface visuelle, tandis que la logique datetime de Python gère les opérations temporelles.",
+    "status": "Dépôt",
+    "subtitle": "Un système d'automatisation des rendez-vous hospitaliers en Python, avec interface Tkinter et parcours patient, médecin, personnel et rendez-vous adossés à MySQL.",
+    "title": "Hospital Appointment System",
+    "type": "Système d'automatisation bureau"
+  },
+  "hospital-form-app": {
+    "category": "Logiciel / Base de données",
+    "challenge": "Le projet demandait d'organiser 15 formulaires, trois parcours utilisateur et des opérations directes en base de données, tout en gardant lisibles les flux patient, médecin et secrétariat.",
+    "features": [
+      "Trois parcours utilisateur distincts",
+      "Quinze formulaires Windows Forms",
+      "Six tables SQL Server",
+      "Opérations de création, lecture, mise à jour et suppression",
+      "Preuves archivées d'interface et de schéma"
+    ],
+    "links": [
+      {
+        "label": "Voir l'étude de cas"
+      },
+      {
+        "label": "Voir l'archive de code source"
+      }
+    ],
+    "overview": "Hospital Form App est le nom porté par Hospital System dans le portfolio : un projet individuel du cours de Programmation Visuelle qui associe trois parcours Windows Forms propres à chaque rôle à des opérations directes sur SQL Server. Le dépôt conserve des extraits de code, le schéma et des preuves d'interface, plutôt qu'une compilation exécutable.",
+    "process": [
+      {
+        "text": "Structuration de l'interface autour de formulaires dédiés au patient, au médecin et au secrétariat.",
+        "title": "Architecture des formulaires"
+      },
+      {
+        "text": "Liaison des actions de rendez-vous et de profil sur les trois parcours propres à chaque rôle.",
+        "title": "Parcours par rôle"
+      },
+      {
+        "text": "Organisation des opérations de création, lecture, mise à jour et suppression sur SQL Server via des commandes ADO.NET.",
+        "title": "Opérations ADO.NET"
+      },
+      {
+        "text": "Conservation des extraits de code, du schéma et des preuves d'interface pour la relecture du dépôt.",
+        "title": "Documentation de l'archive"
+      }
+    ],
+    "role": "Développeur logiciel",
+    "solution": "J'ai structuré cette application bureau académique autour de formulaires propres à chaque rôle, d'une navigation pilotée par les événements et de commandes ADO.NET s'appuyant sur un modèle SQL Server de six tables.",
+    "status": "Archive de code source",
+    "subtitle": "Un projet académique de 2024 en C# et Windows Forms illustrant les parcours patient, médecin, secrétariat et rendez-vous via SQL Server et ADO.NET. Le dépôt est conservé comme archive de code source.",
+    "title": "Hospital Form App",
+    "type": "Projet logiciel académique / personnel"
+  },
+  "ic-supply": {
+    "category": "Données / Backend",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Concept de suivi des approvisionnements",
+      "Structure de données de type inventaire",
+      "Approche des workflows backend",
+      "Pratique sur des données opérationnelles",
+      "Logique de projet structurée"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Un projet orienté approvisionnement, centré sur une structure de données de type inventaire, la logique de suivi et l'approche backend.",
+    "role": "Backend / Data Developer",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Un projet orienté approvisionnement, centré sur une structure de données de type inventaire, la logique de suivi et l'approche backend.",
+    "title": "IC Supply",
+    "type": "Système de données"
+  },
+  "legacy-of-the-lost": {
+    "category": "Développement de jeux",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Atmosphère d'aventure",
+      "Pratique de la composition de scènes",
+      "Présentation de prototype",
+      "Idée orientée exploration",
+      "Expérimentation en game design"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Un prototype de jeu à l'atmosphère d'aventure plus sombre, construit autour de l'exploration et de la présentation des scènes.",
+    "role": "Développeur de jeux",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Un prototype de jeu à l'atmosphère d'aventure plus sombre, construit autour de l'exploration et de la présentation des scènes.",
+    "title": "Legacy of the Lost",
+    "type": "Prototype de jeu"
+  },
+  "mandelas-web-site-project": {
+    "category": "Développement web",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Mise en page d'un site statique",
+      "Structure de contenu",
+      "Sections de page responsive",
+      "Pratique du frontend",
+      "Fondamentaux de la présentation web"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Un projet de site web centré sur la structure du contenu, la mise en page frontend et le développement de pages statiques.",
+    "role": "Développeur web",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Un projet de site web centré sur la structure du contenu, la mise en page frontend et le développement de pages statiques.",
+    "title": "Mandelas Website Project",
+    "type": "Projet de site web"
+  },
+  "my-java-projects": {
+    "category": "Développement logiciel",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Fondamentaux de Java",
+      "Pratique de la programmation orientée objet",
+      "Exercices d'algorithmique",
+      "Structure d'un dépôt d'apprentissage",
+      "Logique de programmation essentielle"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Une collection de projets d'entraînement en Java centrés sur la programmation orientée objet, les algorithmes et les fondamentaux du langage.",
+    "role": "Développeur Java",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Une collection de projets d'entraînement en Java centrés sur la programmation orientée objet, les algorithmes et les fondamentaux du langage.",
+    "title": "My Java Projects",
+    "type": "Dépôt d'apprentissage"
+  },
+  "my-museum": {
+    "category": "Développement mobile",
+    "challenge": "Le projet demandait de relier les écrans mobiles à une logique de contenu adossée à Firebase.",
+    "features": [
+      "Application Android en Kotlin",
+      "Base de données Firebase",
+      "Parcours de partage de contenu",
+      "Parcours de contenu mobile",
+      "Workflow Android Studio"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "MyMuseum est une application Android de partage de contenu centrée sur les parcours utilisateur mobiles et les interactions adossées à Firebase.",
+    "role": "Développeur Android",
+    "solution": "J'ai construit l'application en Kotlin sous Android Studio, en me concentrant sur le parcours mobile principal et l'intégration Firebase.",
+    "status": "Dépôt",
+    "subtitle": "Une application Android de partage de contenu construite avec Kotlin et Firebase autour des parcours utilisateur mobiles et des interactions adossées à une base de données.",
+    "title": "MyMuseum — Mobile Content App",
+    "type": "Application Android"
+  },
+  "portfolio-website": {
+    "category": "Développement web",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Architecture du portfolio en production",
+      "Pages de détail de projet dynamiques",
+      "Intégration de l'assistant Ajoop",
+      "Recruiter Mode et palette de recherche",
+      "Mini-jeu d'aventure interactif"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Le dépôt du portfolio personnel en production, qui réunit catalogue de projets, assistant d'AI, Recruiter Mode, formulaire de demande et mini-jeux interactifs.",
+    "role": "Développeur web",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Le dépôt du portfolio personnel en production, qui réunit catalogue de projets, assistant d'AI, Recruiter Mode, formulaire de demande et mini-jeux interactifs.",
+    "title": "Portfolio Website",
+    "type": "Portfolio en production"
+  },
+  "porto-25": {
+    "category": "Développement web",
+    "challenge": "L'objectif était de travailler une structure de page responsive moderne, la hiérarchie des sections, les espacements et la cohérence visuelle dans un format de site statique léger.",
+    "features": [
+      "Pratique de la mise en page avec Tailwind CSS",
+      "Structure de portfolio et de landing page personnelle",
+      "Conception de sections responsive",
+      "Présentation frontend statique",
+      "Première expérimentation de marque personnelle"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Porto 25 est un dépôt d'entraînement frontend centré sur la création d'une interface de portfolio et de landing page épurée avec Tailwind CSS. Il représente une expérimentation antérieure de marque personnelle et de mise en page, avant le système de portfolio actuel.",
+    "role": "Développeur frontend",
+    "solution": "Je l'ai abordé comme un exercice d'interface avec Tailwind : créer des sections réutilisables, garder la mise en page responsive et organiser le contenu autour d'une présentation de portfolio personnel.",
+    "status": "Dépôt",
+    "subtitle": "Une expérimentation de portfolio et de landing page avec Tailwind CSS, réalisée pour travailler la mise en page responsive, la marque personnelle et la présentation web moderne.",
+    "title": "Porto 25",
+    "type": "Interface de portfolio Tailwind"
+  },
+  "pyhton-projects": {
+    "category": "Données / Automatisation",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Fondamentaux de Python",
+      "Pratique par les scripts",
+      "Idées d'automatisation",
+      "Exercices de logique de données",
+      "Archive de projets d'apprentissage"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Un dépôt d'entraînement Python regroupant des projets d'apprentissage sur les fondamentaux de la programmation, l'automatisation et la logique orientée données.",
+    "role": "Développeur Python",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Un dépôt d'entraînement Python regroupant des projets d'apprentissage sur les fondamentaux de la programmation, l'automatisation et la logique orientée données.",
+    "title": "Python Projects",
+    "type": "Dépôt d'apprentissage"
+  },
+  "tank-savage": {
+    "category": "Développement de jeux",
+    "challenge": "Le combat de véhicules demande un ressenti de conduite, un comportement de collision et un rythme de combat différents de ceux des jeux centrés sur un personnage.",
+    "features": [
+      "Logique de contrôle du char",
+      "Prototype de combat",
+      "Interaction fondée sur la physique",
+      "Workflow Blueprints et C++",
+      "Pratique d'Unreal Engine 5"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Tank Savage se concentre sur le déplacement du char, l'interaction de combat et le prototypage de jouabilité sous Unreal Engine.",
+    "role": "Développeur Unreal Engine",
+    "solution": "J'ai abordé le projet comme un prototype de contrôle de char, d'interaction avec l'environnement et de règles de combat en utilisant les workflows d'Unreal.",
+    "status": "Dépôt",
+    "subtitle": "Un prototype de combat de chars à la troisième personne construit avec Unreal Engine, les Blueprints, C++ et une jouabilité fondée sur la physique.",
+    "title": "Tank Savage",
+    "type": "Prototype de jeu de combat"
+  },
+  "unity-essentials": {
+    "category": "Développement de jeux",
+    "challenge": "L'objectif était de consolider les fondamentaux d'Unity en isolant des mécaniques dans des scènes claires et en les construisant pas à pas.",
+    "features": [
+      "Plusieurs scènes Unity",
+      "Expérimentations sur les mécaniques essentielles",
+      "Mise en œuvre en C#",
+      "Structure orientée apprentissage",
+      "Fondamentaux de jouabilité"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Unity Essentials est un projet orienté apprentissage comportant plusieurs scènes, chacune consacrée à un concept ou une mécanique Unity différente.",
+    "role": "Développeur Unity",
+    "solution": "J'ai structuré le projet comme un environnement d'apprentissage pratique, avec une expérimentation par scènes et une logique de jouabilité réutilisable.",
+    "status": "Dépôt",
+    "subtitle": "Un projet d'apprentissage Unity comportant plusieurs scènes, centré sur les mécaniques essentielles et les fondamentaux de jouabilité.",
+    "title": "Unity Essentials",
+    "type": "Projet d'apprentissage"
+  },
+  "warehouse-war": {
+    "category": "Développement de jeux",
+    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "features": [
+      "Concept de combat en entrepôt",
+      "Pratique de l'agencement d'environnement",
+      "Systèmes de jouabilité au stade prototype",
+      "Interaction centrée sur l'action",
+      "Workflow de projet de jeu"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Un prototype de jeu situé dans un entrepôt, qui explore le combat, l'agencement de l'environnement et les systèmes de jouabilité.",
+    "role": "Développeur de jeux",
+    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "status": "Dépôt",
+    "subtitle": "Un prototype de jeu situé dans un entrepôt, qui explore le combat, l'agencement de l'environnement et les systèmes de jouabilité.",
+    "title": "Warehouse War",
+    "type": "Prototype de jeu"
+  },
+  "weather-app": {
+    "category": "Développement web",
+    "challenge": "L'enjeu principal était de relier l'interface utilisateur à des données météo externes de façon claire et exploitable.",
+    "features": [
+      "Récupération de données en JavaScript",
+      "Affichage des informations météo",
+      "Interface frontend",
+      "Concept fondé sur la localisation",
+      "Pratique orientée API"
+    ],
+    "links": [
+      {
+        "label": "Ouvrir GitHub"
+      }
+    ],
+    "overview": "Weather App est un projet frontend centré sur la récupération de données météo et leur présentation dans une interface simple.",
+    "role": "Développeur frontend",
+    "solution": "J'ai construit une interface en JavaScript qui récupère et affiche les informations météo.",
+    "status": "Dépôt",
+    "subtitle": "Une application météo en JavaScript qui récupère des données de prévision et présente des informations météo fondées sur la localisation.",
+    "title": "Weather App",
+    "type": "Application web"
+  }
+}

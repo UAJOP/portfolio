@@ -76,7 +76,12 @@ const requiredBootPages = [
 ];
 requiredBootPages.forEach((file) => {
   const source = read(file);
-  check(source.includes('src="script.js"'), `${file} must load the global script bootloader`);
+  /* 404.html loads the bootloader root-absolutely: GitHub Pages serves it at
+   * whatever URL failed, so a relative path would resolve against that. */
+  check(
+    source.includes('src="script.js"') || source.includes('src="/script.js"'),
+    `${file} must load the global script bootloader`,
+  );
   check(!source.includes("flagship-copy.js"), `${file} still references retired flagship-copy.js`);
 });
 

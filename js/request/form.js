@@ -31,7 +31,7 @@ const requestFormText = {
 };
 
 function getRequestFormText(language = getCurrentLocale()) {
-  return getLocalizedCollection(requestFormText, language);
+  return getLocalizedCollection(requestFormText, language, "request");
 }
 
 function setRequestStatus(type, message, { showEmail = false } = {}) {

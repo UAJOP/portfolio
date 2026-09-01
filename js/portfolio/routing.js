@@ -59,21 +59,45 @@ function siteRootPrefix() {
   return (document.body && document.body.dataset.siteRoot) || "";
 }
 
+/**
+ * Prefix that reaches the current locale's root.
+ *
+ * Localized generated pages declare it; English pages have none, and their
+ * locale root is the site root, which is exactly the pre-09C behaviour.
+ */
+function localeRootPrefix() {
+  const declared = document.body && document.body.dataset.localeRoot;
+  return declared === undefined || declared === null ? siteRootPrefix() : declared;
+}
+
 /** A URL is already resolved if it is absolute, root-relative or a fragment. */
 function isResolvedUrl(url) {
   return /^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(String(url || ""));
 }
 
-/** Rebases a repo-relative path onto the current page's depth. */
+/**
+ * Rebases a repo-relative path onto the current page's depth, keeping page
+ * links inside the current locale.
+ *
+ * Every URL the renderers emit goes through here, so a German page never links
+ * a reader back into English by accident, and assets never grow a locale
+ * prefix they do not have on disk.
+ */
 function siteUrl(path) {
   const value = String(path || "");
   if (!value || isResolvedUrl(value)) return value;
-  return `${siteRootPrefix()}${value}`;
+  const routes = window.KAAN_LOCALE_ROUTES;
+  if (!routes) return `${siteRootPrefix()}${value}`;
+  const locale = typeof getCurrentLocale === "function" ? getCurrentLocale() : "en";
+  return routes.localizedInternalHref(value, locale, {
+    siteRoot: siteRootPrefix(),
+    localeRoot: localeRootPrefix(),
+  });
 }
 
-/** The canonical URL for a project. */
+/** The canonical URL for a project, in the current locale. */
 function projectUrl(slug) {
-  return `${siteRootPrefix()}projects/${encodeURIComponent(slug)}/`;
+  return siteUrl(`projects/${encodeURIComponent(slug)}/`);
 }
 
 /**

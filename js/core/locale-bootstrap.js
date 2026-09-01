@@ -2,25 +2,40 @@
 (function(){
   var storageKey="kaanbalci-site-language";
   var defaultLocale="en";
-  var active=[{"id":"en","dir":"ltr"},{"id":"tr","dir":"ltr"}];
-  function find(value){
+  var active=[{"id":"en","dir":"ltr"},{"id":"tr","dir":"ltr"},{"id":"de","dir":"ltr"},{"id":"es","dir":"ltr"},{"id":"fr","dir":"ltr"}];
+  var known=[{"id":"en","dir":"ltr","prefix":""},{"id":"tr","dir":"ltr","prefix":"tr"},{"id":"de","dir":"ltr","prefix":"de"},{"id":"es","dir":"ltr","prefix":"es"},{"id":"fr","dir":"ltr","prefix":"fr"}];
+  var html=document.documentElement;
+  function match(list,value){
     var raw=String(value||"").trim().toLowerCase().replace(/_/g,"-");
     var base=raw.split("-")[0];
-    return active.find(function(item){return item.id===raw||item.id===base;})||null;
+    return list.find(function(item){return item.id===raw||item.id===base;})||null;
   }
-  var resolved=null;
-  try { resolved=find(localStorage.getItem(storageKey)); } catch(error) {}
-  if(!resolved){
-    var preferences=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language]);
-    for(var i=0;i<preferences.length&&!resolved;i+=1) resolved=find(preferences[i]);
+  function fromPath(){
+    var segment=String(location.pathname||"").replace(/^\/+/,"").split("/")[0];
+    if(!segment) return null;
+    for(var i=0;i<known.length;i+=1) if(known[i].prefix&&known[i].prefix===segment) return known[i];
+    return null;
   }
-  resolved=resolved||find(defaultLocale)||active[0];
-  var html=document.documentElement;
+  var byPath=html.hasAttribute("data-route-locale-from-path");
+  var declared=byPath?fromPath():match(known,html.getAttribute("data-route-locale"));
+  var resolved=declared;
+  if(!resolved&&!byPath){
+    try { resolved=match(active,localStorage.getItem(storageKey)); } catch(error) {}
+    if(!resolved){
+      var preferences=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language]);
+      for(var i=0;i<preferences.length&&!resolved;i+=1) resolved=match(active,preferences[i]);
+    }
+  }
+  resolved=resolved||match(known,defaultLocale)||active[0];
   html.lang=resolved.id;
   html.dir=resolved.dir||"ltr";
   html.dataset.locale=resolved.id;
-  if(resolved.id!==defaultLocale) html.dataset.localePending="true";
   window.__KAAN_PREPAINT_LOCALE__=resolved.id;
+  window.__KAAN_ROUTE_LOCALE__=resolved.id;
+  window.__KAAN_PACK_LOCALE__=(resolved.id!==defaultLocale)?resolved.id:null;
+  var staticLocale=byPath?defaultLocale:resolved.id;
+  if(resolved.id===staticLocale) return;
+  html.dataset.localePending="true";
   window.setTimeout(function(){
     if(html.dataset.localeReady==="true") return;
     html.lang=defaultLocale; html.dir="ltr"; html.dataset.locale=defaultLocale;

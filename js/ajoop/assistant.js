@@ -849,7 +849,7 @@ let portfolioChatbotState = {
 };
 
 function getPortfolioChatbotContent(language = getCurrentLocale()) {
-  return getLocalizedCollection(portfolioChatbotContent, language);
+  return getLocalizedCollection(portfolioChatbotContent, language, "ajoop");
 }
 
 function createChatbotLinks(links = []) {
@@ -910,7 +910,7 @@ function resetChatbotMessages() {
 function updatePortfolioChatbotLanguage(
   language = getCurrentLocale(),
 ) {
-  portfolioChatbotState.language = isActiveLocale(language) ? normalizeLocaleId(language) : siteLocaleRegistry.defaultLocale;
+  portfolioChatbotState.language = renderableLocaleId(language);
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
   const launcherText = document.querySelector("[data-chatbot-launcher-text]");
   const title = document.querySelector("[data-chatbot-title]");

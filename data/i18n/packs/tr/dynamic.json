@@ -1,0 +1,694 @@
+{
+  "ajoop": {
+    "launcher": "Ajoop'a Sor",
+    "title": "Ajoop",
+    "subtitle": "",
+    "greeting": "Selam, ben Ajoop. Kaan'ın yeteneklerini, projelerini, AI deneyimini, Joyday çalışmalarını, CV ve iletişim seçeneklerini hızlıca anlatabilirim. Bir soru seçebilir veya anahtar kelime yazabilirsin.",
+    "inputPlaceholder": "Proje, AI, CV hakkında sor...",
+    "sendLabel": "Gönder",
+    "closeLabel": "Chatbot'u kapat",
+    "openLabel": "Portfolio chatbot'u aç",
+    "quicks": [
+      {
+        "label": "Kaan kim?"
+      },
+      {
+        "label": "AI / chatbot deneyimi"
+      },
+      {
+        "label": "En iyi projeler"
+      },
+      {
+        "label": "Joyday web sitesi"
+      },
+      {
+        "label": "Tech stack"
+      },
+      {
+        "label": "CV & iletişim"
+      }
+    ],
+    "answers": {
+      "about": {
+        "text": "Kaan Balcı; conversational AI, solution engineering, LLM değerlendirme, workflow otomasyonu ve kullanıcı odaklı yazılım ürünlerine odaklanan bir AI Designer & Software Developer. 50+ akademik, kişisel, freelance ve ekip projesine katkı sağladı.",
+        "links": [
+          {
+            "label": "Hakkımda"
+          },
+          {
+            "label": "Deneyim"
+          }
+        ]
+      },
+      "ai": {
+        "text": "Kaan'ın AI tarafı chatbot akış tasarımı, n8n tarzı otomasyon mantığı, IVR ve çok kanallı workflow'lar, LLM değerlendirme, prompt analizi ve çıktı inceleme üzerine kurulu. CBOT'ta kurumsal chatbot QA, stabilizasyon, akış yeniden yapılandırma ve sigorta hasar başvuru POC çalışmalarına katkı sağladı.",
+        "links": [
+          {
+            "label": "AI Case Study"
+          },
+          {
+            "label": "Deneyim"
+          }
+        ]
+      },
+      "projects": {
+        "text": "En güçlü proje alanları: AI Chatbot Flow Design, Atölye Joyday Official Website, Hospital Appointment System, Hospital Form App, Drivenfinity ve Cars Dataset Analysis. Projeler sayfası artık seçili case study’leri ve ana public GitHub repository kataloğunu dinamik detay sayfalarıyla birlikte topluyor.",
+        "links": [
+          {
+            "label": "Projeleri Gör"
+          },
+          {
+            "label": "Atölye Joyday Vaka Çalışmasını Gör"
+          }
+        ]
+      },
+      "joyday": {
+        "text": "Atölye Joyday gerçek bir işletme projesi. Kaan web deneyimini, hizmet sayfalarını, paket akışını ve rezervasyon yolculuğunu tasarlayıp geliştirdi. Müşteri deneyimini operasyon takibiyle bağladığı için güçlü bir canlı işletme vaka çalışması olarak duruyor.",
+        "links": [
+          {
+            "label": "Atölye Joyday Vaka Çalışmasını Gör"
+          },
+          {
+            "label": "Atölye Joyday Canlı Sitesini Aç"
+          }
+        ]
+      },
+      "stack": {
+        "text": "Ana stack: Python, C#/.NET, JavaScript, PHP, Java, Kotlin, C++, MySQL, MSSQL, Firebase, Unity, Unreal Engine, n8n, AI Flow ve LLM değerlendirme iş akışları.",
+        "links": [
+          {
+            "label": "Hakkımda"
+          },
+          {
+            "label": "Projeler"
+          }
+        ]
+      },
+      "cv": {
+        "text": "Kaan'ın CV'sini görüntüleyebilir, mail atabilir veya LinkedIn/GitHub üzerinden ulaşabilirsin. Forward Deployed Engineer fırsatları için en hızlı yol CV + LinkedIn.",
+        "links": [
+          {
+            "label": "CV'yi Görüntüle"
+          },
+          {
+            "label": "E-posta"
+          },
+          {
+            "label": "LinkedIn"
+          },
+          {
+            "label": "GitHub"
+          }
+        ]
+      },
+      "availability": {
+        "text": "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor; Applied AI, AI reliability, solution engineering, otomasyon ve ürün odaklı yazılım geliştirme kanıtları bu yönü destekliyor.",
+        "links": [
+          {
+            "label": "İletişim"
+          },
+          {
+            "label": "Deneyim"
+          }
+        ]
+      },
+      "certificates": {
+        "text": "Kaan'ın Udemy, Cisco ve benzeri platformlardan 25+ sertifikası var. Certificates sayfasında modern galeri ve büyük önizleme modalı bulunuyor.",
+        "links": [
+          {
+            "label": "Sertifikalar"
+          }
+        ]
+      },
+      "default": {
+        "text": "Bunu tam eşleştiremedim ama Kaan'ın AI deneyimi, projeleri, tech stack'i, Joyday çalışmaları, CV'si, sertifikaları veya iletişim bilgileri hakkında yardımcı olabilirim. Aşağıdaki hazır sorulardan birini deneyebilirsin.",
+        "links": [
+          {
+            "label": "Projeler"
+          },
+          {
+            "label": "Hakkımda"
+          }
+        ]
+      }
+    }
+  },
+  "recruiter": {
+    "profile": "Forward Deployed Engineer",
+    "focus": [
+      "Conversational AI",
+      "Solution Engineering",
+      "LLM Değerlendirme",
+      "Workflow Otomasyonu"
+    ],
+    "skills": [
+      "Chatbot akış tasarımı, QA ve stabilizasyon",
+      "n8n tarzı çok adımlı workflow mantığı",
+      "LLM yanıt, akıl yürütme, kod ve multimodal değerlendirme",
+      "Python, C#/.NET, JavaScript, PHP ve SQL",
+      "Kullanıcı odaklı dijital ürün geliştirme"
+    ],
+    "capabilities": [
+      "Applied AI",
+      "AI Reliability",
+      "Solution Engineering",
+      "Conversational AI",
+      "Automation",
+      "Product Engineering"
+    ],
+    "proof": [
+      "CBOT'ta QA, stabilizasyon, kanal yapılandırması ve büyük ölçekli akış yeniden yapılandırmayı kapsayan kurumsal conversational AI deneyimi.",
+      "Ses, telefon doğrulama, WhatsApp aktarımı ve belge toplama içeren sigorta hasar başvuru POC'sini tasarladı, geliştirdi, test etti ve sundu.",
+      "Akıl yürütme, kod ve multimodal çıktıları kapsayan yapılandırılmış LLM değerlendirme ve kalite çalışmaları.",
+      "JavaScript, Google Forms, Sheets ve Apps Script ile Atölye Joyday canlı dijital ürünü ve rezervasyon otomasyonu."
+    ],
+    "projects": [
+      [
+        "SINAMA — AI Agent Reliability Lab",
+        "Canlı, Türkçe öncelikli AI agent reliability ve regression test lab'ı",
+        null,
+        "Vaka Çalışmasını Gör"
+      ],
+      [
+        "AI Chatbot Akış Tasarımı",
+        "Conversational AI ve kurumsal workflow kanıtı",
+        null
+      ],
+      [
+        "AI Flow Puzzle",
+        "Canlı node mantığı, fallback ve doğrulama demosu",
+        null,
+        "Vaka Çalışmasını Gör"
+      ],
+      [
+        "Atölye Joyday Resmi Web Sitesi",
+        "Canlı dijital ürün ve rezervasyon yolculuğu",
+        null,
+        "Vaka Çalışmasını Gör"
+      ],
+      [
+        "Hospital Form App",
+        "Kaynak arşivi olarak korunan C# Windows Forms ve SQL Server iş akışı projesi.",
+        null,
+        "Vaka Çalışmasını Gör"
+      ]
+    ],
+    "buttons": {
+      "cv": "CV'yi Görüntüle",
+      "contact": "E-posta",
+      "linkedin": "LinkedIn",
+      "close": "Kapat"
+    }
+  },
+  "recruiterV2": {
+    "label": "İK MODU V2",
+    "title": "Yetkinlik odağına göre kanıt özeti",
+    "lead": "Forward Deployed Engineer hedefini sabit tutar; aynı portfolyoda seçilen yetkinliğe ait proje ve deneyim kanıtını öne çıkarır.",
+    "choose": "Kanıt odağı",
+    "primary": "Ana hedef",
+    "focus": "Kanıt odağı",
+    "capabilities": "Yetkinlik alanları",
+    "skills": "Ana yetkinlikler",
+    "proof": "Önerilen kanıt",
+    "cv": "CV'yi Görüntüle",
+    "email": "E-posta",
+    "close": "Kapat",
+    "updated": "Portfolyo verisi",
+    "openEvidence": "Kanıtı aç"
+  },
+  "ultimate": {
+    "recruiterLabel": "İK Modu",
+    "recruiterOpenLabel": "Recruiter Mode’u aç",
+    "recruiterCloseLabel": "Recruiter Mode’u kapat",
+    "recruiterTitle": "İK özeti",
+    "recruiterLead": "Conversational AI, solution engineering, LLM değerlendirme, workflow otomasyonu ve yazılım fırsatları için kısa ve kanıt odaklı profil özeti.",
+    "availability": "İşe açık",
+    "skillsTitle": "Ana yetkinlikler",
+    "projectsTitle": "Kanıt projeler",
+    "commandsTitle": "Ara",
+    "commandDialogLabel": "Arama paleti",
+    "commandPlaceholder": "Sayfa, proje veya komut ara...",
+    "noResults": "Komut bulunamadı.",
+    "projectSearchPlaceholder": "Proje, teknoloji veya anahtar kelime ara...",
+    "projectSearchLabel": "Projelerde ara",
+    "copyDone": "Kopyalandı",
+    "commands": [
+      {
+        "label": "Ana Sayfaya Git",
+        "hint": "Landing page",
+        "keywords": "home ana sayfa"
+      },
+      {
+        "label": "Projeleri Aç",
+        "hint": "Proje kataloğu",
+        "keywords": "projeler portfolio works"
+      },
+      {
+        "label": "SINAMA Vaka Çalışmasını Gör",
+        "hint": "AI agent reliability lab vaka çalışması",
+        "keywords": "sinama ai agent reliability lab regression evaluation vaka çalışması"
+      },
+      {
+        "label": "SINAMA Canlı Ürününü Aç",
+        "hint": "Canlı AI agent reliability lab",
+        "keywords": "sinama canlı ürün ai agent reliability lab"
+      },
+      {
+        "label": "Oyunları Aç",
+        "hint": "Oynanabilir mini oyunlar",
+        "keywords": "oyunlar oyun mini web canvas"
+      },
+      {
+        "label": "Joyday Painting Aç",
+        "hint": "Sanal action painting oyunu",
+        "keywords": "joyday painting action canvas boya oyun png"
+      },
+      {
+        "label": "AI Flow Puzzle Oyna",
+        "hint": "n8n tarzı chatbot workflow oyunu",
+        "keywords": "ai flow puzzle n8n chatbot workflow otomasyon oyun"
+      },
+      {
+        "label": "AI Flow Puzzle Vaka Çalışmasını Gör",
+        "hint": "Tasarım ve teknik vaka çalışması",
+        "keywords": "ai flow puzzle vaka çalışması node doğrulama fallback"
+      },
+      {
+        "label": "Macera'yı Aç",
+        "hint": "Kariyer merge mini oyunu",
+        "keywords": "macera oyun kariyer merge job iş kaan"
+      },
+      {
+        "label": "Atölye Joyday Vaka Çalışmasını Gör",
+        "hint": "Canlı işletme ve dijital ürün vaka çalışması",
+        "keywords": "atölye joyday vaka çalışması rezervasyon dijital ürün"
+      },
+      {
+        "label": "Atölye Joyday Canlı Sitesini Aç",
+        "hint": "Canlı yaratıcı atölye web sitesi",
+        "keywords": "atölye joyday canlı site işletme"
+      },
+      {
+        "label": "Hospital System Vaka Çalışmasını Gör",
+        "hint": "2024 C# Windows Forms kaynak arşivi vaka çalışması",
+        "keywords": "hospital system form app c# windows forms sql server vaka çalışması"
+      },
+      {
+        "label": "Hospital System Kaynak Arşivini Aç",
+        "hint": "Herkese açık C# proje arşivi",
+        "keywords": "hospital system kaynak arşivi github c# windows forms"
+      },
+      {
+        "label": "CV'yi Görüntüle",
+        "hint": "Google Drive CV",
+        "keywords": "resume cv özgeçmiş"
+      },
+      {
+        "label": "GitHub Aç",
+        "hint": "UAJOP repository'leri",
+        "keywords": "github repo kod"
+      },
+      {
+        "label": "LinkedIn Aç",
+        "hint": "Profesyonel profil",
+        "keywords": "linkedin iletişim"
+      },
+      {
+        "label": "Tema Değiştir",
+        "hint": "Koyu / Açık",
+        "keywords": "tema koyu açık"
+      },
+      {
+        "label": "Dil Değiştir",
+        "hint": "EN / TR",
+        "keywords": "dil tr en"
+      },
+      {
+        "label": "Ajoop'u Aç",
+        "hint": "Portfolio asistanı",
+        "keywords": "bot asistan ajoop chat"
+      },
+      {
+        "label": "İK Modunu Aç/Kapat",
+        "hint": "Kompakt işe alım görünümü",
+        "keywords": "ik insan kaynakları recruiter iş mod"
+      },
+      {
+        "label": "3D Matematik Labını Aç",
+        "hint": "İnteraktif canvas modeli",
+        "keywords": "3d matematik canvas model döndür"
+      },
+      {
+        "label": "Easter Egg Başlat",
+        "hint": "Havai fişek sürprizi",
+        "keywords": "easter egg havai fişek sürpriz"
+      }
+    ]
+  },
+  "request": {
+    "sending": "Talep gönderiliyor...",
+    "success": "Talebiniz alındı ve kaydedildi. En kısa sürede dönüş yapacağım. Dilersen doğrudan e-posta da gönderebilirsin:",
+    "timeout": "Talep zaman aşımına uğradı ve gönderildiği doğrulanamadı. Bilgilerin formda duruyor; tekrar deneyebilir veya e-posta ile ulaşabilirsin:",
+    "neutral": "Teşekkürler.",
+    "fallback": "Mail gönderim endpointi henüz bağlanmadığı için e-posta taslağı açıldı. Google Apps Script URL'si request-config.js içine eklenince form direkt mail atacak.",
+    "error": "Talep gönderilemedi ve kaydedildiği doğrulanamadı. Bilgilerin formda duruyor; tekrar deneyebilir veya e-posta ile ulaşabilirsin:",
+    "consent": "Devam etmek için iletişim iznini onaylamalısın.",
+    "subject": "Yeni proje talebi",
+    "button": "Talebi Gönder"
+  },
+  "adventure": {
+    "heroEyebrow": "İnteraktif portfolyo oyunu",
+    "heroTitle": "Kaan'ın Kariyer Macerası",
+    "heroLead": "Kitapları, araçları, yazılım becerilerini ve AI workflow deneyimini birleştir. Son Job Offer nesnesine ulaş ve kariyer merge'ünü tamamla.",
+    "heroCardTitle": "Merge to Job",
+    "heroCardText": "Vanilla JavaScript ve Canvas ile geliştirilmiş küçük bir web oyunu.",
+    "gameEyebrow": "Kariyer merge laboratuvarı",
+    "gameTitle": "Öğrenmeden iş teklifine giden yolu inşa et.",
+    "scoreLabel": "Skor",
+    "bestLabel": "En iyi",
+    "nextLabel": "Sıradaki",
+    "dropButton": "Nesneyi bırak",
+    "restartButton": "Yeniden başlat",
+    "controlHint": "Mouse/dokunma veya A-D tuşlarıyla hareket et. Mobilde sürükle, bırakmak için dokun; Space/Enter da çalışır.",
+    "howEyebrow": "Nasıl oynanır",
+    "howTitle": "Aynı nesneler birleşip bir sonraki kariyer adımına dönüşür.",
+    "howText": "Oyun bilerek kısa ve portfolyo dostu tasarlandı. Yeterince öğrenme nesnesi birleştir, daha güçlü drop'ları aç ve finalde Job Offer üret.",
+    "ladderEyebrow": "Birleşme zinciri",
+    "winTitle": "Kaan Job Offer seviyesine ulaştı!",
+    "winText": "Öğrenme, projeler, AI workflow deneyimi ve portfolyo kanıtları tek güçlü profile dönüştü.",
+    "playAgain": "Tekrar oyna",
+    "viewProjects": "Projeleri gör",
+    "viewResume": "CV'yi gör",
+    "gameOver": "Beyin fazla doldu. Yeniden başlatılıyor...",
+    "dropLocked": "Bir saniye bekle"
+  },
+  "aiFlowPuzzle": {
+    "heroEyebrow": "n8n mantıklı logic oyunu",
+    "heroTitle": "AI Flow Puzzle",
+    "heroLead": "Node'ları yerleştir, intent yollarını bağla, fallback mantığı ekle ve final chatbot workflow'unu doğrula.",
+    "backToGames": "Oyunlara Dön",
+    "startBuilding": "Akışı Kur",
+    "heroCardTitle": "Temiz akışlar bağla",
+    "heroCardText": "Workflow düşünme, chatbot tasarımı ve otomasyon yapısını anlatan hafif bir tarayıcı oyunu.",
+    "scenariosEyebrow": "Senaryolar",
+    "chooseChallenge": "Bir workflow challenge seç.",
+    "scenarioHelp": "Her seviye küçük bir n8n board'u gibi çalışır: gerekli node'ları koy, ayarla ve otomasyonu çalıştır.",
+    "templatesTitle": "Şablonlar",
+    "templatesHint": "Boş başla veya hazır bir workflow şablonu yükleyip geliştir.",
+    "nodePalette": "Node paleti",
+    "nodePaletteHint": "Board'a eklemek için node'a tıkla. Akışı düzenlemek için node'ları sürükle.",
+    "builderEyebrow": "Workflow builder",
+    "scoreLabel": "Skor",
+    "nodesLabel": "Node",
+    "linksLabel": "Link",
+    "connectTip": "Önce kaynak node'a, sonra hedef node'a tıklayarak bağlantı oluştur.",
+    "testMessageLabel": "Test mesajı",
+    "runFlow": "Akışı çalıştır",
+    "validateFlow": "Akışı doğrula",
+    "hintButton": "İpucu",
+    "arrangeButton": "Otomatik diz",
+    "resetButton": "Sıfırla",
+    "objectivesTitle": "Hedefler",
+    "inspectorTitle": "Inspector & ayar",
+    "inspectorEmptyTitle": "Bir node seç",
+    "inspectorEmptyText": "İncelemek, ayarlamak veya bağlantı başlatmak için board üzerindeki bir node'a tıkla.",
+    "executionTitle": "Çalıştırma log'u",
+    "runLogEmpty": "Akışı çalıştırınca node'ların n8n gibi sırayla çalışmasını burada görürsün.",
+    "scoreBreakdownTitle": "Kalite skoru",
+    "resultReady": "Doğrulamaya hazır.",
+    "flowToolsTitle": "Flow araçları",
+    "exportJson": "JSON indir",
+    "importJson": "JSON içe aktar",
+    "copySummary": "Özeti kopyala",
+    "downloadReport": "Rapor indir",
+    "downloadPng": "PNG indir",
+    "nextScenario": "Sonraki senaryo",
+    "whyEyebrow": "Bu oyun neden var",
+    "whyTitle": "AI Designer düşüncesini oynanabilir gösterme yolu.",
+    "whyText": "Amaç sadece eğlence değil. Oyun; chatbot akışlarında trigger, intent mantığı, dallanma, cevap yönetimi, fallback güvenliği ve temiz otomasyon çıktılarının neden gerektiğini gösterir.",
+    "viewExperience": "Deneyimi Gör",
+    "viewWorks": "Projeleri Gör",
+    "activeSource": "Kaynak seçildi. Bağlamak için hedef node'a tıkla.",
+    "connected": "Bağlantı eklendi.",
+    "connectionRemoved": "Bağlantı silindi.",
+    "duplicateConnection": "Bu bağlantı zaten var.",
+    "selfConnection": "Bir node kendisine bağlanamaz.",
+    "nodeAdded": "Node board'a eklendi.",
+    "nodeRemoved": "Node silindi.",
+    "boardReset": "Board sıfırlandı.",
+    "exportDone": "Workflow JSON indirildi.",
+    "importDone": "Workflow içe aktarıldı.",
+    "importFailed": "Bu JSON içe aktarılamadı.",
+    "pngDone": "Workflow PNG indirildi.",
+    "reportDone": "Workflow raporu indirildi.",
+    "summaryCopied": "Özet kopyalandı.",
+    "successTitle": "Akış doğrulandı!",
+    "successText": "Temiz otomasyon yolu kuruldu. Artık küçük bir n8n workflow'u gibi çalıştırabilirsin.",
+    "missingTitle": "Akışın biraz daha çalışmaya ihtiyacı var.",
+    "hintIntro": "Sıradaki mantıklı adım:",
+    "missingNode": "Node ekle:",
+    "missingEdge": "Bağla:",
+    "allClear": "Tüm hedefler iyi görünüyor. Akışı çalıştır.",
+    "selectedLabel": "Seçilen",
+    "removeNode": "Node'u sil",
+    "startConnection": "Bağlantı başlat",
+    "deleteConnection": "Bağlantıyı sil",
+    "connectionList": "Bağlantılar",
+    "noConnections": "Henüz çıkış bağlantısı yok.",
+    "requiredNodes": "Gerekli node'lar",
+    "requiredConnections": "Gerekli bağlantılar",
+    "optionalRule": "Flow kuralı",
+    "scenarioCompleted": "Tamamlandı",
+    "scenarioLocked": "Kur",
+    "templateBlank": "Boş board",
+    "templateHappy": "Happy path",
+    "templateSolution": "Tam çözüm",
+    "templateBlankDesc": "Sadece trigger ve end node'ları.",
+    "templateHappyDesc": "Tüm güvenlik yolu olmadan ana dal.",
+    "templateSolutionDesc": "Önerilen tam akış.",
+    "runInvalid": "Akış henüz çalışamaz. Önce eksikleri düzelt.",
+    "runStarted": "Çalıştırma başladı.",
+    "runCompleted": "Akış başarıyla tamamlandı.",
+    "logicScore": "Mantık",
+    "automationScore": "Otomasyon",
+    "uxScore": "UX",
+    "safetyScore": "Güvenlik",
+    "efficiencyScore": "Verimlilik",
+    "totalScore": "Toplam",
+    "configTitle": "Konfigürasyon",
+    "configName": "Görünen ad",
+    "configSample": "Örnek input",
+    "configThreshold": "Güven skoru eşiği",
+    "configRule": "Kural / branch mantığı",
+    "configPrompt": "Prompt / talimat",
+    "configSource": "Veri kaynağı",
+    "configMessage": "Cevap mesajı",
+    "configMode": "Mod",
+    "edgeLabel": "Bağlantı etiketi",
+    "debugTitle": "Debug notları",
+    "noDebug": "Kritik debug sorunu yok.",
+    "runStepReceived": "Mesaj alındı",
+    "runStepIntent": "Intent tespit edildi",
+    "runStepRoute": "Route seçildi",
+    "runStepData": "Veri kontrol edildi veya kaydedildi",
+    "runStepAI": "AI reasoning tamamlandı",
+    "runStepNotify": "Bildirim gönderildi",
+    "runStepResponse": "Kullanıcı cevabı üretildi",
+    "runStepSafety": "Güvenlik yolu hazır",
+    "runStepEnd": "Workflow tamamlandı",
+    "summaryIntro": "Bu akış chat trigger ile başlar, intent tespit eder, kullanıcıyı route eder, otomasyon çıktılarını yönetir ve güvenli cevap yoluyla kapanır.",
+    "nodeTypes": {
+      "trigger": {
+        "title": "Chat Trigger",
+        "desc": "Kullanıcı mesaj gönderdiğinde başlar.",
+        "category": "Input"
+      },
+      "intent": {
+        "title": "Intent Detector",
+        "desc": "Kullanıcının ne istediğini anlar.",
+        "category": "AI Mantık"
+      },
+      "router": {
+        "title": "Route Switch",
+        "desc": "Akışı farklı yollara böler.",
+        "category": "Mantık"
+      },
+      "condition": {
+        "title": "Condition",
+        "desc": "Paket müsaitliği gibi bir kuralı kontrol eder.",
+        "category": "Mantık"
+      },
+      "kb": {
+        "title": "Knowledge Base",
+        "desc": "Güvenilir işletme bilgisini okur.",
+        "category": "Veri"
+      },
+      "llm": {
+        "title": "LLM Reasoning",
+        "desc": "Bağlama uygun cevap üretir.",
+        "category": "AI Mantık"
+      },
+      "response": {
+        "title": "Response",
+        "desc": "Kullanıcıya net bir cevap gönderir.",
+        "category": "Output"
+      },
+      "fallback": {
+        "title": "Fallback",
+        "desc": "Net olmayan veya desteklenmeyen istekleri yönetir.",
+        "category": "Güvenlik"
+      },
+      "sheet": {
+        "title": "Google Sheets",
+        "desc": "Rezervasyon veya lead verisini kaydeder.",
+        "category": "Otomasyon"
+      },
+      "crm": {
+        "title": "CRM Update",
+        "desc": "Müşteri kaydı oluşturur veya günceller.",
+        "category": "Otomasyon"
+      },
+      "email": {
+        "title": "Email Notify",
+        "desc": "Ekibe veya müşteriye bildirim gönderir.",
+        "category": "Otomasyon"
+      },
+      "handoff": {
+        "title": "Human Handoff",
+        "desc": "Riskli durumları gerçek kişiye aktarır.",
+        "category": "Güvenlik"
+      },
+      "end": {
+        "title": "End",
+        "desc": "Otomasyonu temiz şekilde kapatır.",
+        "category": "Output"
+      }
+    },
+    "scenarios": {
+      "joyday": {
+        "title": "Joyday Rezervasyon Botu",
+        "level": "Seviye 01",
+        "short": "Rezervasyon akışı",
+        "goal": "Müşteri mesajını intent tespitine, paket müsaitliğine, kayıt işlemine, onay cevabına ve fallback'e bağla.",
+        "objective": "Ana rezervasyon dalını ve güvenli fallback dalını kur.",
+        "messages": [
+          "Merhaba, iki kişi action painting rezervasyonu yapabilir miyiz?",
+          "Cumartesi müsaitlik var mı?",
+          "Ebeveyn çocuk paketi ne kadar?"
+        ]
+      },
+      "support": {
+        "title": "Kurumsal Destek Botu",
+        "level": "Seviye 02",
+        "short": "Destek triage",
+        "goal": "Botun isteği algıladığı, route ettiği, knowledge base kontrol ettiği, LLM ile cevapladığı ve riskli durumları insana aktardığı destek otomasyonu kur.",
+        "objective": "Routing, knowledge base, LLM response ve human handoff kullan.",
+        "messages": [
+          "Hesabım kilitlendi ve yardım istiyorum.",
+          "Fatura tutarı yanlış görünüyor.",
+          "Bir insan temsilciyle konuşmak istiyorum."
+        ]
+      },
+      "lead": {
+        "title": "Lead Capture Otomasyonu",
+        "level": "Seviye 03",
+        "short": "Satış lead akışı",
+        "goal": "Kullanıcı intent'ini yakalayan, lead'i kaydeden, ekibe mail atan, kullanıcıya dönen ve güvenli kapanan satış akışı kur.",
+        "objective": "Lead'i yakala, kaydet, bildir, cevapla ve akışı kapat.",
+        "messages": [
+          "Web sitemiz için AI chatbot istiyoruz.",
+          "Otomasyon projesi için benimle iletişime geçer misiniz?",
+          "Workflow tasarım fiyatı almak istiyorum."
+        ]
+      }
+    }
+  },
+  "joydayPaint": {
+    "canvas": {
+      "square": "50x50 Kare Tuval",
+      "circle": "52 cm Daire Tuval",
+      "rect": "40x60 Dikdörtgen Tuval"
+    },
+    "canvasButtons": {
+      "square": [
+        "50x50 Kare",
+        "Klasik Joyday tuvali"
+      ],
+      "circle": [
+        "52 cm Daire",
+        "Yuvarlak kompozisyon"
+      ],
+      "rect": [
+        "40x60 Dikdörtgen",
+        "Dikey poster hissi"
+      ]
+    },
+    "tool": {
+      "bottle": "Fırlatma Şişesi",
+      "spray": "Fısfıs",
+      "brush": "Fırça",
+      "balloon": "Su Balonu"
+    },
+    "toolSub": {
+      "bottle": "Tek hamle boya atışı",
+      "spray": "Yumuşak püskürtme",
+      "brush": "Sürükleyerek boya",
+      "balloon": "Büyük patlama"
+    },
+    "infoTitle": "Kısa ipucu",
+    "infoText": "Tuvalini seçtikten sonra alttaki ekipman barını kullan. Şişede basıp bırakarak tuvale tek hamlede temiz bir boya çizgisi fırlat. Bu bilgiyi istediğin zaman kapatabilirsin.",
+    "thicknessTitle": "İncelik ayarı",
+    "thicknessMin": "İnce",
+    "thicknessMax": "Kalın",
+    "thicknessLevels": [
+      "İnce",
+      "Orta",
+      "Kalın"
+    ],
+    "intensityTitle": "Boya yoğunluğu",
+    "intensityMin": "Hafif",
+    "intensityMax": "Yoğun",
+    "intensityLevels": [
+      "Hafif",
+      "Normal",
+      "Yoğun"
+    ],
+    "paletteNames": {
+      "joydayBright": "Joyday Parlak",
+      "neonParty": "Neon Parti",
+      "softPastel": "Soft Pastel",
+      "warmEnergy": "Sıcak Enerji",
+      "oceanFlow": "Okyanus Akışı"
+    },
+    "static": {
+      "customColor": "Özel renk",
+      "suggestPalette": "Palet öner",
+      "inspirationEyebrow": "Yaratıcı görev",
+      "newTheme": "Yeni tema",
+      "starterStains": "Başlangıç lekesi",
+      "missionEyebrow": "Mini görev",
+      "soundEyebrow": "Stüdyo sesi",
+      "finishEyebrow": "Eser hazır",
+      "finishTitle": "Joyday tuvalin hazır.",
+      "finishText": "Eserine isim ver, çıktı stilini seç ve PNG olarak indir.",
+      "artName": "Eser adı",
+      "signature": "Joyday imzası ekle",
+      "cleanExport": "Temiz tuval",
+      "brandedExport": "Joyday kartı",
+      "downloadPng": "PNG indir",
+      "realCanvasCta": "Gerçek tuvalde yap",
+      "newArtwork": "Yeni eser"
+    },
+    "actions": {
+      "undo": "Geri al",
+      "redo": "İleri al",
+      "remix": "Remix",
+      "clear": "Temizle",
+      "finish": "Eseri bitir"
+    },
+    "soundOn": "Ses Açık",
+    "soundOff": "Ses Kapalı",
+    "completed": "Tamamlandı!",
+    "missionNext": "Yeni görev açıldı"
+  }
+}

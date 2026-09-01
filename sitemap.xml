@@ -1,45 +1,213 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://kaanbalci.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://kaanbalci.com/tr/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://kaanbalci.com/de/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://kaanbalci.com/es/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://kaanbalci.com/fr/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://kaanbalci.com/works.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/tr/works.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/de/works.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/es/works.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/fr/works.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://kaanbalci.com/sinama-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/tr/sinama-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/de/sinama-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/es/sinama-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/fr/sinama-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://kaanbalci.com/merge-rush-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/tr/merge-rush-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/de/merge-rush-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/es/merge-rush-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/fr/merge-rush-case-study.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://kaanbalci.com/now.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/tr/now.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/de/now.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/es/now.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/fr/now.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://kaanbalci.com/blog.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/tr/blog.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/de/blog.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/es/blog.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/fr/blog.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://kaanbalci.com/about.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/tr/about.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/de/about.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/es/about.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/fr/about.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://kaanbalci.com/games.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/tr/games.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/de/games.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/es/games.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/fr/games.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://kaanbalci.com/labs.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/tr/labs.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/de/labs.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/es/labs.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/fr/labs.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://kaanbalci.com/ai-flow-puzzle-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/tr/ai-flow-puzzle-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/de/ai-flow-puzzle-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/es/ai-flow-puzzle-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/fr/ai-flow-puzzle-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://kaanbalci.com/atolye-joyday-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/tr/atolye-joyday-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/de/atolye-joyday-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/es/atolye-joyday-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/fr/atolye-joyday-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://kaanbalci.com/hospital-system-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/tr/hospital-system-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/de/hospital-system-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/es/hospital-system-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kaanbalci.com/fr/hospital-system-case-study.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://kaanbalci.com/single-work.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/single-work.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/single-work.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/single-work.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/single-work.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/request.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/request.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/request.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/request.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/request.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/adventure.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/tr/adventure.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/de/adventure.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/es/adventure.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/fr/adventure.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://kaanbalci.com/joyday-paint.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/tr/joyday-paint.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/de/joyday-paint.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/es/joyday-paint.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/fr/joyday-paint.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://kaanbalci.com/ai-flow-puzzle.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/tr/ai-flow-puzzle.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/de/ai-flow-puzzle.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/es/ai-flow-puzzle.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://kaanbalci.com/fr/ai-flow-puzzle.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://kaanbalci.com/projects/ai-chatbot-flow-design/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/ai-chatbot-flow-design/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/ai-chatbot-flow-design/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/ai-chatbot-flow-design/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/ai-chatbot-flow-design/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/atolye-joyday-official-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/atolye-joyday-official-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/atolye-joyday-official-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/atolye-joyday-official-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/atolye-joyday-official-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/drivenfinity/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/drivenfinity/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/drivenfinity/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/drivenfinity/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/drivenfinity/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/dunker-madness/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/dunker-madness/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/dunker-madness/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/dunker-madness/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/dunker-madness/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/unity-essentials/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/unity-essentials/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/unity-essentials/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/unity-essentials/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/unity-essentials/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/extract-shoot-zero/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/extract-shoot-zero/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/extract-shoot-zero/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/extract-shoot-zero/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/extract-shoot-zero/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/tank-savage/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/tank-savage/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/tank-savage/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/tank-savage/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/tank-savage/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/hospital-form-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/hospital-form-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/hospital-form-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/hospital-form-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/hospital-form-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/cars-dataset-analysis/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/cars-dataset-analysis/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/cars-dataset-analysis/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/cars-dataset-analysis/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/cars-dataset-analysis/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/my-museum/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/my-museum/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/my-museum/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/my-museum/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/my-museum/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/control-panel/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/control-panel/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/control-panel/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/control-panel/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/control-panel/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/hospital-appointment-system/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/hospital-appointment-system/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/hospital-appointment-system/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/hospital-appointment-system/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/hospital-appointment-system/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/escape-island/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/escape-island/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/escape-island/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/escape-island/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/escape-island/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/calculator-android-studio/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/calculator-android-studio/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/calculator-android-studio/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/calculator-android-studio/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/calculator-android-studio/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/warehouse-war/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/warehouse-war/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/warehouse-war/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/warehouse-war/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/warehouse-war/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/legacy-of-the-lost/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/legacy-of-the-lost/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/legacy-of-the-lost/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/legacy-of-the-lost/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/legacy-of-the-lost/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/porto-25/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/porto-25/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/porto-25/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/porto-25/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/porto-25/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/my-java-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/my-java-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/my-java-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/my-java-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/my-java-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/agency-db/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/agency-db/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/agency-db/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/agency-db/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/agency-db/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/mandelas-web-site-project/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/mandelas-web-site-project/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/mandelas-web-site-project/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/mandelas-web-site-project/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/mandelas-web-site-project/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/pyhton-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/pyhton-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/pyhton-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/pyhton-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/pyhton-projects/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/ic-supply/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/ic-supply/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/ic-supply/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/ic-supply/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/ic-supply/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/portfolio-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/tr/projects/portfolio-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/de/projects/portfolio-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/es/projects/portfolio-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kaanbalci.com/fr/projects/portfolio-website/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 </urlset>

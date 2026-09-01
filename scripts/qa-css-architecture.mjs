@@ -75,10 +75,14 @@ for (const file of onDisk) {
 /* ---------- 2. page stylesheet references ---------- */
 
 const htmlFiles = fs.readdirSync(ROOT).filter((f) => f.endsWith(".html")).sort();
+/* 404.html addresses its assets root-absolutely because GitHub Pages serves
+ * that one document at whatever URL failed, at any depth. Both forms name the
+ * same repository file, so the leading slash is normalized away here. */
 const sheetsOf = (html) =>
   [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)]
     .map((m) => (m[0].match(/href="([^"]+)"/) || [])[1])
-    .filter((h) => h && !/^https?:/.test(h));
+    .filter((h) => h && !/^https?:/.test(h))
+    .map((h) => h.replace(/^\//, ""));
 
 for (const file of htmlFiles) {
   const html = read(file);
@@ -176,6 +180,15 @@ if (compactHeader) {
   ok("compact header opens navigation through is-open", /\.nav-links\.is-open\s*\{[\s\S]*?display:\s*flex/.test(compactHeader[1]));
   ok("compact navigation occupies its own row", /\.nav-links\s*\{[\s\S]*?width:\s*100%/.test(compactHeader[1]));
 }
+
+ok(
+  "single-column layout children may shrink without horizontal overflow",
+  /@media screen and \(max-width: 1100px\)[\s\S]*?\.hero\s*>\s*\*[\s\S]*?\.split-section\s*>\s*\*[\s\S]*?min-width:\s*0/.test(shared),
+);
+ok(
+  "headings wrap long localized words without horizontal overflow",
+  /h1,\s*h2,\s*h3\s*\{[\s\S]*?overflow-wrap:\s*anywhere/.test(shared),
+);
 
 /* ---------- payload report ---------- */
 

@@ -8,7 +8,7 @@
     "qa:portfolio": "node qa-portfolio-consistency.js",
     "qa:assets": "node qa-assets.js",
     "qa:links": "node qa-internal-links.js",
-    "qa:html": "html-validate \"*.html\"",
+    "qa:html": "html-validate \"*.html\" \"projects/*/index.html\" \"tr/*.html\" \"tr/projects/*/index.html\" \"de/*.html\" \"de/projects/*/index.html\" \"es/*.html\" \"es/projects/*/index.html\" \"fr/*.html\" \"fr/projects/*/index.html\"",
     "qa:spelling": "cspell \"*.{html,md}\" --config cspell.json --no-progress --show-suggestions",
     "qa:audit": "node scripts/site-audit.mjs",
     "qa:ajoop": "node scripts/qa-ajoop-intents.mjs",
@@ -32,7 +32,12 @@
     "qa:react": "node qa-react-foundation.js",
     "qa:a11y:react": "pa11y-ci --config .pa11yci-react",
     "qa:i18n": "node scripts/qa-i18n.mjs",
-    "i18n:generate": "node scripts/generate-i18n.mjs"
+    "i18n:generate": "node scripts/generate-i18n.mjs",
+    "i18n:extract": "node scripts/extract-i18n-source.mjs",
+    "i18n:packs": "node scripts/build-locale-packs.mjs --derive",
+    "i18n:routes": "node scripts/generate-localized-routes.mjs",
+    "i18n:coverage": "node scripts/build-locale-packs.mjs --coverage",
+    "i18n:build": "npm run i18n:extract && npm run i18n:packs && npm run i18n:generate && npm run i18n:routes"
   },
   "devDependencies": {
     "@cspell/dict-tr-tr": "3.0.6",

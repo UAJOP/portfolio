@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "protectedTerms": [
     "GitHub",
     "JavaScript",
@@ -17,8 +17,70 @@
     "AI Engineer",
     "Solution Engineer"
   ],
+  "projectNames": [
+    "AI Chatbot Flow Design",
+    "AI Flow Puzzle",
+    "Atölye Joyday",
+    "Atölye Joyday Official Website",
+    "Hospital Appointment System",
+    "Hospital Form App",
+    "Hospital System",
+    "Joyday",
+    "Joyday Action Painting",
+    "Merge Rush",
+    "Merge Rush: Tiny Factory",
+    "MyMuseum — Mobile Content App",
+    "Portfolio Website",
+    "SINAMA",
+    "SINAMA — AI Agent Reliability Lab"
+  ],
+  "languageNeutralStrings": [
+    "3 PASS · 2 FAIL · 0 ERROR",
+    "404 | Kaan Balcı",
+    "5 PASS · 0 FAIL · 0 ERROR",
+    "AI Designer & Software Developer",
+    "AI Designer • Software Developer • Automation Builder",
+    "AI Flow Designer & Frontend Developer",
+    "AI Flow Puzzle Case Study | Kaan Balcı",
+    "AI Flow Puzzle | Kaan Balcı",
+    "Applied AI / AI Reliability",
+    "Applied AI / Agent Reliability",
+    "Applied AI / Reliability Engineering",
+    "Architecture V2 production audit",
+    "Atölye Joyday Case Study | Kaan Balcı",
+    "Backend / Data Developer",
+    "Condition → Fallback → End",
+    "Hospital System Case Study | Kaan Balcı",
+    "Insurance Reliability Pack v1",
+    "Intent → Fallback → End",
+    "Joyday Action Painting | Kaan Balcı",
+    "Kaan Balcı | AI Designer & Software Developer",
+    "Kaan Balcı | Forward Deployed Engineer",
+    "Legacy of the Lost",
+    "Merge Rush: Tiny Factory Case Study",
+    "Merge Rush: Tiny Factory Case Study | Kaan Balcı",
+    "Now / Build Log | Kaan Balcı",
+    "Outlier AI – AI Training Specialist",
+    "Product Designer & Full-Stack Developer",
+    "Punto Organization – Event Operations Supervisor",
+    "Python, C#, JavaScript, PHP, Java, Kotlin, C++",
+    "Run Results + Evidence UI",
+    "SINAMA — AI Agent Reliability Lab",
+    "SINAMA — AI Agent Reliability Lab Case Study",
+    "SINAMA — AI Agent Reliability Lab Case Study | Kaan Balcı",
+    "Software / Product Engineering",
+    "Trigger → Intent → CRM → Email → Response → End",
+    "Trigger → Intent → Condition → Sheets → Response → End",
+    "Trigger → Intent → Router → Knowledge Base → LLM Reasoning → Response → End"
+  ],
+  "localePolicy": {
+    "de": "Natürliches Fachdeutsch. Etablierte englische Fachbegriffe der Branche (AI, LLM, RAG, Workflow, Chatbot, Frontend, Deployment) bleiben englisch, statt in lange Substantivketten übersetzt zu werden. Kanonische Rollentitel wie Forward Deployed Engineer bleiben unverändert; eine erklärende Umschreibung darf im Fließtext danebenstehen. Produkt- und Projektnamen werden nie übersetzt.",
+    "es": "Español internacional neutro, sin regionalismos ni voseo, comprensible en España y en América Latina. La terminología técnica inglesa habitual en el sector (AI, LLM, workflow, chatbot, frontend, deployment) se conserva. Los títulos de puesto canónicos como Forward Deployed Engineer no se traducen; puede acompañarlos una explicación en español. Los nombres de productos y proyectos nunca se traducen.",
+    "fr": "Français professionnel moderne. Les termes techniques anglais courants du secteur (AI, LLM, workflow, chatbot, frontend, deployment) sont conservés plutôt que traduits littéralement. Les intitulés de poste canoniques comme Forward Deployed Engineer restent en anglais, avec au besoin une explication en français dans le texte. Les noms de produits et de projets ne sont jamais traduits.",
+    "tr": "Sektörde yerleşik İngilizce teknik terimler (AI, LLM, workflow, chatbot, frontend, deployment) korunur. Forward Deployed Engineer gibi kanonik rol adları çevrilmez."
+  },
   "notes": {
-    "en": "Brand, product and technical names keep their canonical casing. Career terms may be localized only through reviewed locale packs.",
-    "tr": "Marka, ürün ve teknik adların özgün yazımı korunur. Kariyer terimleri yalnızca gözden geçirilmiş dil paketleriyle yerelleştirilir."
+    "en": "Brand, product and technical names keep their canonical casing. Career terms may be localized only through reviewed locale packs. `languageNeutralStrings` records copy that is deliberately identical across every locale — flow diagrams, result summaries, technology lists and canonical titles — so qa:i18n can reject untranslated prose without flagging these.",
+    "tr": "Marka, ürün ve teknik adların özgün yazımı korunur. Kariyer terimleri yalnızca gözden geçirilmiş dil paketleriyle yerelleştirilir. `languageNeutralStrings`, her dilde bilerek aynı bırakılan metinleri kaydeder."
   }
 }

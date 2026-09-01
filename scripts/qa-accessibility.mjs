@@ -48,7 +48,9 @@ const allPages = [...rootPages, ...generated];
 for (const file of allPages) {
   const html = read(file);
   const isGenerated = file.startsWith("projects/");
-  const prefix = isGenerated ? "../../" : "";
+  /* 404.html loads its assets root-absolutely: GitHub Pages serves that one
+   * document at whatever URL failed, so a relative path would break at depth. */
+  const prefix = file === "404.html" ? "/" : isGenerated ? "../../" : "";
 
   /* ---------- language ---------- */
   const htmlTag = (html.match(/<html\b[^>]*>/i) || [""])[0];
