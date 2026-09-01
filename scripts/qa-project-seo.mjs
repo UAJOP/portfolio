@@ -269,10 +269,24 @@ ok("runtime rebases relative URLs by page depth", /function siteUrl\(path\)/.tes
 const sitemap = read("sitemap.xml");
 const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 const projectLocs = locs.filter((l) => l.includes("/projects/"));
+const localeRegistry = JSON.parse(read("data/i18n/locales.json"));
+const indexableLocaleIds = (localeRegistry.localizedRoutes?.indexable || []).filter(
+  (id) => id !== localeRegistry.defaultLocale,
+);
+const sitemapLocaleIds = [localeRegistry.defaultLocale, ...indexableLocaleIds];
+const localePrefix = (id) => {
+  const definition = localeRegistry.locales.find((item) => item.id === id);
+  return definition?.routePrefix ? `${definition.routePrefix}/` : "";
+};
 
-check("sitemap lists every project route", projectLocs.length, slugs.length);
+check("sitemap lists every project route in every indexable locale", projectLocs.length, slugs.length * sitemapLocaleIds.length);
 for (const slug of slugs) {
-  ok(`sitemap contains ${slug}`, locs.includes(`${SITE_ORIGIN}/projects/${slug}/`));
+  for (const locale of sitemapLocaleIds) {
+    ok(
+      `sitemap contains ${locale} ${slug}`,
+      locs.includes(`${SITE_ORIGIN}/${localePrefix(locale)}projects/${slug}/`),
+    );
+  }
 }
 ok("sitemap excludes legacy query-string project URLs", !locs.some((l) => l.includes("project-detail.html")));
 ok("sitemap has no duplicate URLs", locs.length === new Set(locs).size);

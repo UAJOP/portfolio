@@ -1,0 +1,116 @@
+{
+  "about": {
+    "description": "Die Forward-Deployed-Engineer-Ausrichtung von Kaan Balcı und sein Hintergrund als AI Designer & Software Developer für zuverlässige AI-Systeme und produktreife Umsetzung.",
+    "ogDescription": "Belege als Forward Deployed Engineer in Applied AI, AI-Zuverlässigkeit, Solution Engineering und produktorientierter Softwareentwicklung.",
+    "ogTitle": "Über Kaan Balcı | Forward Deployed Engineer",
+    "title": "Über Kaan Balcı | Forward Deployed Engineer"
+  },
+  "adventure": {
+    "description": "Spielen Sie Kaans interaktives Karriere-Merge-Abenteuer: Kombinieren Sie Lernbausteine, Software-Werkzeuge und AI-Fähigkeiten bis zum Jobangebot.",
+    "ogDescription": "Ein Portfolio-Minispiel über Lernen, Projekte, AI-Workflows und den Weg zum Jobangebot.",
+    "ogTitle": "Kaans Karriere-Abenteuer | Kaan Balcı",
+    "title": "Abenteuer | Kaan Balcı"
+  },
+  "aiFlowPuzzle": {
+    "description": "Spielen Sie AI Flow Puzzle, ein von n8n inspiriertes Logikspiel rund um Chatbot-Workflows von Kaan Balcı.",
+    "ogDescription": "Ein von n8n inspiriertes Portfolio-Minispiel, in dem Chatbot-Automatisierungen durch das Verbinden von Nodes entstehen.",
+    "ogTitle": "AI Flow Puzzle | Kaan Balcı",
+    "title": "AI Flow Puzzle | Kaan Balcı"
+  },
+  "aiFlowPuzzleCaseStudy": {
+    "description": "Case Study zu AI Flow Puzzle: eine von n8n inspirierte Browser-Anwendung über Chatbot-Node-Logik, Flow-Validierung, Fallback-Pfade und Journey-Design.",
+    "ogDescription": "Design und Umsetzung einer von n8n inspirierten Browser-Anwendung für Chatbot-Node-Logik, Validierung, Fallback-Pfade und Nutzer-Journeys.",
+    "ogTitle": "AI Flow Puzzle Case Study | Kaan Balcı",
+    "title": "AI Flow Puzzle Case Study | Kaan Balcı"
+  },
+  "blog": {
+    "description": "Berufliche Erfahrung in Conversational AI, LLM-Evaluation, Workflow-Automatisierung, Softwareentwicklung und digitalen Produkten für reale Unternehmen.",
+    "ogDescription": "Berufliche Erfahrung in unternehmensweiter Conversational AI, Software und digitalen Produkten.",
+    "ogTitle": "Erfahrung | Kaan Balcı",
+    "title": "Erfahrung | Kaan Balcı"
+  },
+  "certificates": {
+    "description": "Zertifikate und strukturierte Weiterbildungen von Kaan Balcı in Softwareentwicklung, künstlicher Intelligenz, Daten und digitalen Produkten.",
+    "ogDescription": "Zertifikate und strukturierte Weiterbildungen von Kaan Balcı in Softwareentwicklung, künstlicher Intelligenz, Daten und digitalen Produkten.",
+    "ogTitle": "Zertifikate | Kaan Balcı",
+    "title": "Zertifikate | Kaan Balcı"
+  },
+  "games": {
+    "description": "Interaktive Browser-Spiele und Game-Produktarbeit von Kaan Balcı, angeführt von Merge Rush: Tiny Factory.",
+    "ogDescription": "Merge Rush: Tiny Factory und ausgewählte spielbare Browser-Experimente.",
+    "ogTitle": "Spiele | Kaan Balcı",
+    "title": "Spiele | Kaan Balcı"
+  },
+  "home": {
+    "description": "Kaan Balcı — Forward Deployed Engineer für zuverlässige AI-Systeme, Solution-Engineering-Workflows und produktorientierte Software.",
+    "ogDescription": "Portfolio eines Forward Deployed Engineer mit Belegen aus AI-Zuverlässigkeit, Solution Engineering und produktorientierter Software.",
+    "ogTitle": "Kaan Balcı | Forward Deployed Engineer",
+    "title": "Kaan Balcı | Forward Deployed Engineer"
+  },
+  "hospitalCaseStudy": {
+    "description": "Eine Case Study zu C# und .NET Framework Windows Forms: Abläufe für Patient, Arzt und Sekretariat auf einem SQL-Server-Datenmodell.",
+    "ogDescription": "Eine Case Study zu C# und .NET Framework Windows Forms: Abläufe für Patient, Arzt und Sekretariat auf einem SQL-Server-Datenmodell.",
+    "ogTitle": "Hospital System Case Study | Kaan Balcı",
+    "title": "Hospital System Case Study | Kaan Balcı"
+  },
+  "joydayCaseStudy": {
+    "description": "Case Study zu Atölye Joyday, einem produktiven digitalen Produkt aus mehrseitiger Angebotssuche, Reservierungsstrecken und Google-basierter Betriebsautomatisierung.",
+    "ogDescription": "Ein produktives digitales Produkt, das mehrseitige Angebotssuche, Reservierungs-Journeys und Google-basierte Betriebsautomatisierung für ein Kreativatelier verbindet.",
+    "ogTitle": "Atölye Joyday Case Study | Kaan Balcı",
+    "title": "Atölye Joyday Case Study | Kaan Balcı"
+  },
+  "joydayPaint": {
+    "description": "Joyday Action Painting ist ein verspieltes, browserbasiertes Action-Painting-Erlebnis von Kaan Balcı.",
+    "ogDescription": "Wählen Sie eine Leinwand, stellen Sie Farben zusammen und erstellen Sie mit Action-Painting-Werkzeugen Ihr eigenes Bild zum Herunterladen.",
+    "ogTitle": "Joyday Action Painting | Kaan Balcı",
+    "title": "Joyday Action Painting | Kaan Balcı"
+  },
+  "labs": {
+    "description": "Kaan Labs — interaktive technische Experimente von Kaan Balcı zu AI-Workflow-Logik, Canvas, Mathematik und Browser-Erlebnissen.",
+    "ogDescription": "Kaan Labs — interaktive technische Experimente von Kaan Balcı zu AI-Workflow-Logik, Canvas, Mathematik und Browser-Erlebnissen.",
+    "ogTitle": "Kaan Labs | Technische Experimente",
+    "title": "Kaan Labs | Technische Experimente"
+  },
+  "mergeRushCaseStudy": {
+    "description": "Merge Rush: Tiny Factory ist ein aktiv entwickeltes Merge-Game-Projekt mit Phaser 3 und TypeScript rund um zeitgebundene Aufträge, Fabrik-Restaurierung, schrittweise freigeschaltete Felder und plattformbewusste Architektur.",
+    "ogDescription": "Merge-Game-Entwicklung mit Phaser 3 und TypeScript, fokussiert auf Produktschleife, Progression, responsives Gameplay und Plattformarchitektur.",
+    "ogTitle": "Merge Rush: Tiny Factory Case Study",
+    "title": "Merge Rush: Tiny Factory Case Study | Kaan Balcı"
+  },
+  "notFound": {
+    "description": "404-Seite des Portfolios von Kaan Balcı.",
+    "ogDescription": "404-Seite des Portfolios von Kaan Balcı.",
+    "ogTitle": "404 | Kaan Balcı",
+    "title": "404 | Kaan Balcı"
+  },
+  "now": {
+    "description": "Aktuelles Build-Log von Kaan Balcı — laufende Arbeit an SINAMA, Merge Rush und der Portfolio-Entwicklung.",
+    "ogDescription": "Aktuelles Build-Log von Kaan Balcı — laufende Arbeit an SINAMA, Merge Rush und der Portfolio-Entwicklung.",
+    "ogTitle": "Now / Build Log | Kaan Balcı",
+    "title": "Now / Build Log | Kaan Balcı"
+  },
+  "projectShell": {
+    "description": "Detaillierte Projekt-Case-Study-Seite für die Projekte im Portfolio-Archiv von Kaan Balcı.",
+    "ogDescription": "Detaillierte Projekt-Case-Study-Seite für die Projekte im Portfolio-Archiv von Kaan Balcı.",
+    "ogTitle": "Projektdetails | Kaan Balcı",
+    "title": "Projektdetails | Kaan Balcı"
+  },
+  "request": {
+    "description": "Senden Sie Kaan Balcı eine strukturierte Projektanfrage für AI-Workflows, Automatisierung, Websites, Dashboards oder Softwareprodukte.",
+    "ogDescription": "Senden Sie Kaan Balcı eine strukturierte Projektanfrage für AI-Workflows, Automatisierung, Websites, Dashboards oder Softwareprodukte.",
+    "ogTitle": "Projekt anfragen | Kaan Balcı",
+    "title": "Projekt anfragen | Kaan Balcı"
+  },
+  "sinamaCaseStudy": {
+    "description": "SINAMA ist ein Turkish-first Reliability Lab für AI-Agenten: mehrstufige Szenariotests, deterministische Workflow-Bewertung, Regressions-Trends und belegte Release-Readiness.",
+    "ogDescription": "Deterministische Workflow-Belege, Regressions-Trends und Release-Readiness für AI-Agenten im Kundenservice.",
+    "ogTitle": "SINAMA — AI Agent Reliability Lab Case Study",
+    "title": "SINAMA — AI Agent Reliability Lab Case Study | Kaan Balcı"
+  },
+  "works": {
+    "description": "Ausgewählte Arbeiten von Kaan Balcı aus Applied AI, Software, Web und Game-Produkten, angeführt von SINAMA und Merge Rush: Tiny Factory.",
+    "ogDescription": "Herausragende und ausgewählte Engineering-Arbeiten aus AI-Zuverlässigkeit, Softwareprodukten und interaktiven Systemen.",
+    "ogTitle": "Projekte | Kaan Balcı",
+    "title": "Projekte | Kaan Balcı"
+  }
+}

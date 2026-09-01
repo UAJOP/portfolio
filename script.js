@@ -20,6 +20,7 @@
 
   const COMMON = [
     "i18n-data.js",
+    "js/core/locale-routes.js",
     "js/core/locale.js",
     "js/core/analytics-config.js",
     "js/core/analytics.js",
@@ -65,6 +66,38 @@
     "js/portfolio/works.js": "js/features/recruiter.js",
   };
 
+  /* Translation packs, keyed by the scopes a page type actually renders.
+   *
+   * A localized route ships only its own locale's copy, and only the scopes it
+   * needs: five locales cost a reader one locale, not five. English pages load
+   * nothing here at all, because English is the source language. */
+  const PAGE_PACK_SCOPES = {
+    home: [],
+    about: [],
+    blog: [],
+    now: [],
+    labs: [],
+    error: [],
+    caseStudy: ["case-studies"],
+    works: ["projects"],
+    games: ["projects", "games"],
+    game: ["games"],
+    projectDetail: ["projects"],
+    certificates: [],
+    request: ["request"],
+  };
+
+  /**
+   * The pack locale for this page, published by the parser-blocking bootstrap.
+   * It is null on English routes, which need no pack, and the value is already
+   * validated against the locale registry there.
+   */
+  function packList(page) {
+    const locale = window.__KAAN_PACK_LOCALE__;
+    if (!locale) return [];
+    return ["core", ...(PAGE_PACK_SCOPES[page] || [])].map((scope) => `i18n/pack-${locale}-${scope}.js`);
+  }
+
   const current = document.currentScript;
   const currentUrl = current?.src || new URL("script.js", window.location.href).href;
   const baseUrl = new URL(".", currentUrl);
@@ -100,6 +133,10 @@
       if (at === -1) list.push(module);
       else list.splice(at, 0, module);
     });
+
+    /* Packs are plain data assignments and must land after the registry they
+     * key against and before any module that reads translated copy. */
+    list.splice(list.indexOf("i18n-data.js") + 1, 0, ...packList(page));
 
     return list;
   }

@@ -157,7 +157,10 @@ for (const file of htmlFiles) {
    * which must run in <head> before translated body content can paint. */
   const srcs = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1]);
   for (const src of srcs) {
-    const normalized = src.replace(/^\.\.\/\.\.\//, "");
+    /* 404.html references the bootstrap root-absolutely because GitHub Pages
+     * serves it at whatever URL failed; generated pages sit two deep. Both name
+     * the same repository file. */
+    const normalized = src.replace(/^\.\.\/\.\.\//, "").replace(/^\//, "");
     const allowedEarlyBootstrap = normalized === EARLY_BOOTSTRAP;
     ok(`${file}: does not bypass the manifest with ${src}`, !src.includes("js/") || allowedEarlyBootstrap);
   }
@@ -235,6 +238,8 @@ for (const slug of generated) {
   const html = read(`projects/${slug}/index.html`);
   const body = (html.match(/<body\b[^>]*>/i) || [""])[0];
   check(`projects/${slug}/: data-page marker`, (body.match(/data-page="([^"]*)"/) || [])[1], "projectDetail");
+  check(`projects/${slug}/: canonical slug marker`, (body.match(/data-project-slug="([^"]*)"/) || [])[1], slug);
+  check(`projects/${slug}/: site-root depth`, (body.match(/data-site-root="([^"]*)"/) || [])[1], "../../");
   ok(`projects/${slug}/: loads the bootloader`, /src="\.\.\/\.\.\/script\.js"/.test(html));
   const directRuntimeSources = [...html.matchAll(/<script[^>]+src="([^"]*\/js\/[^"]+)"/g)]
     .map((match) => match[1])
@@ -245,42 +250,72 @@ for (const slug of generated) {
 /* ---------- 8. project media URLs preserve route depth contracts ---------- */
 
 const sampleProject = {
-  title: { en: "Sample" },
-  subtitle: { en: "Sample subtitle" },
+  title: { en: "Sample", fr: "Exemple localisé" },
+  subtitle: { en: "Sample subtitle", fr: "Sous-titre localisé" },
   category: { en: "Test" },
   role: { en: "Developer" },
   type: { en: "Website" },
   status: { en: "Complete" },
-  overview: { en: "Overview" },
+  overview: { en: "Overview", fr: "Aperçu localisé" },
   challenge: { en: "Challenge" },
   solution: { en: "Solution" },
   image: "assets/hero.webp",
   gallery: ["assets/gallery-a.webp", "assets/gallery-b.webp"],
-  features: { en: ["Feature"] },
+  features: { en: ["Feature"], fr: ["Fonctionnalité localisée"] },
   stack: ["JavaScript"],
   links: [],
   year: "2026",
 };
 
-const mediaSandbox = (siteRoot) => {
+const mediaSandbox = (siteRoot, {
+  locale = "en",
+  projectSlug = "sample",
+  search = "",
+  href = "https://kaanbalci.com/projects/sample/",
+  localeRoot,
+  localized = false,
+} = {}) => {
   const listeners = {};
   const root = { innerHTML: "" };
+  const dataset = { siteRoot };
+  if (projectSlug) dataset.projectSlug = projectSlug;
+  if (localeRoot !== undefined) dataset.localeRoot = localeRoot;
   const document = {
-    body: { dataset: { siteRoot, projectSlug: "sample" } },
+    body: { dataset },
     title: "",
     addEventListener(type, listener) { listeners[type] = listener; },
     querySelector(selector) { return selector === "[data-project-detail]" ? root : null; },
+  };
+  const localizedInternalHref = (value, _locale, depths) => {
+    const path = String(value || "");
+    if (/^(?:assets\/.*|[^/]+\.(?:webp|png|jpg|jpeg|gif|svg))$/i.test(path)) return `${depths.siteRoot}${path}`;
+    return `${depths.localeRoot ?? depths.siteRoot}${path}`;
   };
   const sandbox = {
     document,
     window: {
       KAAN_PORTFOLIO: { projectDetails: { sample: sampleProject } },
-      location: { search: "", href: "https://kaanbalci.com/projects/sample/" },
+      location: { search, href },
+      ...(localized ? { KAAN_LOCALE_ROUTES: { localizedInternalHref } } : {}),
     },
     URL,
     URLSearchParams,
-    currentSiteLanguage: "en",
+    currentSiteLanguage: locale,
     i18nTranslations: { tr: {} },
+    getCurrentLocale: () => locale,
+    getLocalizedValue(value, requested = locale) {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+      return value[requested] ?? value.en ?? Object.values(value)[0];
+    },
+    getI18nText(english, turkish, requested = locale) {
+      if (requested === "tr") return turkish;
+      const french = {
+        "Previous Project": "Projet précédent",
+        "Next Project": "Projet suivant",
+        "All Works": "Tous les projets",
+      };
+      return requested === "fr" ? (french[english] || english) : english;
+    },
   };
   vm.createContext(sandbox);
   for (const file of ["js/core/media.js", "js/portfolio/routing.js", "js/portfolio/project-detail.js"]) {
@@ -290,7 +325,14 @@ const mediaSandbox = (siteRoot) => {
 };
 
 const canonicalMedia = mediaSandbox("../../");
-canonicalMedia.sandbox.renderProjectDetail("en");
+check("canonical project slug resolves from its generated-page marker", canonicalMedia.sandbox.resolveCurrentProjectSlug(), "sample");
+ok(
+  "canonical project renderer executes automatically when its module loads",
+  canonicalMedia.root.innerHTML.includes('class="project-detail-hero section-shell reveal"'),
+);
+for (const marker of ["project-detail-grid", "process-steps", "detail-gallery", "detail-navigation"]) {
+  ok(`canonical project automatic boot renders ${marker}`, canonicalMedia.root.innerHTML.includes(marker));
+}
 ok(
   "canonical project hero uses the site-root-aware URL policy",
   canonicalMedia.root.innerHTML.includes('src="../../assets/hero.webp"'),
@@ -329,8 +371,16 @@ check(
   "../../assets/joyday-homepage-preview.webp",
 );
 
-const legacyMedia = mediaSandbox("");
-legacyMedia.sandbox.renderProjectDetail("en");
+const legacyMedia = mediaSandbox("", {
+  projectSlug: null,
+  search: "?project=sample",
+  href: "https://kaanbalci.com/project-detail.html?project=sample",
+});
+check("legacy project slug resolves from the query string", legacyMedia.sandbox.resolveCurrentProjectSlug(), "sample");
+ok(
+  "legacy project-detail route still auto-renders the full body",
+  legacyMedia.root.innerHTML.includes("project-detail-grid"),
+);
 ok(
   "legacy project hero keeps its root-page relative URL",
   legacyMedia.root.innerHTML.includes('src="assets/hero.webp"'),
@@ -347,6 +397,29 @@ check(
   "legacy missing media fallback keeps its root-page relative URL",
   legacyFallback.assignedSource,
   "assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
+);
+
+const localizedMedia = mediaSandbox("../../../", {
+  locale: "fr",
+  localeRoot: "../../",
+  href: "https://kaanbalci.com/fr/projects/sample/",
+  localized: true,
+});
+ok(
+  "localized canonical project auto-boots with the URL locale overlay",
+  localizedMedia.root.innerHTML.includes("Exemple localisé") &&
+    localizedMedia.root.innerHTML.includes("Aperçu localisé") &&
+    localizedMedia.root.innerHTML.includes("Fonctionnalité localisée"),
+);
+ok(
+  "localized canonical project keeps gallery assets at the site root",
+  localizedMedia.root.innerHTML.includes('src="../../../assets/gallery-a.webp"'),
+);
+const localizedProjectLinks = [...localizedMedia.root.innerHTML.matchAll(/href="([^"]*projects\/sample\/)"/g)]
+  .map((match) => match[1]);
+ok(
+  "localized Previous / Next project links preserve the locale root",
+  localizedProjectLinks.length === 2 && localizedProjectLinks.every((hrefValue) => hrefValue === "../../projects/sample/"),
 );
 
 const shellSource = read("js/core/shell.js");
@@ -401,7 +474,14 @@ const allSource = [...onDisk, "portfolio-v2.js", "portfolio-data.js", "script.js
 const declared = new Set(
   [...allSource.matchAll(/window\.(KAAN[A-Za-z_]*)\s*=/g)].map((m) => m[1]),
 );
-const EXPECTED_GLOBALS = ["KAAN_PORTFOLIO", "KAAN_REQUEST_FORM_ENDPOINT", "KAAN_REQUEST_FORM_EMAIL", "KAAN_GOOGLE_FORM_URL"];
+const EXPECTED_GLOBALS = [
+  "KAAN_PORTFOLIO",
+  "KAAN_REQUEST_FORM_ENDPOINT",
+  "KAAN_REQUEST_FORM_EMAIL",
+  "KAAN_GOOGLE_FORM_URL",
+  /* BRIEF 09C: the locale route mapper, shared by the runtime and generators. */
+  "KAAN_LOCALE_ROUTES",
+];
 for (const global of declared) {
   ok(`window.${global} is an expected project global`, EXPECTED_GLOBALS.includes(global));
 }

@@ -44,11 +44,11 @@
     });
   }
 
-  function projectLinkMarkup(projectId, language = lang()) {
+  function projectLinkMarkup(projectId, language = lang(), openEvidence = "Open evidence") {
     const project = registry.projects[projectId];
     if (!project) return "";
     const href = project.links?.caseStudy || project.links?.live || "works.html";
-    return `<a href="${esc(href)}"><strong>${esc(project.name)}</strong><small>${esc(pick(project.summary, language))}</small><span>${lt("Open evidence", "Kanıtı aç", language)}</span></a>`;
+    return `<a href="${esc(href)}"><strong>${esc(project.name)}</strong><small>${esc(pick(project.summary, language))}</small><span>${esc(openEvidence)}</span></a>`;
   }
 
   function getRoleFromUrl() {
@@ -73,16 +73,16 @@
         label: "RECRUITER MODE V2", title: "Evidence summary by capability focus",
         lead: "Keeps the Forward Deployed Engineer target fixed while prioritizing project and experience evidence for the selected capability.",
         choose: "Evidence focus", primary: "Primary target", focus: "Evidence focus", capabilities: "Capability areas",
-        skills: "Core capabilities", proof: "Recommended evidence", cv: "View Resume", email: "Email Me", close: "Close", updated: "Portfolio data"
+        skills: "Core capabilities", proof: "Recommended evidence", cv: "View Resume", email: "Email Me", close: "Close", updated: "Portfolio data", openEvidence: "Open evidence"
       },
       tr: {
         label: "İK MODU V2", title: "Yetkinlik odağına göre kanıt özeti",
         lead: "Forward Deployed Engineer hedefini sabit tutar; aynı portfolyoda seçilen yetkinliğe ait proje ve deneyim kanıtını öne çıkarır.",
         choose: "Kanıt odağı", primary: "Ana hedef", focus: "Kanıt odağı", capabilities: "Yetkinlik alanları",
-        skills: "Ana yetkinlikler", proof: "Önerilen kanıt", cv: "CV'yi Görüntüle", email: "E-posta", close: "Kapat", updated: "Portfolyo verisi"
+        skills: "Ana yetkinlikler", proof: "Önerilen kanıt", cv: "CV'yi Görüntüle", email: "E-posta", close: "Kapat", updated: "Portfolyo verisi", openEvidence: "Kanıtı aç"
       }
     };
-    return getLocalizedCollection(copy, language);
+    return getLocalizedCollection(copy, language, "recruiterV2");
   }
 
   function renderRecruiterV2(language = lang()) {
@@ -112,7 +112,7 @@
         <h3>${esc(copy.skills)}</h3>
         <ul class="recruiter-proof-list recruiter-capability-list">${profile.skills.map((item) => `<li>${esc(pick(item, language))}</li>`).join("")}</ul>
         <h3>${esc(copy.proof)}</h3>
-        <div class="recruiter-links">${profile.evidence.map((id) => projectLinkMarkup(id, language)).join("")}</div>
+        <div class="recruiter-links">${profile.evidence.map((id) => projectLinkMarkup(id, language, copy.openEvidence)).join("")}</div>
         <div class="recruiter-actions">
           <a class="btn primary" href="${esc(registry.profile.resume)}" target="_blank" rel="noopener">${esc(copy.cv)}</a>
           <a class="btn ghost" href="${esc(registry.profile.email)}">${esc(copy.email)}</a>

@@ -1095,6 +1095,7 @@ function preserveWhitespace(originalValue, translatedValue) {
 
 function hasLegacyTextTranslation(key) {
   if (!key) return false;
+  if (typeof getPackPhrase === "function" && getPackPhrase(key, getCurrentLocale())) return true;
   return getActiveLocales().some(
     (locale) => locale.id !== siteLocaleRegistry.defaultLocale && Boolean(i18nTranslations[locale.id]?.[key]),
   );
@@ -1102,6 +1103,7 @@ function hasLegacyTextTranslation(key) {
 
 function hasLegacyAttributeTranslation(key) {
   if (!key) return false;
+  if (typeof getPackAttribute === "function" && getPackAttribute(key, getCurrentLocale())) return true;
   return getActiveLocales().some(
     (locale) => locale.id !== siteLocaleRegistry.defaultLocale && Boolean(i18nAttributeTranslations[locale.id]?.[key]),
   );
@@ -1150,11 +1152,15 @@ const translatableAttributes = [];
 
 function translateLegacyText(key, locale) {
   if (locale === siteLocaleRegistry.defaultLocale) return key;
+  const packed = typeof getPackPhrase === "function" ? getPackPhrase(key, locale) : null;
+  if (packed) return packed;
   return i18nTranslations[locale]?.[key] || key;
 }
 
 function translateLegacyAttribute(key, locale) {
   if (locale === siteLocaleRegistry.defaultLocale) return key;
+  const packed = typeof getPackAttribute === "function" ? getPackAttribute(key, locale) : null;
+  if (packed) return packed;
   return i18nAttributeTranslations[locale]?.[key] || key;
 }
 
@@ -1180,7 +1186,11 @@ function applyProtectedTermCasing() {
 }
 
 function applyLanguagePresentation(locale = getCurrentLocale()) {
-  const activeLocale = isActiveLocale(locale) ? normalizeLocaleId(locale) : siteLocaleRegistry.defaultLocale;
+  /* Renderable, not merely active: a candidate locale under review is served
+   * from its own generated route and must render in its own language. Clamping
+   * to `active` here would reset a /de/ page back to English after the static
+   * HTML had already painted it in German. */
+  const activeLocale = renderableLocaleId(locale);
   currentSiteLanguage = activeLocale;
 
   translatableTextNodes.forEach((node) => {

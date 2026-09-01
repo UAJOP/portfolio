@@ -147,7 +147,7 @@ function renderRecruiterDrawer(language = getCurrentLocale()) {
   if (!drawer) return;
   const hadFocus = drawer.contains(document.activeElement);
   const content = getUltimateContent(language);
-  const data = getLocalizedCollection(recruiterItems, language);
+  const data = getLocalizedCollection(recruiterItems, language, "recruiter");
   drawer.innerHTML = `
     <div class="recruiter-card">
       <button class="recruiter-close" type="button" data-recruiter-close aria-label="${escapeProjectHtml(data.buttons.close)}"><i class="bx bx-x" aria-hidden="true"></i></button>

@@ -1,0 +1,788 @@
+{
+  "ajoop": {
+    "launcher": "Ask Ajoop",
+    "title": "Ajoop",
+    "subtitle": "",
+    "greeting": "Hey, I am Ajoop. I can quickly explain Kaan's skills, projects, AI experience, Joyday work, CV and contact options. Choose a question or type a keyword.",
+    "inputPlaceholder": "Ask about projects, AI, CV...",
+    "sendLabel": "Send",
+    "closeLabel": "Close chatbot",
+    "openLabel": "Open portfolio chatbot",
+    "quicks": [
+      {
+        "id": "about",
+        "label": "Who is Kaan?"
+      },
+      {
+        "id": "ai",
+        "label": "AI / chatbot experience"
+      },
+      {
+        "id": "projects",
+        "label": "Best projects"
+      },
+      {
+        "id": "joyday",
+        "label": "Joyday website"
+      },
+      {
+        "id": "stack",
+        "label": "Tech stack"
+      },
+      {
+        "id": "cv",
+        "label": "CV & contact"
+      }
+    ],
+    "answers": {
+      "about": {
+        "text": "Kaan Balcı is an AI Designer & Software Developer focused on conversational AI, solution engineering, LLM evaluation, workflow automation and user-centered software products. He has contributed to 50+ academic, personal, freelance and team-based projects.",
+        "links": [
+          {
+            "label": "About",
+            "url": "about.html"
+          },
+          {
+            "label": "Experience",
+            "url": "blog.html"
+          }
+        ]
+      },
+      "ai": {
+        "text": "Kaan's AI direction is based on chatbot flow design, n8n-style automation logic, IVR and multi-channel workflows, LLM evaluation, prompt analysis and output review. At CBOT, he contributed to enterprise chatbot QA, stabilization, flow restructuring and an insurance claims intake POC.",
+        "links": [
+          {
+            "label": "AI Case Study",
+            "url": "projects/ai-chatbot-flow-design/"
+          },
+          {
+            "label": "Experience",
+            "url": "blog.html"
+          }
+        ]
+      },
+      "projects": {
+        "text": "The strongest project areas are AI Chatbot Flow Design, Atölye Joyday Official Website, Hospital Appointment System, Hospital Form App, Drivenfinity and Cars Dataset Analysis. The Works page now combines selected case studies and the main public GitHub repository catalog with dynamic detail pages.",
+        "links": [
+          {
+            "label": "View Works",
+            "url": "works.html"
+          },
+          {
+            "label": "View Atölye Joyday Case Study",
+            "url": "atolye-joyday-case-study.html"
+          }
+        ]
+      },
+      "joyday": {
+        "text": "Atölye Joyday is a real business project. Kaan designed and developed the website experience, service pages, package flow and reservation journey. It shows practical product thinking because it connects customer experience with operational tracking.",
+        "links": [
+          {
+            "label": "View Atölye Joyday Case Study",
+            "url": "atolye-joyday-case-study.html"
+          },
+          {
+            "label": "Open Atölye Joyday Website",
+            "url": "https://atolyejoyday.com/"
+          }
+        ]
+      },
+      "stack": {
+        "text": "Main stack: Python, C#/.NET, JavaScript, PHP, Java, Kotlin, C++, MySQL, MSSQL, Firebase, Unity, Unreal Engine, n8n, AI Flow and LLM evaluation workflows.",
+        "links": [
+          {
+            "label": "About",
+            "url": "about.html"
+          },
+          {
+            "label": "Works",
+            "url": "works.html"
+          }
+        ]
+      },
+      "cv": {
+        "text": "You can view Kaan's CV, contact him by email, or reach him through LinkedIn and GitHub from the site footer. For Forward Deployed Engineer opportunities, the fastest path is CV + LinkedIn.",
+        "links": [
+          {
+            "label": "View Resume",
+            "url": "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing"
+          },
+          {
+            "label": "Email",
+            "url": "mailto:kaanb8776@gmail.com"
+          },
+          {
+            "label": "LinkedIn",
+            "url": "https://www.linkedin.com/in/balcikaan/"
+          },
+          {
+            "label": "GitHub",
+            "url": "https://github.com/UAJOP"
+          }
+        ]
+      },
+      "availability": {
+        "text": "Kaan is currently positioning primarily as a Forward Deployed Engineer, supported by evidence across Applied AI, AI reliability, solution engineering, automation and product-minded software delivery.",
+        "links": [
+          {
+            "label": "Contact",
+            "url": "mailto:kaanb8776@gmail.com"
+          },
+          {
+            "label": "Experience",
+            "url": "blog.html"
+          }
+        ]
+      },
+      "certificates": {
+        "text": "Kaan has 25+ certifications across Udemy, Cisco and related platforms. The Certificates page shows a clean gallery with preview modal support.",
+        "links": [
+          {
+            "label": "Certificates",
+            "url": "single-work.html"
+          }
+        ]
+      },
+      "default": {
+        "text": "I could not match that exactly, but I can help with Kaan's AI experience, projects, tech stack, Joyday work, CV, certificates or contact details. Try one of the quick questions below.",
+        "links": [
+          {
+            "label": "Works",
+            "url": "works.html"
+          },
+          {
+            "label": "About",
+            "url": "about.html"
+          }
+        ]
+      }
+    }
+  },
+  "recruiter": {
+    "profile": "Forward Deployed Engineer",
+    "focus": [
+      "Conversational AI",
+      "Solution Engineering",
+      "LLM Evaluation",
+      "Workflow Automation"
+    ],
+    "skills": [
+      "Chatbot flow design, QA and stabilization",
+      "n8n-style multi-step workflow logic",
+      "LLM response, reasoning, code and multimodal evaluation",
+      "Python, C#/.NET, JavaScript, PHP and SQL",
+      "User-centered digital product development"
+    ],
+    "capabilities": [
+      "Applied AI",
+      "AI Reliability",
+      "Solution Engineering",
+      "Conversational AI",
+      "Automation",
+      "Product Engineering"
+    ],
+    "proof": [
+      "Enterprise conversational AI experience at CBOT across QA, stabilization, channel configuration and large-scale flow restructuring.",
+      "Designed, built, tested and presented an insurance claims intake POC with voice, phone verification, WhatsApp handoff and document collection.",
+      "Structured LLM evaluation and quality-assessment work covering reasoning, code and multimodal outputs.",
+      "Live digital product and reservation automation at Atölye Joyday using JavaScript, Google Forms, Sheets and Apps Script."
+    ],
+    "projects": [
+      [
+        "SINAMA — AI Agent Reliability Lab",
+        "Live Turkish-first AI agent reliability and regression testing lab",
+        "sinama-case-study.html",
+        "View Case Study"
+      ],
+      [
+        "AI Chatbot Flow Design",
+        "Conversational AI and enterprise workflow evidence",
+        "projects/ai-chatbot-flow-design/"
+      ],
+      [
+        "AI Flow Puzzle",
+        "Live node-logic, fallback and validation demo",
+        "ai-flow-puzzle-case-study.html",
+        "View Case Study"
+      ],
+      [
+        "Atölye Joyday Official Website",
+        "Live digital product and reservation journey",
+        "atolye-joyday-case-study.html",
+        "View Case Study"
+      ],
+      [
+        "Hospital Form App",
+        "C# Windows Forms and SQL Server workflow project preserved as a source archive.",
+        "hospital-system-case-study.html",
+        "View Case Study"
+      ]
+    ],
+    "buttons": {
+      "cv": "View Resume",
+      "contact": "Email Me",
+      "linkedin": "LinkedIn",
+      "close": "Close"
+    }
+  },
+  "recruiterV2": {
+    "label": "RECRUITER MODE V2",
+    "title": "Evidence summary by capability focus",
+    "lead": "Keeps the Forward Deployed Engineer target fixed while prioritizing project and experience evidence for the selected capability.",
+    "choose": "Evidence focus",
+    "primary": "Primary target",
+    "focus": "Evidence focus",
+    "capabilities": "Capability areas",
+    "skills": "Core capabilities",
+    "proof": "Recommended evidence",
+    "cv": "View Resume",
+    "email": "Email Me",
+    "close": "Close",
+    "updated": "Portfolio data",
+    "openEvidence": "Open evidence"
+  },
+  "ultimate": {
+    "recruiterLabel": "Recruiter Mode",
+    "recruiterOpenLabel": "Open recruiter mode",
+    "recruiterCloseLabel": "Close recruiter mode",
+    "recruiterTitle": "Recruiter snapshot",
+    "recruiterLead": "A concise, evidence-based profile for conversational AI, solution engineering, LLM evaluation, workflow automation and software opportunities.",
+    "availability": "Open for work",
+    "skillsTitle": "Top skills",
+    "projectsTitle": "Best evidence",
+    "commandsTitle": "Search",
+    "commandDialogLabel": "Search palette",
+    "commandPlaceholder": "Search page, project or command...",
+    "noResults": "No command found.",
+    "projectSearchPlaceholder": "Search by project, technology or keyword...",
+    "projectSearchLabel": "Search projects",
+    "copyDone": "Copied",
+    "commands": [
+      {
+        "id": "home",
+        "label": "Go to Home",
+        "hint": "Landing page",
+        "keywords": "home landing",
+        "type": "nav",
+        "value": "index.html"
+      },
+      {
+        "id": "works",
+        "label": "Open Works",
+        "hint": "Project catalog",
+        "keywords": "projects works portfolio",
+        "type": "nav",
+        "value": "works.html"
+      },
+      {
+        "id": "sinama-case-study",
+        "label": "View SINAMA Case Study",
+        "hint": "AI agent reliability lab case study",
+        "keywords": "sinama ai agent reliability lab regression evaluation case study",
+        "type": "nav",
+        "value": "sinama-case-study.html"
+      },
+      {
+        "id": "sinama-live",
+        "label": "Open SINAMA Live Product",
+        "hint": "Live AI agent reliability lab",
+        "keywords": "sinama live product ai agent reliability lab",
+        "type": "nav",
+        "value": "https://sinama.kaanbalci.com",
+        "external": true
+      },
+      {
+        "id": "games",
+        "label": "Open Games",
+        "hint": "Playable mini games",
+        "keywords": "games oyun mini web canvas",
+        "type": "nav",
+        "value": "games.html"
+      },
+      {
+        "id": "joyday-paint",
+        "label": "Open Joyday Painting",
+        "hint": "Virtual action painting game",
+        "keywords": "joyday painting action canvas paint game png",
+        "type": "nav",
+        "value": "joyday-paint.html"
+      },
+      {
+        "id": "ai-flow-puzzle-play",
+        "label": "Play AI Flow Puzzle",
+        "hint": "n8n-style chatbot workflow game",
+        "keywords": "ai flow puzzle n8n chatbot workflow automation game",
+        "type": "nav",
+        "value": "ai-flow-puzzle.html"
+      },
+      {
+        "id": "ai-flow-puzzle-case-study",
+        "label": "View AI Flow Puzzle Case Study",
+        "hint": "Design and technical case study",
+        "keywords": "ai flow puzzle case study node validation fallback",
+        "type": "nav",
+        "value": "ai-flow-puzzle-case-study.html"
+      },
+      {
+        "id": "adventure",
+        "label": "Open Adventure",
+        "hint": "Career merge mini game",
+        "keywords": "adventure game mini career merge job kaan",
+        "type": "nav",
+        "value": "adventure.html"
+      },
+      {
+        "id": "joyday-case-study",
+        "label": "View Atölye Joyday Case Study",
+        "hint": "Live business and digital product case study",
+        "keywords": "atolye joyday case study reservation digital product",
+        "type": "nav",
+        "value": "atolye-joyday-case-study.html"
+      },
+      {
+        "id": "joyday-live",
+        "label": "Open Atölye Joyday Website",
+        "hint": "Live creative workshop website",
+        "keywords": "atolye joyday live website business",
+        "type": "nav",
+        "value": "https://atolyejoyday.com/",
+        "external": true
+      },
+      {
+        "id": "hospital-system-case-study",
+        "label": "View Hospital System Case Study",
+        "hint": "2024 C# Windows Forms source-archive case study",
+        "keywords": "hospital system form app c# windows forms sql server case study",
+        "type": "nav",
+        "value": "hospital-system-case-study.html"
+      },
+      {
+        "id": "hospital-system-source",
+        "label": "Open Hospital System Source Archive",
+        "hint": "Public C# project archive",
+        "keywords": "hospital system source archive github c# windows forms",
+        "type": "nav",
+        "value": "https://github.com/UAJOP/Hospital-System",
+        "external": true
+      },
+      {
+        "id": "cv",
+        "label": "View Resume",
+        "hint": "Google Drive CV",
+        "keywords": "resume cv",
+        "type": "resume"
+      },
+      {
+        "id": "github",
+        "label": "Open GitHub",
+        "hint": "UAJOP repositories",
+        "keywords": "github repo code",
+        "type": "nav",
+        "value": "https://github.com/UAJOP",
+        "external": true
+      },
+      {
+        "id": "linkedin",
+        "label": "Open LinkedIn",
+        "hint": "Professional profile",
+        "keywords": "linkedin contact",
+        "type": "nav",
+        "value": "https://www.linkedin.com/in/balcikaan/",
+        "external": true
+      },
+      {
+        "id": "theme",
+        "label": "Switch Theme",
+        "hint": "Dark / Light",
+        "keywords": "theme dark light",
+        "type": "theme"
+      },
+      {
+        "id": "language",
+        "label": "Switch Language",
+        "hint": "EN / TR",
+        "keywords": "language tr en",
+        "type": "language"
+      },
+      {
+        "id": "ajoop",
+        "label": "Open Ajoop",
+        "hint": "Portfolio assistant",
+        "keywords": "bot assistant ajoop chat",
+        "type": "chatbot"
+      },
+      {
+        "id": "recruiter",
+        "label": "Toggle Recruiter Mode",
+        "hint": "Compact hiring view",
+        "keywords": "recruiter hiring mode",
+        "type": "recruiter"
+      },
+      {
+        "id": "mathlab",
+        "label": "Open 3D Math Lab",
+        "hint": "Interactive canvas model",
+        "keywords": "3d math canvas model rotate",
+        "type": "nav",
+        "value": "labs.html#algorithmic-3d-lab"
+      },
+      {
+        "id": "easter",
+        "label": "Launch Easter Egg",
+        "hint": "Fireworks surprise",
+        "keywords": "easter egg fireworks surprise",
+        "type": "easter"
+      }
+    ]
+  },
+  "request": {
+    "sending": "Sending request...",
+    "success": "Your request was received and recorded. I will get back to you shortly. You can also reach me directly at:",
+    "timeout": "The request timed out and could not be confirmed as sent. Your details are still in the form — please try again, or email:",
+    "neutral": "Thank you.",
+    "fallback": "The direct email endpoint is not connected yet, so an email draft was opened. After adding the Google Apps Script URL into request-config.js, the form will send emails directly.",
+    "error": "The request could not be delivered and was not confirmed as recorded. Your details are still in the form — please try again, or email:",
+    "consent": "Please confirm the consent checkbox to continue.",
+    "subject": "New project request",
+    "button": "Send Request"
+  },
+  "adventure": {
+    "heroEyebrow": "Interactive portfolio game",
+    "heroTitle": "Kaan's Career Adventure",
+    "heroLead": "Combine books, tools, code skills and AI workflow experience. Reach the final Job Offer object and complete the career merge.",
+    "heroCardTitle": "Merge to Job",
+    "heroCardText": "A tiny web game built with vanilla JavaScript and Canvas.",
+    "gameEyebrow": "Career merge lab",
+    "gameTitle": "Build the path from learning to job offer.",
+    "scoreLabel": "Score",
+    "bestLabel": "Best",
+    "nextLabel": "Next",
+    "dropButton": "Drop object",
+    "restartButton": "Restart",
+    "controlHint": "Move with mouse/touch or A-D keys. On mobile, drag to aim and tap to drop. Space/Enter also work.",
+    "howEyebrow": "How to play",
+    "howTitle": "Same objects merge into the next career step.",
+    "howText": "The game is intentionally short and portfolio-friendly. Merge enough learning objects to unlock stronger drops, then create the final Job Offer.",
+    "ladderEyebrow": "Merge ladder",
+    "winTitle": "Kaan reached Job Offer!",
+    "winText": "Learning, projects, AI workflows and portfolio proof merged into one strong profile.",
+    "playAgain": "Play again",
+    "viewProjects": "View projects",
+    "viewResume": "View resume",
+    "gameOver": "Brain overloaded. Restarting...",
+    "dropLocked": "Wait a moment"
+  },
+  "aiFlowPuzzle": {
+    "heroEyebrow": "n8n-inspired logic game",
+    "heroTitle": "AI Flow Puzzle",
+    "heroLead": "Build chatbot automations by placing nodes, connecting intent paths, adding fallback logic and validating the final workflow.",
+    "backToGames": "Back to Games",
+    "startBuilding": "Start Building",
+    "heroCardTitle": "Connect clean flows",
+    "heroCardText": "A lightweight browser game about workflow thinking, chatbot design and automation structure.",
+    "scenariosEyebrow": "Scenarios",
+    "chooseChallenge": "Choose a workflow challenge.",
+    "scenarioHelp": "Each level behaves like a small n8n board: place the required nodes, configure them and run the automation.",
+    "templatesTitle": "Templates",
+    "templatesHint": "Start blank or load a ready workflow template, then improve it.",
+    "nodePalette": "Node palette",
+    "nodePaletteHint": "Click a node to add it to the board. Drag nodes to organize your flow.",
+    "builderEyebrow": "Workflow builder",
+    "scoreLabel": "Score",
+    "nodesLabel": "Nodes",
+    "linksLabel": "Links",
+    "connectTip": "Click a source node, then click a target node to create a connection.",
+    "testMessageLabel": "Test message",
+    "runFlow": "Run flow",
+    "validateFlow": "Validate flow",
+    "hintButton": "Hint",
+    "arrangeButton": "Auto arrange",
+    "resetButton": "Reset",
+    "objectivesTitle": "Objectives",
+    "inspectorTitle": "Inspector & config",
+    "inspectorEmptyTitle": "Select a node",
+    "inspectorEmptyText": "Click a node on the board to inspect it, configure it or start a connection.",
+    "executionTitle": "Execution log",
+    "runLogEmpty": "Run the flow to see each node execute like an n8n workflow.",
+    "scoreBreakdownTitle": "Quality score",
+    "resultReady": "Ready to validate.",
+    "flowToolsTitle": "Flow tools",
+    "exportJson": "Export JSON",
+    "importJson": "Import JSON",
+    "copySummary": "Copy summary",
+    "downloadReport": "Download report",
+    "downloadPng": "Download PNG",
+    "nextScenario": "Next scenario",
+    "whyEyebrow": "Why this game exists",
+    "whyTitle": "A playable way to show AI Designer thinking.",
+    "whyText": "The goal is not only entertainment. The game demonstrates how chatbot flows need triggers, intent logic, branching, response handling, fallback safety and clean automation outputs.",
+    "viewExperience": "View Experience",
+    "viewWorks": "View Works",
+    "activeSource": "Source selected. Click a target node to connect.",
+    "connected": "Connection added.",
+    "connectionRemoved": "Connection removed.",
+    "duplicateConnection": "This connection already exists.",
+    "selfConnection": "A node cannot connect to itself.",
+    "nodeAdded": "Node added to the board.",
+    "nodeRemoved": "Node removed.",
+    "boardReset": "Board reset.",
+    "exportDone": "Workflow JSON downloaded.",
+    "importDone": "Workflow imported.",
+    "importFailed": "Could not import this JSON.",
+    "pngDone": "Workflow PNG downloaded.",
+    "reportDone": "Workflow report downloaded.",
+    "summaryCopied": "Summary copied.",
+    "successTitle": "Flow validated!",
+    "successText": "Clean automation path created. You can run it like a small n8n workflow.",
+    "missingTitle": "The flow needs a bit more work.",
+    "hintIntro": "Next logical step:",
+    "missingNode": "Add node:",
+    "missingEdge": "Connect:",
+    "allClear": "All objectives look good. Run the flow.",
+    "selectedLabel": "Selected",
+    "removeNode": "Remove node",
+    "startConnection": "Start connection",
+    "deleteConnection": "Delete connection",
+    "connectionList": "Connections",
+    "noConnections": "No outgoing connection yet.",
+    "requiredNodes": "Required nodes",
+    "requiredConnections": "Required connections",
+    "optionalRule": "Flow rule",
+    "scenarioCompleted": "Completed",
+    "scenarioLocked": "Build",
+    "jsonFilename": "ai-flow-puzzle-workflow.json",
+    "reportFilename": "ai-flow-puzzle-report.txt",
+    "pngFilename": "ai-flow-puzzle-board.png",
+    "templateBlank": "Blank board",
+    "templateHappy": "Happy path",
+    "templateSolution": "Full solution",
+    "templateBlankDesc": "Only trigger and end nodes.",
+    "templateHappyDesc": "Main branch without every safety path.",
+    "templateSolutionDesc": "Complete recommended flow.",
+    "runInvalid": "Flow cannot run yet. Fix the missing pieces first.",
+    "runStarted": "Execution started.",
+    "runCompleted": "Execution completed successfully.",
+    "logicScore": "Logic",
+    "automationScore": "Automation",
+    "uxScore": "UX",
+    "safetyScore": "Safety",
+    "efficiencyScore": "Efficiency",
+    "totalScore": "Total",
+    "configTitle": "Configuration",
+    "configName": "Display name",
+    "configSample": "Sample input",
+    "configThreshold": "Confidence threshold",
+    "configRule": "Rule / branch logic",
+    "configPrompt": "Prompt / instruction",
+    "configSource": "Data source",
+    "configMessage": "Response message",
+    "configMode": "Mode",
+    "edgeLabel": "Connection label",
+    "debugTitle": "Debug notes",
+    "noDebug": "No critical debug issue detected.",
+    "runStepReceived": "Message received",
+    "runStepIntent": "Intent detected",
+    "runStepRoute": "Route selected",
+    "runStepData": "Data checked or saved",
+    "runStepAI": "AI reasoning completed",
+    "runStepNotify": "Notification sent",
+    "runStepResponse": "User response generated",
+    "runStepSafety": "Safety path ready",
+    "runStepEnd": "Workflow finished",
+    "summaryIntro": "This workflow starts with a chat trigger, detects intent, routes the user, handles automation outputs and closes with a safe response path.",
+    "nodeTypes": {
+      "trigger": {
+        "title": "Chat Trigger",
+        "desc": "Starts when the user sends a message.",
+        "category": "Input"
+      },
+      "intent": {
+        "title": "Intent Detector",
+        "desc": "Understands what the user wants.",
+        "category": "AI Logic"
+      },
+      "router": {
+        "title": "Route Switch",
+        "desc": "Splits the flow into different paths.",
+        "category": "Logic"
+      },
+      "condition": {
+        "title": "Condition",
+        "desc": "Checks a rule such as package availability.",
+        "category": "Logic"
+      },
+      "kb": {
+        "title": "Knowledge Base",
+        "desc": "Reads trusted business information.",
+        "category": "Data"
+      },
+      "llm": {
+        "title": "LLM Reasoning",
+        "desc": "Generates a context-aware answer.",
+        "category": "AI Logic"
+      },
+      "response": {
+        "title": "Response",
+        "desc": "Sends a clear answer back to the user.",
+        "category": "Output"
+      },
+      "fallback": {
+        "title": "Fallback",
+        "desc": "Handles unclear or unsupported requests.",
+        "category": "Safety"
+      },
+      "sheet": {
+        "title": "Google Sheets",
+        "desc": "Stores reservation or lead data.",
+        "category": "Automation"
+      },
+      "crm": {
+        "title": "CRM Update",
+        "desc": "Creates or updates a customer record.",
+        "category": "Automation"
+      },
+      "email": {
+        "title": "Email Notify",
+        "desc": "Notifies the team or customer.",
+        "category": "Automation"
+      },
+      "handoff": {
+        "title": "Human Handoff",
+        "desc": "Sends risky cases to a real person.",
+        "category": "Safety"
+      },
+      "end": {
+        "title": "End",
+        "desc": "Closes the automation cleanly.",
+        "category": "Output"
+      }
+    },
+    "scenarios": {
+      "joyday": {
+        "title": "Joyday Reservation Bot",
+        "level": "Level 01",
+        "short": "Reservation flow",
+        "goal": "Connect a customer message to intent detection, package availability, booking record, confirmation and fallback.",
+        "objective": "Build the main reservation branch and a safe fallback branch.",
+        "messages": [
+          "Hi, can we book action painting for two people?",
+          "Do you have availability on Saturday?",
+          "How much is the parent and child package?"
+        ]
+      },
+      "support": {
+        "title": "Enterprise Support Bot",
+        "level": "Level 02",
+        "short": "Support triage",
+        "goal": "Create a support automation where the bot detects the request, routes it, checks knowledge, reasons with an LLM and hands off risky cases.",
+        "objective": "Use routing, knowledge base, LLM response and human handoff.",
+        "messages": [
+          "My account is locked and I need help.",
+          "The invoice amount looks wrong.",
+          "I want to speak with a human agent."
+        ]
+      },
+      "lead": {
+        "title": "Lead Capture Automation",
+        "level": "Level 03",
+        "short": "Sales lead flow",
+        "goal": "Build a sales intake workflow that captures the user's intent, records the lead, emails the team, responds to the user and ends safely.",
+        "objective": "Capture, store, notify, respond and close the lead flow.",
+        "messages": [
+          "We need an AI chatbot for our website.",
+          "Can you contact me about an automation project?",
+          "I want pricing for a workflow design."
+        ]
+      }
+    }
+  },
+  "joydayPaint": {
+    "canvas": {
+      "square": "50x50 Square Canvas",
+      "circle": "52 cm Circle Canvas",
+      "rect": "40x60 Rectangle Canvas"
+    },
+    "canvasButtons": {
+      "square": [
+        "50x50 Square",
+        "Classic Joyday canvas"
+      ],
+      "circle": [
+        "52 cm Circle",
+        "Round composition"
+      ],
+      "rect": [
+        "40x60 Rectangle",
+        "Vertical poster feel"
+      ]
+    },
+    "tool": {
+      "bottle": "Throw Bottle",
+      "spray": "Spray",
+      "brush": "Brush",
+      "balloon": "Water Balloon"
+    },
+    "toolSub": {
+      "bottle": "One-shot paint throw",
+      "spray": "Soft mist",
+      "brush": "Drag strokes",
+      "balloon": "Large burst"
+    },
+    "infoTitle": "Quick tip",
+    "infoText": "Choose your canvas, then use the toolbelt below. For the bottle, press and release to throw one clean paint line onto the canvas. You can close this tip anytime.",
+    "thicknessTitle": "Stroke thickness",
+    "thicknessMin": "Thin",
+    "thicknessMax": "Thick",
+    "thicknessLevels": [
+      "Thin",
+      "Medium",
+      "Thick"
+    ],
+    "intensityTitle": "Paint intensity",
+    "intensityMin": "Soft",
+    "intensityMax": "Dense",
+    "intensityLevels": [
+      "Soft",
+      "Normal",
+      "Dense"
+    ],
+    "filename": "joyday-action-painting",
+    "paletteNames": {
+      "joydayBright": "Joyday Bright",
+      "neonParty": "Neon Party",
+      "softPastel": "Soft Pastel",
+      "warmEnergy": "Warm Energy",
+      "oceanFlow": "Ocean Flow"
+    },
+    "static": {
+      "customColor": "Custom color",
+      "suggestPalette": "Suggest palette",
+      "inspirationEyebrow": "Creative prompt",
+      "newTheme": "New theme",
+      "starterStains": "Starter stains",
+      "missionEyebrow": "Mini mission",
+      "soundEyebrow": "Studio sound",
+      "finishEyebrow": "Artwork ready",
+      "finishTitle": "Your Joyday canvas is ready.",
+      "finishText": "Name your artwork, choose an export style and download it as PNG.",
+      "artName": "Artwork name",
+      "signature": "Add Joyday signature",
+      "cleanExport": "Clean canvas",
+      "brandedExport": "Joyday card",
+      "downloadPng": "Download PNG",
+      "realCanvasCta": "Make it on a real canvas",
+      "newArtwork": "New artwork"
+    },
+    "actions": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "remix": "Remix",
+      "clear": "Clear",
+      "finish": "Finish Artwork"
+    },
+    "soundOn": "Sound On",
+    "soundOff": "Sound Off",
+    "completed": "Completed!",
+    "missionNext": "Next mission unlocked"
+  }
+}

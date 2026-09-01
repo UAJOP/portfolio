@@ -99,7 +99,14 @@
   };
 
   function lang() { return typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en"); }
-  function t(key) { const active = copy[lang()] || copy.en; return active[key] || copy.en[key] || key; }
+  /* The shipped locale pack supplies any language beyond the inline EN/TR pair,
+   * so adding a locale never edits this file. */
+  function activeCopy() {
+    return typeof getLocalizedCollection === "function"
+      ? getLocalizedCollection(copy, lang(), "adventure")
+      : copy[lang()] || copy.en;
+  }
+  function t(key) { const active = activeCopy() || copy.en; return active[key] || copy.en[key] || key; }
 
   function applyText() {
     document.querySelectorAll("[data-adventure-text]").forEach((node) => {

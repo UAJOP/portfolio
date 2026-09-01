@@ -1,0 +1,693 @@
+{
+  "adventure": {
+    "bestLabel": "Meilleur",
+    "controlHint": "Déplacez-vous à la souris, au toucher ou avec les touches A et D. Sur mobile, faites glisser pour viser et touchez pour lâcher. La barre d'espace et Entrée fonctionnent aussi.",
+    "dropButton": "Lâcher l'objet",
+    "dropLocked": "Patientez un instant",
+    "gameEyebrow": "Laboratoire de fusion de carrière",
+    "gameOver": "Cerveau saturé. Redémarrage…",
+    "gameTitle": "Construisez le chemin de l'apprentissage à l'offre d'emploi.",
+    "heroCardText": "Un petit jeu web réalisé en JavaScript pur et Canvas.",
+    "heroCardTitle": "Fusionner jusqu'à l'emploi",
+    "heroEyebrow": "Jeu de portfolio interactif",
+    "heroLead": "Combinez livres, outils, compétences en programmation et expérience des workflows d'AI. Atteignez l'objet final « offre d'emploi » et terminez la fusion de carrière.",
+    "heroTitle": "L'aventure professionnelle de Kaan",
+    "howEyebrow": "Comment jouer",
+    "howText": "Le jeu est volontairement court et adapté à un portfolio. Fusionnez assez d'objets d'apprentissage pour débloquer des objets plus forts, puis créez l'offre d'emploi finale.",
+    "howTitle": "Les objets identiques fusionnent vers l'étape de carrière suivante.",
+    "ladderEyebrow": "Échelle de fusion",
+    "nextLabel": "Suivant",
+    "playAgain": "Rejouer",
+    "restartButton": "Recommencer",
+    "scoreLabel": "Score",
+    "viewProjects": "Voir les projets",
+    "viewResume": "Voir le CV",
+    "winText": "Apprentissage, projets, workflows d'AI et preuves de portfolio fusionnés en un profil solide.",
+    "winTitle": "Kaan a atteint l'offre d'emploi !"
+  },
+  "aiFlowPuzzle": {
+    "activeSource": "Source sélectionnée. Cliquez sur un nœud cible pour relier.",
+    "allClear": "Tous les objectifs semblent bons. Lancez le flux.",
+    "arrangeButton": "Organiser automatiquement",
+    "automationScore": "Automatisation",
+    "backToGames": "Retour aux jeux",
+    "boardReset": "Plateau réinitialisé.",
+    "builderEyebrow": "Constructeur de workflow",
+    "chooseChallenge": "Choisissez un défi de workflow.",
+    "configMessage": "Message de réponse",
+    "configMode": "Mode",
+    "configName": "Nom affiché",
+    "configPrompt": "Prompt / instruction",
+    "configRule": "Règle / logique de branchement",
+    "configSample": "Entrée d'exemple",
+    "configSource": "Source de données",
+    "configThreshold": "Seuil de confiance",
+    "configTitle": "Configuration",
+    "connectTip": "Cliquez sur un nœud source, puis sur un nœud cible pour créer une connexion.",
+    "connected": "Connexion ajoutée.",
+    "connectionList": "Connexions",
+    "connectionRemoved": "Connexion supprimée.",
+    "copySummary": "Copier le résumé",
+    "debugTitle": "Notes de débogage",
+    "deleteConnection": "Supprimer la connexion",
+    "downloadPng": "Télécharger le PNG",
+    "downloadReport": "Télécharger le rapport",
+    "duplicateConnection": "Cette connexion existe déjà.",
+    "edgeLabel": "Libellé de la connexion",
+    "efficiencyScore": "Efficacité",
+    "executionTitle": "Journal d'exécution",
+    "exportDone": "JSON du workflow téléchargé.",
+    "exportJson": "Exporter le JSON",
+    "flowToolsTitle": "Outils de flux",
+    "heroCardText": "Un jeu navigateur léger sur la pensée workflow, la conception de chatbots et la structure d'automatisation.",
+    "heroCardTitle": "Relier des flux propres",
+    "heroEyebrow": "Jeu de logique inspiré de n8n",
+    "heroLead": "Construisez des automatisations de chatbot en plaçant des nœuds, en reliant les chemins d'intention, en ajoutant une logique de fallback et en validant le workflow final.",
+    "heroTitle": "AI Flow Puzzle",
+    "hintButton": "Indice",
+    "hintIntro": "Prochaine étape logique :",
+    "importDone": "Workflow importé.",
+    "importFailed": "Impossible d'importer ce JSON.",
+    "importJson": "Importer un JSON",
+    "inspectorEmptyText": "Cliquez sur un nœud du plateau pour l'inspecter, le configurer ou démarrer une connexion.",
+    "inspectorEmptyTitle": "Sélectionnez un nœud",
+    "inspectorTitle": "Inspecteur et configuration",
+    "linksLabel": "Connexions",
+    "logicScore": "Logique",
+    "missingEdge": "Relier :",
+    "missingNode": "Ajouter un nœud :",
+    "missingTitle": "Le flux demande encore un peu de travail.",
+    "nextScenario": "Scénario suivant",
+    "noConnections": "Aucune connexion sortante pour l'instant.",
+    "noDebug": "Aucun problème de débogage critique détecté.",
+    "nodeAdded": "Nœud ajouté au plateau.",
+    "nodePalette": "Palette de nœuds",
+    "nodePaletteHint": "Cliquez sur un nœud pour l'ajouter au plateau. Faites glisser les nœuds pour organiser votre flux.",
+    "nodeRemoved": "Nœud supprimé.",
+    "nodeTypes": {
+      "condition": {
+        "category": "Logique",
+        "desc": "Vérifie une règle, par exemple la disponibilité d'une formule.",
+        "title": "Condition"
+      },
+      "crm": {
+        "category": "Automatisation",
+        "desc": "Crée ou met à jour une fiche client.",
+        "title": "CRM Update"
+      },
+      "email": {
+        "category": "Automatisation",
+        "desc": "Prévient l'équipe ou le client.",
+        "title": "Email Notify"
+      },
+      "end": {
+        "category": "Sortie",
+        "desc": "Clôture proprement l'automatisation.",
+        "title": "End"
+      },
+      "fallback": {
+        "category": "Sécurité",
+        "desc": "Traite les demandes floues ou non prises en charge.",
+        "title": "Fallback"
+      },
+      "handoff": {
+        "category": "Sécurité",
+        "desc": "Oriente les cas sensibles vers une personne réelle.",
+        "title": "Human Handoff"
+      },
+      "intent": {
+        "category": "Logique d'AI",
+        "desc": "Comprend ce que veut l'utilisateur.",
+        "title": "Intent Detector"
+      },
+      "kb": {
+        "category": "Données",
+        "desc": "Consulte des informations métier fiables.",
+        "title": "Knowledge Base"
+      },
+      "llm": {
+        "category": "Logique d'AI",
+        "desc": "Génère une réponse tenant compte du contexte.",
+        "title": "LLM Reasoning"
+      },
+      "response": {
+        "category": "Sortie",
+        "desc": "Renvoie une réponse claire à l'utilisateur.",
+        "title": "Response"
+      },
+      "router": {
+        "category": "Logique",
+        "desc": "Divise le flux en plusieurs chemins.",
+        "title": "Route Switch"
+      },
+      "sheet": {
+        "category": "Automatisation",
+        "desc": "Enregistre des données de réservation ou de lead.",
+        "title": "Google Sheets"
+      },
+      "trigger": {
+        "category": "Entrée",
+        "desc": "Se déclenche quand l'utilisateur envoie un message.",
+        "title": "Chat Trigger"
+      }
+    },
+    "nodesLabel": "Nœuds",
+    "objectivesTitle": "Objectifs",
+    "optionalRule": "Règle de flux",
+    "pngDone": "PNG du workflow téléchargé.",
+    "removeNode": "Supprimer le nœud",
+    "reportDone": "Rapport du workflow téléchargé.",
+    "requiredConnections": "Connexions requises",
+    "requiredNodes": "Nœuds requis",
+    "resetButton": "Réinitialiser",
+    "resultReady": "Prêt pour la validation.",
+    "runCompleted": "Exécution terminée.",
+    "runFlow": "Exécuter le flux",
+    "runInvalid": "Le flux n'est pas encore valide.",
+    "runLogEmpty": "Aucune exécution lancée pour l'instant.",
+    "runStarted": "Exécution lancée…",
+    "runStepAI": "Le LLM génère une réponse",
+    "runStepData": "Données enregistrées",
+    "runStepEnd": "Flux clôturé proprement",
+    "runStepIntent": "Intention détectée",
+    "runStepNotify": "Notification envoyée",
+    "runStepReceived": "Message reçu",
+    "runStepResponse": "Réponse envoyée",
+    "runStepRoute": "Demande routée",
+    "runStepSafety": "Chemin de sécurité vérifié",
+    "safetyScore": "Sécurité",
+    "scenarioCompleted": "Scénario terminé !",
+    "scenarioHelp": "Remplissez les objectifs pour débloquer le scénario suivant.",
+    "scenarioLocked": "Terminez d'abord le scénario précédent.",
+    "scenarios": {
+      "joyday": {
+        "goal": "Reliez un message client à la détection d'intention, à la disponibilité de la formule, à l'enregistrement de la réservation, à la confirmation et au fallback.",
+        "level": "Niveau 01",
+        "messages": [
+          "Bonjour, pouvons-nous réserver une séance d'action painting pour deux personnes ?",
+          "Avez-vous de la disponibilité samedi ?",
+          "Combien coûte la formule parent-enfant ?"
+        ],
+        "objective": "Construisez la branche principale de réservation et une branche de fallback sûre.",
+        "short": "Flux de réservation",
+        "title": "Joyday Reservation Bot"
+      },
+      "lead": {
+        "goal": "Construisez un workflow commercial qui capte l'intention, enregistre le lead, prévient l'équipe par e-mail, répond à l'utilisateur et se termine proprement.",
+        "level": "Niveau 03",
+        "messages": [
+          "Nous avons besoin d'un chatbot d'AI pour notre site web.",
+          "Pouvez-vous me contacter au sujet d'un projet d'automatisation ?",
+          "Je souhaiterais un tarif pour une conception de workflow."
+        ],
+        "objective": "Capter, enregistrer, notifier, répondre et clôturer le flux de lead.",
+        "short": "Flux de lead commercial",
+        "title": "Lead Capture Automation"
+      },
+      "support": {
+        "goal": "Créez une automatisation de support où le bot détecte la demande, la route, consulte la base de connaissances, raisonne avec un LLM et transfère les cas sensibles.",
+        "level": "Niveau 02",
+        "messages": [
+          "Mon compte est bloqué et j'ai besoin d'aide.",
+          "Le montant de la facture semble incorrect.",
+          "Je souhaite parler à une personne."
+        ],
+        "objective": "Utilisez le routage, la base de connaissances, la réponse du LLM et le transfert vers un humain.",
+        "short": "Tri du support",
+        "title": "Enterprise Support Bot"
+      }
+    },
+    "scenariosEyebrow": "Scénarios",
+    "scoreBreakdownTitle": "Score de qualité",
+    "scoreLabel": "Score",
+    "selectedLabel": "Sélectionné",
+    "selfConnection": "Un nœud ne peut pas se relier à lui-même.",
+    "startBuilding": "Commencer à construire",
+    "startConnection": "Démarrer une connexion",
+    "successText": "Chemin d'automatisation propre créé. Vous pouvez l'exécuter comme un petit workflow n8n.",
+    "successTitle": "Flux validé !",
+    "summaryCopied": "Résumé copié.",
+    "summaryIntro": "Ce workflow démarre par un déclencheur de chat, détecte l'intention, route l'utilisateur, gère les sorties d'automatisation et se termine par un chemin de réponse sûr.",
+    "templateBlank": "Plateau vide",
+    "templateBlankDesc": "Uniquement les nœuds de déclenchement et de fin.",
+    "templateHappy": "Happy path",
+    "templateHappyDesc": "Branche principale sans tous les chemins de sécurité.",
+    "templateSolution": "Solution complète",
+    "templateSolutionDesc": "Flux recommandé complet.",
+    "templatesHint": "Partez d'un plateau vide ou chargez un modèle de workflow prêt à l'emploi, puis améliorez-le.",
+    "templatesTitle": "Modèles",
+    "testMessageLabel": "Message de test",
+    "totalScore": "Total",
+    "uxScore": "UX",
+    "validateFlow": "Valider le flux",
+    "viewExperience": "Voir l'expérience",
+    "viewWorks": "Voir les projets",
+    "whyEyebrow": "Pourquoi ce jeu existe",
+    "whyText": "L'objectif n'est pas seulement de divertir. Le jeu montre que les flux de chatbot ont besoin de déclencheurs, d'une logique d'intention, de branchements, de gestion des réponses, d'une sécurité de fallback et de sorties d'automatisation propres.",
+    "whyTitle": "Une façon jouable de montrer la démarche d'un AI Designer."
+  },
+  "ajoop": {
+    "answers": {
+      "about": {
+        "links": [
+          {
+            "label": "À propos"
+          },
+          {
+            "label": "Expérience"
+          }
+        ],
+        "text": "Kaan Balcı est AI Designer & Software Developer, orienté conversational AI, solution engineering, évaluation de LLM, automatisation de workflows et produits logiciels centrés sur l'utilisateur. Il a contribué à plus de 50 projets académiques, personnels, freelance et en équipe."
+      },
+      "ai": {
+        "links": [
+          {
+            "label": "Étude de cas AI"
+          },
+          {
+            "label": "Expérience"
+          }
+        ],
+        "text": "L'orientation AI de Kaan repose sur la conception de flux de chatbot, la logique d'automatisation façon n8n, les workflows IVR et multicanaux, l'évaluation de LLM, l'analyse de prompts et la revue des sorties. Chez CBOT, il a contribué à la QA de chatbots en entreprise, à leur stabilisation, à la restructuration des flux et à un POC de déclaration de sinistre."
+      },
+      "availability": {
+        "links": [
+          {
+            "label": "Contact"
+          },
+          {
+            "label": "Expérience"
+          }
+        ],
+        "text": "Kaan se positionne actuellement avant tout comme Forward Deployed Engineer, avec des preuves en Applied AI, fiabilité de l'AI, solution engineering, automatisation et livraison logicielle orientée produit."
+      },
+      "certificates": {
+        "links": [
+          {
+            "label": "Certificats"
+          }
+        ],
+        "text": "Kaan possède plus de 25 certifications d'Udemy, Cisco et de plateformes apparentées. La page Certificats présente une galerie claire avec aperçu agrandi."
+      },
+      "cv": {
+        "links": [
+          {
+            "label": "Voir le CV"
+          },
+          {
+            "label": "E-mail"
+          },
+          {
+            "label": "LinkedIn"
+          },
+          {
+            "label": "GitHub"
+          }
+        ],
+        "text": "Vous pouvez consulter le CV de Kaan, lui écrire par e-mail ou le joindre via LinkedIn et GitHub depuis le pied de page. Pour des opportunités de Forward Deployed Engineer, le plus rapide reste le CV accompagné de LinkedIn."
+      },
+      "default": {
+        "links": [
+          {
+            "label": "Projets"
+          },
+          {
+            "label": "À propos"
+          }
+        ],
+        "text": "Je n'ai pas pu identifier cela précisément, mais je peux vous renseigner sur l'expérience de Kaan en AI, ses projets, sa stack technique, le travail Joyday, son CV, ses certificats ou ses coordonnées. Essayez l'une des questions rapides ci-dessous."
+      },
+      "joyday": {
+        "links": [
+          {
+            "label": "Voir l'étude de cas Atölye Joyday"
+          },
+          {
+            "label": "Ouvrir le site web d'Atölye Joyday"
+          }
+        ],
+        "text": "Atölye Joyday est un projet d'entreprise réel. Kaan a conçu et développé l'expérience du site, les pages de prestations, le parcours des formules et le parcours de réservation. Il illustre une réflexion produit concrète, car il relie l'expérience client au suivi opérationnel."
+      },
+      "projects": {
+        "links": [
+          {
+            "label": "Voir les projets"
+          },
+          {
+            "label": "Voir l'étude de cas Atölye Joyday"
+          }
+        ],
+        "text": "Les domaines de projet les plus solides sont AI Chatbot Flow Design, Atölye Joyday Official Website, Hospital Appointment System, Hospital Form App, Drivenfinity et Cars Dataset Analysis. La page Projets combine des études de cas sélectionnées, le catalogue public GitHub et des pages de détail dynamiques."
+      },
+      "stack": {
+        "links": [
+          {
+            "label": "À propos"
+          },
+          {
+            "label": "Projets"
+          }
+        ],
+        "text": "Stack principale : Python, C#/.NET, JavaScript, PHP, Java, Kotlin, C++, MySQL, MSSQL, Firebase, Unity, Unreal Engine, n8n, AI Flow et workflows d'évaluation de LLM."
+      }
+    },
+    "closeLabel": "Fermer le chatbot",
+    "greeting": "Bonjour, je suis Ajoop. Je peux vous présenter rapidement les compétences de Kaan, ses projets, son expérience en AI, le travail Joyday, son CV et les moyens de le contacter. Choisissez une question ou saisissez un mot-clé.",
+    "inputPlaceholder": "Posez une question sur les projets, l'AI, le CV…",
+    "launcher": "Demander à Ajoop",
+    "openLabel": "Ouvrir le chatbot du portfolio",
+    "quicks": [
+      {
+        "label": "Qui est Kaan ?"
+      },
+      {
+        "label": "Expérience AI et chatbot"
+      },
+      {
+        "label": "Meilleurs projets"
+      },
+      {
+        "label": "Site web Joyday"
+      },
+      {
+        "label": "Stack technique"
+      },
+      {
+        "label": "CV et contact"
+      }
+    ],
+    "sendLabel": "Envoyer",
+    "title": "Ajoop"
+  },
+  "joydayPaint": {
+    "actions": {
+      "clear": "Effacer",
+      "finish": "Terminer l'œuvre",
+      "redo": "Rétablir",
+      "remix": "Remixer",
+      "undo": "Annuler"
+    },
+    "canvas": {
+      "circle": "Toile ronde de 52 cm",
+      "rect": "Toile rectangulaire 40x60",
+      "square": "Toile carrée 50x50"
+    },
+    "canvasButtons": {
+      "circle": [
+        "Rond de 52 cm",
+        "Composition ronde"
+      ],
+      "rect": [
+        "Rectangle 40x60",
+        "Allure d'affiche verticale"
+      ],
+      "square": [
+        "Carré 50x50",
+        "Toile Joyday classique"
+      ]
+    },
+    "completed": "Terminé !",
+    "infoText": "Choisissez votre toile, puis utilisez la barre d'outils ci-dessous. Avec la bouteille, appuyez et relâchez pour projeter une ligne de peinture nette sur la toile. Vous pouvez fermer ce conseil à tout moment.",
+    "infoTitle": "Conseil rapide",
+    "intensityLevels": [
+      "Douce",
+      "Normale",
+      "Dense"
+    ],
+    "intensityMax": "Dense",
+    "intensityMin": "Douce",
+    "intensityTitle": "Intensité de la peinture",
+    "missionNext": "Mission suivante débloquée",
+    "paletteNames": {
+      "joydayBright": "Joyday Bright",
+      "neonParty": "Neon Party",
+      "oceanFlow": "Ocean Flow",
+      "softPastel": "Soft Pastel",
+      "warmEnergy": "Warm Energy"
+    },
+    "soundOff": "Son désactivé",
+    "soundOn": "Son activé",
+    "static": {
+      "artName": "Nom de l'œuvre",
+      "brandedExport": "Carte Joyday",
+      "cleanExport": "Toile nue",
+      "customColor": "Couleur personnalisée",
+      "downloadPng": "Télécharger le PNG",
+      "finishEyebrow": "Œuvre prête",
+      "finishText": "Nommez votre œuvre, choisissez un style d'export et téléchargez-la en PNG.",
+      "finishTitle": "Votre toile Joyday est prête.",
+      "inspirationEyebrow": "Impulsion créative",
+      "missionEyebrow": "Mini-mission",
+      "newArtwork": "Nouvelle œuvre",
+      "newTheme": "Nouveau thème",
+      "realCanvasCta": "Réalisez-la sur une vraie toile",
+      "signature": "Ajouter la signature Joyday",
+      "soundEyebrow": "Ambiance sonore du studio",
+      "starterStains": "Taches de départ",
+      "suggestPalette": "Proposer une palette"
+    },
+    "thicknessLevels": [
+      "Fin",
+      "Moyen",
+      "Épais"
+    ],
+    "thicknessMax": "Épais",
+    "thicknessMin": "Fin",
+    "thicknessTitle": "Épaisseur du trait",
+    "tool": {
+      "balloon": "Ballon d'eau",
+      "bottle": "Lancer la bouteille",
+      "brush": "Pinceau",
+      "spray": "Bombe"
+    },
+    "toolSub": {
+      "balloon": "Grand éclatement",
+      "bottle": "Un jet de peinture",
+      "brush": "Traits en glissant",
+      "spray": "Brume légère"
+    }
+  },
+  "recruiter": {
+    "buttons": {
+      "close": "Fermer",
+      "contact": "M'écrire",
+      "cv": "Voir le CV",
+      "linkedin": "LinkedIn"
+    },
+    "capabilities": [
+      "Applied AI",
+      "AI Reliability",
+      "Solution Engineering",
+      "Conversational AI",
+      "Automatisation",
+      "Product Engineering"
+    ],
+    "focus": [
+      "Conversational AI",
+      "Solution Engineering",
+      "Évaluation de LLM",
+      "Automatisation de workflows"
+    ],
+    "profile": "Forward Deployed Engineer",
+    "projects": [
+      [
+        "SINAMA — AI Agent Reliability Lab",
+        "Reliability lab Turkish-first en production pour les tests de fiabilité et de régression d'agents d'AI",
+        null,
+        "Voir l'étude de cas"
+      ],
+      [
+        "AI Chatbot Flow Design",
+        "Preuves en conversational AI et workflows d'entreprise",
+        null
+      ],
+      [
+        "AI Flow Puzzle",
+        "Démonstration en production de logique de nœuds, de fallback et de validation",
+        null,
+        "Voir l'étude de cas"
+      ],
+      [
+        "Atölye Joyday Official Website",
+        "Produit numérique en production avec parcours de réservation",
+        null,
+        "Voir l'étude de cas"
+      ],
+      [
+        "Hospital Form App",
+        "Projet de workflows en C# Windows Forms et SQL Server conservé comme archive de code source.",
+        null,
+        "Voir l'étude de cas"
+      ]
+    ],
+    "proof": [
+      "Expérience en conversational AI en entreprise chez CBOT : QA, stabilisation, configuration des canaux et restructuration de flux à grande échelle.",
+      "Conception, construction, test et présentation d'un POC de déclaration de sinistre avec voix, vérification téléphonique, transfert WhatsApp et collecte de documents.",
+      "Travail structuré d'évaluation de LLM et d'appréciation de la qualité portant sur le raisonnement, le code et les sorties multimodales.",
+      "Produit numérique en production et automatisation des réservations chez Atölye Joyday avec JavaScript, Google Forms, Sheets et Apps Script."
+    ],
+    "skills": [
+      "Conception de flux de chatbot, QA et stabilisation",
+      "Logique de workflow à plusieurs étapes façon n8n",
+      "Évaluation des réponses, du raisonnement, du code et des sorties multimodales de LLM",
+      "Python, C#/.NET, JavaScript, PHP et SQL",
+      "Développement de produits numériques centré sur l'utilisateur"
+    ]
+  },
+  "recruiterV2": {
+    "label": "RECRUITER MODE V2",
+    "title": "Synthèse des preuves par domaine de compétence",
+    "lead": "L’objectif de Forward Deployed Engineer reste inchangé, tandis que les preuves issues des projets et de l’expérience sont mises en avant pour la compétence sélectionnée.",
+    "choose": "Axe de preuve",
+    "primary": "Objectif principal",
+    "focus": "Axe de preuve",
+    "capabilities": "Domaines de compétence",
+    "skills": "Compétences clés",
+    "proof": "Preuves recommandées",
+    "cv": "Voir le CV",
+    "email": "M’écrire",
+    "close": "Fermer",
+    "updated": "Données du portfolio",
+    "openEvidence": "Ouvrir la preuve"
+  },
+  "request": {
+    "button": "Envoyer la demande",
+    "consent": "Veuillez confirmer la case de consentement pour continuer.",
+    "error": "La demande n'a pas pu être transmise ni confirmée comme enregistrée. Vos informations restent dans le formulaire : réessayez ou écrivez à :",
+    "fallback": "Le point d'entrée e-mail direct n'est pas encore connecté, un brouillon d'e-mail a donc été ouvert. Une fois l'URL Google Apps Script renseignée dans request-config.js, le formulaire enverra les e-mails directement.",
+    "neutral": "Merci.",
+    "sending": "Envoi de la demande…",
+    "subject": "Nouvelle demande de projet",
+    "success": "Votre demande a bien été reçue et enregistrée. Je reviens vers vous rapidement. Vous pouvez aussi me joindre directement à :",
+    "timeout": "La demande a dépassé le délai d'attente et n'a pas pu être confirmée comme envoyée. Vos informations restent dans le formulaire : réessayez ou écrivez à :"
+  },
+  "ultimate": {
+    "availability": "Ouvert aux opportunités",
+    "commandDialogLabel": "Palette de recherche",
+    "commandPlaceholder": "Rechercher une page, un projet ou une commande…",
+    "commands": [
+      {
+        "hint": "Page d'accueil",
+        "keywords": "accueil home landing",
+        "label": "Aller à l'accueil"
+      },
+      {
+        "hint": "Catalogue de projets",
+        "keywords": "projets travaux portfolio works",
+        "label": "Ouvrir les projets"
+      },
+      {
+        "hint": "Étude de cas de l'AI Agent Reliability Lab",
+        "keywords": "sinama ai agent reliability lab fiabilite regression evaluation etude de cas",
+        "label": "Voir l'étude de cas SINAMA"
+      },
+      {
+        "hint": "AI Agent Reliability Lab en production",
+        "keywords": "sinama produit live ai agent reliability lab",
+        "label": "Ouvrir le produit SINAMA"
+      },
+      {
+        "hint": "Mini-jeux jouables",
+        "keywords": "jeux games mini web canvas",
+        "label": "Ouvrir les jeux"
+      },
+      {
+        "hint": "Jeu d'action painting virtuel",
+        "keywords": "joyday painting action canvas peinture jeu png",
+        "label": "Ouvrir Joyday Painting"
+      },
+      {
+        "hint": "Jeu de workflow de chatbot façon n8n",
+        "keywords": "ai flow puzzle n8n chatbot workflow automatisation jeu",
+        "label": "Jouer à AI Flow Puzzle"
+      },
+      {
+        "hint": "Étude de cas design et technique",
+        "keywords": "ai flow puzzle etude de cas noeud validation fallback",
+        "label": "Voir l'étude de cas AI Flow Puzzle"
+      },
+      {
+        "hint": "Mini-jeu de fusion de carrière",
+        "keywords": "aventure adventure jeu carriere fusion emploi kaan",
+        "label": "Ouvrir l'aventure"
+      },
+      {
+        "hint": "Étude de cas entreprise réelle et produit numérique",
+        "keywords": "atolye joyday etude de cas reservation produit numerique",
+        "label": "Voir l'étude de cas Atölye Joyday"
+      },
+      {
+        "hint": "Site web en production d'un atelier créatif",
+        "keywords": "atolye joyday site web entreprise live",
+        "label": "Ouvrir le site web d'Atölye Joyday"
+      },
+      {
+        "hint": "Étude de cas de l'archive C# Windows Forms de 2024",
+        "keywords": "hospital system form app c# windows forms sql server rendez-vous etude de cas",
+        "label": "Voir l'étude de cas Hospital System"
+      },
+      {
+        "hint": "Archive publique du projet C#",
+        "keywords": "hospital system archive code github c# windows forms",
+        "label": "Ouvrir l'archive Hospital System"
+      },
+      {
+        "hint": "CV sur Google Drive",
+        "keywords": "cv curriculum resume",
+        "label": "Voir le CV"
+      },
+      {
+        "hint": "Dépôts UAJOP",
+        "keywords": "github depot code",
+        "label": "Ouvrir GitHub"
+      },
+      {
+        "hint": "Profil professionnel",
+        "keywords": "linkedin contact",
+        "label": "Ouvrir LinkedIn"
+      },
+      {
+        "hint": "Sombre / Clair",
+        "keywords": "theme sombre clair",
+        "label": "Changer de thème"
+      },
+      {
+        "hint": "EN / TR",
+        "keywords": "langue language tr en fr",
+        "label": "Changer de langue"
+      },
+      {
+        "hint": "Assistant du portfolio",
+        "keywords": "bot assistant ajoop conversation",
+        "label": "Ouvrir Ajoop"
+      },
+      {
+        "hint": "Vue compacte pour le recrutement",
+        "keywords": "recruteur recrutement mode",
+        "label": "Basculer le Recruiter Mode"
+      },
+      {
+        "hint": "Modèle interactif sur Canvas",
+        "keywords": "3d mathematiques canvas modele rotation",
+        "label": "Ouvrir le labo 3D"
+      },
+      {
+        "hint": "Surprise en feux d'artifice",
+        "keywords": "easter egg feux artifice surprise",
+        "label": "Lancer l'easter egg"
+      }
+    ],
+    "commandsTitle": "Rechercher",
+    "copyDone": "Copié",
+    "noResults": "Aucune commande trouvée.",
+    "projectSearchLabel": "Rechercher des projets",
+    "projectSearchPlaceholder": "Rechercher par projet, technologie ou mot-clé…",
+    "projectsTitle": "Meilleures preuves",
+    "recruiterCloseLabel": "Fermer le Recruiter Mode",
+    "recruiterLabel": "Recruiter Mode",
+    "recruiterLead": "Un profil concis et fondé sur des preuves pour des opportunités en conversational AI, solution engineering, évaluation de LLM, automatisation de workflows et développement logiciel.",
+    "recruiterOpenLabel": "Ouvrir le Recruiter Mode",
+    "recruiterTitle": "Aperçu pour le recrutement",
+    "skillsTitle": "Principales compétences"
+  }
+}

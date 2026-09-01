@@ -403,7 +403,13 @@
   function lang() {
     return typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en");
   }
-  function activeCopy() { return copy[lang()] || copy.en; }
+  /* The shipped locale pack supplies any language beyond the inline EN/TR pair,
+   * so adding a locale never edits this file. */
+  function activeCopy() {
+    return (typeof getLocalizedCollection === "function"
+      ? getLocalizedCollection(copy, lang(), "aiFlowPuzzle")
+      : copy[lang()]) || copy.en;
+  }
   function t(key) { const active = activeCopy(); return active[key] || copy.en[key] || key; }
   function tNode(type) { const active = activeCopy(); return (active.nodeTypes && active.nodeTypes[type]) || copy.en.nodeTypes[type]; }
   function tScenario(id) { const active = activeCopy(); return (active.scenarios && active.scenarios[id]) || copy.en.scenarios[id]; }

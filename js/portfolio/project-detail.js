@@ -194,3 +194,9 @@ function setupProjectCopyLink() {
   });
 }
 
+/* The first language presentation runs while this page-scoped module is still
+ * absent, so its optional render guard cannot populate the detail body. Boot
+ * once as soon as the renderer and its routing dependency are both available;
+ * later locale changes continue to re-render through the existing subscriber. */
+renderProjectDetail();
+

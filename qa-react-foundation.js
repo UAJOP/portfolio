@@ -243,7 +243,10 @@ productionPages.forEach((page) => {
   check(exists(page), `production page was removed: ${page}`);
   if (!exists(page)) return;
   const source = read(page);
-  check(source.includes('src="script.js"'), `${page} no longer boots the production runtime`);
+  /* 404.html is served for failures at arbitrary path depth, so its runtime
+   * reference is root-relative; authored routes retain the document-relative
+   * form. Both resolve to the same production file. */
+  check(/\bsrc="\/?script\.js"/.test(source), `${page} no longer boots the production runtime`);
   check(!source.includes(OUT_DIR), `${page} must not reference the React build output`);
   check(!source.includes("react-preview"), `${page} must not link the React preview`);
   check(!/<script[^>]+type="module"/.test(source), `${page} must not load a module bundle; production has no build step`);

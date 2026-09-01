@@ -1,4 +1,5 @@
 window.caseStudyPageData = {
+  id: "sinama-case-study",
   titles: {
     en: "SINAMA — AI Agent Reliability Lab Case Study | Kaan Balcı",
     tr: "SINAMA — AI Agent Reliability Lab Vaka Çalışması | Kaan Balcı",

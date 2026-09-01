@@ -1,4 +1,5 @@
 window.caseStudyPageData = {
+  id: "atolye-joyday-case-study",
   titles: {
     en: "Atölye Joyday Case Study | Kaan Balcı",
     tr: "Atölye Joyday Vaka Çalışması | Kaan Balcı"
