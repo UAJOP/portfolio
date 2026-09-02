@@ -128,6 +128,11 @@ const ORDER = [
   ["js/ajoop/context.js", "js/ajoop/router.js"],
   ["js/ajoop/knowledge.js", "js/ajoop/router.js"],
   ["js/ajoop/router.js", "js/ajoop/assistant.js"],
+  /* Ajoop 4.1: the planner reads the router's route shape and the knowledge
+   * layer, and assistant.js renders the plan it returns. */
+  ["js/ajoop/knowledge.js", "js/ajoop/conversation.js"],
+  ["js/ajoop/router.js", "js/ajoop/conversation.js"],
+  ["js/ajoop/conversation.js", "js/ajoop/assistant.js"],
   ["js/features/ultimate.js", "js/features/recruiter.js"],
   ["js/features/recruiter.js", "js/features/command-palette.js"],
   ["js/features/command-palette.js", "js/features/ajoop-nav.js"],

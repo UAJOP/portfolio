@@ -279,6 +279,9 @@ function routeAjoopQuery(message, context) {
     score,
     candidates,
     answerDepth,
+    /* Ajoop 4.1: the detail level the visitor last chose. Carried on the route
+     * so the answer templates never have to read storage themselves. */
+    depth: (conversation && conversation.depth) || "normal",
     pageContext: page || null,
   };
 }
