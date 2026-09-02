@@ -863,12 +863,15 @@ function createChatbotLinks(links = []) {
 
 function addChatbotMessage(type, text, links = []) {
   const messageList = document.querySelector("[data-chatbot-messages]");
-  if (!messageList) return;
+  if (!messageList) return null;
   const message = document.createElement("div");
   message.className = `chatbot-message ${type === "user" ? "user" : "bot"}`;
   message.innerHTML = `<p>${escapeProjectHtml(text)}</p>${type === "bot" ? createChatbotLinks(links) : ""}`;
   messageList.appendChild(message);
   messageList.scrollTop = messageList.scrollHeight;
+  /* Returned so Ajoop 4.3 can swap this message's prose for a grounded model
+   * answer later without disturbing its links or evidence cards. */
+  return message;
 }
 
 function getRandomChatbotLine(value) {
@@ -910,7 +913,7 @@ function answerChatbotIntent(intentId, depth = 0, level = "normal") {
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
   const answer = content.answers[intentId] || content.answers.default;
   const links = answer.links || [];
-  addChatbotMessage(
+  return addChatbotMessage(
     "bot",
     ajoopPreparedText(answer.text, depth, level),
     level === "quick" ? links.slice(0, 1) : links,
@@ -1368,7 +1371,7 @@ function renderAjoopComparison(comparison) {
 /** Appends a structured evidence response as one bot message. */
 function addAjoopEvidenceMessage(response) {
   const messageList = document.querySelector("[data-chatbot-messages]");
-  if (!messageList) return;
+  if (!messageList) return null;
   const message = document.createElement("div");
   message.className = "chatbot-message bot";
   const text = document.createElement("p");
@@ -1380,6 +1383,96 @@ function addAjoopEvidenceMessage(response) {
   );
   messageList.appendChild(message);
   messageList.scrollTop = messageList.scrollHeight;
+  return message;
+}
+
+/* ---------- Ajoop 4.3 local AI bridge ---------- */
+
+/**
+ * Replaces one message's prose with a grounded model answer.
+ *
+ * Only the leading <p> changes. Evidence cards, proof lists, comparison rows
+ * and canonical links are untouched, because those are the facts and the model
+ * answer is only their presentation. Inserted with textContent, so markup in a
+ * model reply is shown as text rather than becoming structure.
+ */
+function applyAjoopAiAnswer(messageElement, answer) {
+  if (!messageElement || !answer) return false;
+  const paragraph = messageElement.querySelector("p");
+  if (!paragraph) return false;
+  paragraph.textContent = answer;
+  messageElement.classList.add("is-ai-enhanced");
+  return true;
+}
+
+/** The evidence model to ground on: what the panel is showing, or the subject. */
+function ajoopAiGrounding(route, evidence, language) {
+  if (evidence) return evidence;
+  if (!route.entity || typeof buildAjoopProjectCard !== "function") return null;
+  const card = buildAjoopProjectCard(route.entity, language);
+  return card ? { text: "", cards: [card], comparison: null, mode: route.mode || null } : null;
+}
+
+/**
+ * Asks the bridge to restate an already-rendered answer.
+ *
+ * Deliberately fire-and-forget: the deterministic answer is on screen before
+ * this runs, so every failure is silent and the visitor simply keeps the answer
+ * they already have. Nothing here can leave the panel in a broken state.
+ */
+function enhanceAjoopAnswerWithAi(messageElement, route, evidence, question, turn) {
+  if (typeof requestAjoopAiResponse !== "function") return;
+  const config = getAjoopAiConfig();
+  if (!isAjoopAiConfigured(config)) return;
+
+  const language = portfolioChatbotState.language;
+  const grounding = ajoopAiGrounding(route, evidence, language);
+  const payload = buildAjoopAiPayload(route, grounding, question, language);
+
+  Promise.resolve(requestAjoopAiResponse({ payload, config, turn }))
+    .then((result) => {
+      /* A reply for a superseded turn — the visitor asked something else, or
+       * hit Start over — is dropped rather than rendered. */
+      if (!result || !result.ok || !isAjoopAiTurnCurrent(turn)) {
+        renderAjoopAiStatus();
+        return;
+      }
+      if (applyAjoopAiAnswer(messageElement, result.answer)) renderAjoopAiStatus();
+    })
+    .catch(() => {
+      /* Unreachable in practice: the bridge never rejects. Belt and braces so a
+       * future change can never surface an exception to a visitor. */
+    });
+}
+
+/** Updates the small header status. Text carries the meaning, not colour. */
+function renderAjoopAiStatus() {
+  const target = document.querySelector("[data-chatbot-subtitle]");
+  if (!target) return;
+  const language = portfolioChatbotState.language;
+  const state = typeof getAjoopAiState === "function" ? getAjoopAiState().state : "disabled";
+  if (state === "available") {
+    target.textContent = `✦ ${ajoopLabel("AI Enhanced", "AI Destekli", language)}`;
+    target.classList.add("is-ai");
+  } else {
+    /* Every other state — off, unreachable, still checking — is the honest
+     * default: answers come from portfolio evidence. The indicator never
+     * implies a model is standing by. */
+    target.textContent = `● ${ajoopLabel("Evidence Mode", "Kanıt Modu", language)}`;
+    target.classList.remove("is-ai");
+  }
+}
+
+/** One health probe when the panel opens, subject to the bridge's own backoff. */
+function initializeAjoopAi() {
+  if (typeof checkAjoopAiHealth !== "function") return;
+  if (!isAjoopAiConfigured(getAjoopAiConfig())) {
+    renderAjoopAiStatus();
+    return;
+  }
+  Promise.resolve(checkAjoopAiHealth({}))
+    .then(() => renderAjoopAiStatus())
+    .catch(() => renderAjoopAiStatus());
 }
 
 /**
@@ -1572,6 +1665,9 @@ function runAjoopAction(action, label) {
     return;
   }
   addChatbotMessage("user", label);
+  /* The echoed button label is what the visitor actually asked for, so it is
+   * the question the AI bridge grounds on for tapped turns. */
+  const asked = { message: label };
   if (action.action === "depth") {
     if (typeof setAjoopDepth === "function") setAjoopDepth(action.depth);
     const context = typeof readAjoopContext === "function" ? readAjoopContext() : null;
@@ -1583,6 +1679,7 @@ function runAjoopAction(action, label) {
         facet: (context && context.lastFacet) || "overview",
         depth: action.depth,
       }),
+      asked,
     );
     return;
   }
@@ -1597,6 +1694,7 @@ function runAjoopAction(action, label) {
         facet: "proof",
         mode: "prove",
       }),
+      asked,
     );
     return;
   }
@@ -1610,14 +1708,15 @@ function runAjoopAction(action, label) {
         mode: "compare",
         compareWith: action.compareWith,
       }),
+      asked,
     );
     return;
   }
   if (action.entity) {
-    answerAjoopRoute(ajoopRouteForEntity(action.entity, action.facet));
+    answerAjoopRoute(ajoopRouteForEntity(action.entity, action.facet), asked);
     return;
   }
-  answerAjoopRoute(ajoopSyntheticRoute({ intent: action.intent || "default" }));
+  answerAjoopRoute(ajoopSyntheticRoute({ intent: action.intent || "default" }), asked);
 }
 
 /**
@@ -1649,17 +1748,30 @@ function answerAjoopRoute(route, options) {
   const evidence = buildAjoopEvidenceFor(route, language, settings.message);
   portfolioChatbotState.lastEvidence = evidence || null;
 
+  /* Ajoop 4.3 opens a turn before rendering, so a reply from a previous turn
+   * that is still in flight can be recognised as stale and discarded. */
+  const aiTurn = typeof beginAjoopAiTurn === "function" ? beginAjoopAiTurn() : 0;
+
   deliverAjoopAnswer(() => {
+    let rendered = null;
     if (evidence) {
-      addAjoopEvidenceMessage(evidence);
+      rendered = addAjoopEvidenceMessage(evidence);
     } else if (plan && plan.fallback) {
+      /* A clarification prompt is a question, not an answer; there is nothing
+       * grounded for a model to restate, so the bridge is not consulted. */
       addChatbotMessage("bot", plan.fallback.prompt, []);
     } else {
       const answer = route.preferPrepared ? null : ajoopEntityAnswer(route, language);
-      if (answer && answer.text) addChatbotMessage("bot", answer.text, answer.links);
-      else answerChatbotIntent(route.intent, route.answerDepth, route.depth);
+      if (answer && answer.text) rendered = addChatbotMessage("bot", answer.text, answer.links);
+      else rendered = answerChatbotIntent(route.intent, route.answerDepth, route.depth);
     }
     if (plan) renderAjoopActions(plan.followups, "followups");
+
+    /* The deterministic answer is on screen by now. Enhancement is optional,
+     * asynchronous and silent on failure. */
+    if (rendered && typeof enhanceAjoopAnswerWithAi === "function") {
+      enhanceAjoopAnswerWithAi(rendered, route, evidence, settings.message, aiTurn);
+    }
   });
 
   if (typeof rememberAjoopTurn === "function") {
@@ -1720,8 +1832,13 @@ function handleAjoopMessage(message) {
 function resetAjoopConversation() {
   if (typeof resetAjoopContext === "function") resetAjoopContext();
   portfolioChatbotState.lastRoute = null;
+  portfolioChatbotState.lastEvidence = null;
+  /* Opens a new turn so an AI reply still in flight for the cleared
+   * conversation cannot arrive and write itself into the fresh transcript. */
+  if (typeof beginAjoopAiTurn === "function") beginAjoopAiTurn();
   resetChatbotMessages();
   renderChatbotQuickActions();
+  renderAjoopAiStatus();
   document.querySelector("[data-chatbot-input]")?.focus();
 }
 
@@ -1796,6 +1913,9 @@ function updatePortfolioChatbotLanguage(
   if (close) close.setAttribute("aria-label", content.closeLabel);
   renderChatbotQuickActions();
   resetChatbotMessages();
+  /* The subtitle slot is the AI status indicator, and the line above has just
+   * overwritten it with the (empty) localized subtitle. Restore it, localized. */
+  renderAjoopAiStatus();
 }
 
 function setChatbotOpen(
@@ -1822,6 +1942,9 @@ function setChatbotOpen(
   if (isOpen) {
     setBackgroundInert(widget);
     setOverlayBodyState(true);
+    /* One probe per open, subject to the bridge's own backoff. No polling loop:
+     * when the bridge is not configured this is a no-op. */
+    if (typeof initializeAjoopAi === "function") initializeAjoopAi();
     const input = document.querySelector("[data-chatbot-input]");
     setTimeout(() => input?.focus(), 80);
   } else if (wasOpen) {

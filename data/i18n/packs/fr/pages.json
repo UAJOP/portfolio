@@ -916,7 +916,9 @@
     "Purpose": "Objectif",
     "Showing {shown} of {total}.": "Affichage de {shown} sur {total}.",
     "compared with": "comparé à",
-    "here is the portfolio evidence.": "voici les preuves du portfolio."
+    "here is the portfolio evidence.": "voici les preuves du portfolio.",
+    "AI Enhanced": "Amélioré par l’IA",
+    "Evidence Mode": "Mode preuves"
   },
   "title": {
     "AI Flow Puzzle | Kaan Balcı": "AI Flow Puzzle | Kaan Balcı",
