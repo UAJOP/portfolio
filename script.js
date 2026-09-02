@@ -27,7 +27,7 @@
     "js/core/shell.js",
     "js/core/theme.js",
     "js/core/media.js",
-    "js/core/i18n.js",
+    "js/core/i18n-runtime.js",
     "js/portfolio/routing.js",
     "js/ajoop/matcher.js",
     "js/ajoop/assistant.js",
@@ -62,7 +62,7 @@
    * shared copy. Splice points keep those guarantees explicit. */
   const INSERT_BEFORE = {
     "js/portfolio/project-detail.js": "js/ajoop/matcher.js",
-    "js/features/certificates.js": "js/core/i18n.js",
+    "js/features/certificates.js": "js/core/i18n-runtime.js",
     "js/portfolio/works.js": "js/features/recruiter.js",
   };
 
