@@ -1,0 +1,378 @@
+{
+  "id": "ajoop-local-ai-bridge-v1",
+  "name": "kaanbalci.com — Ajoop Local AI Bridge (template)",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "description": "Credential-free export. Bridges the public Ajoop chatbot to a LOCAL Ollama model. The browser never talks to Ollama: it POSTs to this webhook, which validates the payload, builds a grounded prompt from the portfolio evidence the browser supplied, calls Ollama on the loopback interface and returns prose. Ollama's port is never exposed publicly. Every rejection returns a short reason, never a stack trace. If this workflow is inactive or the machine is off, the portfolio falls back to its deterministic answers and is unaffected."
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "environment_variables_required": {
+    "AJOOP_AI_ALLOWED_ORIGINS": "Comma-separated browser origins allowed to call this bridge, e.g. \"https://kaanbalci.com,http://localhost:4173\". Never \"*\": this endpoint runs on a personal machine.",
+    "OLLAMA_BASE_URL": "Local Ollama base URL. Default http://127.0.0.1:11434 — loopback only, never a public bind address.",
+    "AJOOP_AI_MODEL": "Ollama model tag to use, e.g. qwen3:4b.",
+    "AJOOP_AI_MAX_QUESTION_CHARS": "Maximum accepted question length, e.g. 500. Requests above this are rejected before any inference runs.",
+    "N8N_BLOCK_ENV_ACCESS_IN_NODE": "Must be \"false\". This template is configured entirely through environment variables, and n8n blocks $env inside nodes by default. With the default, the Code nodes see no configuration and the Ollama nodes cannot resolve their URL, so every request degrades to a rejection."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ajoop-ai",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://kaanbalci.com,http://localhost:4173"
+        }
+      },
+      "id": "webhook-ajoop-ai",
+      "name": "Ajoop Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -820,
+        0
+      ],
+      "webhookId": "ajoop-ai",
+      "notes": "POST only. allowedOrigins is a literal on purpose: the Webhook node resolves parameters outside a Code node, and n8n blocks $env there by default, which made the workflow fail to start with HTTP 500. It governs CORS/preflight headers only — the authoritative origin check is in Validate Request, driven by AJOOP_AI_ALLOWED_ORIGINS. Edit this list when the site's origins change."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Schema and origin validation. Nothing reaches the model until this passes.\n//\n// Two request shapes are accepted:\n//   { version: 1, mode: 'health' }            -> liveness probe\n//   { version: 1, question, locale, grounding } -> inference\n//\n// Anything else is rejected here, cheaply, before Ollama is touched.\nconst PROTOCOL = 1;\nconst maxQuestion = Number($env.AJOOP_AI_MAX_QUESTION_CHARS || 500);\nconst allowed = String($env.AJOOP_AI_ALLOWED_ORIGINS || '')\n  .split(',')\n  .map((value) => value.trim())\n  .filter(Boolean);\n\nconst headers = $json.headers || {};\nconst origin = headers.origin || headers.Origin || '';\nconst body = $json.body || {};\n\nconst reject = (error) => [{ json: { valid: false, error } }];\n\n// An empty allowlist is a misconfiguration, not permission for everyone.\nif (!allowed.length) return reject('bridge not configured');\nif (!origin || !allowed.includes(origin)) return reject('origin not allowed');\nif (body.version !== PROTOCOL) return reject('unsupported version');\n\nif (body.mode === 'health') {\n  return [{ json: { valid: true, health: true } }];\n}\n\nconst question = typeof body.question === 'string' ? body.question.trim() : '';\nif (!question) return reject('question required');\nif (question.length > maxQuestion) return reject('question too long');\n\nconst grounding = body.grounding && typeof body.grounding === 'object' ? body.grounding : {};\nconst evidence = Array.isArray(grounding.evidence) ? grounding.evidence.slice(0, 3) : [];\nconst comparison = grounding.comparison && typeof grounding.comparison === 'object' ? grounding.comparison : null;\n\n// No evidence means nothing to ground on. Say so rather than letting the model\n// answer from its own memory, which is exactly the failure mode this bridge exists to prevent.\nif (!evidence.length && !comparison) return reject('no grounding supplied');\n\nconst locales = ['en', 'tr', 'de', 'es', 'fr'];\nconst locale = locales.includes(body.locale) ? body.locale : 'en';\nconst depths = ['quick', 'normal', 'deep'];\nconst depth = depths.includes(body.depth) ? body.depth : 'normal';\n\nreturn [{ json: { valid: true, health: false, question, locale, depth, evidence, comparison } }];"
+      },
+      "id": "validate-request",
+      "name": "Validate Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "route-valid",
+      "name": "Request Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.health }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "route-health",
+      "name": "Health Probe?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Grounded prompt construction.\n//\n// THE EVIDENCE IS THE SOURCE OF TRUTH, NOT THE MODEL. The system message states\n// that in the strongest terms available, and the user message carries only the\n// canonical fields the browser sent. The model's job is reasoning and phrasing;\n// it is explicitly forbidden from supplying portfolio facts of its own.\nconst data = $json;\n\nconst depthGuidance = {\n  quick: 'Answer in one or two short sentences.',\n  normal: 'Answer in two to four sentences, suitable for a recruiter skimming the page.',\n  deep: 'Answer in one short paragraph, using more of the supplied proof points.',\n}[data.depth];\n\n// Deliberately terse. qwen3 is a reasoning model: in live testing every extra\n// prohibition measurably lengthened its internal deliberation until it\n// exhausted the token budget and returned nothing at all. This wording\n// converged 3/3 while still refusing to invent facts. Keep it short.\nconst system = [\n  \"You describe Kaan Balci's portfolio using ONLY the evidence given.\",\n  'Never add facts, numbers, dates, employers, repositories or links that are not in the evidence.',\n  'If the evidence lacks the answer, say the portfolio data does not contain it.',\n  'Do not rank projects against each other.',\n  'Answer in this language: ' + data.locale + '. ' + depthGuidance + ' Plain prose, no markdown.',\n].join('\\n');\n\nconst lines = [];\nfor (const item of data.evidence || []) {\n  lines.push('PROJECT: ' + item.title);\n  if (item.summary) lines.push('SUMMARY: ' + item.summary);\n  if (Array.isArray(item.meta) && item.meta.length) lines.push('CONTEXT: ' + item.meta.join(' | '));\n  if (Array.isArray(item.tags) && item.tags.length) lines.push('TECHNOLOGIES: ' + item.tags.join(', '));\n  if (Array.isArray(item.proof) && item.proof.length) lines.push('PROOF POINTS: ' + item.proof.join(' | '));\n  if (Array.isArray(item.sources) && item.sources.length) lines.push('AVAILABLE SOURCES: ' + item.sources.map((s) => s.kind).join(', '));\n  lines.push('');\n}\nif (data.comparison) {\n  lines.push('COMPARISON BETWEEN: ' + data.comparison.left + ' AND ' + data.comparison.right);\n  for (const row of data.comparison.rows || []) {\n    const format = (value) => (Array.isArray(value) ? value.join(', ') : value || 'not listed');\n    lines.push(row.key + ' -> ' + data.comparison.left + ': ' + format(row.a) + ' // ' + data.comparison.right + ': ' + format(row.b));\n  }\n  lines.push('');\n}\n\nconst user = [\n  'PORTFOLIO EVIDENCE:',\n  lines.join('\\n').trim(),\n  '',\n  'VISITOR QUESTION:',\n  data.question,\n].join('\\n');\n\nreturn [{ json: { system, user, locale: data.locale } }];"
+      },
+      "id": "build-prompt",
+      "name": "Build Grounded Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434' }}/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $env.AJOOP_AI_MODEL || 'qwen3:4b', stream: false, think: true, messages: [ { role: 'system', content: $json.system }, { role: 'user', content: $json.user } ], options: { temperature: 0.1, top_p: 0.9, num_predict: 1024, num_ctx: 4096 } }) }}",
+        "options": {
+          "timeout": 45000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "call-ollama",
+      "name": "Ollama Chat",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        120
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "Loopback only. think:true is load-bearing: with think:false this model streams untagged chain-of-thought straight into message.content, so ENABLING thinking is what keeps it out of the answer (Ollama returns it separately in message.thinking, which is discarded). Measured on an RTX 4050 with qwen3:4b fully GPU-resident: 9-21s per request. Raising num_predict above 1024 does not improve reliability — the model often stops of its own accord after thinking without emitting content, which the output validator turns into a clean fallback. See docs/ajoop-local-ai.md for the model-reliability finding."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Output validation. A reachable model is not a trusted one.\n//\n// The model is asked for PLAIN PROSE, so its answer is read straight from\n// message.content. An earlier revision ran JSON.parse(content) and took an\n// .answer field from it; because nothing ever asked the model for JSON that\n// parse always threw, raw became '', and every reply -- including correct ones\n// -- was discarded as 'empty model response', so the AI path could never\n// succeed. Keep this reader aligned with what the prompt actually requests.\nconst response = $json || {};\n// think:true puts reasoning in message.thinking, which is deliberately ignored.\nconst raw = (response.message && response.message.content) || '';\nconst model = response.model || $env.AJOOP_AI_MODEL || 'qwen3:4b';\n\n// Defence in depth: strip tagged reasoning or markup before it is ever shown.\nconst cleaned = String(raw)\n  .replace(/<think>[\\s\\S]*?<\\/think>/gi, '')\n  .replace(/<[^>]+>/g, '')\n  .trim();\n\nif (!cleaned) {\n  return [{ json: { ok: false, error: 'empty model response' } }];\n}\nif (cleaned.length > 4000) {\n  return [{ json: { ok: false, error: 'model response too long' } }];\n}\n\nreturn [{ json: { ok: true, mode: 'ai', answer: cleaned, model } }];"
+      },
+      "id": "validate-output",
+      "name": "Validate Model Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434' }}/api/tags",
+        "options": {
+          "timeout": 3000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "check-ollama",
+      "name": "Ollama Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        60,
+        -220
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "Loopback model inventory. Health is available only when Ollama responds and the configured model is installed."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Liveness requires both Ollama and the configured model; a running n8n alone\n// must never make the browser claim AI Enhanced. No execution detail is exposed.\nconst model = $env.AJOOP_AI_MODEL || 'qwen3:4b';\nconst models = Array.isArray($json.models) ? $json.models : [];\nconst available = models.some((item) => item && (item.name === model || item.model === model));\nreturn [{ json: available\n  ? { ok: true, mode: 'health', model }\n  : { ok: false, error: 'model unavailable' } }];"
+      },
+      "id": "health-response",
+      "name": "Health Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rejections carry a short reason and nothing else: no stack traces, no node\n// names, no environment detail. The browser only needs to know it must fall back.\nreturn [{ json: { ok: false, error: String($json.error || 'invalid request').slice(0, 120) } }];"
+      },
+      "id": "reject-response",
+      "name": "Rejection Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond",
+      "name": "Respond to Ajoop",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        0
+      ],
+      "notes": "Always HTTP 200 with an ok flag. The browser treats ok:false exactly like a network failure and shows its deterministic answer."
+    }
+  ],
+  "connections": {
+    "Ajoop Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request": {
+      "main": [
+        [
+          {
+            "node": "Request Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Valid?": {
+      "main": [
+        [
+          {
+            "node": "Health Probe?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rejection Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health Probe?": {
+      "main": [
+        [
+          {
+            "node": "Ollama Health",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Grounded Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Grounded Prompt": {
+      "main": [
+        [
+          {
+            "node": "Ollama Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat": {
+      "main": [
+        [
+          {
+            "node": "Validate Model Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Model Output": {
+      "main": [
+        [
+          {
+            "node": "Respond to Ajoop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Health": {
+      "main": [
+        [
+          {
+            "node": "Health Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Ajoop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rejection Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Ajoop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

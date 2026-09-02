@@ -44,6 +44,11 @@
     /* Ajoop 4.2 evidence model: reads the knowledge layer and the router's
      * route shape, and assistant.js renders the responses it returns. */
     "js/ajoop/evidence.js",
+    /* Ajoop 4.3 optional local AI bridge. The public config ships disabled, so
+     * these two files load but make no network request until a local n8n
+     * endpoint is configured by hand. */
+    "ajoop-ai-config.js",
+    "js/ajoop/ai-bridge.js",
     "js/ajoop/assistant.js",
     "js/features/ultimate.js",
     "js/features/recruiter.js",

@@ -239,16 +239,22 @@ function routeAjoopQuery(message, context) {
   /* Subject resolution. The message wins; then what the visitor was already
    * talking about; then the page they are standing on. A message that named a
    * subject never inherits, which is how switching subject works. */
-  /* A technology is something a subject HAS, not a subject itself.
+  /* A technology is something a subject HAS, not a subject itself. A named
+   * project is also more concrete than a role label in the same sentence.
    *
    * Entity extraction ranks by alias specificity, so a two-word technology
    * ("AI Evaluation") outranks a one-word project ("SINAMA") — which made
    * "SINAMA'da AI evaluation yaptın mı?" set the active subject to the
-   * technology and lose SINAMA for the next turn. Tech entities still vote for
-   * the stack intent; they just never win the subject when a real one is named.
+   * technology and lose SINAMA for the next turn. The same specificity ordering
+   * made "SINAMA ... Applied AI" select the role instead of the project. Tech
+   * and role entities still vote for intents; they just do not displace an
+   * explicitly named project as the subject.
    */
   const subjectEntities = entities.filter((match) => match.type !== "tech");
-  const namedEntity = (subjectEntities[0] || entities[0] || {}).id || null;
+  const projectEntities = subjectEntities.filter(
+    (match) => match.type === "project" || match.type === "projectDetail",
+  );
+  const namedEntity = (projectEntities[0] || subjectEntities[0] || entities[0] || {}).id || null;
   const inheritable = facet !== "overview" || !winner;
   let entity = namedEntity;
   let entitySource = namedEntity ? "message" : null;

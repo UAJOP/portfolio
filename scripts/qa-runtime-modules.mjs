@@ -138,6 +138,11 @@ const ORDER = [
   ["js/ajoop/knowledge.js", "js/ajoop/evidence.js"],
   ["js/ajoop/router.js", "js/ajoop/evidence.js"],
   ["js/ajoop/evidence.js", "js/ajoop/assistant.js"],
+  /* Ajoop 4.3: the bridge serializes the evidence model and reads the public
+   * config, and assistant.js renders whatever it returns. */
+  ["ajoop-ai-config.js", "js/ajoop/ai-bridge.js"],
+  ["js/ajoop/evidence.js", "js/ajoop/ai-bridge.js"],
+  ["js/ajoop/ai-bridge.js", "js/ajoop/assistant.js"],
   ["js/features/ultimate.js", "js/features/recruiter.js"],
   ["js/features/recruiter.js", "js/features/command-palette.js"],
   ["js/features/command-palette.js", "js/features/ajoop-nav.js"],
