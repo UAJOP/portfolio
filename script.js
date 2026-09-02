@@ -30,6 +30,14 @@
     "js/core/i18n-runtime.js",
     "js/portfolio/routing.js",
     "js/ajoop/matcher.js",
+    /* Ajoop 4.0 brain, in dependency order: entities and context reuse the
+     * matcher's tokenizer, knowledge reads the registry, and the router needs
+     * all three. assistant.js stays last because it owns the keyword map and
+     * the answers the router routes into. */
+    "js/ajoop/entities.js",
+    "js/ajoop/context.js",
+    "js/ajoop/knowledge.js",
+    "js/ajoop/router.js",
     "js/ajoop/assistant.js",
     "js/features/ultimate.js",
     "js/features/recruiter.js",

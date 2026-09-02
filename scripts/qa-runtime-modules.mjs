@@ -119,6 +119,15 @@ const ORDER = [
   ["js/core/i18n-runtime.js", "js/portfolio/routing.js"],
   ["js/portfolio/routing.js", "js/ajoop/assistant.js"],
   ["js/ajoop/matcher.js", "js/ajoop/assistant.js"],
+  /* Ajoop 4.0 brain. Entities and context reuse the matcher's tokenizer, the
+   * router needs entities, context and knowledge, and assistant.js owns the
+   * keyword map and answers the router routes into. */
+  ["js/ajoop/matcher.js", "js/ajoop/entities.js"],
+  ["js/ajoop/matcher.js", "js/ajoop/context.js"],
+  ["js/ajoop/entities.js", "js/ajoop/router.js"],
+  ["js/ajoop/context.js", "js/ajoop/router.js"],
+  ["js/ajoop/knowledge.js", "js/ajoop/router.js"],
+  ["js/ajoop/router.js", "js/ajoop/assistant.js"],
   ["js/features/ultimate.js", "js/features/recruiter.js"],
   ["js/features/recruiter.js", "js/features/command-palette.js"],
   ["js/features/command-palette.js", "js/features/ajoop-nav.js"],
