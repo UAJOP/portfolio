@@ -259,4 +259,70 @@ function getAjoopEntityEvidence(entity, language, registry) {
   const project = getAjoopProject(id, language, registry);
   return project ? { kind: "project", id: project.id, project } : null;
 }
+
+/* ---------- Ajoop 4.2 evidence accessors ---------- */
+
+/** Link kinds that count as a citable source rather than a navigation aid. */
+const AJOOP_SOURCE_KINDS = ["caseStudy", "live", "github"];
+
+/**
+ * The citable sources for a project, in a stable order.
+ *
+ * A source the registry does not list simply does not appear — this is the
+ * single place an evidence card could imply a repository or a live URL that
+ * does not exist, so it stays a filter over canonical links and never a
+ * constructor of new ones.
+ */
+function getAjoopProjectSources(id, language, registry) {
+  const links = getAjoopProjectLinks(id, language, registry);
+  return AJOOP_SOURCE_KINDS.map((kind) => links.find((link) => link.kind === kind)).filter(
+    Boolean,
+  );
+}
+
+/**
+ * Every project id the registry can describe, flagship records first.
+ *
+ * Flagship records carry the recruiter-facing summary and proof, so they lead;
+ * detail slugs already covered by a flagship record are dropped rather than
+ * listed twice.
+ */
+function getAjoopCanonicalProjectIds(registry) {
+  const source = getAjoopRegistry(registry);
+  const flagship = Object.keys((source && source.projects) || {});
+  const covered = new Set(
+    flagship.map((id) => ajoopDetailSlugForProject(id, registry)).filter(Boolean),
+  );
+  const details = Object.keys((source && source.projectDetails) || {}).filter(
+    (slug) => !covered.has(slug),
+  );
+  return [...flagship, ...details];
+}
+
+/**
+ * Two projects side by side, reduced to the fields both records can express.
+ *
+ * A row is emitted only when at least one side has canonical content for it, so
+ * the comparison never shows an empty column pretending to be a finding. No
+ * ranking, no verdict: the rows are facts and the reader draws the conclusion.
+ */
+function getAjoopComparisonData(entityA, entityB, language, registry) {
+  const left = getAjoopProject(entityA, language, registry);
+  const right = getAjoopProject(entityB, language, registry);
+  if (!left || !right || left.id === right.id) return null;
+  return {
+    left,
+    right,
+    fields: [
+      { key: "category", a: left.category, b: right.category },
+      { key: "summary", a: left.summary, b: right.summary },
+      { key: "status", a: left.status, b: right.status },
+      { key: "stack", a: left.stack, b: right.stack },
+      { key: "proof", a: left.proof, b: right.proof },
+    ].filter((field) => {
+      const has = (value) => (Array.isArray(value) ? value.length > 0 : Boolean(value));
+      return has(field.a) || has(field.b);
+    }),
+  };
+}
 /* ajoop-knowledge:end */

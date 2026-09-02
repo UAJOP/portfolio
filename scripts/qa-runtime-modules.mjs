@@ -133,6 +133,11 @@ const ORDER = [
   ["js/ajoop/knowledge.js", "js/ajoop/conversation.js"],
   ["js/ajoop/router.js", "js/ajoop/conversation.js"],
   ["js/ajoop/conversation.js", "js/ajoop/assistant.js"],
+  /* Ajoop 4.2: the evidence model reads the knowledge layer and the router's
+   * route shape; assistant.js renders what it returns. */
+  ["js/ajoop/knowledge.js", "js/ajoop/evidence.js"],
+  ["js/ajoop/router.js", "js/ajoop/evidence.js"],
+  ["js/ajoop/evidence.js", "js/ajoop/assistant.js"],
   ["js/features/ultimate.js", "js/features/recruiter.js"],
   ["js/features/recruiter.js", "js/features/command-palette.js"],
   ["js/features/command-palette.js", "js/features/ajoop-nav.js"],

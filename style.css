@@ -110,7 +110,11 @@ html[data-theme="light"] .lang-switch,
 html[data-theme="light"] .chatbot-close,
 html[data-theme="light"] .chatbot-form input,
 html[data-theme="light"] .chatbot-quicks button,
-html[data-theme="light"] .chatbot-message.bot {
+html[data-theme="light"] .chatbot-message.bot,
+/* Evidence surfaces sit on an already-translucent bot bubble, so they need an
+ * opaque light-theme background for the same reason the bubble does. */
+html[data-theme="light"] .ajoop-card,
+html[data-theme="light"] .ajoop-compare {
   background: rgba(255, 255, 255, 0.72);
 }
 html[data-theme="light"] .chatbot-message p {
@@ -2182,6 +2186,143 @@ body.overlay-modal-open {
   color: var(--muted);
   font-style: italic;
   opacity: 0.85;
+}
+
+/* Ajoop 4.2 evidence cards.
+ *
+ * Reuses the panel's existing surface vocabulary — same border token, same
+ * pill radius for tags, same accent for actions — so evidence reads as part of
+ * Ajoop rather than an embedded widget. Everything sizes from the panel width;
+ * there are no fixed widths and no horizontal scrollers. */
+.ajoop-card,
+.ajoop-compare {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.ajoop-card-source {
+  color: var(--brand);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ajoop-card-title {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.ajoop-card-summary,
+.ajoop-card-meta {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.ajoop-card-meta {
+  font-size: 11.5px;
+  opacity: 0.85;
+}
+.ajoop-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+  list-style: none;
+}
+.ajoop-card-tags li {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.ajoop-card-proof {
+  margin-top: 9px;
+  padding-left: 16px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ajoop-card-proof li {
+  overflow-wrap: anywhere;
+}
+.ajoop-card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ajoop-card-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  color: var(--brand);
+  background: rgba(56, 189, 248, 0.1);
+  font-size: 12px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+/* Comparison: two columns where there is room, one where there is not.
+ *
+ * Every cell repeats its project name, so the meaning never depends on which
+ * column a value landed in — the same markup reads correctly stacked, and a
+ * screen reader gets the pairing without a table. */
+.ajoop-compare-row + .ajoop-compare-row {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.ajoop-compare-row:first-of-type {
+  margin-top: 8px;
+}
+.ajoop-compare-label {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ajoop-compare-cells {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+.ajoop-compare-cell {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.ajoop-compare-who {
+  color: var(--brand);
+  font-size: 10.5px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+.ajoop-compare-value {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+/* The panel is ~390px at most, so two columns only earn their keep on the
+ * wider end of it; below that they become unreadable slivers. */
+@media screen and (max-width: 560px) {
+  .ajoop-compare-cells {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .chatbot-form {
   display: grid;

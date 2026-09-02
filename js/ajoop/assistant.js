@@ -1181,6 +1181,235 @@ function deliverAjoopAnswer(render) {
   }, AJOOP_THINKING_DELAY_MS);
 }
 
+/* ---------- Ajoop 4.2 evidence rendering ---------- */
+
+/**
+ * A URL safe to put in an href.
+ *
+ * Card values come from the canonical registry rather than the visitor, but a
+ * link is the one field where a bad value would become executable, so the
+ * protocol is checked here rather than assumed upstream.
+ */
+function ajoopSafeUrl(url) {
+  const value = String(url || "").trim();
+  if (!value) return null;
+  if (/^(https?:|mailto:)/i.test(value)) return value;
+  /* Relative repo paths are resolved by the locale-aware router. */
+  if (/^[a-z0-9._~\-/]/i.test(value) && !/^[a-z][a-z0-9+.-]*:/i.test(value)) return value;
+  return null;
+}
+
+/** An anchor built from canonical data, with the site's external-link rules. */
+function ajoopCardLink(link, contextLabel) {
+  const safe = ajoopSafeUrl(link && link.url);
+  if (!safe) return null;
+  const anchor = document.createElement("a");
+  anchor.href = typeof siteUrl === "function" ? siteUrl(safe) : safe;
+  anchor.textContent = link.label || safe;
+  if (contextLabel) anchor.setAttribute("aria-label", `${contextLabel}: ${anchor.textContent}`);
+  if (/^https?:/i.test(safe)) {
+    anchor.target = "_blank";
+    anchor.rel = "noopener";
+  }
+  return anchor;
+}
+
+function ajoopCardList(className, items, label, limit) {
+  const list = document.createElement("ul");
+  list.className = className;
+  if (label) list.setAttribute("aria-label", label);
+  items.slice(0, typeof limit === "number" ? limit : items.length).forEach((item) => {
+    const entry = document.createElement("li");
+    entry.textContent = item;
+    list.appendChild(entry);
+  });
+  return list;
+}
+
+let ajoopCardSequence = 0;
+
+/**
+ * One evidence card.
+ *
+ * Built with createElement and textContent throughout: no template string
+ * reaches innerHTML, so no registry value can be interpreted as markup. Empty
+ * sections are omitted rather than rendered blank.
+ */
+function renderAjoopEvidenceCard(card) {
+  const language = portfolioChatbotState.language;
+  const article = document.createElement("article");
+  article.className = "ajoop-card";
+  ajoopCardSequence += 1;
+  const titleId = `ajoop-card-${ajoopCardSequence}`;
+  article.setAttribute("aria-labelledby", titleId);
+
+  const source = document.createElement("p");
+  source.className = "ajoop-card-source";
+  source.textContent = card.source;
+  article.appendChild(source);
+
+  const title = document.createElement("h3");
+  title.className = "ajoop-card-title";
+  title.id = titleId;
+  title.textContent = card.title;
+  article.appendChild(title);
+
+  if (card.summary) {
+    const summary = document.createElement("p");
+    summary.className = "ajoop-card-summary";
+    summary.textContent = card.summary;
+    article.appendChild(summary);
+  }
+  if (card.meta.length) {
+    const meta = document.createElement("p");
+    meta.className = "ajoop-card-meta";
+    meta.textContent = card.meta.join(" · ");
+    article.appendChild(meta);
+  }
+  if (card.tags.length) {
+    article.appendChild(
+      ajoopCardList(
+        "ajoop-card-tags",
+        card.tags,
+        ajoopLabel("Tech stack", "Teknolojiler", language),
+      ),
+    );
+  }
+  if (card.proof.length) {
+    article.appendChild(
+      ajoopCardList(
+        "ajoop-card-proof",
+        card.proof,
+        ajoopLabel("Proof points", "Kanıt maddeleri", language),
+      ),
+    );
+  }
+  if (card.links.length) {
+    const row = document.createElement("div");
+    row.className = "ajoop-card-links";
+    card.links.forEach((link) => {
+      const anchor = ajoopCardLink(link);
+      if (anchor) row.appendChild(anchor);
+    });
+    if (row.childNodes.length) article.appendChild(row);
+  }
+  return article;
+}
+
+/** One comparison cell, always naming which project it belongs to. */
+function ajoopCompareCell(who, value) {
+  const cell = document.createElement("div");
+  cell.className = "ajoop-compare-cell";
+  const name = document.createElement("span");
+  name.className = "ajoop-compare-who";
+  name.textContent = who;
+  cell.appendChild(name);
+  const body = document.createElement("span");
+  body.className = "ajoop-compare-value";
+  if (Array.isArray(value)) body.textContent = value.length ? value.join(", ") : "—";
+  else body.textContent = value || "—";
+  cell.appendChild(body);
+  return cell;
+}
+
+/**
+ * The side-by-side view.
+ *
+ * Every cell carries its own project name, so the structure reads correctly
+ * whether CSS renders two columns or one stacked list — the meaning never
+ * depends on visual position, which is also what makes it work for a screen
+ * reader and at 320px.
+ */
+function renderAjoopComparison(comparison) {
+  const language = portfolioChatbotState.language;
+  const root = document.createElement("div");
+  root.className = "ajoop-compare";
+  root.setAttribute("role", "group");
+  root.setAttribute(
+    "aria-label",
+    `${ajoopLabel("Comparison", "Karşılaştırma", language)}: ${comparison.left.title} / ${comparison.right.title}`,
+  );
+
+  const source = document.createElement("p");
+  source.className = "ajoop-card-source";
+  source.textContent = comparison.source;
+  root.appendChild(source);
+
+  comparison.rows.forEach((row) => {
+    const block = document.createElement("div");
+    block.className = "ajoop-compare-row";
+    const label = document.createElement("p");
+    label.className = "ajoop-compare-label";
+    label.textContent = row.label;
+    block.appendChild(label);
+    const cells = document.createElement("div");
+    cells.className = "ajoop-compare-cells";
+    cells.appendChild(ajoopCompareCell(comparison.left.title, row.a));
+    cells.appendChild(ajoopCompareCell(comparison.right.title, row.b));
+    block.appendChild(cells);
+    root.appendChild(block);
+  });
+
+  const linkRow = document.createElement("div");
+  linkRow.className = "ajoop-card-links";
+  [
+    { project: comparison.left, links: comparison.links.left },
+    { project: comparison.right, links: comparison.links.right },
+  ].forEach((side) => {
+    side.links.forEach((link) => {
+      const anchor = ajoopCardLink(link, side.project.title);
+      if (anchor) linkRow.appendChild(anchor);
+    });
+  });
+  if (linkRow.childNodes.length) root.appendChild(linkRow);
+  return root;
+}
+
+/** Appends a structured evidence response as one bot message. */
+function addAjoopEvidenceMessage(response) {
+  const messageList = document.querySelector("[data-chatbot-messages]");
+  if (!messageList) return;
+  const message = document.createElement("div");
+  message.className = "chatbot-message bot";
+  const text = document.createElement("p");
+  text.textContent = response.text;
+  message.appendChild(text);
+  if (response.comparison) message.appendChild(renderAjoopComparison(response.comparison));
+  (response.cards || []).forEach((card) =>
+    message.appendChild(renderAjoopEvidenceCard(card)),
+  );
+  messageList.appendChild(message);
+  messageList.scrollTop = messageList.scrollHeight;
+}
+
+/**
+ * The evidence response for a route, or null when this turn is ordinary text.
+ *
+ * `message` is passed in rather than stored on the route: the filter mode needs
+ * the raw words, and the route is what gets handed to the context layer.
+ */
+function buildAjoopEvidenceFor(route, language, message) {
+  if (typeof buildAjoopProveResponse !== "function") return null;
+
+  if (route.mode === "compare") {
+    const left = route.compareWith || route.previousEntity;
+    const right = route.entity;
+    if (!left || !right || left === right) return null;
+    return buildAjoopCompareResponse(left, right, language);
+  }
+  if (route.mode === "filter") {
+    return buildAjoopFilterResponse(message || "", language);
+  }
+  if (route.mode === "prove" || route.facet === "proof") {
+    if (!route.entity) return null;
+    return (
+      buildAjoopProveResponse(route.entity, language) ||
+      buildAjoopNoEvidenceResponse(language)
+    );
+  }
+  return null;
+}
+
 /**
  * A route shaped like the router's, for turns that did not come from typing.
  *
@@ -1357,6 +1586,33 @@ function runAjoopAction(action, label) {
     );
     return;
   }
+  /* Ajoop 4.2 action kinds. Both carry their subject explicitly, so neither
+   * depends on what the visitor typed before. */
+  if (action.action === "evidence") {
+    answerAjoopRoute(
+      ajoopSyntheticRoute({
+        intent: ajoopIntentForEntity(action.entity),
+        entity: action.entity,
+        entitySource: "message",
+        facet: "proof",
+        mode: "prove",
+      }),
+    );
+    return;
+  }
+  if (action.action === "compare") {
+    answerAjoopRoute(
+      ajoopSyntheticRoute({
+        intent: ajoopIntentForEntity(action.entity),
+        entity: action.entity,
+        entitySource: "message",
+        facet: "overview",
+        mode: "compare",
+        compareWith: action.compareWith,
+      }),
+    );
+    return;
+  }
   if (action.entity) {
     answerAjoopRoute(ajoopRouteForEntity(action.entity, action.facet));
     return;
@@ -1373,8 +1629,9 @@ function runAjoopAction(action, label) {
  * answer rather than sitting beside a guess. Either way the turn is folded into
  * the conversation context so the next message can inherit the subject.
  */
-function answerAjoopRoute(route) {
+function answerAjoopRoute(route, options) {
   const language = portfolioChatbotState.language;
+  const settings = options || {};
   portfolioChatbotState.lastRoute = route;
 
   const plan =
@@ -1386,8 +1643,16 @@ function answerAjoopRoute(route) {
         })
       : null;
 
+  /* Ajoop 4.2: an evidence response replaces the text answer when the turn
+   * asked for evidence, a comparison or a filtered list. Everything else falls
+   * through to the 4.0/4.1 path unchanged. */
+  const evidence = buildAjoopEvidenceFor(route, language, settings.message);
+  portfolioChatbotState.lastEvidence = evidence || null;
+
   deliverAjoopAnswer(() => {
-    if (plan && plan.fallback) {
+    if (evidence) {
+      addAjoopEvidenceMessage(evidence);
+    } else if (plan && plan.fallback) {
       addChatbotMessage("bot", plan.fallback.prompt, []);
     } else {
       const answer = route.preferPrepared ? null : ajoopEntityAnswer(route, language);
@@ -1417,7 +1682,29 @@ function handleAjoopMessage(message) {
   const direction =
     typeof detectAjoopContinuation === "function" ? detectAjoopContinuation(message) : null;
   const route = (direction && ajoopContinuationRoute(direction)) || routeAjoopQuery(message);
-  answerAjoopRoute(route);
+
+  /* Ajoop 4.2: decide whether this turn wants evidence, a comparison or a
+   * filtered list. Continuations keep the treatment of the turn they continue,
+   * so "daha detaylı" after a comparison does not silently become a filter. */
+  if (!direction && typeof detectAjoopEvidenceMode === "function") {
+    route.mode = detectAjoopEvidenceMode(message, route) || null;
+    if (route.mode === "compare") {
+      /* Two names in one sentence compare those two, in reading order; a single
+       * name compares against whatever the visitor was just discussing. */
+      const named = (route.entities || []).filter((match) =>
+        typeof getAjoopProject === "function" ? Boolean(getAjoopProject(match.id, portfolioChatbotState.language)) : true,
+      );
+      if (named.length >= 2) {
+        const ordered = orderAjoopComparisonEntities(message, named);
+        route.compareWith = ordered[0];
+        route.entity = ordered[1];
+      } else {
+        route.compareWith = route.previousEntity;
+      }
+    }
+  }
+
+  answerAjoopRoute(route, { message });
   return route;
 }
 

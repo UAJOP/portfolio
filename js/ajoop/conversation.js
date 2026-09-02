@@ -168,9 +168,16 @@ function ajoopProjectFacetActions(project, route, language) {
       }),
     );
   }
-  if (project.proof.length && facet !== "proof") {
+  /* Ajoop 4.2: this is the evidence-card entry point rather than a text facet.
+   * It is offered only when the registry has proof points or a citable source
+   * behind it, so the button never leads to an empty card. */
+  const sources =
+    typeof getAjoopProjectSources === "function"
+      ? getAjoopProjectSources(project.id, language)
+      : [];
+  if ((project.proof.length || sources.length) && facet !== "proof") {
     actions.push(
-      ajoopAction(`${project.id}:proof`, ajoopPlanText("Evidence", "Kanıtlar", language), "facet", {
+      ajoopAction(`${project.id}:proof`, ajoopPlanText("Evidence", "Kanıtlar", language), "evidence", {
         entity: project.id,
         facet: "proof",
       }),
@@ -217,8 +224,37 @@ function ajoopCompareAction(route, language, registry) {
     `compare:${other}`,
     ajoopPlanText("Compare with {name}", "{name} ile karşılaştır", language).replace("{name}", project.name),
     "compare",
-    { entity: other, facet: "overview" },
+    { entity: other, facet: "overview", compareWith: route.entity },
   );
+}
+
+/**
+ * Comparison candidates when only one subject is known.
+ *
+ * 4.1 could only offer a comparison once the visitor had already mentioned two
+ * projects. Rather than pick an arbitrary partner, this offers the flagship
+ * records as explicit choices — the visitor decides what the comparison is
+ * against, and the registry decides what is on the menu.
+ */
+function ajoopCompareCandidateActions(route, language, registry, limit) {
+  if (route.previousEntity && route.previousEntity !== route.entity) return [];
+  const source = getAjoopRegistry(registry);
+  const projects = (source && source.projects) || {};
+  return Object.keys(projects)
+    .filter((id) => id !== route.entity)
+    .slice(0, typeof limit === "number" ? limit : 1)
+    .map((id) => {
+      const project = getAjoopProject(id, language, registry);
+      return project
+        ? ajoopAction(
+            `compare:${id}`,
+            ajoopPlanText("Compare with {name}", "{name} ile karşılaştır", language).replace("{name}", project.name),
+            "compare",
+            { entity: id, facet: "overview", compareWith: route.entity },
+          )
+        : null;
+    })
+    .filter(Boolean);
 }
 
 /** Two flagship projects to offer as a subject switch, from canonical data. */
@@ -254,10 +290,13 @@ function ajoopRoleActions(profile, route, language, registry) {
       intent: "roles",
     }),
   );
+  /* Ajoop 4.2: "Prove it" renders the profile's own canonical evidence
+   * projects as cards. The order is the registry's curated `evidence` list, not
+   * a computed ranking, so no fit score is implied. */
   if (profile.evidence.length) {
     actions.push(
-      ajoopAction(`role:${profile.id}:evidence`, ajoopPlanText("Strongest evidence", "En güçlü kanıtlar", language), "facet", {
-        entity: profile.evidence[0],
+      ajoopAction(`role:${profile.id}:prove`, ajoopPlanText("Prove it", "Kanıtla", language), "evidence", {
+        entity: profile.id,
         facet: "proof",
       }),
     );
@@ -471,10 +510,26 @@ function planAjoopConversation(route, options) {
 
     if (profile) followups = ajoopRoleActions(profile, route, language, registry);
     else if (project) {
-      followups = ajoopProjectFacetActions(project, route, language);
-      const compare = ajoopCompareAction(route, language, registry);
-      if (compare) followups.push(compare);
-      followups.push(...ajoopSuggestedProjects(language, registry, project.id, 1));
+      /* Conversational actions outrank navigation.
+       *
+       * The row is capped, and a data-rich project (SINAMA) generates more
+       * actions than fit. Facets and Compare keep the visitor inside Ajoop,
+       * while the link buttons leave it — and every one of those links is also
+       * on the evidence card — so links yield the tail of the row rather than
+       * crowding out the comparison. */
+      const projectActions = ajoopProjectFacetActions(project, route, language);
+      const facets = projectActions.filter((action) => action.action !== "nav");
+      const links = projectActions.filter((action) => action.action === "nav");
+      const compare =
+        ajoopCompareAction(route, language, registry) ||
+        ajoopCompareCandidateActions(route, language, registry, 1)[0] ||
+        null;
+      followups = [
+        ...facets,
+        ...(compare ? [compare] : []),
+        ...links,
+        ...ajoopSuggestedProjects(language, registry, project.id, 1),
+      ];
     } else {
       followups = ajoopIntentActions(route, language, registry, quickLabels);
     }
