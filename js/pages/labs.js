@@ -251,3 +251,8 @@ function setupAlgorithmic3DLab() {
     start();
   }
 }
+
+/* This page-scoped module owns its own lifecycle. It is loaded only when
+ * <body data-page="labs"> is present, so initialization must happen here
+ * after the implementation is defined instead of from an earlier COMMON module. */
+setupAlgorithmic3DLab();
