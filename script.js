@@ -28,6 +28,8 @@
     "js/core/theme.js",
     "js/core/media.js",
     "js/core/i18n-runtime.js",
+    /* Build tooling still reads "js/core/i18n.js" as the historical EN/TR
+     * compatibility source. It is intentionally absent from browser runtime. */
     "js/portfolio/routing.js",
     "js/ajoop/matcher.js",
     "js/ajoop/assistant.js",
