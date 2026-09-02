@@ -2121,22 +2121,50 @@ body.overlay-modal-open {
   font-size: 12px;
   font-weight: 900;
 }
+/* Ajoop 4.1 action row.
+ *
+ * This was a single horizontal scroller. Contextual follow-ups make the row
+ * longer and less predictable, and a sideways scroller hides the options a
+ * visitor is meant to notice, so the row wraps instead. Wrapping also removes
+ * the horizontal overflow on narrow screens. */
 .chatbot-quicks {
-  display: flex;
+  display: grid;
   gap: 8px;
   padding: 0 16px 14px;
-  overflow-x: auto;
+  max-height: 168px;
+  overflow-y: auto;
+}
+.chatbot-actions-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Follow-ups replace the opening suggestions in place, so the row gets its own
+ * accent to show that the offer changed rather than simply moved. */
+.chatbot-quicks.is-followups .chatbot-actions-label {
+  color: var(--brand);
+}
+.chatbot-actions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .chatbot-quicks button {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-width: 100%;
   min-height: 34px;
-  padding: 0 11px;
+  padding: 7px 11px;
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
   font-size: 12px;
   font-weight: 850;
+  line-height: 1.25;
+  text-align: left;
+  overflow-wrap: anywhere;
   cursor: pointer;
   transition: 0.25s ease;
 }
@@ -2144,6 +2172,16 @@ body.overlay-modal-open {
   color: #06111f;
   background: linear-gradient(135deg, var(--brand), var(--accent));
   border-color: transparent;
+}
+/* Start over is an escape hatch, not a suggestion: present but quieter. */
+.chatbot-quicks button[data-chatbot-action-kind="reset"] {
+  color: var(--muted);
+  background: transparent;
+}
+.chatbot-message.is-thinking p {
+  color: var(--muted);
+  font-style: italic;
+  opacity: 0.85;
 }
 .chatbot-form {
   display: grid;
@@ -2205,6 +2243,12 @@ body.overlay-modal-open {
     width: calc(100vw - 28px);
     max-height: calc(100dvh - 112px - env(safe-area-inset-bottom));
     border-radius: 24px;
+  }
+
+  /* The panel is short here and the transcript is the point, so the wrapped
+   * action row gives back height rather than pushing messages out of view. */
+  .chatbot-quicks {
+    max-height: 124px;
   }
 }
 .chatbot-header p:empty {

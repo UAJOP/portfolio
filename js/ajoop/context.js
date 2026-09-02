@@ -30,13 +30,26 @@
 const AJOOP_CONTEXT_KEY = "ajoop-context-v1";
 const AJOOP_CONTEXT_VERSION = 1;
 
+/**
+ * Ajoop 4.1 added `lastFacet` and `depth` to this shape.
+ *
+ * The version and the storage key deliberately did NOT change: reads merge the
+ * stored record onto these defaults, so a context written by 4.0 keeps working
+ * and simply picks up the new fields at their defaults. Bumping the version
+ * would have discarded live sessions for no benefit.
+ */
 function emptyAjoopContext() {
   return {
     version: AJOOP_CONTEXT_VERSION,
     lastIntent: null,
     lastEntity: null,
     previousEntity: null,
+    /* Consecutive turns on the same intent — rotates prepared answer lines. */
     answerDepth: 0,
+    /* Which aspect of the subject was last asked about (stack, links, proof…). */
+    lastFacet: null,
+    /* How much detail the visitor asked for: quick | normal | deep. */
+    depth: "normal",
     pageContext: null,
   };
 }
@@ -109,8 +122,21 @@ function rememberAjoopTurn(turn, store) {
         ? current.lastEntity
         : current.previousEntity,
     answerDepth: intent && intent === current.lastIntent ? current.answerDepth + 1 : 0,
+    /* The resolved subject and aspect are what a continuation ("daha detaylı")
+     * re-answers, so both survive the turn even when the next message names
+     * neither. */
+    lastFacet: turn && turn.facet !== undefined ? turn.facet : current.lastFacet,
+    depth: turn && turn.depth ? turn.depth : current.depth,
     pageContext: (turn && turn.pageContext) || current.pageContext,
   };
+  writeAjoopContext(next, store);
+  return next;
+}
+
+/** Records a depth change without disturbing the active subject. */
+function setAjoopDepth(depth, store) {
+  const current = readAjoopContext(store);
+  const next = Object.assign({}, current, { depth });
   writeAjoopContext(next, store);
   return next;
 }

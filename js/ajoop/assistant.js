@@ -892,10 +892,29 @@ function selectAjoopAnswerLine(value, depth = 0) {
   return value[depth % value.length];
 }
 
-function answerChatbotIntent(intentId, depth = 0) {
+/**
+ * Prepared-answer text at the requested detail level.
+ *
+ * Prepared answers are arrays of curated lines, so "deep" pairs the rotated
+ * line with the next one rather than inventing a longer version of it. Quick
+ * and normal both stay at one line; quick trims the links instead.
+ */
+function ajoopPreparedText(value, depth, level) {
+  const line = selectAjoopAnswerLine(value, depth);
+  if (level !== "deep" || !Array.isArray(value) || value.length < 2) return line;
+  const next = value[(depth + 1) % value.length];
+  return next && next !== line ? `${line} ${next}` : line;
+}
+
+function answerChatbotIntent(intentId, depth = 0, level = "normal") {
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
   const answer = content.answers[intentId] || content.answers.default;
-  addChatbotMessage("bot", selectAjoopAnswerLine(answer.text, depth), answer.links);
+  const links = answer.links || [];
+  addChatbotMessage(
+    "bot",
+    ajoopPreparedText(answer.text, depth, level),
+    level === "quick" ? links.slice(0, 1) : links,
+  );
 }
 
 /* ajoop-entity-answers:start
@@ -920,22 +939,58 @@ function orderAjoopLinks(links, linkHint) {
   ];
 }
 
+/**
+ * Ajoop 4.1 answer depth.
+ *
+ * The three levels are the same canonical fields shown at three widths — quick
+ * trims to the identifying sentence, deep adds the evidence a recruiter would
+ * ask for next. Nothing is rewritten or generated; a level that has no extra
+ * canonical data to show simply looks like the level below it.
+ */
+function ajoopDepthOf(route) {
+  const value = route && route.depth;
+  return value === "quick" || value === "deep" ? value : "normal";
+}
+
+/** Primary link only for quick answers, everything for normal and deep. */
+function ajoopDepthLinks(links, depth, linkHint) {
+  const ordered = orderAjoopLinks(links, linkHint);
+  return depth === "quick" ? ordered.slice(0, 1) : ordered;
+}
+
 function ajoopProjectAnswer(project, route, language) {
   const lines = [];
+  const depth = ajoopDepthOf(route);
   switch (route.facet) {
     case "stack": {
       if (!project.stack.length) return null;
+      const shown = depth === "quick" ? project.stack.slice(0, 4) : project.stack;
       lines.push(
-        `${project.name} — ${ajoopLabel("Stack", "Teknolojiler", language)}: ${project.stack.join(", ")}.`,
+        `${project.name} — ${ajoopLabel("Stack", "Teknolojiler", language)}: ${shown.join(", ")}.`,
       );
-      if (project.summary) lines.push(project.summary);
+      if (depth !== "quick" && project.summary) lines.push(project.summary);
+      if (depth === "deep") {
+        const meta = [project.category, project.role, project.year].filter(Boolean);
+        if (meta.length) lines.push(meta.join(" · "));
+        if (project.proof.length) {
+          lines.push(
+            `${ajoopLabel("Evidence", "Kanıt", language)}: ${project.proof.slice(0, 3).join("; ")}.`,
+          );
+        }
+      }
       break;
     }
     case "proof": {
       if (!project.proof.length) return null;
+      const shown = depth === "quick" ? project.proof.slice(0, 2) : project.proof;
       lines.push(
-        `${project.name} — ${ajoopLabel("Evidence", "Kanıt", language)}: ${project.proof.join("; ")}.`,
+        `${project.name} — ${ajoopLabel("Evidence", "Kanıt", language)}: ${shown.join("; ")}.`,
       );
+      if (depth === "deep" && project.stack.length) {
+        lines.push(
+          `${ajoopLabel("Stack", "Teknolojiler", language)}: ${project.stack.join(", ")}.`,
+        );
+      }
       break;
     }
     case "links": {
@@ -969,32 +1024,66 @@ function ajoopProjectAnswer(project, route, language) {
     }
     default: {
       if (!project.summary) return null;
-      const meta = [project.category, project.status, project.year].filter(Boolean);
       lines.push(`${project.name} — ${project.summary}`);
-      if (meta.length) lines.push(meta.join(" · "));
+      if (depth !== "quick") {
+        const meta = [project.category, project.status, project.year].filter(Boolean);
+        if (meta.length) lines.push(meta.join(" · "));
+      }
+      if (depth === "deep") {
+        if (project.stack.length) {
+          lines.push(
+            `${ajoopLabel("Stack", "Teknolojiler", language)}: ${project.stack.join(", ")}.`,
+          );
+        }
+        if (project.proof.length) {
+          lines.push(
+            `${ajoopLabel("Evidence", "Kanıt", language)}: ${project.proof.slice(0, 4).join("; ")}.`,
+          );
+        }
+      }
       break;
     }
   }
   return {
     text: lines.filter(Boolean).join(" "),
-    links: orderAjoopLinks(project.links, route.linkHint),
+    links: ajoopDepthLinks(project.links, depth, route.linkHint),
   };
 }
 
-function ajoopRoleAnswer(profile, language) {
+/**
+ * The honest answer to "what are the gaps?".
+ *
+ * The registry records capabilities and evidence; it does not record
+ * weaknesses. Rather than reason about what is missing — which would be
+ * generated opinion presented as portfolio data — this says so and shows what
+ * IS documented, so a recruiter can draw their own conclusion.
+ */
+function ajoopRoleGapAnswer(profile, language, links) {
   const parts = [
-    `${profile.focusTitle || profile.label} — ${ajoopLabel("capability focus", "yetkinlik odağı", language)}.`,
+    ajoopLabel(
+      "Gap and weakness data is not structured in the portfolio registry, so I will not guess at it.",
+      "Eksik yön ve zayıflık verisi portfolyo kaydında yapılandırılmış değil, bu yüzden tahmin yürütmüyorum.",
+      language,
+    ),
+    `${ajoopLabel("What is documented for this focus", "Bu odak için kayıtlı olan", language)}: ${profile.focusTitle || profile.label}.`,
   ];
   if (profile.capabilities.length) {
     parts.push(
       `${ajoopLabel("Capabilities", "Yetkinlikler", language)}: ${profile.capabilities.join(", ")}.`,
     );
   }
-  if (profile.skills.length) {
-    parts.push(
-      `${ajoopLabel("Core capabilities", "Ana yetkinlikler", language)}: ${profile.skills.slice(0, 3).join("; ")}.`,
-    );
-  }
+  parts.push(
+    ajoopLabel(
+      "Kaan can answer scope questions directly.",
+      "Kapsam sorularını Kaan doğrudan yanıtlayabilir.",
+      language,
+    ),
+  );
+  return { text: parts.join(" "), links };
+}
+
+function ajoopRoleAnswer(profile, language, route) {
+  const depth = ajoopDepthOf(route);
   const links = profile.evidence
     .map((id) => {
       const project = getAjoopProject(id, language);
@@ -1006,7 +1095,24 @@ function ajoopRoleAnswer(profile, language) {
     label: ajoopLabel("Open Recruiter Mode", "İK Modunu aç", language),
     url: `index.html?role=${encodeURIComponent(profile.id)}`,
   });
-  return { text: parts.join(" "), links };
+
+  if (route && route.facet === "gaps") return ajoopRoleGapAnswer(profile, language, links);
+
+  const parts = [
+    `${profile.focusTitle || profile.label} — ${ajoopLabel("capability focus", "yetkinlik odağı", language)}.`,
+  ];
+  if (profile.capabilities.length) {
+    parts.push(
+      `${ajoopLabel("Capabilities", "Yetkinlikler", language)}: ${profile.capabilities.join(", ")}.`,
+    );
+  }
+  if (depth !== "quick" && profile.skills.length) {
+    const shown = depth === "deep" ? profile.skills : profile.skills.slice(0, 3);
+    parts.push(
+      `${ajoopLabel("Core capabilities", "Ana yetkinlikler", language)}: ${shown.join("; ")}.`,
+    );
+  }
+  return { text: parts.join(" "), links: depth === "quick" ? links.slice(0, 2) : links };
 }
 
 /**
@@ -1022,7 +1128,7 @@ function ajoopEntityAnswer(route, language) {
     typeof getAjoopEntity === "function" ? getAjoopEntity(route.entity) : null;
   const evidence = getAjoopEntityEvidence(entity || route.entity, language);
   if (!evidence) return null;
-  if (evidence.kind === "role") return ajoopRoleAnswer(evidence.profile, language);
+  if (evidence.kind === "role") return ajoopRoleAnswer(evidence.profile, language, route);
   if (evidence.kind === "project") {
     return ajoopProjectAnswer(evidence.project, route, language);
   }
@@ -1030,26 +1136,273 @@ function ajoopEntityAnswer(route, language) {
 }
 /* ajoop-entity-answers:end */
 
+/* ---------- Ajoop 4.1 conversation layer ---------- */
+
 /**
- * Answers one routed message.
+ * Response transition.
+ *
+ * A tiny fixed pause makes "you asked / Ajoop answered" read as two beats
+ * instead of one instant paste. It is NOT an imitation of model latency: there
+ * is no streaming, no random jitter, and direct navigation actions skip it
+ * entirely. The placeholder is aria-hidden because the answer arrives in the
+ * same live region a fifth of a second later, and announcing both would just
+ * talk over the useful one.
+ */
+const AJOOP_THINKING_DELAY_MS = 220;
+
+function addAjoopThinkingMessage() {
+  const messageList = document.querySelector("[data-chatbot-messages]");
+  if (!messageList) return null;
+  const node = document.createElement("div");
+  node.className = "chatbot-message bot is-thinking";
+  node.setAttribute("data-chatbot-thinking", "");
+  node.setAttribute("aria-hidden", "true");
+  node.innerHTML = `<p>${escapeProjectHtml(
+    ajoopLabel(
+      "Checking portfolio evidence…",
+      "Portfolyo kanıtları kontrol ediliyor…",
+      portfolioChatbotState.language,
+    ),
+  )}</p>`;
+  messageList.appendChild(node);
+  messageList.scrollTop = messageList.scrollHeight;
+  return node;
+}
+
+function deliverAjoopAnswer(render) {
+  const node = addAjoopThinkingMessage();
+  if (!node || typeof window === "undefined" || typeof window.setTimeout !== "function") {
+    render();
+    return;
+  }
+  window.setTimeout(() => {
+    node.remove();
+    render();
+  }, AJOOP_THINKING_DELAY_MS);
+}
+
+/**
+ * A route shaped like the router's, for turns that did not come from typing.
+ *
+ * Button taps and continuations already know their subject, so they skip
+ * scoring entirely. `origin: "action"` tells the planner not to offer
+ * clarification for them — there is nothing ambiguous about a tapped button.
+ */
+function ajoopSyntheticRoute(overrides) {
+  const context = typeof readAjoopContext === "function" ? readAjoopContext() : null;
+  const page =
+    typeof readAjoopPageContext === "function" ? readAjoopPageContext() : null;
+  const route = Object.assign(
+    {
+      origin: "action",
+      intent: "default",
+      secondaryIntents: [],
+      entities: [],
+      entity: null,
+      entitySource: null,
+      previousEntity: (context && context.lastEntity) || null,
+      facet: "overview",
+      linkHint: null,
+      confidence: "high",
+      score: 0,
+      candidates: [],
+      answerDepth: 0,
+      depth: (context && context.depth) || "normal",
+      pageContext: page,
+    },
+    overrides || {},
+  );
+  route.answerDepth =
+    context && context.lastIntent === route.intent ? (context.answerDepth || 0) + 1 : 0;
+  return route;
+}
+
+/** The intent an entity implies, so a subject switch lands on a real answer. */
+function ajoopIntentForEntity(entityId) {
+  if (typeof getAjoopEntity !== "function" || typeof ajoopEntityIntent !== "function") {
+    return "default";
+  }
+  const known = new Set(
+    (typeof chatbotKeywordMap === "undefined" ? [] : chatbotKeywordMap)
+      .map((entry) => entry && entry.id)
+      .filter(Boolean),
+  );
+  return ajoopEntityIntent(getAjoopEntity(entityId), known) || "default";
+}
+
+/** True when a prepared, hand-written answer exists for this intent id. */
+function ajoopHasPreparedAnswer(intentId) {
+  const content = getPortfolioChatbotContent(portfolioChatbotState.language);
+  return Boolean(intentId && content.answers && content.answers[intentId]);
+}
+
+/**
+ * Route for a subject the visitor picked from a button.
+ *
+ * `preferPrepared` protects the curated answers. SINAMA, Merge Rush and Joyday
+ * are both entity ids and intent ids, and their hand-written answers say more
+ * than a generated registry overview does — so asking for one of those as a
+ * whole keeps the prepared copy. A specific facet (stack, proof, links) always
+ * comes from canonical data, because prepared copy cannot answer those.
+ */
+function ajoopRouteForEntity(entityId, facet) {
+  const intent = ajoopIntentForEntity(entityId);
+  const resolved = facet || "overview";
+  return ajoopSyntheticRoute({
+    intent,
+    entity: entityId,
+    entitySource: "message",
+    facet: resolved,
+    linkHint: resolved === "links" ? "github" : null,
+    preferPrepared:
+      resolved === "overview" && intent === entityId && ajoopHasPreparedAnswer(intent),
+  });
+}
+
+/**
+ * Re-answers the active subject at a new depth.
+ *
+ * "daha detaylı" is an instruction about the current topic, so it reuses the
+ * stored intent, entity and facet instead of being scored as a new question.
+ * Returns null when there is no conversation yet, and the caller routes the
+ * message normally.
+ */
+function ajoopContinuationRoute(direction) {
+  const context = typeof readAjoopContext === "function" ? readAjoopContext() : null;
+  if (!context || (!context.lastIntent && !context.lastEntity)) return null;
+  const depth =
+    typeof nextAjoopDepth === "function" ? nextAjoopDepth(context.depth, direction) : context.depth;
+  if (typeof setAjoopDepth === "function") setAjoopDepth(depth);
+  return ajoopSyntheticRoute({
+    intent: context.lastIntent || "default",
+    entity: context.lastEntity || null,
+    entitySource: context.lastEntity ? "conversation" : null,
+    facet: context.lastFacet || "overview",
+    depth,
+  });
+}
+
+/** Quick-action labels, so an intent is never named two different ways. */
+function ajoopQuickLabelMap() {
+  const content = getPortfolioChatbotContent(portfolioChatbotState.language);
+  const map = {};
+  (content.quicks || []).forEach((quick) => {
+    map[quick.id] = quick.label;
+  });
+  return map;
+}
+
+/**
+ * Renders one row of actions.
+ *
+ * `mode` distinguishes the opening suggestions from the contextual follow-ups
+ * that replace them after every answer; the row is labelled either way so the
+ * change of meaning is visible rather than implied by position alone. Actions
+ * stay in a closure and the buttons carry only an index, so no action data is
+ * serialized into the DOM.
+ */
+function renderAjoopActions(actions, mode) {
+  const container = document.querySelector("[data-chatbot-quicks]");
+  if (!container) return;
+  const language = portfolioChatbotState.language;
+  const heading =
+    mode === "followups"
+      ? ajoopLabel("Continue", "Devam", language)
+      : ajoopLabel("Suggestions", "Öneriler", language);
+  container.classList.toggle("is-followups", mode === "followups");
+  container.innerHTML = `
+    <p class="chatbot-actions-label">${escapeProjectHtml(heading)}</p>
+    <div class="chatbot-actions-list" role="group" aria-label="${escapeProjectHtml(heading)}">
+      ${actions
+        .map(
+          (action, index) =>
+            `<button type="button" data-chatbot-action="${index}" data-chatbot-action-kind="${escapeProjectHtml(action.action)}">${escapeProjectHtml(action.label)}</button>`,
+        )
+        .join("")}
+    </div>`;
+  container.querySelectorAll("[data-chatbot-action]").forEach((button) => {
+    const action = actions[Number(button.dataset.chatbotAction)];
+    button.addEventListener("click", () =>
+      runAjoopAction(action, button.textContent.trim()),
+    );
+  });
+}
+
+/** Dispatches one follow-up action. */
+function runAjoopAction(action, label) {
+  if (!action) return;
+  if (action.action === "reset") {
+    resetAjoopConversation();
+    return;
+  }
+  if (action.action === "nav") {
+    /* Direct navigation: no echo, no transition delay. */
+    const target = typeof siteUrl === "function" ? siteUrl(action.url) : action.url;
+    if (/^https?:/i.test(String(action.url))) window.open(target, "_blank", "noopener");
+    else window.location.href = target;
+    return;
+  }
+  addChatbotMessage("user", label);
+  if (action.action === "depth") {
+    if (typeof setAjoopDepth === "function") setAjoopDepth(action.depth);
+    const context = typeof readAjoopContext === "function" ? readAjoopContext() : null;
+    answerAjoopRoute(
+      ajoopSyntheticRoute({
+        intent: (context && context.lastIntent) || "default",
+        entity: (context && context.lastEntity) || null,
+        entitySource: context && context.lastEntity ? "conversation" : null,
+        facet: (context && context.lastFacet) || "overview",
+        depth: action.depth,
+      }),
+    );
+    return;
+  }
+  if (action.entity) {
+    answerAjoopRoute(ajoopRouteForEntity(action.entity, action.facet));
+    return;
+  }
+  answerAjoopRoute(ajoopSyntheticRoute({ intent: action.intent || "default" }));
+}
+
+/**
+ * Answers one routed turn and offers what comes next.
  *
  * Entity-specific canonical answers win when they exist; otherwise the prepared
- * intent answer runs exactly as it did before Ajoop 4.0. Either way the turn is
- * folded into the conversation context so the next message can inherit the
- * subject.
+ * intent answer runs exactly as it did before. When the planner decides the
+ * question was too ambiguous to answer, the clarification prompt replaces the
+ * answer rather than sitting beside a guess. Either way the turn is folded into
+ * the conversation context so the next message can inherit the subject.
  */
 function answerAjoopRoute(route) {
   const language = portfolioChatbotState.language;
   portfolioChatbotState.lastRoute = route;
 
-  const answer = ajoopEntityAnswer(route, language);
-  if (answer && answer.text) addChatbotMessage("bot", answer.text, answer.links);
-  else answerChatbotIntent(route.intent, route.answerDepth);
+  const plan =
+    typeof planAjoopConversation === "function"
+      ? planAjoopConversation(route, {
+          language,
+          depth: route.depth,
+          quickLabels: ajoopQuickLabelMap(),
+        })
+      : null;
+
+  deliverAjoopAnswer(() => {
+    if (plan && plan.fallback) {
+      addChatbotMessage("bot", plan.fallback.prompt, []);
+    } else {
+      const answer = route.preferPrepared ? null : ajoopEntityAnswer(route, language);
+      if (answer && answer.text) addChatbotMessage("bot", answer.text, answer.links);
+      else answerChatbotIntent(route.intent, route.answerDepth, route.depth);
+    }
+    if (plan) renderAjoopActions(plan.followups, "followups");
+  });
 
   if (typeof rememberAjoopTurn === "function") {
     rememberAjoopTurn({
       intent: route.intent,
       entity: route.entitySource === "message" ? route.entity : null,
+      facet: route.facet,
+      depth: route.depth,
       pageContext: route.pageContext ? route.pageContext.pageType : null,
     });
   }
@@ -1061,35 +1414,40 @@ function handleAjoopMessage(message) {
     answerChatbotIntent(detectChatbotIntent(message));
     return null;
   }
-  const route = routeAjoopQuery(message);
+  const direction =
+    typeof detectAjoopContinuation === "function" ? detectAjoopContinuation(message) : null;
+  const route = (direction && ajoopContinuationRoute(direction)) || routeAjoopQuery(message);
   answerAjoopRoute(route);
   return route;
 }
 
-/** Clears both the visible transcript and the remembered conversation. */
+/**
+ * Start over.
+ *
+ * Clears the structured context and the visible transcript, restores the
+ * greeting and the opening suggestions, and returns focus to the input. It
+ * deliberately does not touch the site locale, Recruiter Mode, the page, or the
+ * open state of the panel — starting a new conversation is not starting a new
+ * visit.
+ */
 function resetAjoopConversation() {
   if (typeof resetAjoopContext === "function") resetAjoopContext();
   portfolioChatbotState.lastRoute = null;
   resetChatbotMessages();
+  renderChatbotQuickActions();
+  document.querySelector("[data-chatbot-input]")?.focus();
 }
 
+/** The opening suggestions, from the shipped quick-action content. */
 function renderChatbotQuickActions() {
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
-  const quickContainer = document.querySelector("[data-chatbot-quicks]");
-  if (!quickContainer) return;
-  quickContainer.innerHTML = content.quicks
-    .map(
-      (quick) =>
-        `<button type="button" data-chatbot-intent="${escapeProjectHtml(quick.id)}">${escapeProjectHtml(quick.label)}</button>`,
-    )
-    .join("");
-
-  quickContainer.querySelectorAll("[data-chatbot-intent]").forEach((button) => {
-    button.addEventListener("click", () => {
-      addChatbotMessage("user", button.textContent.trim());
-      answerAjoopQuickAction(button.dataset.chatbotIntent || "default");
-    });
-  });
+  const actions = (content.quicks || []).map((quick) => ({
+    id: `quick:${quick.id}`,
+    label: quick.label,
+    action: "intent",
+    intent: quick.id,
+  }));
+  renderAjoopActions(actions, "initial");
 }
 
 /**
@@ -1100,15 +1458,22 @@ function renderChatbotQuickActions() {
  * "github?" resolves against it — the same flow a typed question gets.
  */
 function answerAjoopQuickAction(intentId) {
-  const context =
-    typeof readAjoopContext === "function" ? readAjoopContext() : null;
-  const depth =
-    context && context.lastIntent === intentId ? (context.answerDepth || 0) + 1 : 0;
-  answerChatbotIntent(intentId, depth);
-  if (typeof rememberAjoopTurn !== "function") return;
-  const entity =
-    typeof getAjoopEntity === "function" && getAjoopEntity(intentId) ? intentId : null;
-  rememberAjoopTurn({ intent: intentId, entity });
+  const isEntity =
+    typeof getAjoopEntity === "function" && Boolean(getAjoopEntity(intentId));
+  answerAjoopRoute(
+    ajoopSyntheticRoute(
+      isEntity
+        ? {
+            intent: intentId,
+            entity: intentId,
+            entitySource: "message",
+            /* The quick action promises the curated answer its label names; the
+             * entity is recorded so follow-ups still resolve against it. */
+            preferPrepared: ajoopHasPreparedAnswer(intentId),
+          }
+        : { intent: intentId },
+    ),
+  );
 }
 
 function resetChatbotMessages() {
