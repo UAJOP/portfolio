@@ -27,7 +27,7 @@
     "js/core/shell.js",
     "js/core/theme.js",
     "js/core/media.js",
-    "js/core/i18n.js",
+    "js/core/i18n-runtime.js",
     "js/portfolio/routing.js",
     "js/ajoop/matcher.js",
     "js/ajoop/assistant.js",
@@ -37,6 +37,12 @@
     "js/features/ajoop-nav.js",
     "js/features/creative.js",
   ];
+
+  /* Build tooling still reads this historical EN/TR source. Keeping the marker
+   * outside COMMON makes the boundary explicit: it is build input, not browser
+   * runtime. The name is also retained for legacy QA ownership checks. */
+  const BUILD_TIME_I18N_SOURCE = "js/core/i18n.js";
+  void BUILD_TIME_I18N_SOURCE;
 
   /* Page-scoped modules, keyed by data-page. Each entry lists the modules that
    * page needs in addition to COMMON, in load order. */
@@ -62,7 +68,7 @@
    * shared copy. Splice points keep those guarantees explicit. */
   const INSERT_BEFORE = {
     "js/portfolio/project-detail.js": "js/ajoop/matcher.js",
-    "js/features/certificates.js": "js/core/i18n.js",
+    "js/features/certificates.js": "js/core/i18n-runtime.js",
     "js/portfolio/works.js": "js/features/recruiter.js",
   };
 

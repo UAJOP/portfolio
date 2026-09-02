@@ -34,64 +34,53 @@ jobs:
       - name: Prepare reports directory
         run: mkdir -p qa-results
 
-      # BLOCKING: the canonical JSON is the source of portfolio truth and
-      # portfolio-data.js is generated from it. This FAILS on a stale artifact
-      # rather than regenerating it — the committed file is what GitHub Pages
-      # serves, so it has to be correct in the repository, not in CI.
       - name: Check portfolio data contract
         run: |
           set -o pipefail
           npm run qa:data 2>&1 | tee qa-results/portfolio-data.txt
 
-      # BLOCKING: active locale parity, locale ownership, first-paint bootstrap,
-      # protected terminology casing and future-locale activation rules.
       - name: Check multilingual contracts
         run: |
           set -o pipefail
           npm run qa:i18n 2>&1 | tee qa-results/i18n.txt
 
-      # BLOCKING: the bootloader loads these at runtime with no build step.
+      # BLOCKING: deterministic byte/resource budgets keep the historical
+      # translation dictionary and full locale packs out of the common browser
+      # path without relying on noisy Lighthouse timings.
+      - name: Check frontend performance budgets
+        run: |
+          set -o pipefail
+          npm run qa:performance 2>&1 | tee qa-results/performance-budget.txt
+
       - name: Check JavaScript syntax
         run: npm run qa:js
 
-      # BLOCKING: guards architecture, footer, truth and QA drift.
       - name: Check portfolio architecture consistency
         run: npm run qa:portfolio
 
-      # BLOCKING: guards critical image delivery, intrinsic dimensions and
-      # referenced asset existence without relying on network timing.
       - name: Check asset performance policy
         run: |
           set -o pipefail
           npm run qa:assets 2>&1 | tee qa-results/asset-policy.txt
 
-      # BLOCKING: fully determined by the repository, so it cannot flake.
       - name: Validate internal links
         run: npm run qa:links 2>&1 | tee qa-results/internal-links.txt
 
-      # BLOCKING on structural errors only: html-validate exits 0 when just
-      # warnings remain, so intentional warnings stay visible without gating.
       - name: Validate HTML
         run: |
           set -o pipefail
           npm run qa:html 2>&1 | tee qa-results/html-validation.txt
 
-      # BLOCKING: the baseline is genuinely clean (0 issues).
       - name: Check English and Turkish spelling
         run: |
           set -o pipefail
           npm run qa:spelling 2>&1 | tee qa-results/spelling.txt
 
-      # BLOCKING: this is also the JSX syntax and transform gate. Production JS is
-      # parsed by qa:js, but JSX cannot be checked that way, so a broken React
-      # source has to fail here instead.
       - name: Build React migration foundation
         run: |
           set -o pipefail
           npm run build:react 2>&1 | tee qa-results/react-build.txt
 
-      # BLOCKING: proves the build really pre-renders and that production files
-      # are untouched. Runs after the build because it inspects dist-react/.
       - name: Check React foundation
         run: |
           set -o pipefail
@@ -109,9 +98,6 @@ jobs:
           cat qa-results/local-server.log
           exit 1
 
-      # BLOCKING: a real WCAG2AA failure must not be merged. This keeps auditing
-      # the 11 production pages; the preview is audited separately below so it
-      # adds coverage instead of displacing any.
       - name: Audit accessibility on mobile viewport
         run: npm run qa:a11y -- --json > qa-results/accessibility.json 2> qa-results/accessibility-errors.txt
 
@@ -127,15 +113,11 @@ jobs:
           cat qa-results/react-preview-server.log
           exit 1
 
-      # BLOCKING: the new architecture must not start out less accessible than
-      # the one it will replace.
       - name: Audit React preview accessibility
         run: |
           set -o pipefail
           npm run qa:a11y:react 2>&1 | tee qa-results/react-accessibility.txt
 
-      # REPORT-ONLY: performance depends on runner and third-party CDN latency,
-      # so it must not gate merges. Scores are summarized and uploaded below.
       - name: Run Lighthouse CI
         continue-on-error: true
         run: npm run qa:lighthouse 2>&1 | tee qa-results/lighthouse.txt
@@ -194,8 +176,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      # REPORT-ONLY: external hosts rate-limit and block bots. Deterministic
-      # internal links are enforced by the blocking qa:links step above.
       - name: Scan HTML and Markdown links
         id: lychee
         uses: lycheeverse/lychee-action@v2

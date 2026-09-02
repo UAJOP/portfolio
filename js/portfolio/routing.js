@@ -37,7 +37,7 @@ function translateProjectDisplayLabel(label, language = (typeof getCurrentLocale
   const locale = typeof normalizeLocaleId === "function" ? normalizeLocaleId(language) : String(language || "en");
   const fallbackLocale = typeof siteLocaleRegistry !== "undefined" ? siteLocaleRegistry.defaultLocale : "en";
   if (locale === fallbackLocale) return label;
-  return (typeof i18nTranslations !== "undefined" && i18nTranslations[locale]?.[label]) || label;
+  return (typeof getPackPhrase === "function" && getPackPhrase(label, locale)) || label;
 }
 
 /* project-routing:start
@@ -122,4 +122,3 @@ function escapeProjectHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-

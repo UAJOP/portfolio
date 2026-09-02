@@ -189,7 +189,6 @@ function closeEasterEgg(layer = document.querySelector("[data-easter-layer]")) {
   setTimeout(() => layer.classList.remove("is-active"), 220);
 }
 
-
 function extendCreativeCommands() {
   if (typeof ultimateContent === "undefined") return;
   const hasCommand = (lang, id) =>
@@ -232,7 +231,5 @@ function extendCreativeCommands() {
 
 extendCreativeCommands();
 setupEasterEgg();
-/* Lives in js/pages/labs.js, loaded only on labs.html. */
-if (typeof setupAlgorithmic3DLab === "function") setupAlgorithmic3DLab();
 
 /* Project request page and service inquiry flow */

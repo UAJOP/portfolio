@@ -62,8 +62,11 @@ ok("PAGE_MODULES parsed at least one page type", Object.keys(PAGE_MODULES).lengt
 
 const ALL_MODULES = [...new Set([...(COMMON || []), ...Object.values(PAGE_MODULES).flat()])];
 const EARLY_BOOTSTRAP = "js/core/locale-bootstrap.js";
+/* Historical EN/TR dictionaries are still read by build tooling while the
+ * browser now consumes generated locale packs plus i18n-runtime.js. */
+const BUILD_ONLY_MODULES = new Set(["js/core/i18n.js"]);
 
-/* ---------- 1. every referenced module exists, and every module is referenced ---------- */
+/* ---------- 1. every referenced module exists, and every runtime module is referenced ---------- */
 
 for (const module of ALL_MODULES) {
   ok(`manifest module exists on disk: ${module}`, exists(module));
@@ -80,8 +83,16 @@ const onDisk = exists("js") ? walk("js").sort() : [];
 ok("js/ contains runtime modules", onDisk.length > 0);
 for (const module of onDisk) {
   ok(
-    `module is referenced by the manifest or declared early bootstrap: ${module}`,
-    ALL_MODULES.includes(module) || module === EARLY_BOOTSTRAP,
+    `module is referenced by the manifest or explicitly non-runtime: ${module}`,
+    ALL_MODULES.includes(module) || module === EARLY_BOOTSTRAP || BUILD_ONLY_MODULES.has(module),
+  );
+}
+for (const module of BUILD_ONLY_MODULES) {
+  ok(`build-only module exists: ${module}`, exists(module));
+  ok(`build-only module is not shipped by COMMON: ${module}`, !COMMON.includes(module));
+  ok(
+    `build-only module is not shipped by any page scope: ${module}`,
+    !Object.values(PAGE_MODULES).flat().includes(module),
   );
 }
 
@@ -104,8 +115,8 @@ const ORDER = [
   ["js/core/analytics-config.js", "js/core/analytics.js"],
   ["js/core/analytics.js", "js/core/shell.js"],
   ["js/core/shell.js", "js/core/theme.js"],
-  ["js/core/theme.js", "js/core/i18n.js"],
-  ["js/core/i18n.js", "js/portfolio/routing.js"],
+  ["js/core/theme.js", "js/core/i18n-runtime.js"],
+  ["js/core/i18n-runtime.js", "js/portfolio/routing.js"],
   ["js/portfolio/routing.js", "js/ajoop/assistant.js"],
   ["js/ajoop/matcher.js", "js/ajoop/assistant.js"],
   ["js/features/ultimate.js", "js/features/recruiter.js"],
@@ -127,6 +138,10 @@ if (insertBlock) {
     "project-detail is spliced ahead of the Ajoop assistant",
     /"js\/portfolio\/project-detail\.js":\s*"js\/ajoop\/(matcher|assistant)\.js"/.test(insertBlock[1]),
   );
+  ok(
+    "certificates are spliced ahead of the compact i18n presentation runtime",
+    /"js\/features\/certificates\.js":\s*"js\/core\/i18n-runtime\.js"/.test(insertBlock[1]),
+  );
 }
 
 /* ---------- 4. pages declare a page type the manifest knows ---------- */
@@ -145,21 +160,14 @@ for (const file of htmlFiles) {
     ok(`${file}: data-page "${marker}" is known to the manifest`, marker in PAGE_MODULES);
   }
 
-  /* The loader reads document.body at boot, so it must sit inside <body>. */
   const headMatch = html.match(/<head>([\s\S]*?)<\/head>/i);
   ok(
     `${file}: script.js is loaded from <body>, not <head>`,
     !(headMatch && /src="[^"]*script\.js"/.test(headMatch[1])),
   );
 
-  /* No page may load a runtime module directly; the manifest owns order.
-   * The one deliberate exception is the tiny parser-blocking locale bootstrap,
-   * which must run in <head> before translated body content can paint. */
   const srcs = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1]);
   for (const src of srcs) {
-    /* 404.html references the bootstrap root-absolutely because GitHub Pages
-     * serves it at whatever URL failed; generated pages sit two deep. Both name
-     * the same repository file. */
     const normalized = src.replace(/^\.\.\/\.\.\//, "").replace(/^\//, "");
     const allowedEarlyBootstrap = normalized === EARLY_BOOTSTRAP;
     ok(`${file}: does not bypass the manifest with ${src}`, !src.includes("js/") || allowedEarlyBootstrap);
@@ -179,6 +187,7 @@ const REQUIRED = [
   ["single-work.html", "js/features/certificates.js", "[data-cert]"],
   ["adventure.html", "js/pages/games.js", "adventure"],
   ["joyday-paint.html", "js/pages/games.js", "joyday"],
+  ["labs.html", "js/pages/labs.js", "#math-3d-canvas"],
 ];
 
 const modulesFor = (page) => [...COMMON, ...(PAGE_MODULES[page] || [])];
@@ -200,10 +209,24 @@ const PAGE_SCOPED = [
   "js/portfolio/project-detail.js",
   "js/features/certificates.js",
   "js/pages/games.js",
+  "js/pages/labs.js",
 ];
 for (const module of PAGE_SCOPED) {
   ok(`page-scoped module is not in COMMON: ${module}`, !COMMON.includes(module));
 }
+
+/* Labs owns its page lifecycle. A COMMON module may never try to initialize a
+ * function that is defined only later by the labs page module. */
+const labsSource = read("js/pages/labs.js");
+const creativeSource = read("js/features/creative.js");
+ok(
+  "labs page module initializes the Algorithmic 3D canvas after defining it",
+  /function\s+setupAlgorithmic3DLab\b[\s\S]*?\nsetupAlgorithmic3DLab\(\);\s*$/.test(labsSource),
+);
+ok(
+  "COMMON creative module no longer owns the Labs 3D startup",
+  !/setupAlgorithmic3DLab/.test(creativeSource),
+);
 
 /* The pages the audit called out as paying for code they never used. */
 const MUST_NOT_LOAD = [
@@ -220,6 +243,8 @@ const MUST_NOT_LOAD = [
   ["ai-flow-puzzle.html", "js/request/form.js"],
   ["works.html", "js/request/form.js"],
   ["request.html", "js/portfolio/project-detail.js"],
+  ["about.html", "js/pages/labs.js"],
+  ["works.html", "js/pages/labs.js"],
 ];
 for (const [file, module] of MUST_NOT_LOAD) {
   const page = pageOf[file];
@@ -301,12 +326,12 @@ const mediaSandbox = (siteRoot, {
     URL,
     URLSearchParams,
     currentSiteLanguage: locale,
-    i18nTranslations: { tr: {} },
     getCurrentLocale: () => locale,
     getLocalizedValue(value, requested = locale) {
       if (!value || typeof value !== "object" || Array.isArray(value)) return value;
       return value[requested] ?? value.en ?? Object.values(value)[0];
     },
+    getPackPhrase: () => null,
     getI18nText(english, turkish, requested = locale) {
       if (requested === "tr") return turkish;
       const french = {
@@ -445,10 +470,6 @@ for (const symbol of [
 
 /* ---------- 10. inline handlers keep a reachable global ---------- */
 
-/* Three pages still use inline onclick="openDrivePreviews()". A function
- * declared at the top level of a classic script becomes a window property, so
- * this keeps working — but only while its module is COMMON. If that module ever
- * becomes page-scoped, the markup breaks silently, so the pairing is asserted. */
 const inlineHandlers = new Map();
 for (const file of htmlFiles) {
   for (const m of read(file).matchAll(/\son[a-z]+="([A-Za-z_$][\w$]*)\(/g)) {
@@ -469,7 +490,6 @@ for (const [fn, pages] of inlineHandlers) {
 
 /* ---------- 11. project-owned globals stay intentional ---------- */
 
-/* Native/browser globals are out of scope; this only tracks window.KAAN_*. */
 const allSource = [...onDisk, "portfolio-v2.js", "portfolio-data.js", "script.js"].map(read).join("\n");
 const declared = new Set(
   [...allSource.matchAll(/window\.(KAAN[A-Za-z_]*)\s*=/g)].map((m) => m[1]),
@@ -479,7 +499,6 @@ const EXPECTED_GLOBALS = [
   "KAAN_REQUEST_FORM_ENDPOINT",
   "KAAN_REQUEST_FORM_EMAIL",
   "KAAN_GOOGLE_FORM_URL",
-  /* BRIEF 09C: the locale route mapper, shared by the runtime and generators. */
   "KAAN_LOCALE_ROUTES",
 ];
 for (const global of declared) {

@@ -3,7 +3,7 @@
   "private": true,
   "description": "Automated preflight checks for kaanbalci.com",
   "scripts": {
-    "qa": "npm run qa:data && npm run qa:i18n && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:css && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
+    "qa": "npm run qa:data && npm run qa:i18n && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:performance && npm run qa:css && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
     "qa:js": "node qa-js-syntax.js",
     "qa:portfolio": "node qa-portfolio-consistency.js",
     "qa:assets": "node qa-assets.js",
@@ -16,6 +16,7 @@
     "qa:projects": "node scripts/qa-project-data.mjs",
     "qa:seo": "node scripts/qa-project-seo.mjs",
     "qa:runtime": "node scripts/qa-runtime-modules.mjs",
+    "qa:performance": "node scripts/qa-performance-budget.mjs",
     "qa:css": "node scripts/qa-css-architecture.mjs",
     "qa:a11y:static": "node scripts/qa-accessibility.mjs",
     "qa:recruiter": "node scripts/qa-recruiter-ux.mjs",
