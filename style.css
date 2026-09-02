@@ -104,6 +104,9 @@ html[data-theme="light"] .project-tags span {
 html[data-theme="light"] .btn.ghost,
 html[data-theme="light"] .nav-toggle,
 html[data-theme="light"] .theme-toggle,
+/* Every other header pill gets an opaque light surface; the language switch was
+ * left on the dark-theme rgba(255,255,255,0.06), which is invisible here. */
+html[data-theme="light"] .lang-switch,
 html[data-theme="light"] .chatbot-close,
 html[data-theme="light"] .chatbot-form input,
 html[data-theme="light"] .chatbot-quicks button,
@@ -434,6 +437,10 @@ h3 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* Icon buttons outside .case-actions / the game action rows had no spacing at
+   * all between <i> and label. Those four containers already declare this exact
+   * value locally; it belongs on the base so every .btn matches. */
+  gap: 8px;
   min-height: 48px;
   padding: 0 20px;
   border-radius: 999px;
@@ -2572,10 +2579,13 @@ html[data-theme="light"] .math-lab-hint {
 .math-lab-copy .project-tags {
   margin-top: 22px;
 }
+/* Mirrors the safe-area offsets of .portfolio-chatbot in the opposite corner, so
+ * the two fixed widgets clear browser chrome / the home indicator identically
+ * and sit on one baseline instead of 6px apart. */
 .easter-trigger {
   position: fixed;
-  left: 18px;
-  bottom: 18px;
+  left: max(18px, calc(env(safe-area-inset-left) + 12px));
+  bottom: max(24px, calc(env(safe-area-inset-bottom) + 18px));
   z-index: 82;
   width: 46px;
   height: 46px;
@@ -2677,12 +2687,19 @@ html[data-theme="light"] .easter-message {
     min-height: 380px;
   }
 
+  /* 44px matches the touch-target floor css/a11y.css sets for every other
+   * control at this size; the trigger was the one fixed widget left at 42px. */
   .easter-trigger {
-    left: 14px;
-    bottom: 14px;
-    width: 42px;
-    height: 42px;
-    border-radius: 15px;
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+  }
+}
+/* Same breakpoint the chatbot uses, so both corners shift together. */
+@media screen and (max-width: 560px) {
+  .easter-trigger {
+    left: max(14px, calc(env(safe-area-inset-left) + 10px));
+    bottom: max(18px, calc(env(safe-area-inset-bottom) + 14px));
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -3398,15 +3415,20 @@ html[data-locale-pending="true"] body {
   padding: 4px 8px;
 }
 
+/* The pill wrapper adds 4px padding + 1px border per side, so the inner height
+ * is the sibling header control height minus 10px: 28px next to the 38px
+ * recruiter/search/theme pills, 34px next to the 44px touch targets below. The
+ * selector shipped at 34px everywhere and stood 6px taller than its neighbours
+ * on desktop. */
 .lang-selector-label {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
+  min-height: 28px;
 }
 
 .lang-selector-select {
   min-width: 88px;
-  min-height: 34px;
+  min-height: 28px;
   border: 0;
   border-radius: 999px;
   padding: 0 28px 0 10px;
@@ -3423,14 +3445,27 @@ html[data-theme="light"] .lang-selector-select {
   color-scheme: light;
 }
 
+/* 3px offset is the site-wide ring in css/a11y.css; the pill radius is restored
+ * because that file's generic select rule rounds focused controls to 6px, which
+ * squared the ring off inside a 999px pill. At this offset the ring still lands
+ * inside the wrapper's padding rather than over its border. */
 .lang-selector-select:focus-visible {
   outline: 3px solid var(--brand);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  border-radius: 999px;
 }
 
 .lang-selector-select option {
   color: #0b1628;
   background: #f8fbff;
+}
+
+/* css/a11y.css raises the sibling header controls to 44px here. */
+@media screen and (max-width: 820px) {
+  .lang-selector-label,
+  .lang-selector-select {
+    min-height: 34px;
+  }
 }
 
 @media screen and (max-width: 560px) {
