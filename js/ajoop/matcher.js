@@ -110,7 +110,25 @@ function matchesKeyword(tokens, keyword) {
 }
 /* ajoop-intent-matching:end */
 
+/**
+ * Message -> intent id, kept as the stable public entry point.
+ *
+ * Ajoop 4.0 moved routing into js/ajoop/router.js, which scores every candidate
+ * intent instead of taking the first match in map order. This wrapper keeps the
+ * original one-argument contract for every existing caller.
+ *
+ * It routes with NO conversation or page context on purpose: callers of this
+ * function expect a pure message -> intent mapping, and inheriting a subject
+ * from an earlier turn would make the same message resolve differently over
+ * time. The assistant calls routeAjoopQuery() directly when it wants context.
+ *
+ * The first-match fallback below is what runs if router.js is unavailable, so
+ * this file still behaves correctly on its own.
+ */
 function detectChatbotIntent(message) {
+  if (typeof routeAjoopQuery === "function") {
+    return routeAjoopQuery(message, { conversation: null, page: null }).intent;
+  }
   const tokens = tokenizeIntentText(message);
   if (!tokens.length) return "default";
   const match = chatbotKeywordMap.find((item) =>
