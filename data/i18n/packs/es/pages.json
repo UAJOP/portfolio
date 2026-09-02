@@ -902,7 +902,21 @@
     "What is documented for this focus": "Lo que está documentado para este enfoque",
     "Who is Kaan?": "¿Quién es Kaan?",
     "Why is this a fit?": "¿Por qué encaja?",
-    "Work history": "Trayectoria profesional"
+    "Work history": "Trayectoria profesional",
+    "A structured evidence card is not available for this item yet, so I will not improvise one.": "Todavía no hay una tarjeta de evidencias estructurada para este elemento, así que no improvisaré una.",
+    "Comparison": "Comparación",
+    "Domain": "Ámbito",
+    "Matching projects": "Proyectos coincidentes",
+    "No matching projects are listed in the portfolio data.": "No hay proyectos coincidentes en los datos del portafolio.",
+    "Portfolio evidence": "Evidencia del portafolio",
+    "Portfolio evidence for": "Evidencia del portafolio para",
+    "Projects using {term}": "Proyectos que utilizan {term}",
+    "Proof points": "Evidencias",
+    "Prove it": "Demuéstralo",
+    "Purpose": "Propósito",
+    "Showing {shown} of {total}.": "Se muestran {shown} de {total}.",
+    "compared with": "comparado con",
+    "here is the portfolio evidence.": "aquí está la evidencia del portafolio."
   },
   "title": {
     "AI Flow Puzzle | Kaan Balcı": "AI Flow Puzzle | Kaan Balcı",

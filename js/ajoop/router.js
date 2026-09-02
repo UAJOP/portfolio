@@ -89,7 +89,9 @@ const AJOOP_FACET_KEYWORDS = {
     "source",
     "adres",
   ],
-  proof: ["proof", "kanıt", "evidence", "metric", "metrics", "sonuç", "results"],
+  /* "prove" joins the proof facet in 4.2 so "prove it" resolves like "kanıtla",
+   * which the "kanıt" prefix already covered. */
+  proof: ["proof", "prove", "kanıt", "evidence", "metric", "metrics", "sonuç", "results"],
 };
 
 /** Facet resolution order when a message hits more than one. */
@@ -237,7 +239,16 @@ function routeAjoopQuery(message, context) {
   /* Subject resolution. The message wins; then what the visitor was already
    * talking about; then the page they are standing on. A message that named a
    * subject never inherits, which is how switching subject works. */
-  const namedEntity = entities.length ? entities[0].id : null;
+  /* A technology is something a subject HAS, not a subject itself.
+   *
+   * Entity extraction ranks by alias specificity, so a two-word technology
+   * ("AI Evaluation") outranks a one-word project ("SINAMA") — which made
+   * "SINAMA'da AI evaluation yaptın mı?" set the active subject to the
+   * technology and lose SINAMA for the next turn. Tech entities still vote for
+   * the stack intent; they just never win the subject when a real one is named.
+   */
+  const subjectEntities = entities.filter((match) => match.type !== "tech");
+  const namedEntity = (subjectEntities[0] || entities[0] || {}).id || null;
   const inheritable = facet !== "overview" || !winner;
   let entity = namedEntity;
   let entitySource = namedEntity ? "message" : null;

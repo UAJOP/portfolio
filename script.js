@@ -41,6 +41,9 @@
     /* Ajoop 4.1 conversation planner: needs the router's result shape and the
      * knowledge layer, and must precede assistant.js, which renders its plan. */
     "js/ajoop/conversation.js",
+    /* Ajoop 4.2 evidence model: reads the knowledge layer and the router's
+     * route shape, and assistant.js renders the responses it returns. */
+    "js/ajoop/evidence.js",
     "js/ajoop/assistant.js",
     "js/features/ultimate.js",
     "js/features/recruiter.js",
