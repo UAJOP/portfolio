@@ -566,30 +566,30 @@
       "linkedin": "LinkedIn"
     },
     "capabilities": [
-      "Applied AI",
-      "AI Reliability",
-      "Solution Engineering",
-      "Conversational AI",
-      "Automatización",
-      "Product Engineering"
+      "Discovery de cliente",
+      "Definición técnica del alcance",
+      "Despliegue de AI",
+      "Evaluación de LLM",
+      "Integración de APIs",
+      "Madurez para producción"
     ],
     "focus": [
-      "Conversational AI",
-      "Solution Engineering",
-      "Evaluación de LLM",
-      "Automatización de flujos"
+      "Discovery de cliente y alcance",
+      "Despliegue e integración de AI",
+      "Evaluación y fiabilidad",
+      "Entrega full-stack"
     ],
     "profile": "Forward Deployed Engineer",
     "projects": [
       [
         "SINAMA — AI Agent Reliability Lab",
-        "Reliability lab Turkish-first en producción para pruebas de fiabilidad y regresión de agentes de AI",
+        "Laboratorio de fiabilidad de agentes de AI en vivo: evaluación multiturno, evidencia de regresión y decisiones de release-readiness",
         null,
         "Ver caso de estudio"
       ],
       [
         "AI Chatbot Flow Design",
-        "Evidencia de conversational AI y flujos empresariales",
+        "Traducción de flujos de trabajo de clientes empresariales y entrega de AI multicanal",
         null
       ],
       [
@@ -600,7 +600,7 @@
       ],
       [
         "Atölye Joyday Official Website",
-        "Producto digital en producción con recorrido de reserva",
+        "Despliegue de cara al cliente: recorrido de reserva y automatización operativa",
         null,
         "Ver caso de estudio"
       ],
@@ -612,34 +612,34 @@
       ]
     ],
     "proof": [
-      "Experiencia en conversational AI empresarial en CBOT: QA, estabilización, configuración de canales y reestructuración de flujos a gran escala.",
+      "Flujos de trabajo de clientes empresariales implementados mediante trabajo de Conversational AI en CBOT: QA, estabilización, configuración de canales y reestructuración de flujos a gran escala.",
       "Diseño, construcción, prueba y presentación de un POC de alta de siniestros con voz, verificación telefónica, traspaso a WhatsApp y recopilación de documentos.",
       "Trabajo estructurado de evaluación de LLM y valoración de calidad sobre razonamiento, código y salidas multimodales.",
-      "Producto digital en producción y automatización de reservas en Atölye Joyday con JavaScript, Google Forms, Sheets y Apps Script."
+      "Entrega de extremo a extremo de un producto de cara al cliente en vivo y de la automatización de reservas en Atölye Joyday con JavaScript, Google Forms, Sheets y Apps Script."
     ],
     "skills": [
-      "Diseño de flujos de chatbot, QA y estabilización",
-      "Lógica de flujos de varios pasos estilo n8n",
-      "Evaluación de respuestas, razonamiento, código y salidas multimodales de LLM",
-      "Python, C#/.NET, JavaScript, PHP y SQL",
-      "Desarrollo de productos digitales centrado en las personas usuarias"
+      "Traducir flujos de trabajo de negocio en alcance técnico",
+      "Prototipar rápidamente soluciones de AI y software utilizables",
+      "Integrar APIs, datos y sistemas de flujos de trabajo",
+      "Evaluar y estabilizar el comportamiento de la AI",
+      "Entrega práctica con Python/FastAPI, TypeScript y SQL"
     ]
   },
   "recruiterV2": {
-    "label": "RECRUITER MODE V2",
-    "title": "Resumen de evidencia por área de capacidad",
-    "lead": "Mantiene fijo el objetivo de Forward Deployed Engineer y prioriza la evidencia de proyectos y experiencia para el área seleccionada.",
-    "choose": "Enfoque de evidencia",
-    "primary": "Objetivo principal",
-    "focus": "Enfoque de evidencia",
     "capabilities": "Áreas de capacidad",
-    "skills": "Capacidades principales",
-    "proof": "Evidencia recomendada",
+    "choose": "Enfoque de evidencia",
+    "close": "Cerrar",
     "cv": "Ver currículum",
     "email": "Escríbame",
-    "close": "Cerrar",
-    "updated": "Datos del portafolio",
-    "openEvidence": "Abrir evidencia"
+    "focus": "Enfoque de evidencia",
+    "label": "RECRUITER MODE V2",
+    "lead": "Mantiene fijo el objetivo de Forward Deployed Engineer y reordena la misma evidencia — discovery, despliegue de AI, fiabilidad, entrega — según la capacidad que elija.",
+    "openEvidence": "Abrir evidencia",
+    "primary": "Objetivo principal",
+    "proof": "Evidencia recomendada",
+    "skills": "Capacidades principales",
+    "title": "Resumen de evidencia por área de capacidad",
+    "updated": "Datos del portafolio"
   },
   "request": {
     "button": "Enviar solicitud",

@@ -9,7 +9,7 @@
 (function () {
   window.KAAN_PORTFOLIO = Object.freeze({
     "version": "2.0.0",
-    "updatedAt": "2026-08-23",
+    "updatedAt": "2026-09-03",
     "profile": {
       "name": "Kaan Balcı",
       "primaryTitle": {
@@ -29,8 +29,8 @@
         "tr": "İşe açık"
       },
       "direction": {
-        "en": "Forward Deployed Engineer with evidence across Applied AI, AI reliability, solution engineering and product-minded software delivery.",
-        "tr": "Applied AI, AI reliability, solution engineering ve ürün odaklı yazılım geliştirme alanlarında kanıt sunan Forward Deployed Engineer."
+        "en": "Forward Deployed Engineer focused on turning ambiguous customer workflows into deployable AI systems through discovery, technical scoping, rapid prototyping, integration, evaluation and production-readiness work.",
+        "tr": "Belirsiz müşteri workflow'larını discovery, teknik scoping, hızlı prototipleme, entegrasyon, evaluation ve production-readiness çalışmalarıyla deploy edilebilir AI sistemlerine dönüştürmeye odaklanan Forward Deployed Engineer."
       },
       "resume": "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing",
       "linkedin": "https://www.linkedin.com/in/balcikaan/",
@@ -44,8 +44,8 @@
         "x": "https://x.com/KaanAjop"
       },
       "footerTagline": {
-        "en": "Forward Deployed Engineer building reliable AI systems and product-minded software.",
-        "tr": "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren Forward Deployed Engineer."
+        "en": "Forward Deployed Engineer turning customer workflows into reliable AI systems and shipped software.",
+        "tr": "Müşteri workflow'larını güvenilir AI sistemlerine ve çalışan yazılım ürünlerine dönüştüren Forward Deployed Engineer."
       }
     },
     "projects": {
@@ -57,16 +57,16 @@
           "tr": "Canlı MVP"
         },
         "category": {
-          "en": "Applied AI / Reliability Engineering",
-          "tr": "Applied AI / Reliability Engineering"
+          "en": "Applied AI / Deployment Reliability",
+          "tr": "Applied AI / Deployment Güvenilirliği"
         },
         "role": {
           "en": "Product Designer & Full-Stack Developer",
           "tr": "Product Designer & Full-Stack Developer"
         },
         "summary": {
-          "en": "A Turkish-first reliability lab for repeatable multi-turn agent testing, deterministic workflow evidence, regression comparison, version trends and release-readiness decisions.",
-          "tr": "Tekrarlanabilir multi-turn agent testleri, deterministik workflow kanıtı, regression karşılaştırması, version trendleri ve release-readiness kararları için Turkish-first reliability lab."
+          "en": "A reliability lab that turns customer-service AI behavior into repeatable multi-turn tests, deterministic workflow evidence, regression comparisons and release-readiness decisions for safer deployment iteration.",
+          "tr": "Customer-service AI davranışını daha güvenli deployment iterasyonu için tekrarlanabilir multi-turn testlere, deterministik workflow kanıtına, regression karşılaştırmalarına ve release-readiness kararlarına dönüştüren reliability lab."
         },
         "stack": [
           "Next.js",
@@ -114,6 +114,53 @@
           "tr": "Semantic-judge calibration ve stabilizasyon"
         }
       },
+      "chatbotFlow": {
+        "id": "chatbotFlow",
+        "name": "AI Chatbot Flow Design",
+        "status": {
+          "en": "Case Study",
+          "tr": "Case Study"
+        },
+        "category": {
+          "en": "Enterprise AI Delivery",
+          "tr": "Kurumsal AI Delivery"
+        },
+        "summary": {
+          "en": "Enterprise customer-workflow evidence across chatbot QA, stabilization, large-scale flow restructuring, channel configuration, multi-channel handoffs and an insurance-claims intake POC.",
+          "tr": "Chatbot QA, stabilizasyon, büyük ölçekli flow restructuring, channel configuration, multi-channel handoff ve insurance-claims intake POC üzerinden kurumsal customer-workflow kanıtı."
+        },
+        "links": {
+          "caseStudy": "projects/ai-chatbot-flow-design/"
+        },
+        "role": {
+          "en": "AI Designer",
+          "tr": "AI Designer"
+        }
+      },
+      "joyday": {
+        "id": "joyday",
+        "name": "Atölye Joyday Official Website",
+        "status": {
+          "en": "Live",
+          "tr": "Canlı"
+        },
+        "category": {
+          "en": "Customer-Facing Web Product Delivery",
+          "tr": "Müşteriye Dönük Web Ürünü Teslimi"
+        },
+        "summary": {
+          "en": "A live business product where service discovery, reservation journeys and operational automation were translated into one customer-facing workflow and shipped into daily use.",
+          "tr": "Hizmet keşfi, rezervasyon journey'leri ve operasyon otomasyonunun tek customer-facing workflow'a çevrilip günlük kullanıma alındığı canlı işletme ürünü."
+        },
+        "links": {
+          "caseStudy": "atolye-joyday-case-study.html",
+          "live": "https://atolyejoyday.com/"
+        },
+        "role": {
+          "en": "Co-Founder & Digital Product Developer",
+          "tr": "Kurucu Ortak & Dijital Ürün Geliştirici"
+        }
+      },
       "mergeRush": {
         "id": "mergeRush",
         "name": "Merge Rush: Tiny Factory",
@@ -122,16 +169,16 @@
           "tr": "Aktif Geliştirme"
         },
         "category": {
-          "en": "Game Product Engineering",
-          "tr": "Oyun Ürünü Mühendisliği"
+          "en": "Game Product Systems Engineering",
+          "tr": "Oyun Ürünü Sistem Mühendisliği"
         },
         "role": {
           "en": "Game Developer & Product Designer",
           "tr": "Game Developer & Ürün Tasarımcısı"
         },
         "summary": {
-          "en": "A Phaser 3 + TypeScript merge-game product connecting timed orders, factory restoration, progressive board unlocks, multi-cell pieces and platform-aware architecture for a YouTube Playables direction.",
-          "tr": "Timed order'lar, fabrika onarımı, aşamalı board unlock, multi-cell parçalar ve YouTube Playables yönü için platform-aware mimariyi birleştiren Phaser 3 + TypeScript merge-game ürünü."
+          "en": "A Phaser 3 + TypeScript product proving stateful systems, timed workflows, progressive unlocks, responsive delivery and platform-aware architecture through a merge-game implementation.",
+          "tr": "Merge-game implementation üzerinden stateful systems, timed workflow, progressive unlock, responsive delivery ve platform-aware architecture kanıtı sunan Phaser 3 + TypeScript ürünü."
         },
         "stack": [
           "Phaser 3",
@@ -221,53 +268,6 @@
           "tr": "Gameplay pacing, retention ve production readiness"
         }
       },
-      "joyday": {
-        "id": "joyday",
-        "name": "Atölye Joyday Official Website",
-        "status": {
-          "en": "Live",
-          "tr": "Canlı"
-        },
-        "category": {
-          "en": "Real Business Product",
-          "tr": "Gerçek İşletme Ürünü"
-        },
-        "summary": {
-          "en": "A customer-facing workshop website with package discovery, reservation journeys and operational automation.",
-          "tr": "Paket keşfi, rezervasyon yolculukları ve operasyon otomasyonu içeren müşteriye dönük atölye web ürünü."
-        },
-        "links": {
-          "caseStudy": "atolye-joyday-case-study.html",
-          "live": "https://atolyejoyday.com/"
-        },
-        "role": {
-          "en": "Co-Founder & Digital Product Developer",
-          "tr": "Kurucu Ortak & Dijital Ürün Geliştirici"
-        }
-      },
-      "chatbotFlow": {
-        "id": "chatbotFlow",
-        "name": "AI Chatbot Flow Design",
-        "status": {
-          "en": "Case Study",
-          "tr": "Case Study"
-        },
-        "category": {
-          "en": "Enterprise Conversational AI",
-          "tr": "Kurumsal Conversational AI"
-        },
-        "summary": {
-          "en": "Enterprise chatbot QA, stabilization, flow restructuring and multi-channel workflow evidence.",
-          "tr": "Kurumsal chatbot QA, stabilizasyon, flow restructuring ve multi-channel workflow kanıtı."
-        },
-        "links": {
-          "caseStudy": "projects/ai-chatbot-flow-design/"
-        },
-        "role": {
-          "en": "AI Designer",
-          "tr": "AI Designer"
-        }
-      },
       "hospital": {
         "id": "hospital",
         "name": "Hospital Form App",
@@ -276,12 +276,12 @@
           "tr": "Kaynak Arşivi"
         },
         "category": {
-          "en": "C#/.NET Software",
-          "tr": "C#/.NET Yazılım"
+          "en": "Workflow Software Foundation",
+          "tr": "Workflow Software Foundation"
         },
         "summary": {
-          "en": "A database-backed Windows Forms workflow project for patient, doctor, secretary and appointment operations.",
-          "tr": "Hasta, doktor, sekreter ve randevu operasyonları için veritabanı destekli Windows Forms workflow projesi."
+          "en": "A database-backed Windows Forms system demonstrating multi-role workflow logic, stateful operations and appointment coordination across patient, doctor and secretary flows.",
+          "tr": "Hasta, doktor ve sekreter flow'larında multi-role workflow mantığı, stateful operasyonlar ve randevu koordinasyonunu gösteren veritabanı destekli Windows Forms sistemi."
         },
         "links": {
           "caseStudy": "hospital-system-case-study.html",
@@ -2362,40 +2362,40 @@
     "recruiterProfiles": {
       "applied-ai": {
         "label": {
-          "en": "Applied AI",
-          "tr": "Applied AI"
+          "en": "AI Deployment & Reliability",
+          "tr": "AI Deployment ve Güvenilirlik"
         },
         "focusTitle": {
-          "en": "Applied AI / AI Reliability",
-          "tr": "Applied AI / AI Reliability"
+          "en": "AI Deployment, Evaluation & Reliability",
+          "tr": "AI Deployment, Evaluation ve Güvenilirlik"
         },
         "capabilities": [
-          "AI Agent Reliability",
+          "AI Deployment",
+          "Technical Scoping",
+          "Agent Reliability",
           "LLM Evaluation",
-          "Conversational AI",
-          "Python / FastAPI",
-          "Regression Testing"
+          "Production Readiness"
         ],
         "skills": [
           {
-            "en": "Multi-turn scenario and agent evaluation",
-            "tr": "Multi-turn senaryo ve agent değerlendirme"
+            "en": "Translate real workflows into testable AI behavior and acceptance criteria",
+            "tr": "Gerçek workflow'ları test edilebilir AI davranışına ve acceptance criteria'ya çevirme"
           },
           {
-            "en": "Deterministic tool/workflow contracts and regression evidence",
-            "tr": "Deterministik tool/workflow contract'ları ve regression kanıtı"
+            "en": "Build repeatable multi-turn evaluations, regression evidence and release-readiness gates",
+            "tr": "Tekrarlanabilir multi-turn evaluation, regression kanıtı ve release-readiness gate'leri geliştirme"
           },
           {
-            "en": "Python / FastAPI services and PostgreSQL persistence",
-            "tr": "Python / FastAPI servisleri ve PostgreSQL persistence"
+            "en": "Prototype and integrate Python / FastAPI AI services around clear product contracts",
+            "tr": "Net product contract'ları etrafında Python / FastAPI AI servislerini prototipleme ve entegre etme"
           },
           {
-            "en": "LLM response, reasoning, code and multimodal evaluation",
-            "tr": "LLM yanıt, reasoning, code ve multimodal değerlendirme"
+            "en": "Evaluate LLM responses, reasoning, code and multimodal outputs with structured quality criteria",
+            "tr": "LLM yanıt, reasoning, code ve multimodal output'ları yapılandırılmış kalite kriterleriyle değerlendirme"
           },
           {
-            "en": "Enterprise conversational-AI workflow design",
-            "tr": "Kurumsal conversational-AI workflow tasarımı"
+            "en": "Design enterprise conversational-AI flows with explicit fallbacks, handoffs and validation logic",
+            "tr": "Açık fallback, handoff ve validation mantığıyla kurumsal conversational-AI flow'ları tasarlama"
           }
         ],
         "evidence": [
@@ -2406,128 +2406,128 @@
       },
       "solution-engineering": {
         "label": {
-          "en": "Solution Engineering",
-          "tr": "Solution Engineering"
+          "en": "Customer Discovery & Scoping",
+          "tr": "Müşteri Discovery ve Scoping"
         },
         "focusTitle": {
-          "en": "Solution Engineering",
-          "tr": "Solution Engineering"
+          "en": "Customer Discovery, Scoping & Forward Deployment",
+          "tr": "Müşteri Discovery, Scoping ve Forward Deployment"
         },
         "capabilities": [
-          "Customer Workflows",
-          "Conversational AI",
-          "Automation",
+          "Customer Discovery",
+          "Technical Scoping",
+          "Workflow Mapping",
           "API Integration",
-          "Product Delivery"
+          "Customer Delivery"
         ],
         "skills": [
           {
-            "en": "Translating business requirements into testable workflows",
-            "tr": "İş gereksinimlerini test edilebilir workflow'lara çevirme"
+            "en": "Turn business requirements and operational constraints into technical scope and implementation paths",
+            "tr": "İş gereksinimlerini ve operasyonel kısıtları teknik scope'a ve implementation yollarına çevirme"
           },
           {
-            "en": "Chatbot QA, stabilization and multi-channel handoffs",
-            "tr": "Chatbot QA, stabilizasyon ve multi-channel handoff'lar"
+            "en": "Rapidly prototype customer workflows and make integration boundaries explicit",
+            "tr": "Müşteri workflow'larını hızlıca prototipleme ve integration boundary'lerini açık hale getirme"
           },
           {
-            "en": "External-agent and API integration thinking",
-            "tr": "External-agent ve API integration düşüncesi"
+            "en": "Stabilize multi-channel handoffs, validation paths and customer-facing workflow behavior",
+            "tr": "Multi-channel handoff, validation yolları ve customer-facing workflow davranışını stabilize etme"
           },
           {
-            "en": "Customer-facing product ownership",
-            "tr": "Müşteriye dönük ürün sahipliği"
+            "en": "Connect APIs, automation and product logic into usable end-to-end journeys",
+            "tr": "API, automation ve product logic'i kullanılabilir end-to-end journey'lere bağlama"
           },
           {
-            "en": "Release-readiness and evidence-based delivery",
-            "tr": "Release-readiness ve kanıt odaklı delivery"
+            "en": "Use QA, evidence and release criteria to protect delivery quality while iterating quickly",
+            "tr": "Hızlı iterasyon sırasında delivery kalitesini korumak için QA, evidence ve release kriterleri kullanma"
           }
         ],
         "evidence": [
           "chatbotFlow",
-          "sinama",
-          "joyday"
+          "joyday",
+          "sinama"
         ]
       },
       "software": {
         "label": {
-          "en": "Software",
-          "tr": "Yazılım"
+          "en": "Full-Stack Delivery",
+          "tr": "Full-Stack Delivery"
         },
         "focusTitle": {
-          "en": "Software / Product Engineering",
-          "tr": "Yazılım / Ürün Mühendisliği"
+          "en": "Full-Stack Prototyping & Delivery",
+          "tr": "Full-Stack Prototipleme & Delivery"
         },
         "capabilities": [
-          "Python",
-          "FastAPI",
+          "Rapid Prototyping",
+          "Python / FastAPI",
           "TypeScript",
-          "C#/.NET",
-          "Databases"
+          "APIs & Databases",
+          "Automated QA"
         ],
         "skills": [
           {
-            "en": "Backend APIs and persistence",
-            "tr": "Backend API'ler ve persistence"
+            "en": "Build backend APIs, data flows and persistence for working prototypes and product systems",
+            "tr": "Çalışan prototipler ve ürün sistemleri için backend API, data flow ve persistence geliştirme"
           },
           {
-            "en": "TypeScript and responsive product interfaces",
-            "tr": "TypeScript ve responsive ürün arayüzleri"
+            "en": "Ship responsive TypeScript / JavaScript product interfaces around real workflows",
+            "tr": "Gerçek workflow'lar etrafında responsive TypeScript / JavaScript ürün arayüzleri geliştirme"
           },
           {
-            "en": "C#/.NET and database-backed desktop workflows",
-            "tr": "C#/.NET ve veritabanı destekli desktop workflow'lar"
+            "en": "Integrate SQL-backed state, operational rules and external services",
+            "tr": "SQL-backed state, operasyonel kurallar ve external servisleri entegre etme"
           },
           {
-            "en": "Automated quality gates and regression testing",
-            "tr": "Automated quality gate'ler ve regression testing"
+            "en": "Use automated quality gates and regression checks to make iteration safer",
+            "tr": "İterasyonu daha güvenli hale getirmek için automated quality gate ve regression check'leri kullanma"
           },
           {
-            "en": "Stateful product architecture",
-            "tr": "Stateful ürün mimarisi"
+            "en": "Work across product, implementation and debugging instead of stopping at a prototype mockup",
+            "tr": "Prototype mockup'ta kalmadan product, implementation ve debugging boyunca çalışabilme"
           }
         ],
         "evidence": [
           "sinama",
-          "hospital",
-          "joyday"
+          "joyday",
+          "hospital"
         ]
       },
       "game": {
         "label": {
-          "en": "Game / Interactive",
-          "tr": "Oyun / İnteraktif"
+          "en": "Product Systems (Supporting)",
+          "tr": "Product Systems (Destekleyici)"
         },
         "focusTitle": {
-          "en": "Interactive Systems",
-          "tr": "İnteraktif Sistemler"
+          "en": "Supporting Product Engineering Evidence",
+          "tr": "Destekleyici Product Engineering Kanıtı"
         },
         "capabilities": [
-          "Phaser 3",
           "TypeScript",
-          "Gameplay State",
+          "Stateful Systems",
           "Responsive UI",
-          "Platform Architecture"
+          "Platform Architecture",
+          "Iterative Delivery"
         ],
         "skills": [
           {
-            "en": "Merge-game state, progression and timed-order systems",
-            "tr": "Merge-game state, progression ve timed-order sistemleri"
+            "en": "Model state, progression, timed workflows and edge cases in an interactive product",
+            "tr": "İnteraktif üründe state, progression, timed workflow ve edge case'leri modelleme"
           },
           {
-            "en": "Footprint-aware placement and deadlock logic",
-            "tr": "Footprint-aware placement ve deadlock mantığı"
+            "en": "Implement footprint-aware placement, merge and deadlock rules",
+            "tr": "Footprint-aware placement, merge ve deadlock kurallarını uygulama"
           },
           {
-            "en": "Responsive browser-game UI",
-            "tr": "Responsive browser-game UI"
+            "en": "Build responsive browser-product interfaces across desktop and mobile viewports",
+            "tr": "Desktop ve mobil viewport'larda responsive browser-product arayüzleri geliştirme"
           },
           {
-            "en": "Platform lifecycle, save, language and audio abstractions",
-            "tr": "Platform lifecycle, save, language ve audio abstraction'ları"
+            "en": "Abstract platform lifecycle, save, language and audio concerns behind stable interfaces",
+            "tr": "Platform lifecycle, save, language ve audio ihtiyaçlarını stable interface'lerin arkasında soyutlama"
           },
           {
-            "en": "Playtesting-driven iteration",
-            "tr": "Playtesting odaklı iterasyon"
+            "en": "Use playtesting feedback to prioritize and iterate on product behavior",
+            "tr": "Product davranışını önceliklendirmek ve iterasyon yapmak için playtesting feedback kullanma"
           }
         ],
         "evidence": [

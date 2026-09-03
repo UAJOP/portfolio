@@ -71,13 +71,13 @@
     const copy = {
       en: {
         label: "RECRUITER MODE V2", title: "Evidence summary by capability focus",
-        lead: "Keeps the Forward Deployed Engineer target fixed while prioritizing project and experience evidence for the selected capability.",
+        lead: "Keeps the Forward Deployed Engineer target fixed and reorders the same evidence — discovery, AI deployment, reliability, delivery — around the capability you select.",
         choose: "Evidence focus", primary: "Primary target", focus: "Evidence focus", capabilities: "Capability areas",
         skills: "Core capabilities", proof: "Recommended evidence", cv: "View Resume", email: "Email Me", close: "Close", updated: "Portfolio data", openEvidence: "Open evidence"
       },
       tr: {
         label: "İK MODU V2", title: "Yetkinlik odağına göre kanıt özeti",
-        lead: "Forward Deployed Engineer hedefini sabit tutar; aynı portfolyoda seçilen yetkinliğe ait proje ve deneyim kanıtını öne çıkarır.",
+        lead: "Forward Deployed Engineer hedefini sabit tutar; aynı kanıtı — discovery, AI deployment, reliability, delivery — seçtiğiniz yetkinliğe göre yeniden sıralar.",
         choose: "Kanıt odağı", primary: "Ana hedef", focus: "Kanıt odağı", capabilities: "Yetkinlik alanları",
         skills: "Ana yetkinlikler", proof: "Önerilen kanıt", cv: "CV'yi Görüntüle", email: "E-posta", close: "Kapat", updated: "Portfolyo verisi", openEvidence: "Kanıtı aç"
       }
@@ -181,11 +181,11 @@
       target.quicks = copy[language].quicks;
       target.answers.about = {
         ...target.answers.about,
-        text: lt("Kaan is currently positioning primarily as a Forward Deployed Engineer; his AI Designer & Software Developer background brings together evidence across Applied AI, AI reliability, conversational AI, automation and product-minded software delivery.", "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor; AI Designer & Software Developer geçmişi Applied AI, AI reliability, conversational AI, automation ve ürün odaklı yazılım geliştirme kanıtlarını bir araya getiriyor.", language)
+        text: lt("Kaan is currently positioning primarily as a Forward Deployed Engineer: he takes ambiguous customer workflows through discovery, technical scoping, prototyping, integration, evaluation and production readiness. The AI Designer & Software Developer background is where that evidence comes from.", "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor: belirsiz müşteri workflow'larını discovery, teknik scoping, prototipleme, entegrasyon, evaluation ve production readiness adımlarından geçiriyor. Bu kanıtın kaynağı AI Designer & Software Developer geçmişi.", language)
       };
       target.answers.cv = {
         ...target.answers.cv,
-        text: lt("You can review Kaan's CV or contact him through LinkedIn and email. The primary target is Forward Deployed Engineer; capability focuses lead to the relevant project evidence.", "Kaan'ın CV'sini görüntüleyebilir veya LinkedIn ve e-posta üzerinden iletişime geçebilirsiniz. Ana hedef Forward Deployed Engineer; yetkinlik odakları ilgili proje kanıtına yönlendirir.", language)
+        text: lt("You can review Kaan's CV or contact him through LinkedIn and email. The primary target is Forward Deployed Engineer; each capability focus opens the project evidence behind it.", "Kaan'ın CV'sini görüntüleyebilir veya LinkedIn ve e-posta üzerinden iletişime geçebilirsiniz. Ana hedef Forward Deployed Engineer; her yetkinlik odağı arkasındaki proje kanıtını açar.", language)
       };
       target.answers.sinama = {
         text: [
@@ -206,7 +206,7 @@
         links: [{ label: lt("Merge Rush Case Study", "Merge Rush Vaka Çalışması", language), url: p.mergeRush.links.caseStudy }]
       };
       target.answers.roles = {
-        text: lt(`Kaan is currently positioning primarily as a Forward Deployed Engineer. Evidence focuses: ${focusSummary(language)}. SINAMA + CBOT lead for Applied AI and AI reliability; CBOT + SINAMA + Joyday for solution engineering; SINAMA backend + Hospital for software / product engineering; and Merge Rush for interactive systems.`, `Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor. Kanıt odakları: ${focusSummary(language)}. Applied AI ve AI reliability için SINAMA + CBOT; solution engineering için CBOT + SINAMA + Joyday; software / product engineering için SINAMA backend + Hospital; interactive systems için Merge Rush öne çıkar.`, language),
+        text: lt(`Kaan is currently positioning primarily as a Forward Deployed Engineer. Evidence focuses: ${focusSummary(language)}. SINAMA leads for AI deployment, evaluation and reliability; the CBOT work leads for customer discovery, scoping and enterprise workflow delivery; Joyday proves end-to-end customer-facing delivery; SINAMA backend + Hospital cover full-stack delivery, and Merge Rush is supporting product-systems evidence.`, `Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor. Kanıt odakları: ${focusSummary(language)}. AI deployment, evaluation ve reliability için SINAMA; customer discovery, scoping ve kurumsal workflow delivery için CBOT çalışması; uçtan uca customer-facing delivery için Joyday; full-stack delivery için SINAMA backend + Hospital öne çıkar, Merge Rush ise destekleyici product-systems kanıtı.`, language),
         links: [{ label: lt("Open Recruiter Mode", "İK Modunu aç", language), url: "index.html?role=applied-ai" }, { label: lt("About", "Hakkımda", language), url: "about.html" }]
       };
       target.answers.availability = target.answers.roles;
@@ -216,9 +216,9 @@
       };
       target.answers.projects = {
         text: [
-          lt("The two current flagship products are SINAMA and Merge Rush. SINAMA is the main Applied AI / reliability-engineering proof; Merge Rush is the main game-system / interactive-product proof. Joyday adds real-business product ownership and AI Chatbot Flow Design adds enterprise conversational-AI evidence.", "Güncel iki flagship ürün SINAMA ve Merge Rush. SINAMA Applied AI / reliability engineering; Merge Rush game-system / interactive product engineering tarafının ana kanıtı. Joyday gerçek işletme ürünü, AI Chatbot Flow Design ise enterprise conversational-AI deneyiminin güçlü desteği.", language)
+          lt("The primary evidence is SINAMA, the CBOT chatbot flow work and Atölye Joyday. SINAMA proves AI evaluation and release readiness; the CBOT work proves enterprise customer-workflow delivery; Joyday proves end-to-end ownership of a live customer product. Merge Rush and the Hospital system add the product-engineering and workflow-software breadth behind them.", "Ana kanıt SINAMA, CBOT chatbot flow çalışması ve Atölye Joyday. SINAMA AI evaluation ve release readiness kanıtı; CBOT çalışması kurumsal customer-workflow delivery kanıtı; Joyday canlı bir müşteri ürününün uçtan uca sahiplenilmesi. Merge Rush ve Hospital sistemi ise arkalarındaki product-engineering ve workflow-software genişliğini ekliyor.", language)
         ],
-        links: [{ label: lt("Works", "Projeler", language), url: "works.html" }, { label: "SINAMA", url: p.sinama.links.caseStudy }, { label: "Merge Rush", url: p.mergeRush.links.caseStudy }]
+        links: [{ label: lt("Works", "Projeler", language), url: "works.html" }, { label: "SINAMA", url: p.sinama.links.caseStudy }, { label: "AI Chatbot Flow Design", url: p.chatbotFlow.links.caseStudy }]
       };
     });
 
@@ -250,12 +250,12 @@
       en: [
         { id: "labs-v2", label: "Open Kaan Labs", hint: "Technical experiments", keywords: "labs experiments canvas ai flow", type: "nav", value: "labs.html" },
         { id: "now-v2", label: "Open Build Log", hint: "What is being built now", keywords: "now build log latest status", type: "nav", value: "now.html" },
-        { id: "applied-ai-role", label: "Applied AI Evidence View", hint: "Open capability-focused evidence", keywords: "applied ai evidence recruiter", type: "nav", value: "index.html?role=applied-ai" }
+        { id: "applied-ai-role", label: "Evidence by Capability", hint: "Open capability-focused evidence", keywords: "evidence capability focus recruiter applied ai discovery scoping", type: "nav", value: "index.html?role=applied-ai" }
       ],
       tr: [
         { id: "labs-v2", label: "Kaan Labs'i Aç", hint: "Teknik deneyler", keywords: "labs deneyler canvas ai flow", type: "nav", value: "labs.html" },
         { id: "now-v2", label: "Build Log'u Aç", hint: "Şu an ne geliştiriliyor", keywords: "now build log son durum güncel", type: "nav", value: "now.html" },
-        { id: "applied-ai-role", label: "Applied AI Kanıt Görünümü", hint: "Yetkinlik odaklı kanıt görünümü", keywords: "applied ai kanıt ik recruiter", type: "nav", value: "index.html?role=applied-ai" }
+        { id: "applied-ai-role", label: "Yetkinliğe Göre Kanıt", hint: "Yetkinlik odaklı kanıt görünümü", keywords: "kanıt yetkinlik odak ik recruiter applied ai discovery scoping", type: "nav", value: "index.html?role=applied-ai" }
       ]
     };
     ["en", "tr"].forEach((language) => {

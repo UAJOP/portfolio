@@ -566,30 +566,30 @@
       "linkedin": "LinkedIn"
     },
     "capabilities": [
-      "Applied AI",
-      "AI Reliability",
-      "Solution Engineering",
-      "Conversational AI",
-      "Automatisierung",
-      "Product Engineering"
+      "Customer Discovery",
+      "Technisches Scoping",
+      "AI-Deployment",
+      "LLM-Evaluation",
+      "API-Integration",
+      "Produktionsreife"
     ],
     "focus": [
-      "Conversational AI",
-      "Solution Engineering",
-      "LLM-Evaluation",
-      "Workflow-Automatisierung"
+      "Discovery & Scoping beim Kunden",
+      "AI-Deployment & Integration",
+      "Evaluation & Zuverlässigkeit",
+      "Full-Stack-Umsetzung"
     ],
     "profile": "Forward Deployed Engineer",
     "projects": [
       [
         "SINAMA — AI Agent Reliability Lab",
-        "Produktives Turkish-first Lab für Zuverlässigkeits- und Regressionstests von AI-Agenten",
+        "Laufendes AI-Agent-Reliability-Lab: mehrstufige Evaluation, Regressionsbelege und Release-Readiness-Entscheidungen",
         null,
         "Case Study ansehen"
       ],
       [
         "AI Chatbot Flow Design",
-        "Belege aus Conversational AI und Unternehmens-Workflows",
+        "Übersetzung von Kundenworkflows im Unternehmen und Multi-Channel-AI-Delivery",
         null
       ],
       [
@@ -600,7 +600,7 @@
       ],
       [
         "Atölye Joyday Official Website",
-        "Produktives digitales Produkt mit Reservierungsstrecke",
+        "Kundennahes Deployment: Reservierungsstrecke und Betriebsautomatisierung",
         null,
         "Case Study ansehen"
       ],
@@ -612,34 +612,34 @@
       ]
     ],
     "proof": [
-      "Erfahrung mit Conversational AI im Unternehmen bei CBOT: QA, Stabilisierung, Kanalkonfiguration und großflächiger Flow-Umbau.",
+      "Kundenworkflows im Unternehmensumfeld, umgesetzt durch Conversational-AI-Arbeit bei CBOT: QA, Stabilisierung, Channel-Konfiguration und großflächiger Flow-Umbau.",
       "Einen POC zur Schadensaufnahme in der Versicherung entworfen, gebaut, getestet und präsentiert — mit Sprache, Telefonverifizierung, WhatsApp-Übergabe und Dokumentenerfassung.",
       "Strukturierte LLM-Evaluation und Qualitätsbewertung für Reasoning, Code und multimodale Ausgaben.",
-      "Produktives digitales Produkt und Reservierungsautomatisierung bei Atölye Joyday mit JavaScript, Google Forms, Sheets und Apps Script."
+      "Durchgängige Umsetzung eines laufenden kundennahen Produkts und der Reservierungsautomatisierung bei Atölye Joyday mit JavaScript, Google Forms, Sheets und Apps Script."
     ],
     "skills": [
-      "Chatbot-Flow-Design, QA und Stabilisierung",
-      "Mehrstufige Workflow-Logik im n8n-Stil",
-      "Bewertung von LLM-Antworten, Reasoning, Code und multimodalen Ausgaben",
-      "Python, C#/.NET, JavaScript, PHP und SQL",
-      "Nutzerzentrierte digitale Produktentwicklung"
+      "Geschäftsworkflows in technischen Scope übersetzen",
+      "Nutzbare AI- und Softwarelösungen schnell prototypen",
+      "APIs, Daten und Workflow-Systeme integrieren",
+      "AI-Verhalten bewerten und stabilisieren",
+      "Praktische Umsetzung mit Python/FastAPI, TypeScript und SQL"
     ]
   },
   "recruiterV2": {
-    "label": "RECRUITER MODE V2",
-    "title": "Nachweisübersicht nach Kompetenzschwerpunkt",
-    "lead": "Das Ziel Forward Deployed Engineer bleibt unverändert, während Projekt- und Erfahrungsnachweise für die ausgewählte Kompetenz priorisiert werden.",
-    "choose": "Nachweisfokus",
-    "primary": "Primäres Ziel",
-    "focus": "Nachweisfokus",
     "capabilities": "Kompetenzbereiche",
-    "skills": "Kernkompetenzen",
-    "proof": "Empfohlene Nachweise",
+    "choose": "Nachweisfokus",
+    "close": "Schließen",
     "cv": "Lebenslauf ansehen",
     "email": "E-Mail schreiben",
-    "close": "Schließen",
-    "updated": "Portfolio-Daten",
-    "openEvidence": "Nachweis öffnen"
+    "focus": "Nachweisfokus",
+    "label": "RECRUITER MODE V2",
+    "lead": "Hält das Ziel Forward Deployed Engineer fest und ordnet dieselben Belege — Discovery, AI-Deployment, Zuverlässigkeit, Umsetzung — nach der gewählten Fähigkeit neu.",
+    "openEvidence": "Nachweis öffnen",
+    "primary": "Primäres Ziel",
+    "proof": "Empfohlene Nachweise",
+    "skills": "Kernkompetenzen",
+    "title": "Nachweisübersicht nach Kompetenzschwerpunkt",
+    "updated": "Portfolio-Daten"
   },
   "request": {
     "button": "Anfrage senden",

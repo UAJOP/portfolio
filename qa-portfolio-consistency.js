@@ -91,6 +91,9 @@ const index = read("index.html");
   "Weather App",
   "AI workflow demo",
   "Algorithmic 3D lab",
+  /* The homepage used to open on a two-flagship framing that led with a game
+   * product. The forward-deployed story leads with customer workflow evidence. */
+  "Two products define my current engineering direction.",
 ].forEach((stale) => check(!index.includes(stale), `homepage should not lead with: ${stale}`));
 const normalizedIndex = normalizeWhitespace(index);
 check(normalizedIndex.includes("Hiring a Forward Deployed Engineer?"), "homepage recruiter CTA must use the canonical target identity");
@@ -291,14 +294,15 @@ check(Object.keys(canonicalSocials).length === 5, "registry profile.socials must
 
 const canonicalTagline = registry?.profile?.footerTagline?.en || "";
 check(Boolean(canonicalTagline), "registry profile.footerTagline must define the canonical footer positioning copy");
-check(canonicalTagline === "Forward Deployed Engineer building reliable AI systems and product-minded software.", "canonical EN footer positioning must reflect the Forward Deployed Engineer target");
-check(registry?.profile?.footerTagline?.tr === "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren Forward Deployed Engineer.", "canonical TR footer positioning must reflect the Forward Deployed Engineer target");
+check(canonicalTagline === "Forward Deployed Engineer turning customer workflows into reliable AI systems and shipped software.", "canonical EN footer positioning must reflect the Forward Deployed Engineer target");
+check(registry?.profile?.footerTagline?.tr === "Müşteri workflow'larını güvenilir AI sistemlerine ve çalışan yazılım ürünlerine dönüştüren Forward Deployed Engineer.", "canonical TR footer positioning must reflect the Forward Deployed Engineer target");
 
 // Wordings that previously drifted across page families and must not return.
 const retiredFooterCopy = [
   "AI Designer &amp; Software Developer building reliable AI systems and product-minded software.",
   "AI Designer &amp; Software Developer building practical AI workflows and software products.",
   "AI Designer &amp; Software Developer building practical AI workflows and scalable software systems.",
+  "Forward Deployed Engineer building reliable AI systems and product-minded software.",
 ];
 
 htmlFiles.forEach((file) => {

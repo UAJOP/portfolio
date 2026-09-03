@@ -227,42 +227,42 @@
   "recruiter": {
     "profile": "Forward Deployed Engineer",
     "focus": [
-      "Conversational AI",
-      "Solution Engineering",
-      "LLM Değerlendirme",
-      "Workflow Otomasyonu"
+      "Müşteri Discovery ve Scoping",
+      "AI Deployment ve Entegrasyon",
+      "Evaluation ve Güvenilirlik",
+      "Full-Stack Teslim"
     ],
     "skills": [
-      "Chatbot akış tasarımı, QA ve stabilizasyon",
-      "n8n tarzı çok adımlı workflow mantığı",
-      "LLM yanıt, akıl yürütme, kod ve multimodal değerlendirme",
-      "Python, C#/.NET, JavaScript, PHP ve SQL",
-      "Kullanıcı odaklı dijital ürün geliştirme"
+      "İş workflow'larını teknik scope'a çevirme",
+      "Kullanılabilir AI ve yazılım çözümlerini hızlı prototipleme",
+      "API, veri ve workflow sistemlerini entegre etme",
+      "AI davranışını değerlendirme ve stabilize etme",
+      "Python/FastAPI, TypeScript ve SQL ile uygulamalı delivery"
     ],
     "capabilities": [
-      "Applied AI",
-      "AI Reliability",
-      "Solution Engineering",
-      "Conversational AI",
-      "Automation",
-      "Product Engineering"
+      "Customer Discovery",
+      "Technical Scoping",
+      "AI Deployment",
+      "LLM Evaluation",
+      "API Integration",
+      "Production Readiness"
     ],
     "proof": [
-      "CBOT'ta QA, stabilizasyon, kanal yapılandırması ve büyük ölçekli akış yeniden yapılandırmayı kapsayan kurumsal conversational AI deneyimi.",
+      "CBOT'taki conversational AI çalışmalarıyla kurumsal müşteri workflow'larının hayata geçirilmesi: QA, stabilizasyon, kanal yapılandırması ve büyük ölçekli akış yeniden yapılandırma.",
       "Ses, telefon doğrulama, WhatsApp aktarımı ve belge toplama içeren sigorta hasar başvuru POC'sini tasarladı, geliştirdi, test etti ve sundu.",
       "Akıl yürütme, kod ve multimodal çıktıları kapsayan yapılandırılmış LLM değerlendirme ve kalite çalışmaları.",
-      "JavaScript, Google Forms, Sheets ve Apps Script ile Atölye Joyday canlı dijital ürünü ve rezervasyon otomasyonu."
+      "JavaScript, Google Forms, Sheets ve Apps Script ile Atölye Joyday canlı müşteri ürününün ve rezervasyon otomasyonunun uçtan uca teslimi."
     ],
     "projects": [
       [
         "SINAMA — AI Agent Reliability Lab",
-        "Canlı, Türkçe öncelikli AI agent reliability ve regression test lab'ı",
+        "Canlı AI agent reliability lab'ı: multi-turn evaluation, regression kanıtı ve release-readiness kararları",
         null,
         "Vaka Çalışmasını Gör"
       ],
       [
         "AI Chatbot Akış Tasarımı",
-        "Conversational AI ve kurumsal workflow kanıtı",
+        "Kurumsal müşteri workflow çevirisi ve multi-channel AI delivery",
         null
       ],
       [
@@ -273,7 +273,7 @@
       ],
       [
         "Atölye Joyday Resmi Web Sitesi",
-        "Canlı dijital ürün ve rezervasyon yolculuğu",
+        "Customer-facing deployment: rezervasyon journey'si ve operasyon otomasyonu",
         null,
         "Vaka Çalışmasını Gör"
       ],
@@ -294,7 +294,7 @@
   "recruiterV2": {
     "label": "İK MODU V2",
     "title": "Yetkinlik odağına göre kanıt özeti",
-    "lead": "Forward Deployed Engineer hedefini sabit tutar; aynı portfolyoda seçilen yetkinliğe ait proje ve deneyim kanıtını öne çıkarır.",
+    "lead": "Forward Deployed Engineer hedefini sabit tutar; aynı kanıtı — discovery, AI deployment, reliability, delivery — seçtiğiniz yetkinliğe göre yeniden sıralar.",
     "choose": "Kanıt odağı",
     "primary": "Ana hedef",
     "focus": "Kanıt odağı",

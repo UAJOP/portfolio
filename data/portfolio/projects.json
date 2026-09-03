@@ -7,16 +7,16 @@
       "tr": "Canlı MVP"
     },
     "category": {
-      "en": "Applied AI / Reliability Engineering",
-      "tr": "Applied AI / Reliability Engineering"
+      "en": "Applied AI / Deployment Reliability",
+      "tr": "Applied AI / Deployment Güvenilirliği"
     },
     "role": {
       "en": "Product Designer & Full-Stack Developer",
       "tr": "Product Designer & Full-Stack Developer"
     },
     "summary": {
-      "en": "A Turkish-first reliability lab for repeatable multi-turn agent testing, deterministic workflow evidence, regression comparison, version trends and release-readiness decisions.",
-      "tr": "Tekrarlanabilir multi-turn agent testleri, deterministik workflow kanıtı, regression karşılaştırması, version trendleri ve release-readiness kararları için Turkish-first reliability lab."
+      "en": "A reliability lab that turns customer-service AI behavior into repeatable multi-turn tests, deterministic workflow evidence, regression comparisons and release-readiness decisions for safer deployment iteration.",
+      "tr": "Customer-service AI davranışını daha güvenli deployment iterasyonu için tekrarlanabilir multi-turn testlere, deterministik workflow kanıtına, regression karşılaştırmalarına ve release-readiness kararlarına dönüştüren reliability lab."
     },
     "stack": [
       "Next.js",
@@ -64,6 +64,45 @@
       "tr": "Semantic-judge calibration ve stabilizasyon"
     }
   },
+  "chatbotFlow": {
+    "id": "chatbotFlow",
+    "detailSlug": "ai-chatbot-flow-design",
+    "status": {
+      "en": "Case Study",
+      "tr": "Case Study"
+    },
+    "category": {
+      "en": "Enterprise AI Delivery",
+      "tr": "Kurumsal AI Delivery"
+    },
+    "summary": {
+      "en": "Enterprise customer-workflow evidence across chatbot QA, stabilization, large-scale flow restructuring, channel configuration, multi-channel handoffs and an insurance-claims intake POC.",
+      "tr": "Chatbot QA, stabilizasyon, büyük ölçekli flow restructuring, channel configuration, multi-channel handoff ve insurance-claims intake POC üzerinden kurumsal customer-workflow kanıtı."
+    },
+    "links": {
+      "caseStudy": "projects/ai-chatbot-flow-design/"
+    }
+  },
+  "joyday": {
+    "id": "joyday",
+    "detailSlug": "atolye-joyday-official-website",
+    "status": {
+      "en": "Live",
+      "tr": "Canlı"
+    },
+    "category": {
+      "en": "Customer-Facing Web Product Delivery",
+      "tr": "Müşteriye Dönük Web Ürünü Teslimi"
+    },
+    "summary": {
+      "en": "A live business product where service discovery, reservation journeys and operational automation were translated into one customer-facing workflow and shipped into daily use.",
+      "tr": "Hizmet keşfi, rezervasyon journey'leri ve operasyon otomasyonunun tek customer-facing workflow'a çevrilip günlük kullanıma alındığı canlı işletme ürünü."
+    },
+    "links": {
+      "caseStudy": "atolye-joyday-case-study.html",
+      "live": "https://atolyejoyday.com/"
+    }
+  },
   "mergeRush": {
     "id": "mergeRush",
     "name": "Merge Rush: Tiny Factory",
@@ -72,16 +111,16 @@
       "tr": "Aktif Geliştirme"
     },
     "category": {
-      "en": "Game Product Engineering",
-      "tr": "Oyun Ürünü Mühendisliği"
+      "en": "Game Product Systems Engineering",
+      "tr": "Oyun Ürünü Sistem Mühendisliği"
     },
     "role": {
       "en": "Game Developer & Product Designer",
       "tr": "Game Developer & Ürün Tasarımcısı"
     },
     "summary": {
-      "en": "A Phaser 3 + TypeScript merge-game product connecting timed orders, factory restoration, progressive board unlocks, multi-cell pieces and platform-aware architecture for a YouTube Playables direction.",
-      "tr": "Timed order'lar, fabrika onarımı, aşamalı board unlock, multi-cell parçalar ve YouTube Playables yönü için platform-aware mimariyi birleştiren Phaser 3 + TypeScript merge-game ürünü."
+      "en": "A Phaser 3 + TypeScript product proving stateful systems, timed workflows, progressive unlocks, responsive delivery and platform-aware architecture through a merge-game implementation.",
+      "tr": "Merge-game implementation üzerinden stateful systems, timed workflow, progressive unlock, responsive delivery ve platform-aware architecture kanıtı sunan Phaser 3 + TypeScript ürünü."
     },
     "stack": [
       "Phaser 3",
@@ -171,45 +210,6 @@
       "tr": "Gameplay pacing, retention ve production readiness"
     }
   },
-  "joyday": {
-    "id": "joyday",
-    "detailSlug": "atolye-joyday-official-website",
-    "status": {
-      "en": "Live",
-      "tr": "Canlı"
-    },
-    "category": {
-      "en": "Real Business Product",
-      "tr": "Gerçek İşletme Ürünü"
-    },
-    "summary": {
-      "en": "A customer-facing workshop website with package discovery, reservation journeys and operational automation.",
-      "tr": "Paket keşfi, rezervasyon yolculukları ve operasyon otomasyonu içeren müşteriye dönük atölye web ürünü."
-    },
-    "links": {
-      "caseStudy": "atolye-joyday-case-study.html",
-      "live": "https://atolyejoyday.com/"
-    }
-  },
-  "chatbotFlow": {
-    "id": "chatbotFlow",
-    "detailSlug": "ai-chatbot-flow-design",
-    "status": {
-      "en": "Case Study",
-      "tr": "Case Study"
-    },
-    "category": {
-      "en": "Enterprise Conversational AI",
-      "tr": "Kurumsal Conversational AI"
-    },
-    "summary": {
-      "en": "Enterprise chatbot QA, stabilization, flow restructuring and multi-channel workflow evidence.",
-      "tr": "Kurumsal chatbot QA, stabilizasyon, flow restructuring ve multi-channel workflow kanıtı."
-    },
-    "links": {
-      "caseStudy": "projects/ai-chatbot-flow-design/"
-    }
-  },
   "hospital": {
     "id": "hospital",
     "detailSlug": "hospital-form-app",
@@ -218,12 +218,12 @@
       "tr": "Kaynak Arşivi"
     },
     "category": {
-      "en": "C#/.NET Software",
-      "tr": "C#/.NET Yazılım"
+      "en": "Workflow Software Foundation",
+      "tr": "Workflow Software Foundation"
     },
     "summary": {
-      "en": "A database-backed Windows Forms workflow project for patient, doctor, secretary and appointment operations.",
-      "tr": "Hasta, doktor, sekreter ve randevu operasyonları için veritabanı destekli Windows Forms workflow projesi."
+      "en": "A database-backed Windows Forms system demonstrating multi-role workflow logic, stateful operations and appointment coordination across patient, doctor and secretary flows.",
+      "tr": "Hasta, doktor ve sekreter flow'larında multi-role workflow mantığı, stateful operasyonlar ve randevu koordinasyonunu gösteren veritabanı destekli Windows Forms sistemi."
     },
     "links": {
       "caseStudy": "hospital-system-case-study.html",
