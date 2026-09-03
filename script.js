@@ -56,12 +56,13 @@
      * structured plan assistant.js renders. Needs evidence.js and the
      * ontology; must precede assistant.js. */
     "js/ajoop/response.js",
-    /* Ajoop 5.0 optional local AI bridge. The public config ships disabled, so
-     * these two files load but make no network request until the HTTPS edge in
-     * front of the loopback-only Node bridge is configured by hand. */
+    /* Ajoop 5.1 local AI/RAG path. Config and transport load before the
+     * assistant; rag-client.js loads after it and replaces only the optional AI
+     * seam, leaving deterministic rendering as the offline fallback. */
     "ajoop-ai-config.js",
     "js/ajoop/ai-bridge.js",
     "js/ajoop/assistant.js",
+    "js/ajoop/rag-client.js",
     "js/features/ultimate.js",
     "js/features/recruiter.js",
     "js/features/command-palette.js",
