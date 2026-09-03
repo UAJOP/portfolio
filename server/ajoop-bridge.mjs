@@ -203,16 +203,41 @@ const server = http.createServer(async (request, response) => {
   }
 });
 
+/**
+ * Prewarm the exact chat path a visitor will use, not `/api/generate`.
+ * Matching the runtime chat template and speed options avoids making the first
+ * visitor pay the one-time chat-runner setup cost measured after startup.
+ */
 async function prewarmModel() {
   if (!nativeFetch) return false;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20000);
   try {
-    const response = await nativeFetch(`${config.ollamaBaseUrl}/api/generate`, {
+    const response = await fastOllamaFetch(`${config.ollamaBaseUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
-      body: JSON.stringify({ model: config.model, stream: false, keep_alive: -1 }),
+      body: JSON.stringify({
+        model: config.model,
+        stream: false,
+        think: false,
+        keep_alive: -1,
+        options: {
+          temperature: 0,
+          num_ctx: 1024,
+          num_predict: 64,
+        },
+        messages: [
+          {
+            role: "system",
+            content: "Answer in English. Use only the evidence. Add no inference. Answer with one short sentence.",
+          },
+          {
+            role: "user",
+            content: "Question: What is Ajoop?\n\nEvidence:\nAjoop is Kaan Balcı's portfolio assistant.",
+          },
+        ],
+      }),
     });
     return Boolean(response?.ok);
   } catch (error) {
