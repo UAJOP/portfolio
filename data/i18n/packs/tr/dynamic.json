@@ -3,7 +3,13 @@
     "launcher": "Ajoop'a Sor",
     "title": "Ajoop",
     "subtitle": "",
-    "greeting": "Selam, ben Ajoop. Kaan'ın yeteneklerini, projelerini, AI deneyimini, Joyday çalışmalarını, CV ve iletişim seçeneklerini hızlıca anlatabilirim. Bir soru seçebilir veya anahtar kelime yazabilirsin.",
+    "greeting": [
+      "Selam, ben Ajoop. Kaan'ın AI, yazılım, projeler, CV ve iletişim tarafını hızlıca anlatabilirim. Hazır sorulardan seçebilir ya da direkt yazabilirsin.",
+      "Hoş geldin. Kaan'ın AI Designer profili, CBOT deneyimi, Joyday projesi, teknoloji stack'i ve güçlü projeleri hakkında yardımcı olurum.",
+      "Merhaba, Ajoop burada. İstersen sana Kaan'ın profilini İK gözüyle özetleyeyim, istersen direkt proje sayfalarına yönlendireyim.",
+      "Selam! Kaan'ın portfolyo yapısını, en güçlü projelerini, AI deneyimini ve iletişim yollarını biliyorum. Nereden başlayalım?",
+      "Hey, burada portfolyo asistanı var. AI workflow, otomasyon, web projeleri, oyun projeleri, CV, sertifikalar veya role uygunluk sorabilirsin."
+    ],
     "inputPlaceholder": "Proje, AI, CV hakkında sor...",
     "sendLabel": "Gönder",
     "closeLabel": "Chatbot'u kapat",
@@ -122,6 +128,91 @@
       },
       "default": {
         "text": "Bunu tam eşleştiremedim ama Kaan'ın AI deneyimi, projeleri, tech stack'i, Joyday çalışmaları, CV'si, sertifikaları veya iletişim bilgileri hakkında yardımcı olabilirim. Aşağıdaki hazır sorulardan birini deneyebilirsin.",
+        "links": [
+          {
+            "label": "Projeler"
+          },
+          {
+            "label": "Hakkımda"
+          }
+        ]
+      },
+      "greeting": {
+        "text": [
+          "Selam, ben Ajoop. Kaan'ın AI, yazılım, projeler, CV ve iletişim tarafını hızlıca anlatabilirim. Hazır sorulardan seçebilir ya da direkt yazabilirsin.",
+          "Hoş geldin. Kaan'ın AI Designer profili, CBOT deneyimi, Joyday projesi, teknoloji stack'i ve güçlü projeleri hakkında yardımcı olurum.",
+          "Merhaba, Ajoop burada. İstersen sana Kaan'ın profilini İK gözüyle özetleyeyim, istersen direkt proje sayfalarına yönlendireyim.",
+          "Selam! Kaan'ın portfolyo yapısını, en güçlü projelerini, AI deneyimini ve iletişim yollarını biliyorum. Nereden başlayalım?",
+          "Hey, burada portfolyo asistanı var. AI workflow, otomasyon, web projeleri, oyun projeleri, CV, sertifikalar veya role uygunluk sorabilirsin."
+        ],
+        "links": [
+          {
+            "label": "Hakkımda"
+          },
+          {
+            "label": "Deneyim"
+          }
+        ]
+      },
+      "experience": {
+        "text": [
+          "Kaan'ın deneyiminde CBOT AI Designer, Outlier AI Training Specialist, Atölye Joyday Co-Founder & Digital Product Developer ve önceki Punto/Ocean's Team operasyon-yazılım işleri var.",
+          "Kariyer yolu hibrit ama avantajlı: operasyon tarafı müşteri/süreç farkındalığı verdi, yazılım projeleri uygulama gücü kazandırdı, AI işleri güncel yönünü oluşturdu.",
+          "CBOT en direkt AI Designer deneyimi; Joyday en güçlü gerçek ürün sahipliği örneği; Outlier AI ise LLM değerlendirme ve kalite inceleme tarafını destekliyor.",
+          "Kaan; client-facing operasyon, chatbot akış tasarımı, LLM değerlendirme, web geliştirme ve rezervasyon workflow taraflarında çalıştı. Bu karışım solution odaklı AI/yazılım rolleri için iyi duruyor.",
+          "Zaman çizelgesi için Deneyim sayfası iyi: AI işleri, freelance AI evaluation, Joyday, Punto, Ocean's Team, Gameathon ve Mobidictum yer alıyor."
+        ],
+        "links": [
+          {
+            "label": "Deneyim"
+          },
+          {
+            "label": "CV"
+          }
+        ]
+      },
+      "roles": {
+        "text": [
+          "Kaan'ın ana hedefi Forward Deployed Engineer; Applied AI, AI reliability, solution engineering, otomasyon ve product engineering kanıtları bu yönü destekliyor.",
+          "Kaan özellikle teknik mantık ile iş/müşteri iletişiminin birlikte gerektiği rollerde güçlü duruyor.",
+          "Saf senior backend rolü için daha derin production-scale kanıt gerekebilir; ama AI workflow, solution engineering, chatbot ve otomasyon rolleri için eşleşme daha güçlü.",
+          "En uygun ortamlar: AI ürün ekipleri, chatbot/agent platformları, otomasyon ekipleri, solution engineering takımları ve geniş sorumluluk isteyen küçük ürün ekipleri.",
+          "İş AI akışı, müşteri gereksinimi, entegrasyon, dashboard ve web/product düşüncesini karıştırıyorsa Kaan'ın profili iyi oturur."
+        ],
+        "links": [
+          {
+            "label": "Deneyim"
+          },
+          {
+            "label": "İletişim"
+          }
+        ]
+      },
+      "education": {
+        "text": [
+          "Kaan, İzmir Ekonomi Üniversitesi Bilgisayar Programcılığı mezunu ve Anadolu Üniversitesi Görsel İletişim Tasarımı'na devam ediyor.",
+          "Eğitim tarafı yazılım temeli ile devam eden görsel/tasarım yönünü birleştiriyor; bu da ürün ve portfolyo sunumuna katkı sağlıyor.",
+          "Bilgisayar Programcılığı altyapısı C#, Python, Java, veritabanı ve web geliştirme çalışmalarını destekliyor.",
+          "Tasarım eğitimi tarafı değerli çünkü Kaan'ın işleri teknik mantık ile kullanıcıya görünen arayüzü sık sık birleştiriyor.",
+          "Eğitim özeti: Bilgisayar Programcılığı mezuniyeti ve devam eden Görsel İletişim Tasarımı eğitimi."
+        ],
+        "links": [
+          {
+            "label": "Hakkımda"
+          },
+          {
+            "label": "CV"
+          }
+        ]
+      },
+      "weather": {
+        "text": [
+          "Bu statik portfolyo içinde canlı hava durumu çekemiyorum ama site içinde seni şemsiyesiz gezdiririm.",
+          "Hava durumu modu canlı API'ye bağlı değil. Şimdilik Kaan'ın AI deneyimi, projeleri, CV'si veya iletişim yollarında yardımcı olabilirim.",
+          "Ajoop'ta canlı hava durumu yok ama ileride agent özelliği olarak hava durumu API'si ve konum izniyle eklenebilir.",
+          "Meteoroloji tarafında değilim, portfolyo tarafında iyiyim. Proje, AI workflow veya Kaan'ın role uygunluğunu sorarsan daha iyi cevap veririm.",
+          "Canlı hava durumu şu an statik site kapsamının dışında. Site navigasyonu, CV, projeler ve İK özeti tamamen kapsamımda."
+        ],
         "links": [
           {
             "label": "Projeler"

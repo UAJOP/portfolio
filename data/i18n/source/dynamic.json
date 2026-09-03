@@ -3,7 +3,13 @@
     "launcher": "Ask Ajoop",
     "title": "Ajoop",
     "subtitle": "",
-    "greeting": "Hey, I am Ajoop. I can quickly explain Kaan's skills, projects, AI experience, Joyday work, CV and contact options. Choose a question or type a keyword.",
+    "greeting": [
+      "Hey, I am Ajoop. I can explain Kaan's AI, software, projects, CV and contact options. Pick a quick question or type naturally.",
+      "Hi! Ajoop here. Ask me about Kaan's AI Designer profile, CBOT experience, Joyday project, tech stack or best portfolio projects.",
+      "Welcome. I can give you a quick recruiter-style summary of Kaan or guide you to the right project page.",
+      "Hey there. I know Kaan's portfolio structure, strongest projects, AI experience and contact routes. What should we open first?",
+      "Hello! You can ask me about AI workflows, automation, web projects, game projects, CV, certificates or role fit."
+    ],
     "inputPlaceholder": "Ask about projects, AI, CV...",
     "sendLabel": "Send",
     "closeLabel": "Close chatbot",
@@ -148,6 +154,101 @@
         "links": [
           {
             "label": "Works",
+            "url": "works.html"
+          },
+          {
+            "label": "About",
+            "url": "about.html"
+          }
+        ]
+      },
+      "greeting": {
+        "text": [
+          "Hey, I am Ajoop. I can explain Kaan's AI, software, projects, CV and contact options. Pick a quick question or type naturally.",
+          "Hi! Ajoop here. Ask me about Kaan's AI Designer profile, CBOT experience, Joyday project, tech stack or best portfolio projects.",
+          "Welcome. I can give you a quick recruiter-style summary of Kaan or guide you to the right project page.",
+          "Hey there. I know Kaan's portfolio structure, strongest projects, AI experience and contact routes. What should we open first?",
+          "Hello! You can ask me about AI workflows, automation, web projects, game projects, CV, certificates or role fit."
+        ],
+        "links": [
+          {
+            "label": "About",
+            "url": "about.html"
+          },
+          {
+            "label": "Experience",
+            "url": "blog.html"
+          }
+        ]
+      },
+      "experience": {
+        "text": [
+          "Kaan's experience includes CBOT as AI Designer, Outlier AI as AI Training Specialist, Atölye Joyday as Co-Founder & Digital Product Developer, and earlier operations/software responsibilities at Punto and Ocean's Team.",
+          "The career path is hybrid but useful: operations gave client/process awareness, software projects gave implementation skill, and AI work shaped his current AI Designer direction.",
+          "CBOT is the most direct AI Designer experience; Joyday is the strongest real product ownership example; Outlier AI supports LLM evaluation and quality-review experience.",
+          "Kaan has worked across client-facing operations, chatbot flow design, LLM evaluation, web development and reservation workflows. That mix is good for solution-oriented AI/software roles.",
+          "His experience page is useful if you want the timeline: it lists AI work, freelance AI evaluation, Joyday, Punto, Ocean's Team, Gameathon and Mobidictum."
+        ],
+        "links": [
+          {
+            "label": "Experience",
+            "url": "blog.html"
+          },
+          {
+            "label": "CV",
+            "url": "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing"
+          }
+        ]
+      },
+      "roles": {
+        "text": [
+          "Kaan's primary target is Forward Deployed Engineer, with capability evidence across Applied AI, AI reliability, solution engineering, automation and product engineering.",
+          "Kaan is especially strong for roles that require both technical logic and communication with business/client teams.",
+          "For a pure backend senior role he would need deeper production-scale proof, but for AI workflow, solution engineering, chatbot and automation roles the match is much stronger.",
+          "Best-fit environments: AI product teams, chatbot/agent platforms, automation teams, solution engineering teams and small product teams where broad execution matters.",
+          "If the job mixes AI flows, customer requirements, integrations, dashboards and web/product thinking, Kaan's profile fits well."
+        ],
+        "links": [
+          {
+            "label": "Experience",
+            "url": "blog.html"
+          },
+          {
+            "label": "Contact",
+            "url": "mailto:kaanb8776@gmail.com"
+          }
+        ]
+      },
+      "education": {
+        "text": [
+          "Kaan graduated from Izmir University of Economics Computer Programming and continues Visual Communication Design at Anadolu University.",
+          "His education combines software foundations with an ongoing visual/design direction, which helps with product and portfolio presentation.",
+          "The Computer Programming background supports C#, Python, Java, database and web-development work.",
+          "The design education side is useful because Kaan's work often mixes technical logic with user-facing interfaces.",
+          "Education summary: Computer Programming graduate with ongoing Visual Communication Design studies."
+        ],
+        "links": [
+          {
+            "label": "About",
+            "url": "about.html"
+          },
+          {
+            "label": "CV",
+            "url": "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing"
+          }
+        ]
+      },
+      "weather": {
+        "text": [
+          "I cannot fetch live weather inside this static portfolio, but I can guide you around the site without needing an umbrella.",
+          "Weather mode is not connected to a live API here. For now I can help with Kaan's AI experience, projects, CV or contact routes.",
+          "No live weather feed in Ajoop yet. But if this becomes an agent feature, it could be added with a weather API and user location permission.",
+          "I am portfolio-focused, not meteorology-focused. Ask me about projects, AI workflows or Kaan's role fit and I will be much more useful.",
+          "Live weather is outside my current static-site scope. Site navigation, CV, projects and recruiter summary are fully in scope."
+        ],
+        "links": [
+          {
+            "label": "Projects",
             "url": "works.html"
           },
           {

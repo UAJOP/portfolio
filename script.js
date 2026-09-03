@@ -30,6 +30,10 @@
     "js/core/i18n-runtime.js",
     "js/portfolio/routing.js",
     "js/ajoop/matcher.js",
+    /* Ajoop 4.4 conversation language and global meta intents. Reuses the
+     * matcher's tokenizer and must precede the router, which asks it about the
+     * raw message before it scores anything. */
+    "js/ajoop/language.js",
     /* Ajoop 4.0 brain, in dependency order: entities and context reuse the
      * matcher's tokenizer, knowledge reads the registry, and the router needs
      * all three. assistant.js stays last because it owns the keyword map and

@@ -317,6 +317,57 @@
         ],
         "text": "Das konnte ich nicht genau zuordnen. Ich helfe aber gern bei Kaans AI-Erfahrung, Projekten, Tech-Stack, der Joyday-Arbeit, Lebenslauf, Zertifikaten oder Kontaktdaten. Probieren Sie eine der schnellen Fragen unten."
       },
+      "education": {
+        "links": [
+          {
+            "label": "Über mich"
+          },
+          {
+            "label": "Lebenslauf"
+          }
+        ],
+        "text": [
+          "Kaan hat den Studiengang Computerprogrammierung an der İzmir University of Economics abgeschlossen und studiert weiterhin Visuelle Kommunikationsgestaltung an der Anadolu University.",
+          "Seine Ausbildung verbindet Softwaregrundlagen mit einer fortlaufenden visuellen und gestalterischen Ausrichtung, was Produkt- und Portfoliopräsentationen zugutekommt.",
+          "Der Hintergrund in Computerprogrammierung unterstützt seine Arbeit mit C#, Python, Java, Datenbanken und Webentwicklung.",
+          "Die Designausbildung ist wertvoll, weil Kaans Arbeit technische Logik häufig mit nutzerorientierten Oberflächen verbindet.",
+          "Kurz gesagt: Abschluss in Computerprogrammierung und laufendes Studium der Visuellen Kommunikationsgestaltung."
+        ]
+      },
+      "experience": {
+        "links": [
+          {
+            "label": "Erfahrung"
+          },
+          {
+            "label": "Lebenslauf"
+          }
+        ],
+        "text": [
+          "Kaans Erfahrung umfasst CBOT als AI Designer, Outlier AI als AI Training Specialist, Atölye Joyday als Mitgründer und Digital Product Developer sowie frühere Aufgaben in Betrieb und Software bei Punto und Ocean's Team.",
+          "Sein Werdegang ist hybrid, aber nützlich: Der operative Bereich brachte Kunden- und Prozessverständnis, Softwareprojekte Umsetzungskompetenz und die AI-Arbeit prägte seine heutige Ausrichtung.",
+          "CBOT ist seine direkteste AI-Designer-Erfahrung; Joyday ist das stärkste Beispiel für echte Produktverantwortung; Outlier AI stützt seine Erfahrung in LLM-Evaluation und Qualitätsprüfung.",
+          "Kaan hat in kundenorientiertem Betrieb, Chatbot-Flow-Design, LLM-Evaluation, Webentwicklung und Reservierungsabläufen gearbeitet. Diese Mischung passt gut zu lösungsorientierten AI- und Softwarepositionen.",
+          "Für die zeitliche Übersicht ist die Erfahrungsseite hilfreich: Sie führt AI-Arbeit, freiberufliche AI-Evaluation, Joyday, Punto, Ocean's Team, Gameathon und Mobidictum auf."
+        ]
+      },
+      "greeting": {
+        "links": [
+          {
+            "label": "Über mich"
+          },
+          {
+            "label": "Erfahrung"
+          }
+        ],
+        "text": [
+          "Hallo, ich bin Ajoop. Ich kann Kaans AI-, Software- und Projektarbeit sowie Lebenslauf und Kontaktwege erklären. Wählen Sie eine schnelle Frage oder schreiben Sie frei.",
+          "Hallo! Hier ist Ajoop. Fragen Sie mich nach Kaans AI-Designer-Profil, CBOT-Erfahrung, Joyday-Projekt, Tech-Stack oder den stärksten Portfolioprojekten.",
+          "Willkommen. Ich kann Kaan kurz aus Recruiter-Sicht zusammenfassen oder Sie zur passenden Projektseite führen.",
+          "Hallo! Ich kenne Kaans Portfoliostruktur, stärkste Projekte, AI-Erfahrung und Kontaktwege. Was sollen wir zuerst öffnen?",
+          "Sie können mich nach AI-Workflows, Automatisierung, Web- und Spieleprojekten, Lebenslauf, Zertifikaten oder Rollenpassung fragen."
+        ]
+      },
       "joyday": {
         "links": [
           {
@@ -339,6 +390,23 @@
         ],
         "text": "Die stärksten Projektbereiche sind AI Chatbot Flow Design, Atölye Joyday Official Website, Hospital Appointment System, Hospital Form App, Drivenfinity und Cars Dataset Analysis. Die Projektseite verbindet ausgewählte Case Studies mit dem öffentlichen GitHub-Katalog und dynamischen Detailseiten."
       },
+      "roles": {
+        "links": [
+          {
+            "label": "Erfahrung"
+          },
+          {
+            "label": "Kontakt"
+          }
+        ],
+        "text": [
+          "Kaans vorrangiges Ziel ist Forward Deployed Engineer, gestützt durch Belege aus Applied AI, AI-Zuverlässigkeit, Solution Engineering, Automatisierung und Product Engineering.",
+          "Kaan ist besonders stark für Positionen, die sowohl technische Logik als auch Kommunikation mit Geschäfts- und Kundenteams erfordern.",
+          "Für eine reine Senior-Backend-Position bräuchte er tiefere Belege auf Produktionsmaßstab; für AI-Workflows, Solution Engineering, Chatbots und Automatisierung ist die Passung deutlich stärker.",
+          "Am besten passen AI-Produktteams, Chatbot- und Agentenplattformen, Automatisierungsteams, Solution-Engineering-Teams und kleine Produktteams mit breiter Verantwortung.",
+          "Wenn eine Position AI-Flows, Kundenanforderungen, Integrationen, Dashboards und Web- oder Produktdenken verbindet, passt Kaans Profil gut."
+        ]
+      },
       "stack": {
         "links": [
           {
@@ -349,10 +417,33 @@
           }
         ],
         "text": "Hauptstack: Python, C#/.NET, JavaScript, PHP, Java, Kotlin, C++, MySQL, MSSQL, Firebase, Unity, Unreal Engine, n8n, AI Flow und LLM-Evaluations-Workflows."
+      },
+      "weather": {
+        "links": [
+          {
+            "label": "Projekte"
+          },
+          {
+            "label": "Über mich"
+          }
+        ],
+        "text": [
+          "In diesem statischen Portfolio kann ich kein Live-Wetter abrufen, aber ich kann Sie ohne Regenschirm durch die Website führen.",
+          "Der Wettermodus ist hier nicht mit einer Live-API verbunden. Ich kann stattdessen bei Kaans AI-Erfahrung, Projekten, Lebenslauf oder Kontaktwegen helfen.",
+          "Ajoop hat noch keinen Live-Wetterfeed. Als Agentenfunktion ließe er sich später mit einer Wetter-API und Standortfreigabe ergänzen.",
+          "Mein Schwerpunkt ist das Portfolio, nicht die Meteorologie. Fragen zu Projekten, AI-Workflows oder Kaans Rollenpassung kann ich besser beantworten.",
+          "Live-Wetter liegt außerhalb des aktuellen statischen Umfangs. Seitennavigation, Lebenslauf, Projekte und Recruiter-Zusammenfassung sind vollständig abgedeckt."
+        ]
       }
     },
     "closeLabel": "Chatbot schließen",
-    "greeting": "Hallo, ich bin Ajoop. Ich erkläre Ihnen schnell Kaans Fähigkeiten, Projekte, AI-Erfahrung, die Joyday-Arbeit, den Lebenslauf und die Kontaktmöglichkeiten. Wählen Sie eine Frage oder tippen Sie ein Stichwort.",
+    "greeting": [
+      "Hallo, ich bin Ajoop. Ich kann Kaans AI-, Software- und Projektarbeit sowie Lebenslauf und Kontaktwege erklären. Wählen Sie eine schnelle Frage oder schreiben Sie frei.",
+      "Hallo! Hier ist Ajoop. Fragen Sie mich nach Kaans AI-Designer-Profil, CBOT-Erfahrung, Joyday-Projekt, Tech-Stack oder den stärksten Portfolioprojekten.",
+      "Willkommen. Ich kann Kaan kurz aus Recruiter-Sicht zusammenfassen oder Sie zur passenden Projektseite führen.",
+      "Hallo! Ich kenne Kaans Portfoliostruktur, stärkste Projekte, AI-Erfahrung und Kontaktwege. Was sollen wir zuerst öffnen?",
+      "Sie können mich nach AI-Workflows, Automatisierung, Web- und Spieleprojekten, Lebenslauf, Zertifikaten oder Rollenpassung fragen."
+    ],
     "inputPlaceholder": "Fragen Sie nach Projekten, AI, Lebenslauf …",
     "launcher": "Ajoop fragen",
     "openLabel": "Portfolio-Chatbot öffnen",

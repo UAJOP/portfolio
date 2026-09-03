@@ -98,6 +98,43 @@ const AJOOP_FACET_KEYWORDS = {
 const AJOOP_FACET_PRIORITY = ["links", "stack", "proof"];
 
 /**
+ * Intents whose subject is Kaan or the site, never a project.
+ *
+ * Ajoop 4.4 context precedence. "Hangi teknolojileri biliyor?" asked after a
+ * SINAMA answer is a question about Kaan's stack, not about SINAMA's — but the
+ * facet ("stack") used to make it inheritable, so the old subject silently
+ * hijacked it. When one of these wins on its OWN keywords, the turn resolves
+ * at profile level and inherits nothing.
+ */
+const AJOOP_SELF_CONTAINED_INTENTS = new Set([
+  "about",
+  "availability",
+  "certificates",
+  "cv",
+  "education",
+  "experience",
+  "greeting",
+  "request",
+  "roles",
+  "weather",
+]);
+
+/**
+ * Cues that make a stack question about Kaan rather than the active project.
+ *
+ * A bare "stack?" is a useful contextual follow-up and should inherit SINAMA.
+ * "What technologies does Kaan know?" and its supported-language equivalents
+ * explicitly point back at the person, so a stale project must not hijack it.
+ */
+const AJOOP_PROFILE_SCOPE_KEYWORDS = [
+  "kaan", "he", "his", "know", "knows", "you", "your",
+  "biliyor", "bildiği", "bildigi", "sen", "senin", "onun",
+  "er", "kennt", "kann", "sein", "seine",
+  "conoce", "sabe", "sus",
+  "connait", "sait", "ses", "il",
+];
+
+/**
  * Which link the visitor asked for, when they asked for a link at all.
  * "github?" should surface the repository first, not the case study.
  */
@@ -217,6 +254,35 @@ function routeAjoopQuery(message, context) {
     options.conversation === undefined ? readAjoopContext() : options.conversation;
   const page = options.page === undefined ? readAjoopPageContext(null, registry) : options.page;
 
+  /* PRECEDENCE STEP 1 — global meta intent.
+   *
+   * "Sen kimsin?" is a question about Ajoop, and it must answer the same way
+   * whatever the visitor was reading a moment ago. Returning here, before
+   * entity extraction and before intent scoring, is what makes that true:
+   * there is no path from this branch to the conversation subject or the page
+   * subject, so neither can leak into the answer. */
+  const meta =
+    typeof detectAjoopMetaIntent === "function" ? detectAjoopMetaIntent(message) : null;
+  if (meta) {
+    return {
+      meta,
+      intent: `meta:${meta}`,
+      secondaryIntents: [],
+      entities: [],
+      entity: null,
+      entitySource: null,
+      previousEntity: (conversation && conversation.lastEntity) || null,
+      facet: "overview",
+      linkHint: null,
+      confidence: "high",
+      score: 0,
+      candidates: [],
+      answerDepth: 0,
+      depth: (conversation && conversation.depth) || "normal",
+      pageContext: page || null,
+    };
+  }
+
   const entities = extractAjoopEntities(tokens, registry);
   const facet = detectAjoopFacet(tokens);
 
@@ -255,7 +321,24 @@ function routeAjoopQuery(message, context) {
     (match) => match.type === "project" || match.type === "projectDetail",
   );
   const namedEntity = (projectEntities[0] || subjectEntities[0] || entities[0] || {}).id || null;
-  const inheritable = facet !== "overview" || !winner;
+
+  /* PRECEDENCE STEPS 2-5, in order: explicit entity, explicit intent,
+   * conversation context, page context.
+   *
+   * A message that names a subject never inherits — that is how switching
+   * subject works. A message that wins a self-contained intent on its own
+   * keywords does not inherit either, because it already stated its subject:
+   * Kaan. Everything else may inherit, but only when the question is about an
+   * ASPECT of something ("github?", "kanıt?") rather than a fresh overview. */
+  const profileScopedStack =
+    Boolean(winner) &&
+    winner.id === "stack" &&
+    AJOOP_PROFILE_SCOPE_KEYWORDS.some((keyword) => matchesKeyword(tokens, keyword));
+  const selfContained =
+    Boolean(winner) &&
+    (AJOOP_SELF_CONTAINED_INTENTS.has(winner.id) || profileScopedStack) &&
+    winner.keywordScore > 0;
+  const inheritable = !selfContained && (facet !== "overview" || !winner);
   let entity = namedEntity;
   let entitySource = namedEntity ? "message" : null;
   if (!entity && inheritable && conversation && conversation.lastEntity) {
@@ -284,6 +367,9 @@ function routeAjoopQuery(message, context) {
       : 0;
 
   return {
+    /* Ajoop 4.4: null on every ordinary route, so callers can branch on one
+     * field instead of re-detecting the meta intent themselves. */
+    meta: null,
     intent,
     secondaryIntents: candidates.slice(1, 4).map((candidate) => candidate.id),
     entities,
