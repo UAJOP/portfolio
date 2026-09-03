@@ -51,7 +51,54 @@ function emptyAjoopContext() {
     /* How much detail the visitor asked for: quick | normal | deep. */
     depth: "normal",
     pageContext: null,
+    /* Ajoop 4.5 context lifetime. `entityAge` counts turns since the subject
+     * was last named or used; `touchedAt` is when the context last moved. Both
+     * exist so a stale subject stops being treated as context — see
+     * pruneAjoopContext for why that matters. */
+    entityAge: 0,
+    touchedAt: 0,
   };
+}
+
+/**
+ * How long a subject stays in play.
+ *
+ * A visitor who asked about SINAMA, then about the CV, then about education,
+ * is no longer talking about SINAMA — but 4.4 kept it indefinitely, so a later
+ * "github?" would answer about a project three topics ago. Four turns is about
+ * as long as a subject survives in a real conversation before it needs to be
+ * named again, and fifteen minutes is long enough that stepping away for a
+ * coffee does not lose the thread while a next-day tab does.
+ */
+const AJOOP_ENTITY_MAX_AGE = 4;
+const AJOOP_CONTEXT_TTL_MS = 15 * 60 * 1000;
+
+function ajoopNow(now) {
+  if (typeof now === "function") return now();
+  if (typeof now === "number") return now;
+  return Date.now();
+}
+
+/**
+ * The context as it should be READ this turn, with anything stale removed.
+ *
+ * Pure: it does not write. The router calls it once so every consumer sees the
+ * same pruned view, and the stored record is only rewritten when the turn is
+ * remembered — a read must never have side effects on the conversation.
+ */
+function pruneAjoopContext(context, now) {
+  if (!context) return context;
+  const current = ajoopNow(now);
+
+  /* A context nobody has touched for a quarter of an hour is a different
+   * visit in the same tab. Start clean rather than half-remembering. */
+  if (context.touchedAt && current - context.touchedAt > AJOOP_CONTEXT_TTL_MS) {
+    return emptyAjoopContext();
+  }
+  if (context.lastEntity && (context.entityAge || 0) > AJOOP_ENTITY_MAX_AGE) {
+    return Object.assign({}, context, { lastEntity: null, entityAge: 0 });
+  }
+  return context;
 }
 
 function ajoopContextStore(store) {
@@ -110,13 +157,18 @@ function resetAjoopContext(store) {
  * line instead of the same one.
  */
 function rememberAjoopTurn(turn, store) {
-  const current = readAjoopContext(store);
+  const current = pruneAjoopContext(readAjoopContext(store), turn && turn.now);
   const intent = (turn && turn.intent) || null;
   const entity = (turn && turn.entity) || null;
+  /* A turn that used the stored subject keeps it alive; a turn that ignored it
+   * ages it. `usedEntity` is what the router resolved, whatever its source. */
+  const usedEntity = turn && turn.usedEntity ? turn.usedEntity : null;
+  const carried = entity || current.lastEntity;
+  const refreshed = Boolean(entity) || (usedEntity && usedEntity === current.lastEntity);
   const next = {
     version: AJOOP_CONTEXT_VERSION,
     lastIntent: intent,
-    lastEntity: entity || current.lastEntity,
+    lastEntity: carried,
     previousEntity:
       entity && current.lastEntity && entity !== current.lastEntity
         ? current.lastEntity
@@ -128,7 +180,29 @@ function rememberAjoopTurn(turn, store) {
     lastFacet: turn && turn.facet !== undefined ? turn.facet : current.lastFacet,
     depth: turn && turn.depth ? turn.depth : current.depth,
     pageContext: (turn && turn.pageContext) || current.pageContext,
+    entityAge: refreshed ? 0 : (current.entityAge || 0) + 1,
+    touchedAt: ajoopNow(turn && turn.now),
   };
+  writeAjoopContext(next, store);
+  return next;
+}
+
+/**
+ * Drops the active subject without clearing the rest of the conversation.
+ *
+ * A question about Kaan, about Ajoop, or a greeting is a change of subject
+ * even though it names no new one. Letting the old project simply expire would
+ * leave it live for the next "github?", so it is released deliberately.
+ */
+function releaseAjoopEntity(store, now) {
+  const current = readAjoopContext(store);
+  if (!current.lastEntity) return current;
+  const next = Object.assign({}, current, {
+    previousEntity: current.lastEntity,
+    lastEntity: null,
+    entityAge: 0,
+    touchedAt: ajoopNow(now),
+  });
   writeAjoopContext(next, store);
   return next;
 }

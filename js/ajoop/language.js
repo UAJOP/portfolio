@@ -44,8 +44,9 @@ const AJOOP_LANGUAGE_MARKERS = {
     strong: [
       "what", "who", "how", "why", "which", "this", "that", "your", "you",
       "does", "did", "tell", "show", "about", "there", "have", "were", "would",
-      "could", "should", "please", "projects", "experience", "skills",
-      "hello", "hi", "hey",
+      "could", "should", "please", "projects", "experience", "skills", "work",
+      "hello", "hi", "hey", "annual", "revenue", "salary", "valuation",
+      "funding", "downloads", "users", "details",
     ],
     common: ["is", "are", "the", "and", "with", "can", "do", "of", "for", "me", "in", "on", "to"],
   },
@@ -57,6 +58,7 @@ const AJOOP_LANGUAGE_MARKERS = {
       "kanit", "kanitla", "ozetle", "biraz", "yani", "daha", "sen",
       "misin", "musun",
       "merhaba", "selam", "gunaydin",
+      "yapiyor", "yapar",
     ],
     common: ["ne", "mi", "mu", "bir", "ile", "bana", "icin", "var", "yok", "cok"],
   },
@@ -65,17 +67,19 @@ const AJOOP_LANGUAGE_MARKERS = {
       "was", "wer", "wie", "warum", "welche", "welches", "kannst",
       "bist", "dein", "deine", "sind", "nicht", "uber", "zeig", "zeige",
       "erzahl", "projekte", "erfahrung", "funktionierst",
-      "machst", "ich", "mir", "bitte", "danke", "und",
+      "machst", "ich", "mir", "bitte", "danke", "und", "berufserfahrung",
       "hallo", "guten", "wetter", "ausbildung", "studium",
+      "woran", "arbeitet", "arbeitest", "gebaut", "gemacht", "seine", "seinen",
+      "lebenslauf",
     ],
-    common: ["ist", "du", "der", "die", "das", "mit", "ein", "eine", "im"],
+    common: ["ist", "du", "der", "die", "das", "mit", "ein", "eine", "im", "er"],
   },
   es: {
     strong: [
       "quien", "eres", "como", "cuales", "cual", "puedes", "muestrame",
       "proyectos", "experiencia", "habilidades", "trabajo", "hola", "gracias",
-      "haces", "sobre", "porque", "donde", "cuanto", "esto", "tus",
-      "funcionas", "sabes",
+      "haces", "hace", "sobre", "porque", "donde", "cuanto", "esto", "tus",
+      "funcionas", "sabes", "curriculum",
       "tiempo", "clima", "educacion", "estudios",
     ],
     common: ["que", "es", "el", "la", "los", "las", "con", "un", "una", "de", "en", "tu", "me"],
@@ -84,8 +88,8 @@ const AJOOP_LANGUAGE_MARKERS = {
     strong: [
       "qui", "comment", "pourquoi", "quel", "quelle", "quelles", "peux",
       "montre", "projets", "competences", "bonjour", "merci",
-      "fais", "faites", "etes", "votre", "vos", "cest", "quoi", "fonctionnes",
-      "sais", "parle", "dis",
+      "fais", "fait", "faites", "etes", "votre", "vos", "cest", "quoi", "fonctionnes",
+      "sais", "parle", "dis", "voir", "professionnelle",
       "experience", "formation", "meteo",
     ],
     common: ["que", "est", "le", "la", "les", "et", "avec", "un", "une", "de", "sur", "tu", "je", "moi"],
@@ -119,6 +123,77 @@ const AJOOP_TURKISH_SUFFIXES = /(misin|musun|miyim|abilirsin|ebilirsin|iyorsun|i
 
 /** Below this the message is treated as undecided and the language is kept. */
 const AJOOP_LANGUAGE_MIN_SCORE = 3;
+
+/**
+ * Words that settle the language on their own.
+ *
+ * Ajoop 4.5. Function-word scoring is built for sentences and says nothing
+ * about "selam" or "hola" — a one-word greeting carries no articles, no verbs
+ * and no question words, so 4.4 scored every language at zero and left the
+ * conversation in whatever language it was already in. That is the wrong
+ * default for the FIRST message of a conversation, which is very often exactly
+ * a one-word greeting.
+ *
+ * Each entry below belongs to one language and to no other among these five,
+ * so seeing it is enough. Everything ambiguous stays out: "ciao" (Italian),
+ * "ok", "hmm" and any word that is a name.
+ */
+const AJOOP_DECISIVE_WORDS = {
+  en: [
+    "hello", "hey", "hiya", "thanks", "thank", "please", "goodbye", "cheers",
+    "morning", "welcome", "sure", "okay",
+  ],
+  tr: [
+    "selam", "selamlar", "merhaba", "mrb", "slm", "naber", "gunaydin", "kolay",
+    "tesekkurler", "tesekkur", "sagol", "sagolun", "eyvallah", "eyw",
+    "gorusuruz", "tamam", "peki", "evet", "hayir", "lutfen",
+  ],
+  de: [
+    "hallo", "servus", "moin", "danke", "bitte", "tschuss", "guten",
+    "wiedersehen", "gerne", "genau",
+  ],
+  es: [
+    "hola", "buenas", "gracias", "adios", "vale", "claro", "por favor",
+    "hasta luego", "chau",
+  ],
+  fr: [
+    "bonjour", "salut", "coucou", "merci", "revoir", "bien sur", "voila",
+    "bonsoir", "svp",
+  ],
+};
+
+/**
+ * A decisive word only decides while the message is SHORT.
+ *
+ * "sa" is a Turkish greeting and also the French word for "his"; "peki" is
+ * Turkish and "genau" is German, and either could appear inside a longer
+ * sentence in another language. Restricting the shortcut to short messages is
+ * what makes it safe: a greeting is short by nature, and a long sentence has
+ * enough function words for the scorer to decide properly.
+ */
+const AJOOP_DECISIVE_MAX_TOKENS = 3;
+
+/** Turkish greetings written as initialisms. Whole-message match only. */
+const AJOOP_TURKISH_SHORTHAND = new Set(["sa", "as", "slm", "mrb", "gunaydin"]);
+
+/**
+ * The language a short message states outright, or null.
+ *
+ * Returns null the moment two languages both claim a word, because a tie here
+ * would flip a conversation on the weakest possible evidence.
+ */
+function detectDecisiveAjoopLanguage(tokens) {
+  if (!tokens.length || tokens.length > AJOOP_DECISIVE_MAX_TOKENS) return null;
+
+  /* A one-word Turkish greeting initialism. Only as the whole message: "sa"
+   * inside a French sentence is the possessive, not a greeting. */
+  if (tokens.length === 1 && AJOOP_TURKISH_SHORTHAND.has(tokens[0].folded)) return "tr";
+
+  const claimed = AJOOP_LANGUAGES.filter((id) =>
+    AJOOP_DECISIVE_WORDS[id].some((word) => matchesKeyword(tokens, word)),
+  );
+  return claimed.length === 1 ? claimed[0] : null;
+}
 
 /** Scores every supported language against one message. */
 function scoreAjoopLanguages(message) {
@@ -162,6 +237,14 @@ function scoreAjoopLanguages(message) {
 function detectAjoopMessageLanguage(message) {
   const text = String(message || "").trim();
   if (!text) return null;
+  const tokens = tokenizeIntentText(text);
+  if (!tokens.length) return null;
+
+  /* A short message that names its language outright settles it. This is the
+   * greeting path, and it runs first because greetings score nothing. */
+  const decisive = detectDecisiveAjoopLanguage(tokens);
+  if (decisive) return decisive;
+
   const scores = scoreAjoopLanguages(text);
   const ranked = AJOOP_LANGUAGES.slice().sort(
     (a, b) =>
@@ -171,6 +254,17 @@ function detectAjoopMessageLanguage(message) {
   if (scores[best] < AJOOP_LANGUAGE_MIN_SCORE) return null;
   if (scores[best] === scores[second]) return null;
   return best;
+}
+
+/**
+ * True when a message carries no language information at all.
+ *
+ * "SINAMA?", "github?", "stack?" are the shape of a follow-up: a bare noun and
+ * a question mark. They must never move the conversation language, and saying
+ * so explicitly is clearer than inferring it from a null detection result.
+ */
+function isAjoopLanguageNeutral(message) {
+  return detectAjoopMessageLanguage(message) === null;
 }
 
 /**
@@ -190,69 +284,19 @@ function resolveAjoopReplyLanguage(message, options) {
 /* ---------- global meta intents ---------- */
 
 /**
- * Questions about Ajoop rather than about the portfolio.
- *
- * These are matched as whole phrases, never as bare tokens: "Kaan kim?" is a
- * question about Kaan and must keep routing normally, while "sen kimsin?" is
- * about the assistant. That distinction is the entire reason this list holds
- * phrases and contains no lone "kim" or "who".
- */
-const AJOOP_META_INTENT_PHRASES = {
-  identity: [
-    "sen kimsin", "kimsin", "sen nesin", "kim oluyorsun", "adin ne", "ajoop nedir",
-    "ajoop kim", "ajoop ne", "who are you", "what are you", "whats ajoop",
-    "what is ajoop", "who is ajoop", "introduce yourself", "tell me about yourself",
-    "wer bist du", "was bist du", "was ist ajoop", "wer ist ajoop",
-    "quien eres", "que eres", "que es ajoop", "quien es ajoop",
-    "qui es tu", "qui etes vous", "quest ce que ajoop", "cest quoi ajoop",
-    "qui est ajoop",
-  ],
-  capabilities: [
-    "ne yapabilirsin", "neler yapabilirsin", "ne yapiyorsun", "ne ise yariyorsun",
-    "bana nasil yardim", "neler biliyorsun", "ne sorabilirim",
-    "what can you do", "what do you do", "how can you help", "what can i ask",
-    "what do you know", "what are you for",
-    "was kannst du", "wobei kannst du helfen", "was weisst du",
-    "que puedes hacer", "en que puedes ayudar", "que sabes",
-    "que peux tu faire", "comment peux tu aider", "que sais tu faire",
-  ],
-  howItWorks: [
-    "nasil calisiyorsun", "nasil calisirsin", "nasil cevap veriyorsun",
-    "bilgileri nereden aliyorsun", "kaynagin ne",
-    "how do you work", "how does this work", "how do you know",
-    "where do you get", "how are you built",
-    "wie funktionierst du", "wie funktioniert das", "woher weisst du",
-    "como funcionas", "como funciona esto", "de donde sacas",
-    "comment fonctionnes tu", "comment ca marche", "ou trouves tu",
-  ],
-  isAi: [
-    "yapay zeka misin", "ai misin", "bot musun", "gercek misin", "insan misin",
-    "chatgpt misin", "bu yapay zeka mi", "bu ai mi",
-    "is this ai", "are you ai", "are you an ai", "are you a bot", "are you a robot",
-    "are you real", "are you human", "are you chatgpt", "is this a bot", "is this real",
-    "bist du eine ki", "bist du ein bot", "ist das ki",
-    "eres una ia", "eres un bot", "esto es ia",
-    "es tu une ia", "es tu un bot", "cest une ia",
-  ],
-};
-
-/** Resolution order when a message hits more than one meta phrase. */
-const AJOOP_META_PRIORITY = ["identity", "isAi", "capabilities", "howItWorks"];
-
-/**
  * Which meta intent a message asks for, or null.
  *
- * Runs before intent scoring and before entity extraction, which is what makes
- * these "global": no previous subject and no page context can reach them.
+ * Ajoop 4.5 moved the phrase lists into js/ajoop/ontology.js, where every
+ * other intent already lives — two parallel tables of "questions about Ajoop"
+ * was one table too many, and this copy had already drifted from it. The
+ * function stays as the named entry point the router and planner call.
  */
 function detectAjoopMetaIntent(message) {
   const tokens = tokenizeIntentText(message);
   if (!tokens.length) return null;
-  return (
-    AJOOP_META_PRIORITY.find((kind) =>
-      AJOOP_META_INTENT_PHRASES[kind].some((phrase) => matchesKeyword(tokens, phrase)),
-    ) || null
-  );
+  if (typeof scoreAjoopOntology !== "function") return null;
+  const winner = scoreAjoopOntology(tokens).find((candidate) => candidate.global);
+  return winner ? winner.id : null;
 }
 
 /**
@@ -295,9 +339,25 @@ const AJOOP_META_ANSWERS = {
   },
 };
 
+/**
+ * Ontology intent ids for the meta family, mapped onto the copy keys above.
+ *
+ * The ontology names intents in snake_case like every other intent it holds;
+ * this copy predates it. One small table beats renaming five locales' worth of
+ * strings, and it accepts either spelling so no caller has to care.
+ */
+const AJOOP_META_ANSWER_KEYS = {
+  identity: "identity",
+  capabilities: "capabilities",
+  how_it_works: "howItWorks",
+  howItWorks: "howItWorks",
+  is_ai: "isAi",
+  isAi: "isAi",
+};
+
 /** The meta answer text for a language, falling back to English. */
 function getAjoopMetaAnswer(kind, language) {
-  const entry = AJOOP_META_ANSWERS[kind];
+  const entry = AJOOP_META_ANSWERS[AJOOP_META_ANSWER_KEYS[kind] || kind];
   if (!entry) return "";
   return entry[language] || entry.en;
 }

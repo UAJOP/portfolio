@@ -34,6 +34,10 @@
      * matcher's tokenizer and must precede the router, which asks it about the
      * raw message before it scores anything. */
     "js/ajoop/language.js",
+    /* Ajoop 4.5 intent ontology: the intent families, their multilingual
+     * phrase families and their evidence policies. The router scores against
+     * it, so it must precede router.js. */
+    "js/ajoop/ontology.js",
     /* Ajoop 4.0 brain, in dependency order: entities and context reuse the
      * matcher's tokenizer, knowledge reads the registry, and the router needs
      * all three. assistant.js stays last because it owns the keyword map and
@@ -48,6 +52,10 @@
     /* Ajoop 4.2 evidence model: reads the knowledge layer and the router's
      * route shape, and assistant.js renders the responses it returns. */
     "js/ajoop/evidence.js",
+    /* Ajoop 4.5 response planner: turns a route plus its evidence into the
+     * structured plan assistant.js renders. Needs evidence.js and the
+     * ontology; must precede assistant.js. */
+    "js/ajoop/response.js",
     /* Ajoop 4.3 optional local AI bridge. The public config ships disabled, so
      * these two files load but make no network request until a local n8n
      * endpoint is configured by hand. */
