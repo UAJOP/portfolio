@@ -785,17 +785,15 @@ function selectAjoopEvidence(route, language, message, registry) {
   }
 }
 
-/* ---------- 4.3 grounding hand-off ---------- */
+/* ---------- grounding hand-off ---------- */
 
 /**
  * The evidence model as a plain, transport-ready object.
  *
- * Ajoop 4.3 will run a local n8n + Ollama pipeline. That model must be grounded
- * in these exact facts rather than its own recollection, so the contract is
- * defined here, now, while the only consumer is a DOM renderer: everything a
- * prompt would need is already in the response object, and nothing about it
- * assumes a panel. Nothing is sent anywhere in 4.2 — this is the shape, not the
- * transport.
+ * Ajoop 5.0 can send this shape through its optional Node/Ollama bridge. That
+ * model must be grounded in these exact facts rather than its own recollection,
+ * so the contract lives here beside the deterministic evidence model. Nothing
+ * in this function owns transport or persists the payload.
  */
 function serializeAjoopEvidence(route, response, language) {
   const locale = ajoopEvidenceLocale(language);

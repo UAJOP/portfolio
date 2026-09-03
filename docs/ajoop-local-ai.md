@@ -1,20 +1,37 @@
 # Ajoop local AI bridge
 
 Ajoop answers deterministically from canonical portfolio data. This optional
-bridge lets a **local** n8n + Ollama pair restate an already-computed answer in
+bridge lets a **local** Ollama model restate an already-computed answer in
 natural language, grounded in the evidence Ajoop 4.2 produced.
 
 The model never supplies portfolio facts. It receives the evidence and is
 instructed to present only that.
 
 ```
-browser → n8n webhook → Ollama (loopback) → grounded prose → browser
+kaanbalci.com → HTTPS edge/tunnel → 127.0.0.1:8787 Node bridge → 127.0.0.1:11434 Ollama
 ```
 
 **The bridge is never a dependency.** It ships disabled. When it is off,
-unreachable, slow or returns something malformed, Ajoop shows the deterministic
-answer it had already rendered. The portfolio is fully usable with this machine
-switched off — that is its normal state.
+unreachable, busy, slow or returns something malformed, Ajoop shows the
+deterministic answer it had already rendered. The portfolio is fully usable with
+this machine switched off — that is its normal state.
+
+## Why n8n left the public path
+
+Ajoop 4.3 routed the browser through a local n8n webhook. n8n can persist
+execution data, which includes the visitor's question. A local n8n 2.37.7
+verification retained a probe marker **even with** `saveManualExecutions: false`,
+`saveDataSuccessExecution: "none"`, `saveDataErrorExecution: "none"` and the
+corresponding global flags set. An assistant on a public site must not slowly
+accumulate a transcript of what strangers asked it.
+
+Ajoop 5.0 replaces that hop with a small, dependency-free Node service in
+`server/`: it holds a request in memory for the length of one generation and
+writes nothing, anywhere.
+
+`automation/n8n/ajoop-local-ai.template.json` is retained and marked
+**LEGACY / LOCAL EXPERIMENTATION — NOT THE PUBLIC AJOOP REQUEST PATH**. Nothing
+the site loads points at it.
 
 ---
 
@@ -22,254 +39,195 @@ switched off — that is its normal state.
 
 ```bash
 ollama serve
-```
-
-Ollama listens on `http://127.0.0.1:11434`. **Leave it on loopback.** Nothing
-outside this machine should reach port 11434, now or after a tunnel exists.
-
-## 2. Confirm the model
-
-```bash
-ollama list
 ollama pull qwen3:4b   # only if it is missing
 ```
 
-> **Two qwen3 behaviours the workflow depends on.** Both were found by live
-> testing on an RTX 4050 (model 100% GPU-resident, ~9–15s per grounded answer).
->
-> **1. `think: true` is deliberate and load-bearing.** With `think: false` this
-> model streams *untagged* chain-of-thought straight into `message.content` — a
+Ollama listens on `http://127.0.0.1:11434`. **Leave it on loopback.** Nothing
+outside this machine should reach port 11434, now or after a tunnel exists —
+publish the bridge, never Ollama.
+
+> **`think: true` is deliberate and load-bearing.** With `think: false` qwen3
+> streams *untagged* chain-of-thought straight into `message.content` — a
 > visitor would read "Hmm, the user is asking…" as Ajoop's answer, and no tag
-> stripping can catch it because there are no tags. Setting `think: true` is
-> what makes Ollama put reasoning in a separate `message.thinking` field, which
-> the workflow discards. `/no_think` in the prompt does **not** work here, and
-> neither does `/api/generate`.
+> stripping can catch it because there are no tags. `think: true` makes Ollama
+> put reasoning in a separate `message.thinking` field, which the bridge reads
+> never and returns never. If `message.content` nevertheless contains a
+> `<think>` marker, the bridge rejects the whole optional answer; trying to
+> recover text around malformed tags would create a false security guarantee.
+> `/no_think` in the prompt does not work here.
 >
-> **2. The answer is plain prose, so read `message.content` directly.** Nothing
-> asks the model for JSON, so `Validate Model Output` must not try to parse it
-> as JSON. A revision that did returned `empty model response` for *every*
-> reply, including correct ones, which silently disabled the whole AI path while
-> looking like a model problem. If you change the output contract, change the
-> prompt and the Ollama request together.
+> The system prompt is deliberately terse. An earlier version with eight
+> prohibitions made the model ruminate past its token budget and return nothing.
 >
-> Prompt length also matters: an earlier system prompt with eight prohibitions
-> made the model ruminate past its token budget. The shipped wording is
-> deliberately terse — keep it short.
->
-> If you want lower latency, a non-reasoning instruct model
-> (`qwen2.5:3b-instruct`, `llama3.2:3b`) avoids the thinking phase entirely.
-> Set `AJOOP_AI_MODEL`; no code change is needed.
+> For lower latency, a non-reasoning instruct model (`qwen2.5:3b-instruct`,
+> `llama3.2:3b`) skips the thinking phase. Set `AJOOP_AI_MODEL`; no code change.
 
-## 3. Start n8n
-
-Run n8n in production mode and keep its listener on loopback. For PowerShell:
+## 2. Start the bridge
 
 ```powershell
-$env:NODE_ENV = "production"
-$env:N8N_LISTEN_ADDRESS = "127.0.0.1"
-npx n8n
+$env:AJOOP_AI_ALLOWED_ORIGINS = "https://kaanbalci.com,http://localhost:4173"
+npm run start:ajoop:bridge
 ```
 
-Default UI: `http://127.0.0.1:5678`.
+```
+Ajoop bridge listening on 127.0.0.1:8787/ajoop
+Ajoop bridge model qwen3:4b · 2 allowed origin(s)
+```
 
-`NODE_ENV=production` is a security requirement, not an optimization. In
-development mode, n8n's own JSON parser can include a stack trace and local
-installation paths when it rejects syntactically invalid JSON.
+That is the entire log surface. No request content is ever printed.
 
-## 4. Set the environment variables
+## 3. Environment variables
 
-Set these for the n8n process before importing (n8n reads them at execution
-time):
-
-| Variable | Example | Purpose |
+| Variable | Default | Purpose |
 |---|---|---|
 | `AJOOP_AI_ALLOWED_ORIGINS` | `https://kaanbalci.com,http://localhost:4173` | Browser origins allowed to call the bridge. Never `*`. |
+| `AJOOP_AI_PORT` | `8787` | Listen port. |
 | `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | Loopback Ollama. |
 | `AJOOP_AI_MODEL` | `qwen3:4b` | Model tag. |
+| `AJOOP_AI_TIMEOUT_MS` | `45000` | Abort a generation after this. |
+| `AJOOP_AI_MAX_BODY_BYTES` | `65536` | Hard request-body cap. |
 | `AJOOP_AI_MAX_QUESTION_CHARS` | `500` | Rejects oversized questions before inference. |
-| `N8N_BLOCK_ENV_ACCESS_IN_NODE` | `false` | **Required.** See below. |
+| `AJOOP_AI_MAX_EVIDENCE` | `3` | Evidence cards passed to the model. |
+| `AJOOP_AI_MAX_CONCURRENT` | `1` | Simultaneous generations. A second one gets 429. |
+| `AJOOP_AI_RATE_MAX` | `20` | Generations per window. |
+| `AJOOP_AI_RATE_WINDOW_MS` | `60000` | Rate window. |
+| `AJOOP_AI_TEMPERATURE` | `0.2` | Low, because the model is restating, not composing. |
 
-An empty allowlist is treated as *misconfigured*, not as "allow everyone".
+An empty allowlist resolves to the shipped defaults, **never** to "allow
+everyone" — the one interpretation that would turn a typo into an open relay.
+The listener and route are fixed at `127.0.0.1` and `/ajoop`; environment
+variables cannot turn the bridge into a `0.0.0.0` listener or expose another
+route. Numeric settings are parsed strictly and bounded; malformed or unsafe
+values fall back to the defaults.
 
-> **`N8N_BLOCK_ENV_ACCESS_IN_NODE=false` is not optional.** This template is
-> configured entirely through environment variables, and current n8n blocks
-> `$env` inside nodes by default. Leave the default and the Code nodes see no
-> allowlist (every request is rejected as `bridge not configured`) and the
-> Ollama nodes cannot resolve their URL.
->
-> The Webhook node no longer reads `$env` at all, for a related reason: it
-> resolves parameters *outside* a Code node, and a blocked expression there
-> throws before the workflow starts — n8n answers
-> `HTTP 500 Workflow could not be started!` and the bridge is dead rather than
-> degraded. Its `allowedOrigins` is therefore a literal list, governing only the
-> CORS/preflight headers; the authoritative origin check stays in
-> `Validate Request`, driven by `AJOOP_AI_ALLOWED_ORIGINS`. Edit that literal
-> when the site's origins change.
+`http://localhost:4173` is included intentionally for the local preview server.
+An allowed browser origin is echoed exactly, credentials are never enabled, and
+`Vary: Origin` is sent with that response. A non-browser request without an
+`Origin` header gets no CORS header. The in-process rate guard is deliberately a
+single fixed-size global counter: it trusts neither `X-Forwarded-For` nor any
+other visitor-controlled identity header. CORS is not authentication, so the
+release edge must enforce its own network-level abuse controls too.
 
-## 5. Import and activate the workflow
+## 4. Point Ajoop at it
 
-Import `automation/n8n/ajoop-local-ai.template.json`, then **Activate** it.
-
-The production webhook is:
-
-```
-POST http://127.0.0.1:5678/webhook/ajoop-ai
-```
-
-While testing in the editor, n8n exposes `/webhook-test/ajoop-ai` instead, and
-only for one execution after you press *Test workflow*.
-
-> **Publish it from the editor UI, not the CLI.** On n8n 2.37.7 the production
-> webhook is gated behind the workflow being *published*, which is a separate
-> thing from being *active*. `n8n import:workflow` followed by
-> `n8n publish:workflow` leaves the workflow active but unpublished — n8n logs
-> `Activated workflow …` and still answers `404 Cannot POST /webhook/ajoop-ai`,
-> because `workflow_publication_trigger_status` is never populated. Open the
-> workflow in the editor and use **Publish** there. Also note that importing a
-> workflow with an id that already exists overwrites it *and* clears its
-> published state, so re-publish after every import.
-
-## 6. Point Ajoop at it
-
-Edit `ajoop-ai-config.js` locally:
+Edit `ajoop-ai-config.js` **locally**:
 
 ```js
 window.KAAN_AJOOP_AI = {
   enabled: true,
-  endpoint: "http://127.0.0.1:5678/webhook/ajoop-ai",
-  timeoutMs: 12000,
+  endpoint: "http://127.0.0.1:8787/ajoop",
+  timeoutMs: 30000,
   retryAfterMs: 60000,
 };
 ```
 
-> Keep `enabled: false` on the committed file. This file is public: it is served
-> to every visitor and is **not** a place for a secret. A token here would be
-> readable by anyone who opens devtools. Access control belongs at the bridge.
+> Keep `enabled: false` and `endpoint: ""` on the committed file. It is public,
+> served to every visitor, and is not a place for a secret. A committed
+> localhost endpoint would make every visitor's browser attempt a loopback
+> request that only ever fails.
 
-## 7. Test health
+## 5. Test
 
 ```bash
-curl -s -X POST http://127.0.0.1:5678/webhook/ajoop-ai \
-  -H "Content-Type: application/json" \
-  -H "Origin: http://localhost:4173" \
+# health — never wakes the model
+curl -s -X POST http://127.0.0.1:8787/ajoop \
+  -H "Content-Type: application/json" -H "Origin: http://localhost:4173" \
   -d '{"version":1,"mode":"health"}'
+# → {"ok":true,"model":"qwen3:4b"}
+
+# grounded generation
+curl -s -X POST http://127.0.0.1:8787/ajoop \
+  -H "Content-Type: application/json" -H "Origin: http://localhost:4173" \
+  -d '{"version":1,"question":"Why is SINAMA strong evidence?","locale":"en",
+       "grounding":{"evidence":[{"title":"SINAMA — AI Agent Reliability Lab",
+       "summary":"A reliability lab for repeatable multi-turn agent testing.",
+       "tags":["FastAPI","PostgreSQL"],
+       "proof":["14-scenario typed cross-vertical suite"]}],"comparison":null}}'
+# → {"ok":true,"answer":"…","model":"qwen3:4b"}
 ```
-
-Expected:
-
-```json
-{ "ok": true, "mode": "health", "model": "qwen3:4b" }
-```
-
-Open Ajoop and the header should read **✦ AI Enhanced**. Anything else reads
-**● Evidence Mode**.
-
-## 8. Test a grounded request
-
-```bash
-curl -s -X POST http://127.0.0.1:5678/webhook/ajoop-ai \
-  -H "Content-Type: application/json" \
-  -H "Origin: http://localhost:4173" \
-  -d '{
-    "version": 1,
-    "question": "Why is SINAMA a strong Applied AI project?",
-    "locale": "en",
-    "depth": "normal",
-    "grounding": {
-      "evidence": [{
-        "title": "SINAMA — AI Agent Reliability Lab",
-        "summary": "A Turkish-first reliability lab for repeatable multi-turn agent testing.",
-        "tags": ["Next.js", "Python", "FastAPI", "PostgreSQL"],
-        "proof": ["14-scenario typed cross-vertical suite", "Deterministic tool and workflow contracts"],
-        "sources": [{ "kind": "github" }]
-      }],
-      "comparison": null
-    }
-  }'
-```
-
-Expected: `{ "ok": true, "mode": "ai", "answer": "…", "model": "qwen3:4b" }`.
 
 **Check the answer invents nothing** — no user counts, no revenue, no dates, no
 employers that were not supplied.
 
-## 9. Confirm the fallback
+Then stop the bridge and ask Ajoop something. You should get a normal
+deterministic answer with evidence cards intact, no error and no spinner. That
+is the whole point; verify it deliberately, not by accident.
 
-Stop Ollama (or n8n) and ask Ajoop something. You should see:
+`npm run qa:ajoop:bridge` covers every branch above with no network, no Ollama
+and no socket.
 
-- a normal deterministic answer, with evidence cards intact
-- **● Evidence Mode** in the header
-- no error, no spinner, no broken conversation
+## 6. Contract
 
-That is the whole point. Verify it deliberately, not by accident.
-
-## 10. Future: public demo topology
-
-```
-kaanbalci.com → HTTPS tunnel → local n8n → local Ollama
-```
-
-Point `endpoint` at the tunnel URL and add `https://kaanbalci.com` to
-`AJOOP_AI_ALLOWED_ORIGINS`. No tunnel provider is assumed or hardcoded.
-
-When the machine is off, the tunnel is down, the health probe fails and the site
-serves deterministic Ajoop. Nothing to switch off, nothing to deploy.
-
-Before exposing anything publicly:
-
-- keep Ollama on loopback — publish the **n8n webhook**, never port 11434
-- keep the origin allowlist narrow
-- add rate limiting at the tunnel or reverse proxy
-- the workflow already caps question length and requires grounding
-
----
-
-## Privacy
-
-Ajoop persists **no** conversation data: not the question, not the answer, not
-the evidence text. `sessionStorage` holds only structured routing metadata
-(intent, entity ids, facet, depth), exactly as in 4.0–4.2.
-
-When AI mode is on, the visitor's question **is transmitted** to your local n8n,
-which is the one thing this feature changes. It is not stored by the browser.
-
-**One operational caveat:** n8n can save execution data, which would include the
-question. The shipped template sets `saveManualExecutions: false`,
-`saveDataSuccessExecution: "none"` and `saveDataErrorExecution: "none"`, but do
-not assume those workflow settings alone guarantee that no data is retained.
-Before exposing a tunnel, send a unique probe question, stop n8n, and inspect
-both its execution history and its backing database for that marker. A local n8n
-2.37.7 verification retained the marker even with the workflow settings and the
-corresponding global save flags set to `none`/`false`; treat any such retention
-as a release blocker, or adopt an isolated/ephemeral n8n data directory with an
-explicit retention policy. Do not use real visitor traffic until this check is
-clean.
-
-## Contract
-
-Request:
+Request (the browser payload, built by `buildAjoopAiPayload()` from
+`serializeAjoopEvidence()` — there is no second evidence collector):
 
 ```json
-{ "version": 1, "question": "...", "locale": "tr", "intent": "...",
-  "entity": "...", "depth": "normal",
+{ "version": 1, "question": "...", "locale": "en|tr|de|es|fr",
+  "intent": "...", "entity": "...", "facet": "...", "depth": "normal",
   "grounding": { "evidence": [...], "comparison": null } }
 ```
 
-Success:
+Success: `{ "ok": true, "answer": "...", "model": "qwen3:4b" }`
+Health: `{ "ok": true, "model": "qwen3:4b" }`
+Failure: `{ "ok": false, "error": "short reason" }`
 
-```json
-{ "ok": true, "mode": "ai", "answer": "...", "model": "qwen3:4b" }
-```
+| Status | When |
+|---|---|
+| 400 | invalid JSON, unsupported version, bad locale, question > 500, no grounding |
+| 403 | origin not on the allowlist |
+| 404 | any path other than `/ajoop` |
+| 405 | any method other than POST/OPTIONS |
+| 413 | body over the cap |
+| 415 | POST body is not `application/json` |
+| 429 | already generating (`busy`), or over the rate window (`rate limited`) |
+| 502 / 503 / 504 | Ollama unreachable, missing, malformed, or timed out |
 
-Validated JSON failures use HTTP 200 with a short reason and no stack trace:
+No failure body carries a stack trace, a prompt, a local path, an environment
+value, Ollama's own response or its port. The browser treats every `ok: false`,
+timeout, CORS failure, non-JSON body and empty answer identically: keep the
+deterministic answer. A 429 is the one failure that does **not** count toward
+the bridge's unavailability streak — a bridge that says "not now" is a healthy
+bridge, and a visitor typing quickly should not be able to talk it into looking
+offline.
 
-```json
-{ "ok": false, "error": "no grounding supplied" }
-```
+## Privacy
 
-Syntactically invalid JSON is rejected earlier by n8n's request parser with
-HTTP 422. Keep n8n in production mode so that parser response remains short and
-does not expose a stack trace or local paths.
+The browser and Node bridge persist **no visitor conversation data**.
+`sessionStorage` holds only structured routing metadata (intent, entity ids,
+facet, depth), exactly as in 4.0–4.2.
 
-The browser treats every `ok: false`, timeout, CORS failure, non-JSON body and
-empty answer identically: keep the deterministic answer.
+The Node bridge is stateless by construction:
+
+- no question, evidence, prompt or answer is written to disk
+- no request history, no database, no analytics event
+- nothing is logged but the startup line and generic error codes
+- the rate guard is in memory and resets on restart, because a counter that
+  survived a restart would be state the bridge promised not to keep
+
+When AI mode is on, the visitor's question **is transmitted** through the
+configured HTTPS edge to the local bridge, which forwards it to local Ollama.
+The Node and Ollama processes stay on the operator's machine, but a hosted edge
+or tunnel may process the request before it reaches them. Its request-body
+logging and retention must therefore be disabled and verified before release.
+
+`scripts/qa-ajoop-bridge.mjs` asserts the logging guarantee directly: it drives
+a request carrying a marker string through success and failure paths with the
+console captured, and fails if the marker, the evidence, the prompt or the
+answer appears anywhere in it.
+
+## Release step: the HTTPS edge
+
+`endpoint` is intentionally empty in the committed config and **no tunnel
+provider, URL or secret is committed**. Exposing the bridge is a release
+decision, made once the implementation is approved:
+
+1. Put an HTTPS edge in front of `127.0.0.1:8787` — any tunnel or reverse proxy.
+2. Add the site origin to `AJOOP_AI_ALLOWED_ORIGINS`.
+3. Set `enabled: true` and `endpoint` to the HTTPS URL in `ajoop-ai-config.js`.
+4. Keep Ollama on loopback. Publish the bridge, never port 11434.
+5. Disable and verify request-body logging/retention at the edge or tunnel.
+6. Add rate limiting at the edge as well — the bridge's own guard protects the
+   GPU, not the uplink.
+
+When the machine is off the health probe fails and the site serves deterministic
+Ajoop. Nothing to switch off, nothing to deploy.

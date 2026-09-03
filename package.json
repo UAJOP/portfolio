@@ -13,6 +13,8 @@
     "qa:audit": "node scripts/site-audit.mjs",
     "qa:ajoop": "node scripts/qa-ajoop-intents.mjs",
     "qa:ajoop:behavior": "node scripts/qa-ajoop-behavior.mjs",
+    "qa:ajoop:bridge": "node scripts/qa-ajoop-bridge.mjs",
+    "start:ajoop:bridge": "node server/ajoop-bridge.mjs",
     "qa:request": "node scripts/qa-request-submission.mjs",
     "qa:projects": "node scripts/qa-project-data.mjs",
     "qa:seo": "node scripts/qa-project-seo.mjs",

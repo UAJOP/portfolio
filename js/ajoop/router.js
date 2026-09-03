@@ -193,25 +193,6 @@ function routeAjoopQuery(message, context) {
   );
   const namedEntity = (projectEntities[0] || subjectEntities[0] || entities[0] || {}).id || null;
 
-  /* PRECEDENCE STEPS 3-5 — self-contained intent, then conversation, then page. */
-  const inheritable = ajoopMayInheritEntity(winner, facet);
-  let entity = namedEntity;
-  let entitySource = namedEntity ? "message" : null;
-  if (!entity && inheritable && conversation && conversation.lastEntity) {
-    entity = conversation.lastEntity;
-    entitySource = "conversation";
-  }
-  if (!entity && inheritable && page && page.pageEntity) {
-    entity = page.pageEntity;
-    entitySource = "page";
-  }
-
-  /* A role intent carries its own subject: the recruiter profile it names. */
-  if (!entity && winner && winner.roleId) {
-    entity = winner.roleId;
-    entitySource = "message";
-  }
-
   /* A bare subject IS a question.
    *
    * "SINAMA" on its own scores no intent — it is a name, not a phrase — and
@@ -235,6 +216,51 @@ function routeAjoopQuery(message, context) {
         matched: [namedEntity],
       };
     }
+  }
+
+  /* PRECEDENCE STEP 6 — an unanswerable winner yields to an answerable peer.
+   *
+   * Scores are additive over every matched phrase and decisive token, so an
+   * intent that spells one stem several ways can out-total an intent that
+   * matched a single longer, strictly more specific phrase. "Hangi
+   * teknolojileri biliyor" is the case that exposed it: tech_stack collects
+   * "hangi teknolojiler" + "teknoloji" + "teknolojiler" over the same words and
+   * beats skills, which matched the whole question — then needs a project the
+   * visitor never named and can only ask which one.
+   *
+   * Rebalancing those keyword lists would be guesswork that moves every other
+   * route with them. The real rule is narrower and belongs here, with the other
+   * precedence steps: a subject-less aspect question loses to a candidate that
+   * matched at least as specific a phrase AND can actually be answered. When no
+   * such peer exists — "stack?", "links?" on their own — the winner stands and
+   * the planner still asks which project, which is the right reply to those. */
+  if (resolved && resolved.needsEntity && !namedEntity) {
+    const answerable = candidates.find(
+      (candidate) => !candidate.needsEntity && candidate.specificity >= resolved.specificity,
+    );
+    if (answerable) resolved = answerable;
+  }
+
+  /* PRECEDENCE STEPS 3-5 — self-contained intent, then conversation, then page.
+   * This deliberately runs after step 6: a complete person-level question must
+   * not become a project question merely because an older turn or the current
+   * page can supply the project that the losing candidate needed. */
+  const inheritable = ajoopMayInheritEntity(resolved, facet);
+  let entity = namedEntity;
+  let entitySource = namedEntity ? "message" : null;
+  if (!entity && inheritable && conversation && conversation.lastEntity) {
+    entity = conversation.lastEntity;
+    entitySource = "conversation";
+  }
+  if (!entity && inheritable && page && page.pageEntity) {
+    entity = page.pageEntity;
+    entitySource = "page";
+  }
+
+  /* A role intent carries its own subject: the recruiter profile it names. */
+  if (!entity && resolved && resolved.roleId) {
+    entity = resolved.roleId;
+    entitySource = "message";
   }
 
   const previousEntity =

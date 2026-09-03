@@ -1,9 +1,9 @@
 {
   "id": "ajoop-local-ai-bridge-v1",
-  "name": "kaanbalci.com — Ajoop Local AI Bridge (template)",
+  "name": "LEGACY / LOCAL EXPERIMENTATION — Ajoop n8n bridge (NOT the public Ajoop request path)",
   "meta": {
     "templateCredsSetupCompleted": false,
-    "description": "Credential-free export. Bridges the public Ajoop chatbot to a LOCAL Ollama model. The browser never talks to Ollama: it POSTs to this webhook, which validates the payload, builds a grounded prompt from the portfolio evidence the browser supplied, calls Ollama on the loopback interface and returns prose. Ollama's port is never exposed publicly. Every rejection returns a short reason, never a stack trace. If this workflow is inactive or the machine is off, the portfolio falls back to its deterministic answers and is unaffected."
+    "description": "LEGACY / LOCAL EXPERIMENTATION — NOT THE PUBLIC AJOOP REQUEST PATH. Ajoop 5.0 moved the public path to server/ajoop-bridge.mjs (browser -> HTTPS edge -> 127.0.0.1:8787 Node bridge -> 127.0.0.1:11434 Ollama). This workflow is retained only for local experimentation and is not wired to the site. It was retired from the public path because n8n execution history retained visitor questions even with every documented save flag set to none/false; the Node bridge stores nothing. See docs/ajoop-local-ai.md."
   },
   "settings": {
     "executionOrder": "v1",
