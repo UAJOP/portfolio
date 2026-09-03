@@ -24,7 +24,7 @@
  */
 window.KAAN_AJOOP_AI = {
   /* Master switch. False means the bridge code loads but never runs. */
-  enabled: false,
+  enabled: true,
 
   /* The public HTTPS edge in front of the local Node bridge, configured at
    * release time. Deliberately empty here: a committed localhost endpoint would
@@ -33,7 +33,7 @@ window.KAAN_AJOOP_AI = {
    * that may not exist. No provider is assumed or hardcoded. Ollama's own port
    * is never named in anything the visitor loads: the browser talks only to the
    * bridge, and 11434 stays off the public internet. */
-  endpoint: "",
+  endpoint: "https://ajoop.kaanbalci.com/ajoop",
 
   /* When this elapses the request is aborted and the deterministic answer
    * stands. It can afford to be generous: the deterministic answer is already
