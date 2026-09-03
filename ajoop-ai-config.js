@@ -10,9 +10,10 @@
  * n8n is no longer in this path. See docs/ajoop-local-ai.md.
  *
  * Production behavior is AI-first while the bridge is healthy: the deterministic
- * answer is still rendered as the fallback source of truth, but it stays hidden
- * only while the AI request is in flight. If the bridge is disabled, offline,
- * busy, malformed or too slow, the `is-enhancing` class is removed and the
+ * answer is still rendered as the fallback source of truth, but its prose,
+ * evidence cards and links stay visually replaced by one compact thinking state
+ * while the AI request is in flight. If the bridge is disabled, offline, busy,
+ * malformed or too slow, the `is-enhancing` class is removed and the same
  * deterministic answer appears unchanged.
  *
  * THIS FILE IS PUBLIC. It is served to every visitor, so it holds no secret and
@@ -45,13 +46,57 @@ window.KAAN_AJOOP_AI = {
  * AI-first presentation without weakening deterministic fallback.
  *
  * assistant.js adds `is-enhancing` synchronously after rendering the grounded
- * deterministic message and removes it on either AI success or failure. Hiding
- * that one in-flight message means visitors see the AI answer directly when it
- * succeeds; on any failure the same deterministic message becomes visible.
+ * deterministic message and removes it on either AI success or failure. During
+ * that request we keep the same bot bubble on screen, hide every final-answer
+ * child, and show one lightweight thinking line instead. The earlier 620ms
+ * deterministic thinking beat is styled with the same copy, so both phases read
+ * as one continuous response rather than "deterministic answer → AI rewrite".
+ *
+ * No extra backend delay is added. Warm AI can land as soon as it is ready; the
+ * visual state simply occupies the time the request already takes.
  */
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.setAttribute("data-ajoop-ai-first", "");
-  style.textContent = ".chatbot-message.bot.is-enhancing{display:none;}";
+  style.textContent = `
+    html { --ajoop-ai-thinking-copy: "Thinking this through…"; }
+    html[lang^="tr"] { --ajoop-ai-thinking-copy: "Bunu düşünüyorum…"; }
+    html[lang^="de"] { --ajoop-ai-thinking-copy: "Ich denke darüber nach…"; }
+    html[lang^="es"] { --ajoop-ai-thinking-copy: "Estoy pensando…"; }
+    html[lang^="fr"] { --ajoop-ai-thinking-copy: "J’y réfléchis…"; }
+
+    .chatbot-message.bot.is-enhancing {
+      display: block;
+      min-height: 44px;
+    }
+    .chatbot-message.bot.is-enhancing > * {
+      display: none !important;
+    }
+    .chatbot-message.bot.is-enhancing::before {
+      content: var(--ajoop-ai-thinking-copy);
+      display: block;
+      color: var(--muted);
+      line-height: 1.5;
+      opacity: 0.82;
+    }
+
+    .chatbot-message.bot.is-thinking > p {
+      font-size: 0;
+    }
+    .chatbot-message.bot.is-thinking > p::before {
+      content: var(--ajoop-ai-thinking-copy);
+      display: block;
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: 0.82;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .chatbot-message.bot.is-enhancing::before,
+      .chatbot-message.bot.is-thinking > p::before {
+        transition: none;
+      }
+    }
+  `;
   document.head?.appendChild(style);
 }
