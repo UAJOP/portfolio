@@ -17,13 +17,13 @@
     "tr": "İşe açık"
   },
   "direction": {
-    "en": "Forward Deployed Engineer with evidence across Applied AI, AI reliability, solution engineering and product-minded software delivery.",
-    "tr": "Applied AI, AI reliability, solution engineering ve ürün odaklı yazılım geliştirme alanlarında kanıt sunan Forward Deployed Engineer."
+    "en": "Forward Deployed Engineer focused on turning ambiguous customer workflows into deployable AI systems through discovery, technical scoping, rapid prototyping, integration, evaluation and production-readiness work.",
+    "tr": "Belirsiz müşteri workflow'larını discovery, teknik scoping, hızlı prototipleme, entegrasyon, evaluation ve production-readiness çalışmalarıyla deploy edilebilir AI sistemlerine dönüştürmeye odaklanan Forward Deployed Engineer."
   },
   "resume": "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing",
   "email": "mailto:kaanb8776@gmail.com",
   "footerTagline": {
-    "en": "Forward Deployed Engineer building reliable AI systems and product-minded software.",
-    "tr": "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren Forward Deployed Engineer."
+    "en": "Forward Deployed Engineer turning customer workflows into reliable AI systems and shipped software.",
+    "tr": "Müşteri workflow'larını güvenilir AI sistemlerine ve çalışan yazılım ürünlerine dönüştüren Forward Deployed Engineer."
   }
 }
