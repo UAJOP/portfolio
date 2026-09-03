@@ -45,6 +45,20 @@ function languageFromCorePrompt(messages) {
   return match?.[1]?.trim() || "English";
 }
 
+/**
+ * Qwen occasionally returns the requested scope marker and answer on the same
+ * line instead of the two-line contract. The RAG core still uses the marker to
+ * choose portfolio/general mode, but visitors should only ever see prose.
+ */
+function sanitizeRagAnswer(value) {
+  if (typeof value !== "string") return value;
+  return value
+    .trim()
+    .replace(/^SCOPE\s*:\s*(?:PORTFOLIO|GENERAL)\b[\s:—-]*/i, "")
+    .replace(/^ANSWER\s*:\s*/i, "")
+    .trim();
+}
+
 /** Runtime adapter for the legacy grounded writer path only. */
 async function fastOllamaFetch(url, options = {}) {
   if (!nativeFetch) throw new TypeError("fetch unavailable");
@@ -188,7 +202,11 @@ const server = http.createServer(async (request, response) => {
       contentType: request.headers["content-type"] || "",
       body: read.body,
     });
-    send(response, result.status, result.headers, result.body);
+    const body =
+      url.pathname === rag.path && result?.body?.ok && typeof result.body.answer === "string"
+        ? { ...result.body, answer: sanitizeRagAnswer(result.body.answer) }
+        : result.body;
+    send(response, result.status, result.headers, body);
   } catch (error) {
     console.error("[ajoop-bridge] unhandled request failure");
     send(
@@ -238,9 +256,48 @@ async function prewarmModel() {
   }
 }
 
+/**
+ * Warm the exact context/token shape used by the RAG generator after the
+ * embedding index is built. This prevents the first visitor from paying the
+ * one-time 2048-context runner setup cost.
+ */
+async function prewarmRagModel() {
+  if (!nativeFetch) return false;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+  try {
+    const response = await nativeFetch(`${config.ollamaBaseUrl}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: config.model,
+        stream: false,
+        think: false,
+        keep_alive: -1,
+        options: { temperature: 0.15, num_ctx: 2048, num_predict: 180 },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are Ajoop. Return exactly: SCOPE: GENERAL then ANSWER: ready.",
+          },
+          { role: "user", content: "Warm the RAG response path." },
+        ],
+      }),
+    });
+    return Boolean(response?.ok);
+  } catch (error) {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function start() {
   const warmed = await prewarmModel();
   const ragStatus = await rag.initialize();
+  const ragWarmed = ragStatus.ready ? await prewarmRagModel() : false;
   server.listen(config.port, config.host, () => {
     console.log(`Ajoop bridge listening on ${config.host}:${config.port}${config.path}`);
     console.log(`Ajoop bridge model ${config.model} · ${config.allowedOrigins.length} allowed origin(s)`);
@@ -248,6 +305,7 @@ async function start() {
     console.log(
       `Ajoop RAG ${ragStatus.ready ? "ready" : "unavailable"} · ${ragStatus.chunks} chunks · ${ragStatus.embedModel}`,
     );
+    console.log(`Ajoop RAG warm model ${ragWarmed ? "ready" : "unavailable"}`);
   });
 }
 
