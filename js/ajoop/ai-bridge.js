@@ -1,9 +1,17 @@
 /**
- * Optional local AI bridge for Ajoop (Ajoop 4.3).
+ * Optional local AI bridge for Ajoop (Ajoop 5.0).
  *
  * Ajoop answers deterministically. This module can additionally hand the
- * already-computed answer and its canonical evidence to a LOCAL n8n webhook,
- * which prompts a local Ollama model to restate it in natural language.
+ * already-computed answer and its canonical evidence to a LOCAL Node bridge
+ * (server/ajoop-bridge.mjs), which prompts a local Ollama model to restate it
+ * in natural language:
+ *
+ *   this module → HTTPS edge/tunnel → 127.0.0.1:8787 → 127.0.0.1:11434
+ *
+ * 5.0 removed n8n from this path. Its execution history retained visitor
+ * questions even with every documented save flag off, and an assistant on a
+ * public site must not accumulate a transcript of what strangers asked. The
+ * Node bridge stores nothing. See docs/ajoop-local-ai.md.
  *
  * THE MODEL IS NOT A SOURCE OF TRUTH. It receives the evidence Ajoop 4.2
  * already built and is instructed to present only that. Cards, proof points,
@@ -11,11 +19,11 @@
  * whatever the model returns.
  *
  * THE BRIDGE IS NEVER A DEPENDENCY. Every failure path — not configured,
- * offline, timed out, blocked by CORS, malformed JSON, empty answer — resolves
- * to the same outcome: the deterministic answer that was already rendered
- * stands, and nothing is shown to the visitor about the failure. The portfolio
- * is fully usable with the machine that runs n8n switched off, which is its
- * normal state.
+ * offline, busy, timed out, blocked by CORS, malformed JSON, empty answer —
+ * resolves to the same outcome: the deterministic answer that was already
+ * rendered stands, and nothing is shown to the visitor about the failure. The
+ * portfolio is fully usable with the machine that runs the bridge switched
+ * off, which is its normal state.
  *
  * Loads after evidence.js (it serializes that module's model) and before
  * assistant.js, which owns the DOM.
@@ -59,7 +67,7 @@ const AJOOP_AI_TURN = Object.freeze({
 /** Consecutive turn failures before the bridge itself is called unavailable. */
 const AJOOP_AI_TURN_FAILURE_LIMIT = 3;
 
-/** Contract version sent to the bridge, so n8n can reject shapes it predates. */
+/** Contract version sent to the bridge, so it can reject shapes it predates. */
 const AJOOP_AI_PROTOCOL_VERSION = 1;
 
 /** A model answer longer than this is treated as malformed rather than shown. */
@@ -275,9 +283,9 @@ function validateAjoopAiResponse(raw) {
  * serializeAjoopEvidence — there is deliberately no second evidence collector,
  * so what the model is told is exactly what the panel shows.
  *
- * The raw question travels because the model needs it to answer. It is not
- * persisted anywhere by Ajoop; see docs/ajoop-local-ai.md for the one place it
- * can come to rest (n8n execution history) and how to switch that off.
+ * The raw question travels because the model needs it to answer. Since 5.0
+ * there is no longer anywhere for it to come to rest: the Node bridge holds it
+ * in memory for one request and writes nothing. See docs/ajoop-local-ai.md.
  */
 function buildAjoopAiPayload(route, response, question, language) {
   const grounded =
@@ -305,10 +313,11 @@ function buildAjoopAiPayload(route, response, question, language) {
 /**
  * Whether the bridge is reachable, cached with a backoff.
  *
- * The browser never probes Ollama: it asks n8n, and n8n decides what "healthy"
- * means for the model behind it. A negative verdict is cached for
- * `retryAfterMs` so a stopped service costs one failed request per minute
- * rather than one per message.
+ * The browser never probes Ollama: it asks the bridge, and the bridge decides
+ * what "healthy" means for the model behind it. Port 11434 is never named by
+ * anything the visitor loads. A negative verdict is cached for `retryAfterMs`
+ * so a stopped service costs one failed request per minute rather than one per
+ * message.
  */
 async function checkAjoopAiHealth(options) {
   const settings = options || {};
@@ -392,6 +401,16 @@ async function requestAjoopAiResponse(options) {
 
   if (!isAjoopAiTurnCurrent(turn)) {
     return { ok: false, reason: "stale", turnState: null };
+  }
+
+  /* Ajoop 5.0: the bridge refuses a second generation while the model is
+   * busy, and rate-limits a burst, with 429. That is a healthy bridge saying
+   * "not now" — it answered, on time, correctly. Counting it toward the
+   * unavailability streak would let a visitor typing quickly talk the bridge
+   * into looking offline. The turn still keeps its deterministic answer. */
+  if (!result.ok && result.reason === "http-error" && result.status === 429) {
+    setAjoopBridgeState(AJOOP_AI_STATE.AVAILABLE, settings.now);
+    return failed("busy");
   }
 
   if (!result.ok) {
