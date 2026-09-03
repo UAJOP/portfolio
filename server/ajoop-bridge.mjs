@@ -1,25 +1,19 @@
 #!/usr/bin/env node
 /**
- * Ajoop bridge server (Ajoop 5.0) — the thinnest possible node:http shell
- * around server/ajoop-bridge-core.mjs.
+ * Ajoop bridge server (Ajoop 5.0/5.1 migration shell).
  *
- *   browser → HTTPS edge/tunnel → 127.0.0.1:8787 (here) → 127.0.0.1:11434
+ *   browser → HTTPS edge/tunnel → 127.0.0.1:8787 → Ollama
  *
- * Node built-ins only. No framework, no dependencies, no database, no disk.
- * Request/response content is never logged or persisted.
+ * `/ajoop` keeps the proven deterministic-grounding bridge alive while
+ * `/ajoop-rag` is validated side-by-side. Once the RAG path is accepted by
+ * playtests the frontend can switch without a big-bang backend migration.
  */
 import http from "node:http";
 import { createAjoopBridge } from "./ajoop-bridge-core.mjs";
+import { createAjoopRag } from "./ajoop-rag.mjs";
 
 const nativeFetch = typeof fetch === "function" ? fetch : null;
 
-/*
- * Local runtime defaults are deliberately speed-first. Environment variables
- * still win, but a normal `npm run start:ajoop:bridge` uses the measured fast
- * instruct model, deterministic temperature and an 8s model deadline so the
- * bridge releases its single GPU slot before the browser's 10s enhancement
- * budget expires.
- */
 const runtimeEnv = {
   ...process.env,
   AJOOP_AI_MODEL: process.env.AJOOP_AI_MODEL || "qwen3:4b-instruct",
@@ -27,11 +21,6 @@ const runtimeEnv = {
   AJOOP_AI_TIMEOUT_MS: process.env.AJOOP_AI_TIMEOUT_MS || "8000",
 };
 
-/**
- * Qwen3 variants can occasionally leave reasoning before an orphan closing
- * think tag even when thinking is disabled. Accept only the final prose after
- * that exact shape; ordinary think tags remain rejected by the core.
- */
 function extractFastFinalAnswer(value) {
   const text = typeof value === "string" ? value : "";
   if (!text || /<\s*think\b/i.test(text)) return text;
@@ -49,22 +38,14 @@ function extractFastFinalAnswer(value) {
 
 function languageFromCorePrompt(messages) {
   if (!Array.isArray(messages)) return "English";
-  const system = messages.find((message) => message?.role === "system" && typeof message.content === "string");
+  const system = messages.find(
+    (message) => message?.role === "system" && typeof message.content === "string",
+  );
   const match = system?.content?.match(/Answer in ([^.\n]+)\./i);
   return match?.[1]?.trim() || "English";
 }
 
-/**
- * Runtime-only Ollama adapter.
- *
- * The core still owns validation, grounding, CORS, rate limits and fallbacks.
- * This wrapper only makes the model-writing step fast and bounded:
- *   - thinking disabled
- *   - compact anti-inference prompt
- *   - one short sentence
- *   - 1k context / 64 generated tokens
- *   - model kept resident while Ollama is running
- */
+/** Runtime adapter for the legacy grounded writer path only. */
 async function fastOllamaFetch(url, options = {}) {
   if (!nativeFetch) throw new TypeError("fetch unavailable");
 
@@ -94,8 +75,7 @@ async function fastOllamaFetch(url, options = {}) {
 
       requestOptions = { ...options, body: JSON.stringify(body) };
     } catch (error) {
-      /* Malformed adapter input is left untouched for the normal core/network
-       * failure path rather than creating a second validation policy here. */
+      /* Leave malformed adapter input untouched for the core failure path. */
     }
   }
 
@@ -127,6 +107,7 @@ async function fastOllamaFetch(url, options = {}) {
 }
 
 const bridge = createAjoopBridge({ env: runtimeEnv, fetchImpl: fastOllamaFetch });
+const rag = createAjoopRag({ env: runtimeEnv, fetchImpl: nativeFetch });
 const { config } = bridge;
 
 function readBody(request, limit) {
@@ -178,19 +159,30 @@ function send(response, status, headers, body) {
 
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${config.host}:${config.port}`);
-  if (url.pathname !== config.path) {
-    send(response, 404, { "Content-Type": "application/json; charset=utf-8" }, { ok: false, error: "not found" });
+  const handler = url.pathname === rag.path ? rag : url.pathname === config.path ? bridge : null;
+  if (!handler) {
+    send(
+      response,
+      404,
+      { "Content-Type": "application/json; charset=utf-8" },
+      { ok: false, error: "not found" },
+    );
     return;
   }
 
   const read = await readBody(request, config.maxBodyBytes);
   if (!read.ok) {
-    send(response, 413, { "Content-Type": "application/json; charset=utf-8" }, { ok: false, error: "payload too large" });
+    send(
+      response,
+      413,
+      { "Content-Type": "application/json; charset=utf-8" },
+      { ok: false, error: "payload too large" },
+    );
     return;
   }
 
   try {
-    const result = await bridge.handle({
+    const result = await handler.handle({
       method: request.method,
       origin: request.headers.origin || "",
       contentType: request.headers["content-type"] || "",
@@ -199,15 +191,16 @@ const server = http.createServer(async (request, response) => {
     send(response, result.status, result.headers, result.body);
   } catch (error) {
     console.error("[ajoop-bridge] unhandled request failure");
-    send(response, 500, { "Content-Type": "application/json; charset=utf-8" }, { ok: false, error: "bridge error" });
+    send(
+      response,
+      500,
+      { "Content-Type": "application/json; charset=utf-8" },
+      { ok: false, error: "bridge error" },
+    );
   }
 });
 
-/**
- * Prewarm the exact chat path a visitor will use, not `/api/generate`.
- * Matching the runtime chat template and speed options avoids making the first
- * visitor pay the one-time chat-runner setup cost measured after startup.
- */
+/** Prewarm the exact legacy chat path so `/ajoop` remains regression-safe. */
 async function prewarmModel() {
   if (!nativeFetch) return false;
   const controller = new AbortController();
@@ -222,19 +215,17 @@ async function prewarmModel() {
         stream: false,
         think: false,
         keep_alive: -1,
-        options: {
-          temperature: 0,
-          num_ctx: 1024,
-          num_predict: 64,
-        },
+        options: { temperature: 0, num_ctx: 1024, num_predict: 64 },
         messages: [
           {
             role: "system",
-            content: "Answer in English. Use only the evidence. Add no inference. Answer with one short sentence.",
+            content:
+              "Answer in English. Use only the evidence. Add no inference. Answer with one short sentence.",
           },
           {
             role: "user",
-            content: "Question: What is Ajoop?\n\nEvidence:\nAjoop is Kaan Balcı's portfolio assistant.",
+            content:
+              "Question: What is Ajoop?\n\nEvidence:\nAjoop is Kaan Balcı's portfolio assistant.",
           },
         ],
       }),
@@ -249,10 +240,14 @@ async function prewarmModel() {
 
 async function start() {
   const warmed = await prewarmModel();
+  const ragStatus = await rag.initialize();
   server.listen(config.port, config.host, () => {
     console.log(`Ajoop bridge listening on ${config.host}:${config.port}${config.path}`);
     console.log(`Ajoop bridge model ${config.model} · ${config.allowedOrigins.length} allowed origin(s)`);
     console.log(`Ajoop bridge warm model ${warmed ? "ready" : "unavailable"}`);
+    console.log(
+      `Ajoop RAG ${ragStatus.ready ? "ready" : "unavailable"} · ${ragStatus.chunks} chunks · ${ragStatus.embedModel}`,
+    );
   });
 }
 
