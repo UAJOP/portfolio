@@ -1,59 +1,42 @@
 /**
- * Ajoop local AI bridge configuration (Ajoop 5.0).
+ * Ajoop local AI configuration (Ajoop 5.1 RAG).
  *
- * Ajoop's facts and evidence remain deterministic. The production bridge lets a
- * LOCAL Node bridge (server/ajoop-bridge.mjs) hand that already-computed,
- * grounded evidence to Ollama for the visitor-facing prose.
+ * The browser talks only to the public HTTPS edge. The Node bridge on Kaan's
+ * machine owns retrieval, scope selection and local Ollama generation:
  *
- *   browser → HTTPS edge/tunnel → 127.0.0.1:8787 → 127.0.0.1:11434
+ *   browser → HTTPS edge/tunnel → 127.0.0.1:8787/ajoop-rag → Ollama
  *
- * n8n is no longer in this path. See docs/ajoop-local-ai.md.
+ * Canonical portfolio JSON remains the source of truth. RAG retrieves from that
+ * data for Kaan/portfolio questions; unrelated questions may be answered as
+ * ordinary general conversation. The deterministic Ajoop stack still renders a
+ * complete offline fallback and remains available when the local bridge is off.
  *
- * Production behavior is AI-first while the bridge is healthy: the deterministic
- * answer is still rendered as the fallback source of truth, but its prose,
- * evidence cards and links stay visually replaced by one compact thinking state
- * while the AI request is in flight. If the bridge is disabled, offline, busy,
- * malformed or too slow, the `is-enhancing` class is removed and the same
- * deterministic answer appears unchanged.
- *
- * THIS FILE IS PUBLIC. It is served to every visitor, so it holds no secret and
- * never should: a token here would be readable by anyone who opens devtools.
- * Access control belongs at the bridge — origin allowlist, rate limiting,
- * concurrency cap and payload validation in server/ajoop-bridge-core.mjs —
- * never in static frontend JavaScript.
+ * THIS FILE IS PUBLIC. Never place a token or secret here.
  */
 window.KAAN_AJOOP_AI = {
-  /* Production switch for the optional local AI presentation layer. */
   enabled: true,
 
-  /* Public HTTPS edge in front of the loopback-only Node bridge. Ollama's own
-   * port is never named in anything the visitor loads. */
-  endpoint: "https://ajoop.kaanbalci.com/ajoop",
+  /* Public edge for the local in-memory RAG endpoint. */
+  endpoint: "https://ajoop.kaanbalci.com/ajoop-rag",
 
-  /* AI-first has a strict patience budget. Warm qwen3:4b responses are expected
-   * well inside this window after the fast no-think adapter; if the request does
-   * not finish in time, the browser reveals the deterministic answer instead of
-   * leaving the visitor staring at an empty turn. */
+  /* Warm measured RAG turns are normally ~1–4s. Ten seconds leaves headroom
+   * while still revealing the deterministic fallback quickly on a bad turn. */
   timeoutMs: 10000,
 
-  /* How long an "unavailable" verdict sticks before the bridge retries, so a
-   * stopped bridge does not mean a failed request on every single turn. A busy
-   * bridge answering 429 is not unavailable and does not start this clock. */
+  /* Avoid hammering a bridge that is intentionally offline. */
   retryAfterMs: 60000,
 };
 
 /*
- * AI-first presentation without weakening deterministic fallback.
+ * One visible response lifecycle:
+ *   thinking → RAG answer
+ * or, if local AI fails:
+ *   thinking → deterministic fallback
  *
- * assistant.js adds `is-enhancing` synchronously after rendering the grounded
- * deterministic message and removes it on either AI success or failure. During
- * that request we keep the same bot bubble on screen, hide every final-answer
- * child, and show one lightweight thinking line instead. The earlier 620ms
- * deterministic thinking beat is styled with the same copy, so both phases read
- * as one continuous response rather than "deterministic answer → AI rewrite".
- *
- * No extra backend delay is added. Warm AI can land as soon as it is ready; the
- * visual state simply occupies the time the request already takes.
+ * assistant.js renders the deterministic source first for resilience, then the
+ * RAG client adds `is-enhancing` in the same task. Final-answer children remain
+ * hidden during inference so visitors never see deterministic prose flash and
+ * then get rewritten by AI.
  */
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
