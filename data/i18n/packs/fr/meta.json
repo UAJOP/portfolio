@@ -1,7 +1,7 @@
 {
   "about": {
-    "description": "L'orientation de Kaan Balcı comme Forward Deployed Engineer et son parcours d'AI Designer & Software Developer autour des systèmes d'AI fiables et de la livraison produit.",
-    "ogDescription": "Preuves en tant que Forward Deployed Engineer en Applied AI, fiabilité de l'AI, solution engineering et logiciel orienté produit.",
+    "description": "Kaan Balcı travaille là où des problèmes clients flous rencontrent l'ingénierie concrète : discovery et conception de solutions, déploiement et fiabilité en Applied AI, prototypage full-stack.",
+    "ogDescription": "Discovery client et conception de solutions, déploiement et fiabilité en Applied AI, prototypage et intégration full-stack — avec les preuves derrière chacun.",
     "ogTitle": "À propos de Kaan Balcı | Forward Deployed Engineer",
     "title": "À propos de Kaan Balcı | Forward Deployed Engineer"
   },
@@ -24,8 +24,8 @@
     "title": "Étude de cas AI Flow Puzzle | Kaan Balcı"
   },
   "blog": {
-    "description": "Expérience professionnelle en conversational AI, évaluation de LLM, automatisation de workflows, développement logiciel et produits numériques pour des entreprises réelles.",
-    "ogDescription": "Expérience professionnelle en conversational AI en entreprise, logiciel et produits numériques.",
+    "description": "L'expérience de Kaan Balcı en livraison technique au contact du client : Conversational AI en entreprise, évaluation de LLM, logiciel full-stack et un produit d'entreprise en production.",
+    "ogDescription": "Un fil traverse chaque poste : la livraison technique au contact du client, des workflows d'AI en entreprise à un produit d'entreprise en production.",
     "ogTitle": "Expérience | Kaan Balcı",
     "title": "Expérience | Kaan Balcı"
   },
@@ -42,8 +42,8 @@
     "title": "Jeux | Kaan Balcı"
   },
   "home": {
-    "description": "Kaan Balcı — Forward Deployed Engineer qui construit des systèmes d'AI fiables, des workflows de solution engineering et des logiciels orientés produit.",
-    "ogDescription": "Portfolio d'un Forward Deployed Engineer avec des preuves en fiabilité de l'AI, solution engineering et logiciel orienté produit.",
+    "description": "Kaan Balcı — Forward Deployed Engineer qui transforme des workflows clients flous en systèmes d'AI et logiciels déployables, par le cadrage, le prototypage et l'évaluation.",
+    "ogDescription": "Preuves d'un Forward Deployed Engineer : discovery client, cadrage technique, prototypage d'AI, intégration, évaluation et livraison prête pour la production.",
     "ogTitle": "Kaan Balcı | Forward Deployed Engineer",
     "title": "Kaan Balcı | Forward Deployed Engineer"
   },
@@ -108,9 +108,9 @@
     "title": "Étude de cas SINAMA — AI Agent Reliability Lab | Kaan Balcı"
   },
   "works": {
-    "description": "Travaux sélectionnés de Kaan Balcı en Applied AI, logiciel, web et produit de jeu, menés par SINAMA et Merge Rush: Tiny Factory.",
-    "ogDescription": "Travaux d'ingénierie phares et sélectionnés en fiabilité de l'AI, produits logiciels et systèmes interactifs.",
-    "ogTitle": "Projets | Kaan Balcı",
-    "title": "Projets | Kaan Balcı"
+    "description": "Preuves d'ingénierie pour le travail forward-deployed de Kaan Balcı : fiabilité de l'AI, livraison de workflows en entreprise, produits clients et systèmes full-stack.",
+    "ogDescription": "Chaque projet répond à une question : que prouve-t-il sur le déploiement d'AI et de logiciels dans un vrai workflow client ?",
+    "ogTitle": "Preuves d'ingénierie | Kaan Balcı",
+    "title": "Preuves d'ingénierie | Kaan Balcı"
   }
 }

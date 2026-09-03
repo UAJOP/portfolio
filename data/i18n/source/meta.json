@@ -1,15 +1,15 @@
 {
   "home": {
     "title": "Kaan Balcı | Forward Deployed Engineer",
-    "description": "Kaan Balcı — Forward Deployed Engineer building reliable AI systems, solution-engineering workflows and product-minded software.",
+    "description": "Kaan Balcı — Forward Deployed Engineer turning ambiguous customer workflows into deployable AI and software systems through scoping, prototyping and evaluation.",
     "ogTitle": "Kaan Balcı | Forward Deployed Engineer",
-    "ogDescription": "Forward Deployed Engineer portfolio with evidence across AI reliability, solution engineering and product-minded software."
+    "ogDescription": "Forward Deployed Engineer evidence: customer discovery, technical scoping, AI prototyping, integration, evaluation and production-ready delivery."
   },
   "works": {
-    "title": "Projects | Kaan Balcı",
-    "description": "Selected Applied AI, software, web and game-product work by Kaan Balcı, led by SINAMA and Merge Rush: Tiny Factory.",
-    "ogTitle": "Projects | Kaan Balcı",
-    "ogDescription": "Flagship and selected engineering work across AI reliability, software products and interactive systems."
+    "title": "Engineering Evidence | Kaan Balcı",
+    "description": "Engineering evidence for forward-deployed work by Kaan Balcı: AI reliability, enterprise workflow delivery, customer-facing products and full-stack systems.",
+    "ogTitle": "Engineering Evidence | Kaan Balcı",
+    "ogDescription": "Each project answers one question: what does this prove about deploying AI and software inside a real customer workflow?"
   },
   "sinamaCaseStudy": {
     "title": "SINAMA — AI Agent Reliability Lab Case Study | Kaan Balcı",
@@ -31,15 +31,15 @@
   },
   "blog": {
     "title": "Experience | Kaan Balcı",
-    "description": "Professional experience across conversational AI, LLM evaluation, workflow automation, software development and real-business digital products.",
+    "description": "Kaan Balcı's experience in customer-facing technical delivery: enterprise conversational AI, LLM evaluation, full-stack software and a live business product.",
     "ogTitle": "Experience | Kaan Balcı",
-    "ogDescription": "Professional experience across enterprise conversational AI, software and digital product work."
+    "ogDescription": "One thread runs through every role: customer-facing technical delivery, from enterprise AI workflows to a live business product."
   },
   "about": {
     "title": "About Kaan Balcı | Forward Deployed Engineer",
-    "description": "Kaan Balcı's Forward Deployed Engineer direction and AI Designer & Software Developer background across reliable AI systems and product delivery.",
+    "description": "Kaan Balcı works where ambiguous customer problems meet hands-on engineering: discovery and solution design, applied AI deployment and reliability, full-stack prototyping.",
     "ogTitle": "About Kaan Balcı | Forward Deployed Engineer",
-    "ogDescription": "Forward Deployed Engineer evidence across Applied AI, AI reliability, solution engineering and product-minded software."
+    "ogDescription": "Customer discovery and solution design, applied AI deployment and reliability, full-stack prototyping and integration — with the evidence behind each."
   },
   "games": {
     "title": "Games | Kaan Balcı",

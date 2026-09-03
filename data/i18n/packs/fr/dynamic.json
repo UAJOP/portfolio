@@ -566,30 +566,30 @@
       "linkedin": "LinkedIn"
     },
     "capabilities": [
-      "Applied AI",
-      "AI Reliability",
-      "Solution Engineering",
-      "Conversational AI",
-      "Automatisation",
-      "Product Engineering"
+      "Discovery client",
+      "Cadrage technique",
+      "Déploiement d'AI",
+      "Évaluation de LLM",
+      "Intégration d'API",
+      "Maturité de production"
     ],
     "focus": [
-      "Conversational AI",
-      "Solution Engineering",
-      "Évaluation de LLM",
-      "Automatisation de workflows"
+      "Discovery client et cadrage",
+      "Déploiement et intégration d'AI",
+      "Évaluation et fiabilité",
+      "Livraison full-stack"
     ],
     "profile": "Forward Deployed Engineer",
     "projects": [
       [
         "SINAMA — AI Agent Reliability Lab",
-        "Reliability lab Turkish-first en production pour les tests de fiabilité et de régression d'agents d'AI",
+        "Laboratoire de fiabilité d'agents AI en ligne : évaluation multi-tours, preuves de régression et décisions de release-readiness",
         null,
         "Voir l'étude de cas"
       ],
       [
         "AI Chatbot Flow Design",
-        "Preuves en conversational AI et workflows d'entreprise",
+        "Traduction de workflows clients en entreprise et livraison d'AI multicanale",
         null
       ],
       [
@@ -600,7 +600,7 @@
       ],
       [
         "Atölye Joyday Official Website",
-        "Produit numérique en production avec parcours de réservation",
+        "Déploiement au contact du client : parcours de réservation et automatisation opérationnelle",
         null,
         "Voir l'étude de cas"
       ],
@@ -612,34 +612,34 @@
       ]
     ],
     "proof": [
-      "Expérience en conversational AI en entreprise chez CBOT : QA, stabilisation, configuration des canaux et restructuration de flux à grande échelle.",
+      "Workflows clients d'entreprise mis en œuvre dans le cadre de travaux de Conversational AI chez CBOT : QA, stabilisation, configuration des canaux et restructuration de flux à grande échelle.",
       "Conception, construction, test et présentation d'un POC de déclaration de sinistre avec voix, vérification téléphonique, transfert WhatsApp et collecte de documents.",
       "Travail structuré d'évaluation de LLM et d'appréciation de la qualité portant sur le raisonnement, le code et les sorties multimodales.",
-      "Produit numérique en production et automatisation des réservations chez Atölye Joyday avec JavaScript, Google Forms, Sheets et Apps Script."
+      "Livraison de bout en bout d'un produit client en production et de l'automatisation des réservations chez Atölye Joyday, avec JavaScript, Google Forms, Sheets et Apps Script."
     ],
     "skills": [
-      "Conception de flux de chatbot, QA et stabilisation",
-      "Logique de workflow à plusieurs étapes façon n8n",
-      "Évaluation des réponses, du raisonnement, du code et des sorties multimodales de LLM",
-      "Python, C#/.NET, JavaScript, PHP et SQL",
-      "Développement de produits numériques centré sur l'utilisateur"
+      "Traduire des workflows métier en périmètre technique",
+      "Prototyper rapidement des solutions d'AI et logicielles utilisables",
+      "Intégrer API, données et systèmes de workflow",
+      "Évaluer et stabiliser le comportement de l'AI",
+      "Livraison concrète en Python/FastAPI, TypeScript et SQL"
     ]
   },
   "recruiterV2": {
-    "label": "RECRUITER MODE V2",
-    "title": "Synthèse des preuves par domaine de compétence",
-    "lead": "L’objectif de Forward Deployed Engineer reste inchangé, tandis que les preuves issues des projets et de l’expérience sont mises en avant pour la compétence sélectionnée.",
-    "choose": "Axe de preuve",
-    "primary": "Objectif principal",
-    "focus": "Axe de preuve",
     "capabilities": "Domaines de compétence",
-    "skills": "Compétences clés",
-    "proof": "Preuves recommandées",
+    "choose": "Axe de preuve",
+    "close": "Fermer",
     "cv": "Voir le CV",
     "email": "M’écrire",
-    "close": "Fermer",
-    "updated": "Données du portfolio",
-    "openEvidence": "Ouvrir la preuve"
+    "focus": "Axe de preuve",
+    "label": "RECRUITER MODE V2",
+    "lead": "Garde fixe l'objectif Forward Deployed Engineer et réordonne les mêmes preuves — discovery, déploiement d'AI, fiabilité, livraison — selon la compétence choisie.",
+    "openEvidence": "Ouvrir la preuve",
+    "primary": "Objectif principal",
+    "proof": "Preuves recommandées",
+    "skills": "Compétences clés",
+    "title": "Synthèse des preuves par domaine de compétence",
+    "updated": "Données du portfolio"
   },
   "request": {
     "button": "Envoyer la demande",

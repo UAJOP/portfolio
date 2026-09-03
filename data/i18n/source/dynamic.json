@@ -262,42 +262,42 @@
   "recruiter": {
     "profile": "Forward Deployed Engineer",
     "focus": [
-      "Conversational AI",
-      "Solution Engineering",
-      "LLM Evaluation",
-      "Workflow Automation"
+      "Customer Discovery & Scoping",
+      "AI Deployment & Integration",
+      "Evaluation & Reliability",
+      "Full-Stack Delivery"
     ],
     "skills": [
-      "Chatbot flow design, QA and stabilization",
-      "n8n-style multi-step workflow logic",
-      "LLM response, reasoning, code and multimodal evaluation",
-      "Python, C#/.NET, JavaScript, PHP and SQL",
-      "User-centered digital product development"
+      "Translating business workflows into technical scope",
+      "Rapid prototyping of usable AI and software solutions",
+      "Integrating APIs, data and workflow systems",
+      "Evaluating and stabilizing AI behavior",
+      "Hands-on delivery with Python/FastAPI, TypeScript and SQL"
     ],
     "capabilities": [
-      "Applied AI",
-      "AI Reliability",
-      "Solution Engineering",
-      "Conversational AI",
-      "Automation",
-      "Product Engineering"
+      "Customer Discovery",
+      "Technical Scoping",
+      "AI Deployment",
+      "LLM Evaluation",
+      "API Integration",
+      "Production Readiness"
     ],
     "proof": [
-      "Enterprise conversational AI experience at CBOT across QA, stabilization, channel configuration and large-scale flow restructuring.",
+      "Enterprise customer workflows implemented through conversational-AI work at CBOT: QA, stabilization, channel configuration and large-scale flow restructuring.",
       "Designed, built, tested and presented an insurance claims intake POC with voice, phone verification, WhatsApp handoff and document collection.",
       "Structured LLM evaluation and quality-assessment work covering reasoning, code and multimodal outputs.",
-      "Live digital product and reservation automation at Atölye Joyday using JavaScript, Google Forms, Sheets and Apps Script."
+      "End-to-end delivery of a live customer-facing product and reservation automation at Atölye Joyday using JavaScript, Google Forms, Sheets and Apps Script."
     ],
     "projects": [
       [
         "SINAMA — AI Agent Reliability Lab",
-        "Live Turkish-first AI agent reliability and regression testing lab",
+        "Live AI agent reliability lab: multi-turn evaluation, regression evidence and release-readiness decisions",
         "sinama-case-study.html",
         "View Case Study"
       ],
       [
         "AI Chatbot Flow Design",
-        "Conversational AI and enterprise workflow evidence",
+        "Enterprise customer-workflow translation and multi-channel AI delivery",
         "projects/ai-chatbot-flow-design/"
       ],
       [
@@ -308,7 +308,7 @@
       ],
       [
         "Atölye Joyday Official Website",
-        "Live digital product and reservation journey",
+        "Customer-facing deployment: reservation journey and operational automation",
         "atolye-joyday-case-study.html",
         "View Case Study"
       ],
@@ -329,7 +329,7 @@
   "recruiterV2": {
     "label": "RECRUITER MODE V2",
     "title": "Evidence summary by capability focus",
-    "lead": "Keeps the Forward Deployed Engineer target fixed while prioritizing project and experience evidence for the selected capability.",
+    "lead": "Keeps the Forward Deployed Engineer target fixed and reorders the same evidence — discovery, AI deployment, reliability, delivery — around the capability you select.",
     "choose": "Evidence focus",
     "primary": "Primary target",
     "focus": "Evidence focus",

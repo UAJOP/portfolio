@@ -2,17 +2,17 @@
   "applied-ai": {
     "label": {
       "en": "AI Deployment & Reliability",
-      "tr": "AI Deployment & Reliability"
+      "tr": "AI Deployment ve Güvenilirlik"
     },
     "focusTitle": {
-      "en": "Applied AI Delivery / Reliability",
-      "tr": "Applied AI Delivery / Reliability"
+      "en": "AI Deployment, Evaluation & Reliability",
+      "tr": "AI Deployment, Evaluation ve Güvenilirlik"
     },
     "capabilities": [
       "AI Deployment",
+      "Technical Scoping",
       "Agent Reliability",
       "LLM Evaluation",
-      "Workflow Evidence",
       "Production Readiness"
     ],
     "skills": [
@@ -45,19 +45,19 @@
   },
   "solution-engineering": {
     "label": {
-      "en": "Customer Delivery & Integration",
-      "tr": "Customer Delivery & Integration"
+      "en": "Customer Discovery & Scoping",
+      "tr": "Müşteri Discovery ve Scoping"
     },
     "focusTitle": {
-      "en": "Solution Engineering / Forward Deployment",
-      "tr": "Solution Engineering / Forward Deployment"
+      "en": "Customer Discovery, Scoping & Forward Deployment",
+      "tr": "Müşteri Discovery, Scoping ve Forward Deployment"
     },
     "capabilities": [
-      "Discovery & Scoping",
+      "Customer Discovery",
+      "Technical Scoping",
       "Workflow Mapping",
       "API Integration",
-      "Customer Delivery",
-      "Production Readiness"
+      "Customer Delivery"
     ],
     "skills": [
       {
@@ -93,8 +93,8 @@
       "tr": "Full-Stack Delivery"
     },
     "focusTitle": {
-      "en": "Software / Product Delivery",
-      "tr": "Yazılım / Ürün Delivery"
+      "en": "Full-Stack Prototyping & Delivery",
+      "tr": "Full-Stack Prototipleme & Delivery"
     },
     "capabilities": [
       "Rapid Prototyping",
@@ -133,8 +133,8 @@
   },
   "game": {
     "label": {
-      "en": "Product Systems / Interactive",
-      "tr": "Product Systems / İnteraktif"
+      "en": "Product Systems (Supporting)",
+      "tr": "Product Systems (Destekleyici)"
     },
     "focusTitle": {
       "en": "Supporting Product Engineering Evidence",

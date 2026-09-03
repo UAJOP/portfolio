@@ -42,9 +42,9 @@ const CANONICAL_SOCIALS = {
 const CANONICAL_PRIMARY_TITLE = "Forward Deployed Engineer";
 const CANONICAL_BACKGROUND_TITLE = "AI Designer & Software Developer";
 const CANONICAL_FOOTER_EN =
-  "Forward Deployed Engineer building reliable AI systems and product-minded software.";
+  "Forward Deployed Engineer turning customer workflows into reliable AI systems and shipped software.";
 const CANONICAL_FOOTER_TR =
-  "Güvenilir AI sistemleri ve ürün odaklı yazılımlar geliştiren Forward Deployed Engineer.";
+  "Müşteri workflow'larını güvenilir AI sistemlerine ve çalışan yazılım ürünlerine dönüştüren Forward Deployed Engineer.";
 
 const isBilingual = (value) =>
   Boolean(value) &&
