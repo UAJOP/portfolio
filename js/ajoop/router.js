@@ -1,146 +1,69 @@
 /**
- * Weighted deterministic query router for Ajoop (Ajoop 4.0 Brain).
+ * Deterministic query router for Ajoop (Ajoop 4.5 core).
  *
- * Replaces "first keyword in map order wins" with a scored decision over every
- * candidate intent, the entities named in the message, and the context the
- * visitor is already in. Still fully deterministic and offline: the same input
- * and the same stored context always produce the same route, and nothing here
- * calls a model, an API or a fuzzy-matching dependency.
+ * One message in, one structured route out:
  *
- * Loads after matcher.js, entities.js, context.js and knowledge.js, and before
- * assistant.js, which owns the keyword map and the answers.
+ *   { intent, family, confidence, entity, entitySource, facet, evidencePolicy }
+ *
+ * Ajoop 4.0 scored a flat keyword map. 4.5 scores the intent ontology in
+ * js/ajoop/ontology.js instead, and adds the two things the old router could
+ * not express: a CONFIDENCE band, so a coin-flip match can be sent to
+ * clarification rather than answered, and an EVIDENCE POLICY, so the answer
+ * layer knows what this kind of question is allowed to cite before it composes
+ * anything.
+ *
+ * Still fully deterministic and offline: the same input and the same stored
+ * context always produce the same route, and nothing here calls a model, an
+ * API or a fuzzy-matching dependency.
+ *
+ * Loads after ontology.js, entities.js, context.js and knowledge.js, and
+ * before conversation.js, response.js and assistant.js.
  */
 /* ajoop-router:start
- * Keep this block DOM-free. Everything it needs — the keyword map, the stored
+ * Keep this block DOM-free. Everything it needs — the ontology, the stored
  * conversation context, the page context — is passed in or read through the
- * guarded accessors below, so QA can drive it with fixtures.
- *
- * WHY SCORING, NOT ORDER. The old map order encoded priority implicitly: a
- * generic intent early in the list stole specific questions, and the fix was
- * always to shuffle the array. Scoring makes the same priorities explicit —
- * a two-word phrase outweighs a bare token, a recognized entity outweighs a
- * generic keyword — and leaves map order as nothing more than a tie-breaker.
+ * guarded accessors below, so the behaviour matrix can drive it with fixtures.
  */
-
-/**
- * Intents broad enough to match almost any portfolio question. They still win
- * when nothing more specific matches; they just stop outbidding specifics.
- */
-const AJOOP_GENERIC_INTENTS = new Set([
-  "projects",
-  "about",
-  "stack",
-  "ai",
-  "availability",
-  "default",
-]);
-
-const AJOOP_GENERIC_INTENT_FACTOR = 0.6;
-
-/** A recognized entity is worth more than one generic token, less than a phrase. */
-const AJOOP_ENTITY_INTENT_BOOST = 7;
-
-/**
- * Keywords that describe the act of asking rather than the subject asked about.
- *
- * "tell me about AI" is a question about AI, not about Kaan, but "about" is the
- * longer token and length is otherwise a good proxy for signal. These carry
- * minimum weight so they can still win an otherwise empty match ("hakkında"
- * alone is a valid question) without ever outbidding a real subject.
- */
-const AJOOP_FILLER_KEYWORDS = new Set(["about", "hakkında", "hakkımda"]);
-const AJOOP_FILLER_WEIGHT = 1;
 
 /**
  * Facet keywords: which *aspect* of a subject the visitor asked about.
  *
  * The facet is independent of the intent on purpose. "SINAMA hangi
- * teknolojiler?" scores highest on the `sinama` intent, while "hangi
- * teknolojiler?" alone scores highest on `stack` — both should answer with the
- * same SINAMA stack, so the answer layer keys off the facet plus the resolved
- * entity rather than the intent id.
+ * teknolojiler?" and a bare "hangi teknolojiler?" both resolve to the stack
+ * facet; what differs is whether the subject came from the message or from the
+ * conversation. Keeping the two apart is what lets a one-word follow-up work.
  */
 const AJOOP_FACET_KEYWORDS = {
   stack: [
-    "stack",
-    "tech",
-    "technology",
-    "technologies",
-    "teknoloji",
-    "teknolojiler",
-    "framework",
-    "language",
-    "built with",
-    "kullan",
-    "yazıl",
+    "stack", "tech", "technology", "technologies", "teknoloji", "teknolojiler",
+    "framework", "language", "built with", "kullan", "yazıl",
+    "technologien", "tecnologias",
   ],
   links: [
-    "github",
-    "repo",
-    "repository",
-    "link",
-    "links",
-    "demo",
-    "live",
-    "canlı",
-    "website",
-    "site",
-    "kaynak",
-    "source",
-    "adres",
+    "github", "repo", "repository", "link", "links", "demo", "live", "canlı",
+    "website", "site", "kaynak", "source", "adres", "url", "enlace", "lien",
   ],
-  /* "prove" joins the proof facet in 4.2 so "prove it" resolves like "kanıtla",
-   * which the "kanıt" prefix already covered. */
-  proof: ["proof", "prove", "kanıt", "evidence", "metric", "metrics", "sonuç", "results"],
+  proof: [
+    "proof", "prove", "kanıt", "evidence", "metric", "metrics", "sonuç",
+    "results", "beleg", "beweis", "evidencia", "preuve",
+  ],
+  reasoning: [
+    "neden", "niçin", "niye", "why", "warum", "wieso", "pourquoi", "porque",
+    "por qué", "rationale", "reasoning",
+  ],
+  status: ["status", "durum", "aşama", "stage", "estado", "statut", "live", "canlı"],
 };
 
 /** Facet resolution order when a message hits more than one. */
-const AJOOP_FACET_PRIORITY = ["links", "stack", "proof"];
-
-/**
- * Intents whose subject is Kaan or the site, never a project.
- *
- * Ajoop 4.4 context precedence. "Hangi teknolojileri biliyor?" asked after a
- * SINAMA answer is a question about Kaan's stack, not about SINAMA's — but the
- * facet ("stack") used to make it inheritable, so the old subject silently
- * hijacked it. When one of these wins on its OWN keywords, the turn resolves
- * at profile level and inherits nothing.
- */
-const AJOOP_SELF_CONTAINED_INTENTS = new Set([
-  "about",
-  "availability",
-  "certificates",
-  "cv",
-  "education",
-  "experience",
-  "greeting",
-  "request",
-  "roles",
-  "weather",
-]);
-
-/**
- * Cues that make a stack question about Kaan rather than the active project.
- *
- * A bare "stack?" is a useful contextual follow-up and should inherit SINAMA.
- * "What technologies does Kaan know?" and its supported-language equivalents
- * explicitly point back at the person, so a stale project must not hijack it.
- */
-const AJOOP_PROFILE_SCOPE_KEYWORDS = [
-  "kaan", "he", "his", "know", "knows", "you", "your",
-  "biliyor", "bildiği", "bildigi", "sen", "senin", "onun",
-  "er", "kennt", "kann", "sein", "seine",
-  "conoce", "sabe", "sus",
-  "connait", "sait", "ses", "il",
-];
+const AJOOP_FACET_PRIORITY = ["links", "stack", "proof", "reasoning", "status"];
 
 /**
  * Which link the visitor asked for, when they asked for a link at all.
  * "github?" should surface the repository first, not the case study.
  */
 const AJOOP_LINK_HINTS = {
-  github: ["github", "repo", "repository", "kaynak", "source"],
-  live: ["live", "canlı", "demo", "site", "website", "adres"],
+  github: ["github", "repo", "repository", "kaynak", "source", "quellcode"],
+  live: ["live", "canlı", "demo", "site", "website", "adres", "en vivo"],
 };
 
 function detectAjoopLinkHint(tokens) {
@@ -152,31 +75,6 @@ function detectAjoopLinkHint(tokens) {
   );
 }
 
-/** The live keyword map, or an empty list if assistant.js has not loaded. */
-function ajoopIntentMap(intents) {
-  if (Array.isArray(intents)) return intents;
-  return typeof chatbotKeywordMap === "undefined" ? [] : chatbotKeywordMap;
-}
-
-/**
- * Keyword weight.
- *
- * A consecutive multi-word phrase is the strongest signal a rule-based matcher
- * has, so it scales with length. Single tokens scale with length too, because
- * the short ones ("ai", "cv", "rol") are the collision-prone ones the matcher
- * already has to guard.
- */
-function ajoopKeywordWeight(keyword) {
-  const tokens = getKeywordTokens(keyword);
-  if (!tokens.length) return 0;
-  if (tokens.length > 1) return 8 * tokens.length;
-  if (AJOOP_FILLER_KEYWORDS.has(normalizeIntentText(keyword))) return AJOOP_FILLER_WEIGHT;
-  const length = tokens[0].folded.length;
-  if (length >= 6) return 6;
-  if (length >= 4) return 5;
-  return 4;
-}
-
 /** Which facet the message asks for, or "overview". */
 function detectAjoopFacet(tokens) {
   if (!tokens || !tokens.length) return "overview";
@@ -186,51 +84,45 @@ function detectAjoopFacet(tokens) {
   return hit || "overview";
 }
 
-/** Scores every intent in the map against the message tokens. */
-function scoreAjoopIntents(tokens, intents, entityIntents) {
-  const map = ajoopIntentMap(intents);
-  const candidates = [];
+/* ---------- context precedence ---------- */
 
-  map.forEach((entry, order) => {
-    if (!entry || !entry.id || !Array.isArray(entry.keywords)) return;
-    const matched = [];
-    let score = 0;
-    entry.keywords.forEach((keyword) => {
-      if (!matchesKeyword(tokens, keyword)) return;
-      matched.push(keyword);
-      score += ajoopKeywordWeight(keyword);
-    });
-    if (AJOOP_GENERIC_INTENTS.has(entry.id)) score *= AJOOP_GENERIC_INTENT_FACTOR;
+/**
+ * Families whose subject is Kaan, Ajoop or the site — never a project.
+ *
+ * These never inherit a project from the conversation or the page. It is the
+ * rule that stops "cv", "deneyim" or "kaan kim" being answered about whatever
+ * project happened to be on screen two turns ago.
+ */
+const AJOOP_NON_PROJECT_FAMILIES = new Set(["social", "meta", "person", "current"]);
 
-    const votes = entityIntents.get(entry.id) || 0;
-    const entityBoost = votes * AJOOP_ENTITY_INTENT_BOOST;
-    if (!matched.length && !entityBoost) return;
+/**
+ * Facets that are ABOUT something rather than a subject in themselves.
+ *
+ * "github?", "stack?", "neden?" are the shape of a follow-up: they name an
+ * aspect and expect the subject to come from the conversation. An overview
+ * question with no named subject is a new topic, not a follow-up.
+ */
+const AJOOP_INHERITING_FACETS = new Set(["stack", "links", "proof", "reasoning", "status"]);
 
-    candidates.push({
-      id: entry.id,
-      score: score + entityBoost,
-      keywordScore: score,
-      entityBoost,
-      matched,
-      order,
-      /* Longest matched keyword, used to break score ties toward specificity. */
-      specificity: matched.reduce(
-        (best, keyword) => Math.max(best, getKeywordTokens(keyword).length),
-        0,
-      ),
-    });
-  });
-
-  /* Deterministic ranking: score, then specificity, then map order. */
-  return candidates.sort(
-    (a, b) => b.score - a.score || b.specificity - a.specificity || a.order - b.order,
-  );
-}
-
-function ajoopConfidence(score, hasEntity) {
-  if (score >= 14 || (score >= 8 && hasEntity)) return "high";
-  if (score >= 5) return "medium";
-  return "low";
+/**
+ * Whether this turn may take its subject from context.
+ *
+ * The precedence contract, in one place:
+ *
+ *   1. a global/meta intent      inherits nothing, ever
+ *   2. an entity named in the message wins outright
+ *   3. a self-contained intent (person/current/social) inherits nothing
+ *   4. an aspect question inherits the conversation subject
+ *   5. failing that, the page's own subject
+ *
+ * Context only ever FILLS IN what the message left out. It never overrides.
+ */
+function ajoopMayInheritEntity(winner, facet) {
+  if (!winner) return true;
+  if (winner.global) return false;
+  if (AJOOP_NON_PROJECT_FAMILIES.has(winner.family)) return false;
+  if (winner.needsEntity) return true;
+  return AJOOP_INHERITING_FACETS.has(facet);
 }
 
 /**
@@ -240,7 +132,7 @@ function ajoopConfidence(score, hasEntity) {
  *   conversation — stored context object, or null to route without memory
  *   page         — page context object, or null
  *   registry     — canonical registry override (tests)
- *   intents      — keyword map override (tests)
+ *   now          — clock override (tests), for context expiry
  *
  * Omit `context` entirely and the live session context and page are read.
  * Pass `{ conversation: null, page: null }` for a pure message-only route.
@@ -250,95 +142,59 @@ function routeAjoopQuery(message, context) {
   const tokens = tokenizeIntentText(message);
   const registry = options.registry;
 
-  const conversation =
+  const stored =
     options.conversation === undefined ? readAjoopContext() : options.conversation;
+  /* Ajoop 4.5: a subject the visitor stopped talking about several turns ago
+   * is not context, it is a trap. Expiry happens here, once, so every consumer
+   * below sees the same already-pruned view. */
+  const conversation =
+    typeof pruneAjoopContext === "function" ? pruneAjoopContext(stored, options.now) : stored;
   const page = options.page === undefined ? readAjoopPageContext(null, registry) : options.page;
-
-  /* PRECEDENCE STEP 1 — global meta intent.
-   *
-   * "Sen kimsin?" is a question about Ajoop, and it must answer the same way
-   * whatever the visitor was reading a moment ago. Returning here, before
-   * entity extraction and before intent scoring, is what makes that true:
-   * there is no path from this branch to the conversation subject or the page
-   * subject, so neither can leak into the answer. */
-  const meta =
-    typeof detectAjoopMetaIntent === "function" ? detectAjoopMetaIntent(message) : null;
-  if (meta) {
-    return {
-      meta,
-      intent: `meta:${meta}`,
-      secondaryIntents: [],
-      entities: [],
-      entity: null,
-      entitySource: null,
-      previousEntity: (conversation && conversation.lastEntity) || null,
-      facet: "overview",
-      linkHint: null,
-      confidence: "high",
-      score: 0,
-      candidates: [],
-      answerDepth: 0,
-      depth: (conversation && conversation.depth) || "normal",
-      pageContext: page || null,
-    };
-  }
 
   const entities = extractAjoopEntities(tokens, registry);
   const facet = detectAjoopFacet(tokens);
+  const signals =
+    typeof detectAjoopSignals === "function" ? detectAjoopSignals(tokens) : new Set();
 
-  const map = ajoopIntentMap(options.intents);
-  const knownIntentIds = new Set(map.map((entry) => entry && entry.id).filter(Boolean));
-
-  /* Each recognized entity votes once for the intent it implies. */
-  const entityIntents = new Map();
-  entities.forEach((match) => {
-    const intentId = ajoopEntityIntent(getAjoopEntity(match.id, registry), knownIntentIds);
-    if (!intentId) return;
-    entityIntents.set(intentId, (entityIntents.get(intentId) || 0) + 1);
-  });
-
-  const candidates = tokens.length
-    ? scoreAjoopIntents(tokens, map, entityIntents)
-    : [];
+  const candidates =
+    typeof scoreAjoopOntology === "function" ? scoreAjoopOntology(tokens, { signals }) : [];
   const winner = candidates[0] || null;
 
-  /* Subject resolution. The message wins; then what the visitor was already
-   * talking about; then the page they are standing on. A message that named a
-   * subject never inherits, which is how switching subject works. */
-  /* A technology is something a subject HAS, not a subject itself. A named
-   * project is also more concrete than a role label in the same sentence.
+  /* PRECEDENCE STEP 1 — a global/meta intent short-circuits everything.
    *
-   * Entity extraction ranks by alias specificity, so a two-word technology
-   * ("AI Evaluation") outranks a one-word project ("SINAMA") — which made
-   * "SINAMA'da AI evaluation yaptın mı?" set the active subject to the
-   * technology and lose SINAMA for the next turn. The same specificity ordering
-   * made "SINAMA ... Applied AI" select the role instead of the project. Tech
-   * and role entities still vote for intents; they just do not displace an
-   * explicitly named project as the subject.
-   */
+   * "Sen kimsin?" must answer the same way whatever the visitor was reading a
+   * moment ago. Returning here, before subject resolution, is what makes that
+   * structurally true rather than merely intended. */
+  if (winner && winner.global) {
+    return ajoopRoute({
+      intent: winner.id,
+      family: winner.family,
+      meta: winner.id,
+      evidencePolicy: winner.evidence,
+      confidence: AJOOP_CONFIDENCE.HIGH,
+      score: winner.score,
+      candidates,
+      signals,
+      previousEntity: (conversation && conversation.lastEntity) || null,
+      depth: (conversation && conversation.depth) || "normal",
+      pageContext: page || null,
+    });
+  }
+
+  /* PRECEDENCE STEP 2 — an entity named in this message.
+   *
+   * A technology is something a subject HAS, not a subject itself, and a named
+   * project is more concrete than a role label in the same sentence. Tech and
+   * role entities still inform the intent; they just do not displace an
+   * explicitly named project as the subject. */
   const subjectEntities = entities.filter((match) => match.type !== "tech");
   const projectEntities = subjectEntities.filter(
     (match) => match.type === "project" || match.type === "projectDetail",
   );
   const namedEntity = (projectEntities[0] || subjectEntities[0] || entities[0] || {}).id || null;
 
-  /* PRECEDENCE STEPS 2-5, in order: explicit entity, explicit intent,
-   * conversation context, page context.
-   *
-   * A message that names a subject never inherits — that is how switching
-   * subject works. A message that wins a self-contained intent on its own
-   * keywords does not inherit either, because it already stated its subject:
-   * Kaan. Everything else may inherit, but only when the question is about an
-   * ASPECT of something ("github?", "kanıt?") rather than a fresh overview. */
-  const profileScopedStack =
-    Boolean(winner) &&
-    winner.id === "stack" &&
-    AJOOP_PROFILE_SCOPE_KEYWORDS.some((keyword) => matchesKeyword(tokens, keyword));
-  const selfContained =
-    Boolean(winner) &&
-    (AJOOP_SELF_CONTAINED_INTENTS.has(winner.id) || profileScopedStack) &&
-    winner.keywordScore > 0;
-  const inheritable = !selfContained && (facet !== "overview" || !winner);
+  /* PRECEDENCE STEPS 3-5 — self-contained intent, then conversation, then page. */
+  const inheritable = ajoopMayInheritEntity(winner, facet);
   let entity = namedEntity;
   let entitySource = namedEntity ? "message" : null;
   if (!entity && inheritable && conversation && conversation.lastEntity) {
@@ -350,13 +206,53 @@ function routeAjoopQuery(message, context) {
     entitySource = "page";
   }
 
+  /* A role intent carries its own subject: the recruiter profile it names. */
+  if (!entity && winner && winner.roleId) {
+    entity = winner.roleId;
+    entitySource = "message";
+  }
+
+  /* A bare subject IS a question.
+   *
+   * "SINAMA" on its own scores no intent — it is a name, not a phrase — and
+   * the first cut of 4.5 sent it to clarification, which is a ridiculous reply
+   * to somebody who just named the thing they want to hear about. Naming a
+   * project asks for its overview; naming a recruiter focus asks for the fit.
+   * The entity is the evidence, so this is confident rather than a guess. */
+  let resolved = winner;
+  if (!resolved && namedEntity) {
+    const named = getAjoopEntity(namedEntity, registry);
+    const implied = named && named.type === "role" ? "fit_for_role" : "project_overview";
+    const definition = getAjoopIntent(implied);
+    if (definition) {
+      resolved = {
+        id: definition.id,
+        family: definition.family,
+        evidence: definition.evidence,
+        facet: definition.facet || null,
+        score: 10,
+        specificity: 1,
+        matched: [namedEntity],
+      };
+    }
+  }
+
   const previousEntity =
     conversation && conversation.lastEntity && conversation.lastEntity !== entity
       ? conversation.lastEntity
       : (conversation && conversation.previousEntity) || null;
 
-  const intent = winner ? winner.id : "default";
-  const score = winner ? Number(winner.score.toFixed(3)) : 0;
+  const confidence = resolved === winner
+    ? ajoopRouteConfidence(candidates, { hasEntity: Boolean(entity) })
+    : AJOOP_CONFIDENCE.HIGH;
+
+  /* An intent that needs a subject and has none is not answerable as asked,
+   * however well it scored. The planner turns this into a focused question
+   * rather than an answer about nothing. */
+  const unresolved = Boolean(resolved && resolved.needsEntity && !entity);
+
+  const intent = resolved ? resolved.id : null;
+  const resolvedFacet = resolved && resolved.facet && facet === "overview" ? resolved.facet : facet;
 
   /* The depth THIS turn will have, computed the same way rememberAjoopTurn
    * will record it, so the answer layer can pick the next prepared line rather
@@ -366,26 +262,71 @@ function routeAjoopQuery(message, context) {
       ? (conversation.answerDepth || 0) + 1
       : 0;
 
-  return {
-    /* Ajoop 4.4: null on every ordinary route, so callers can branch on one
-     * field instead of re-detecting the meta intent themselves. */
-    meta: null,
+  return ajoopRoute({
     intent,
-    secondaryIntents: candidates.slice(1, 4).map((candidate) => candidate.id),
+    family: resolved ? resolved.family : null,
+    evidencePolicy: resolved ? resolved.evidence : AJOOP_EVIDENCE.NONE,
+    confidence: unresolved ? AJOOP_CONFIDENCE.LOW : confidence,
+    unresolved,
+    score: resolved ? Number(resolved.score.toFixed(3)) : 0,
+    candidates,
+    signals,
     entities,
     entity,
     entitySource,
     previousEntity,
-    facet,
-    linkHint: facet === "links" ? detectAjoopLinkHint(tokens) : null,
-    confidence: winner ? ajoopConfidence(score, Boolean(entity)) : "low",
-    score,
-    candidates,
+    facet: resolvedFacet,
+    linkHint: resolvedFacet === "links" ? detectAjoopLinkHint(tokens) : null,
     answerDepth,
-    /* Ajoop 4.1: the detail level the visitor last chose. Carried on the route
-     * so the answer templates never have to read storage themselves. */
     depth: (conversation && conversation.depth) || "normal",
     pageContext: page || null,
-  };
+  });
+}
+
+/**
+ * The route shape, with every field present.
+ *
+ * Consumers read a lot of fields off a route and 4.4's two return statements
+ * had already drifted apart on which ones they set. One constructor means one
+ * shape, and an absent field is a bug here rather than an undefined three
+ * modules downstream.
+ */
+function ajoopRoute(values) {
+  return Object.assign(
+    {
+      origin: "message",
+      intent: null,
+      family: null,
+      meta: null,
+      evidencePolicy: AJOOP_EVIDENCE.NONE,
+      confidence: AJOOP_CONFIDENCE.NONE,
+      unresolved: false,
+      score: 0,
+      candidates: [],
+      signals: new Set(),
+      entities: [],
+      entity: null,
+      entitySource: null,
+      previousEntity: null,
+      compareWith: null,
+      facet: "overview",
+      linkHint: null,
+      answerDepth: 0,
+      depth: "normal",
+      preferPrepared: false,
+      pageContext: null,
+    },
+    values || {},
+  );
+}
+
+/** Secondary intent ids, for a clarification prompt that offers real choices. */
+function ajoopRouteAlternatives(route, limit) {
+  const cap = typeof limit === "number" ? limit : 3;
+  return (route.candidates || [])
+    .slice(0, cap + 1)
+    .filter((candidate) => candidate.id !== route.intent)
+    .slice(0, cap)
+    .map((candidate) => candidate.id);
 }
 /* ajoop-router:end */

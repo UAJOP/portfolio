@@ -123,9 +123,13 @@ html[data-theme="light"] .chatbot-message p {
 html[data-theme="light"] .chatbot-message.user p,
 html[data-theme="light"] .btn.primary,
 html[data-theme="light"] .chatbot-launcher,
-html[data-theme="light"] .chatbot-form button,
-html[data-theme="light"] .chatbot-avatar {
+html[data-theme="light"] .chatbot-form button {
   color: #f8fbff;
+}
+/* The mascot draws itself in the brand colour on a translucent tile, which
+ * needs an opaque ground in light theme for the same reason the bubbles do. */
+html[data-theme="light"] .ajoop-mascot {
+  background: rgba(255, 255, 255, 0.72);
 }
 html[data-theme="light"] .chatbot-launcher-icon {
   background: rgba(255, 255, 255, 0.3);
@@ -2037,30 +2041,204 @@ body.overlay-modal-open {
  * one dot, and where an answer came from is said on the answer. */
 .chatbot-header {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto 38px;
+  grid-template-columns: 38px minmax(0, 1fr) auto auto 36px;
   gap: 10px;
   align-items: center;
   padding: 12px 14px;
   border-bottom: 1px solid var(--line);
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(129, 140, 248, 0.07));
 }
-.chatbot-avatar,
 .chatbot-close {
   display: grid;
   place-items: center;
   border-radius: 14px;
 }
-.chatbot-avatar {
-  width: 40px;
-  height: 40px;
-  color: #06111f;
-  background: linear-gradient(135deg, var(--brand), var(--accent));
-}
-.chatbot-avatar i {
-  font-size: 24px;
-}
 .chatbot-identity {
   min-width: 0;
+}
+
+/* Ajoop 4.5 mascot.
+ *
+ * A GRID CELL, not an overlay. Being a real child of the header is what
+ * guarantees it cannot cover a button, cannot sit on the transcript and cannot
+ * drift when the transcript scrolls — none of which an absolutely-positioned
+ * character can promise at any z-index.
+ *
+ * Every state is one attribute value. The frames are SVG parts that CSS shows,
+ * hides and transforms, so there is no GIF, no video, no sprite sheet and no
+ * JavaScript animation loop — and everything that moves is transform/opacity,
+ * which stays on the compositor. */
+.ajoop-mascot {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(129, 140, 248, 0.16));
+  border: 1px solid rgba(56, 189, 248, 0.34);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.ajoop-mascot svg {
+  width: 30px;
+  height: 30px;
+  overflow: visible;
+}
+.ajoop-mascot svg line {
+  stroke: var(--brand);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.ajoop-mascot-head {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 1.8;
+}
+.ajoop-mascot-bulb,
+.ajoop-mascot-eye,
+.ajoop-mascot-mouth,
+.ajoop-mascot-dots circle {
+  fill: var(--brand);
+}
+.ajoop-mascot-antenna {
+  transform-origin: 20px 9px;
+  transition: transform 0.3s ease;
+}
+.ajoop-mascot-eye {
+  transform-origin: center;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.ajoop-mascot-mouth {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  transform-origin: 20px 26px;
+}
+/* Hidden by default; each state turns on the parts it needs. */
+.ajoop-mascot-dots,
+.ajoop-mascot-null {
+  opacity: 0;
+}
+/* `visibility`, not just opacity: the NULL face is a <text> node, and an
+ * opacity-0 one still shows up in the header's text content. */
+.ajoop-mascot-null {
+  visibility: hidden;
+  fill: var(--brand);
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+/* idle — a slow bob and an occasional blink. Alive, not busy. */
+.ajoop-mascot[data-ajoop-mascot="idle"] svg {
+  animation: ajoopMascotBob 3.6s ease-in-out infinite;
+}
+.ajoop-mascot[data-ajoop-mascot="idle"] .ajoop-mascot-eye {
+  animation: ajoopMascotBlink 5.2s infinite;
+}
+@keyframes ajoopMascotBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+@keyframes ajoopMascotBlink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.14); }
+}
+
+/* listening — leaning in while the composer has focus. */
+.ajoop-mascot[data-ajoop-mascot="listening"] {
+  border-color: rgba(56, 189, 248, 0.6);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(129, 140, 248, 0.2));
+}
+.ajoop-mascot[data-ajoop-mascot="listening"] .ajoop-mascot-antenna {
+  transform: rotate(-9deg);
+}
+.ajoop-mascot[data-ajoop-mascot="listening"] .ajoop-mascot-bulb {
+  animation: ajoopMascotPulse 1.6s ease-in-out infinite;
+}
+@keyframes ajoopMascotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* thinking — the mouth becomes three working dots, the antenna ticks. */
+.ajoop-mascot[data-ajoop-mascot="thinking"] .ajoop-mascot-mouth {
+  opacity: 0;
+}
+.ajoop-mascot[data-ajoop-mascot="thinking"] .ajoop-mascot-dots {
+  opacity: 1;
+}
+.ajoop-mascot[data-ajoop-mascot="thinking"] .ajoop-mascot-dots circle {
+  animation: ajoopMascotDot 1.05s ease-in-out infinite;
+}
+.ajoop-mascot[data-ajoop-mascot="thinking"] .ajoop-mascot-dots circle:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.ajoop-mascot[data-ajoop-mascot="thinking"] .ajoop-mascot-dots circle:nth-child(3) {
+  animation-delay: 0.32s;
+}
+.ajoop-mascot[data-ajoop-mascot="thinking"] .ajoop-mascot-antenna {
+  animation: ajoopMascotTick 1.4s ease-in-out infinite;
+}
+@keyframes ajoopMascotDot {
+  0%, 100% { opacity: 0.28; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-1.6px); }
+}
+@keyframes ajoopMascotTick {
+  0%, 100% { transform: rotate(-7deg); }
+  50% { transform: rotate(7deg); }
+}
+
+/* answering — a brief cyan reveal as the answer lands. */
+.ajoop-mascot[data-ajoop-mascot="answering"] {
+  border-color: rgba(56, 189, 248, 0.7);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.14);
+}
+.ajoop-mascot[data-ajoop-mascot="answering"] .ajoop-mascot-mouth {
+  transform: scaleX(1.25);
+}
+
+/* clarifying — eyes up, mouth small: the face of a question. */
+.ajoop-mascot[data-ajoop-mascot="clarifying"] .ajoop-mascot-eye {
+  transform: translateY(-1.5px) scaleY(0.7);
+}
+.ajoop-mascot[data-ajoop-mascot="clarifying"] .ajoop-mascot-mouth {
+  transform: scaleX(0.45);
+}
+.ajoop-mascot[data-ajoop-mascot="clarifying"] .ajoop-mascot-antenna {
+  transform: rotate(14deg);
+}
+
+/* offline — the NULL face. This is the ERROR state, not the default one:
+ * Ajoop only looks like this when a bridge it was told to expect is not
+ * answering, which on the shipped configuration never happens. */
+.ajoop-mascot[data-ajoop-mascot="offline"] {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.05);
+}
+.ajoop-mascot[data-ajoop-mascot="offline"] .ajoop-mascot-face,
+.ajoop-mascot[data-ajoop-mascot="offline"] .ajoop-mascot-bulb {
+  opacity: 0.25;
+}
+.ajoop-mascot[data-ajoop-mascot="offline"] .ajoop-mascot-null {
+  visibility: visible;
+  opacity: 0.85;
+}
+
+/* The state in words, for anyone who would rather read it than watch it. */
+.ajoop-mascot-state {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ajoop-mascot svg,
+  .ajoop-mascot-eye,
+  .ajoop-mascot-bulb,
+  .ajoop-mascot-antenna,
+  .ajoop-mascot-dots circle {
+    animation: none !important;
+  }
 }
 .chatbot-header h2 {
   font-size: 17px;
@@ -2094,6 +2272,13 @@ body.overlay-modal-open {
 .chatbot-close i {
   font-size: 22px;
 }
+/* The transcript is the only scrolling zone in the panel.
+ *
+ * The action row lost its own scrollbar in 4.4 and the header and composer are
+ * fixed grid rows, so there is exactly one scroll container here — which is
+ * what removes the "nested scrolling" feel. The scrollbar itself is styled
+ * because the native one on Windows is a wide grey slab that reads as a
+ * browser chrome artifact sitting inside a rounded glass panel. */
 .chatbot-messages {
   display: grid;
   align-content: start;
@@ -2101,6 +2286,23 @@ body.overlay-modal-open {
   padding: 14px 14px 4px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.35) transparent;
+}
+.chatbot-messages::-webkit-scrollbar {
+  width: 8px;
+}
+.chatbot-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chatbot-messages::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+  background-color: rgba(56, 189, 248, 0.3);
+}
+.chatbot-messages:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(56, 189, 248, 0.5);
 }
 .chatbot-message {
   max-width: 92%;
@@ -2477,7 +2679,26 @@ body.overlay-modal-open {
   }
 
   .chatbot-header {
+    grid-template-columns: 32px minmax(0, 1fr) auto 34px;
+    gap: 9px;
     padding: 10px 12px;
+  }
+
+  /* The state in words is the first thing to go on a phone: the face still
+   * carries it, and the header has a title to fit. */
+  .ajoop-mascot-state {
+    display: none;
+  }
+
+  .ajoop-mascot {
+    width: 32px;
+    height: 32px;
+    border-radius: 11px;
+  }
+
+  .ajoop-mascot svg {
+    width: 25px;
+    height: 25px;
   }
 
   .chatbot-messages {

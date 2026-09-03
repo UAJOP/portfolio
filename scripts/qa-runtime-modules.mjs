@@ -148,6 +148,14 @@ const ORDER = [
   ["js/ajoop/matcher.js", "js/ajoop/language.js"],
   ["js/ajoop/language.js", "js/ajoop/router.js"],
   ["js/ajoop/language.js", "js/ajoop/assistant.js"],
+  /* Ajoop 4.5: the ontology is what the router scores against, and the
+   * response planner turns a route plus its evidence into what gets rendered. */
+  ["js/ajoop/matcher.js", "js/ajoop/ontology.js"],
+  ["js/ajoop/ontology.js", "js/ajoop/router.js"],
+  ["js/ajoop/ontology.js", "js/ajoop/conversation.js"],
+  ["js/ajoop/evidence.js", "js/ajoop/response.js"],
+  ["js/ajoop/router.js", "js/ajoop/response.js"],
+  ["js/ajoop/response.js", "js/ajoop/assistant.js"],
   ["js/features/ultimate.js", "js/features/recruiter.js"],
   ["js/features/recruiter.js", "js/features/command-palette.js"],
   ["js/features/command-palette.js", "js/features/ajoop-nav.js"],

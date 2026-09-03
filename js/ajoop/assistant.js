@@ -1364,16 +1364,25 @@ function ajoopEntityAnswer(route, language) {
 /* ---------- Ajoop 4.1 conversation layer ---------- */
 
 /**
- * Response transition.
+ * The thinking beat.
  *
- * A tiny fixed pause makes "you asked / Ajoop answered" read as two beats
- * instead of one instant paste. It is NOT an imitation of model latency: there
- * is no streaming, no random jitter, and direct navigation actions skip it
- * entirely. The placeholder is aria-hidden because the answer arrives in the
- * same live region a fifth of a second later, and announcing both would just
- * talk over the useful one.
+ * A deterministic lookup returns in single-digit milliseconds, and slamming
+ * the answer into the transcript the instant the visitor hits send does not
+ * read as fast — it reads as a lookup table, because that is what it looks
+ * like. A short held pause makes "you asked / Ajoop answered" two beats
+ * instead of one paste, and gives the mascot somewhere to be.
+ *
+ * This is PRESENTATION, not latency theatre with a spinner attached to a
+ * backend: there is no streaming, no random jitter, the value is a minimum
+ * rather than a wait, and direct navigation actions skip it entirely. An
+ * optional AI enhancement that arrives later never re-enters this state — the
+ * visitor already has their answer by then.
+ *
+ * The placeholder is aria-hidden because the real answer lands in the same
+ * live region moments later, and announcing both would talk over the useful
+ * one.
  */
-const AJOOP_THINKING_DELAY_MS = 220;
+const AJOOP_THINKING_DELAY_MS = 620;
 
 function addAjoopThinkingMessage() {
   const messageList = ajoopMessageList();
@@ -1399,13 +1408,17 @@ function addAjoopThinkingMessage() {
 const AJOOP_PACK_WAIT_MS = 2500;
 
 /**
- * Runs `render` after the transition beat, and after `ready` settles.
+ * Runs `render` after the thinking beat, and after `ready` settles.
  *
  * `ready` is the on-demand translation pack for the conversation language. It
  * is raced against a deadline rather than awaited outright: a pack that never
  * arrives must cost the visitor a less-localized answer, never a missing one.
+ *
+ * The mascot enters `thinking` for the whole beat and is handed back to the
+ * caller's chosen resting state once the answer is on screen.
  */
 function deliverAjoopAnswer(render, ready) {
+  setAjoopMascotState("thinking");
   const node = addAjoopThinkingMessage();
   if (typeof window === "undefined" || typeof window.setTimeout !== "function") {
     if (node) node.remove();
@@ -1427,6 +1440,142 @@ function deliverAjoopAnswer(render, ready) {
     );
   }
   Promise.all(waits).then(finish, finish);
+}
+
+/* ---------- Ajoop 4.5 mascot state machine ---------- */
+
+/**
+ * The mascot is a FIXED part of the header, not an overlay.
+ *
+ * It lives in the panel's header grid, which means it cannot collide with a
+ * button, cannot sit on top of the transcript, and cannot move when the
+ * transcript scrolls — three things a free-floating absolutely-positioned
+ * character does by construction, whatever z-index it is given.
+ *
+ * Every state is one attribute value driving CSS. There is no GIF, no video,
+ * no sprite sheet and no animation loop in JavaScript: the frames are SVG
+ * elements that CSS shows, hides and transforms, so the whole character costs
+ * a few hundred bytes and animates on the compositor.
+ */
+const AJOOP_MASCOT_STATES = Object.freeze({
+  IDLE: "idle",
+  LISTENING: "listening",
+  THINKING: "thinking",
+  ANSWERING: "answering",
+  CLARIFYING: "clarifying",
+  OFFLINE: "offline",
+});
+
+/** How long a transient state holds before falling back to rest. */
+const AJOOP_MASCOT_ANSWERING_MS = 900;
+const AJOOP_MASCOT_CLARIFYING_MS = 1600;
+const AJOOP_MASCOT_OFFLINE_MS = 2400;
+
+let ajoopMascotTimer = null;
+
+/**
+ * The resting face is always `idle`.
+ *
+ * NULL is the ERROR face, not the default one. Resting at NULL whenever a
+ * configured bridge is down would put a broken-looking character on a panel
+ * that is working perfectly — the deterministic assistant is the product, and
+ * the bridge is an optional garnish on top of it. So `offline` is shown
+ * briefly when a turn actually reached for the bridge and found nothing, and
+ * then the character goes back to being alive.
+ */
+function ajoopRestingMascotState() {
+  return AJOOP_MASCOT_STATES.IDLE;
+}
+
+/** State labels. Header chrome, so they follow the SITE locale (see §15). */
+function ajoopMascotLabel(state) {
+  const language = portfolioChatbotState.language;
+  switch (state) {
+    case AJOOP_MASCOT_STATES.LISTENING:
+      return ajoopLabel("Listening", "Dinliyor", language);
+    case AJOOP_MASCOT_STATES.THINKING:
+      return ajoopLabel("Thinking", "Düşünüyor", language);
+    case AJOOP_MASCOT_STATES.ANSWERING:
+      return ajoopLabel("Answering", "Yanıtlıyor", language);
+    case AJOOP_MASCOT_STATES.CLARIFYING:
+      return ajoopLabel("Needs a hint", "Netleştiriyor", language);
+    case AJOOP_MASCOT_STATES.OFFLINE:
+      return ajoopLabel("Local AI offline", "Yerel AI kapalı", language);
+    default:
+      return ajoopLabel("Ready", "Hazır", language);
+  }
+}
+
+/**
+ * Moves the mascot to a state.
+ *
+ * `answering` and `clarifying` are transient by design: they are punctuation
+ * on a turn, not modes. They expire on their own, so nothing can leave the
+ * mascot spinning — which is what happened in 4.4 whenever a slow local model
+ * kept a request open for half a minute after the answer was already visible.
+ */
+function setAjoopMascotState(state) {
+  const mascot = document.querySelector("[data-ajoop-mascot]");
+  if (!mascot) return;
+  if (ajoopMascotTimer) {
+    clearTimeout(ajoopMascotTimer);
+    ajoopMascotTimer = null;
+  }
+  const resolved = state || ajoopRestingMascotState();
+  mascot.setAttribute("data-ajoop-mascot", resolved);
+  const label = ajoopMascotLabel(resolved);
+  mascot.setAttribute("aria-label", label);
+  mascot.setAttribute("title", label);
+  const text = document.querySelector("[data-ajoop-mascot-label]");
+  if (text) text.textContent = label;
+
+  /* Transient states, all of them punctuation on a turn rather than modes.
+   * Nothing can leave the mascot stuck: every non-resting state expires. */
+  const hold =
+    resolved === AJOOP_MASCOT_STATES.ANSWERING
+      ? AJOOP_MASCOT_ANSWERING_MS
+      : resolved === AJOOP_MASCOT_STATES.CLARIFYING
+        ? AJOOP_MASCOT_CLARIFYING_MS
+        : resolved === AJOOP_MASCOT_STATES.OFFLINE
+          ? AJOOP_MASCOT_OFFLINE_MS
+          : 0;
+  if (hold && typeof window !== "undefined" && typeof window.setTimeout === "function") {
+    ajoopMascotTimer = window.setTimeout(() => {
+      ajoopMascotTimer = null;
+      setAjoopMascotState(ajoopRestingMascotState());
+    }, hold);
+  }
+}
+
+/**
+ * The character, as inline SVG.
+ *
+ * One shape per part so CSS can move them independently: the antenna leans
+ * while thinking, the eyes blink at rest and close to a question mark while
+ * clarifying, the mouth becomes the NULL bar when the bridge is offline. Every
+ * part is decorative — the state is carried by the aria-label on the wrapper,
+ * so nothing here is communicated by picture alone.
+ */
+function ajoopMascotMarkup() {
+  return `
+    <span class="ajoop-mascot" data-ajoop-mascot="idle" role="img">
+      <svg viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+        <g class="ajoop-mascot-antenna">
+          <line x1="20" y1="9" x2="20" y2="4" />
+          <circle class="ajoop-mascot-bulb" cx="20" cy="3" r="2.4" />
+        </g>
+        <rect class="ajoop-mascot-head" x="7" y="9" width="26" height="22" rx="8" />
+        <g class="ajoop-mascot-face">
+          <rect class="ajoop-mascot-eye is-left" x="13" y="16" width="4" height="6" rx="2" />
+          <rect class="ajoop-mascot-eye is-right" x="23" y="16" width="4" height="6" rx="2" />
+          <rect class="ajoop-mascot-mouth" x="15" y="25" width="10" height="2.4" rx="1.2" />
+        </g>
+        <g class="ajoop-mascot-dots" aria-hidden="true">
+          <circle cx="15" cy="26" r="1.5" /><circle cx="20" cy="26" r="1.5" /><circle cx="25" cy="26" r="1.5" />
+        </g>
+        <text class="ajoop-mascot-null" x="20" y="28" text-anchor="middle">NULL</text>
+      </svg>
+    </span>`;
 }
 
 /* ---------- Ajoop 4.2 evidence rendering ---------- */
@@ -1716,7 +1865,22 @@ function enhanceAjoopAnswerWithAi(messageElement, route, evidence, question, tur
        * answer the visitor is already reading simply stands, which is also
        * what they get when the bridge is switched off entirely. A reply for a
        * superseded turn is dropped the same way. */
-      if (!result || !result.ok || !isAjoopAiTurnCurrent(turn)) return;
+      if (!result || !result.ok || !isAjoopAiTurnCurrent(turn)) {
+        /* Ajoop 4.5: the ONE place NULL is earned. A configured bridge that
+         * could not be reached shows the offline face briefly, then the
+         * character goes back to idle — the visitor's answer never depended on
+         * it, so the notice must not outlast the moment. A superseded turn is
+         * not a failure and says nothing. */
+        if (
+          isAjoopAiTurnCurrent(turn) &&
+          result &&
+          typeof getAjoopAiState === "function" &&
+          getAjoopAiState().state === "unavailable"
+        ) {
+          setAjoopMascotState(AJOOP_MASCOT_STATES.OFFLINE);
+        }
+        return;
+      }
       applyAjoopAiAnswer(messageElement, result.answer, locale);
       renderAjoopBridgeStatus();
     })
@@ -1739,18 +1903,27 @@ function enhanceAjoopAnswerWithAi(messageElement, route, evidence, question, tur
  */
 function renderAjoopBridgeStatus() {
   const target = document.querySelector("[data-chatbot-bridge]");
-  if (!target) return;
-  const online =
-    typeof getAjoopAiState === "function" && getAjoopAiState().state === "available";
-  target.hidden = !online;
-  if (online) {
-    const label = ajoopLabel(
-      "Local AI bridge connected",
-      "Yerel AI köprüsü bağlı",
-      portfolioChatbotState.language,
-    );
-    target.setAttribute("aria-label", label);
-    target.setAttribute("title", label);
+  if (target) {
+    const online =
+      typeof getAjoopAiState === "function" && getAjoopAiState().state === "available";
+    target.hidden = !online;
+    if (online) {
+      const label = ajoopLabel(
+        "Local AI bridge connected",
+        "Yerel AI köprüsü bağlı",
+        portfolioChatbotState.language,
+      );
+      target.setAttribute("aria-label", label);
+      target.setAttribute("title", label);
+    }
+  }
+  /* The resting face may have changed with the verdict — but only while the
+   * mascot is actually at rest. A bridge probe that lands mid-turn must not
+   * pull the character out of thinking or answering. */
+  const mascot = document.querySelector("[data-ajoop-mascot]");
+  const current = mascot && mascot.getAttribute("data-ajoop-mascot");
+  if (current === "idle" || current === "offline") {
+    setAjoopMascotState(ajoopRestingMascotState());
   }
 }
 
@@ -1767,109 +1940,71 @@ function initializeAjoopAi() {
 }
 
 /**
- * The evidence response for a route, or null when this turn is ordinary text.
- *
- * `message` is passed in rather than stored on the route: the filter mode needs
- * the raw words, and the route is what gets handed to the context layer.
- */
-function buildAjoopEvidenceFor(route, language, message) {
-  if (typeof buildAjoopProveResponse !== "function") return null;
-
-  if (route.mode === "compare") {
-    const left = route.compareWith || route.previousEntity;
-    const right = route.entity;
-    if (!left || !right || left === right) return null;
-    return buildAjoopCompareResponse(left, right, language);
-  }
-  if (route.mode === "filter") {
-    return buildAjoopFilterResponse(message || "", language);
-  }
-  if (route.mode === "prove" || route.facet === "proof") {
-    if (!route.entity) return null;
-    return (
-      buildAjoopProveResponse(route.entity, language) ||
-      buildAjoopNoEvidenceResponse(language)
-    );
-  }
-  return null;
-}
-
-/**
  * A route shaped like the router's, for turns that did not come from typing.
  *
- * Button taps and continuations already know their subject, so they skip
- * scoring entirely. `origin: "action"` tells the planner not to offer
- * clarification for them — there is nothing ambiguous about a tapped button.
+ * Button taps and continuations already know their subject and their intent,
+ * so they skip scoring entirely. `origin: "action"` and high confidence tell
+ * the response planner not to offer clarification for them — there is nothing
+ * ambiguous about a tapped button.
+ *
+ * The family and evidence policy are read from the ontology rather than passed
+ * in, so a synthetic route obeys exactly the same evidence rules as a scored
+ * one. That is the whole point: a tapped "Evidence" button and a typed
+ * "kanıtla" must reach the same answer.
  */
 function ajoopSyntheticRoute(overrides) {
   const context = typeof readAjoopContext === "function" ? readAjoopContext() : null;
-  const page =
-    typeof readAjoopPageContext === "function" ? readAjoopPageContext() : null;
-  const route = Object.assign(
-    {
-      origin: "action",
-      meta: null,
-      intent: "default",
-      secondaryIntents: [],
-      entities: [],
-      entity: null,
-      entitySource: null,
-      previousEntity: (context && context.lastEntity) || null,
-      facet: "overview",
-      linkHint: null,
-      confidence: "high",
-      score: 0,
-      candidates: [],
-      answerDepth: 0,
-      depth: (context && context.depth) || "normal",
-      pageContext: page,
-    },
-    overrides || {},
-  );
+  const page = typeof readAjoopPageContext === "function" ? readAjoopPageContext() : null;
+  const values = overrides || {};
+  const definition =
+    typeof getAjoopIntent === "function" && values.intent ? getAjoopIntent(values.intent) : null;
+
+  const route =
+    typeof ajoopRoute === "function"
+      ? ajoopRoute({
+          origin: "action",
+          intent: values.intent || null,
+          family: definition ? definition.family : null,
+          meta: definition && definition.global ? values.intent : null,
+          evidencePolicy: definition ? definition.evidence : AJOOP_EVIDENCE.NONE,
+          confidence: AJOOP_CONFIDENCE.HIGH,
+          facet: values.facet || (definition && definition.facet) || "overview",
+          previousEntity: (context && context.lastEntity) || null,
+          depth: (context && context.depth) || "normal",
+          pageContext: page,
+        })
+      : {};
+  Object.assign(route, values);
+  if (definition && !values.family) route.family = definition.family;
+  if (definition && values.evidencePolicy === undefined) route.evidencePolicy = definition.evidence;
   route.answerDepth =
     context && context.lastIntent === route.intent ? (context.answerDepth || 0) + 1 : 0;
   return route;
 }
 
-/** The intent an entity implies, so a subject switch lands on a real answer. */
-function ajoopIntentForEntity(entityId) {
-  if (typeof getAjoopEntity !== "function" || typeof ajoopEntityIntent !== "function") {
-    return "default";
-  }
-  const known = new Set(
-    (typeof chatbotKeywordMap === "undefined" ? [] : chatbotKeywordMap)
-      .map((entry) => entry && entry.id)
-      .filter(Boolean),
-  );
-  return ajoopEntityIntent(getAjoopEntity(entityId), known) || "default";
-}
-
-/** True when a prepared, hand-written answer exists for this intent id. */
-function ajoopHasPreparedAnswer(intentId) {
-  const content = getPortfolioChatbotContent(portfolioChatbotState.language);
-  return Boolean(intentId && content.answers && content.answers[intentId]);
-}
-
 /**
- * Route for a subject the visitor picked from a button.
+ * The intent a bare subject implies.
  *
- * `preferPrepared` protects the curated answers. SINAMA, Merge Rush and Joyday
- * are both entity ids and intent ids, and their hand-written answers say more
- * than a generated registry overview does — so asking for one of those as a
- * whole keeps the prepared copy. A specific facet (stack, proof, links) always
- * comes from canonical data, because prepared copy cannot answer those.
+ * Tapping a project name is a request for that project's overview; tapping a
+ * recruiter focus is a request for role fit. Both are entities, and the
+ * ontology intent that answers them differs, so it is resolved from the entity
+ * type rather than assumed.
  */
-function ajoopRouteForEntity(entityId, facet) {
-  const intent = ajoopIntentForEntity(entityId);
+function ajoopIntentForEntity(entityId) {
+  const entity = typeof getAjoopEntity === "function" ? getAjoopEntity(entityId) : null;
+  if (entity && entity.type === "role") return "fit_for_role";
+  return "project_overview";
+}
+
+/** Route for a subject the visitor picked from a button. */
+function ajoopRouteForEntity(entityId, facet, intent) {
   const resolved = facet || "overview";
   return ajoopSyntheticRoute({
-    intent,
+    intent: intent || ajoopIntentForEntity(entityId),
     entity: entityId,
     entitySource: "message",
     facet: resolved,
     linkHint: resolved === "links" ? "github" : null,
-    preferPrepared:
-      resolved === "overview" && intent === entityId && ajoopHasPreparedAnswer(intent),
   });
 }
 
@@ -1882,66 +2017,19 @@ function ajoopRouteForEntity(entityId, facet) {
  * message normally.
  */
 function ajoopContinuationRoute(direction) {
-  const context = typeof readAjoopContext === "function" ? readAjoopContext() : null;
+  const stored = typeof readAjoopContext === "function" ? readAjoopContext() : null;
+  const context = typeof pruneAjoopContext === "function" ? pruneAjoopContext(stored) : stored;
   if (!context || (!context.lastIntent && !context.lastEntity)) return null;
   const depth =
     typeof nextAjoopDepth === "function" ? nextAjoopDepth(context.depth, direction) : context.depth;
   if (typeof setAjoopDepth === "function") setAjoopDepth(depth);
   return ajoopSyntheticRoute({
-    intent: context.lastIntent || "default",
+    intent: context.lastIntent || "project_overview",
     entity: context.lastEntity || null,
     entitySource: context.lastEntity ? "conversation" : null,
     facet: context.lastFacet || "overview",
     depth,
   });
-}
-
-/**
- * The quick actions, resolved BY ID rather than by list position.
- *
- * A locale pack ships `quicks` as bare labels and the loader merges them onto
- * the English list by index (see mergeLocaleCopy). That only works while both
- * lists are the same shape, and they are not: portfolio-v2.js replaces this
- * list at boot with the evidence-registry line-up, so on the German, Spanish
- * and French routes every chip carried a label belonging to a different id —
- * "SINAMA evidence" reading "Wer ist Kaan?".
- *
- * Pairing English and Turkish by id and translating through getI18nText fixes
- * that at the source: a locale with no phrase for a label gets the English
- * one, which is a chip that tells the truth instead of a chip that lies.
- */
-function ajoopQuickLabelPairs(language) {
-  return {
-    about: ajoopLabel("Who is Kaan?", "Kaan kim?", language),
-    ai: ajoopLabel("AI experience", "AI deneyimi", language),
-    projects: ajoopLabel("Best projects", "En iyi projeler", language),
-    joyday: "Joyday",
-    stack: ajoopLabel("Tech stack", "Teknolojiler", language),
-    cv: ajoopLabel("CV & contact", "CV & iletişim", language),
-    experience: ajoopLabel("Work history", "İş geçmişi", language),
-    roles: ajoopLabel("Role fit", "Role uygunluk", language),
-    weather: ajoopLabel("Weather?", "Hava?", language),
-    sinama: ajoopLabel("SINAMA evidence", "SINAMA kanıtı", language),
-    mergeRush: ajoopLabel("Merge Rush evidence", "Merge Rush kanıtı", language),
-    latestBuild: ajoopLabel("Latest build", "Son build", language),
-  };
-}
-
-function ajoopQuickActions(language = ajoopReplyLanguage()) {
-  const english = (portfolioChatbotContent.en && portfolioChatbotContent.en.quicks) || [];
-  const labels = ajoopQuickLabelPairs(language);
-  return english
-    .filter((quick) => quick && quick.id)
-    .map((quick) => ({ id: quick.id, label: labels[quick.id] || quick.label }));
-}
-
-/** Quick-action labels, so an intent is never named two different ways. */
-function ajoopQuickLabelMap(language = ajoopReplyLanguage()) {
-  const map = {};
-  ajoopQuickActions(language).forEach((quick) => {
-    map[quick.id] = quick.label;
-  });
-  return map;
 }
 
 /** One action button, wired to its action through a closure, not the DOM. */
@@ -2018,16 +2106,18 @@ function runAjoopAction(action, label) {
   /* The echoed button label is what the visitor actually asked for, so it is
    * the question the AI bridge grounds on for tapped turns. */
   const asked = { message: label };
+
   if (action.action === "meta") {
-    answerAjoopRoute(ajoopSyntheticRoute({ meta: action.meta, intent: `meta:${action.meta}` }), asked);
+    answerAjoopRoute(ajoopSyntheticRoute({ intent: action.meta }), asked);
     return;
   }
   if (action.action === "depth") {
     if (typeof setAjoopDepth === "function") setAjoopDepth(action.depth);
-    const context = typeof readAjoopContext === "function" ? readAjoopContext() : null;
+    const stored = typeof readAjoopContext === "function" ? readAjoopContext() : null;
+    const context = typeof pruneAjoopContext === "function" ? pruneAjoopContext(stored) : stored;
     answerAjoopRoute(
       ajoopSyntheticRoute({
-        intent: (context && context.lastIntent) || "default",
+        intent: (context && context.lastIntent) || "best_projects",
         entity: (context && context.lastEntity) || null,
         entitySource: context && context.lastEntity ? "conversation" : null,
         facet: (context && context.lastFacet) || "overview",
@@ -2037,50 +2127,39 @@ function runAjoopAction(action, label) {
     );
     return;
   }
-  /* Ajoop 4.2 action kinds. Both carry their subject explicitly, so neither
-   * depends on what the visitor typed before. */
-  if (action.action === "evidence") {
-    answerAjoopRoute(
-      ajoopSyntheticRoute({
-        intent: ajoopIntentForEntity(action.entity),
-        entity: action.entity,
-        entitySource: "message",
-        facet: "proof",
-        mode: "prove",
-      }),
-      asked,
-    );
-    return;
-  }
   if (action.action === "compare") {
     answerAjoopRoute(
       ajoopSyntheticRoute({
-        intent: ajoopIntentForEntity(action.entity),
+        intent: "compare_projects",
         entity: action.entity,
         entitySource: "message",
-        facet: "overview",
-        mode: "compare",
         compareWith: action.compareWith,
       }),
       asked,
     );
     return;
   }
+  /* Facet and entity actions both carry their subject explicitly, so neither
+   * depends on what the visitor typed before. */
   if (action.entity) {
-    answerAjoopRoute(ajoopRouteForEntity(action.entity, action.facet), asked);
+    answerAjoopRoute(ajoopRouteForEntity(action.entity, action.facet, action.intent), asked);
     return;
   }
-  answerAjoopRoute(ajoopSyntheticRoute({ intent: action.intent || "default" }), asked);
+  answerAjoopRoute(ajoopSyntheticRoute({ intent: action.intent || "best_projects" }), asked);
 }
 
 /**
  * Answers one routed turn and offers what comes next.
  *
- * Entity-specific canonical answers win when they exist; otherwise the prepared
- * intent answer runs exactly as it did before. When the planner decides the
- * question was too ambiguous to answer, the clarification prompt replaces the
- * answer rather than sitting beside a guess. Either way the turn is folded into
- * the conversation context so the next message can inherit the subject.
+ * Ajoop 4.5 reduced this to orchestration and nothing else. What to say is
+ * js/ajoop/response.js; what evidence may appear is js/ajoop/evidence.js; what
+ * to offer next is js/ajoop/conversation.js. This function sequences those
+ * three, renders the result once, and folds the turn into context.
+ *
+ * The order matters: the mascot enters `thinking` immediately, the plan is
+ * built after the translation pack settles, and the answer is revealed only
+ * once the minimum visual delay has passed — so a conversation reads as a
+ * conversation rather than as a database returning rows.
  */
 function answerAjoopRoute(route, options) {
   const language = ajoopReplyLanguage();
@@ -2098,94 +2177,98 @@ function answerAjoopRoute(route, options) {
     typeof ensureAjoopLanguagePack === "function" ? ensureAjoopLanguagePack(language) : null;
 
   deliverAjoopAnswer(() => {
-    /* Build localized follow-ups and evidence only after the requested pack
-     * has settled. Otherwise the first DE/ES/FR turn on an EN page can capture
-     * English fallback labels before its language pack arrives. */
+    /* Built after the requested pack has settled. Otherwise the first DE/ES/FR
+     * turn on an EN page captures English fallback labels before its pack
+     * arrives. */
     const plan =
-      typeof planAjoopConversation === "function"
-        ? planAjoopConversation(route, {
+      typeof planAjoopResponse === "function"
+        ? planAjoopResponse(route, {
             language,
-            depth: route.depth,
-            quickLabels: ajoopQuickLabelMap(language),
+            message: settings.message,
+            entityAnswer: (target, locale) => ajoopEntityAnswer(target, locale),
+            preparedAnswer: (target, locale) =>
+              ajoopPreparedAnswer(target.intent, target.answerDepth, target.depth, locale),
           })
         : null;
+    if (!plan) return;
 
-    /* Ajoop 4.2: an evidence response replaces the text answer when the turn
-     * asked for evidence, a comparison or a filtered list. Everything else falls
-     * through to the 4.0/4.1 path unchanged. */
-    const evidence = route.meta
-      ? null
-      : buildAjoopEvidenceFor(route, language, settings.message);
-    portfolioChatbotState.lastEvidence = evidence || null;
+    portfolioChatbotState.lastPlan = plan;
+    portfolioChatbotState.lastEvidence = plan.cards && plan.cards.length ? plan : null;
 
-    /* ONE render path. Whatever this turn turned out to be — a question about
-     * Ajoop, an evidence response, a clarification, an entity answer or
-     * prepared copy — it becomes the same message spec and goes through the
-     * same renderer, so the visitor never sees the seam between them. */
-    const spec = { type: "bot", language, provenance: AJOOP_PROVENANCE_EVIDENCE };
-    let groundable = true;
-
-    if (route.meta) {
-      /* An answer about Ajoop is not a portfolio claim, so it carries no
-       * evidence line and is never handed to the model to restate — the one
-       * thing a model must not paraphrase is the description of itself. */
-      spec.text =
-        typeof getAjoopMetaAnswer === "function" ? getAjoopMetaAnswer(route.meta, language) : "";
-      spec.provenance = null;
-      groundable = false;
-    } else if (evidence) {
-      spec.text = evidence.text;
-      spec.cards = evidence.cards || [];
-      spec.comparison = evidence.comparison || null;
+    /* ONE render path. Whatever this turn turned out to be — a greeting, a
+     * question about Ajoop, an evidence response, a clarification or a project
+     * answer — it is the same message spec through the same renderer, so the
+     * visitor never sees a seam between them. */
+    const rendered = renderAjoopMessage({
+      type: "bot",
+      language,
+      text: plan.text,
+      links: plan.links,
+      cards: plan.cards,
+      comparison: plan.comparison,
+      provenance: plan.provenance,
       /* The full record only when the visitor asked for it. */
-      spec.detail = route.depth === "deep";
-    } else if (plan && plan.fallback) {
-      /* A clarification prompt is a question, not an answer; there is nothing
-       * grounded for a model to restate, so the bridge is not consulted. */
-      spec.text = plan.fallback.prompt;
-      spec.provenance = null;
-      groundable = false;
-    } else {
-      const answer = route.preferPrepared ? null : ajoopEntityAnswer(route, language);
-      const resolved =
-        answer && answer.text
-          ? answer
-          : ajoopPreparedAnswer(route.intent, route.answerDepth, route.depth, language);
-      spec.text = resolved.text;
-      spec.links = resolved.links;
-    }
+      detail: plan.depth === "deep",
+    });
 
-    const rendered = renderAjoopMessage(spec);
-    if (plan) renderAjoopActions(plan.followups, "followups", plan.secondary);
+    const actions =
+      typeof planAjoopActions === "function"
+        ? planAjoopActions(route, plan, { language, depth: route.depth })
+        : null;
+    if (actions) renderAjoopActions(actions.actions, "followups", actions.secondary);
+
+    /* The transition ends when the answer lands, whatever the bridge is doing.
+     * A clarification rests in its own face so the question stays visible as a
+     * question. */
+    setAjoopMascotState(plan.type === "clarify" ? "clarifying" : "answering");
 
     /* The deterministic answer is on screen by now. Enhancement is optional,
-     * asynchronous and silent on failure. */
-    if (rendered && groundable && typeof enhanceAjoopAnswerWithAi === "function") {
-      enhanceAjoopAnswerWithAi(rendered, route, evidence, settings.message, aiTurn, language);
+     * asynchronous and silent on failure — and it never re-enters `thinking`,
+     * because the visitor already has their answer. */
+    if (rendered && plan.groundable && typeof enhanceAjoopAnswerWithAi === "function") {
+      enhanceAjoopAnswerWithAi(rendered, route, plan, settings.message, aiTurn, language);
     }
   }, ready);
 
   if (typeof rememberAjoopTurn === "function") {
+    /* A greeting or a question about Ajoop sets neither subject nor intent: it
+     * must not become the thing the next message inherits or elaborates on.
+     * Anything else records what it resolved, and `usedEntity` keeps a subject
+     * that was actually used from ageing out of the conversation. */
+    const conversational = route.family !== "social" && route.family !== "meta";
     rememberAjoopTurn({
-      /* A question about Ajoop sets neither subject nor intent: it must not
-       * become the thing the next message inherits or elaborates on. The
-       * subject that was in play before it survives, so the visitor can pick
-       * the conversation back up where they left it. */
-      intent: route.meta ? null : route.intent,
-      entity: !route.meta && route.entitySource === "message" ? route.entity : null,
+      intent: conversational ? route.intent : null,
+      entity: conversational && route.entitySource === "message" ? route.entity : null,
+      usedEntity: conversational ? route.entity : null,
       facet: route.facet,
       depth: route.depth,
       pageContext: route.pageContext ? route.pageContext.pageType : null,
     });
+    /* A person-level or meta question is a change of subject even though it
+     * names no new one. Releasing the old project here is what stops the next
+     * bare "github?" answering about something three topics ago. */
+    if (!conversational || AJOOP_SUBJECT_CLEARING_FAMILIES.has(route.family)) {
+      if (typeof releaseAjoopEntity === "function") releaseAjoopEntity();
+    }
   }
 }
 
+/**
+ * Families that end the current subject.
+ *
+ * Asking about Kaan, about Ajoop, or saying hello moves the conversation off
+ * whatever project was in play. Discovery does not: "best projects" is a step
+ * towards a subject, not away from one.
+ */
+const AJOOP_SUBJECT_CLEARING_FAMILIES = new Set(["social", "meta", "person", "current"]);
+
 /** Handles a typed message end to end: route it, answer it, remember it. */
 function handleAjoopMessage(message) {
-  /* Ajoop 4.4: the language of the reply is decided from the message itself,
-   * before anything else happens, and it is sticky — a follow-up like
-   * "github?" says nothing about language and keeps the one in play. The site
-   * locale is only ever the starting point; it is never written to. */
+  /* Ajoop 4.4/4.5: the language of the reply is decided from the message
+   * itself, before anything else happens, and it is sticky — "github?" says
+   * nothing about language and keeps the one in play, while "selam" settles it
+   * outright. The site locale is only ever the starting point; it is never
+   * written to. */
   if (typeof resolveAjoopReplyLanguage === "function") {
     portfolioChatbotState.replyLanguage = resolveAjoopReplyLanguage(message, {
       current: portfolioChatbotState.replyLanguage,
@@ -2193,32 +2276,26 @@ function handleAjoopMessage(message) {
     });
   }
 
-  if (typeof routeAjoopQuery !== "function") {
-    answerChatbotIntent(detectChatbotIntent(message));
-    return null;
-  }
+  if (typeof routeAjoopQuery !== "function") return null;
+
   const direction =
     typeof detectAjoopContinuation === "function" ? detectAjoopContinuation(message) : null;
   const route = (direction && ajoopContinuationRoute(direction)) || routeAjoopQuery(message);
 
-  /* Ajoop 4.2: decide whether this turn wants evidence, a comparison or a
-   * filtered list. Continuations keep the treatment of the turn they continue,
-   * so "daha detaylı" after a comparison does not silently become a filter. */
-  if (!direction && typeof detectAjoopEvidenceMode === "function") {
-    route.mode = detectAjoopEvidenceMode(message, route) || null;
-    if (route.mode === "compare") {
-      /* Two names in one sentence compare those two, in reading order; a single
-       * name compares against whatever the visitor was just discussing. */
-      const named = (route.entities || []).filter((match) =>
-        typeof getAjoopProject === "function" ? Boolean(getAjoopProject(match.id, ajoopReplyLanguage())) : true,
-      );
-      if (named.length >= 2) {
-        const ordered = orderAjoopComparisonEntities(message, named);
-        route.compareWith = ordered[0];
-        route.entity = ordered[1];
-      } else {
-        route.compareWith = route.previousEntity;
-      }
+  /* Two project names in one sentence compare those two, in reading order; a
+   * single name compares against whatever the visitor was just discussing. */
+  if (route.intent === "compare_projects") {
+    const named = (route.entities || []).filter((match) =>
+      typeof getAjoopProject === "function"
+        ? Boolean(getAjoopProject(match.id, ajoopReplyLanguage()))
+        : true,
+    );
+    if (named.length >= 2 && typeof orderAjoopComparisonEntities === "function") {
+      const ordered = orderAjoopComparisonEntities(message, named);
+      route.compareWith = ordered[0];
+      route.entity = ordered[1];
+    } else if (!route.compareWith) {
+      route.compareWith = route.previousEntity;
     }
   }
 
@@ -2254,67 +2331,63 @@ function resetAjoopConversation() {
 /**
  * The opening suggestions.
  *
- * Four, from the eight the content ships. An opening screen is a first
- * impression, and eight chips under a greeting reads as a phone tree; four
- * covers the questions a recruiter actually opens with — who, what AI work,
- * which projects, how to reach him — and the input handles the rest.
+ * Four named intents, not the first four of whatever list happens to be
+ * loaded: the flagship project, how Kaan maps to a role, the wider portfolio,
+ * and how to reach him — the four things a recruiter opens this panel to find
+ * out. Everything else is one sentence away in the input.
  */
 const AJOOP_MAX_STARTER_SUGGESTIONS = 4;
 
-/**
- * The opening four, named by id.
- *
- * The flagship project, how Kaan maps to a role, the wider portfolio, and how
- * to reach him — the four things a recruiter opens this panel to find out.
- * Anything present in the live list but not named here is still one sentence
- * away in the input.
- */
-const AJOOP_STARTER_INTENTS = ["sinama", "roles", "projects", "cv"];
+const AJOOP_STARTER_ACTIONS = [
+  { entity: "sinama" },
+  { intent: "fit_for_role" },
+  { intent: "best_projects" },
+  { intent: "cv" },
+];
 
 function renderChatbotQuickActions() {
-  const quicks = ajoopQuickActions(ajoopReplyLanguage());
-  const preferred = AJOOP_STARTER_INTENTS.map((id) =>
-    quicks.find((quick) => quick.id === id),
-  ).filter(Boolean);
-  const actions = (preferred.length ? preferred : quicks)
-    .slice(0, AJOOP_MAX_STARTER_SUGGESTIONS)
-    .map((quick) => {
-      const isEntity =
-        typeof getAjoopEntity === "function" && Boolean(getAjoopEntity(quick.id));
+  const language = ajoopReplyLanguage();
+  const actions = AJOOP_STARTER_ACTIONS.slice(0, AJOOP_MAX_STARTER_SUGGESTIONS)
+    .map((starter) => {
+      if (starter.entity) {
+        const project =
+          typeof getAjoopProject === "function"
+            ? getAjoopProject(starter.entity, language)
+            : null;
+        if (!project) return null;
+        return {
+          id: `quick:${starter.entity}`,
+          label:
+            typeof ajoopShortProjectName === "function"
+              ? ajoopShortProjectName(project.name)
+              : project.name,
+          action: "entity",
+          entity: starter.entity,
+          intent: "project_overview",
+          facet: "overview",
+        };
+      }
       return {
-        id: `quick:${quick.id}`,
-        label: quick.label,
-        action: isEntity ? "entity" : "intent",
-        intent: quick.id,
-        entity: isEntity ? quick.id : null,
+        id: `quick:${starter.intent}`,
+        label:
+          typeof ajoopIntentLabel === "function"
+            ? ajoopIntentLabel(starter.intent, language)
+            : starter.intent,
+        action: "intent",
+        intent: starter.intent,
       };
-    });
+    })
+    .filter(Boolean);
   renderAjoopActions(actions, "initial");
 }
 
-/**
- * A quick action is a routed turn too.
- *
- * Several quick-action ids are also entity ids ("sinama", "mergeRush",
- * "joyday"), so tapping one sets the subject and a typed follow-up such as
- * "github?" resolves against it — the same flow a typed question gets.
- */
+/** A quick action is a routed turn too, with the same rules as a typed one. */
 function answerAjoopQuickAction(intentId) {
-  const isEntity =
-    typeof getAjoopEntity === "function" && Boolean(getAjoopEntity(intentId));
+  const isEntity = typeof getAjoopEntity === "function" && Boolean(getAjoopEntity(intentId));
   answerAjoopRoute(
-    ajoopSyntheticRoute(
-      isEntity
-        ? {
-            intent: intentId,
-            entity: intentId,
-            entitySource: "message",
-            /* The quick action promises the curated answer its label names; the
-             * entity is recorded so follow-ups still resolve against it. */
-            preferPrepared: ajoopHasPreparedAnswer(intentId),
-          }
-        : { intent: intentId },
-    ),
+    isEntity
+      ? ajoopRouteForEntity(intentId, "overview")
+      : ajoopSyntheticRoute({ intent: intentId }),
   );
 }
 
@@ -2421,11 +2494,12 @@ function setupPortfolioChatbot() {
   widget.innerHTML = `
     <div class="chatbot-panel" data-chatbot-panel aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ajoop-dialog-title">
       <div class="chatbot-header">
-        <div class="chatbot-avatar"><i class="bx bx-bot" aria-hidden="true"></i></div>
+        ${ajoopMascotMarkup()}
         <div class="chatbot-identity">
           <h2 id="ajoop-dialog-title" data-chatbot-title>${escapeProjectHtml(content.title)}</h2>
           <p data-chatbot-subtitle>${escapeProjectHtml(ajoopHeaderSubtitle(getCurrentLocale()))}</p>
         </div>
+        <span class="ajoop-mascot-state" data-ajoop-mascot-label></span>
         <span class="chatbot-bridge-dot" data-chatbot-bridge role="img" hidden></span>
         <button class="chatbot-close" type="button" data-chatbot-close aria-label="${escapeProjectHtml(content.closeLabel)}"><i class="bx bx-x" aria-hidden="true"></i></button>
       </div>
@@ -2464,6 +2538,30 @@ function setupPortfolioChatbot() {
       input.value = "";
       handleAjoopMessage(value);
     });
+
+  /* Ajoop 4.5 input/state wiring.
+   *
+   * The mascot follows the composer: focusing or typing puts it in
+   * `listening`, leaving the field returns it to rest. It deliberately does
+   * NOT interrupt a turn in flight — a visitor who clicks the input while an
+   * answer is being prepared has not cancelled anything, and yanking the
+   * mascot out of `thinking` would say they had. */
+  const composer = document.querySelector("[data-chatbot-input]");
+  if (composer) {
+    const listen = () => {
+      const mascot = document.querySelector("[data-ajoop-mascot]");
+      const current = mascot && mascot.getAttribute("data-ajoop-mascot");
+      if (current === "thinking") return;
+      setAjoopMascotState("listening");
+    };
+    composer.addEventListener("focus", listen);
+    composer.addEventListener("input", listen);
+    composer.addEventListener("blur", () => {
+      const mascot = document.querySelector("[data-ajoop-mascot]");
+      const current = mascot && mascot.getAttribute("data-ajoop-mascot");
+      if (current === "listening") setAjoopMascotState(ajoopRestingMascotState());
+    });
+  }
 
   document.addEventListener("keydown", (event) => {
     const panel = document.querySelector("[data-chatbot-panel]");

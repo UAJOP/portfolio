@@ -270,6 +270,51 @@ function findAjoopProjectsByQuery(tokens, language, registry, limit) {
   };
 }
 
+/**
+ * Projects whose canonical CATEGORY or SUMMARY matches a requested domain.
+ *
+ * Domain discovery deliberately excludes `stack`: a project using Python is
+ * not automatically a Python-domain project, and treating it as one made this
+ * intent identical to projects_by_technology. Category is the strongest
+ * domain signal the current registry owns; summary is a narrow fallback for
+ * explicit descriptions such as Joyday's workshop website. No synonym table
+ * or inferred taxonomy is introduced.
+ */
+function findAjoopProjectsByDomain(tokens, language, registry, limit) {
+  const locale = ajoopEvidenceLocale(language);
+  const terms = ajoopFilterTerms(tokens);
+  if (!terms.length) return { matches: [], total: 0, terms: [] };
+
+  const matchedTerms = new Set();
+  const scored = [];
+  const matchesDomainTerm = (tokens, term) =>
+    matchesKeyword(tokens, term.base) ||
+    (term.folded.length >= 3 && tokens.some((token) => token.folded.startsWith(term.folded)));
+  getAjoopCanonicalProjectIds(registry).forEach((id, order) => {
+    const project = getAjoopProject(id, locale, registry);
+    if (!project) return;
+    const categoryTokens = tokenizeIntentText(project.category || "");
+    const summaryTokens = tokenizeIntentText(project.summary || "");
+    let score = 0;
+    terms.forEach((term) => {
+      const categoryMatch = matchesDomainTerm(categoryTokens, term);
+      const summaryMatch = matchesDomainTerm(summaryTokens, term);
+      if (!categoryMatch && !summaryMatch) return;
+      score += categoryMatch ? 3 : 1;
+      matchedTerms.add(term.base);
+    });
+    if (score > 0) scored.push({ id, score, order });
+  });
+
+  scored.sort((a, b) => b.score - a.score || a.order - b.order);
+  const cap = typeof limit === "number" ? limit : AJOOP_MAX_EVIDENCE_CARDS;
+  return {
+    matches: scored.slice(0, cap).map((entry) => entry.id),
+    total: scored.length,
+    terms: [...matchedTerms],
+  };
+}
+
 /* ---------- request interpretation ---------- */
 
 /** Asking for the receipts rather than the summary. */
@@ -433,6 +478,46 @@ function buildAjoopFilterResponse(message, language, registry) {
   });
 }
 
+/** Domain-aware sibling of the technology filter, with the same response shape. */
+function buildAjoopDomainFilterResponse(message, language, registry) {
+  const locale = ajoopEvidenceLocale(language);
+  const tokens = tokenizeIntentText(message);
+  const found = findAjoopProjectsByDomain(tokens, locale, registry);
+  const term = found.terms.join(", ");
+
+  if (!found.matches.length) {
+    return ajoopResponse(
+      ajoopEvidenceText(
+        "The portfolio does not classify a project in that domain, so I will not infer one from an unrelated technology. Try AI, games, or the full project list.",
+        "Portfolyo o alanda bir proje sınıflandırmıyor; bu yüzden ilgisiz bir teknolojiden alan tahmini yapmıyorum. AI, oyunlar veya tüm proje listesini deneyebilirsin.",
+        locale,
+      ),
+      { mode: "filter", terms: found.terms, total: 0 },
+    );
+  }
+
+  const cards = found.matches
+    .map((id) => buildAjoopProjectCard(id, locale, registry))
+    .filter(Boolean);
+  const heading = term
+    ? ajoopEvidenceText(
+        "These are the projects whose canonical category or description matches {term}.",
+        "Kanonik kategori veya açıklaması {term} ile eşleşen projeler bunlar.",
+        locale,
+      ).replace("{term}", term)
+    : ajoopEvidenceText(
+        "These are the projects classified in that domain.",
+        "Bu alanda sınıflandırılan projeler bunlar.",
+        locale,
+      );
+  return ajoopResponse(heading, {
+    cards,
+    mode: "filter",
+    terms: found.terms,
+    total: found.total,
+  });
+}
+
 /**
  * The honest answer when an entity has no structured evidence record.
  *
@@ -450,6 +535,254 @@ function buildAjoopNoEvidenceResponse(language) {
     ),
     { mode: "prove", cards: [] },
   );
+}
+
+/* ---------- Ajoop 4.5 evidence relevance ---------- */
+
+/**
+ * What Kaan is working on now, from the registry's own `currentFocus` fields.
+ *
+ * This is the answer that used to come out wrong. "Kaan şu an ne üzerinde
+ * çalışıyor?" reached a build-log intent and got portfolio migration entries —
+ * true statements about the WEBSITE, presented as an answer about the person.
+ * Current work is a property of the projects, so it is read from the projects.
+ */
+function buildAjoopCurrentWorkResponse(language, registry) {
+  const locale = ajoopEvidenceLocale(language);
+  const source = getAjoopRegistry(registry);
+  const projects = (source && source.projects) || {};
+  const active = Object.keys(projects)
+    .filter((id) => projects[id] && projects[id].currentFocus)
+    .map((id) => ({ id, focus: ajoopLocalized(projects[id].currentFocus, locale) }))
+    .filter((entry) => entry.focus);
+
+  if (!active.length) return null;
+
+  const lines = active
+    .map((entry) => {
+      const project = getAjoopProject(entry.id, locale, registry);
+      return project ? `${project.name} — ${entry.focus}` : null;
+    })
+    .filter(Boolean);
+
+  const cards = active
+    .slice(0, AJOOP_MAX_EVIDENCE_CARDS)
+    .map((entry) => buildAjoopProjectCard(entry.id, locale, registry))
+    .filter(Boolean);
+
+  return ajoopResponse(
+    `${ajoopEvidenceText(
+      "Right now Kaan is heads-down on these:",
+      "Kaan şu anda şunlara odaklanmış durumda:",
+      locale,
+    )} ${lines.join(". ")}.`,
+    { cards, mode: "current", intent: "current_work" },
+  );
+}
+
+/**
+ * The build log — the portfolio's own changelog.
+ *
+ * Deliberately reachable ONLY from the CURRENT family. It answers "what
+ * changed on this site", which is a genuine question and a wrong answer to
+ * almost every other one.
+ */
+function buildAjoopBuildLogResponse(language, registry, limit) {
+  const locale = ajoopEvidenceLocale(language);
+  const entries =
+    typeof getAjoopBuildLog === "function"
+      ? getAjoopBuildLog(typeof limit === "number" ? limit : 3, locale, registry)
+      : [];
+  if (!entries.length) return null;
+  const lines = entries
+    .map((entry) => (entry.title ? `${entry.date} — ${entry.title}` : null))
+    .filter(Boolean);
+  if (!lines.length) return null;
+  return ajoopResponse(
+    `${ajoopEvidenceText(
+      "The most recent work on this portfolio:",
+      "Bu portfolyodaki en son çalışmalar:",
+      locale,
+    )} ${lines.join(". ")}.`,
+    { mode: "current", intent: "latest_build", entries },
+  );
+}
+
+/** The flagship records, in the registry's own curated order. */
+function buildAjoopBestProjectsResponse(language, registry) {
+  const locale = ajoopEvidenceLocale(language);
+  const cards = getAjoopCanonicalProjectIds(registry)
+    .slice(0, AJOOP_MAX_EVIDENCE_CARDS)
+    .map((id) => buildAjoopProjectCard(id, locale, registry))
+    .filter(Boolean);
+  if (!cards.length) return null;
+  return ajoopResponse(
+    ajoopEvidenceText(
+      "These are the projects Kaan would put in front of you first.",
+      "Kaan'ın önce göstereceği projeler bunlar.",
+      locale,
+    ),
+    { cards, mode: "discovery", intent: "best_projects" },
+  );
+}
+
+/** Where one project stands, from its canonical status and current focus. */
+function buildAjoopStatusResponse(entityId, language, registry) {
+  const locale = ajoopEvidenceLocale(language);
+  const project = getAjoopProject(entityId, locale, registry);
+  if (!project || !project.status) return null;
+  const source = getAjoopRegistry(registry);
+  const record = source && source.projects && source.projects[project.projectId];
+  const focus = record ? ajoopLocalized(record.currentFocus, locale) : "";
+  const text = focus
+    ? ajoopEvidenceText(
+        "{name} is at {status}, and the current push is {focus}.",
+        "{name} şu an {status} durumunda; üzerinde çalışılan konu {focus}.",
+        locale,
+      ).replace("{focus}", focus)
+    : ajoopEvidenceText("{name} is at {status}.", "{name} şu an {status} durumunda.", locale);
+  return ajoopResponse(
+    text.replace("{name}", project.name).replace("{status}", project.status),
+    { cards: [buildAjoopProjectCard(project.id, locale, registry)].filter(Boolean), mode: "status" },
+  );
+}
+
+/**
+ * Why a project exists and how it works, from its summary and proof.
+ *
+ * The registry stores no separate "reasoning" field, and inventing one would
+ * be generated opinion wearing the costume of portfolio data. What it does
+ * store is the purpose and the outcomes, which is the honest version of the
+ * answer — so this composes those and says nothing else.
+ */
+function buildAjoopReasoningResponse(entityId, language, registry) {
+  const locale = ajoopEvidenceLocale(language);
+  const project = getAjoopProject(entityId, locale, registry);
+  if (!project || !project.summary) return null;
+  const parts = [
+    ajoopEvidenceText("{name} exists to do this: {summary}", "{name} şunun için var: {summary}", locale)
+      .replace("{name}", project.name)
+      .replace("{summary}", project.summary),
+  ];
+  if (project.proof.length) {
+    parts.push(
+      ajoopEvidenceText(
+        "The way it earns that claim: {proof}.",
+        "Bu iddiayı şununla karşılıyor: {proof}.",
+        locale,
+      ).replace("{proof}", project.proof.slice(0, 3).join("; ")),
+    );
+  }
+  return ajoopResponse(parts.join(" "), {
+    cards: [buildAjoopProjectCard(project.id, locale, registry)].filter(Boolean),
+    mode: "reasoning",
+  });
+}
+
+/**
+ * The answer when the portfolio does not hold the fact that was asked for.
+ *
+ * A distinct response type, not a generic fallback: the visitor asked a clear,
+ * answerable-sounding question and deserves to be told that the DATA is
+ * missing rather than that the QUESTION was not understood.
+ */
+function buildAjoopInsufficiencyResponse(language, topic) {
+  const locale = ajoopEvidenceLocale(language);
+  const text = topic
+    ? ajoopEvidenceText(
+        "The portfolio data does not record {topic}, so I will not guess at it. Kaan can answer that directly.",
+        "Portfolyo verisi {topic} bilgisini tutmuyor, bu yüzden tahmin yürütmüyorum. Kaan bunu doğrudan yanıtlayabilir.",
+        locale,
+      ).replace("{topic}", topic)
+    : ajoopEvidenceText(
+        "That is not something the portfolio data records, so I will not improvise an answer. Kaan can tell you directly.",
+        "Bu, portfolyo verisinin tuttuğu bir bilgi değil; uydurmaktansa söylemeyi tercih ederim. Kaan doğrudan anlatabilir.",
+        locale,
+      );
+  return ajoopResponse(text, { mode: "insufficient", cards: [] });
+}
+
+/**
+ * The evidence response for one route, or null when the turn is plain text.
+ *
+ * THE RELEVANCE RULE, in one place. 4.2-4.4 dispatched on a "mode" derived
+ * from keywords in the message, which is why a question about Kaan could reach
+ * project cards and a question about the person could reach the build log.
+ * 4.5 dispatches on the route's FAMILY and INTENT, so what an answer may cite
+ * is decided by what kind of question it is — and a family that has no
+ * business citing something structurally cannot reach it.
+ */
+function selectAjoopEvidence(route, language, message, registry) {
+  if (!route || !route.intent) return null;
+  const locale = ajoopEvidenceLocale(language);
+  const policy = route.evidencePolicy || AJOOP_EVIDENCE.NONE;
+  if (policy === AJOOP_EVIDENCE.NONE) return null;
+
+  switch (route.family) {
+    /* CURRENT is the only family that may read the build log. */
+    case "current":
+      if (route.intent === "current_work") {
+        return (
+          buildAjoopCurrentWorkResponse(locale, registry) ||
+          buildAjoopBuildLogResponse(locale, registry, 3)
+        );
+      }
+      return buildAjoopBuildLogResponse(locale, registry, route.intent === "recent_updates" ? 5 : 3);
+
+    case "discovery":
+      if (route.intent === "projects_by_technology") {
+        return buildAjoopFilterResponse(message || "", locale, registry);
+      }
+      if (route.intent === "projects_by_domain") {
+        return buildAjoopDomainFilterResponse(message || "", locale, registry);
+      }
+      return buildAjoopBestProjectsResponse(locale, registry);
+
+    case "role": {
+      if (!route.entity) return null;
+      return buildAjoopProveResponse(route.entity, locale, registry);
+    }
+
+    case "project": {
+      if (route.intent === "compare_projects") {
+        const left = route.compareWith || route.previousEntity;
+        const right = route.entity;
+        if (!left || !right || left === right) return null;
+        return buildAjoopCompareResponse(left, right, locale, registry);
+      }
+      if (!route.entity) return null;
+      if (route.intent === "status") return buildAjoopStatusResponse(route.entity, locale, registry);
+      if (route.intent === "project_reasoning") {
+        return buildAjoopReasoningResponse(route.entity, locale, registry);
+      }
+      if (route.intent === "evidence") {
+        return (
+          buildAjoopProveResponse(route.entity, locale, registry) ||
+          buildAjoopInsufficiencyResponse(locale, null)
+        );
+      }
+      /* tech_stack and project_overview are answered as prose by the response
+       * planner, with the card carrying the structured detail underneath. */
+      const card = buildAjoopProjectCard(route.entity, locale, registry);
+      return card ? ajoopResponse("", { cards: [card], mode: "project" }) : null;
+    }
+
+    /* PERSON gets supporting evidence only where a canonical record genuinely
+     * backs the claim — and never the build log, which is about the site. */
+    case "person": {
+      if (route.intent === "skills" || route.intent === "current_direction") {
+        const cards = ["applied-ai", "solution-engineering"]
+          .map((id) => buildAjoopRoleCard(id, locale, registry))
+          .filter(Boolean)
+          .slice(0, 2);
+        return cards.length ? ajoopResponse("", { cards, mode: "profile" }) : null;
+      }
+      return null;
+    }
+
+    default:
+      return null;
+  }
 }
 
 /* ---------- 4.3 grounding hand-off ---------- */
