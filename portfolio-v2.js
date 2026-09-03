@@ -148,7 +148,10 @@
 
     const copy = {
       en: {
-        greeting: "Hey — Ajoop 3.0 here. I use the portfolio evidence registry to explain Kaan's current projects, role fit and proof. Ask about SINAMA, Merge Rush, Applied AI, Solution Engineering or the latest build.",
+        /* Ajoop 4.4 copy pass: the greeting used to open with a version
+         * number and the words "evidence registry", which tells a recruiter
+         * about the implementation instead of about Kaan. */
+        greeting: "Hi — I am Ajoop, the copilot for this portfolio. I answer from Kaan's own project records: what he built, the stack behind it and the evidence for it. Ask about SINAMA, Merge Rush, how he maps to a role, or anything else here.",
         quicks: [
           { id: "sinama", label: "SINAMA evidence" },
           { id: "mergeRush", label: "Merge Rush evidence" },
@@ -159,7 +162,7 @@
         ]
       },
       tr: {
-        greeting: "Selam — Ajoop 3.0 burada. Kaan'ın güncel projelerini, role uygunluğunu ve kanıtlarını portfolio evidence registry üzerinden anlatıyorum. SINAMA, Merge Rush, Applied AI, Solution Engineering veya son build'i sorabilirsin.",
+        greeting: "Selam — ben Ajoop, bu portfolyonun asistanıyım. Cevaplarımı Kaan'ın kendi proje kayıtlarından veriyorum: ne yaptı, hangi teknolojiyle, kanıtı ne. SINAMA, Merge Rush, role uygunluk ya da aklına gelen başka bir şeyi sorabilirsin.",
         quicks: [
           { id: "sinama", label: "SINAMA kanıtı" },
           { id: "mergeRush", label: "Merge Rush kanıtı" },

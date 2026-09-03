@@ -86,6 +86,9 @@ const AJOOP_CONTINUATION_MAX_TOKENS = 4;
 function detectAjoopContinuation(message, registry) {
   const tokens = tokenizeIntentText(message);
   if (!tokens.length || tokens.length > AJOOP_CONTINUATION_MAX_TOKENS) return null;
+  /* A question about Ajoop is a new subject, not a request to elaborate on the
+   * old one; it outranks every continuation cue. */
+  if (typeof detectAjoopMetaIntent === "function" && detectAjoopMetaIntent(message)) return null;
   if (extractAjoopEntities(tokens, registry).length) return null;
   if (
     typeof scoreAjoopIntents === "function" &&
@@ -146,31 +149,26 @@ function ajoopAction(id, label, action, extra) {
   return Object.assign({ id, label, action }, extra || {});
 }
 
-/** Facet actions that canonical data can actually back, in a stable order. */
+/**
+ * Project follow-ups, best first.
+ *
+ * Ajoop 4.4 cut this from "every action canonical data can back" to a ranked
+ * list the caller trims to two. The old row printed facets, a comparison, up
+ * to three link buttons and a suggested project at once: eight or nine
+ * controls under every answer, which reads as a menu rather than as a next
+ * step. Ranking here, capping there, keeps the decision in one place.
+ *
+ * The order is what a recruiter reaches for next: the receipts, then how it
+ * was built, then the page that proves it. Every entry is still gated on the
+ * canonical data behind it existing, so no button leads anywhere empty.
+ */
 function ajoopProjectFacetActions(project, route, language) {
   const actions = [];
   const facet = route.facet || "overview";
   const linkOf = (kind) => project.links.find((link) => link.kind === kind);
 
-  if (facet !== "overview") {
-    actions.push(
-      ajoopAction(`${project.id}:overview`, ajoopPlanText("Overview", "Genel bakış", language), "facet", {
-        entity: project.id,
-        facet: "overview",
-      }),
-    );
-  }
-  if (project.stack.length && facet !== "stack") {
-    actions.push(
-      ajoopAction(`${project.id}:stack`, ajoopPlanText("Tech stack", "Teknolojiler", language), "facet", {
-        entity: project.id,
-        facet: "stack",
-      }),
-    );
-  }
-  /* Ajoop 4.2: this is the evidence-card entry point rather than a text facet.
-   * It is offered only when the registry has proof points or a citable source
-   * behind it, so the button never leads to an empty card. */
+  /* Ajoop 4.2: the evidence-card entry point rather than a text facet. Offered
+   * only when the registry has proof points or a citable source behind it. */
   const sources =
     typeof getAjoopProjectSources === "function"
       ? getAjoopProjectSources(project.id, language)
@@ -183,26 +181,35 @@ function ajoopProjectFacetActions(project, route, language) {
       }),
     );
   }
-  /* Link buttons navigate straight there; offering a link Ajoop does not have
-   * would be the one place this layer could imply a fact that is not in the
-   * registry, so each is gated on the canonical URL existing. */
-  const github = linkOf("github");
-  if (github) {
-    actions.push(ajoopAction(`${project.id}:github`, "GitHub", "nav", { url: github.url }));
-  }
-  const live = linkOf("live");
-  if (live) {
+  if (project.stack.length && facet !== "stack") {
     actions.push(
-      ajoopAction(`${project.id}:live`, ajoopPlanText("Live product", "Canlı ürün", language), "nav", {
-        url: live.url,
+      ajoopAction(`${project.id}:stack`, ajoopPlanText("Tech stack", "Teknolojiler", language), "facet", {
+        entity: project.id,
+        facet: "stack",
       }),
     );
   }
-  const caseStudy = linkOf("caseStudy");
-  if (caseStudy) {
+  if (facet !== "overview") {
     actions.push(
-      ajoopAction(`${project.id}:case`, ajoopPlanText("Case study", "Vaka çalışması", language), "nav", {
-        url: caseStudy.url,
+      ajoopAction(`${project.id}:overview`, ajoopPlanText("Overview", "Genel bakış", language), "facet", {
+        entity: project.id,
+        facet: "overview",
+      }),
+    );
+  }
+  /* One link, not three. The evidence card already carries the full set, so a
+   * second copy of it in the action row is pure duplication; this is the
+   * single strongest destination for the project. */
+  const primaryLink = linkOf("caseStudy") || linkOf("live") || linkOf("github");
+  if (primaryLink) {
+    const linkLabels = {
+      caseStudy: ajoopPlanText("Case study", "Vaka çalışması", language),
+      live: ajoopPlanText("Live product", "Canlı ürün", language),
+      github: "GitHub",
+    };
+    actions.push(
+      ajoopAction(`${project.id}:${primaryLink.kind}`, linkLabels[primaryLink.kind], "nav", {
+        url: primaryLink.url,
       }),
     );
   }
@@ -222,39 +229,27 @@ function ajoopCompareAction(route, language, registry) {
   if (!project) return null;
   return ajoopAction(
     `compare:${other}`,
-    ajoopPlanText("Compare with {name}", "{name} ile karşılaştır", language).replace("{name}", project.name),
+    ajoopPlanText("Compare with {name}", "{name} ile karşılaştır", language).replace(
+      "{name}",
+      ajoopShortProjectName(project.name),
+    ),
     "compare",
     { entity: other, facet: "overview", compareWith: route.entity },
   );
 }
 
 /**
- * Comparison candidates when only one subject is known.
+ * A project name short enough to be a button.
  *
- * 4.1 could only offer a comparison once the visitor had already mentioned two
- * projects. Rather than pick an arbitrary partner, this offers the flagship
- * records as explicit choices — the visitor decides what the comparison is
- * against, and the registry decides what is on the menu.
+ * Canonical names carry their positioning — "SINAMA — AI Agent Reliability
+ * Lab", "Merge Rush: Tiny Factory" — which belongs in a card title and wraps
+ * to three lines in a chip. The identifying head is what a person would say
+ * out loud, and it is taken from the same canonical string rather than being
+ * a second name maintained by hand.
  */
-function ajoopCompareCandidateActions(route, language, registry, limit) {
-  if (route.previousEntity && route.previousEntity !== route.entity) return [];
-  const source = getAjoopRegistry(registry);
-  const projects = (source && source.projects) || {};
-  return Object.keys(projects)
-    .filter((id) => id !== route.entity)
-    .slice(0, typeof limit === "number" ? limit : 1)
-    .map((id) => {
-      const project = getAjoopProject(id, language, registry);
-      return project
-        ? ajoopAction(
-            `compare:${id}`,
-            ajoopPlanText("Compare with {name}", "{name} ile karşılaştır", language).replace("{name}", project.name),
-            "compare",
-            { entity: id, facet: "overview", compareWith: route.entity },
-          )
-        : null;
-    })
-    .filter(Boolean);
+function ajoopShortProjectName(name) {
+  const head = String(name || "").split(/[—–:|(]/)[0].trim();
+  return head || String(name || "");
 }
 
 /** Two flagship projects to offer as a subject switch, from canonical data. */
@@ -267,29 +262,23 @@ function ajoopSuggestedProjects(language, registry, exclude, limit) {
     .map((id) => {
       const project = getAjoopProject(id, language, registry);
       return project
-        ? ajoopAction(`entity:${id}`, project.name, "entity", { entity: id, facet: "overview" })
+        ? ajoopAction(`entity:${id}`, ajoopShortProjectName(project.name), "entity", {
+            entity: id,
+            facet: "overview",
+          })
         : null;
     })
     .filter(Boolean);
 }
 
+/**
+ * Role follow-ups, best first. Trimmed by the caller the same way the project
+ * list is: the strongest two survive, the rest stay reachable by typing.
+ */
 function ajoopRoleActions(profile, route, language, registry) {
   const source = getAjoopRegistry(registry);
   const facet = (route && route.facet) || "overview";
   const actions = [];
-  if (facet !== "overview") {
-    actions.push(
-      ajoopAction(`role:${profile.id}:overview`, ajoopPlanText("Role fit", "Role uygunluk", language), "facet", {
-        entity: profile.id,
-        facet: "overview",
-      }),
-    );
-  }
-  actions.push(
-    ajoopAction("role:why", ajoopPlanText("Why is this a fit?", "Neden uygun?", language), "intent", {
-      intent: "roles",
-    }),
-  );
   /* Ajoop 4.2: "Prove it" renders the profile's own canonical evidence
    * projects as cards. The order is the registry's curated `evidence` list, not
    * a computed ranking, so no fit score is implied. */
@@ -298,6 +287,19 @@ function ajoopRoleActions(profile, route, language, registry) {
       ajoopAction(`role:${profile.id}:prove`, ajoopPlanText("Prove it", "Kanıtla", language), "evidence", {
         entity: profile.id,
         facet: "proof",
+      }),
+    );
+  }
+  actions.push(
+    ajoopAction("role:recruiter", ajoopPlanText("Recruiter Mode", "İK Modu", language), "nav", {
+      url: `index.html?role=${encodeURIComponent(profile.id)}`,
+    }),
+  );
+  if (facet !== "overview") {
+    actions.push(
+      ajoopAction(`role:${profile.id}:overview`, ajoopPlanText("Role fit", "Role uygunluk", language), "facet", {
+        entity: profile.id,
+        facet: "overview",
       }),
     );
   }
@@ -315,9 +317,28 @@ function ajoopRoleActions(profile, route, language, registry) {
   if (resume) {
     actions.push(ajoopAction("role:cv", ajoopPlanText("Resume", "CV", language), "nav", { url: resume }));
   }
+  return actions;
+}
+
+/**
+ * Follow-ups after a question about Ajoop itself.
+ *
+ * A meta answer explains the assistant; the useful next step is to try it, so
+ * these point back at the portfolio rather than deeper into the machinery.
+ */
+function ajoopMetaActions(route, language, registry, quickLabels) {
+  const actions = [];
+  if (route.meta !== "capabilities") {
+    actions.push(
+      ajoopAction("meta:capabilities", ajoopPlanText("What can you do?", "Ne yapabilirsin?", language), "meta", {
+        meta: "capabilities",
+      }),
+    );
+  }
+  actions.push(...ajoopSuggestedProjects(language, registry, null, 1));
   actions.push(
-    ajoopAction("role:recruiter", ajoopPlanText("Recruiter Mode", "İK Modu", language), "nav", {
-      url: `index.html?role=${encodeURIComponent(profile.id)}`,
+    ajoopAction("intent:roles", ajoopIntentLabel("roles", language, quickLabels), "intent", {
+      intent: "roles",
     }),
   );
   return actions;
@@ -402,6 +423,9 @@ function planAjoopFallback(route, language, registry, quickLabels) {
    * ambiguous. Without this, every follow-up would land in "topics" mode,
    * because a synthetic route carries no scored candidates. */
   if (route.origin === "action") return null;
+  /* A meta route scores no intents by design — it is resolved before the
+   * scorer runs — so "no candidates" says nothing about it being ambiguous. */
+  if (route.meta) return null;
 
   const nothingMatched = !route.candidates || !route.candidates.length;
 
@@ -461,32 +485,50 @@ function planAjoopFallback(route, language, registry, quickLabels) {
 
 /* ---------- the plan ---------- */
 
-/** Depth controls available from the current level. */
+/**
+ * The one depth control that makes sense from here.
+ *
+ * 4.1 offered both directions on every answer, so "More detail" and "Short
+ * answer" sat under every reply whether or not either was wanted. Only one of
+ * them is ever the obvious next move: you go deeper until you are deep, and
+ * from deep the only way is back. Offering that one keeps the control without
+ * the wall.
+ */
 function planAjoopDepthOptions(depth, language) {
   const current = normalizeAjoopDepth(depth);
-  const options = [];
-  if (current !== "deep") {
-    options.push(
-      ajoopAction("depth:more", ajoopPlanText("More detail", "Daha detaylı", language), "depth", {
-        depth: nextAjoopDepth(current, "more"),
-      }),
-    );
-  }
-  if (current !== "quick") {
-    options.push(
+  if (current === "deep") {
+    return [
       ajoopAction("depth:less", ajoopPlanText("Short answer", "Kısa anlat", language), "depth", {
         depth: nextAjoopDepth(current, "less"),
       }),
-    );
+    ];
   }
-  return options;
+  return [
+    ajoopAction("depth:more", ajoopPlanText("More detail", "Daha detaylı", language), "depth", {
+      depth: nextAjoopDepth(current, "more"),
+    }),
+  ];
 }
+
+/**
+ * How many action buttons an answer may offer.
+ *
+ * Three, and the third is the depth control. The cap is not cosmetic: the row
+ * sits between the transcript and the input on a phone, so every extra button
+ * is a line of answer the visitor cannot see. Two contextual actions is enough
+ * to suggest a direction; more is a menu, and a menu is what the visitor came
+ * here to avoid.
+ */
+const AJOOP_MAX_FOLLOWUPS = 3;
+const AJOOP_MAX_CONTEXT_ACTIONS = 2;
 
 /**
  * The full conversational offer for one answered turn.
  *
- * Returns `{ followups, fallback, depthOptions, depth }`. `followups` is
- * already deduplicated and capped, so the renderer can print it as-is.
+ * Returns `{ followups, secondary, fallback, depthOptions, depth }`.
+ * `followups` is deduplicated and capped, so the renderer prints it as-is;
+ * `secondary` holds the escape hatch, which is rendered apart from the
+ * suggestions rather than competing with them for attention.
  */
 function planAjoopConversation(route, options) {
   const settings = options || {};
@@ -499,59 +541,53 @@ function planAjoopConversation(route, options) {
 
   const fallback = route ? planAjoopFallback(route, language, registry, quickLabels) : null;
 
-  let followups = [];
+  let contextual = [];
   if (fallback) {
-    followups = fallback.actions.slice();
+    contextual = fallback.actions.slice();
+  } else if (route && route.meta) {
+    contextual = ajoopMetaActions(route, language, registry, quickLabels);
   } else if (route) {
     const entity = route.entity ? getAjoopEntity(route.entity, registry) : null;
     const profile =
       entity && entity.type === "role" ? getAjoopRoleProfile(route.entity, language, registry) : null;
     const project = profile ? null : getAjoopProject(route.entity, language, registry);
 
-    if (profile) followups = ajoopRoleActions(profile, route, language, registry);
+    if (profile) contextual = ajoopRoleActions(profile, route, language, registry);
     else if (project) {
-      /* Conversational actions outrank navigation.
-       *
-       * The row is capped, and a data-rich project (SINAMA) generates more
-       * actions than fit. Facets and Compare keep the visitor inside Ajoop,
-       * while the link buttons leave it — and every one of those links is also
-       * on the evidence card — so links yield the tail of the row rather than
-       * crowding out the comparison. */
-      const projectActions = ajoopProjectFacetActions(project, route, language);
-      const facets = projectActions.filter((action) => action.action !== "nav");
-      const links = projectActions.filter((action) => action.action === "nav");
-      const compare =
-        ajoopCompareAction(route, language, registry) ||
-        ajoopCompareCandidateActions(route, language, registry, 1)[0] ||
-        null;
-      followups = [
-        ...facets,
+      /* A comparison is only offered when a second subject is genuinely in
+       * play. 4.1 also proposed an arbitrary flagship as a partner, which
+       * turned a contextual action into a permanent one; a visitor who wants
+       * to compare can name the two projects. */
+      const compare = ajoopCompareAction(route, language, registry);
+      contextual = [
+        ...ajoopProjectFacetActions(project, route, language),
         ...(compare ? [compare] : []),
-        ...links,
-        ...ajoopSuggestedProjects(language, registry, project.id, 1),
       ];
     } else {
-      followups = ajoopIntentActions(route, language, registry, quickLabels);
+      contextual = ajoopIntentActions(route, language, registry, quickLabels);
     }
   }
 
-  /* Depth first (it applies to the answer just given), then subject actions,
-   * then the escape hatch. Cap the middle so the row never crowds the input. */
-  const depthOptions = fallback ? [] : planAjoopDepthOptions(depth, language);
+  /* Two contextual actions, then the depth control. A clarification prompt is
+   * a question about what the visitor meant, so it gets its own choices and no
+   * depth control — there is no answer yet to make longer or shorter. */
+  const depthOptions = fallback || (route && route.meta) ? [] : planAjoopDepthOptions(depth, language);
   const seen = new Set();
-  const unique = [];
-  [...depthOptions, ...followups].forEach((action) => {
-    if (!action || seen.has(action.id)) return;
+  const followups = [];
+  [
+    ...contextual.slice(0, fallback ? AJOOP_MAX_FOLLOWUPS : AJOOP_MAX_CONTEXT_ACTIONS),
+    ...depthOptions,
+  ].forEach((action) => {
+    if (!action || seen.has(action.id) || followups.length >= AJOOP_MAX_FOLLOWUPS) return;
     seen.add(action.id);
-    unique.push(action);
+    followups.push(action);
   });
-  const capped = unique.slice(0, 7);
-  capped.push(
-    ajoopAction("reset", ajoopPlanText("Start over", "Baştan başla", language), "reset"),
-  );
 
   return {
-    followups: capped,
+    followups,
+    /* Rendered apart from the suggestions: always reachable, never one of the
+     * three things Ajoop is actually proposing. */
+    secondary: [ajoopAction("reset", ajoopPlanText("Start over", "Baştan başla", language), "reset")],
     fallback,
     depthOptions,
     depth,

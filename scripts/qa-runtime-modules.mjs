@@ -143,6 +143,11 @@ const ORDER = [
   ["ajoop-ai-config.js", "js/ajoop/ai-bridge.js"],
   ["js/ajoop/evidence.js", "js/ajoop/ai-bridge.js"],
   ["js/ajoop/ai-bridge.js", "js/ajoop/assistant.js"],
+  /* Ajoop 4.4: language detection and the global meta intents reuse the
+   * matcher's tokenizer and are consulted by the router before it scores. */
+  ["js/ajoop/matcher.js", "js/ajoop/language.js"],
+  ["js/ajoop/language.js", "js/ajoop/router.js"],
+  ["js/ajoop/language.js", "js/ajoop/assistant.js"],
   ["js/features/ultimate.js", "js/features/recruiter.js"],
   ["js/features/recruiter.js", "js/features/command-palette.js"],
   ["js/features/command-palette.js", "js/features/ajoop-nav.js"],

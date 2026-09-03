@@ -179,11 +179,23 @@ const AJOOP_FILTER_STOPWORDS = new Set([
   "göster", "goster", "listele", "hangi", "kullandığı", "kullandigi", "kullanılan",
   "kullanilan", "kullanan", "proje", "projeler", "projelerini", "projeleri",
   "projede", "olan", "var", "bana", "ile", "ve", "and", "in", "on", "of", "a", "an",
+  /* Ajoop 4.4: the same scaffolding in the other three conversation languages.
+   * Without these, "zeig mir seine Projekte" filtered on the words "zeig",
+   * "mir" and "seine" and honestly reported that nothing matched them —
+   * technically true, and a wrong answer to the question asked. */
+  "zeig", "zeige", "zeigen", "mir", "seine", "seinen", "seiner", "ihre", "welche",
+  "welches", "von", "alle", "bitte", "benutzt", "verwendet", "nutzt", "projekt",
+  "projekte", "und", "mit",
+  "muestrame", "muestra", "dime", "sus", "proyecto", "proyectos", "cuales",
+  "usando", "usa", "todos", "todas", "los", "las", "por", "favor", "con", "de",
+  "montre", "moi", "ses", "projet", "projets", "quels", "quelles", "avec",
+  "utilise", "utilisant", "tous", "toutes", "les", "sur",
 ]);
 
 /** A message only filters projects when it actually asks for projects. */
 const AJOOP_FILTER_TRIGGERS = [
   "projects", "project", "proje", "projeler", "projelerini", "projeleri", "portfolio",
+  "projekt", "proyecto", "projet",
 ];
 
 /**
@@ -333,7 +345,11 @@ function buildAjoopProveResponse(entityId, language, registry) {
     if (!cards.length) return null;
     const profile = getAjoopRoleProfile(entityId, locale, registry);
     return ajoopResponse(
-      `${ajoopEvidenceText("Portfolio evidence for", "Şu odak için portfolyo kanıtı", locale)} ${profile.focusTitle || profile.label}:`,
+      ajoopEvidenceText(
+        "This is the work behind {name}.",
+        "{name} odağının arkasındaki işler bunlar.",
+        locale,
+      ).replace("{name}", profile.focusTitle || profile.label),
       { cards, mode: "prove", entityId },
     );
   }
@@ -344,7 +360,10 @@ function buildAjoopProveResponse(entityId, language, registry) {
    * sentence; presenting that as "evidence" would oversell it. */
   if (!card.proof.length && !card.links.length) return null;
   return ajoopResponse(
-    `${card.title} — ${ajoopEvidenceText("here is the portfolio evidence.", "portfolyo kanıtı burada.", locale)}`,
+    ajoopEvidenceText("Here is what backs {name} up.", "{name} için elimdeki kanıt şu.", locale).replace(
+      "{name}",
+      card.title,
+    ),
     { cards: [card], mode: "prove", entityId },
   );
 }
@@ -355,7 +374,9 @@ function buildAjoopCompareResponse(entityA, entityB, language, registry) {
   const comparison = buildAjoopComparison(entityA, entityB, locale, registry);
   if (!comparison) return null;
   return ajoopResponse(
-    `${comparison.left.title} ${ajoopEvidenceText("compared with", "ile karşılaştırma:", locale)} ${comparison.right.title}`,
+    ajoopEvidenceText("{left} and {right}, side by side.", "{left} ve {right} yan yana.", locale)
+      .replace("{left}", comparison.left.title)
+      .replace("{right}", comparison.right.title),
     { comparison, mode: "compare", entityId: entityA },
   );
 }
@@ -370,8 +391,8 @@ function buildAjoopFilterResponse(message, language, registry) {
   if (!found.matches.length) {
     return ajoopResponse(
       ajoopEvidenceText(
-        "No matching projects are listed in the portfolio data.",
-        "Portfolyo verisinde eşleşen proje listelenmiyor.",
+        "Nothing in Kaan's portfolio data matches that. Ask me which technologies he does work in, or open the full project list.",
+        "Kaan'ın portfolyo verisinde bununla eşleşen bir şey yok. Hangi teknolojilerle çalıştığını sorabilir ya da tüm proje listesini açabilirsin.",
         locale,
       ),
       { mode: "filter", terms: found.terms, total: 0 },
@@ -381,21 +402,30 @@ function buildAjoopFilterResponse(message, language, registry) {
   const cards = found.matches
     .map((id) => buildAjoopProjectCard(id, locale, registry))
     .filter(Boolean);
+  /* Ajoop 4.4 copy pass. This used to read "Projects using X:" — accurate, and
+   * unmistakably a database query talking. A full sentence costs nothing and
+   * makes the deterministic path sound like the same assistant the model-backed
+   * path does. */
   const heading = term
-    ? ajoopEvidenceText("Projects using {term}", "{term} kullanılan projeler", locale).replace(
-        "{term}",
-        term,
-      )
-    : ajoopEvidenceText("Matching projects", "Eşleşen projeler", locale);
+    ? ajoopEvidenceText(
+        "Here is where {term} shows up in Kaan's work.",
+        "{term} Kaan'ın işlerinde şu projelerde geçiyor.",
+        locale,
+      ).replace("{term}", term)
+    : ajoopEvidenceText(
+        "Here are the projects that match.",
+        "Eşleşen projeler bunlar.",
+        locale,
+      );
   /* Neutral count rather than a pluralized "N more", which would need a plural
    * rule per locale to stay grammatical. */
   const more =
     found.total > cards.length
-      ? ` ${ajoopEvidenceText("Showing {shown} of {total}.", "{total} projeden {shown} tanesi gösteriliyor.", locale)
+      ? ` ${ajoopEvidenceText("Showing {shown} of {total}.", "{total} eşleşmeden {shown} tanesi gösteriliyor.", locale)
           .replace("{shown}", String(cards.length))
           .replace("{total}", String(found.total))}`
       : "";
-  return ajoopResponse(`${heading}:${more}`, {
+  return ajoopResponse(`${heading}${more}`, {
     cards,
     mode: "filter",
     terms: found.terms,
@@ -414,8 +444,8 @@ function buildAjoopNoEvidenceResponse(language) {
   const locale = ajoopEvidenceLocale(language);
   return ajoopResponse(
     ajoopEvidenceText(
-      "A structured evidence card is not available for this item yet, so I will not improvise one.",
-      "Bu öğe için yapılandırılmış kanıt kartı henüz yok, bu yüzden uydurmuyorum.",
+      "I do not have a structured evidence record for that one yet, and I would rather say so than improvise. Kaan can answer it directly.",
+      "Bunun için yapılandırılmış bir kanıt kaydım henüz yok; uydurmaktansa bunu söylemeyi tercih ederim. Kaan doğrudan yanıtlayabilir.",
       locale,
     ),
     { mode: "prove", cards: [] },

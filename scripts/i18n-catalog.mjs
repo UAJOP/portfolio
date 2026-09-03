@@ -177,7 +177,24 @@ export function loadLegacyDictionaries() {
  * `namespace` is the stable pack key; `declaration` locates the source literal.
  */
 export const DYNAMIC_SURFACES = [
-  { namespace: "ajoop", file: "js/ajoop/assistant.js", declaration: "const portfolioChatbotContent =" },
+  {
+    namespace: "ajoop",
+    file: "js/ajoop/assistant.js",
+    declaration: "const portfolioChatbotContent =",
+    /* Ajoop introduces these surfaces after the base literal. Evaluate only its
+     * DOM-free prefix and project the added copy into the canonical snapshot so
+     * every shipped conversation language has the same obligations. */
+    evaluateThrough: "let portfolioChatbotState =",
+    expression: "portfolioChatbotContent",
+    evaluatePaths: [
+      "greeting",
+      "answers.greeting",
+      "answers.experience",
+      "answers.roles",
+      "answers.education",
+      "answers.weather",
+    ],
+  },
   { namespace: "recruiter", file: "js/features/recruiter.js", declaration: "const recruiterItems =" },
   { namespace: "recruiterV2", file: "portfolio-v2.js", declaration: "const copy =" },
   { namespace: "ultimate", file: "js/features/ultimate.js", declaration: "const ultimateContent =" },
@@ -249,6 +266,23 @@ export function readObjectLiteral(file, declaration, bindings = neutralBindings(
 export function loadDynamicSurface(namespace) {
   const surface = DYNAMIC_SURFACES.find((item) => item.namespace === namespace);
   if (!surface) throw new Error(`unknown dynamic surface ${namespace}`);
+  if (surface.evaluateThrough) {
+    const source = read(surface.file);
+    const end = source.indexOf(surface.evaluateThrough);
+    if (end < 0) throw new Error(`${surface.file} no longer contains ${surface.evaluateThrough}`);
+    const evaluated = vm.runInNewContext(
+      `${source.slice(0, end)}\n${surface.expression}`,
+      { ...neutralBindings() },
+      { filename: `${surface.file}:${surface.expression}` },
+    );
+    const literal = readObjectLiteral(surface.file, surface.declaration);
+    for (const branch of ["en", "tr"]) {
+      for (const key of surface.evaluatePaths || []) {
+        writePath(literal[branch], key, readPath(evaluated[branch], key));
+      }
+    }
+    return literal;
+  }
   return readObjectLiteral(surface.file, surface.declaration);
 }
 

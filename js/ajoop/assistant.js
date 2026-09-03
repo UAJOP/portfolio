@@ -244,6 +244,11 @@ const chatbotKeywordMap = [
       "github",
       "hospital",
       "hastane",
+      /* Ajoop 4.4: the word "projects" in the other conversation languages.
+       * "projet"/"projets" already resolve through the "proje" prefix; these
+       * two do not. */
+      "projekt",
+      "proyecto",
     ],
   },
   {
@@ -252,7 +257,14 @@ const chatbotKeywordMap = [
       "stack",
       "tech",
       "technology",
+      "technologies",
       "teknoloji",
+      "teknolojiler",
+      "technologie",
+      "technologien",
+      "tecnología",
+      "tecnologias",
+      "tecnologías",
       "python",
       "c#",
       "javascript",
@@ -394,25 +406,31 @@ function enhanceAjoopDialogDepth() {
     "Hey, burada portfolyo asistanı var. AI workflow, otomasyon, web projeleri, oyun projeleri, CV, sertifikalar veya role uygunluk sorabilirsin.",
   ];
 
+  /* The base quick-action list. portfolio-v2.js replaces it at boot with the
+   * evidence-registry line-up; this is what Ajoop offers if that layer is not
+   * present. Labels are read by id (see ajoopQuickActions), so the order here
+   * is a presentation choice rather than a contract with anything. */
   portfolioChatbotContent.en.quicks = [
     { id: "about", label: "Who is Kaan?" },
     { id: "ai", label: "AI experience" },
-    { id: "experience", label: "Work history" },
     { id: "projects", label: "Best projects" },
-    { id: "roles", label: "Role fit" },
     { id: "joyday", label: "Joyday" },
-    { id: "weather", label: "Weather?" },
+    { id: "stack", label: "Tech stack" },
     { id: "cv", label: "CV & contact" },
+    { id: "experience", label: "Work history" },
+    { id: "roles", label: "Role fit" },
+    { id: "weather", label: "Weather?" },
   ];
   portfolioChatbotContent.tr.quicks = [
     { id: "about", label: "Kaan kim?" },
     { id: "ai", label: "AI deneyimi" },
-    { id: "experience", label: "İş geçmişi" },
     { id: "projects", label: "En iyi projeler" },
-    { id: "roles", label: "Role uygunluk" },
     { id: "joyday", label: "Joyday" },
-    { id: "weather", label: "Hava?" },
+    { id: "stack", label: "Tech stack" },
     { id: "cv", label: "CV & iletişim" },
+    { id: "experience", label: "İş geçmişi" },
+    { id: "roles", label: "Role uygunluk" },
+    { id: "weather", label: "Hava?" },
   ];
 
   Object.assign(portfolioChatbotContent.en.answers, {
@@ -643,6 +661,12 @@ function enhanceAjoopDialogDepth() {
     "hello",
     "hi",
     "hey",
+    "hallo",
+    "guten tag",
+    "hola",
+    "buenos dias",
+    "bonjour",
+    "salut",
   ]);
   upsertKeywords("weather", [
     "hava",
@@ -654,6 +678,15 @@ function enhanceAjoopDialogDepth() {
     "soğuk",
     "istanbul hava",
     "izmir hava",
+    "wetter",
+    "regen",
+    "temperatur",
+    "tiempo",
+    "clima",
+    "lluvia",
+    "meteo",
+    "météo",
+    "pluie",
   ]);
   upsertKeywords("experience", [
     "deneyim",
@@ -666,6 +699,14 @@ function enhanceAjoopDialogDepth() {
     "ocean",
     "staj",
     "intern",
+    "erfahrung",
+    "berufserfahrung",
+    "berufsweg",
+    "experiencia",
+    "trayectoria laboral",
+    "expérience",
+    "experience professionnelle",
+    "parcours professionnel",
   ]);
   upsertKeywords("roles", [
     "role",
@@ -679,6 +720,14 @@ function enhanceAjoopDialogDepth() {
     "hangi rol",
     "solution",
     "developer",
+    "rolle",
+    "eignung",
+    "stelle",
+    "puesto",
+    "encaje",
+    "poste",
+    "adéquation",
+    "adequation",
   ]);
   upsertKeywords("education", [
     "education",
@@ -687,6 +736,19 @@ function enhanceAjoopDialogDepth() {
     "üniversite",
     "university",
     "mezun",
+    "ausbildung",
+    "studium",
+    "universität",
+    "universitat",
+    "educación",
+    "educacion",
+    "estudios",
+    "universidad",
+    "formation",
+    "études",
+    "etudes",
+    "université",
+    "universite",
   ]);
 }
 
@@ -844,7 +906,13 @@ enhanceAjoopDialogDepth();
 
 let portfolioChatbotState = {
   initialized: false,
+  /* The SITE locale. Owns the panel chrome: title, placeholder, launcher. */
   language: "en",
+  /* Ajoop 4.4: the CONVERSATION language. Owns everything Ajoop says — answers,
+   * evidence cards, action labels. It starts as the site locale and follows the
+   * visitor from there, so a German question on the English site gets a German
+   * answer inside an English page. The site locale is never touched. */
+  replyLanguage: "en",
   open: false,
   /* Ajoop 4.0: the last structured route, kept so later features (evidence
    * cards, comparison, prove-it) can read what the brain decided without
@@ -852,26 +920,131 @@ let portfolioChatbotState = {
   lastRoute: null,
 };
 
+/** The language to answer in. */
+function ajoopReplyLanguage() {
+  return portfolioChatbotState.replyLanguage || portfolioChatbotState.language;
+}
+
 function getPortfolioChatbotContent(language = getCurrentLocale()) {
   return getLocalizedCollection(portfolioChatbotContent, language, "ajoop");
 }
 
-function createChatbotLinks(links = []) {
-  if (!links.length) return "";
-  return `<div class="chatbot-message-links">${links.map((link) => `<a href="${escapeProjectHtml(siteUrl(link.url))}" ${link.url.startsWith("http") ? 'target="_blank" rel="noopener"' : ""}>${escapeProjectHtml(link.label)}</a>`).join("")}</div>`;
+/* ---------- Ajoop 4.4 unified message rendering ---------- */
+
+/**
+ * How far from the bottom still counts as "reading the newest message".
+ *
+ * Below this the transcript follows new content; above it the visitor has
+ * scrolled back on purpose and is left where they are.
+ */
+const AJOOP_NEAR_BOTTOM_PX = 72;
+
+function ajoopMessageList() {
+  return document.querySelector("[data-chatbot-messages]");
 }
 
-function addChatbotMessage(type, text, links = []) {
-  const messageList = document.querySelector("[data-chatbot-messages]");
+function isAjoopNearBottom(list) {
+  if (!list) return true;
+  return list.scrollHeight - list.scrollTop - list.clientHeight <= AJOOP_NEAR_BOTTOM_PX;
+}
+
+function scrollAjoopToBottom(list) {
+  if (list) list.scrollTop = list.scrollHeight;
+}
+
+/** Provenance kinds. The label is the meaning; nothing is carried by colour. */
+const AJOOP_PROVENANCE_EVIDENCE = "evidence";
+const AJOOP_PROVENANCE_AI = "ai";
+
+function ajoopProvenanceLabel(kind, language) {
+  if (kind === AJOOP_PROVENANCE_AI) {
+    return ajoopLabel(
+      "AI-assisted · grounded in portfolio evidence",
+      "AI destekli · portfolyo kanıtına dayalı",
+      language,
+    );
+  }
+  return ajoopLabel("Portfolio evidence", "Portfolyo kanıtı", language);
+}
+
+/**
+ * The links row, built from canonical data with the site's external rules.
+ *
+ * Capped, like everything else in 4.4: the prepared `projects` answer carries
+ * five links, and five link pills under a three-sentence paragraph is a
+ * navigation menu wearing an answer's clothes.
+ */
+const AJOOP_MESSAGE_LINK_LIMIT = 3;
+
+function appendAjoopMessageLinks(message, links) {
+  if (!links || !links.length) return;
+  const row = document.createElement("div");
+  row.className = "chatbot-message-links";
+  links.slice(0, AJOOP_MESSAGE_LINK_LIMIT).forEach((link) => {
+    const anchor = ajoopCardLink(link);
+    if (anchor) row.appendChild(anchor);
+  });
+  if (row.childNodes.length) message.appendChild(row);
+}
+
+/**
+ * ONE message shape for every answer Ajoop gives.
+ *
+ * Ajoop 4.4 exists largely because there were two: a plain text bubble for the
+ * prepared answers and a different structure for evidence responses, so the
+ * panel read as two products taking turns. Every bot message now has the same
+ * anatomy — prose, then optional evidence, then a provenance line — and the AI
+ * bridge only ever swaps the prose. That is what makes deterministic and
+ * model-backed answers feel like one assistant instead of two.
+ *
+ * `provenance` is omitted for messages that make no evidence claim: the user's
+ * own echo, a greeting, a clarification question, and answers about Ajoop
+ * itself. Labelling those "Portfolio evidence" would be noise at best.
+ */
+function renderAjoopMessage(spec) {
+  const messageList = ajoopMessageList();
   if (!messageList) return null;
+  const language = spec.language || ajoopReplyLanguage();
+  const isUser = spec.type === "user";
+  const followScroll = isUser || isAjoopNearBottom(messageList);
+
   const message = document.createElement("div");
-  message.className = `chatbot-message ${type === "user" ? "user" : "bot"}`;
-  message.innerHTML = `<p>${escapeProjectHtml(text)}</p>${type === "bot" ? createChatbotLinks(links) : ""}`;
+  message.className = `chatbot-message ${isUser ? "user" : "bot"}`;
+
+  const text = document.createElement("p");
+  text.className = "chatbot-message-text";
+  text.setAttribute("data-chatbot-prose", "");
+  text.textContent = spec.text || "";
+  message.appendChild(text);
+
+  if (!isUser) {
+    if (spec.comparison) message.appendChild(renderAjoopComparison(spec.comparison, language));
+    (spec.cards || []).forEach((card) =>
+      message.appendChild(renderAjoopEvidenceCard(card, { detail: spec.detail, language })),
+    );
+    appendAjoopMessageLinks(message, spec.links);
+    if (spec.provenance) {
+      const provenance = document.createElement("p");
+      provenance.className = "ajoop-provenance";
+      provenance.setAttribute("data-ajoop-provenance", spec.provenance);
+      provenance.textContent = ajoopProvenanceLabel(spec.provenance, language);
+      message.appendChild(provenance);
+    }
+  }
+
   messageList.appendChild(message);
-  messageList.scrollTop = messageList.scrollHeight;
-  /* Returned so Ajoop 4.3 can swap this message's prose for a grounded model
-   * answer later without disturbing its links or evidence cards. */
+  if (followScroll) scrollAjoopToBottom(messageList);
+  /* Returned so the AI bridge can swap this message's prose later without
+   * disturbing its links, cards or provenance line. */
   return message;
+}
+
+/**
+ * The original one-line entry point, kept for the callers that only ever had
+ * prose and links to show (the greeting, the echoed button label).
+ */
+function addChatbotMessage(type, text, links = []) {
+  return renderAjoopMessage({ type, text, links });
 }
 
 function getRandomChatbotLine(value) {
@@ -909,15 +1082,31 @@ function ajoopPreparedText(value, depth, level) {
   return next && next !== line ? `${line} ${next}` : line;
 }
 
-function answerChatbotIntent(intentId, depth = 0, level = "normal") {
-  const content = getPortfolioChatbotContent(portfolioChatbotState.language);
+/**
+ * A prepared answer as a spec the message renderer can take, rather than as a
+ * rendered bubble. Ajoop 4.4 needs the two apart so prepared copy, entity
+ * answers and evidence responses all reach the DOM through one function.
+ */
+function ajoopPreparedAnswer(intentId, depth = 0, level = "normal", language = ajoopReplyLanguage()) {
+  const content = getPortfolioChatbotContent(language);
   const answer = content.answers[intentId] || content.answers.default;
   const links = answer.links || [];
-  return addChatbotMessage(
-    "bot",
-    ajoopPreparedText(answer.text, depth, level),
-    level === "quick" ? links.slice(0, 1) : links,
-  );
+  return {
+    text: ajoopPreparedText(answer.text, depth, level),
+    /* A quick answer keeps one way onward; anything more is a link wall. */
+    links: level === "quick" ? links.slice(0, 1) : links.slice(0, 3),
+  };
+}
+
+function answerChatbotIntent(intentId, depth = 0, level = "normal", language = ajoopReplyLanguage()) {
+  const answer = ajoopPreparedAnswer(intentId, depth, level, language);
+  return renderAjoopMessage({
+    type: "bot",
+    language,
+    text: answer.text,
+    links: answer.links,
+    provenance: AJOOP_PROVENANCE_EVIDENCE,
+  });
 }
 
 /* ajoop-entity-answers:start
@@ -965,21 +1154,26 @@ function ajoopProjectAnswer(project, route, language) {
   const lines = [];
   const depth = ajoopDepthOf(route);
   switch (route.facet) {
+    /* Ajoop 4.4 copy pass. These lines used to be field labels with values
+     * after them — "SINAMA — Stack: X, Y, Z." — which is exactly how a
+     * database sounds and nothing like how the model-backed path sounds. Same
+     * canonical values, read out as sentences. Nothing new is claimed. */
     case "stack": {
       if (!project.stack.length) return null;
       const shown = depth === "quick" ? project.stack.slice(0, 4) : project.stack;
       lines.push(
-        `${project.name} — ${ajoopLabel("Stack", "Teknolojiler", language)}: ${shown.join(", ")}.`,
+        ajoopLabel("{name} is built with {stack}.", "{name} şu teknolojilerle geliştirildi: {stack}.", language)
+          .replace("{name}", project.name)
+          .replace("{stack}", shown.join(", ")),
       );
       if (depth !== "quick" && project.summary) lines.push(project.summary);
-      if (depth === "deep") {
-        const meta = [project.category, project.role, project.year].filter(Boolean);
-        if (meta.length) lines.push(meta.join(" · "));
-        if (project.proof.length) {
-          lines.push(
-            `${ajoopLabel("Evidence", "Kanıt", language)}: ${project.proof.slice(0, 3).join("; ")}.`,
-          );
-        }
+      if (depth === "deep" && project.proof.length) {
+        lines.push(
+          ajoopLabel("What it has to show for it: {proof}.", "Elde ettiği sonuçlar: {proof}.", language).replace(
+            "{proof}",
+            project.proof.slice(0, 3).join("; "),
+          ),
+        );
       }
       break;
     }
@@ -987,11 +1181,16 @@ function ajoopProjectAnswer(project, route, language) {
       if (!project.proof.length) return null;
       const shown = depth === "quick" ? project.proof.slice(0, 2) : project.proof;
       lines.push(
-        `${project.name} — ${ajoopLabel("Evidence", "Kanıt", language)}: ${shown.join("; ")}.`,
+        ajoopLabel("Here is what {name} has to show for it: {proof}.", "{name} için elde olan sonuçlar: {proof}.", language)
+          .replace("{name}", project.name)
+          .replace("{proof}", shown.join("; ")),
       );
       if (depth === "deep" && project.stack.length) {
         lines.push(
-          `${ajoopLabel("Stack", "Teknolojiler", language)}: ${project.stack.join(", ")}.`,
+          ajoopLabel("It is built with {stack}.", "Şu teknolojilerle geliştirildi: {stack}.", language).replace(
+            "{stack}",
+            project.stack.join(", "),
+          ),
         );
       }
       break;
@@ -1030,17 +1229,30 @@ function ajoopProjectAnswer(project, route, language) {
       lines.push(`${project.name} — ${project.summary}`);
       if (depth !== "quick") {
         const meta = [project.category, project.status, project.year].filter(Boolean);
-        if (meta.length) lines.push(meta.join(" · "));
+        if (meta.length) {
+          lines.push(
+            ajoopLabel("It sits under {meta}.", "Şu başlıklar altında duruyor: {meta}.", language).replace(
+              "{meta}",
+              meta.join(" · "),
+            ),
+          );
+        }
       }
       if (depth === "deep") {
         if (project.stack.length) {
           lines.push(
-            `${ajoopLabel("Stack", "Teknolojiler", language)}: ${project.stack.join(", ")}.`,
+            ajoopLabel("It is built with {stack}.", "Şu teknolojilerle geliştirildi: {stack}.", language).replace(
+              "{stack}",
+              project.stack.join(", "),
+            ),
           );
         }
         if (project.proof.length) {
           lines.push(
-            `${ajoopLabel("Evidence", "Kanıt", language)}: ${project.proof.slice(0, 4).join("; ")}.`,
+            ajoopLabel("What it has to show for it: {proof}.", "Elde ettiği sonuçlar: {proof}.", language).replace(
+              "{proof}",
+              project.proof.slice(0, 4).join("; "),
+            ),
           );
         }
       }
@@ -1102,17 +1314,27 @@ function ajoopRoleAnswer(profile, language, route) {
   if (route && route.facet === "gaps") return ajoopRoleGapAnswer(profile, language, links);
 
   const parts = [
-    `${profile.focusTitle || profile.label} — ${ajoopLabel("capability focus", "yetkinlik odağı", language)}.`,
+    ajoopLabel(
+      "{name} is the capability focus this maps to.",
+      "{name} bu role karşılık gelen yetkinlik odağı.",
+      language,
+    ).replace("{name}", profile.focusTitle || profile.label),
   ];
   if (profile.capabilities.length) {
     parts.push(
-      `${ajoopLabel("Capabilities", "Yetkinlikler", language)}: ${profile.capabilities.join(", ")}.`,
+      ajoopLabel("Strongest areas: {list}.", "En güçlü alanlar: {list}.", language).replace(
+        "{list}",
+        profile.capabilities.join(", "),
+      ),
     );
   }
   if (depth !== "quick" && profile.skills.length) {
     const shown = depth === "deep" ? profile.skills : profile.skills.slice(0, 3);
     parts.push(
-      `${ajoopLabel("Core capabilities", "Ana yetkinlikler", language)}: ${shown.join("; ")}.`,
+      ajoopLabel("In practice, that means {list}.", "Pratikte bu şu demek: {list}.", language).replace(
+        "{list}",
+        shown.join("; "),
+      ),
     );
   }
   return { text: parts.join(" "), links: depth === "quick" ? links.slice(0, 2) : links };
@@ -1154,34 +1376,57 @@ function ajoopEntityAnswer(route, language) {
 const AJOOP_THINKING_DELAY_MS = 220;
 
 function addAjoopThinkingMessage() {
-  const messageList = document.querySelector("[data-chatbot-messages]");
+  const messageList = ajoopMessageList();
   if (!messageList) return null;
+  const follow = isAjoopNearBottom(messageList);
   const node = document.createElement("div");
   node.className = "chatbot-message bot is-thinking";
   node.setAttribute("data-chatbot-thinking", "");
   node.setAttribute("aria-hidden", "true");
-  node.innerHTML = `<p>${escapeProjectHtml(
-    ajoopLabel(
-      "Checking portfolio evidence…",
-      "Portfolyo kanıtları kontrol ediliyor…",
-      portfolioChatbotState.language,
-    ),
-  )}</p>`;
+  const line = document.createElement("p");
+  line.textContent = ajoopLabel(
+    "Checking portfolio evidence…",
+    "Portfolyo kanıtları kontrol ediliyor…",
+    ajoopReplyLanguage(),
+  );
+  node.appendChild(line);
   messageList.appendChild(node);
-  messageList.scrollTop = messageList.scrollHeight;
+  if (follow) scrollAjoopToBottom(messageList);
   return node;
 }
 
-function deliverAjoopAnswer(render) {
+/** Longest Ajoop will hold an answer back waiting for a translation pack. */
+const AJOOP_PACK_WAIT_MS = 2500;
+
+/**
+ * Runs `render` after the transition beat, and after `ready` settles.
+ *
+ * `ready` is the on-demand translation pack for the conversation language. It
+ * is raced against a deadline rather than awaited outright: a pack that never
+ * arrives must cost the visitor a less-localized answer, never a missing one.
+ */
+function deliverAjoopAnswer(render, ready) {
   const node = addAjoopThinkingMessage();
-  if (!node || typeof window === "undefined" || typeof window.setTimeout !== "function") {
+  if (typeof window === "undefined" || typeof window.setTimeout !== "function") {
+    if (node) node.remove();
     render();
     return;
   }
-  window.setTimeout(() => {
-    node.remove();
+  const finish = () => {
+    if (node) node.remove();
     render();
-  }, AJOOP_THINKING_DELAY_MS);
+  };
+  const beat = new Promise((resolve) => window.setTimeout(resolve, AJOOP_THINKING_DELAY_MS));
+  const waits = [beat];
+  if (ready && typeof ready.then === "function") {
+    waits.push(
+      Promise.race([
+        ready,
+        new Promise((resolve) => window.setTimeout(resolve, AJOOP_PACK_WAIT_MS)),
+      ]),
+    );
+  }
+  Promise.all(waits).then(finish, finish);
 }
 
 /* ---------- Ajoop 4.2 evidence rendering ---------- */
@@ -1229,6 +1474,30 @@ function ajoopCardList(className, items, label, limit) {
   return list;
 }
 
+/**
+ * What a card shows before the visitor asks for more.
+ *
+ * Ajoop 4.2 rendered every canonical field a project had, which on SINAMA is a
+ * card taller than a phone screen — the visitor scrolls past the evidence
+ * looking for the end of it, which is the opposite of what evidence is for.
+ * The limits below are presentation only: the full record still goes to the AI
+ * bridge as grounding, and "More detail" still shows all of it.
+ */
+const AJOOP_CARD_SUMMARY_CHARS = 130;
+const AJOOP_CARD_META_LIMIT = 2;
+const AJOOP_CARD_TAG_LIMIT = 3;
+const AJOOP_CARD_PROOF_LIMIT = 3;
+const AJOOP_CARD_LINK_LIMIT = 2;
+
+/** Trims to the last whole word inside the budget, or returns it untouched. */
+function ajoopTrimSummary(value) {
+  const text = String(value || "");
+  if (text.length <= AJOOP_CARD_SUMMARY_CHARS) return text;
+  const cut = text.slice(0, AJOOP_CARD_SUMMARY_CHARS);
+  const boundary = cut.lastIndexOf(" ");
+  return `${(boundary > 60 ? cut.slice(0, boundary) : cut).replace(/[.,;:·\s]+$/, "")}…`;
+}
+
 let ajoopCardSequence = 0;
 
 /**
@@ -1237,19 +1506,20 @@ let ajoopCardSequence = 0;
  * Built with createElement and textContent throughout: no template string
  * reaches innerHTML, so no registry value can be interpreted as markup. Empty
  * sections are omitted rather than rendered blank.
+ *
+ * `options.detail` is the full record, shown only when the visitor asked for
+ * it. The card carries no source eyebrow any more — the message it sits in
+ * states its provenance once, at the bottom, for everything above it.
  */
-function renderAjoopEvidenceCard(card) {
-  const language = portfolioChatbotState.language;
+function renderAjoopEvidenceCard(card, options) {
+  const settings = options || {};
+  const detail = settings.detail === true;
+  const language = settings.language || ajoopReplyLanguage();
   const article = document.createElement("article");
-  article.className = "ajoop-card";
+  article.className = detail ? "ajoop-card is-detailed" : "ajoop-card";
   ajoopCardSequence += 1;
   const titleId = `ajoop-card-${ajoopCardSequence}`;
   article.setAttribute("aria-labelledby", titleId);
-
-  const source = document.createElement("p");
-  source.className = "ajoop-card-source";
-  source.textContent = card.source;
-  article.appendChild(source);
 
   const title = document.createElement("h3");
   title.className = "ajoop-card-title";
@@ -1260,23 +1530,32 @@ function renderAjoopEvidenceCard(card) {
   if (card.summary) {
     const summary = document.createElement("p");
     summary.className = "ajoop-card-summary";
-    summary.textContent = card.summary;
+    summary.textContent = detail ? card.summary : ajoopTrimSummary(card.summary);
     article.appendChild(summary);
   }
   if (card.meta.length) {
     const meta = document.createElement("p");
     meta.className = "ajoop-card-meta";
-    meta.textContent = card.meta.join(" · ");
+    meta.textContent = (detail ? card.meta : card.meta.slice(0, AJOOP_CARD_META_LIMIT)).join(" · ");
     article.appendChild(meta);
   }
   if (card.tags.length) {
-    article.appendChild(
-      ajoopCardList(
-        "ajoop-card-tags",
-        card.tags,
-        ajoopLabel("Tech stack", "Teknolojiler", language),
-      ),
+    const tags = ajoopCardList(
+      "ajoop-card-tags",
+      card.tags,
+      ajoopLabel("Tech stack", "Teknolojiler", language),
+      detail ? card.tags.length : AJOOP_CARD_TAG_LIMIT,
     );
+    /* The overflow count is part of the evidence: it says the stack is longer
+     * than what is shown, rather than quietly presenting three as the whole. */
+    const hidden = card.tags.length - AJOOP_CARD_TAG_LIMIT;
+    if (!detail && hidden > 0) {
+      const more = document.createElement("li");
+      more.className = "ajoop-card-tag-more";
+      more.textContent = `+${hidden}`;
+      tags.appendChild(more);
+    }
+    article.appendChild(tags);
   }
   if (card.proof.length) {
     article.appendChild(
@@ -1284,13 +1563,14 @@ function renderAjoopEvidenceCard(card) {
         "ajoop-card-proof",
         card.proof,
         ajoopLabel("Proof points", "Kanıt maddeleri", language),
+        detail ? card.proof.length : AJOOP_CARD_PROOF_LIMIT,
       ),
     );
   }
   if (card.links.length) {
     const row = document.createElement("div");
     row.className = "ajoop-card-links";
-    card.links.forEach((link) => {
+    (detail ? card.links : card.links.slice(0, AJOOP_CARD_LINK_LIMIT)).forEach((link) => {
       const anchor = ajoopCardLink(link);
       if (anchor) row.appendChild(anchor);
     });
@@ -1323,8 +1603,7 @@ function ajoopCompareCell(who, value) {
  * depends on visual position, which is also what makes it work for a screen
  * reader and at 320px.
  */
-function renderAjoopComparison(comparison) {
-  const language = portfolioChatbotState.language;
+function renderAjoopComparison(comparison, language = ajoopReplyLanguage()) {
   const root = document.createElement("div");
   root.className = "ajoop-compare";
   root.setAttribute("role", "group");
@@ -1332,11 +1611,6 @@ function renderAjoopComparison(comparison) {
     "aria-label",
     `${ajoopLabel("Comparison", "Karşılaştırma", language)}: ${comparison.left.title} / ${comparison.right.title}`,
   );
-
-  const source = document.createElement("p");
-  source.className = "ajoop-card-source";
-  source.textContent = comparison.source;
-  root.appendChild(source);
 
   comparison.rows.forEach((row) => {
     const block = document.createElement("div");
@@ -1368,24 +1642,6 @@ function renderAjoopComparison(comparison) {
   return root;
 }
 
-/** Appends a structured evidence response as one bot message. */
-function addAjoopEvidenceMessage(response) {
-  const messageList = document.querySelector("[data-chatbot-messages]");
-  if (!messageList) return null;
-  const message = document.createElement("div");
-  message.className = "chatbot-message bot";
-  const text = document.createElement("p");
-  text.textContent = response.text;
-  message.appendChild(text);
-  if (response.comparison) message.appendChild(renderAjoopComparison(response.comparison));
-  (response.cards || []).forEach((card) =>
-    message.appendChild(renderAjoopEvidenceCard(card)),
-  );
-  messageList.appendChild(message);
-  messageList.scrollTop = messageList.scrollHeight;
-  return message;
-}
-
 /* ---------- Ajoop 4.3 local AI bridge ---------- */
 
 /**
@@ -1396,12 +1652,34 @@ function addAjoopEvidenceMessage(response) {
  * answer is only their presentation. Inserted with textContent, so markup in a
  * model reply is shown as text rather than becoming structure.
  */
-function applyAjoopAiAnswer(messageElement, answer) {
+function applyAjoopAiAnswer(messageElement, answer, language) {
   if (!messageElement || !answer) return false;
-  const paragraph = messageElement.querySelector("p");
+  const paragraph = messageElement.querySelector("[data-chatbot-prose]");
   if (!paragraph) return false;
+
+  /* Ajoop 4.4 scroll contract. The prose can get shorter or longer, which
+   * moves everything below it. A visitor who has scrolled back to re-read an
+   * earlier answer must stay where they are; one who is reading the newest
+   * message follows it down. */
+  const list = ajoopMessageList();
+  const follow = isAjoopNearBottom(list);
+  const anchor = list ? list.scrollTop : 0;
+
   paragraph.textContent = answer;
   messageElement.classList.add("is-ai-enhanced");
+  const provenance = messageElement.querySelector("[data-ajoop-provenance]");
+  if (provenance) {
+    provenance.setAttribute("data-ajoop-provenance", AJOOP_PROVENANCE_AI);
+    provenance.textContent = ajoopProvenanceLabel(
+      AJOOP_PROVENANCE_AI,
+      language || ajoopReplyLanguage(),
+    );
+  }
+
+  if (list) {
+    if (follow) scrollAjoopToBottom(list);
+    else list.scrollTop = anchor;
+  }
   return true;
 }
 
@@ -1420,46 +1698,59 @@ function ajoopAiGrounding(route, evidence, language) {
  * this runs, so every failure is silent and the visitor simply keeps the answer
  * they already have. Nothing here can leave the panel in a broken state.
  */
-function enhanceAjoopAnswerWithAi(messageElement, route, evidence, question, turn) {
+function enhanceAjoopAnswerWithAi(messageElement, route, evidence, question, turn, language) {
   if (typeof requestAjoopAiResponse !== "function") return;
   const config = getAjoopAiConfig();
   if (!isAjoopAiConfigured(config)) return;
 
-  const language = portfolioChatbotState.language;
-  const grounding = ajoopAiGrounding(route, evidence, language);
-  const payload = buildAjoopAiPayload(route, grounding, question, language);
+  const locale = language || ajoopReplyLanguage();
+  const grounding = ajoopAiGrounding(route, evidence, locale);
+  const payload = buildAjoopAiPayload(route, grounding, question, locale);
+  messageElement.classList.add("is-enhancing");
 
   Promise.resolve(requestAjoopAiResponse({ payload, config, turn }))
     .then((result) => {
-      /* A reply for a superseded turn — the visitor asked something else, or
-       * hit Start over — is dropped rather than rendered. */
-      if (!result || !result.ok || !isAjoopAiTurnCurrent(turn)) {
-        renderAjoopAiStatus();
-        return;
-      }
-      if (applyAjoopAiAnswer(messageElement, result.answer)) renderAjoopAiStatus();
+      messageElement.classList.remove("is-enhancing");
+      /* Ajoop 4.4 cold-start contract: a failed turn changes NOTHING on
+       * screen. No status flip, no error, no re-render — the deterministic
+       * answer the visitor is already reading simply stands, which is also
+       * what they get when the bridge is switched off entirely. A reply for a
+       * superseded turn is dropped the same way. */
+      if (!result || !result.ok || !isAjoopAiTurnCurrent(turn)) return;
+      applyAjoopAiAnswer(messageElement, result.answer, locale);
+      renderAjoopBridgeStatus();
     })
     .catch(() => {
       /* Unreachable in practice: the bridge never rejects. Belt and braces so a
        * future change can never surface an exception to a visitor. */
+      messageElement.classList.remove("is-enhancing");
     });
 }
 
-/** Updates the small header status. Text carries the meaning, not colour. */
-function renderAjoopAiStatus() {
-  const target = document.querySelector("[data-chatbot-subtitle]");
+/**
+ * The header's bridge indicator.
+ *
+ * Ajoop 4.4 stopped presenting "AI Enhanced" and "Evidence Mode" as two
+ * products in the subtitle slot: they were never two products, and putting
+ * them where the assistant names itself made the panel feel like it had modes.
+ * What is left is one quiet dot, shown ONLY when a local bridge is actually
+ * answering, with its meaning in an accessible label rather than in its
+ * colour. Where each answer came from is said per answer, on the answer.
+ */
+function renderAjoopBridgeStatus() {
+  const target = document.querySelector("[data-chatbot-bridge]");
   if (!target) return;
-  const language = portfolioChatbotState.language;
-  const state = typeof getAjoopAiState === "function" ? getAjoopAiState().state : "disabled";
-  if (state === "available") {
-    target.textContent = `✦ ${ajoopLabel("AI Enhanced", "AI Destekli", language)}`;
-    target.classList.add("is-ai");
-  } else {
-    /* Every other state — off, unreachable, still checking — is the honest
-     * default: answers come from portfolio evidence. The indicator never
-     * implies a model is standing by. */
-    target.textContent = `● ${ajoopLabel("Evidence Mode", "Kanıt Modu", language)}`;
-    target.classList.remove("is-ai");
+  const online =
+    typeof getAjoopAiState === "function" && getAjoopAiState().state === "available";
+  target.hidden = !online;
+  if (online) {
+    const label = ajoopLabel(
+      "Local AI bridge connected",
+      "Yerel AI köprüsü bağlı",
+      portfolioChatbotState.language,
+    );
+    target.setAttribute("aria-label", label);
+    target.setAttribute("title", label);
   }
 }
 
@@ -1467,12 +1758,12 @@ function renderAjoopAiStatus() {
 function initializeAjoopAi() {
   if (typeof checkAjoopAiHealth !== "function") return;
   if (!isAjoopAiConfigured(getAjoopAiConfig())) {
-    renderAjoopAiStatus();
+    renderAjoopBridgeStatus();
     return;
   }
   Promise.resolve(checkAjoopAiHealth({}))
-    .then(() => renderAjoopAiStatus())
-    .catch(() => renderAjoopAiStatus());
+    .then(() => renderAjoopBridgeStatus())
+    .catch(() => renderAjoopBridgeStatus());
 }
 
 /**
@@ -1517,6 +1808,7 @@ function ajoopSyntheticRoute(overrides) {
   const route = Object.assign(
     {
       origin: "action",
+      meta: null,
       intent: "default",
       secondaryIntents: [],
       entities: [],
@@ -1604,50 +1896,108 @@ function ajoopContinuationRoute(direction) {
   });
 }
 
+/**
+ * The quick actions, resolved BY ID rather than by list position.
+ *
+ * A locale pack ships `quicks` as bare labels and the loader merges them onto
+ * the English list by index (see mergeLocaleCopy). That only works while both
+ * lists are the same shape, and they are not: portfolio-v2.js replaces this
+ * list at boot with the evidence-registry line-up, so on the German, Spanish
+ * and French routes every chip carried a label belonging to a different id —
+ * "SINAMA evidence" reading "Wer ist Kaan?".
+ *
+ * Pairing English and Turkish by id and translating through getI18nText fixes
+ * that at the source: a locale with no phrase for a label gets the English
+ * one, which is a chip that tells the truth instead of a chip that lies.
+ */
+function ajoopQuickLabelPairs(language) {
+  return {
+    about: ajoopLabel("Who is Kaan?", "Kaan kim?", language),
+    ai: ajoopLabel("AI experience", "AI deneyimi", language),
+    projects: ajoopLabel("Best projects", "En iyi projeler", language),
+    joyday: "Joyday",
+    stack: ajoopLabel("Tech stack", "Teknolojiler", language),
+    cv: ajoopLabel("CV & contact", "CV & iletişim", language),
+    experience: ajoopLabel("Work history", "İş geçmişi", language),
+    roles: ajoopLabel("Role fit", "Role uygunluk", language),
+    weather: ajoopLabel("Weather?", "Hava?", language),
+    sinama: ajoopLabel("SINAMA evidence", "SINAMA kanıtı", language),
+    mergeRush: ajoopLabel("Merge Rush evidence", "Merge Rush kanıtı", language),
+    latestBuild: ajoopLabel("Latest build", "Son build", language),
+  };
+}
+
+function ajoopQuickActions(language = ajoopReplyLanguage()) {
+  const english = (portfolioChatbotContent.en && portfolioChatbotContent.en.quicks) || [];
+  const labels = ajoopQuickLabelPairs(language);
+  return english
+    .filter((quick) => quick && quick.id)
+    .map((quick) => ({ id: quick.id, label: labels[quick.id] || quick.label }));
+}
+
 /** Quick-action labels, so an intent is never named two different ways. */
-function ajoopQuickLabelMap() {
-  const content = getPortfolioChatbotContent(portfolioChatbotState.language);
+function ajoopQuickLabelMap(language = ajoopReplyLanguage()) {
   const map = {};
-  (content.quicks || []).forEach((quick) => {
+  ajoopQuickActions(language).forEach((quick) => {
     map[quick.id] = quick.label;
   });
   return map;
 }
 
+/** One action button, wired to its action through a closure, not the DOM. */
+function createAjoopActionButton(action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.setAttribute("data-chatbot-action-kind", action.action);
+  button.textContent = action.label;
+  button.addEventListener("click", () => runAjoopAction(action, action.label));
+  return button;
+}
+
 /**
- * Renders one row of actions.
+ * Renders the action area: up to three suggestions, plus the escape hatch.
  *
  * `mode` distinguishes the opening suggestions from the contextual follow-ups
  * that replace them after every answer; the row is labelled either way so the
- * change of meaning is visible rather than implied by position alone. Actions
- * stay in a closure and the buttons carry only an index, so no action data is
- * serialized into the DOM.
+ * change of meaning is visible rather than implied by position alone.
+ *
+ * Ajoop 4.4 splits `secondary` out of that row. Start over used to sit at the
+ * end of the same list, competing for attention with the things Ajoop was
+ * actually proposing; it now sits apart and quieter, present but not offered.
  */
-function renderAjoopActions(actions, mode) {
+function renderAjoopActions(actions, mode, secondary) {
   const container = document.querySelector("[data-chatbot-quicks]");
   if (!container) return;
-  const language = portfolioChatbotState.language;
+  const language = ajoopReplyLanguage();
   const heading =
     mode === "followups"
       ? ajoopLabel("Continue", "Devam", language)
       : ajoopLabel("Suggestions", "Öneriler", language);
   container.classList.toggle("is-followups", mode === "followups");
-  container.innerHTML = `
-    <p class="chatbot-actions-label">${escapeProjectHtml(heading)}</p>
-    <div class="chatbot-actions-list" role="group" aria-label="${escapeProjectHtml(heading)}">
-      ${actions
-        .map(
-          (action, index) =>
-            `<button type="button" data-chatbot-action="${index}" data-chatbot-action-kind="${escapeProjectHtml(action.action)}">${escapeProjectHtml(action.label)}</button>`,
-        )
-        .join("")}
-    </div>`;
-  container.querySelectorAll("[data-chatbot-action]").forEach((button) => {
-    const action = actions[Number(button.dataset.chatbotAction)];
-    button.addEventListener("click", () =>
-      runAjoopAction(action, button.textContent.trim()),
-    );
+  container.textContent = "";
+
+  const label = document.createElement("p");
+  label.className = "chatbot-actions-label";
+  label.textContent = heading;
+  container.appendChild(label);
+
+  const list = document.createElement("div");
+  list.className = "chatbot-actions-list";
+  list.setAttribute("role", "group");
+  list.setAttribute("aria-label", heading);
+  (actions || []).forEach((action) => {
+    if (action) list.appendChild(createAjoopActionButton(action));
   });
+  container.appendChild(list);
+
+  if (secondary && secondary.length) {
+    const row = document.createElement("div");
+    row.className = "chatbot-actions-secondary";
+    secondary.forEach((action) => {
+      if (action) row.appendChild(createAjoopActionButton(action));
+    });
+    container.appendChild(row);
+  }
 }
 
 /** Dispatches one follow-up action. */
@@ -1668,6 +2018,10 @@ function runAjoopAction(action, label) {
   /* The echoed button label is what the visitor actually asked for, so it is
    * the question the AI bridge grounds on for tapped turns. */
   const asked = { message: label };
+  if (action.action === "meta") {
+    answerAjoopRoute(ajoopSyntheticRoute({ meta: action.meta, intent: `meta:${action.meta}` }), asked);
+    return;
+  }
   if (action.action === "depth") {
     if (typeof setAjoopDepth === "function") setAjoopDepth(action.depth);
     const context = typeof readAjoopContext === "function" ? readAjoopContext() : null;
@@ -1729,55 +2083,96 @@ function runAjoopAction(action, label) {
  * the conversation context so the next message can inherit the subject.
  */
 function answerAjoopRoute(route, options) {
-  const language = portfolioChatbotState.language;
+  const language = ajoopReplyLanguage();
   const settings = options || {};
   portfolioChatbotState.lastRoute = route;
-
-  const plan =
-    typeof planAjoopConversation === "function"
-      ? planAjoopConversation(route, {
-          language,
-          depth: route.depth,
-          quickLabels: ajoopQuickLabelMap(),
-        })
-      : null;
-
-  /* Ajoop 4.2: an evidence response replaces the text answer when the turn
-   * asked for evidence, a comparison or a filtered list. Everything else falls
-   * through to the 4.0/4.1 path unchanged. */
-  const evidence = buildAjoopEvidenceFor(route, language, settings.message);
-  portfolioChatbotState.lastEvidence = evidence || null;
 
   /* Ajoop 4.3 opens a turn before rendering, so a reply from a previous turn
    * that is still in flight can be recognised as stale and discarded. */
   const aiTurn = typeof beginAjoopAiTurn === "function" ? beginAjoopAiTurn() : 0;
 
+  /* The conversation may have switched to a language whose copy this page did
+   * not ship. Loading it is raced against a deadline inside deliverAjoopAnswer,
+   * so it delays the answer by a beat at most and never blocks it. */
+  const ready =
+    typeof ensureAjoopLanguagePack === "function" ? ensureAjoopLanguagePack(language) : null;
+
   deliverAjoopAnswer(() => {
-    let rendered = null;
-    if (evidence) {
-      rendered = addAjoopEvidenceMessage(evidence);
+    /* Build localized follow-ups and evidence only after the requested pack
+     * has settled. Otherwise the first DE/ES/FR turn on an EN page can capture
+     * English fallback labels before its language pack arrives. */
+    const plan =
+      typeof planAjoopConversation === "function"
+        ? planAjoopConversation(route, {
+            language,
+            depth: route.depth,
+            quickLabels: ajoopQuickLabelMap(language),
+          })
+        : null;
+
+    /* Ajoop 4.2: an evidence response replaces the text answer when the turn
+     * asked for evidence, a comparison or a filtered list. Everything else falls
+     * through to the 4.0/4.1 path unchanged. */
+    const evidence = route.meta
+      ? null
+      : buildAjoopEvidenceFor(route, language, settings.message);
+    portfolioChatbotState.lastEvidence = evidence || null;
+
+    /* ONE render path. Whatever this turn turned out to be — a question about
+     * Ajoop, an evidence response, a clarification, an entity answer or
+     * prepared copy — it becomes the same message spec and goes through the
+     * same renderer, so the visitor never sees the seam between them. */
+    const spec = { type: "bot", language, provenance: AJOOP_PROVENANCE_EVIDENCE };
+    let groundable = true;
+
+    if (route.meta) {
+      /* An answer about Ajoop is not a portfolio claim, so it carries no
+       * evidence line and is never handed to the model to restate — the one
+       * thing a model must not paraphrase is the description of itself. */
+      spec.text =
+        typeof getAjoopMetaAnswer === "function" ? getAjoopMetaAnswer(route.meta, language) : "";
+      spec.provenance = null;
+      groundable = false;
+    } else if (evidence) {
+      spec.text = evidence.text;
+      spec.cards = evidence.cards || [];
+      spec.comparison = evidence.comparison || null;
+      /* The full record only when the visitor asked for it. */
+      spec.detail = route.depth === "deep";
     } else if (plan && plan.fallback) {
       /* A clarification prompt is a question, not an answer; there is nothing
        * grounded for a model to restate, so the bridge is not consulted. */
-      addChatbotMessage("bot", plan.fallback.prompt, []);
+      spec.text = plan.fallback.prompt;
+      spec.provenance = null;
+      groundable = false;
     } else {
       const answer = route.preferPrepared ? null : ajoopEntityAnswer(route, language);
-      if (answer && answer.text) rendered = addChatbotMessage("bot", answer.text, answer.links);
-      else rendered = answerChatbotIntent(route.intent, route.answerDepth, route.depth);
+      const resolved =
+        answer && answer.text
+          ? answer
+          : ajoopPreparedAnswer(route.intent, route.answerDepth, route.depth, language);
+      spec.text = resolved.text;
+      spec.links = resolved.links;
     }
-    if (plan) renderAjoopActions(plan.followups, "followups");
+
+    const rendered = renderAjoopMessage(spec);
+    if (plan) renderAjoopActions(plan.followups, "followups", plan.secondary);
 
     /* The deterministic answer is on screen by now. Enhancement is optional,
      * asynchronous and silent on failure. */
-    if (rendered && typeof enhanceAjoopAnswerWithAi === "function") {
-      enhanceAjoopAnswerWithAi(rendered, route, evidence, settings.message, aiTurn);
+    if (rendered && groundable && typeof enhanceAjoopAnswerWithAi === "function") {
+      enhanceAjoopAnswerWithAi(rendered, route, evidence, settings.message, aiTurn, language);
     }
-  });
+  }, ready);
 
   if (typeof rememberAjoopTurn === "function") {
     rememberAjoopTurn({
-      intent: route.intent,
-      entity: route.entitySource === "message" ? route.entity : null,
+      /* A question about Ajoop sets neither subject nor intent: it must not
+       * become the thing the next message inherits or elaborates on. The
+       * subject that was in play before it survives, so the visitor can pick
+       * the conversation back up where they left it. */
+      intent: route.meta ? null : route.intent,
+      entity: !route.meta && route.entitySource === "message" ? route.entity : null,
       facet: route.facet,
       depth: route.depth,
       pageContext: route.pageContext ? route.pageContext.pageType : null,
@@ -1787,6 +2182,17 @@ function answerAjoopRoute(route, options) {
 
 /** Handles a typed message end to end: route it, answer it, remember it. */
 function handleAjoopMessage(message) {
+  /* Ajoop 4.4: the language of the reply is decided from the message itself,
+   * before anything else happens, and it is sticky — a follow-up like
+   * "github?" says nothing about language and keeps the one in play. The site
+   * locale is only ever the starting point; it is never written to. */
+  if (typeof resolveAjoopReplyLanguage === "function") {
+    portfolioChatbotState.replyLanguage = resolveAjoopReplyLanguage(message, {
+      current: portfolioChatbotState.replyLanguage,
+      fallback: portfolioChatbotState.language,
+    });
+  }
+
   if (typeof routeAjoopQuery !== "function") {
     answerChatbotIntent(detectChatbotIntent(message));
     return null;
@@ -1804,7 +2210,7 @@ function handleAjoopMessage(message) {
       /* Two names in one sentence compare those two, in reading order; a single
        * name compares against whatever the visitor was just discussing. */
       const named = (route.entities || []).filter((match) =>
-        typeof getAjoopProject === "function" ? Boolean(getAjoopProject(match.id, portfolioChatbotState.language)) : true,
+        typeof getAjoopProject === "function" ? Boolean(getAjoopProject(match.id, ajoopReplyLanguage())) : true,
       );
       if (named.length >= 2) {
         const ordered = orderAjoopComparisonEntities(message, named);
@@ -1833,24 +2239,56 @@ function resetAjoopConversation() {
   if (typeof resetAjoopContext === "function") resetAjoopContext();
   portfolioChatbotState.lastRoute = null;
   portfolioChatbotState.lastEvidence = null;
+  /* A new conversation starts in the site's language again: the previous
+   * visitor's language is part of the conversation being cleared. */
+  portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
   /* Opens a new turn so an AI reply still in flight for the cleared
    * conversation cannot arrive and write itself into the fresh transcript. */
   if (typeof beginAjoopAiTurn === "function") beginAjoopAiTurn();
   resetChatbotMessages();
   renderChatbotQuickActions();
-  renderAjoopAiStatus();
+  renderAjoopBridgeStatus();
   document.querySelector("[data-chatbot-input]")?.focus();
 }
 
-/** The opening suggestions, from the shipped quick-action content. */
+/**
+ * The opening suggestions.
+ *
+ * Four, from the eight the content ships. An opening screen is a first
+ * impression, and eight chips under a greeting reads as a phone tree; four
+ * covers the questions a recruiter actually opens with — who, what AI work,
+ * which projects, how to reach him — and the input handles the rest.
+ */
+const AJOOP_MAX_STARTER_SUGGESTIONS = 4;
+
+/**
+ * The opening four, named by id.
+ *
+ * The flagship project, how Kaan maps to a role, the wider portfolio, and how
+ * to reach him — the four things a recruiter opens this panel to find out.
+ * Anything present in the live list but not named here is still one sentence
+ * away in the input.
+ */
+const AJOOP_STARTER_INTENTS = ["sinama", "roles", "projects", "cv"];
+
 function renderChatbotQuickActions() {
-  const content = getPortfolioChatbotContent(portfolioChatbotState.language);
-  const actions = (content.quicks || []).map((quick) => ({
-    id: `quick:${quick.id}`,
-    label: quick.label,
-    action: "intent",
-    intent: quick.id,
-  }));
+  const quicks = ajoopQuickActions(ajoopReplyLanguage());
+  const preferred = AJOOP_STARTER_INTENTS.map((id) =>
+    quicks.find((quick) => quick.id === id),
+  ).filter(Boolean);
+  const actions = (preferred.length ? preferred : quicks)
+    .slice(0, AJOOP_MAX_STARTER_SUGGESTIONS)
+    .map((quick) => {
+      const isEntity =
+        typeof getAjoopEntity === "function" && Boolean(getAjoopEntity(quick.id));
+      return {
+        id: `quick:${quick.id}`,
+        label: quick.label,
+        action: isEntity ? "entity" : "intent",
+        intent: quick.id,
+        entity: isEntity ? quick.id : null,
+      };
+    });
   renderAjoopActions(actions, "initial");
 }
 
@@ -1881,17 +2319,33 @@ function answerAjoopQuickAction(intentId) {
 }
 
 function resetChatbotMessages() {
-  const content = getPortfolioChatbotContent(portfolioChatbotState.language);
-  const messageList = document.querySelector("[data-chatbot-messages]");
+  const content = getPortfolioChatbotContent(ajoopReplyLanguage());
+  const messageList = ajoopMessageList();
   if (!messageList) return;
-  messageList.innerHTML = "";
-  addChatbotMessage("bot", getRandomChatbotLine(content.greeting));
+  messageList.textContent = "";
+  /* The greeting introduces the assistant; it is not an evidence claim, so it
+   * carries no provenance line. */
+  renderAjoopMessage({ type: "bot", text: getRandomChatbotLine(content.greeting) });
+}
+
+/**
+ * What the header says.
+ *
+ * "Portfolio Copilot" is a description of the thing, and it does not change:
+ * the subtitle slot used to flip between "AI Enhanced" and "Evidence Mode",
+ * which read as two products the visitor had somehow switched between.
+ */
+function ajoopHeaderSubtitle(language) {
+  return ajoopLabel("Portfolio Copilot", "Portfolyo Asistanı", language);
 }
 
 function updatePortfolioChatbotLanguage(
   language = getCurrentLocale(),
 ) {
   portfolioChatbotState.language = renderableLocaleId(language);
+  /* A site language change resets the conversation, so the conversation
+   * language starts again from the new site locale. */
+  portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
   const launcherText = document.querySelector("[data-chatbot-launcher-text]");
   const title = document.querySelector("[data-chatbot-title]");
@@ -1903,7 +2357,7 @@ function updatePortfolioChatbotLanguage(
 
   if (launcherText) launcherText.textContent = content.launcher;
   if (title) title.textContent = content.title;
-  if (subtitle) subtitle.textContent = content.subtitle;
+  if (subtitle) subtitle.textContent = ajoopHeaderSubtitle(portfolioChatbotState.language);
   if (input) {
     input.placeholder = content.inputPlaceholder;
     input.setAttribute("aria-label", content.inputPlaceholder);
@@ -1913,9 +2367,7 @@ function updatePortfolioChatbotLanguage(
   if (close) close.setAttribute("aria-label", content.closeLabel);
   renderChatbotQuickActions();
   resetChatbotMessages();
-  /* The subtitle slot is the AI status indicator, and the line above has just
-   * overwritten it with the (empty) localized subtitle. Restore it, localized. */
-  renderAjoopAiStatus();
+  renderAjoopBridgeStatus();
 }
 
 function setChatbotOpen(
@@ -1970,10 +2422,11 @@ function setupPortfolioChatbot() {
     <div class="chatbot-panel" data-chatbot-panel aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ajoop-dialog-title">
       <div class="chatbot-header">
         <div class="chatbot-avatar"><i class="bx bx-bot" aria-hidden="true"></i></div>
-        <div>
+        <div class="chatbot-identity">
           <h2 id="ajoop-dialog-title" data-chatbot-title>${escapeProjectHtml(content.title)}</h2>
-          <p data-chatbot-subtitle>${escapeProjectHtml(content.subtitle)}</p>
+          <p data-chatbot-subtitle>${escapeProjectHtml(ajoopHeaderSubtitle(getCurrentLocale()))}</p>
         </div>
+        <span class="chatbot-bridge-dot" data-chatbot-bridge role="img" hidden></span>
         <button class="chatbot-close" type="button" data-chatbot-close aria-label="${escapeProjectHtml(content.closeLabel)}"><i class="bx bx-x" aria-hidden="true"></i></button>
       </div>
       <div class="chatbot-messages" data-chatbot-messages aria-live="polite"></div>

@@ -25,12 +25,39 @@
  * QA can drive every branch — offline, timeout, malformed, hostile — without a
  * network, exactly as js/request/submission.js is tested.
  */
+/**
+ * BRIDGE state — a property of the service, not of any one answer.
+ *
+ * `unknown` is the honest starting point for a configured bridge nobody has
+ * spoken to yet, and it is deliberately distinct from `unavailable`: the first
+ * means "no verdict", the second means "we asked and it did not answer".
+ */
 const AJOOP_AI_STATE = Object.freeze({
   DISABLED: "disabled",
+  UNKNOWN: "unknown",
   CHECKING: "checking",
   AVAILABLE: "available",
   UNAVAILABLE: "unavailable",
 });
+
+/**
+ * TURN state — a property of one answer.
+ *
+ * Ajoop 4.4 splits these apart. In 4.3 any failed generation set the bridge to
+ * `unavailable`, which flipped the whole panel's presentation because one slow
+ * cold model missed one deadline. A turn that fails is a turn that keeps its
+ * deterministic answer; only a repeated run of failures says anything about
+ * the service. The health probe owns immediate reachability verdicts.
+ */
+const AJOOP_AI_TURN = Object.freeze({
+  EVIDENCE: "evidence",
+  ENHANCING: "enhancing",
+  AI: "ai",
+  FAILED: "failed",
+});
+
+/** Consecutive turn failures before the bridge itself is called unavailable. */
+const AJOOP_AI_TURN_FAILURE_LIMIT = 3;
 
 /** Contract version sent to the bridge, so n8n can reject shapes it predates. */
 const AJOOP_AI_PROTOCOL_VERSION = 1;
@@ -99,7 +126,7 @@ function isAjoopAiConfigured(config) {
 /* ---------- state ---------- */
 
 const ajoopAiState = {
-  state: AJOOP_AI_STATE.DISABLED,
+  state: AJOOP_AI_STATE.UNKNOWN,
   checkedAt: 0,
   model: null,
   /* Monotonic id of the newest turn. A reply carrying an older id is stale and
@@ -107,14 +134,30 @@ const ajoopAiState = {
   turn: 0,
   requestedTurn: null,
   inFlight: null,
+  /* How many generations in a row came back unusable. Reset by any success. */
+  turnFailures: 0,
 };
 
+/**
+ * The bridge's state as callers should read it.
+ *
+ * An unconfigured bridge reads `disabled` whatever the internal field says,
+ * because "off" is the shipped default and nothing else would be true.
+ */
 function getAjoopAiState() {
   return {
-    state: ajoopAiState.state,
+    state: isAjoopAiConfigured() ? ajoopAiState.state : AJOOP_AI_STATE.DISABLED,
     model: ajoopAiState.model,
     checkedAt: ajoopAiState.checkedAt,
+    turnFailures: ajoopAiState.turnFailures,
   };
+}
+
+/** Records a service-level verdict. Turn outcomes do not come through here. */
+function setAjoopBridgeState(state, now) {
+  ajoopAiState.state = state;
+  ajoopAiState.checkedAt = ajoopAiNow(now);
+  if (state !== AJOOP_AI_STATE.AVAILABLE) ajoopAiState.model = null;
 }
 
 /** Opens a new turn and invalidates any reply still in flight for the old one. */
@@ -133,9 +176,10 @@ function isAjoopAiTurnCurrent(turn) {
 
 function resetAjoopAiState() {
   beginAjoopAiTurn();
-  ajoopAiState.state = AJOOP_AI_STATE.DISABLED;
+  ajoopAiState.state = AJOOP_AI_STATE.UNKNOWN;
   ajoopAiState.checkedAt = 0;
   ajoopAiState.model = null;
+  ajoopAiState.turnFailures = 0;
 }
 
 /* ---------- transport ---------- */
@@ -286,15 +330,14 @@ async function checkAjoopAiHealth(options) {
     { version: AJOOP_AI_PROTOCOL_VERSION, mode: "health" },
     { config, fetchImpl: settings.fetchImpl },
   );
-  ajoopAiState.checkedAt = ajoopAiNow(settings.now);
 
   if (result.ok && result.body && result.body.ok === true) {
-    ajoopAiState.state = AJOOP_AI_STATE.AVAILABLE;
+    setAjoopBridgeState(AJOOP_AI_STATE.AVAILABLE, settings.now);
     ajoopAiState.model =
       typeof result.body.model === "string" ? result.body.model.slice(0, 64) : null;
+    ajoopAiState.turnFailures = 0;
   } else {
-    ajoopAiState.state = AJOOP_AI_STATE.UNAVAILABLE;
-    ajoopAiState.model = null;
+    setAjoopBridgeState(AJOOP_AI_STATE.UNAVAILABLE, settings.now);
   }
   return ajoopAiState.state;
 }
@@ -302,27 +345,44 @@ async function checkAjoopAiHealth(options) {
 /* ---------- the request ---------- */
 
 /**
+ * Records one failed generation.
+ *
+ * Every generation failure is first a verdict about that turn. This includes a
+ * refused connection or HTTP error: the health probe may have succeeded a
+ * moment earlier, and one request must not repaint that service verdict. Only
+ * a run of failures is finally read as the service being unavailable.
+ */
+function recordAjoopAiTurnFailure(now) {
+  ajoopAiState.turnFailures += 1;
+  if (ajoopAiState.turnFailures >= AJOOP_AI_TURN_FAILURE_LIMIT) {
+    setAjoopBridgeState(AJOOP_AI_STATE.UNAVAILABLE, now);
+  }
+}
+
+/**
  * Asks the bridge to restate one answer.
  *
- * Resolves to `{ ok: true, answer, model }` only when every gate passes; any
- * other outcome resolves to `{ ok: false, reason }` and the caller keeps the
- * deterministic answer it already rendered. A late reply for a superseded turn
- * is reported as stale so it is never painted over a newer one.
+ * Resolves to `{ ok: true, answer, model, turnState: "ai" }` only when every
+ * gate passes; any other outcome resolves to `{ ok: false, reason, turnState }`
+ * and the caller keeps the deterministic answer it already rendered. A late
+ * reply for a superseded turn is reported as stale so it is never painted over
+ * a newer one, and a stale reply is not a failure of anything.
  */
 async function requestAjoopAiResponse(options) {
   const settings = options || {};
   const config = settings.config || getAjoopAiConfig();
-  if (!isAjoopAiConfigured(config)) return { ok: false, reason: "not-configured" };
+  const failed = (reason) => ({ ok: false, reason, turnState: AJOOP_AI_TURN.FAILED });
+  if (!isAjoopAiConfigured(config)) return failed("not-configured");
   if (ajoopAiState.state === AJOOP_AI_STATE.UNAVAILABLE && !settings.force) {
     const now = ajoopAiNow(settings.now);
     if (now - ajoopAiState.checkedAt < config.retryAfterMs) {
-      return { ok: false, reason: "unavailable" };
+      return failed("unavailable");
     }
   }
 
   const turn = typeof settings.turn === "number" ? settings.turn : ajoopAiState.turn;
   if (ajoopAiState.requestedTurn === turn) {
-    return { ok: false, reason: "duplicate-turn" };
+    return failed("duplicate-turn");
   }
   ajoopAiState.requestedTurn = turn;
   const result = await postAjoopAiRequest(settings.payload, {
@@ -330,29 +390,31 @@ async function requestAjoopAiResponse(options) {
     fetchImpl: settings.fetchImpl,
   });
 
-  if (!isAjoopAiTurnCurrent(turn)) return { ok: false, reason: "stale" };
+  if (!isAjoopAiTurnCurrent(turn)) {
+    return { ok: false, reason: "stale", turnState: null };
+  }
 
   if (!result.ok) {
-    ajoopAiState.state = AJOOP_AI_STATE.UNAVAILABLE;
-    ajoopAiState.checkedAt = ajoopAiNow(settings.now);
-    return { ok: false, reason: result.reason };
+    recordAjoopAiTurnFailure(settings.now);
+    return failed(result.reason);
   }
 
   const validated = validateAjoopAiResponse(result.body);
   if (!validated) {
-    if (result.body && typeof result.body === "object" && result.body.ok === false) {
-      ajoopAiState.state = AJOOP_AI_STATE.UNAVAILABLE;
-      ajoopAiState.checkedAt = ajoopAiNow(settings.now);
-      ajoopAiState.model = null;
-    }
-    /* Structurally nonsensical data does not disable a reachable bridge. An
-     * explicit ok:false is the workflow's controlled unavailable verdict. */
-    return { ok: false, reason: "invalid-response" };
+    /* An explicit ok:false is still a failed generation, not permission for one
+     * turn to override the bridge's health verdict. */
+    recordAjoopAiTurnFailure(settings.now);
+    return failed("invalid-response");
   }
 
-  ajoopAiState.state = AJOOP_AI_STATE.AVAILABLE;
-  ajoopAiState.checkedAt = ajoopAiNow(settings.now);
+  setAjoopBridgeState(AJOOP_AI_STATE.AVAILABLE, settings.now);
+  ajoopAiState.turnFailures = 0;
   if (validated.model) ajoopAiState.model = validated.model;
-  return { ok: true, answer: validated.answer, model: validated.model };
+  return {
+    ok: true,
+    answer: validated.answer,
+    model: validated.model,
+    turnState: AJOOP_AI_TURN.AI,
+  };
 }
 /* ajoop-ai-bridge:end */
