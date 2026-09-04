@@ -16,6 +16,7 @@
     "qa:ajoop:bridge": "node scripts/qa-ajoop-bridge.mjs",
     "qa:ajoop:knowledge": "node scripts/qa-ajoop-knowledge.mjs",
     "qa:ajoop:facts": "node scripts/qa-ajoop-facts.mjs",
+    "qa:ajoop:retrieval": "node scripts/qa-ajoop-retrieval.mjs",
     "start:ajoop:bridge": "node server/ajoop-bridge.mjs",
     "qa:request": "node scripts/qa-request-submission.mjs",
     "qa:projects": "node scripts/qa-project-data.mjs",

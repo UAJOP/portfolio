@@ -23,7 +23,8 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadMasterKnowledge } from "../server/ajoop-knowledge.mjs";
-import { buildAliasIndex, buildRetrievalQuery, resolveEntities } from "../server/ajoop-entities.mjs";
+import { buildAliasIndex, resolveEntities } from "../server/ajoop-entities.mjs";
+import { buildRetrievalText } from "../server/ajoop-retrieval.mjs";
 import { buildExactFacts, renderExactFact, resolveExactFact } from "../server/ajoop-facts.mjs";
 import { foldQuestion, foldPreservingDotless } from "../server/ajoop-text.mjs";
 import { createAjoopRag } from "../server/ajoop-rag.mjs";
@@ -343,7 +344,7 @@ for (const question of GENERIC_CONCEPTS) {
   check(`a generic concept gains no canonical entity: ${question}`, resolvesTo(question), "");
   check(
     `and its retrieval query is untouched: ${question}`,
-    buildRetrievalQuery(question, resolveEntities(question, aliasIndex)),
+    buildRetrievalText(question, resolveEntities(question, aliasIndex), null),
     question,
   );
 }
@@ -400,18 +401,18 @@ check("the ordinary fold does not", foldQuestion("sınama"), "sinama");
 /* ---------- I. the retrieval query, and the untouched question ---------- */
 
 for (const question of ["sinamanın stacki ne", "cbot'ta ne yaptı", "c sharp projeleri neler", "merge rush nasıl çalışıyor"]) {
-  const query = buildRetrievalQuery(question, resolveEntities(question, aliasIndex));
+  const query = buildRetrievalText(question, resolveEntities(question, aliasIndex), null);
   ok(`the retrieval query keeps the question verbatim: ${question}`, query.startsWith(question));
   ok(`it carries canonical entity names: ${question}`, /canonical entities:/.test(query));
 }
 check(
   "SINAMA is named by its full canonical title",
-  buildRetrievalQuery("sinamanın stacki ne", resolveEntities("sinamanın stacki ne", aliasIndex)),
+  buildRetrievalText("sinamanın stacki ne", resolveEntities("sinamanın stacki ne", aliasIndex), null),
   `sinamanın stacki ne\ncanonical entities: ${raw.projects.flagship.SINAMA.name}`,
 );
 check(
   "a question with no entity is passed through unchanged",
-  buildRetrievalQuery("bugün hava nasıl", resolveEntities("bugün hava nasıl", aliasIndex)),
+  buildRetrievalText("bugün hava nasıl", resolveEntities("bugün hava nasıl", aliasIndex), null),
   "bugün hava nasıl",
 );
 /* The load-bearing one: a question that uses the ordinary Turkish word must
@@ -423,7 +424,7 @@ check(
   const question = "sınama ve değerlendirme arasındaki fark nedir";
   check(
     "an ordinary-word question is embedded verbatim, with nothing added",
-    buildRetrievalQuery(question, resolveEntities(question, aliasIndex)),
+    buildRetrievalText(question, resolveEntities(question, aliasIndex), null),
     question,
   );
 }
@@ -509,11 +510,15 @@ const ask = (question, locale = "tr") =>
  * embedding query identical to what the visitor typed. */
 {
   embedQueries.length = 0;
+  const before = embedCalls;
   const response = await ask("GitHub nedir?");
   check("[e2e] a definition question is not answered from a fact", response.status, 503);
   ok("[e2e] and it carries no exact fact", !("exactFact" in response.body));
-  check("[e2e] its embedding query is the question, verbatim", embedQueries[0], "GitHub nedir?");
-  ok("[e2e] with no canonical entity tail", !/canonical entities:/.test(embedQueries[0] || ""));
+  /* Brief 2 required only that no canonical entity tail reached the embedding.
+   * Retrieval quarantine is stronger: a context-ineligible question is not
+   * embedded at all, so there is no query to contaminate. */
+  check("[e2e] it is not embedded at all", embedCalls - before, 0);
+  ok("[e2e] so no canonical entity tail can exist", !embedQueries.some((query) => /canonical entities:/.test(query)));
 }
 
 /* The live-data guard still runs first, ahead of everything added here. */

@@ -157,17 +157,3 @@ export function resolveEntities(question, index) {
   }
   return resolved;
 }
-
-/**
- * The text the embedding model sees, which is not the text the visitor wrote.
- *
- * The question is preserved verbatim at the front and the canonical names are
- * appended as a labelled tail. That keeps the retrieval query honest about what
- * was asked while giving the embedding the spelling the corpus actually uses.
- */
-export function buildRetrievalQuery(question, entities) {
-  const trimmed = String(question || "").trim();
-  if (!entities?.length) return trimmed;
-  const names = [...new Set(entities.map((entity) => entity.descriptor))];
-  return `${trimmed}\ncanonical entities: ${names.join("; ")}`;
-}

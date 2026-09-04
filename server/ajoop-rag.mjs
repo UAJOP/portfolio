@@ -8,8 +8,18 @@ import {
   resolveCorsOrigin,
 } from "./ajoop-bridge-core.mjs";
 import { MASTER_KNOWLEDGE_SOURCE, loadMasterKnowledge } from "./ajoop-knowledge.mjs";
-import { buildAliasIndex, buildRetrievalQuery, resolveEntities } from "./ajoop-entities.mjs";
+import { buildAliasIndex } from "./ajoop-entities.mjs";
 import { buildExactFacts, renderExactFact, resolveExactFact } from "./ajoop-facts.mjs";
+import { foldQuestion } from "./ajoop-text.mjs";
+import {
+  buildChunkAffinity,
+  buildEntityIndex,
+  isCandidateEligible,
+  lexicalTerms,
+  planRetrievalTurn,
+  scoreCandidate,
+  selectTopChunks,
+} from "./ajoop-retrieval.mjs";
 
 const RAG_PATH = "/ajoop-rag";
 const RAG_PROTOCOL_VERSION = 1;
@@ -437,6 +447,13 @@ async function buildPortfolioChunks() {
             entityId: cleanText(record?.id) || id,
             title: titleFor(record, id),
             record,
+            /* Structural identifiers can establish project ownership without
+             * scanning prose. In particular, projects/hospital points at the
+             * hospital-form-app detail slug and must not look cross-cutting to
+             * a Hospital Appointment System query. */
+            extra: {
+              affinityHints: [id, record?.id, record?.detailSlug].filter(Boolean),
+            },
           }),
         );
       });
@@ -452,6 +469,13 @@ async function buildPortfolioChunks() {
             entityId: id,
             title: titleFor(record, `${dataset.id} ${index + 1}`),
             record,
+            /* Item collections use `area` for ownership (for example a dated
+             * Merge Rush build-log entry). Without this structural hint the
+             * record looks cross-cutting and can leak into another project's
+             * context under adversarial similarity. */
+            extra: {
+              affinityHints: [record?.id, record?.area, record?.project, record?.detailSlug].filter(Boolean),
+            },
           }),
         );
       });
@@ -628,6 +652,8 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
    * afterwards. Nothing here touches the filesystem or the network per turn. */
   let exactFacts = [];
   let aliasIndex = { entities: [], aliasCount: 0 };
+  let entityIndex = { entities: [], aliasCount: 0, byType: () => [] };
+  let chunkAffinity = new Map();
   let masterTitles = new Map();
   /**
    * What ordinary semantic retrieval is allowed to see.
@@ -701,6 +727,12 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
         ready = Boolean(index.length);
         aliasIndex = buildAliasIndex(master.knowledge);
         exactFacts = buildExactFacts(master.knowledge, aliasIndex);
+        /* The alias index carries the curated spellings; the entity index adds
+         * types and the employers and projects the master records without
+         * aliasing. Chunk affinity is then derived once, so isolation costs
+         * nothing per turn. */
+        entityIndex = buildEntityIndex(master.knowledge, aliasIndex);
+        chunkAffinity = buildChunkAffinity(retrievalIndex, entityIndex);
         masterTitles = new Map(master.records.map((record) => [record.id, record.title]));
         corpusStats = {
           ...stats,
@@ -708,6 +740,7 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
           exactFacts: exactFacts.length,
           aliasEntities: aliasIndex.entities.length,
           aliasPhrases: aliasIndex.aliasCount,
+          retrievalEntities: entityIndex.entities.length,
         };
         return { ready, chunks: index.length, embedModel, ...corpusStats };
       } catch (error) {
@@ -717,6 +750,8 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
         corpusStats = {};
         exactFacts = [];
         aliasIndex = { entities: [], aliasCount: 0 };
+        entityIndex = { entities: [], aliasCount: 0, byType: () => [] };
+        chunkAffinity = new Map();
         masterTitles = new Map();
         return { ready: false, chunks: 0, embedModel };
       } finally {
@@ -734,28 +769,63 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
    * against the spelling the corpus uses. Only the embedding sees this; the
    * model is given the original question.
    */
-  const retrieve = async (queryText, history) => {
-    const recentUser = history
-      .filter((item) => item.role === "user")
-      .slice(-2)
-      .map((item) => item.content);
-    const query = [...recentUser, queryText].filter(Boolean).join("\n");
-    const [queryVector] = await embedInputs([query]);
-    const ranked = retrievalIndex
-      .map((item) => ({ ...item, score: dotProduct(queryVector, item.vector) }))
-      .sort((a, b) => b.score - a.score);
+  const retrieve = async (plan, question) => {
+    /* The embedding query is the current question plus the canonical names it
+     * resolved — never earlier conversation. Concatenating old user prose is
+     * what made a new self-contained question embed as a continuation of the
+     * previous topic. */
+    const [queryVector] = await embedInputs([plan.retrievalText]);
+    const terms = lexicalTerms(question);
 
-    const selected = [];
-    const perEntity = new Map();
-    for (const item of ranked) {
-      const key = `${item.source}:${item.entityId}`;
-      const count = perEntity.get(key) || 0;
-      if (count >= 2) continue;
-      selected.push(item);
-      perEntity.set(key, count + 1);
-      if (selected.length >= topK) break;
-    }
-    return selected;
+    /* Ineligible candidates are removed BEFORE scoring. A wrong-project record
+     * that is out of the running cannot be rescued by similarity, which is the
+     * difference between isolation and a penalty. */
+    const ranked = retrievalIndex
+      .filter((item) => isCandidateEligible(item, chunkAffinity, plan))
+      .map((item) => {
+        const scored = scoreCandidate(item, dotProduct(queryVector, item.vector), {
+          affinity: chunkAffinity,
+          activeEntities: plan.activeEntities,
+          terms,
+          framedTypes: plan.framedTypes,
+        });
+        return { ...item, ...scored, score: scored.finalScore };
+      })
+      .sort((a, b) => b.finalScore - a.finalScore);
+
+    /* An explicitly named entity reserves slots for its OWN records; a
+     * professionally framed question with no named entity reserves them for the
+     * family it asked about. Either way the reservation is bounded, so the rest
+     * of the context still follows the ranking. */
+    const named = plan.activeProjects.length || plan.activeOrganizations.length;
+    const matchesInternship = (item) => {
+      const haystack = foldQuestion(
+        [item.title, ...(item.tags || []), item.metadata?.role].filter(Boolean).join(" "),
+      );
+      return item.entityType === "experience" && /(?:^| )(?:intern|internship|staj|stajyer)(?: |$)/.test(haystack);
+    };
+    const reserveWhen = named
+      ? (item) => {
+          const marks = chunkAffinity.get(item.id) || { projects: [], organizations: [] };
+          return [...marks.projects, ...marks.organizations].some((name) => plan.activeEntities.includes(name));
+        }
+      : plan.experienceFocus === "internship"
+        ? matchesInternship
+        : (item) => plan.reservedTypes.includes(item.entityType);
+
+    /* An employer/work-history overview is the one case where four chunks
+     * cannot contain the canonical answer: the master currently has six roles
+     * across five organizations. Include one chunk from every experience
+     * record (still capped at eight) so the model can name the complete set.
+     * An internship question instead reserves only the matching role first. */
+    const experienceRecords = ranked.filter((item) => item.entityType === "experience");
+    const selectedTopK = plan.experienceFocus === "overview"
+      ? Math.max(topK, Math.min(8, experienceRecords.length))
+      : topK;
+    const reservedSlots = plan.experienceFocus === "overview"
+      ? Math.min(8, experienceRecords.length)
+      : plan.experienceFocus === "internship" ? 1 : undefined;
+    return selectTopChunks(ranked, { topK: selectedTopK, reserveWhen, reservedSlots });
   };
 
   const generate = async (question, locale, history, retrieved) => {
@@ -783,6 +853,7 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
       "Choose PORTFOLIO when the question concerns Kaan, his work, projects, skills, experience, career, contact details, this portfolio, yourself, or a follow-up to any of those.",
       "Choose GENERAL for ordinary conversation and general-knowledge questions unrelated to Kaan. Retrieved records that merely look similar never turn a general question into a portfolio one; ignore them and answer the question that was asked.",
       "For PORTFOLIO: every factual claim about Kaan must come only from the retrieved records. If the records do not contain it, say the portfolio does not record it. Never infer or invent a personal fact, an employer, a date, a title or a metric.",
+      "For work-history questions, name every employer represented in the retrieved experience records. For a specific role or internship, copy the organization, role title and Period field from the matching record exactly as written. Never calculate a duration, rewrite the date range or summarize those fields away.",
       "Hiring, role-fit and 'what would he bring us' questions deserve a real assessment, not a disclaimer. Weigh the retrieved evidence, name the kinds of role it supports most strongly, point to the specific projects or results behind that, and say plainly where the portfolio is thin. Present it as decision support, not a hiring verdict, and never strengthen the case with experience the records do not show.",
       "For GENERAL: answer normally and helpfully from general knowledge, in your own voice.",
       "You have no web access and no live data feed of any kind. For anything that changes in real time — weather, exchange rates, share or crypto prices, breaking news, sports results, traffic, opening hours, live availability — say plainly and briefly that you cannot look it up live, add whatever durable context is genuinely useful, and stay GENERAL. Never guess or estimate a current value, never imply you checked a source, and never answer such a question by saying the portfolio does not record it.",
@@ -977,18 +1048,28 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
       }
     }
 
-    /* Only the retrieval path needs entities, so this runs after the fact route
-     * has declined — the deterministic answer never pays for it.
+    /* Only the retrieval path needs any of this, so it runs after the fact
+     * route has declined — the deterministic answer never pays for it.
      *
-     * Alias resolution reads the CURRENT question only, and never edits the
-     * message: resolved names travel with the retrieval query and nowhere else,
-     * so the model still reads what the visitor actually typed. */
-    const entities = resolveEntities(question, aliasIndex);
+     * The plan decides, from the CURRENT question and the supplied history,
+     * which entities are active, whether portfolio records may be shown at all,
+     * and how much conversation the model sees. The visitor's message is never
+     * rewritten; resolved names travel with the embedding query and nowhere
+     * else. */
+    const plan = planRetrievalTurn({ question, history, entityIndex });
 
     active += 1;
     try {
-      const retrieved = await retrieve(buildRetrievalQuery(question, entities), history);
-      const result = await generate(question, locale, history, retrieved);
+      /* Context quarantine. When nothing about the question asks for Kaan's
+       * records, none are fetched and none are shown — no embedding call, and
+       * the model is told plainly that there are no records. This is what stops
+       * a lexical collision like "sınama ve değerlendirme" from arriving as
+       * portfolio evidence and being scoped accordingly. */
+      const retrieved = plan.contextEligible ? await retrieve(plan, question) : [];
+      /* The model sees the selected conversation, not the last six turns. A
+       * self-contained question gets none, so an earlier topic cannot bleed
+       * into an unrelated answer. */
+      const result = await generate(question, locale, plan.generationHistory, retrieved);
       const sources =
         result.scope === "PORTFOLIO"
           ? retrieved.map((item) => ({

@@ -27,11 +27,11 @@ everything below.
 asks the model to restate it. It sends the question, the locale and a bounded
 in-memory conversation history; the bridge retrieves from the canonical
 portfolio JSON itself and decides, per turn, whether the question is
-`PORTFOLIO` or `GENERAL`. There is no intent gate in front of the model —
-every typed turn is eligible, and a general question is answered as ordinary
-conversation even when retrieval happened to return portfolio chunks. The
-bridge has no web access and says so rather than guessing when a question needs
-live data.
+`PORTFOLIO` or `GENERAL`. There is no intent gate in front of the model — every
+ordinary typed turn is eligible for generation, while Brief 3 makes the
+portfolio retrieval context conditional. A general question is answered as
+ordinary conversation without exposing portfolio records. The bridge has no
+web access and says so rather than guessing when a question needs live data.
 
 **The lifecycle inverted.** 4.3 rendered the deterministic answer and let the
 model overwrite it, which showed the visitor two answers per turn. 5.1 opens one
@@ -64,8 +64,8 @@ becomes roughly seventy records of one concept or entity each — `identity`,
 `certifications:summary`, `github:summary` — so that retrieval returns the fact
 a question is about rather than a slab of everything. Each record carries
 `entityType`, `visibility`, `priority`, `tags` and `metadata` alongside the
-fields every chunk has always had. Nothing consumes `priority` or `tags` yet;
-they exist so later work on ranking and evidence links does not have to rewrite
+fields every chunk has always had. Brief 3 consumes them for hybrid ranking,
+record-family reservation and project affinity without having to rewrite
 ingestion.
 
 Two properties are load-bearing and are covered by `npm run qa:ajoop:knowledge`:
@@ -156,10 +156,10 @@ a bounded Turkish suffix (`ajoop-text.mjs`), which is what lets `GitHub'ı`,
 
 Four entities are **context-sensitive**: GitHub, LinkedIn, C# and .NET are
 things visitors ask ordinary general questions about, so their names alone do
-not resolve. "GitHub nedir?" and "C# nedir?" reach the embedding exactly as
-typed, with no canonical tail; "Kaan GitHub Actions biliyor mu?", "c sharp ile
-ne yaptı?" and "Kaan'ın LinkedIn deneyimi nasıl?" resolve because the question
-independently says it is about his work. Only these four are gated — SINAMA,
+not resolve. "GitHub nedir?" and "C# nedir?" reach general generation with no
+embedding and no canonical tail; "Kaan GitHub Actions biliyor mu?", "c sharp
+ile ne yaptı?" and "Kaan'ın LinkedIn deneyimi nasıl?" resolve because the
+question independently says it is about his work. Only these four are gated — SINAMA,
 CBOT and Merge Rush are not subjects of general conversation, and gating every
 alias would cost recall for nothing. A bare "GitHub" or "linkdin" is still
 answered, by the exact-fact route, before retrieval is involved.
@@ -172,9 +172,77 @@ One further ambiguity rule exists, and it is small: `sınama` with the dotless �
 is the ordinary noun "testing", while `sinama` is not a Turkish word at all. A
 question using the ordinary-word spelling resolves to the project only if it
 also carries a portfolio signal, which is why `ajoop-text.mjs` keeps a second
-fold that preserves ı. Note that this governs alias resolution only: what
-retrieval returns for such a question, and how the model then scopes it, is
-ranking work that belongs to a later brief.
+fold that preserves ı. This governs alias resolution; the eligibility and
+ranking policy below separately keeps an ordinary-word question out of the
+portfolio corpus.
+
+## What changed in 5.2: retrieval precision and conversation state
+
+`server/ajoop-retrieval.mjs` decides three things before a byte is embedded:
+which entities the turn is about, whether portfolio records may be shown at
+all, and which records are eligible. The MODEL still chooses PORTFOLIO vs
+GENERAL — this is not an intent router in front of it.
+
+**Context eligibility** is the narrow question of whether to retrieve. Semantic
+similarity is deliberately not one of the reasons: an explicit entity, an
+explicit professional framing, or a genuine follow-up are. That is what finally
+fixes "sınama ve değerlendirme arasındaki fark nedir", which used to rank SINAMA
+chunks on lexical closeness and come back scoped as a portfolio answer. It is now
+GENERAL with zero retrieval and zero embedding calls. A definition frame with no
+entity is never eligible, so "proje yönetimi nedir?" stays general despite
+containing a professional noun.
+
+**Project isolation is a filter, not a penalty.** When the visitor names SINAMA,
+Merge Rush's records are removed from the candidate set, so no similarity score
+can put a Phaser stack into a SINAMA answer. Records belonging to no project —
+skills, positioning, recruiter evidence — are cross-cutting and stay eligible.
+Naming two projects lifts the lock for both, so a comparison sees both. Chunk
+affinity is derived once at startup from each chunk's source, id, title, tags and
+structural identifiers such as `detailSlug` or build-log `area`, never from its
+body prose. That is why a record that merely mentions four projects in prose
+belongs to none of them, while the legacy `projects/hospital` card remains owned
+by Hospital Form App.
+
+Organizations work the same way; technologies deliberately do not. Naming C#
+boosts relevance without locking to one project, because C# legitimately spans
+several.
+
+**Reserved slots** solve a problem a weight could not. "Kaan hangi şirketlerde
+çalıştı?" shares almost no vocabulary with "CBOT — AI Designer", so the embedding
+can rank every experience record below unrelated ones — which is how a question
+with a good answer in the corpus came back as "the portfolio does not record it".
+Mapping the framing to a record TYPE is a structural guarantee, and it needs no
+hardcoded career facts. A work-history overview expands the usual four-record
+window just enough to include one chunk from every canonical role (currently six
+roles across five organizations); an internship question reserves the matching
+internship role first. An explicitly named entity instead reserves slots for its
+own records.
+
+**History is now two separate things.** The retrieval query is the current
+question plus canonical entity names and nothing else — raw prose from earlier
+turns is never concatenated in, which is what made a new question embed as a
+continuation of the old one. Generation history is sent only for a genuine
+follow-up; a self-contained question gets none, so "RAG nedir?" after a
+dollar-rate refusal reads as if it were the first thing anyone asked.
+
+**Only user turns establish entity memory.** An assistant message is text this
+system generated, and letting it set conversational state means the model's own
+guess about the subject becomes the reason the next turn retrieves those records
+— a loop with no ground truth in it. The inheritance walk stops at the first
+self-contained user question that named no entity, so
+"SINAMA nedir? → RAG nedir? → peki neden önemli?" does not reach back past the
+RAG question.
+
+Per-turn cost is unchanged: an exact fact still costs nothing upstream, a
+quarantined general question costs one generation and no embedding, and a
+portfolio turn costs one embedding and one generation. Hybrid ordering combines
+semantic similarity with bounded entity, lexical, canonical-source and requested
+record-family bonuses; no second model or reranker call exists.
+
+Brief 2's privacy boundary remains intact: `public_on_request` records are still
+removed before semantic ranking, the phone remains available only through its
+explicit exact-fact route, and a self-contained turn receives no earlier model
+answer that could replay a sensitive value.
 
 ## Why n8n left the public path
 
