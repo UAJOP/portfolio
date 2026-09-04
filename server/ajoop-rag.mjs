@@ -59,6 +59,154 @@ const MAX_ANSWER_CHARS = 1800;
  */
 export { parseScopedAnswer };
 
+/* ---------- live external data capability guard ---------- */
+
+/**
+ * The three things Ajoop can actually answer from: the portfolio records,
+ * the model's general knowledge, and the supplied local clock.
+ *
+ * It has no web access and no feed, so a question whose answer is a value
+ * that moved this morning is one it can only invent. The system prompt says
+ * exactly that, and the shipped 4B model appends a number anyway — measured on
+ * one question it produced both "1 USD = 24,50 TL" and a "10-11 TL" range.
+ * A fabricated exchange rate on a portfolio site is worse than no answer, so
+ * the capability boundary is ENFORCED here instead of being requested in a
+ * prompt the model is free to ignore.
+ *
+ * THIS IS NOT AN INTENT ROUTER. It never decides PORTFOLIO versus GENERAL for
+ * an ordinary question, and it only fires when BOTH signals are present: a
+ * word that makes the question about NOW, and a subject whose value changes.
+ * Neither alone does anything. Every other question — every portfolio one and
+ * all ordinary conversation — reaches the model exactly as before.
+ *
+ * The narrowness is deliberate and costs recall: "hava durumu nasıl tahmin
+ * edilir?" is untouched because it asks how forecasting works, but adding
+ * "bugün" to that sentence would trip the guard. Answering "I cannot check
+ * that live" to a question about method is a small wrong answer; inventing a
+ * rate is a large one.
+ */
+
+/**
+ * Plain ASCII lowercase, so a question matches whether or not the visitor
+ * typed the diacritics — "güncel" and "guncel" are the same ask.
+ */
+function foldAjoopQuestion(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[ıİ]/g, "i")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/** Words that make a question about NOW rather than about a subject. */
+const AJOOP_LIVE_NOW_WORDS = new Set([
+  "guncel", "guncelmi", "bugun", "simdi", "suan", "anlik", "canli", "son",
+  "now", "current", "currently", "today", "tonight", "latest", "live", "breaking",
+  "aktuell", "aktuelle", "aktuellen", "gerade", "heute", "momentan", "jetzt",
+  "ahora", "actual", "actualmente", "hoy",
+  "actuel", "actuelle", "maintenant", "hui",
+]);
+
+const AJOOP_LIVE_NOW_PHRASES = [
+  "su an", "su anda", "bu an", "right now", "at the moment", "as of now", "en ce moment",
+];
+
+/** Money-shaped subjects, which get the more specific answer. */
+const AJOOP_LIVE_MONEY_WORDS = new Set([
+  "dolar", "dolari", "dolarin", "dolara", "dolarlik", "euro", "avro", "sterlin",
+  "kuru", "kurlar", "kurlari", "doviz", "dovizin", "altin", "gumus",
+  "bitcoin", "btc", "ethereum", "kripto", "borsa", "borsada", "hisse", "hisseler",
+  "usd", "eur", "gbp", "dollar", "crypto", "rate", "rates", "stocks",
+  "wechselkurs", "aktienkurs", "divisa", "divisas", "bolsa", "devise", "devises", "bourse",
+]);
+
+const AJOOP_LIVE_MONEY_PHRASES = [
+  "exchange rate", "stock price", "share price", "tipo de cambio", "taux de change",
+];
+
+/** Everything else that changes faster than a static site can know. */
+const AJOOP_LIVE_OTHER_WORDS = new Set([
+  "hava", "havalar", "sicaklik", "sicakligi", "derece", "yagmur", "yagmurlu",
+  "haber", "haberler", "haberleri", "trafik", "trafikte",
+  "mac", "maci", "macta", "maclar", "skor", "skoru",
+  "weather", "temperature", "forecast", "news", "headlines", "traffic", "score", "scores",
+  "wetter", "temperatur", "nachrichten", "verkehr",
+  "clima", "tiempo", "noticias", "trafico",
+  "meteo", "actualites", "circulation",
+]);
+
+const AJOOP_LIVE_OTHER_PHRASES = [
+  "hava durumu", "acik mi", "calisma saatleri", "kacta aciliyor", "kacta kapaniyor",
+  "opening hours", "is it open", "in stock", "stokta var",
+];
+
+/**
+ * Asks that are about a live value whatever else the sentence says, because
+ * the phrase itself is the question: "maç kaç kaç", "son dakika".
+ */
+const AJOOP_LIVE_ALWAYS_PHRASES = [
+  "son dakika", "kac kac", "puan durumu", "breaking news",
+];
+
+/**
+ * Which kind of live data a question needs, or null for "none of it".
+ *
+ * Exported for the regression tests: the value of a guard like this is
+ * entirely in what it does NOT catch, and that is only worth asserting
+ * directly.
+ */
+export function detectAjoopLiveDataRequest(question) {
+  const text = foldAjoopQuestion(question);
+  if (!text) return null;
+  const words = text.split(" ");
+  const anyWord = (set) => words.some((word) => set.has(word));
+  const anyPhrase = (list) => list.some((phrase) => text.includes(phrase));
+
+  const money = anyWord(AJOOP_LIVE_MONEY_WORDS) || anyPhrase(AJOOP_LIVE_MONEY_PHRASES);
+  const other = anyWord(AJOOP_LIVE_OTHER_WORDS) || anyPhrase(AJOOP_LIVE_OTHER_PHRASES);
+  if (anyPhrase(AJOOP_LIVE_ALWAYS_PHRASES)) return money ? "money" : "other";
+  if (!money && !other) return null;
+
+  /* The second signal. Without it the question is about the subject, not
+   * about its current value: "bitcoin nedir" and "döviz kuru neden değişir"
+   * are ordinary general questions and the model answers them. */
+  const asksNow = anyWord(AJOOP_LIVE_NOW_WORDS) || anyPhrase(AJOOP_LIVE_NOW_PHRASES);
+  if (!asksNow) return null;
+  return money ? "money" : "other";
+}
+
+/**
+ * What Ajoop says instead of a number.
+ *
+ * Two flavours, not a domain response system: money questions get pointed at
+ * a bank or a central bank because that is where the authoritative figure
+ * lives, and everything else gets the generic version. No value, no range, no
+ * date, nothing a visitor could mistake for a reading.
+ */
+const AJOOP_LIVE_DATA_COPY = Object.freeze({
+  money: {
+    en: "I do not have live data access, so I cannot give you a current rate — anything I named would be a guess. For the figure right now, your bank, the central bank's published rate or a finance app will be accurate.",
+    tr: "Canlı verilere erişimim yok, bu yüzden güncel kuru güvenilir biçimde söyleyemem; söyleyeceğim her rakam tahmin olurdu. En güncel değer için TCMB'yi ya da kullandığın finans uygulamasını kontrol et.",
+    de: "Ich habe keinen Zugriff auf Live-Daten und kann deshalb keinen aktuellen Kurs nennen — jede Zahl wäre geraten. Den Wert von jetzt finden Sie bei Ihrer Bank, im veröffentlichten Kurs der Zentralbank oder in einer Finanz-App.",
+    es: "No tengo acceso a datos en vivo, así que no puedo darte un tipo de cambio actual: cualquier cifra sería una suposición. Para el valor de este momento, consulta tu banco, el tipo publicado por el banco central o una app financiera.",
+    fr: "Je n'ai pas accès aux données en direct, je ne peux donc pas donner de taux actuel : tout chiffre serait une supposition. Pour la valeur du moment, consultez votre banque, le taux publié par la banque centrale ou une application financière.",
+  },
+  other: {
+    en: "I do not have live data access, so I cannot check that right now — anything I said about it would be a guess. A live source will have it: a weather service, a news site, or the official page for whatever you are checking.",
+    tr: "Canlı verilere erişimim yok, bu yüzden bunu şu anda kontrol edemem; söyleyeceğim her şey tahmin olurdu. Güncel bilgi için canlı bir kaynağa bakman gerekir: hava durumu servisi, haber sitesi ya da ilgili resmî sayfa.",
+    de: "Ich habe keinen Zugriff auf Live-Daten und kann das gerade nicht nachsehen — alles, was ich dazu sagte, wäre geraten. Eine Live-Quelle hat es: ein Wetterdienst, eine Nachrichtenseite oder die offizielle Seite dazu.",
+    es: "No tengo acceso a datos en vivo, así que no puedo comprobarlo ahora mismo: cualquier cosa que dijera sería una suposición. Una fuente en directo lo tendrá: un servicio meteorológico, un medio de noticias o la página oficial correspondiente.",
+    fr: "Je n'ai pas accès aux données en direct, je ne peux donc pas le vérifier maintenant : tout ce que j'en dirais serait une supposition. Une source en direct l'aura : un service météo, un site d'actualités ou la page officielle concernée.",
+  },
+});
+
+export function ajoopLiveDataAnswer(kind, locale) {
+  const copy = AJOOP_LIVE_DATA_COPY[kind] || AJOOP_LIVE_DATA_COPY.other;
+  return copy[locale] || copy.en;
+}
+
 /**
  * The assistant's turn is prefilled with the first label.
  *
@@ -611,6 +759,29 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
       return { status: 429, headers, body: { ok: false, error: "busy" } };
     }
     if (!withinRate()) return { status: 429, headers, body: { ok: false, error: "rate limited" } };
+
+    /* Answered WITHOUT the model. Generating text about a value the assistant
+     * cannot know is what produces the invented value, so the fix is not to
+     * sanitize the reply afterwards but to have no reply to sanitize: no
+     * retrieval, no generation, no GPU, no number. Scope is GENERAL and there
+     * are no sources, so the panel renders prose and nothing else. */
+    const liveData = detectAjoopLiveDataRequest(question);
+    if (liveData) {
+      return {
+        status: 200,
+        headers,
+        body: {
+          ok: true,
+          mode: "rag",
+          scope: "general",
+          answer: ajoopLiveDataAnswer(liveData, locale),
+          model: generationModel,
+          embedModel,
+          sources: [],
+          retrievalTopScore: 0,
+        },
+      };
+    }
 
     const history = sanitizeHistory(raw.history);
     active += 1;

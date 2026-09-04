@@ -740,6 +740,135 @@ check("a literal wildcard origin is never echoed",
     parseScopedAnswer("SCOPE:SCOPE: GENERAL\nANSWER: hi"), null);
 }
 
+/* ---------- the live external data capability guard ---------- */
+
+{
+  const { detectAjoopLiveDataRequest, ajoopLiveDataAnswer, createAjoopRag } = await import(
+    "../server/ajoop-rag.mjs"
+  );
+
+  /* Ajoop has the portfolio records, general model knowledge and the local
+   * clock. Everything below needs a feed it does not have, and the shipped 4B
+   * model invents a value when asked despite the prompt forbidding it. */
+  const intercepted = [
+    ["güncel dolar kuru kaç tl", "money"],
+    ["dolar şu an kaç", "money"],
+    ["bitcoin şu anda kaç dolar", "money"],
+    ["guncel dolar kuru kac tl", "money"],
+    ["what is the dollar rate right now", "money"],
+    ["bugün hava nasıl", "other"],
+    ["şu an İstanbul kaç derece", "other"],
+    ["what is the weather today", "other"],
+    ["son dakika haberleri neler", "other"],
+    ["maç kaç kaç", "other"],
+    ["trafik nasıl şu an", "other"],
+  ];
+  for (const [question, kind] of intercepted) {
+    check(`[live] intercepts: ${question}`, detectAjoopLiveDataRequest(question), kind);
+  }
+
+  /* The guard is worth having only if it stays out of the way. A question
+   * about a subject is not a question about its current value, and the local
+   * clock remains authoritative for date and time. */
+  const untouched = [
+    "döviz kuru neden değişir?",
+    "bitcoin nedir?",
+    "hava durumu nasıl tahmin edilir?",
+    "Türkiye ekonomisi hakkında ne düşünüyorsun?",
+    "Türkiye hakkında ne düşünüyorsun?",
+    "futbol ofsayt kuralı nedir?",
+    "why do exchange rates change?",
+    "how is weather forecast made?",
+    "bugün günlerden ne?",
+    "saat kaç?",
+    "bugün ayın kaçı?",
+    "what time is it?",
+    "Kaan'ı işe alsam bana ne katkısı olur?",
+    "SINAMA neden güçlü?",
+    "peki teknolojileri?",
+    "bugün nasılsın?",
+  ];
+  for (const question of untouched) {
+    check(`[live] leaves alone: ${question}`, detectAjoopLiveDataRequest(question), null);
+  }
+
+  /* Neither signal does anything on its own — that is what keeps this from
+   * being an intent router. */
+  check("[live] a subject with no liveness marker is not intercepted",
+    detectAjoopLiveDataRequest("dolar"), null);
+  check("[live] a liveness marker with no subject is not intercepted",
+    detectAjoopLiveDataRequest("şu an"), null);
+
+  /* The safe answer never carries a value to mistake for a reading. */
+  for (const locale of ["en", "tr", "de", "es", "fr"]) {
+    for (const kind of ["money", "other"]) {
+      const answer = ajoopLiveDataAnswer(kind, locale);
+      ok(`[live] ${locale}/${kind} has a localized answer`, answer.length > 40);
+      ok(`[live] ${locale}/${kind} states no figure`, !/[0-9]/.test(answer));
+    }
+  }
+  check("[live] an unknown locale falls back to English",
+    ajoopLiveDataAnswer("money", "it"), ajoopLiveDataAnswer("money", "en"));
+  ok("[live] the five locales differ from one another",
+    new Set(["en", "tr", "de", "es", "fr"].map((l) => ajoopLiveDataAnswer("other", l))).size === 5);
+
+  /* End to end: the model is never asked. A fetch that throws on /api/chat
+   * would surface as a 503, so a 200 here is proof generation was bypassed
+   * rather than merely sanitized afterwards. */
+  let chatCalls = 0;
+  const embedOnly = async (url, init) => {
+    if (String(url).includes("/api/chat")) {
+      chatCalls += 1;
+      throw new Error("generation must not be reached");
+    }
+    const batch = JSON.parse(init.body).input;
+    return { ok: true, json: async () => ({ embeddings: batch.map(() => [1, 0, 0]) }) };
+  };
+  const rag = createAjoopRag({ env: ENV, fetchImpl: embedOnly });
+  const status = await rag.initialize();
+  ok("[live] the fixture index is ready", status.ready);
+
+  const askRag = (question, locale) =>
+    rag.handle({
+      method: "POST",
+      origin: ORIGIN,
+      contentType: "application/json",
+      body: JSON.stringify({
+        version: AJOOP_BRIDGE_PROTOCOL_VERSION,
+        mode: "rag",
+        question,
+        locale,
+        history: [],
+      }),
+    });
+
+  const rate = await askRag("güncel dolar kuru kaç tl", "tr");
+  check("[live] a live-data question is answered", rate.status, 200);
+  check("[live] it is answered as GENERAL", rate.body.scope, "general");
+  check("[live] it carries no portfolio sources", rate.body.sources.length, 0);
+  ok("[live] it invents no exchange rate", !/[0-9]/.test(rate.body.answer));
+  check("[live] it answers in the requested locale", rate.body.answer,
+    ajoopLiveDataAnswer("money", "tr"));
+  check("[live] the model was never called", chatCalls, 0);
+
+  const casual = await askRag("dolar şu an kaç", "tr");
+  check("[live] a second phrasing is answered the same way", casual.body.scope, "general");
+  check("[live] the second phrasing still never reaches the model", chatCalls, 0);
+
+  const weather = await askRag("bugün hava nasıl", "en");
+  check("[live] a current-weather question is intercepted", weather.body.answer,
+    ajoopLiveDataAnswer("other", "en"));
+
+  /* And the questions the guard must not touch do reach generation — which
+   * this fixture proves by failing to answer them. */
+  const durable = await askRag("döviz kuru neden değişir?", "tr");
+  check("[live] a durable question is passed through to the model", durable.status, 503);
+  check("[live] passing it through reached generation", chatCalls, 1);
+  const dateQuestion = await askRag("bugün günlerden ne?", "tr");
+  check("[live] a date question is passed through to the model", dateQuestion.status, 503);
+  check("[live] the clock question also reached generation", chatCalls, 2);
+}
+
 /* ---------- health must not promise service an index cannot give ---------- */
 
 {
