@@ -18,7 +18,10 @@ const runtimeEnv = {
   ...process.env,
   AJOOP_AI_MODEL: process.env.AJOOP_AI_MODEL || "qwen3:4b-instruct",
   AJOOP_AI_TEMPERATURE: process.env.AJOOP_AI_TEMPERATURE || "0",
-  AJOOP_AI_TIMEOUT_MS: process.env.AJOOP_AI_TIMEOUT_MS || "8000",
+  /* Warm RAG turns are normally 1–4s, but occasional runner/GPU scheduling
+   * spikes can cross the old 8s ceiling. Fifteen seconds keeps the deterministic
+   * fallback bounded without throwing away a healthy local generation. */
+  AJOOP_AI_TIMEOUT_MS: process.env.AJOOP_AI_TIMEOUT_MS || "15000",
 };
 
 function extractFastFinalAnswer(value) {
@@ -120,8 +123,48 @@ async function fastOllamaFetch(url, options = {}) {
   }
 }
 
+/**
+ * RAG keeps model-owned scope selection, but adds hard semantic guardrails that
+ * are independent of whatever irrelevant portfolio chunks retrieval happened
+ * to return. This is not an intent router: the model still decides the scope.
+ */
+async function ragOllamaFetch(url, options = {}) {
+  if (!nativeFetch) throw new TypeError("fetch unavailable");
+
+  const isChat = String(url).endsWith("/api/chat");
+  if (!isChat || typeof options.body !== "string") return nativeFetch(url, options);
+
+  let requestOptions = options;
+  try {
+    const body = JSON.parse(options.body);
+    if (Array.isArray(body.messages)) {
+      const system = body.messages.find(
+        (message) => message?.role === "system" && typeof message.content === "string",
+      );
+      if (system) {
+        system.content = [
+          system.content,
+          "",
+          "Additional scope and freshness rules:",
+          "Scope follows the user's meaning, never retrieval similarity. Retrieved portfolio records alone never make a question PORTFOLIO.",
+          "Weather, exchange rates, prices, markets, news, countries, politics, science, entertainment and general opinions are GENERAL unless the user explicitly ties them to Kaan or this portfolio.",
+          "A GENERAL question that asks for live/current external data remains GENERAL even when you cannot provide the live value.",
+          "For live/current external facts such as weather, FX rates, stock or crypto prices, news, traffic, sports scores or opening hours: never invent or estimate a current value. Say you do not have live web/data access and recommend checking a live authoritative source.",
+          "The supplied local clock is the only authoritative current-data input, and only for date/time questions.",
+          "Never answer a GENERAL current-data question by saying the portfolio does not record it.",
+        ].join("\n");
+      }
+    }
+    requestOptions = { ...options, body: JSON.stringify(body) };
+  } catch (error) {
+    /* Let the RAG core own malformed input and its normal failure path. */
+  }
+
+  return nativeFetch(url, requestOptions);
+}
+
 const bridge = createAjoopBridge({ env: runtimeEnv, fetchImpl: fastOllamaFetch });
-const rag = createAjoopRag({ env: runtimeEnv, fetchImpl: nativeFetch });
+const rag = createAjoopRag({ env: runtimeEnv, fetchImpl: ragOllamaFetch });
 const { config } = bridge;
 
 function readBody(request, limit) {
