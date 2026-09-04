@@ -609,11 +609,22 @@ check("a literal wildcard origin is never echoed",
 
 {
   const assistant = readFileSync(new URL("../js/ajoop/assistant.js", import.meta.url), "utf8");
-  const renderAt = assistant.indexOf("const rendered = renderAjoopMessage(");
-  const enhanceAt = assistant.indexOf("enhanceAjoopAnswerWithAi(rendered");
-  ok("assistant renders the deterministic answer before requesting enhancement",
-    renderAt >= 0 && enhanceAt > renderAt);
-  ok("AI prose is inserted as text rather than markup", assistant.includes("paragraph.textContent = answer"));
+  const openAt = assistant.indexOf("const node = openAjoopTurn(language);");
+  const commitAt = assistant.indexOf("finishAjoopTurn({ node, route, plan, model, language });");
+  ok("a turn opens one container before it asks for an answer", openAt >= 0 && commitAt > openAt);
+  ok("the deterministic plan and the model answer are awaited together",
+    /Promise\.all\(\[\s*planAjoopTurn\(/.test(assistant));
+  ok("the turn commits into the container it opened",
+    /if \(node && node\.isConnected\) \{\s*node\.classList\.remove\("is-pending"\)/.test(assistant));
+  ok("AI prose is inserted as text rather than markup",
+    assistant.includes("text.textContent = spec.text") && !/innerHTML/.test(assistant.slice(
+      assistant.indexOf("function fillAjoopMessage("),
+      assistant.indexOf("function renderAjoopMessage("),
+    )));
+  const ragClient = readFileSync(new URL("../js/ajoop/rag-client.js", import.meta.url), "utf8");
+  ok("the RAG turn source owns no DOM", !/\bdocument\.|\.innerHTML\b/.test(ragClient));
+  ok("the RAG turn source reuses the one bridge transport",
+    ragClient.includes("requestAjoopAiResponse({") && ragClient.includes("validate: validateAjoopRagResponse"));
   ok("browser transport owns no DOM", !/\bdocument\.|\.innerHTML\b/.test(browserBridgeSource.slice(browserBridgeStart, browserBridgeEnd)));
 }
 

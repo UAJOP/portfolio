@@ -1001,41 +1001,45 @@ function appendAjoopMessageLinks(message, links) {
  * own echo, a greeting, a clarification question, and answers about Ajoop
  * itself. Labelling those "Portfolio evidence" would be noise at best.
  */
-function renderAjoopMessage(spec) {
-  const messageList = ajoopMessageList();
-  if (!messageList) return null;
+function fillAjoopMessage(message, spec) {
   const language = spec.language || ajoopReplyLanguage();
   const isUser = spec.type === "user";
-  const followScroll = isUser || isAjoopNearBottom(messageList);
-
-  const message = document.createElement("div");
-  message.className = `chatbot-message ${isUser ? "user" : "bot"}`;
+  message.textContent = "";
 
   const text = document.createElement("p");
   text.className = "chatbot-message-text";
   text.setAttribute("data-chatbot-prose", "");
   text.textContent = spec.text || "";
   message.appendChild(text);
+  if (isUser) return message;
 
-  if (!isUser) {
-    if (spec.comparison) message.appendChild(renderAjoopComparison(spec.comparison, language));
-    (spec.cards || []).forEach((card) =>
-      message.appendChild(renderAjoopEvidenceCard(card, { detail: spec.detail, language })),
-    );
-    appendAjoopMessageLinks(message, spec.links);
-    if (spec.provenance) {
-      const provenance = document.createElement("p");
-      provenance.className = "ajoop-provenance";
-      provenance.setAttribute("data-ajoop-provenance", spec.provenance);
-      provenance.textContent = ajoopProvenanceLabel(spec.provenance, language);
-      message.appendChild(provenance);
-    }
+  if (spec.comparison) message.appendChild(renderAjoopComparison(spec.comparison, language));
+  (spec.cards || []).forEach((card) =>
+    message.appendChild(renderAjoopEvidenceCard(card, { detail: spec.detail, language })),
+  );
+  appendAjoopMessageLinks(message, spec.links);
+  if (spec.provenance) {
+    const provenance = document.createElement("p");
+    provenance.className = "ajoop-provenance";
+    provenance.setAttribute("data-ajoop-provenance", spec.provenance);
+    provenance.textContent = ajoopProvenanceLabel(spec.provenance, language);
+    message.appendChild(provenance);
   }
+  return message;
+}
+
+function renderAjoopMessage(spec) {
+  const messageList = ajoopMessageList();
+  if (!messageList) return null;
+  const isUser = spec.type === "user";
+  const followScroll = isUser || isAjoopNearBottom(messageList);
+
+  const message = document.createElement("div");
+  message.className = `chatbot-message ${isUser ? "user" : "bot"}`;
+  fillAjoopMessage(message, spec);
 
   messageList.appendChild(message);
   if (followScroll) scrollAjoopToBottom(messageList);
-  /* Returned so the AI bridge can swap this message's prose later without
-   * disturbing its links, cards or provenance line. */
   return message;
 }
 
@@ -1361,85 +1365,264 @@ function ajoopEntityAnswer(route, language) {
 }
 /* ajoop-entity-answers:end */
 
-/* ---------- Ajoop 4.1 conversation layer ---------- */
+/* ---------- Ajoop 5.1 turn lifecycle ---------- */
 
 /**
- * The thinking beat.
+ * ONE assistant turn is ONE message container.
+ *
+ * Ajoop 5.0 produced a turn in three visual pieces: a throwaway thinking
+ * bubble, then a deterministic answer rendered in its place, then — moments
+ * later — the model's answer written over that. Three renders of different
+ * heights in one turn is what made the panel jump and what made Ajoop read as
+ * two assistants taking turns rather than one answering.
+ *
+ * 5.1 opens the answer's own container up front in a pending state, holds the
+ * deterministic plan in memory rather than on screen, and commits ONCE:
+ *
+ *   openAjoopTurn()   → thinking, in the container the answer will occupy
+ *   finishAjoopTurn() → the same container filled, actions settled, one scroll
+ *
+ * The deterministic plan is still built for every turn and is still exactly
+ * what the visitor gets when the local bridge is off, slow, busy or
+ * unreachable. It is simply never shown before the model has had its chance,
+ * so nothing is ever rewritten in front of the visitor.
+ *
+ * The trade-off is deliberate: a turn now waits for RAG, bounded by the
+ * bridge's own timeout, instead of showing a deterministic answer instantly.
+ * Warm local turns land in 1–4s, and a bridge that is not there fails once and
+ * then short-circuits on its own backoff without touching the network again.
+ */
+
+/**
+ * The minimum thinking beat.
  *
  * A deterministic lookup returns in single-digit milliseconds, and slamming
- * the answer into the transcript the instant the visitor hits send does not
- * read as fast — it reads as a lookup table, because that is what it looks
- * like. A short held pause makes "you asked / Ajoop answered" two beats
- * instead of one paste, and gives the mascot somewhere to be.
- *
- * This is PRESENTATION, not latency theatre with a spinner attached to a
- * backend: there is no streaming, no random jitter, the value is a minimum
- * rather than a wait, and direct navigation actions skip it entirely. An
- * optional AI enhancement that arrives later never re-enters this state — the
- * visitor already has their answer by then.
- *
- * The placeholder is aria-hidden because the real answer lands in the same
- * live region moments later, and announcing both would talk over the useful
- * one.
+ * the answer in the instant the visitor hits send does not read as fast — it
+ * reads as a lookup table, because that is what it is. This is a MINIMUM, not
+ * a wait: a RAG turn that takes two seconds does not pay it twice, and direct
+ * navigation actions never enter the lifecycle at all.
  */
-const AJOOP_THINKING_DELAY_MS = 620;
+const AJOOP_TURN_MIN_MS = 420;
 
-function addAjoopThinkingMessage() {
-  const messageList = ajoopMessageList();
-  if (!messageList) return null;
-  const follow = isAjoopNearBottom(messageList);
-  const node = document.createElement("div");
-  node.className = "chatbot-message bot is-thinking";
-  node.setAttribute("data-chatbot-thinking", "");
-  node.setAttribute("aria-hidden", "true");
-  const line = document.createElement("p");
-  line.textContent = ajoopLabel(
-    "Checking portfolio evidence…",
-    "Portfolyo kanıtları kontrol ediliyor…",
-    ajoopReplyLanguage(),
-  );
-  node.appendChild(line);
-  messageList.appendChild(node);
-  if (follow) scrollAjoopToBottom(messageList);
-  return node;
-}
-
-/** Longest Ajoop will hold an answer back waiting for a translation pack. */
+/** Longest Ajoop will hold a turn back waiting for a translation pack. */
 const AJOOP_PACK_WAIT_MS = 2500;
 
-/**
- * Runs `render` after the thinking beat, and after `ready` settles.
- *
- * `ready` is the on-demand translation pack for the conversation language. It
- * is raced against a deadline rather than awaited outright: a pack that never
- * arrives must cost the visitor a less-localized answer, never a missing one.
- *
- * The mascot enters `thinking` for the whole beat and is handed back to the
- * caller's chosen resting state once the answer is on screen.
- */
-function deliverAjoopAnswer(render, ready) {
-  setAjoopMascotState("thinking");
-  const node = addAjoopThinkingMessage();
+/** The container of the turn currently in flight, if any. */
+let ajoopPendingTurn = null;
+
+function ajoopDelay(ms) {
   if (typeof window === "undefined" || typeof window.setTimeout !== "function") {
-    if (node) node.remove();
-    render();
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+/** The one place the thinking copy is written. Follows the reply language. */
+function ajoopThinkingLabel(language) {
+  return ajoopLabel("Thinking this through…", "Bunu düşünüyorum…", language);
+}
+
+/**
+ * Drops a pending turn that was superseded before it could commit.
+ *
+ * A visitor who sends a second message while the first is still thinking must
+ * not be left with an orphaned bubble animating under the new one.
+ */
+function closeAjoopPendingTurn() {
+  if (ajoopPendingTurn && ajoopPendingTurn.isConnected) ajoopPendingTurn.remove();
+  ajoopPendingTurn = null;
+}
+
+/**
+ * Opens the turn's container in its thinking state.
+ *
+ * The animated dots are decorative and aria-hidden; the same paragraph carries
+ * a visually hidden localized "Thinking…" so the transcript's live region says
+ * that something is happening and then announces the answer replacing it.
+ */
+function openAjoopTurn(language) {
+  const messageList = ajoopMessageList();
+  if (!messageList) return null;
+  closeAjoopPendingTurn();
+  const follow = isAjoopNearBottom(messageList);
+
+  const message = document.createElement("div");
+  message.className = "chatbot-message bot is-pending";
+  message.setAttribute("data-ajoop-turn", "pending");
+
+  const text = document.createElement("p");
+  text.className = "chatbot-message-text";
+  text.setAttribute("data-chatbot-prose", "");
+
+  const spoken = document.createElement("span");
+  spoken.className = "visually-hidden";
+  spoken.textContent = ajoopThinkingLabel(language);
+  text.appendChild(spoken);
+
+  const dots = document.createElement("span");
+  dots.className = "ajoop-typing";
+  dots.setAttribute("aria-hidden", "true");
+  for (let dot = 0; dot < 3; dot += 1) dots.appendChild(document.createElement("i"));
+  text.appendChild(dots);
+
+  message.appendChild(text);
+  messageList.appendChild(message);
+  ajoopPendingTurn = message;
+  if (follow) scrollAjoopToBottom(messageList);
+  return message;
+}
+
+/**
+ * Follow-ups while a turn is in flight.
+ *
+ * The row keeps its height — removing it would move everything above it — but
+ * it stops offering and stops accepting. Buttons sitting under a thinking
+ * bubble belong to an answer the visitor has already moved past, and they must
+ * not compete with the state the panel is actually in.
+ */
+function setAjoopTurnBusy(busy) {
+  const container = document.querySelector("[data-chatbot-quicks]");
+  if (!container) return;
+  const state = Boolean(busy);
+  container.classList.toggle("is-busy", state);
+  container.setAttribute("aria-busy", String(state));
+  container.querySelectorAll("button").forEach((button) => {
+    button.disabled = state;
+  });
+}
+
+/** True when a bridge Ajoop was told to expect did not answer. */
+function isAjoopBridgeOffline() {
+  return typeof getAjoopAiState === "function" && getAjoopAiState().state === "unavailable";
+}
+
+/**
+ * The deterministic plan for this turn, once the translation pack has settled.
+ *
+ * The pack is raced against a deadline rather than awaited outright: one that
+ * never arrives must cost the visitor a less-localized answer, never a missing
+ * one. Building the plan after it settles is what stops the first DE/ES/FR turn
+ * on an EN page from capturing English fallback labels.
+ */
+function planAjoopTurn(route, settings, language, ready) {
+  const build = () =>
+    typeof planAjoopResponse === "function"
+      ? planAjoopResponse(route, {
+          language,
+          message: settings.message,
+          entityAnswer: (target, locale) => ajoopEntityAnswer(target, locale),
+          preparedAnswer: (target, locale) =>
+            ajoopPreparedAnswer(target.intent, target.answerDepth, target.depth, locale),
+        })
+      : null;
+  if (!ready || typeof ready.then !== "function") return Promise.resolve(build());
+  return Promise.race([ready, ajoopDelay(AJOOP_PACK_WAIT_MS)]).then(build, build);
+}
+
+/**
+ * The model's answer for this turn, or null.
+ *
+ * RAG-FIRST and gate-free: every conversational turn is offered to the model,
+ * whatever the deterministic router made of it, and the model decides for
+ * itself whether the question is about the portfolio or ordinary conversation.
+ * Failure is silent by construction — the caller falls back to the plan it
+ * already holds, and the visitor never learns a bridge existed.
+ */
+function requestAjoopTurnAnswer(route, question, language, turn) {
+  if (typeof requestAjoopRagTurn !== "function") return Promise.resolve(null);
+  if (typeof isAjoopAiConfigured === "function" && !isAjoopAiConfigured()) {
+    return Promise.resolve(null);
+  }
+  return Promise.resolve(requestAjoopRagTurn({ route, question, language, turn })).catch(
+    () => null,
+  );
+}
+
+/**
+ * Where an answer says it came from.
+ *
+ * The deterministic planner has already decided whether this turn makes a
+ * portfolio claim at all — a greeting, a clarification and a question about
+ * Ajoop itself do not. The model only changes the label on a claim that was
+ * going to be made anyway, and a GENERAL answer makes none.
+ */
+function ajoopTurnProvenance(plan, model, general) {
+  if (general) return null;
+  if (!plan) return model ? AJOOP_PROVENANCE_AI : null;
+  if (!plan.provenance) return null;
+  return model ? AJOOP_PROVENANCE_AI : plan.provenance;
+}
+
+/**
+ * Commits the turn: one fill, one action render, one scroll.
+ *
+ * A GENERAL answer is prose and nothing else. It must not inherit the evidence
+ * cards, links, provenance line or follow-up buttons of a deterministic
+ * portfolio plan that was built for it and never shown — those would answer a
+ * question the visitor did not ask.
+ */
+function finishAjoopTurn(context) {
+  const { node, route, plan, language } = context;
+  const model = context.model && context.model.ok === true ? context.model : null;
+  const general = Boolean(model && model.scope === "general");
+  const list = ajoopMessageList();
+  /* Read the scroll position BEFORE anything moves: a visitor who scrolled
+   * back during the beat is left where they are. */
+  const follow = isAjoopNearBottom(list);
+  ajoopPendingTurn = null;
+
+  if (!plan && !model) {
+    if (node && node.isConnected) node.remove();
+    setAjoopTurnBusy(false);
     return;
   }
-  const finish = () => {
-    if (node) node.remove();
-    render();
+
+  const spec = {
+    type: "bot",
+    language,
+    text: model ? model.answer : plan.text,
+    links: general || !plan ? [] : plan.links,
+    cards: general || !plan ? [] : plan.cards,
+    comparison: general || !plan ? null : plan.comparison,
+    provenance: ajoopTurnProvenance(plan, model, general),
+    /* The full record only when the visitor asked for it. */
+    detail: Boolean(plan && plan.depth === "deep"),
   };
-  const beat = new Promise((resolve) => window.setTimeout(resolve, AJOOP_THINKING_DELAY_MS));
-  const waits = [beat];
-  if (ready && typeof ready.then === "function") {
-    waits.push(
-      Promise.race([
-        ready,
-        new Promise((resolve) => window.setTimeout(resolve, AJOOP_PACK_WAIT_MS)),
-      ]),
-    );
+
+  if (node && node.isConnected) {
+    node.classList.remove("is-pending");
+    node.removeAttribute("data-ajoop-turn");
+    fillAjoopMessage(node, spec);
+  } else {
+    renderAjoopMessage(spec);
   }
-  Promise.all(waits).then(finish, finish);
+
+  /* Actions settle BEFORE the scroll. The row is a sibling grid track of the
+   * transcript, so its height decides how much transcript is visible; settling
+   * it first is what makes one scroll call enough for the whole turn. */
+  if (general) {
+    /* Back to the canonical openers rather than follow-ups inherited from a
+     * portfolio plan the visitor never saw. */
+    renderChatbotQuickActions();
+  } else {
+    const actions =
+      plan && typeof planAjoopActions === "function"
+        ? planAjoopActions(route, plan, { language, depth: route && route.depth })
+        : null;
+    if (actions) renderAjoopActions(actions.actions, "followups", actions.secondary);
+    else setAjoopTurnBusy(false);
+  }
+
+  if (model) renderAjoopBridgeStatus();
+  setAjoopMascotState(
+    !model && isAjoopBridgeOffline()
+      ? AJOOP_MASCOT_STATES.OFFLINE
+      : !model && plan && plan.type === "clarify"
+        ? AJOOP_MASCOT_STATES.CLARIFYING
+        : AJOOP_MASCOT_STATES.ANSWERING,
+  );
+
+  if (follow) scrollAjoopToBottom(list);
 }
 
 /* ---------- Ajoop 4.5 mascot state machine ---------- */
@@ -1500,7 +1683,7 @@ function ajoopMascotLabel(state) {
     case AJOOP_MASCOT_STATES.CLARIFYING:
       return ajoopLabel("Needs a hint", "Netleştiriyor", language);
     case AJOOP_MASCOT_STATES.OFFLINE:
-      return ajoopLabel("Local AI offline", "Yerel AI kapalı", language);
+      return ajoopLabel("Local AI offline", "Yerel AI çevrimdışı", language);
     default:
       return ajoopLabel("Ready", "Hazır", language);
   }
@@ -1791,105 +1974,7 @@ function renderAjoopComparison(comparison, language = ajoopReplyLanguage()) {
   return root;
 }
 
-/* ---------- Ajoop 4.3 local AI bridge ---------- */
-
-/**
- * Replaces one message's prose with a grounded model answer.
- *
- * Only the leading <p> changes. Evidence cards, proof lists, comparison rows
- * and canonical links are untouched, because those are the facts and the model
- * answer is only their presentation. Inserted with textContent, so markup in a
- * model reply is shown as text rather than becoming structure.
- */
-function applyAjoopAiAnswer(messageElement, answer, language) {
-  if (!messageElement || !answer) return false;
-  const paragraph = messageElement.querySelector("[data-chatbot-prose]");
-  if (!paragraph) return false;
-
-  /* Ajoop 4.4 scroll contract. The prose can get shorter or longer, which
-   * moves everything below it. A visitor who has scrolled back to re-read an
-   * earlier answer must stay where they are; one who is reading the newest
-   * message follows it down. */
-  const list = ajoopMessageList();
-  const follow = isAjoopNearBottom(list);
-  const anchor = list ? list.scrollTop : 0;
-
-  paragraph.textContent = answer;
-  messageElement.classList.add("is-ai-enhanced");
-  const provenance = messageElement.querySelector("[data-ajoop-provenance]");
-  if (provenance) {
-    provenance.setAttribute("data-ajoop-provenance", AJOOP_PROVENANCE_AI);
-    provenance.textContent = ajoopProvenanceLabel(
-      AJOOP_PROVENANCE_AI,
-      language || ajoopReplyLanguage(),
-    );
-  }
-
-  if (list) {
-    if (follow) scrollAjoopToBottom(list);
-    else list.scrollTop = anchor;
-  }
-  return true;
-}
-
-/** The evidence model to ground on: what the panel is showing, or the subject. */
-function ajoopAiGrounding(route, evidence, language) {
-  if (evidence) return evidence;
-  if (!route.entity || typeof buildAjoopProjectCard !== "function") return null;
-  const card = buildAjoopProjectCard(route.entity, language);
-  return card ? { text: "", cards: [card], comparison: null, mode: route.mode || null } : null;
-}
-
-/**
- * Asks the bridge to restate an already-rendered answer.
- *
- * Deliberately fire-and-forget: the deterministic answer is on screen before
- * this runs, so every failure is silent and the visitor simply keeps the answer
- * they already have. Nothing here can leave the panel in a broken state.
- */
-function enhanceAjoopAnswerWithAi(messageElement, route, evidence, question, turn, language) {
-  if (typeof requestAjoopAiResponse !== "function") return;
-  const config = getAjoopAiConfig();
-  if (!isAjoopAiConfigured(config)) return;
-
-  const locale = language || ajoopReplyLanguage();
-  const grounding = ajoopAiGrounding(route, evidence, locale);
-  const payload = buildAjoopAiPayload(route, grounding, question, locale);
-  messageElement.classList.add("is-enhancing");
-
-  Promise.resolve(requestAjoopAiResponse({ payload, config, turn }))
-    .then((result) => {
-      messageElement.classList.remove("is-enhancing");
-      /* Ajoop 4.4 cold-start contract: a failed turn changes NOTHING on
-       * screen. No status flip, no error, no re-render — the deterministic
-       * answer the visitor is already reading simply stands, which is also
-       * what they get when the bridge is switched off entirely. A reply for a
-       * superseded turn is dropped the same way. */
-      if (!result || !result.ok || !isAjoopAiTurnCurrent(turn)) {
-        /* Ajoop 4.5: the ONE place NULL is earned. A configured bridge that
-         * could not be reached shows the offline face briefly, then the
-         * character goes back to idle — the visitor's answer never depended on
-         * it, so the notice must not outlast the moment. A superseded turn is
-         * not a failure and says nothing. */
-        if (
-          isAjoopAiTurnCurrent(turn) &&
-          result &&
-          typeof getAjoopAiState === "function" &&
-          getAjoopAiState().state === "unavailable"
-        ) {
-          setAjoopMascotState(AJOOP_MASCOT_STATES.OFFLINE);
-        }
-        return;
-      }
-      applyAjoopAiAnswer(messageElement, result.answer, locale);
-      renderAjoopBridgeStatus();
-    })
-    .catch(() => {
-      /* Unreachable in practice: the bridge never rejects. Belt and braces so a
-       * future change can never surface an exception to a visitor. */
-      messageElement.classList.remove("is-enhancing");
-    });
-}
+/* ---------- Ajoop 5.1 bridge status ---------- */
 
 /**
  * The header's bridge indicator.
@@ -2062,6 +2147,9 @@ function renderAjoopActions(actions, mode, secondary) {
       ? ajoopLabel("Continue", "Devam", language)
       : ajoopLabel("Suggestions", "Öneriler", language);
   container.classList.toggle("is-followups", mode === "followups");
+  /* Rebuilding the row is the end of the turn that suspended it. */
+  container.classList.remove("is-busy");
+  container.setAttribute("aria-busy", "false");
   container.textContent = "";
 
   const label = document.createElement("p");
@@ -2151,84 +2239,46 @@ function runAjoopAction(action, label) {
 /**
  * Answers one routed turn and offers what comes next.
  *
- * Ajoop 4.5 reduced this to orchestration and nothing else. What to say is
+ * Orchestration and nothing else. What to say deterministically is
  * js/ajoop/response.js; what evidence may appear is js/ajoop/evidence.js; what
- * to offer next is js/ajoop/conversation.js. This function sequences those
- * three, renders the result once, and folds the turn into context.
+ * to offer next is js/ajoop/conversation.js; the model answer is
+ * js/ajoop/rag-client.js. This function opens ONE container, races those
+ * sources against the minimum beat, and commits the result once.
  *
- * The order matters: the mascot enters `thinking` immediately, the plan is
- * built after the translation pack settles, and the answer is revealed only
- * once the minimum visual delay has passed — so a conversation reads as a
- * conversation rather than as a database returning rows.
+ * The three sources are awaited together on purpose. Resolving them one after
+ * another is what used to produce a turn in three renders — and a panel that
+ * jumped twice per answer.
  */
 function answerAjoopRoute(route, options) {
   const language = ajoopReplyLanguage();
   const settings = options || {};
   portfolioChatbotState.lastRoute = route;
 
-  /* Ajoop 4.3 opens a turn before rendering, so a reply from a previous turn
-   * that is still in flight can be recognised as stale and discarded. */
-  const aiTurn = typeof beginAjoopAiTurn === "function" ? beginAjoopAiTurn() : 0;
+  /* Opens the turn before rendering, so a reply still in flight for a previous
+   * turn can be recognised as stale and dropped rather than painted over a
+   * newer answer. */
+  const turn = typeof beginAjoopAiTurn === "function" ? beginAjoopAiTurn() : 0;
+
+  const node = openAjoopTurn(language);
+  setAjoopTurnBusy(true);
+  setAjoopMascotState(AJOOP_MASCOT_STATES.THINKING);
 
   /* The conversation may have switched to a language whose copy this page did
-   * not ship. Loading it is raced against a deadline inside deliverAjoopAnswer,
-   * so it delays the answer by a beat at most and never blocks it. */
+   * not ship. Loading it is raced against a deadline, so it costs the turn a
+   * beat at most and never blocks it. */
   const ready =
     typeof ensureAjoopLanguagePack === "function" ? ensureAjoopLanguagePack(language) : null;
 
-  deliverAjoopAnswer(() => {
-    /* Built after the requested pack has settled. Otherwise the first DE/ES/FR
-     * turn on an EN page captures English fallback labels before its pack
-     * arrives. */
-    const plan =
-      typeof planAjoopResponse === "function"
-        ? planAjoopResponse(route, {
-            language,
-            message: settings.message,
-            entityAnswer: (target, locale) => ajoopEntityAnswer(target, locale),
-            preparedAnswer: (target, locale) =>
-              ajoopPreparedAnswer(target.intent, target.answerDepth, target.depth, locale),
-          })
-        : null;
-    if (!plan) return;
-
+  Promise.all([
+    planAjoopTurn(route, settings, language, ready),
+    requestAjoopTurnAnswer(route, settings.message, language, turn),
+    ajoopDelay(AJOOP_TURN_MIN_MS),
+  ]).then(([plan, model]) => {
+    if (typeof isAjoopAiTurnCurrent === "function" && !isAjoopAiTurnCurrent(turn)) return;
     portfolioChatbotState.lastPlan = plan;
-    portfolioChatbotState.lastEvidence = plan.cards && plan.cards.length ? plan : null;
-
-    /* ONE render path. Whatever this turn turned out to be — a greeting, a
-     * question about Ajoop, an evidence response, a clarification or a project
-     * answer — it is the same message spec through the same renderer, so the
-     * visitor never sees a seam between them. */
-    const rendered = renderAjoopMessage({
-      type: "bot",
-      language,
-      text: plan.text,
-      links: plan.links,
-      cards: plan.cards,
-      comparison: plan.comparison,
-      provenance: plan.provenance,
-      /* The full record only when the visitor asked for it. */
-      detail: plan.depth === "deep",
-    });
-
-    const actions =
-      typeof planAjoopActions === "function"
-        ? planAjoopActions(route, plan, { language, depth: route.depth })
-        : null;
-    if (actions) renderAjoopActions(actions.actions, "followups", actions.secondary);
-
-    /* The transition ends when the answer lands, whatever the bridge is doing.
-     * A clarification rests in its own face so the question stays visible as a
-     * question. */
-    setAjoopMascotState(plan.type === "clarify" ? "clarifying" : "answering");
-
-    /* The deterministic answer is on screen by now. Enhancement is optional,
-     * asynchronous and silent on failure — and it never re-enters `thinking`,
-     * because the visitor already has their answer. */
-    if (rendered && plan.groundable && typeof enhanceAjoopAnswerWithAi === "function") {
-      enhanceAjoopAnswerWithAi(rendered, route, plan, settings.message, aiTurn, language);
-    }
-  }, ready);
+    portfolioChatbotState.lastEvidence = plan && plan.cards && plan.cards.length ? plan : null;
+    finishAjoopTurn({ node, route, plan, model, language });
+  });
 
   if (typeof rememberAjoopTurn === "function") {
     /* A greeting or a question about Ajoop sets neither subject nor intent: it
@@ -2315,7 +2365,12 @@ function handleAjoopMessage(message) {
 function resetAjoopConversation() {
   if (typeof resetAjoopContext === "function") resetAjoopContext();
   portfolioChatbotState.lastRoute = null;
+  portfolioChatbotState.lastPlan = null;
   portfolioChatbotState.lastEvidence = null;
+  /* The model's short conversation memory is part of the conversation being
+   * cleared. Leaving it would let the next visitor's first question inherit
+   * the previous one's subject. */
+  if (typeof clearAjoopRagHistory === "function") clearAjoopRagHistory();
   /* A new conversation starts in the site's language again: the previous
    * visitor's language is part of the conversation being cleared. */
   portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
@@ -2395,6 +2450,9 @@ function resetChatbotMessages() {
   const content = getPortfolioChatbotContent(ajoopReplyLanguage());
   const messageList = ajoopMessageList();
   if (!messageList) return;
+  /* The container of a turn still in flight is about to be detached; forget it
+   * here so nothing later tries to commit an answer into it. */
+  ajoopPendingTurn = null;
   messageList.textContent = "";
   /* The greeting introduces the assistant; it is not an evidence claim, so it
    * carries no provenance line. */
@@ -2417,8 +2475,10 @@ function updatePortfolioChatbotLanguage(
 ) {
   portfolioChatbotState.language = renderableLocaleId(language);
   /* A site language change resets the conversation, so the conversation
-   * language starts again from the new site locale. */
+   * language starts again from the new site locale — and so does the model's
+   * conversation memory, which belongs to the transcript being replaced. */
   portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
+  if (typeof clearAjoopRagHistory === "function") clearAjoopRagHistory();
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
   const launcherText = document.querySelector("[data-chatbot-launcher-text]");
   const title = document.querySelector("[data-chatbot-title]");

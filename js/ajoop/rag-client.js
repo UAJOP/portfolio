@@ -1,20 +1,39 @@
 /**
- * Ajoop 5.1 browser RAG adapter.
+ * Ajoop 5.1 RAG turn source.
  *
- * The deterministic Ajoop stack remains the offline/source-of-truth fallback:
- * it still builds the route, answer plan, canonical cards, links and actions.
- * While the local bridge is healthy, however, EVERY conversational turn is
- * handed to /ajoop-rag. The model decides whether the question belongs to the
- * portfolio or to ordinary general conversation; the keyword router no longer
- * decides whether AI is allowed to see the turn.
+ * RAG-FIRST. Every conversational turn is offered to /ajoop-rag, whatever the
+ * deterministic router decided about it: the model chooses PORTFOLIO or
+ * GENERAL scope for itself, and the keyword router no longer decides whether
+ * the model is allowed to see a question.
  *
- * This file intentionally loads after assistant.js. It replaces only the two
- * seams designed for optional AI — response eligibility and enhancement — so
- * the proven deterministic renderer, accessibility behaviour and fallback path
- * stay unchanged.
+ * This module is DOM-FREE on purpose. Ajoop 5.0 shipped it as an overlay that
+ * loaded after assistant.js and monkey-patched three of its functions, which
+ * left the panel with two owners of one lifecycle — a deterministic renderer
+ * and an AI rewriter racing over the same bubble. 5.1 turns it back into what
+ * it always was: the request source. It builds the payload, bounds the
+ * conversation history, validates the reply, and hands assistant.js one
+ * result. assistant.js owns every pixel.
+ *
+ * Transport, timeout, turn invalidation, health backoff and the 429 contract
+ * all come from js/ajoop/ai-bridge.js — this module supplies only the payload
+ * and the response validator, so there is exactly one HTTP client.
+ *
+ * Loads after ai-bridge.js (whose transport it uses) and before assistant.js
+ * (which calls it).
  */
-/* ajoop-rag-client:start */
+/* ajoop-rag-client:start
+ * Keep this block DOM-free.
+ */
 
+/**
+ * Conversation memory, in this tab only.
+ *
+ * Bounded to six turns and 700 characters each: enough that "peki stack?"
+ * still knows which project is in play, small enough that it can never grow
+ * into a transcript. It is never persisted, never sent anywhere but the
+ * bridge, and it is cleared by Start over and by a site-language change —
+ * both of which start a visibly new conversation.
+ */
 const AJOOP_RAG_HISTORY_LIMIT = 6;
 const AJOOP_RAG_HISTORY_CHARS = 700;
 const ajoopRagHistory = [];
@@ -23,18 +42,29 @@ function ajoopRagBoundedText(value, limit = AJOOP_RAG_HISTORY_CHARS) {
   return typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, limit) : "";
 }
 
-function ajoopRagRememberUser(question) {
-  const content = ajoopRagBoundedText(question);
+function ajoopRagRemember(role, value) {
+  const content = ajoopRagBoundedText(value);
   if (!content) return;
   const previous = ajoopRagHistory[ajoopRagHistory.length - 1];
-  if (!previous || previous.content !== content) {
-    ajoopRagHistory.push({ role: "user", content });
-  }
+  if (previous && previous.role === role && previous.content === content) return;
+  ajoopRagHistory.push({ role, content });
   if (ajoopRagHistory.length > AJOOP_RAG_HISTORY_LIMIT) {
     ajoopRagHistory.splice(0, ajoopRagHistory.length - AJOOP_RAG_HISTORY_LIMIT);
   }
 }
 
+/** Start over and a site-language change both begin a new conversation. */
+function clearAjoopRagHistory() {
+  ajoopRagHistory.length = 0;
+}
+
+/**
+ * What to ask about a turn that was not typed.
+ *
+ * A tapped button carries its own label, which is what the visitor asked for.
+ * A synthetic route with neither falls back to the entity or intent name, so
+ * the model still receives a real question rather than an empty string.
+ */
 function ajoopRagQuestion(route, question, language) {
   const direct = ajoopRagBoundedText(question, 500);
   if (direct) return direct;
@@ -57,7 +87,7 @@ function ajoopRagQuestion(route, question, language) {
 }
 
 function buildAjoopRagPayload(route, question, language) {
-  const locale = language || ajoopReplyLanguage() || "en";
+  const locale = language || "en";
   const asked = ajoopRagQuestion(route, question, locale);
   return {
     asked,
@@ -71,6 +101,14 @@ function buildAjoopRagPayload(route, question, language) {
   };
 }
 
+/**
+ * The bridge's reply, or null when it is not usable.
+ *
+ * `scope` is required and must be one of the two the contract defines: a reply
+ * without it cannot be rendered safely, because scope is what decides whether
+ * portfolio evidence stays on the answer. Everything crossing this boundary is
+ * untrusted, including a reply from the visitor's own machine.
+ */
 function validateAjoopRagResponse(raw) {
   if (!raw || typeof raw !== "object" || raw.ok !== true) return null;
   if (typeof raw.answer !== "string") return null;
@@ -79,149 +117,39 @@ function validateAjoopRagResponse(raw) {
   const scope = raw.scope === "general" ? "general" : raw.scope === "portfolio" ? "portfolio" : null;
   if (!scope) return null;
   const model = typeof raw.model === "string" && raw.model ? raw.model.slice(0, 64) : null;
-  return { answer, scope, model };
+  return { answer, model, scope, mode: "rag" };
 }
 
-async function requestAjoopRagResponse({ payload, config, turn, now } = {}) {
-  const resolved = config || getAjoopAiConfig();
-  const failed = (reason) => ({ ok: false, reason, turnState: AJOOP_AI_TURN.FAILED });
-  if (!isAjoopAiConfigured(resolved)) return failed("not-configured");
-
-  if (ajoopAiState.state === AJOOP_AI_STATE.UNAVAILABLE) {
-    const current = ajoopAiNow(now);
-    if (current - ajoopAiState.checkedAt < resolved.retryAfterMs) return failed("unavailable");
-  }
-
-  const activeTurn = typeof turn === "number" ? turn : ajoopAiState.turn;
-  if (ajoopAiState.requestedTurn === activeTurn) return failed("duplicate-turn");
-  ajoopAiState.requestedTurn = activeTurn;
-
-  const result = await postAjoopAiRequest(payload, { config: resolved });
-  if (!isAjoopAiTurnCurrent(activeTurn)) {
-    return { ok: false, reason: "stale", turnState: null };
-  }
-
-  if (!result.ok && result.reason === "http-error" && result.status === 429) {
-    setAjoopBridgeState(AJOOP_AI_STATE.AVAILABLE, now);
-    return failed("busy");
-  }
-
-  if (!result.ok) {
-    recordAjoopAiTurnFailure(now);
-    return failed(result.reason);
-  }
-
-  const validated = validateAjoopRagResponse(result.body);
-  if (!validated) {
-    recordAjoopAiTurnFailure(now);
-    return failed("invalid-response");
-  }
-
-  setAjoopBridgeState(AJOOP_AI_STATE.AVAILABLE, now);
-  ajoopAiState.turnFailures = 0;
-  if (validated.model) ajoopAiState.model = validated.model;
-  return {
-    ok: true,
-    answer: validated.answer,
-    scope: validated.scope,
-    model: validated.model,
-    turnState: AJOOP_AI_TURN.AI,
-  };
-}
-
-/** General chat must never inherit a portfolio card or evidence badge from the
- * deterministic fallback plan that was hidden while inference was running. */
-function applyAjoopGeneralAnswer(messageElement, answer) {
-  if (!messageElement) return false;
-  const paragraph = messageElement.querySelector("[data-chatbot-prose]");
-  if (!paragraph) return false;
-  paragraph.textContent = answer;
-  Array.from(messageElement.children).forEach((child) => {
-    if (child !== paragraph) child.remove();
-  });
-  messageElement.classList.add("is-ai-enhanced", "is-general-ai");
-
-  const actions = document.querySelector("[data-chatbot-quicks]");
-  if (actions) actions.textContent = "";
-  const list = ajoopMessageList();
-  if (list) scrollAjoopToBottom(list);
-  return true;
-}
-
-/* The response planner used `groundable` to decide whether the old evidence
- * writer was allowed to run. RAG owns that decision now, so every real answer,
- * greeting, clarification and unknown turn is eligible while the bridge is on.
- * The deterministic plan still renders first and remains the failure fallback. */
-const ajoopRagBasePlanResponse = planAjoopResponse;
-planAjoopResponse = function ajoopRagPlanResponse(route, options) {
-  const plan = ajoopRagBasePlanResponse(route, options);
-  if (plan) plan.groundable = true;
-  return plan;
-};
-
-/* assistant.js already has the exact DOM lifecycle we need: deterministic
- * fallback render → is-enhancing thinking state → one final replacement. Swap
- * only the request source from evidence-writer payloads to RAG payloads. */
-enhanceAjoopAnswerWithAi = function enhanceAjoopAnswerWithRag(
-  messageElement,
-  route,
-  evidence,
-  question,
-  turn,
-  language,
-) {
-  void evidence;
-  if (!messageElement) return;
-  const config = getAjoopAiConfig();
-  if (!isAjoopAiConfigured(config)) return;
-
-  const locale = language || ajoopReplyLanguage();
-  const request = buildAjoopRagPayload(route, question, locale);
-  messageElement.classList.add("is-enhancing");
-
-  Promise.resolve(
-    requestAjoopRagResponse({ payload: request.payload, config, turn }),
+/**
+ * One RAG turn.
+ *
+ * Never throws and never leaves the caller waiting past the bridge's own
+ * timeout: every outcome — not configured, offline, busy, timed out, stale,
+ * malformed — resolves to a result object whose `ok` is false, and the caller
+ * falls back to the deterministic plan it already built. Only a successful
+ * exchange is remembered, so the history holds what was actually said.
+ */
+function requestAjoopRagTurn(options) {
+  const settings = options || {};
+  const locale = settings.language || "en";
+  const request = buildAjoopRagPayload(settings.route, settings.question, locale);
+  return Promise.resolve(
+    requestAjoopAiResponse({
+      payload: request.payload,
+      config: settings.config,
+      turn: settings.turn,
+      fetchImpl: settings.fetchImpl,
+      now: settings.now,
+      validate: validateAjoopRagResponse,
+    }),
   )
     .then((result) => {
-      messageElement.classList.remove("is-enhancing");
-      if (!result || !result.ok || !isAjoopAiTurnCurrent(turn)) {
-        if (
-          isAjoopAiTurnCurrent(turn) &&
-          result &&
-          typeof getAjoopAiState === "function" &&
-          getAjoopAiState().state === "unavailable"
-        ) {
-          setAjoopMascotState(AJOOP_MASCOT_STATES.OFFLINE);
-        }
-        return;
+      if (result && result.ok) {
+        ajoopRagRemember("user", request.asked);
+        ajoopRagRemember("assistant", result.answer);
       }
-
-      ajoopRagRememberUser(request.asked);
-      if (result.scope === "general") {
-        applyAjoopGeneralAnswer(messageElement, result.answer);
-      } else {
-        applyAjoopAiAnswer(messageElement, result.answer, locale);
-      }
-      setAjoopMascotState("answering");
-      renderAjoopBridgeStatus();
+      return result;
     })
-    .catch(() => {
-      messageElement.classList.remove("is-enhancing");
-    });
-};
-
-const ajoopRagBaseResetConversation = resetAjoopConversation;
-resetAjoopConversation = function resetAjoopRagConversation() {
-  ajoopRagHistory.length = 0;
-  return ajoopRagBaseResetConversation();
-};
-
-/* A site-language change starts a visibly new transcript, so it must not carry
- * old retrieval history into the new conversation either. */
-const ajoopRagBaseLanguageUpdate = updatePortfolioChatbotLanguage;
-updatePortfolioChatbotLanguage = function updateAjoopRagLanguage(language) {
-  ajoopRagHistory.length = 0;
-  return ajoopRagBaseLanguageUpdate(language);
-};
-
+    .catch(() => ({ ok: false, reason: "network-error", turnState: AJOOP_AI_TURN.FAILED }));
+}
 /* ajoop-rag-client:end */

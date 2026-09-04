@@ -11,10 +11,42 @@ instructed to present only that.
 kaanbalci.com → HTTPS edge/tunnel → 127.0.0.1:8787 Node bridge → 127.0.0.1:11434 Ollama
 ```
 
-**The bridge is never a dependency.** It ships disabled. When it is off,
-unreachable, busy, slow or returns something malformed, Ajoop shows the
-deterministic answer it had already rendered. The portfolio is fully usable with
-this machine switched off — that is its normal state.
+**The bridge is never a dependency.** When it is off, unreachable, busy, slow or
+returns something malformed, Ajoop shows the deterministic answer it had already
+planned. The portfolio is fully usable with this machine switched off.
+
+## What changed in 5.1
+
+The rest of this document describes the 4.3 `/ajoop-chat` endpoint, which is
+still shipped by `server/ajoop-bridge.mjs` and still covered by
+`npm run qa:ajoop:bridge`. The path the browser actually uses is now
+`/ajoop-rag` in `server/ajoop-rag.mjs`. Two things about it differ from
+everything below.
+
+**Retrieval replaced grounding.** The browser no longer serializes evidence and
+asks the model to restate it. It sends the question, the locale and a bounded
+in-memory conversation history; the bridge retrieves from the canonical
+portfolio JSON itself and decides, per turn, whether the question is
+`PORTFOLIO` or `GENERAL`. There is no intent gate in front of the model —
+every typed turn is eligible, and a general question is answered as ordinary
+conversation even when retrieval happened to return portfolio chunks. The
+bridge has no web access and says so rather than guessing when a question needs
+live data.
+
+**The lifecycle inverted.** 4.3 rendered the deterministic answer and let the
+model overwrite it, which showed the visitor two answers per turn. 5.1 opens one
+container in a thinking state, plans the deterministic answer without showing
+it, and commits once — model prose when the bridge answers, the deterministic
+plan when it does not. Canonical cards, links and provenance still come from the
+registry and are attached to a `PORTFOLIO` answer only; a `GENERAL` answer is
+prose and nothing else. One turn is one container in `js/ajoop/assistant.js`
+(`openAjoopTurn` → `finishAjoopTurn`); `js/ajoop/rag-client.js` is the
+DOM-free request source and reuses the transport in `js/ajoop/ai-bridge.js`.
+
+The cost of that inversion is that a turn waits for the bridge instead of
+showing a deterministic answer instantly. It is bounded by `timeoutMs` in
+`ajoop-ai-config.js`, and an unreachable bridge fails once and then
+short-circuits on its own backoff.
 
 ## Why n8n left the public path
 

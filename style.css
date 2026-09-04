@@ -2041,7 +2041,11 @@ body.overlay-modal-open {
  * one dot, and where an answer came from is said on the answer. */
 .chatbot-header {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto auto 36px;
+  /* Last track is auto, not a fixed width: css/a11y.css raises the close
+   * button to the 44px touch-target minimum below 820px and loads after this
+   * file, so any fixed track here would be narrower than the control it holds
+   * and push it past the panel's rounded edge. */
+  grid-template-columns: 38px minmax(0, 1fr) auto auto auto;
   gap: 10px;
   align-items: center;
   padding: 12px 14px;
@@ -2158,7 +2162,22 @@ body.overlay-modal-open {
   50% { opacity: 0.35; }
 }
 
-/* thinking — the mouth becomes three working dots, the antenna ticks. */
+/* thinking — the mouth becomes three working dots, the antenna ticks, and the
+ * chip breathes. Slightly more alive than idle and no more than that: the
+ * character reports the state, it does not perform it. */
+.ajoop-mascot[data-ajoop-mascot="thinking"] {
+  border-color: rgba(56, 189, 248, 0.55);
+  animation: ajoopMascotGlow 1.9s ease-in-out infinite;
+}
+@keyframes ajoopMascotGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+  }
+}
 .ajoop-mascot[data-ajoop-mascot="thinking"] .ajoop-mascot-mouth {
   opacity: 0;
 }
@@ -2232,6 +2251,7 @@ body.overlay-modal-open {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ajoop-mascot,
   .ajoop-mascot svg,
   .ajoop-mascot-eye,
   .ajoop-mascot-bulb,
@@ -2306,6 +2326,11 @@ body.overlay-modal-open {
 }
 .chatbot-message {
   max-width: 92%;
+  /* A grid child with long unbroken content — a Turkish compound, a pasted URL
+   * — otherwise widens its track and pushes the panel into a horizontal
+   * scroll. min-width:0 plus wrapping keeps every bubble inside the panel at
+   * any width. */
+  min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -2314,20 +2339,67 @@ body.overlay-modal-open {
 .chatbot-message p {
   color: var(--muted);
   font-size: 14px;
+  overflow-wrap: anywhere;
 }
-/* The prose is the one part of an answer the AI bridge may replace, so it
- * carries the only transition in the message: the swap reads as the same
- * answer settling rather than as a new message arriving. */
 .chatbot-message-text {
   line-height: 1.5;
-  transition: opacity 0.18s ease;
 }
-.chatbot-message.is-enhancing .chatbot-message-text {
-  opacity: 0.78;
+
+/* Ajoop 5.1: the thinking half of a turn.
+ *
+ * This is the SAME container the answer lands in — the bubble is not replaced,
+ * its contents are — so the only movement in a turn is the height the real
+ * answer needs. min-height matches a one-line answer, which is what makes the
+ * commit read as text arriving rather than as a box growing. */
+.chatbot-message.is-pending {
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+}
+.chatbot-message.is-pending .chatbot-message-text {
+  display: inline-flex;
+  align-items: center;
+  min-height: 21px;
+}
+/* Three dots, on the compositor, at the size of the text they stand in for.
+ * No spinner, no skeleton, no fake character-by-character streaming: the panel
+ * should stay calm while it waits. */
+.ajoop-typing {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 21px;
+  padding-bottom: 4px;
+}
+.ajoop-typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--brand);
+  opacity: 0.3;
+  animation: ajoopTypingDot 1.05s ease-in-out infinite;
+}
+.ajoop-typing i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.ajoop-typing i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+@keyframes ajoopTypingDot {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .chatbot-message-text {
-    transition: none;
+  .ajoop-typing i {
+    animation: none;
+    opacity: 0.6;
   }
 }
 /* Ajoop 4.4 provenance. One line per answer, saying where it came from —
@@ -2395,6 +2467,21 @@ body.overlay-modal-open {
   display: grid;
   gap: 7px;
   padding: 10px 14px 0;
+  transition: opacity 0.2s ease;
+}
+/* While a turn is thinking, the row keeps its height — removing it would move
+ * the transcript above it — and stops competing for attention. The buttons are
+ * disabled in markup too, so this is presentation, not the whole guard. */
+.chatbot-quicks.is-busy {
+  opacity: 0.4;
+}
+.chatbot-quicks.is-busy button {
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chatbot-quicks {
+    transition: none;
+  }
 }
 .chatbot-actions-label {
   color: var(--muted);
@@ -2457,11 +2544,6 @@ body.overlay-modal-open {
 .chatbot-quicks .chatbot-actions-secondary button:hover {
   color: var(--text);
   background: transparent;
-}
-.chatbot-message.is-thinking p {
-  color: var(--muted);
-  font-style: italic;
-  opacity: 0.85;
 }
 [data-chatbot-subtitle] {
   font-size: 11.5px;
@@ -2672,14 +2754,19 @@ body.overlay-modal-open {
    * still below it, so the transcript got whatever was left — a few messages'
    * worth. Full width, near-full height and tighter chrome give the
    * conversation the screen; the input stays pinned above the safe area. */
+  /* 14px of gutter on both sides: the widget's own right inset is 14px, so the
+   * panel must be 28px narrower than the viewport, not 20px, or it sits 6px
+   * from the left edge and 14px from the right. */
   .chatbot-panel {
-    width: calc(100vw - 20px);
+    width: calc(100vw - 28px);
     max-height: calc(100dvh - 96px - env(safe-area-inset-bottom));
     border-radius: 22px;
   }
 
+  /* Four tracks below 560px: the state label is display:none here, so it
+   * leaves the grid entirely. */
   .chatbot-header {
-    grid-template-columns: 32px minmax(0, 1fr) auto 34px;
+    grid-template-columns: 32px minmax(0, 1fr) auto auto;
     gap: 9px;
     padding: 10px 12px;
   }
@@ -2715,6 +2802,64 @@ body.overlay-modal-open {
 
   .chatbot-message {
     max-width: 96%;
+  }
+}
+
+/* Small phones — 320px to ~380px, where the 560px sheet still reads as cramped.
+ * Nothing is redesigned here: the same panel gives back the padding, the send
+ * button and the card insets it can spare, so long Turkish sentences get the
+ * width instead of the chrome. */
+@media screen and (max-width: 380px) {
+  .portfolio-chatbot {
+    right: max(10px, calc(env(safe-area-inset-right) + 8px));
+  }
+
+  .chatbot-panel {
+    width: calc(100vw - 20px);
+    border-radius: 18px;
+  }
+
+  .chatbot-header {
+    grid-template-columns: 30px minmax(0, 1fr) auto auto;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+
+  .chatbot-header h2 {
+    font-size: 15.5px;
+  }
+
+  .chatbot-messages {
+    padding: 11px 10px 2px;
+  }
+
+  .chatbot-message {
+    max-width: 97%;
+  }
+
+  .chatbot-quicks {
+    padding: 8px 10px 0;
+  }
+
+  .chatbot-form {
+    grid-template-columns: 1fr 42px;
+    gap: 8px;
+    padding: 8px 10px 10px;
+  }
+
+  .chatbot-form input {
+    min-height: 42px;
+    padding: 0 11px;
+  }
+
+  .chatbot-form button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .ajoop-card,
+  .ajoop-compare {
+    padding: 9px;
   }
 }
 .chatbot-header p:empty {

@@ -369,17 +369,24 @@ function recordAjoopAiTurnFailure(now) {
 }
 
 /**
- * Asks the bridge to restate one answer.
+ * Asks the bridge for one answer.
  *
- * Resolves to `{ ok: true, answer, model, turnState: "ai" }` only when every
- * gate passes; any other outcome resolves to `{ ok: false, reason, turnState }`
- * and the caller keeps the deterministic answer it already rendered. A late
- * reply for a superseded turn is reported as stale so it is never painted over
- * a newer one, and a stale reply is not a failure of anything.
+ * Resolves to `{ ok: true, answer, model, scope, turnState: "ai" }` only when
+ * every gate passes; any other outcome resolves to `{ ok: false, reason,
+ * turnState }` and the caller keeps the deterministic answer it planned. A
+ * late reply for a superseded turn is reported as stale so it is never painted
+ * over a newer one, and a stale reply is not a failure of anything.
+ *
+ * `validate` is injectable so the 5.1 RAG contract — which additionally
+ * carries a scope — reuses this transport instead of cloning it. There is one
+ * HTTP client to the bridge, one timeout, one turn guard and one 429 rule,
+ * whichever endpoint shape is in play.
  */
 async function requestAjoopAiResponse(options) {
   const settings = options || {};
   const config = settings.config || getAjoopAiConfig();
+  const validate =
+    typeof settings.validate === "function" ? settings.validate : validateAjoopAiResponse;
   const failed = (reason) => ({ ok: false, reason, turnState: AJOOP_AI_TURN.FAILED });
   if (!isAjoopAiConfigured(config)) return failed("not-configured");
   if (ajoopAiState.state === AJOOP_AI_STATE.UNAVAILABLE && !settings.force) {
@@ -418,7 +425,7 @@ async function requestAjoopAiResponse(options) {
     return failed(result.reason);
   }
 
-  const validated = validateAjoopAiResponse(result.body);
+  const validated = validate(result.body);
   if (!validated) {
     /* An explicit ok:false is still a failed generation, not permission for one
      * turn to override the bridge's health verdict. */
@@ -432,7 +439,10 @@ async function requestAjoopAiResponse(options) {
   return {
     ok: true,
     answer: validated.answer,
-    model: validated.model,
+    model: validated.model || null,
+    /* Present only for contracts that carry one. The renderer reads it to
+     * decide whether portfolio evidence belongs on this answer at all. */
+    scope: validated.scope || null,
     turnState: AJOOP_AI_TURN.AI,
   };
 }

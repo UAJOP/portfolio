@@ -56,13 +56,14 @@
      * structured plan assistant.js renders. Needs evidence.js and the
      * ontology; must precede assistant.js. */
     "js/ajoop/response.js",
-    /* Ajoop 5.1 local AI/RAG path. Config and transport load before the
-     * assistant; rag-client.js loads after it and replaces only the optional AI
-     * seam, leaving deterministic rendering as the offline fallback. */
+    /* Ajoop 5.1 local AI/RAG path, in dependency order: the public config, the
+     * transport that reads it, and the RAG turn source that reuses that
+     * transport. All three are DOM-free and precede assistant.js, which owns
+     * the turn lifecycle and calls into them. */
     "ajoop-ai-config.js",
     "js/ajoop/ai-bridge.js",
-    "js/ajoop/assistant.js",
     "js/ajoop/rag-client.js",
+    "js/ajoop/assistant.js",
     "js/features/ultimate.js",
     "js/features/recruiter.js",
     "js/features/command-palette.js",

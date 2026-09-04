@@ -143,6 +143,12 @@ const ORDER = [
   ["ajoop-ai-config.js", "js/ajoop/ai-bridge.js"],
   ["js/ajoop/evidence.js", "js/ajoop/ai-bridge.js"],
   ["js/ajoop/ai-bridge.js", "js/ajoop/assistant.js"],
+  /* Ajoop 5.1: the RAG turn source builds the payload and reuses the bridge's
+   * transport, and assistant.js calls it from the turn lifecycle. It is
+   * DOM-free, so it belongs with the other brain modules ahead of the
+   * assistant rather than as an overlay patched in behind it. */
+  ["js/ajoop/ai-bridge.js", "js/ajoop/rag-client.js"],
+  ["js/ajoop/rag-client.js", "js/ajoop/assistant.js"],
   /* Ajoop 4.4: language detection and the global meta intents reuse the
    * matcher's tokenizer and are consulted by the router before it scores. */
   ["js/ajoop/matcher.js", "js/ajoop/language.js"],
