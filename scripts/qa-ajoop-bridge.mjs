@@ -722,6 +722,16 @@ check("a literal wildcard origin is never echoed",
   check("[E] scope survives the think wrapper", reasoned?.scope, "PORTFOLIO");
   check("[C] an unclosed think wrapper is malformed",
     parseScopedAnswer("<think>cut off mid reasoning"), null);
+  /* But a stray tag AFTER a finished reply does not retract it. The model runs
+   * out of tokens partway into an afterthought; the answer above it stands. */
+  const trailing = parseScopedAnswer(
+    "SCOPE: PORTFOLIO\nANSWER: He studied at Anadolu University.\n<think>\nOkay, let me re-check",
+  );
+  check("[C] an answer before a stray think tag survives", trailing?.answer,
+    "He studied at Anadolu University.");
+  check("[C] its scope survives too", trailing?.scope, "PORTFOLIO");
+  ok("[C] the stray reasoning is not returned",
+    !JSON.stringify(trailing).includes("let me re-check"));
 
   /* The assistant turn is prefilled with the scope label so the model opens on
    * the contract instead of on a monologue it cannot finish inside the token

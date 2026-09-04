@@ -48,6 +48,134 @@ showing a deterministic answer instantly. It is bounded by `timeoutMs` in
 `ajoop-ai-config.js`, and an unreachable bridge fails once and then
 short-circuits on its own backoff.
 
+## What changed in 5.2: the canonical knowledge corpus
+
+The retrieval corpus is now two sources built into one in-memory index at
+startup by `buildPortfolioChunks()` in `server/ajoop-rag.mjs`:
+
+1. The seven portfolio datasets under `data/portfolio/`, flattened and chunked
+   exactly as in 5.1.
+2. `data/portfolio/ajoop-master-knowledge.json`, the canonical professional
+   knowledge, turned into semantic records by `server/ajoop-knowledge.mjs`.
+
+The master file is **not** a prompt and is never handed to the model whole. It
+becomes roughly seventy records of one concept or entity each — `identity`,
+`skills:programming`, `experience:cbot`, `project:sinama`,
+`certifications:summary`, `github:summary` — so that retrieval returns the fact
+a question is about rather than a slab of everything. Each record carries
+`entityType`, `visibility`, `priority`, `tags` and `metadata` alongside the
+fields every chunk has always had. Nothing consumes `priority` or `tags` yet;
+they exist so later work on ranking and evidence links does not have to rewrite
+ingestion.
+
+Two properties are load-bearing and are covered by `npm run qa:ajoop:knowledge`:
+
+**Restricted material is physically absent, not merely discouraged.**
+`sanitizeKnowledge()` deletes any node whose `visibility` is not `public` or
+`public_on_request` — and any node whose key names a credential — from the
+parsed tree *before* a single record exists, so the record builders cannot see
+it. An unrecognised visibility marker is treated as restricted, so a new marker
+fails closed. Record text is then rendered from an explicit field list rather
+than by walking whatever keys are present, which means a key added to the JSON
+later reaches the corpus only if someone writes a line for it. Finally
+`loadMasterKnowledge()` searches the finished records for every value it
+removed and throws if one reappears: a leak takes the index down, and the
+browser falls back to its deterministic answers, rather than being served.
+
+**Project entities never merge.** Hospital Form App is C#/.NET/Windows Forms and
+Hospital Appointment System is Python/Tkinter/MySQL; SINAMA is Next.js/FastAPI
+and Merge Rush is Phaser 3/TypeScript. Each is its own record with its own stack
+line, and the tests assert the negative — that neither record contains the
+other's stack.
+
+Canonical URLs live in `metadata.links`, never in embedding text, so the
+embedding stays about the subject and later evidence UI still has the link. A
+project whose repository is private records that fact and offers no link.
+
+The added corpus costs about 1.7s of one-time startup embedding and nothing per
+turn: the file is read, sanitized and recordized once. `num_ctx`, `topK` and the
+generation token budget are unchanged.
+
+## What changed in 5.2: exact facts and aliases
+
+Two mechanisms sit in front of retrieval. They are deliberately separate, and
+neither is an intent router.
+
+**Exact facts** (`server/ajoop-facts.mjs`) answer the questions that have one
+right answer — CV, LinkedIn, GitHub, email, phone, location, availability, the
+channel headlines, education, GPA, spoken languages, programming languages, the
+certificate total, the project-contribution total and the GitHub repository
+snapshot. Twenty-two facts, all read out of the sanitized master knowledge:
+no factual value is written in code, so editing the canonical JSON changes the
+answer. A resolved fact is rendered as localized prose and returned without
+retrieval, embedding or generation — measured at a median of 1ms against a
+normal turn's ~4s.
+
+The router works by SUBTRACTION rather than keyword presence. The topic phrase
+is struck out of the normalized question and the fact fires only if every
+remaining word is a question particle. `question.includes("github")` would
+answer "GitHub nedir?" with Kaan's profile URL; subtraction leaves `nedir`
+standing, which is a content word, so the question falls through to ordinary
+retrieval. The same rule is why "Kaan GitHub Actions biliyor mu?" is a skills
+question rather than a request for a link. A missed route costs a slower answer;
+a false route costs a confident wrong one, so the list of tolerated particles is
+short and is not the place to fix a missed question.
+
+`nedir` and `what is` are tolerated only when the question also carries a
+possessive — "Kaan'ın LinkedIn'i nedir?" asks for his profile, "LinkedIn nedir?"
+asks what LinkedIn is.
+
+**The phone** is the one `public_on_request` fact. It is reachable only by
+explicitly asking for a phone, telephone, mobile or `telefon`; "Kaan'a nasıl
+ulaşırım?" resolves to a different fact that offers email, LinkedIn and the
+portfolio and never the number.
+
+That gate would be worth little on its own, because ordinary retrieval ranks by
+cosine similarity and similarity has no notion of consent: a question that never
+asked for a number could still rank the on-request chunk into the model's
+context and have it read back out in prose. So **`public_on_request` records are
+excluded from semantic retrieval entirely**. They are still embedded and still
+part of the canonical corpus — `chunks` counts them, `retrievableChunks` does
+not — but the ranking loop never sees them, and the only way to reach on-request
+material is the narrow deterministic route that requires an explicit ask.
+
+The cost is that the other on-request record, Kaan's interests outside work, is
+no longer reachable from ordinary questions either. That is the intended trade:
+on-request means a person decides, and a retrieval score is not a person.
+
+**Aliases** (`server/ajoop-entities.mjs`) index the master's own
+`aliases_and_typos` so `linkdin`, `git hub`, `c sharp`, `dot net`, `sinamayı`
+and `cbot'ta` reach the right records. This is RETRIEVAL ONLY: the visitor's
+message is never rewritten, and canonical names are appended to the embedding
+query alone, so the model still reads what was actually typed.
+
+There is no fuzzy matching — no edit distance, no near-miss scoring, because
+that is how `sinema` becomes SINAMA. The only tolerance is curated aliases plus
+a bounded Turkish suffix (`ajoop-text.mjs`), which is what lets `GitHub'ı`,
+`sertifikası` and `üniversitelerde` match without letting anything else in.
+
+Four entities are **context-sensitive**: GitHub, LinkedIn, C# and .NET are
+things visitors ask ordinary general questions about, so their names alone do
+not resolve. "GitHub nedir?" and "C# nedir?" reach the embedding exactly as
+typed, with no canonical tail; "Kaan GitHub Actions biliyor mu?", "c sharp ile
+ne yaptı?" and "Kaan'ın LinkedIn deneyimi nasıl?" resolve because the question
+independently says it is about his work. Only these four are gated — SINAMA,
+CBOT and Merge Rush are not subjects of general conversation, and gating every
+alias would cost recall for nothing. A bare "GitHub" or "linkdin" is still
+answered, by the exact-fact route, before retrieval is involved.
+
+The signals that open that gate are deliberately independent of the entity they
+license: "github" and "repo" are not among them, or naming GitHub would be its
+own excuse for pulling in Kaan's records.
+
+One further ambiguity rule exists, and it is small: `sınama` with the dotless ı
+is the ordinary noun "testing", while `sinama` is not a Turkish word at all. A
+question using the ordinary-word spelling resolves to the project only if it
+also carries a portfolio signal, which is why `ajoop-text.mjs` keeps a second
+fold that preserves ı. Note that this governs alias resolution only: what
+retrieval returns for such a question, and how the model then scopes it, is
+ranking work that belongs to a later brief.
+
 ## Why n8n left the public path
 
 Ajoop 4.3 routed the browser through a local n8n webhook. n8n can persist

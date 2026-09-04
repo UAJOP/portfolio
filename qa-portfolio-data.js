@@ -58,6 +58,7 @@ async function main() {
   // --- Canonical JSON parses -----------------------------------------------
   const {
     CANONICAL_FILES,
+    SERVER_ONLY_FILES,
     COMPOSED_PROFILE_KEYS,
     PROFILE_COMPOSITION,
     composePortfolio,
@@ -65,7 +66,7 @@ async function main() {
     normalizeEol,
   } = await import("./scripts/portfolio-data-model.mjs");
 
-  CANONICAL_FILES.forEach((name) => {
+  [...CANONICAL_FILES, ...SERVER_ONLY_FILES].forEach((name) => {
     const file = `${DATA_DIR}/${name}`;
     check(exists(file), `canonical data file is missing: ${file}`);
     if (!exists(file)) return;
@@ -76,21 +77,30 @@ async function main() {
     }
   });
 
-  // The directory and the manifest must describe each other exactly. Without
+  // The directory and the manifests must describe each other exactly. Without
   // this, a new canonical domain file could be added and then silently ignored
-  // by both the composer and this guard.
+  // by both the composer and this guard. A file is either composed into the
+  // browser registry (CANONICAL_FILES) or read only by the server
+  // (SERVER_ONLY_FILES); being in neither list is the failure.
   const onDisk = fs
     .readdirSync(path.join(__dirname, DATA_DIR))
     .filter((name) => name.endsWith(".json"))
     .sort();
   onDisk.forEach((name) => {
     check(
-      CANONICAL_FILES.includes(name),
-      `${DATA_DIR}/${name} is not listed in CANONICAL_FILES, so nothing composes or checks it`,
+      CANONICAL_FILES.includes(name) || SERVER_ONLY_FILES.includes(name),
+      `${DATA_DIR}/${name} is listed in neither CANONICAL_FILES nor SERVER_ONLY_FILES, so nothing composes or checks it`,
     );
   });
-  CANONICAL_FILES.forEach((name) => {
-    check(onDisk.includes(name), `CANONICAL_FILES lists ${name}, which does not exist on disk`);
+  [...CANONICAL_FILES, ...SERVER_ONLY_FILES].forEach((name) => {
+    check(onDisk.includes(name), `the data manifest lists ${name}, which does not exist on disk`);
+  });
+  // A server-only file must stay out of the bundle every visitor downloads.
+  SERVER_ONLY_FILES.forEach((name) => {
+    check(
+      !CANONICAL_FILES.includes(name),
+      `${name} is both server-only and composed into ${GENERATED}; pick one`,
+    );
   });
 
   check(exists(I18N_FILE), `${I18N_FILE} is missing`);

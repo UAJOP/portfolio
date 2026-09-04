@@ -21,6 +21,19 @@ export const DATA_DIR = path.join(REPO_ROOT, "data", "portfolio");
 export const I18N_DIR = path.join(REPO_ROOT, "data", "i18n");
 export const GENERATED_REGISTRY = path.join(REPO_ROOT, "portfolio-data.js");
 
+/**
+ * Canonical files that the SERVER reads and the browser registry must not.
+ *
+ * `portfolio-data.js` ships to GitHub Pages, so everything composed into it is
+ * downloaded by every visitor. Ajoop's master knowledge is a server-side
+ * retrieval corpus read once by server/ajoop-knowledge.mjs; composing it would
+ * put tens of kilobytes of recruiter intelligence into the page bundle for no
+ * reader benefit. It is listed here rather than left unlisted so that the
+ * directory and the manifests still describe each other exactly — the point of
+ * the guard in qa-portfolio-data.js.
+ */
+export const SERVER_ONLY_FILES = ["ajoop-master-knowledge.json"];
+
 /** Every canonical file, in the order a reader should encounter them. */
 export const CANONICAL_FILES = [
   "meta.json",

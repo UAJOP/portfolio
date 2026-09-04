@@ -1,0 +1,1124 @@
+{
+  "schema_version": "2.0",
+  "snapshot_date": "2026-09-04",
+  "purpose": "Public/professional canonical knowledge for Ajoop, Kaan Balcı's portfolio copilot.",
+  "source_priority": [
+    "1. Latest user-provided CV (CV-KAAN-BALCI(1).pdf)",
+    "2. Current portfolio repository main branch / canonical JSON",
+    "3. Current live portfolio (kaanbalci.com)",
+    "4. Current LinkedIn profile export (Profile.pdf)",
+    "5. Authenticated GitHub account data + public GitHub profile",
+    "6. Public LinkedIn/web search results that match canonical identity signals",
+    "7. User-confirmed prior professional context",
+    "8. Broad web/name matches only if identity signals match; otherwise reject"
+  ],
+  "identity_disambiguation": {
+    "canonical_person": {
+      "name": "Kaan Balcı",
+      "signals": [
+        "kaanbalci.com",
+        "GitHub username UAJOP",
+        "LinkedIn /in/balcikaan/",
+        "Atölye Joyday",
+        "İzmir University of Economics / Computer Programming",
+        "Anadolu University / Visual Communication Design",
+        "AI Designer / Software Developer / Solution Engineer / Forward Deployed Engineer"
+      ]
+    },
+    "explicit_not_this_person": [
+      "The musician / digital creator Kaan Balcı associated with @kaanbalciofficial or Spotify artist results",
+      "Footballer / athlete profiles named Kaan Balcı",
+      "Medical / academic profiles named Dr. Kaan Balcı",
+      "Real-estate professionals named Kaan Balcı",
+      "Any search result lacking one of the canonical identity signals above"
+    ],
+    "rule": "Never merge a same-name Google/web result into Kaan's knowledge unless at least one strong canonical identifier matches."
+  },
+  "identity": {
+    "full_name": {
+      "value": "Kaan Balcı",
+      "confidence": "verified",
+      "visibility": "public"
+    },
+    "location": {
+      "value": "Istanbul / Türkiye",
+      "confidence": "verified",
+      "visibility": "public"
+    },
+    "availability": {
+      "value": "Open for work",
+      "confidence": "verified",
+      "visibility": "public"
+    },
+    "channel_specific_headlines": {
+      "portfolio_primary": "Forward Deployed Engineer",
+      "current_cv": "AI Designer & Solution Engineer",
+      "linkedin": "Forward Deployed Engineer | Co-Founder at Atölye JOYDAY",
+      "background_descriptor": "AI Designer & Software Developer"
+    },
+    "canonical_summary": {
+      "value": "Kaan Balcı is an Istanbul-based AI Designer, Solution Engineer and software developer whose current direction is Forward Deployed Engineering. He works across conversational AI, workflow automation, LLM/agent evaluation, software implementation and product delivery, with an emphasis on turning business and user needs into reliable, testable systems.",
+      "confidence": "verified_synthesis",
+      "visibility": "public"
+    }
+  },
+  "contact_and_channels": {
+    "portfolio": {
+      "value": "https://kaanbalci.com",
+      "status": "canonical",
+      "visibility": "public"
+    },
+    "github": {
+      "value": "https://github.com/UAJOP",
+      "status": "canonical",
+      "visibility": "public"
+    },
+    "linkedin": {
+      "value": "https://www.linkedin.com/in/balcikaan/",
+      "status": "canonical",
+      "visibility": "public"
+    },
+    "primary_email": {
+      "value": "kaanb8776@gmail.com",
+      "status": "canonical_current_cv",
+      "visibility": "public"
+    },
+    "legacy_secondary_email": {
+      "value_redacted": true,
+      "status": "A legacy secondary address exists in the LinkedIn export contact block and is not primary. Its value is deliberately not stored in this file, because this file is committed to a public repository.",
+      "visibility": "do_not_offer_by_default",
+      "rule": "Use the primary email for every contact answer. Never guess, reconstruct or offer the legacy address."
+    },
+    "phone": {
+      "value": "+90 507 133 3382",
+      "status": "present_in current CV and LinkedIn export",
+      "visibility": "public_on_request"
+    },
+    "instagram": {
+      "value": "https://www.instagram.com/kaan_ba1/",
+      "status": "linked from portfolio/GitHub",
+      "visibility": "public"
+    },
+    "youtube": {
+      "value": "https://www.youtube.com/channel/UCCoOWMoemn93OX7cHyGTZuA",
+      "status": "linked from portfolio/GitHub",
+      "visibility": "public"
+    },
+    "x": {
+      "value": "https://x.com/KaanAjop",
+      "status": "linked from portfolio",
+      "visibility": "public"
+    },
+    "twitch": {
+      "value": "https://www.twitch.tv/ajoop",
+      "status": "linked from GitHub profile",
+      "visibility": "public"
+    },
+    "resume": {
+      "value": "https://drive.google.com/file/d/1eERVaYoP-ICuP3xfbzpaDaCo5amwqA8u/view?usp=sharing",
+      "status": "portfolio canonical resume link",
+      "visibility": "public"
+    }
+  },
+  "current_positioning": {
+    "primary_direction": [
+      "Forward Deployed Engineering",
+      "AI Solutions / Solution Engineering",
+      "Applied AI",
+      "Conversational AI",
+      "AI Reliability / Evaluation",
+      "Automation",
+      "Product-minded Software Engineering"
+    ],
+    "target_roles": [
+      "Forward Deployed Engineer",
+      "Solution Engineer",
+      "AI Solutions Engineer",
+      "Applied AI Engineer",
+      "AI Product Engineer",
+      "AI Designer",
+      "Conversational AI Designer",
+      "AI Automation Engineer",
+      "Technical Solutions Engineer",
+      "Software Engineer"
+    ],
+    "core_value_proposition": [
+      "Translate ambiguous business/user needs into clear technical workflows",
+      "Prototype and implement AI/software solutions",
+      "Design and stabilize conversational-AI flows",
+      "Evaluate LLM and agent behavior using structured criteria",
+      "Integrate channels, tools and handoff paths",
+      "Turn tests and evidence into production-readiness decisions",
+      "Combine technical execution with user/product thinking"
+    ]
+  },
+  "education": [
+    {
+      "institution": "İzmir University of Economics",
+      "program": "Computer Programming",
+      "degree": "Associate Degree",
+      "canonical_period": "Sep 2022 - Sep 2024",
+      "gpa": 3.07,
+      "honors": [
+        "Honor Student"
+      ],
+      "additional_user_confirmed": [
+        "Graduated with honors",
+        "Strong final-term performance",
+        "Previously stated class rank: 3rd"
+      ],
+      "visibility": "public",
+      "notes": "GPA is confirmed by live portfolio; Honor Student appears in LinkedIn export. Class-rank detail is user-confirmed but not independently verified in the current public sources."
+    },
+    {
+      "institution": "Anadolu University Open Education Faculty",
+      "program": "Visual Communication Design",
+      "degree": "Bachelor's Degree",
+      "canonical_period": "Sep 2025 - Present",
+      "planned_end_from_linkedin": "Sep 2029",
+      "visibility": "public",
+      "notes": "Latest CV uses Sep 2025 - Present. LinkedIn export shows Jul 2025 - Sep 2029; use latest CV for start-date answers."
+    }
+  ],
+  "spoken_languages": [
+    {
+      "language": "Turkish",
+      "level": "Native / Native or Bilingual",
+      "confidence": "verified"
+    },
+    {
+      "language": "English",
+      "level": "Upper-Intermediate / Professional Working",
+      "confidence": "verified"
+    },
+    {
+      "language": "German",
+      "level": "Elementary",
+      "confidence": "verified"
+    }
+  ],
+  "technical_capabilities": {
+    "core_programming_languages": [
+      "Python",
+      "C#",
+      "JavaScript",
+      "PHP",
+      "SQL",
+      "C++",
+      "Java",
+      "Kotlin",
+      "TypeScript"
+    ],
+    "frameworks_runtime_and_app_tech": [
+      ".NET",
+      "Windows Forms",
+      "ADO.NET",
+      "Next.js",
+      "React",
+      "FastAPI",
+      "Tkinter",
+      "Android Studio",
+      "Phaser 3",
+      "REST APIs",
+      "Google Apps Script"
+    ],
+    "web": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "Responsive Web Design",
+      "Bilingual / multilingual web experiences",
+      "UI flow design"
+    ],
+    "databases_and_data": [
+      "MySQL",
+      "MSSQL / SQL Server",
+      "PostgreSQL",
+      "SQLite",
+      "Firebase",
+      "Google Sheets",
+      "Relational data modeling",
+      "Stored Procedures",
+      "Triggers",
+      "pandas",
+      "scikit-learn",
+      "Data Analysis",
+      "Data Visualization",
+      "Linear Regression"
+    ],
+    "ai_and_automation": [
+      "Conversational AI",
+      "Chatbot Flow Design",
+      "Intent & Response Logic",
+      "Multi-channel AI Flows",
+      "Prompt Engineering",
+      "Tool Calling",
+      "IVR",
+      "WhatsApp Handoff",
+      "Human Handoff",
+      "n8n-based workflow automation",
+      "LLM Response Evaluation",
+      "Reasoning Evaluation",
+      "AI-generated Code Review",
+      "Multimodal Testing",
+      "Agent Reliability",
+      "Regression Testing",
+      "Release Readiness",
+      "RAG",
+      "Local LLM workflows",
+      "Ollama"
+    ],
+    "qa_and_reliability": [
+      "Functional Testing",
+      "Test Case Execution",
+      "Defect Reporting",
+      "Issue Reproduction",
+      "Root-Cause Analysis",
+      "Permission/role validation",
+      "Conversation-history validation",
+      "Workflow validation",
+      "Stabilization testing",
+      "Regression evidence",
+      "Failure analysis"
+    ],
+    "game_development": [
+      "Unity",
+      "Unreal Engine",
+      "Blueprints",
+      "C#",
+      "C++",
+      "Phaser 3",
+      "Gameplay systems",
+      "Physics systems",
+      "Enemy AI",
+      "Game state",
+      "Progression",
+      "Rapid prototyping",
+      "Platform abstraction"
+    ],
+    "delivery_and_tools": [
+      "Git",
+      "GitHub",
+      "Vercel",
+      "Railway",
+      "Cloudflare Tunnel",
+      "Docker fundamentals/local workflows",
+      "cPanel",
+      "VS Code",
+      "Visual Studio",
+      "Jira",
+      "Slack",
+      "Google Workspace",
+      "Google Forms",
+      "Google Sheets",
+      "Cisco Packet Tracer"
+    ],
+    "historical_self_reported_exposure_2025_not_default_proficiency": [
+      "React.js",
+      "JSON/API integration",
+      "MongoDB",
+      "Node.js",
+      "Express.js",
+      "Flask",
+      "Django",
+      "Tailwind CSS",
+      "Bootstrap",
+      "Blockchain",
+      "Solidity",
+      "MERN Stack"
+    ],
+    "proficiency_rule": "Do not invent skill levels. Current CV/portfolio proves use/exposure; an older LinkedIn post contained self-rated levels, but Ajoop should not present those old rankings as current proficiency unless explicitly asked about that historical post."
+  },
+  "professional_experience": [
+    {
+      "organization": "Atölye Joyday",
+      "role": "Co-Founder & Digital Product Developer",
+      "period": "Jan 2026 - Present",
+      "location": "Istanbul / Türkiye",
+      "public_business_location": "Osmanağa Mah. Kuşdili Cad. Feza İş Merkezi No:39 Kat 1 D/6, Kadıköy, Istanbul",
+      "highlights": [
+        "Built and managed the studio's digital products, reservation processes and customer-facing online experience.",
+        "Developed the responsive bilingual website with HTML, CSS and JavaScript.",
+        "Designed package-based reservation journeys from discovery through date/contact/operational follow-up.",
+        "Automated booking, workshop applications and email notifications with Google Forms, Google Sheets and Apps Script.",
+        "Supported hosting, deployment, digital visibility and ongoing customer-experience improvements."
+      ],
+      "visibility": "public"
+    },
+    {
+      "organization": "CBOT",
+      "role": "AI Designer",
+      "period": "Sep 2025 - Oct 2025",
+      "location": "Istanbul / Türkiye | Hybrid",
+      "highlights": [
+        "Contributed to enterprise conversational AI, live-chat and multi-channel automation across banking, insurance, municipal services and employee benefits.",
+        "Designed/built/presented an insurance claim-intake POC combining voice interaction, phone verification, WhatsApp handoff, photo/document collection, prompt design and tool orchestration.",
+        "Identified a municipal chatbot channel-configuration mismatch and independently reconfigured the majority of 500+ nodes for web migration after aligning the approach with the team lead.",
+        "Performed structured live-chat QA across agent/customer flows, conversation history, system messages, role-based permissions and functional behavior.",
+        "Helped reduce an urgent issue backlog from about 63 items to the low 20s through systematic testing, validation, reporting and coordination."
+      ],
+      "public_answer_policy": "Use sectors and generalized workflow evidence by default.",
+      "specific_client_names_user_reported": {
+        "values_redacted": true,
+        "status": "Specific client names were reported by Kaan but are deliberately not stored in this file, because this file is committed to a public repository. The sectors those clients belong to are already public and are covered by the highlights above.",
+        "visibility": "restricted_pending_public_clearance",
+        "rule": "Answer with sectors and generalized workflow evidence only. Never guess, infer or name a specific CBOT client. A name may be added here only after Kaan explicitly clears it for public disclosure."
+      }
+    },
+    {
+      "organization": "Outlier AI",
+      "role": "AI Training Specialist",
+      "period": "Apr 2025 - Aug 2025",
+      "work_mode": "Freelance / Project-Based | Remote",
+      "highlights": [
+        "Completed structured AI training and quality-assessment tasks across 11 projects.",
+        "Worked with major LLM families including ChatGPT, Gemini, Claude, LLaMA and Grok.",
+        "Evaluated 100+ AI-generated code, reasoning and multimodal outputs.",
+        "Assessed correctness, instruction following, reasoning quality, technical accuracy and user relevance.",
+        "Applied prompt analysis, code review and multimodal testing and documented structured feedback."
+      ],
+      "visibility": "public"
+    },
+    {
+      "organization": "Punto Organization",
+      "role": "Software Development Intern",
+      "period": "Jul 2024 - Sep 2024",
+      "location": "Izmir / Türkiye",
+      "highlights": [
+        "Developed an internal event-management dashboard using PHP, JavaScript, HTML, CSS and MySQL.",
+        "Designed database structure and event creation/editing/tracking/reporting workflows.",
+        "Translated operational requirements into a practical web-based solution.",
+        "Managed interface development, database integration, implementation and functional testing."
+      ],
+      "visibility": "public"
+    },
+    {
+      "organization": "Punto Organization",
+      "role": "Event Operations Supervisor",
+      "period": "Jul 2022 - Aug 2025",
+      "location": "Izmir / Türkiye",
+      "highlights": [
+        "Coordinated 100+ client assignments across congresses, meetings and product launches.",
+        "Managed on-site teams, planning, task distribution and client communication.",
+        "Worked under time-sensitive, customer-facing conditions."
+      ],
+      "visibility": "public"
+    },
+    {
+      "organization": "Ocean's Team",
+      "role": "Event Operations Specialist",
+      "period": "Jan 2020 - Jun 2022",
+      "location": "Istanbul / Türkiye",
+      "highlights": [
+        "Supported 50+ corporate events through on-site coordination, logistics and planning.",
+        "Supervised teams of up to 15 staff.",
+        "Developed early responsibility, customer communication and team-coordination experience."
+      ],
+      "visibility": "public"
+    }
+  ],
+  "achievements_and_signals": {
+    "projects_contributed": {
+      "value": "50+",
+      "meaning": "Academic, personal, freelance and team-based projects across AI, software, automation, web, mobile and games.",
+      "confidence": "verified_current_cv"
+    },
+    "gameathon": {
+      "value": "Led a four-person team in a 24-hour Gameathon and placed 4th among 15 teams.",
+      "details": [
+        "game mechanics",
+        "Git workflows",
+        "rapid Unreal Engine prototyping"
+      ],
+      "confidence": "verified_current_cv"
+    },
+    "gpa": {
+      "value": 3.07,
+      "confidence": "verified_live_portfolio"
+    },
+    "honor_student": {
+      "value": true,
+      "confidence": "verified_linkedin_export"
+    },
+    "linkedin_recommendation_themes": [
+      "Responsibility and hard work",
+      "Creative problem solving",
+      "Team contribution",
+      "Clear communication",
+      "Leadership potential",
+      "Strong willingness to learn"
+    ],
+    "linkedin_dynamic_snapshot": {
+      "followers": "about 4K",
+      "connections": "500+",
+      "snapshot_date": "2026-09-04",
+      "rule": "Dynamic; never present as permanent."
+    }
+  },
+  "certifications": {
+    "canonical_total": "25+",
+    "providers": [
+      "Cisco",
+      "Udemy",
+      "BTK Akademi",
+      "Coursera",
+      "Miuul",
+      "Unity",
+      "Unreal Engine",
+      "other learning platforms"
+    ],
+    "selected_verified_current_site": [
+      {
+        "title": "(42 Saat) Sıfırdan Komple Java Geliştirici Kursu",
+        "provider": "Udemy",
+        "completed": "2025-01-24"
+      },
+      {
+        "title": "Uygulama Geliştirerek C# Öğrenin: A'dan Z'ye Eğitim Seti",
+        "provider": "Udemy",
+        "completed": "2025-01-24"
+      },
+      {
+        "title": "Uygulamalarla SQL Öğreniyorum",
+        "provider": "Udemy",
+        "completed": "2025-01-11"
+      },
+      {
+        "title": "Build Responsive Real-World Websites with HTML and CSS",
+        "provider": "Udemy",
+        "completed": "2025-01-24"
+      },
+      {
+        "title": "Unreal Engine 5 C++ Developer: Learn C++ & Make Video Games",
+        "provider": "Udemy",
+        "completed": "2025-01-11"
+      },
+      {
+        "title": "Etik Hacker Olma Kursu",
+        "provider": "Udemy",
+        "completed": "2025-01-24"
+      },
+      {
+        "title": "NDG Linux Essentials",
+        "provider": "Cisco Networking Academy / NDG",
+        "completed": "2024-03-29"
+      },
+      {
+        "title": "Networking Essentials",
+        "provider": "Cisco Networking Academy",
+        "completed": "2024-01-03"
+      },
+      {
+        "title": "Introduction to Packet Tracer",
+        "provider": "Cisco Networking Academy",
+        "completed": "2023-12-01"
+      }
+    ],
+    "rule": "25+ is the canonical aggregate. Exact certificate titles should only be claimed when verified by the certificate page, CV, LinkedIn or a credential source."
+  },
+  "projects": {
+    "flagship": {
+      "SINAMA": {
+        "name": "SINAMA — AI Agent Reliability Lab",
+        "status": "Live MVP",
+        "role": "Product Designer & Full-Stack Developer",
+        "category": "Applied AI / Deployment Reliability",
+        "summary": "Reliability lab for customer-service AI agents using repeatable multi-turn tests, deterministic workflow/tool evidence, regression comparisons and release-readiness decisions.",
+        "stack": [
+          "Next.js",
+          "React",
+          "Python",
+          "FastAPI",
+          "PostgreSQL",
+          "AI Evaluation",
+          "Vercel",
+          "Railway"
+        ],
+        "current_proof_from_repo": [
+          "14-scenario typed cross-vertical suite",
+          "Insurance + e-commerce reliability packs",
+          "Deterministic tool and workflow contracts",
+          "Baseline/regression comparison and version trends",
+          "READY / WARNING / BLOCKED release-readiness policy",
+          "Compatible external HTTPS agent testing"
+        ],
+        "links": {
+          "live": "https://sinama.kaanbalci.com",
+          "github": "https://github.com/UAJOP/sinama",
+          "case_study": "https://kaanbalci.com/sinama-case-study.html"
+        },
+        "conflict_note": "Older web crawl mentions 5 scenarios; current repository data says 14. Use current repository data."
+      },
+      "Merge Rush: Tiny Factory": {
+        "status": "Active Development",
+        "role": "Game Developer & Product Designer",
+        "summary": "Phaser 3 + TypeScript merge-game product demonstrating stateful systems, timed workflows, progressive unlocks, responsive delivery and platform-aware architecture.",
+        "stack": [
+          "Phaser 3",
+          "TypeScript",
+          "Vite",
+          "Vitest",
+          "Responsive UI",
+          "Game State",
+          "Platform Adapter"
+        ],
+        "proof": [
+          "4-minute Factory Run target",
+          "5 restoration stages",
+          "25 progressively unlocked board cells",
+          "Factory Run + Endless modes",
+          "Footprint-aware placement/merge/deadlock logic",
+          "Platform lifecycle/save/audio/language abstractions"
+        ],
+        "repo_visibility": "private; do not expose private repo URL"
+      },
+      "Ajoop Portfolio Copilot": {
+        "status": "Active portfolio AI system",
+        "summary": "Local-first portfolio copilot that answers from Kaan's portfolio knowledge using RAG, deterministic fallback and safety boundaries.",
+        "architecture_public_safe": [
+          "qwen3:4b-instruct via Ollama",
+          "qwen3-embedding:0.6b embeddings",
+          "Node.js /ajoop-rag bridge",
+          "Cloudflare Tunnel external access",
+          "In-memory conversation history",
+          "Portfolio vs general scope contract",
+          "Deterministic live-data guard",
+          "Evidence cards and deterministic fallback"
+        ],
+        "do_not_expose": [
+          "local filesystem paths",
+          "tunnel IDs",
+          "credentials",
+          "tokens",
+          "private runtime secrets"
+        ]
+      }
+    },
+    "portfolio_catalog": [
+      {
+        "name": "AI Chatbot Flow Design",
+        "category": "AI & Automation",
+        "stack": [
+          "Conversational AI",
+          "AI Flow",
+          "Chatbot QA",
+          "Workflow Automation"
+        ]
+      },
+      {
+        "name": "AI Flow Puzzle",
+        "category": "AI & Interactive",
+        "stack": [
+          "JavaScript",
+          "Node Logic",
+          "Flow Validation",
+          "Fallback Design"
+        ]
+      },
+      {
+        "name": "Atölye Joyday Official Website",
+        "category": "Web & Product",
+        "stack": [
+          "HTML",
+          "CSS",
+          "JavaScript",
+          "Google Apps Script",
+          "Google Sheets",
+          "Reservation Automation"
+        ]
+      },
+      {
+        "name": "Hospital Form App",
+        "category": "Desktop Application",
+        "stack": [
+          "C#",
+          ".NET",
+          "Windows Forms",
+          "SQL Server",
+          "ADO.NET"
+        ]
+      },
+      {
+        "name": "Hospital Appointment System",
+        "category": "Software",
+        "stack": [
+          "Python",
+          "Tkinter",
+          "MySQL",
+          "Appointment Logic"
+        ]
+      },
+      {
+        "name": "Cars Dataset Analysis",
+        "category": "Data",
+        "stack": [
+          "Python",
+          "Pandas",
+          "Data Analysis",
+          "Linear Regression"
+        ]
+      },
+      {
+        "name": "Legacy of the Lost",
+        "category": "Games",
+        "stack": [
+          "Unreal Engine 5",
+          "Puzzle Design",
+          "Object Interaction",
+          "Modular Level Design"
+        ]
+      },
+      {
+        "name": "MyMuseum — Mobile Content App",
+        "category": "Mobile",
+        "stack": [
+          "Kotlin",
+          "Firebase",
+          "Android",
+          "Content Sharing"
+        ]
+      },
+      {
+        "name": "Drivenfinity",
+        "category": "Games",
+        "stack": [
+          "Unity",
+          "C#",
+          "3D"
+        ]
+      },
+      {
+        "name": "Agency DB",
+        "category": "Data",
+        "stack": [
+          "SQL",
+          "Database Modeling",
+          "Stored Procedures",
+          "Triggers"
+        ]
+      },
+      {
+        "name": "Control Panel",
+        "category": "Software",
+        "stack": [
+          "PHP",
+          "MySQL",
+          "CSS",
+          "Dashboard"
+        ]
+      },
+      {
+        "name": "Extract Shoot: Zero",
+        "category": "Games",
+        "stack": [
+          "Unreal Engine",
+          "C++",
+          "Blueprints"
+        ]
+      },
+      {
+        "name": "Escape Island",
+        "category": "Games",
+        "stack": [
+          "Unreal Engine 5.4.4",
+          "C++",
+          "Blueprints"
+        ]
+      },
+      {
+        "name": "Portfolio Website",
+        "category": "Web & Product",
+        "stack": [
+          "JavaScript",
+          "Static Site",
+          "Recruiter Mode",
+          "Ajoop",
+          "Interactive Features"
+        ]
+      },
+      {
+        "name": "Tank Savage",
+        "category": "Games",
+        "stack": [
+          "Unreal Engine",
+          "C++",
+          "Blueprints",
+          "Physics"
+        ]
+      },
+      {
+        "name": "Dunker Madness",
+        "category": "Games / Learning",
+        "stack": [
+          "Unity",
+          "C#",
+          "Physics"
+        ]
+      },
+      {
+        "name": "Unity Essentials",
+        "category": "Games / Learning",
+        "stack": [
+          "Unity 6",
+          "C#"
+        ]
+      },
+      {
+        "name": "Weather App",
+        "category": "Web / Learning",
+        "stack": [
+          "HTML",
+          "CSS",
+          "JavaScript",
+          "Weather API"
+        ]
+      },
+      {
+        "name": "Calculator Android Studio",
+        "category": "Mobile / Learning",
+        "stack": [
+          "Android Studio",
+          "Mobile UI"
+        ]
+      },
+      {
+        "name": "Calculator JavaScript",
+        "category": "Web / Learning",
+        "stack": [
+          "HTML",
+          "CSS",
+          "JavaScript",
+          "DOM"
+        ]
+      },
+      {
+        "name": "Warehouse War",
+        "category": "Games / Archive",
+        "stack": [
+          "Unreal Engine",
+          "Combat"
+        ]
+      },
+      {
+        "name": "Porto 25",
+        "category": "Web / Learning",
+        "stack": [
+          "Tailwind CSS",
+          "HTML"
+        ]
+      },
+      {
+        "name": "My Java Projects",
+        "category": "Software / Learning",
+        "stack": [
+          "Java",
+          "OOP",
+          "Algorithms"
+        ]
+      },
+      {
+        "name": "Mandelas Website Project",
+        "category": "Web / Learning",
+        "stack": [
+          "HTML",
+          "CSS"
+        ]
+      },
+      {
+        "name": "Python Projects",
+        "category": "Software / Learning",
+        "stack": [
+          "Python",
+          "Automation"
+        ]
+      },
+      {
+        "name": "IC Supply",
+        "category": "Software / Archive",
+        "stack": [
+          "Database",
+          "Inventory Flow"
+        ]
+      },
+      {
+        "name": "Joyday Action Painting",
+        "category": "Web Game",
+        "stack": [
+          "JavaScript",
+          "Canvas",
+          "PNG Export"
+        ]
+      },
+      {
+        "name": "Kaan's Career Adventure",
+        "category": "Web Game",
+        "stack": [
+          "JavaScript",
+          "Merge / Career Journey"
+        ]
+      },
+      {
+        "name": "Interview Run",
+        "category": "Planned Web Game",
+        "stack": [
+          "Concept",
+          "Interview Choices",
+          "Timing"
+        ]
+      }
+    ],
+    "project_separation_rules": [
+      "Hospital Form App is C#/.NET/Windows Forms/SQL Server. It is NOT the same project as Hospital Appointment System.",
+      "Hospital Appointment System is Python/Tkinter/MySQL. Never mix its stack with Hospital Form App.",
+      "Merge Rush uses Phaser 3/TypeScript/Vite/Vitest. Never mix it with SINAMA's Next.js/Python/FastAPI stack.",
+      "SINAMA is the AI reliability lab; AI Flow Puzzle is the n8n-inspired browser workflow simulator.",
+      "Joyday business site and Joyday Action Painting game are separate artifacts."
+    ]
+  },
+  "github": {
+    "username": "UAJOP",
+    "canonical_url": "https://github.com/UAJOP",
+    "snapshot_date": "2026-09-04",
+    "connector_public_repositories_including_profile_repo": 25,
+    "github_web_visible_repository_count": 24,
+    "reconciliation": "GitHub web shows 24 repositories; authenticated connector returns 25 public repositories when the special UAJOP profile repository is included. Ajoop should say '24 public code/project repositories plus the profile repository' if asked for an exact current GitHub count.",
+    "public_repositories": [
+      "UAJOP",
+      "MyMuseum",
+      "Hospital-Appointment-System",
+      "Agency-Db",
+      "Cars-Dataset-Analysis",
+      "My-java-projects",
+      "Calculator-Android-Studio",
+      "Calculator-JavaScript",
+      "Dashboard",
+      "Weather-App",
+      "Porto-25",
+      "portfolio",
+      "Control-Panel",
+      "Pyhton-Projects",
+      "Mandelas-Web-site-Project",
+      "Hospital-System",
+      "Warehouse-War",
+      "EscapeIsland",
+      "UnityEssentials",
+      "ExtractShoot-Zero",
+      "LegacyOfTheLost",
+      "TankSavage",
+      "DunkerMadness",
+      "Drivenfinity",
+      "sinama"
+    ],
+    "dynamic_profile_snapshot": {
+      "stars": 36,
+      "followers": 1,
+      "following": 1,
+      "note": "Dynamic; not important for recruiter answers."
+    }
+  },
+  "soft_skills_and_work_style": {
+    "directly_supported": [
+      "Analytical problem solving",
+      "Requirements analysis",
+      "Customer/client communication",
+      "Team coordination",
+      "Operational planning",
+      "Technical documentation",
+      "Process improvement",
+      "Product thinking",
+      "Structured QA mindset",
+      "Root-cause analysis",
+      "Responsibility under time pressure",
+      "Independent implementation",
+      "Cross-functional collaboration",
+      "Rapid prototyping"
+    ],
+    "third_party_recommendation_themes": [
+      "Determination and hard work",
+      "Creative perspective",
+      "Responsibility",
+      "Innovative problem solving",
+      "Interpersonal skills",
+      "Team contribution",
+      "Clear articulation of ideas",
+      "Leadership potential",
+      "Strong eagerness to learn"
+    ],
+    "working_method": [
+      "Understand the user/business goal",
+      "Clarify requirements, source data and expected result",
+      "Map flows, system structure, edge cases and interaction paths",
+      "Build the smallest useful solution",
+      "Test, document, refine and keep the output maintainable"
+    ]
+  },
+  "recruiter_intelligence": {
+    "best_fit_story": "Kaan's differentiator is not one language or framework; it is the combination of enterprise conversational-AI workflow experience, structured LLM/agent evaluation, software implementation, customer-facing product ownership and operational/client experience.",
+    "strongest_evidence_for_forward_deployed_engineering": [
+      "CBOT: customer-facing POC, multi-channel flows, 500+ node migration, QA/stabilization",
+      "SINAMA: agent reliability, regression and release-readiness product",
+      "Atölye Joyday: real business product ownership and workflow automation",
+      "Punto: requirements-to-software internal dashboard",
+      "Event operations: client communication, coordination and delivery under pressure"
+    ],
+    "strongest_evidence_for_applied_ai": [
+      "SINAMA",
+      "CBOT enterprise conversational AI",
+      "Outlier AI LLM evaluation",
+      "Ajoop RAG portfolio copilot",
+      "AI Flow Puzzle"
+    ],
+    "strongest_evidence_for_software_engineering": [
+      "Hospital Form App",
+      "Hospital Appointment System",
+      "Punto event-management dashboard",
+      "Portfolio/Ajoop",
+      "Cars Dataset Analysis",
+      "MyMuseum"
+    ],
+    "do_not_overclaim": [
+      "Do not claim senior-level depth without evidence.",
+      "Do not infer years of experience from number of projects.",
+      "Do not claim production ownership for learning/archive projects.",
+      "Do not convert exposure to a technology into expert proficiency."
+    ]
+  },
+  "public_personal_context": {
+    "interests": [
+      "Basketball",
+      "Cycling",
+      "Game development",
+      "Gaming",
+      "Science-fiction / technology media",
+      "Zombie-themed games and films"
+    ],
+    "visibility": "public_on_request",
+    "rule": "Only use when asked or when relevant to culture-fit/personal-interest questions; not a default recruiter answer."
+  },
+  "aliases_and_typos": {
+    "Kaan Balcı": [
+      "kaan",
+      "kaan balci",
+      "kaan balcı",
+      "kaanın",
+      "kaan'in",
+      "kaan balcının",
+      "balcikaan",
+      "UAJOP"
+    ],
+    "SINAMA": [
+      "sinama",
+      "sınama",
+      "sinamayı",
+      "sinamanın",
+      "sinamaa"
+    ],
+    "LinkedIn": [
+      "linkedin",
+      "linkdin",
+      "linked in"
+    ],
+    "GitHub": [
+      "github",
+      "git hub"
+    ],
+    "C#": [
+      "c#",
+      "c sharp",
+      "csharp"
+    ],
+    ".NET": [
+      ".net",
+      "dot net",
+      "dotnet"
+    ],
+    "CBOT": [
+      "cbot",
+      "c bot"
+    ],
+    "Outlier AI": [
+      "outlier",
+      "outlier ai"
+    ],
+    "Atölye Joyday": [
+      "joyday",
+      "atolye joyday",
+      "atölye joyday"
+    ],
+    "Merge Rush: Tiny Factory": [
+      "merge rush",
+      "tiny factory",
+      "merge rush tiny factory"
+    ],
+    "Hospital Form App": [
+      "hospital form app",
+      "c# hastane",
+      "windows forms hastane"
+    ],
+    "Hospital Appointment System": [
+      "hospital appointment system",
+      "python hastane",
+      "tkinter hastane"
+    ]
+  },
+  "privacy_and_answer_boundaries": {
+    "safe_to_index": [
+      "public",
+      "public_on_request"
+    ],
+    "never_index_or_guess": [
+      "Passwords, API keys, tokens, credentials",
+      "Private repository contents",
+      "Home address",
+      "Health/medical information",
+      "Relationship/family information",
+      "Political affiliation/views",
+      "Unpublished financial/salary information",
+      "Anything inferred from same-name web results"
+    ],
+    "live_data_rule": "No live web/data feed: current weather, FX, crypto, scores, opening hours and breaking news must be refused/redirected to a live source.",
+    "missing_fact_rule": "If the canonical knowledge base does not contain a fact, say it is not recorded. Do not fill gaps with guesses."
+  },
+  "conflict_resolution": [
+    {
+      "topic": "Current professional title",
+      "resolution": "Do not force one label everywhere. Portfolio primary = Forward Deployed Engineer; latest CV = AI Designer & Solution Engineer; LinkedIn = Forward Deployed Engineer | Co-Founder at Atölye JOYDAY; background = AI Designer & Software Developer."
+    },
+    {
+      "topic": "Primary email",
+      "resolution": "Use kaanb8776@gmail.com. A legacy secondary address appears in LinkedIn export contact data but is treated as legacy, is not stored in this file, and is never offered."
+    },
+    {
+      "topic": "Anadolu University start date",
+      "resolution": "Use Sep 2025 from latest CV. LinkedIn export's Jul 2025 is secondary/stale."
+    },
+    {
+      "topic": "GitHub repository count",
+      "resolution": "Use 24 public code/project repositories + the special profile repository = 25 public repositories returned by the authenticated connector snapshot."
+    },
+    {
+      "topic": "Certification count",
+      "resolution": "25+ total is canonical; the public certificate page currently verifies a selected subset, not the entire catalog."
+    },
+    {
+      "topic": "SINAMA scenario count",
+      "resolution": "Current portfolio repository data (14 scenarios) outranks older web crawls (5 scenarios)."
+    },
+    {
+      "topic": "Same-name web results",
+      "resolution": "Reject musicians, athletes, doctors, real-estate professionals and other Kaan Balcı results unless canonical identity signals match."
+    }
+  ],
+  "sources": {
+    "latest_cv": "CV-KAAN-BALCI(1).pdf uploaded 2026-09-04",
+    "linkedin_export": "Profile.pdf uploaded 2026-09-04",
+    "live_portfolio": "https://kaanbalci.com",
+    "portfolio_works": "https://kaanbalci.com/works.html",
+    "portfolio_about": "https://kaanbalci.com/about.html",
+    "portfolio_certificates": "https://kaanbalci.com/single-work.html",
+    "portfolio_games": "https://kaanbalci.com/games.html",
+    "github": "https://github.com/UAJOP",
+    "linkedin": "https://www.linkedin.com/in/balcikaan/",
+    "portfolio_repo": "https://github.com/UAJOP/portfolio"
+  }
+}

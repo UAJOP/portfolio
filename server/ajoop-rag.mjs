@@ -7,6 +7,9 @@ import {
   resolveAjoopBridgeConfig,
   resolveCorsOrigin,
 } from "./ajoop-bridge-core.mjs";
+import { MASTER_KNOWLEDGE_SOURCE, loadMasterKnowledge } from "./ajoop-knowledge.mjs";
+import { buildAliasIndex, buildRetrievalQuery, resolveEntities } from "./ajoop-entities.mjs";
+import { buildExactFacts, renderExactFact, resolveExactFact } from "./ajoop-facts.mjs";
 
 const RAG_PATH = "/ajoop-rag";
 const RAG_PROTOCOL_VERSION = 1;
@@ -328,8 +331,19 @@ function splitLongLine(line, limit) {
   return parts;
 }
 
-function chunkRecord({ source, entityId, title, record }) {
-  const bodyLines = flattenValue(record).flatMap((line) => splitLongLine(line, CHUNK_CHARS - 120));
+/**
+ * A record as one or more chunks.
+ *
+ * `record` is flattened generically, the way the portfolio datasets have always
+ * been indexed. `lines` is the alternative for a source that renders its own
+ * text — the master knowledge does, because its privacy boundary depends on
+ * rendering an explicit field list rather than walking whatever keys exist.
+ * `extra` rides along onto every chunk so a source can carry metadata the
+ * generic datasets do not have.
+ */
+function chunkRecord({ source, entityId, title, record, lines, extra }) {
+  const rawLines = lines || flattenValue(record);
+  const bodyLines = rawLines.flatMap((line) => splitLongLine(line, CHUNK_CHARS - 120));
   const header = [`source: ${source}`, `entity: ${entityId}`, `title: ${title}`];
   const chunks = [];
   let current = [...header];
@@ -356,13 +370,49 @@ function chunkRecord({ source, entityId, title, record }) {
     entityId,
     title,
     text,
+    ...(extra || {}),
   }));
+}
+
+/**
+ * The corpus with exact-duplicate chunks dropped, earliest occurrence winning.
+ *
+ * Some facts are recorded both in the portfolio datasets and in the master
+ * knowledge, and a recursive traversal can reach the same leaf twice. Neither
+ * needs a deduplication rewrite — identical text simply must not be embedded
+ * and ranked twice. The datasets are appended first, so an existing chunk is
+ * never the one displaced.
+ */
+function dedupeChunks(chunks) {
+  const seen = new Set();
+  const kept = [];
+  let duplicates = 0;
+  for (const chunk of chunks) {
+    const key = chunk.text.replace(/\s+/g, " ").trim().toLowerCase();
+    if (seen.has(key)) {
+      duplicates += 1;
+      continue;
+    }
+    seen.add(key);
+    kept.push(chunk);
+  }
+  return { kept, duplicates };
 }
 
 async function loadJson(file) {
   return JSON.parse(await readFile(resolve(PORTFOLIO_DATA_DIR, file), "utf8"));
 }
 
+/**
+ * The whole embedding corpus: the portfolio datasets, then the master knowledge.
+ *
+ * The datasets are indexed exactly as before. The master knowledge is appended
+ * as pre-rendered semantic records — one concept or entity each — carrying the
+ * visibility, priority, tag and link metadata that later briefs need in order
+ * to implement exact facts, source priority and evidence links without touching
+ * ingestion again. Restricted material never reaches this function: it is gone
+ * from the tree before loadMasterKnowledge() returns.
+ */
 async function buildPortfolioChunks() {
   const chunks = [];
   for (const dataset of DATASETS) {
@@ -407,7 +457,44 @@ async function buildPortfolioChunks() {
       });
     }
   }
-  return chunks;
+
+  const datasetChunks = chunks.length;
+  const master = await loadMasterKnowledge(PORTFOLIO_DATA_DIR);
+  for (const record of master.records) {
+    chunks.push(
+      ...chunkRecord({
+        source: MASTER_KNOWLEDGE_SOURCE,
+        entityId: record.id,
+        title: record.title,
+        lines: record.text.split("\n"),
+        extra: {
+          entityType: record.entityType,
+          visibility: record.visibility,
+          priority: record.priority,
+          tags: record.tags,
+          metadata: record.metadata,
+        },
+      }),
+    );
+  }
+
+  const { kept, duplicates } = dedupeChunks(chunks);
+  return {
+    chunks: kept,
+    /* Returned so initialize() can build the exact-fact store and the alias
+     * index from the same sanitized tree, without reading the file twice. */
+    master,
+    stats: {
+      datasets: DATASETS.length,
+      datasetChunks,
+      masterKnowledgeRecords: master.stats.records,
+      masterKnowledgeChunks: chunks.length - datasetChunks,
+      indexedPublicRecords: master.stats.publicRecords,
+      indexedOnRequestRecords: master.stats.onRequestRecords,
+      privacyExcluded: master.stats.privacyExcluded,
+      duplicateChunks: duplicates,
+    },
+  };
 }
 
 function normalizeVector(vector) {
@@ -445,8 +532,15 @@ function dotProduct(left, right) {
  * prose alone.
  *
  * A reasoning model may wrap its scratchpad in <think>…</think>; only what
- * follows the last CLOSED tag is the answer. An opening tag with no close means
- * the reply was cut off mid-reasoning, so there is no answer to take.
+ * follows the last CLOSED tag is the answer.
+ *
+ * An UNCLOSED opening tag means the reply ran out of tokens mid-reasoning, and
+ * what counts is where it opened. Opening before anything else leaves no answer
+ * to take. Opening AFTER a finished reply does not retract that reply: with the
+ * master knowledge indexed, qwen3:4b-instruct began writing a correct
+ * SCOPE/ANSWER pair and then carrying on into an unterminated <think> block,
+ * and discarding the whole string threw away a good answer and 503'd a question
+ * it had just answered. Everything before the stray tag is kept.
  */
 function extractFinalAnswer(value) {
   if (typeof value !== "string") return "";
@@ -456,7 +550,8 @@ function extractFinalAnswer(value) {
     const last = closed[closed.length - 1];
     return text.slice((last.index || 0) + last[0].length).trim();
   }
-  return /<\s*think\b/i.test(text) ? "" : text.trim();
+  const opened = text.search(/<\s*think\b/i);
+  return opened === -1 ? text.trim() : text.slice(0, opened).trim();
 }
 
 /**
@@ -525,6 +620,27 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
   let ready = false;
   let initializing = null;
   let index = [];
+  /* Corpus composition, reported by health as diagnostics. Built once with the
+   * index and never recomputed per question. */
+  let corpusStats = {};
+  /* Exact facts, the alias index and master record titles: all derived once
+   * from the same sanitized knowledge the corpus is built from, all read-only
+   * afterwards. Nothing here touches the filesystem or the network per turn. */
+  let exactFacts = [];
+  let aliasIndex = { entities: [], aliasCount: 0 };
+  let masterTitles = new Map();
+  /**
+   * What ordinary semantic retrieval is allowed to see.
+   *
+   * `public_on_request` records are embedded and stay in the canonical corpus,
+   * but they are NOT eligible here. Cosine similarity has no notion of consent:
+   * a question that never asked for a phone number could still rank the
+   * on-request contact chunk into the model's context and have it read back out
+   * in prose. On-request material is therefore reachable only through the
+   * narrow deterministic fact route that requires an explicit ask, and the
+   * ranking loop below simply never sees it.
+   */
+  let retrievalIndex = [];
   let active = 0;
   let rateWindowStart = Date.now();
   let rateCount = 0;
@@ -574,18 +690,34 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
   };
 
   const initialize = async () => {
-    if (ready) return { ready: true, chunks: index.length, embedModel };
+    if (ready) return { ready: true, chunks: index.length, embedModel, ...corpusStats };
     if (initializing) return initializing;
     initializing = (async () => {
       try {
-        const chunks = await buildPortfolioChunks();
+        const { chunks, stats, master } = await buildPortfolioChunks();
         const vectors = await embedInputs(chunks.map((chunk) => chunk.text));
         index = chunks.map((chunk, position) => ({ ...chunk, vector: vectors[position] }));
+        retrievalIndex = index.filter((chunk) => chunk.visibility !== "public_on_request");
         ready = Boolean(index.length);
-        return { ready, chunks: index.length, embedModel };
+        aliasIndex = buildAliasIndex(master.knowledge);
+        exactFacts = buildExactFacts(master.knowledge, aliasIndex);
+        masterTitles = new Map(master.records.map((record) => [record.id, record.title]));
+        corpusStats = {
+          ...stats,
+          retrievableChunks: retrievalIndex.length,
+          exactFacts: exactFacts.length,
+          aliasEntities: aliasIndex.entities.length,
+          aliasPhrases: aliasIndex.aliasCount,
+        };
+        return { ready, chunks: index.length, embedModel, ...corpusStats };
       } catch (error) {
         index = [];
+        retrievalIndex = [];
         ready = false;
+        corpusStats = {};
+        exactFacts = [];
+        aliasIndex = { entities: [], aliasCount: 0 };
+        masterTitles = new Map();
         return { ready: false, chunks: 0, embedModel };
       } finally {
         initializing = null;
@@ -594,14 +726,22 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
     return initializing;
   };
 
-  const retrieve = async (question, history) => {
+  /**
+   * `queryText` is the alias-aware retrieval form, not the visitor's message.
+   *
+   * It carries the question verbatim plus any canonical entity names resolved
+   * from it, so a visitor who typed "linkdin" or "sinamanın" still embeds
+   * against the spelling the corpus uses. Only the embedding sees this; the
+   * model is given the original question.
+   */
+  const retrieve = async (queryText, history) => {
     const recentUser = history
       .filter((item) => item.role === "user")
       .slice(-2)
       .map((item) => item.content);
-    const query = [...recentUser, question].filter(Boolean).join("\n");
+    const query = [...recentUser, queryText].filter(Boolean).join("\n");
     const [queryVector] = await embedInputs([query]);
-    const ranked = index
+    const ranked = retrievalIndex
       .map((item) => ({ ...item, score: dotProduct(queryVector, item.vector) }))
       .sort((a, b) => b.score - a.score);
 
@@ -738,7 +878,18 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
       return {
         status: 200,
         headers,
-        body: { ok: ready, ready, mode: "rag", model: generationModel, embedModel, chunks: index.length },
+        body: {
+          ok: ready,
+          ready,
+          mode: "rag",
+          model: generationModel,
+          embedModel,
+          chunks: index.length,
+          /* Additive diagnostics. Every field above keeps its meaning and its
+           * position, so the browser panel and the launcher probe are
+           * unaffected by what is appended here. */
+          ...corpusStats,
+        },
       };
     }
     if (raw.mode !== "rag") {
@@ -784,9 +935,59 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
     }
 
     const history = sanitizeHistory(raw.history);
+
+    /* Answered WITHOUT retrieval, embedding or the model, for the same reason
+     * as the live-data guard above: when the answer is a single canonical
+     * value, letting cosine similarity choose between four chunks is how a
+     * plausible wrong URL gets served. The router is narrow by construction and
+     * a miss simply falls through to the pipeline below.
+     *
+     * Deliberately keyed off the current question alone. A conversation that
+     * mentioned Kaan earlier must not turn "LinkedIn nedir?" into a request for
+     * his profile. */
+    const fact = resolveExactFact(question, exactFacts);
+    if (fact) {
+      const answer = renderExactFact(fact, locale);
+      if (answer) {
+        return {
+          status: 200,
+          headers,
+          body: {
+            ok: true,
+            mode: "rag",
+            scope: "portfolio",
+            answer,
+            model: generationModel,
+            embedModel,
+            sources: [
+              {
+                id: `${MASTER_KNOWLEDGE_SOURCE}:${fact.sourceRecordId}:1`,
+                source: MASTER_KNOWLEDGE_SOURCE,
+                entityId: fact.sourceRecordId,
+                title: masterTitles.get(fact.sourceRecordId) || fact.sourceRecordId,
+                score: 1,
+              },
+            ],
+            retrievalTopScore: 1,
+            /* Additive diagnostic: which fact answered, for tests and for the
+             * evidence work in a later brief. */
+            exactFact: fact.id,
+          },
+        };
+      }
+    }
+
+    /* Only the retrieval path needs entities, so this runs after the fact route
+     * has declined — the deterministic answer never pays for it.
+     *
+     * Alias resolution reads the CURRENT question only, and never edits the
+     * message: resolved names travel with the retrieval query and nowhere else,
+     * so the model still reads what the visitor actually typed. */
+    const entities = resolveEntities(question, aliasIndex);
+
     active += 1;
     try {
-      const retrieved = await retrieve(question, history);
+      const retrieved = await retrieve(buildRetrievalQuery(question, entities), history);
       const result = await generate(question, locale, history, retrieved);
       const sources =
         result.scope === "PORTFOLIO"
@@ -824,6 +1025,6 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
     config,
     initialize,
     handle,
-    status: () => ({ ready, chunks: index.length, embedModel, model: generationModel }),
+    status: () => ({ ready, chunks: index.length, embedModel, model: generationModel, ...corpusStats }),
   };
 }
