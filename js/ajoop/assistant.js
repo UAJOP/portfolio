@@ -1562,7 +1562,7 @@ function ajoopTurnProvenance(plan, model, general) {
  * question the visitor did not ask.
  */
 function finishAjoopTurn(context) {
-  const { node, route, plan, language } = context;
+  const { node, route, plan, language, question } = context;
   const model = context.model && context.model.ok === true ? context.model : null;
   const general = Boolean(model && model.scope === "general");
   const list = ajoopMessageList();
@@ -1595,6 +1595,14 @@ function finishAjoopTurn(context) {
     fillAjoopMessage(node, spec);
   } else {
     renderAjoopMessage(spec);
+  }
+
+  /* The model's conversation memory is written HERE, at the one point a turn
+   * becomes something the visitor has read — not inside the transport, which
+   * only ever saw the turns the bridge answered. A deterministic fallback is
+   * still a turn the next question will refer back to. */
+  if (typeof rememberAjoopRagExchange === "function") {
+    rememberAjoopRagExchange({ route, question, language, answer: spec.text });
   }
 
   /* Actions settle BEFORE the scroll. The row is a sibling grid track of the
@@ -2277,7 +2285,7 @@ function answerAjoopRoute(route, options) {
     if (typeof isAjoopAiTurnCurrent === "function" && !isAjoopAiTurnCurrent(turn)) return;
     portfolioChatbotState.lastPlan = plan;
     portfolioChatbotState.lastEvidence = plan && plan.cards && plan.cards.length ? plan : null;
-    finishAjoopTurn({ node, route, plan, model, language });
+    finishAjoopTurn({ node, route, plan, model, language, question: settings.message });
   });
 
   if (typeof rememberAjoopTurn === "function") {
@@ -2362,21 +2370,42 @@ function handleAjoopMessage(message) {
  * open state of the panel — starting a new conversation is not starting a new
  * visit.
  */
+/**
+ * Ends the conversation in progress, whatever state it is in.
+ *
+ * Start over and a site-language change both replace the visible transcript, so
+ * both must also end the turn behind it. beginAjoopAiTurn() is the existing
+ * invalidation and the only one: it bumps the turn id and aborts the request in
+ * flight, so a reply already on its way is recognised as stale by the turn
+ * guard and dropped rather than committed into a transcript it does not belong
+ * to — which is how a pre-reset answer used to reappear as the first message of
+ * the fresh one, and how the cleared history used to refill itself.
+ *
+ * The order is load-bearing: the turn is invalidated BEFORE the history is
+ * cleared, so nothing can commit in between and write the old exchange back
+ * into memory that was just emptied.
+ *
+ * It also puts the panel's own state back at rest. A cleared transcript with a
+ * thinking mascot over it and greyed-out suggestions beneath it is a panel
+ * still visibly working on a question that no longer exists.
+ */
+function endAjoopConversationTurn() {
+  if (typeof beginAjoopAiTurn === "function") beginAjoopAiTurn();
+  closeAjoopPendingTurn();
+  if (typeof clearAjoopRagHistory === "function") clearAjoopRagHistory();
+  setAjoopTurnBusy(false);
+  setAjoopMascotState(ajoopRestingMascotState());
+}
+
 function resetAjoopConversation() {
   if (typeof resetAjoopContext === "function") resetAjoopContext();
   portfolioChatbotState.lastRoute = null;
   portfolioChatbotState.lastPlan = null;
   portfolioChatbotState.lastEvidence = null;
-  /* The model's short conversation memory is part of the conversation being
-   * cleared. Leaving it would let the next visitor's first question inherit
-   * the previous one's subject. */
-  if (typeof clearAjoopRagHistory === "function") clearAjoopRagHistory();
   /* A new conversation starts in the site's language again: the previous
    * visitor's language is part of the conversation being cleared. */
   portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
-  /* Opens a new turn so an AI reply still in flight for the cleared
-   * conversation cannot arrive and write itself into the fresh transcript. */
-  if (typeof beginAjoopAiTurn === "function") beginAjoopAiTurn();
+  endAjoopConversationTurn();
   resetChatbotMessages();
   renderChatbotQuickActions();
   renderAjoopBridgeStatus();
@@ -2475,10 +2504,12 @@ function updatePortfolioChatbotLanguage(
 ) {
   portfolioChatbotState.language = renderableLocaleId(language);
   /* A site language change resets the conversation, so the conversation
-   * language starts again from the new site locale — and so does the model's
-   * conversation memory, which belongs to the transcript being replaced. */
+   * language starts again from the new site locale — and the turn, history and
+   * panel state behind the old transcript end with it, exactly as they do for
+   * Start over. Called after the new language is set so the mascot returns to
+   * rest already speaking it. */
   portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
-  if (typeof clearAjoopRagHistory === "function") clearAjoopRagHistory();
+  endAjoopConversationTurn();
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
   const launcherText = document.querySelector("[data-chatbot-launcher-text]");
   const title = document.querySelector("[data-chatbot-title]");

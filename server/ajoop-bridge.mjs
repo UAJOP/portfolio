@@ -10,7 +10,7 @@
  */
 import http from "node:http";
 import { createAjoopBridge } from "./ajoop-bridge-core.mjs";
-import { createAjoopRag } from "./ajoop-rag.mjs";
+import { AJOOP_RAG_GENERATION, createAjoopRag } from "./ajoop-rag.mjs";
 
 const nativeFetch = typeof fetch === "function" ? fetch : null;
 
@@ -300,9 +300,12 @@ async function prewarmModel() {
 }
 
 /**
- * Warm the exact context/token shape used by the RAG generator after the
- * embedding index is built. This prevents the first visitor from paying the
- * one-time 2048-context runner setup cost.
+ * Warm the exact runner the RAG generator will use, once its embedding index is
+ * built, so the first visitor does not pay the one-time context setup cost.
+ *
+ * The shape is imported rather than repeated: a warm-up that describes a
+ * different context size than the one actually served warms the wrong runner
+ * and quietly stops being a warm-up at all.
  */
 async function prewarmRagModel() {
   if (!nativeFetch) return false;
@@ -315,10 +318,7 @@ async function prewarmRagModel() {
       signal: controller.signal,
       body: JSON.stringify({
         model: config.model,
-        stream: false,
-        think: false,
-        keep_alive: -1,
-        options: { temperature: 0.15, num_ctx: 2048, num_predict: 180 },
+        ...AJOOP_RAG_GENERATION,
         messages: [
           {
             role: "system",

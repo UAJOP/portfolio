@@ -33,6 +33,9 @@
  * into a transcript. It is never persisted, never sent anywhere but the
  * bridge, and it is cleared by Start over and by a site-language change —
  * both of which start a visibly new conversation.
+ *
+ * It records the conversation the visitor SAW, not the requests that happened
+ * to succeed — see rememberAjoopRagExchange below.
  */
 const AJOOP_RAG_HISTORY_LIMIT = 6;
 const AJOOP_RAG_HISTORY_CHARS = 700;
@@ -121,13 +124,37 @@ function validateAjoopRagResponse(raw) {
 }
 
 /**
+/**
+ * Records one exchange the visitor actually received.
+ *
+ * The history is a record of the CONVERSATION ON SCREEN, not of the requests
+ * that happened to succeed. Recording it inside the transport meant a turn that
+ * fell back to the deterministic answer left no trace, so the next question
+ * reached the model bare: "peki teknolojileri?" after a failed SINAMA turn had
+ * no subject, even though the visitor was plainly still talking about SINAMA.
+ *
+ * assistant.js therefore calls this once, at the point a turn COMMITS,
+ * whichever source wrote the prose. A superseded or aborted turn never commits
+ * and is never remembered — the visitor never received that answer, so it was
+ * never part of the conversation.
+ */
+function rememberAjoopRagExchange(options) {
+  const settings = options || {};
+  const answer = ajoopRagBoundedText(settings.answer);
+  if (!answer) return;
+  const locale = settings.language || "en";
+  ajoopRagRemember("user", ajoopRagQuestion(settings.route, settings.question, locale));
+  ajoopRagRemember("assistant", answer);
+}
+
+/**
  * One RAG turn.
  *
  * Never throws and never leaves the caller waiting past the bridge's own
  * timeout: every outcome — not configured, offline, busy, timed out, stale,
  * malformed — resolves to a result object whose `ok` is false, and the caller
- * falls back to the deterministic plan it already built. Only a successful
- * exchange is remembered, so the history holds what was actually said.
+ * falls back to the deterministic plan it already built. It deliberately writes
+ * no history of its own; the turn that commits owns that.
  */
 function requestAjoopRagTurn(options) {
   const settings = options || {};
@@ -142,14 +169,6 @@ function requestAjoopRagTurn(options) {
       now: settings.now,
       validate: validateAjoopRagResponse,
     }),
-  )
-    .then((result) => {
-      if (result && result.ok) {
-        ajoopRagRemember("user", request.asked);
-        ajoopRagRemember("assistant", result.answer);
-      }
-      return result;
-    })
-    .catch(() => ({ ok: false, reason: "network-error", turnState: AJOOP_AI_TURN.FAILED }));
+  ).catch(() => ({ ok: false, reason: "network-error", turnState: AJOOP_AI_TURN.FAILED }));
 }
 /* ajoop-rag-client:end */

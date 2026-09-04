@@ -48,6 +48,33 @@ const MAX_HISTORY_ITEMS = 6;
 const MAX_HISTORY_CHARS = 700;
 const MAX_ANSWER_CHARS = 1800;
 
+/**
+ * The generation runner shape.
+ *
+ * Exported because server/ajoop-bridge.mjs warms this exact runner once the
+ * embedding index is built. Ollama sets a runner up per context size, so
+ * warming one shape and then serving another pays the setup cost twice and
+ * hands the first visitor the bill. Keeping the numbers in one object is what
+ * stops the two from drifting apart again.
+ */
+export const AJOOP_RAG_GENERATION = Object.freeze({
+  stream: false,
+  think: false,
+  keep_alive: -1,
+  options: Object.freeze({
+    temperature: 0.15,
+    /* The system prompt plus four retrieved chunks runs past 2048, and a
+     * silently truncated context drops the scope rules at the top of the
+     * prompt — which is exactly the failure that makes a general question come
+     * back as a portfolio answer. Prefill is cheap on the GPU; truncation is
+     * not. */
+    num_ctx: 4096,
+    /* Room for a five-sentence role-fit assessment without letting an ordinary
+     * answer ramble. */
+    num_predict: 260,
+  }),
+});
+
 const cleanText = (value, max = 4000) =>
   typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, max) : "";
 
@@ -442,21 +469,7 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
       `${config.ollamaBaseUrl}/api/chat`,
       {
         model: generationModel,
-        stream: false,
-        think: false,
-        keep_alive: -1,
-        options: {
-          temperature: 0.15,
-          /* The system prompt plus four retrieved chunks runs past 2048, and a
-           * silently truncated context drops the scope rules at the top of the
-           * prompt — which is exactly the failure that makes a general
-           * question come back as a portfolio answer. Prefill is cheap on the
-           * GPU; the truncation is not. */
-          num_ctx: 4096,
-          /* Room for a five-sentence role-fit assessment without letting an
-           * ordinary answer ramble. */
-          num_predict: 260,
-        },
+        ...AJOOP_RAG_GENERATION,
         messages: [
           { role: "system", content: system },
           { role: "user", content: user },

@@ -610,7 +610,7 @@ check("a literal wildcard origin is never echoed",
 {
   const assistant = readFileSync(new URL("../js/ajoop/assistant.js", import.meta.url), "utf8");
   const openAt = assistant.indexOf("const node = openAjoopTurn(language);");
-  const commitAt = assistant.indexOf("finishAjoopTurn({ node, route, plan, model, language });");
+  const commitAt = assistant.indexOf("finishAjoopTurn({ node, route, plan, model, language,");
   ok("a turn opens one container before it asks for an answer", openAt >= 0 && commitAt > openAt);
   ok("the deterministic plan and the model answer are awaited together",
     /Promise\.all\(\[\s*planAjoopTurn\(/.test(assistant));
@@ -625,6 +625,61 @@ check("a literal wildcard origin is never echoed",
   ok("the RAG turn source owns no DOM", !/\bdocument\.|\.innerHTML\b/.test(ragClient));
   ok("the RAG turn source reuses the one bridge transport",
     ragClient.includes("requestAjoopAiResponse({") && ragClient.includes("validate: validateAjoopRagResponse"));
+
+  /* The history must follow the conversation the visitor SAW. Writing it in
+   * the transport recorded only the turns the bridge answered, so a
+   * deterministic fallback left the next question without its subject. */
+  const requestTurn = ragClient.slice(ragClient.indexOf("function requestAjoopRagTurn("));
+  ok("the transport writes no conversation history of its own",
+    !requestTurn.includes("ajoopRagRemember("));
+  ok("history is recorded when a turn commits",
+    /function finishAjoopTurn\(/.test(assistant) &&
+    assistant.indexOf("rememberAjoopRagExchange({") > assistant.indexOf("function finishAjoopTurn("));
+  ok("the committed answer is what gets remembered",
+    assistant.includes("rememberAjoopRagExchange({ route, question, language, answer: spec.text })"));
+
+  /* A language change replaces the transcript, so it must end the turn behind
+   * it through the SAME invalidation Start over uses — otherwise a reply still
+   * in flight commits into the fresh transcript and refills the cleared
+   * history. */
+  ok("one helper ends the conversation in progress",
+    /function endAjoopConversationTurn\(\)\s*\{[\s\S]*?beginAjoopAiTurn\(\)[\s\S]*?clearAjoopRagHistory[\s\S]*?setAjoopTurnBusy\(false\)[\s\S]*?setAjoopMascotState\(/.test(assistant));
+  for (const caller of ["resetAjoopConversation", "updatePortfolioChatbotLanguage"]) {
+    const start = assistant.indexOf(`function ${caller}(`);
+    const body = assistant.slice(start, assistant.indexOf("\n}", start));
+    ok(`${caller} ends the turn in progress`, body.includes("endAjoopConversationTurn()"));
+    ok(`${caller} does not clear history without invalidating`,
+      !body.includes("clearAjoopRagHistory"));
+  }
+}
+
+/* ---------- the RAG warm-up must warm the runner RAG actually uses ---------- */
+
+{
+  const { AJOOP_RAG_GENERATION } = await import("../server/ajoop-rag.mjs");
+  check("RAG generation context", AJOOP_RAG_GENERATION.options.num_ctx, 4096);
+  check("RAG generation prediction budget", AJOOP_RAG_GENERATION.options.num_predict, 260);
+  check("RAG generation temperature", AJOOP_RAG_GENERATION.options.temperature, 0.15);
+  check("RAG generation reasoning", AJOOP_RAG_GENERATION.think, false);
+  check("RAG generation keep_alive", AJOOP_RAG_GENERATION.keep_alive, -1);
+
+  const ragSource = readFileSync(new URL("../server/ajoop-rag.mjs", import.meta.url), "utf8");
+  const bridgeSource = readFileSync(new URL("../server/ajoop-bridge.mjs", import.meta.url), "utf8");
+  ok("the RAG generator uses the shared shape", ragSource.includes("...AJOOP_RAG_GENERATION"));
+  /* Ollama sets a runner up per context size: warming one shape and serving
+   * another warms the wrong runner and hands the first visitor the bill. */
+  const prewarm = bridgeSource.slice(
+    bridgeSource.indexOf("async function prewarmRagModel()"),
+    bridgeSource.indexOf("async function start()"),
+  );
+  ok("the RAG warm-up uses the shared shape", prewarm.includes("...AJOOP_RAG_GENERATION"));
+  ok("the RAG warm-up declares no competing options", !/num_ctx|num_predict/.test(prewarm));
+  /* The legacy /ajoop warm-up is a different, deliberately smaller runner. */
+  const legacy = bridgeSource.slice(
+    bridgeSource.indexOf("async function prewarmModel()"),
+    bridgeSource.indexOf("async function prewarmRagModel()"),
+  );
+  ok("the legacy warm path keeps its own shape", /num_ctx: 1024/.test(legacy));
   ok("browser transport owns no DOM", !/\bdocument\.|\.innerHTML\b/.test(browserBridgeSource.slice(browserBridgeStart, browserBridgeEnd)));
 }
 
