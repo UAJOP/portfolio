@@ -319,6 +319,21 @@ function buildAjoopAiPayload(route, response, question, language) {
  * so a stopped service costs one failed request per minute rather than one per
  * message.
  */
+/**
+ * Whether a health body actually promises service.
+ *
+ * The 5.1 RAG endpoint reports `ready` alongside `ok`: it can be reachable
+ * while its embedding index is still building or has failed, in which case
+ * every real turn 503s. Reading `ok` alone let the panel enter AVAILABLE
+ * against a bridge that could answer nothing. Where `ready` is present it is
+ * authoritative; a body without it is the pre-5.1 /ajoop contract, which has no
+ * index to be ready for and is judged by `ok` as before.
+ */
+function isAjoopHealthReady(body) {
+  if (!body || typeof body !== "object" || body.ok !== true) return false;
+  return body.ready === undefined || body.ready === true;
+}
+
 async function checkAjoopAiHealth(options) {
   const settings = options || {};
   const config = settings.config || getAjoopAiConfig();
@@ -340,7 +355,7 @@ async function checkAjoopAiHealth(options) {
     { config, fetchImpl: settings.fetchImpl },
   );
 
-  if (result.ok && result.body && result.body.ok === true) {
+  if (result.ok && isAjoopHealthReady(result.body)) {
     setAjoopBridgeState(AJOOP_AI_STATE.AVAILABLE, settings.now);
     ajoopAiState.model =
       typeof result.body.model === "string" ? result.body.model.slice(0, 64) : null;

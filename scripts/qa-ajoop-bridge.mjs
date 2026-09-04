@@ -656,6 +656,129 @@ check("a literal wildcard origin is never echoed",
 /* ---------- the RAG warm-up must warm the runner RAG actually uses ---------- */
 
 {
+  /* ---------- the model's explicit scope is authoritative ---------- */
+
+  const { parseScopedAnswer } = await import("../server/ajoop-rag.mjs");
+
+  /* A. an explicit GENERAL survives retrieval that looks highly relevant.
+   * Scope used to be re-derived from the top cosine score whenever the markers
+   * failed to parse, so a general question that happened to retrieve a similar
+   * portfolio chunk was relabelled PORTFOLIO. parseScopedAnswer no longer sees
+   * retrieval at all — that is the fix, stated as a signature. */
+  const general = parseScopedAnswer("SCOPE: GENERAL\nANSWER: hello");
+  check("[A] an explicit GENERAL stays GENERAL", general?.scope, "GENERAL");
+  check("[A] the general answer survives", general?.answer, "hello");
+  check("[A] scope is parsed without retrieval", parseScopedAnswer.length, 1);
+
+  /* B. an explicit PORTFOLIO survives retrieval that looks irrelevant — the
+   * hiring question that came back GENERAL with its evidence stripped off. */
+  const portfolio = parseScopedAnswer("SCOPE: PORTFOLIO\nANSWER: grounded answer");
+  check("[B] an explicit PORTFOLIO stays PORTFOLIO", portfolio?.scope, "PORTFOLIO");
+  check("[B] the grounded answer survives", portfolio?.answer, "grounded answer");
+
+  /* The whitespace bug itself: cleanText() ran before parsing and collapsed the
+   * newline between the two markers, so neither ever matched. */
+  check(
+    "[A/B] CRLF line endings still parse",
+    parseScopedAnswer("SCOPE: PORTFOLIO\r\nANSWER: grounded\r\n")?.scope,
+    "PORTFOLIO",
+  );
+  check(
+    "[A/B] leading prose before the markers still parses",
+    parseScopedAnswer("Sure.\nSCOPE: GENERAL\nANSWER: hello")?.scope,
+    "GENERAL",
+  );
+
+  /* C+D. no contract, no answer: a malformed generation must reach the
+   * deterministic fallback rather than be labelled by similarity. */
+  check("[C] a missing SCOPE marker is malformed", parseScopedAnswer("ANSWER: hello"), null);
+  check("[C] bare prose is malformed", parseScopedAnswer("hello there"), null);
+  check("[C] a missing ANSWER marker is malformed", parseScopedAnswer("SCOPE: GENERAL"), null);
+  check("[D] an invalid scope value is malformed", parseScopedAnswer("SCOPE: MAYBE\nANSWER: hi"), null);
+  check(
+    "[D] an unlisted scope value is malformed",
+    parseScopedAnswer("SCOPE: PORTFOLIO_ISH\nANSWER: hi"),
+    null,
+  );
+  check("[C] an empty ANSWER is malformed", parseScopedAnswer("SCOPE: GENERAL\nANSWER:   "), null);
+  ok("[C] the generator refuses a malformed contract",
+    readFileSync(new URL("../server/ajoop-rag.mjs", import.meta.url), "utf8")
+      .includes('throw new Error("malformed scope contract")'));
+
+  /* E. a multiline ANSWER reaches the cleaner whole — line boundaries are only
+   * given up after both markers have been read. */
+  const multiline = parseScopedAnswer(
+    "SCOPE: PORTFOLIO\nANSWER: First sentence.\nSecond sentence.\n\nThird sentence.",
+  );
+  check("[E] a multiline answer is kept whole", multiline?.answer,
+    "First sentence. Second sentence. Third sentence.");
+  check("[E] its scope is still explicit", multiline?.scope, "PORTFOLIO");
+
+  /* A closed <think> wrapper is stripped without flattening what follows. */
+  const reasoned = parseScopedAnswer(
+    "<think>weighing it up</think>\nSCOPE: PORTFOLIO\nANSWER: Line one.\nLine two.",
+  );
+  check("[E] a closed think wrapper is stripped", reasoned?.answer, "Line one. Line two.");
+  check("[E] scope survives the think wrapper", reasoned?.scope, "PORTFOLIO");
+  check("[C] an unclosed think wrapper is malformed",
+    parseScopedAnswer("<think>cut off mid reasoning"), null);
+
+  /* The assistant turn is prefilled with the scope label so the model opens on
+   * the contract instead of on a monologue it cannot finish inside the token
+   * budget. Ollama echoes that label on some versions and continues from it on
+   * others, so the reply has to read correctly both ways. */
+  const ragSource = readFileSync(new URL("../server/ajoop-rag.mjs", import.meta.url), "utf8");
+  ok("the assistant turn is prefilled with the scope label",
+    ragSource.includes('role: "assistant", content: AJOOP_SCOPE_PREFILL'));
+  ok("the reply is read both with and without the echoed label",
+    ragSource.includes("parseScopedAnswer(content) ||"));
+  check("[prefill] an echoed label parses",
+    parseScopedAnswer("SCOPE: GENERAL\nANSWER: hi")?.scope, "GENERAL");
+  check("[prefill] a bare continuation parses once the label is restored",
+    parseScopedAnswer("SCOPE:" + " " + " GENERAL\nANSWER: hi".trimStart())?.scope, "GENERAL");
+  check("[prefill] a doubled label is malformed rather than guessed",
+    parseScopedAnswer("SCOPE:SCOPE: GENERAL\nANSWER: hi"), null);
+}
+
+/* ---------- health must not promise service an index cannot give ---------- */
+
+{
+  const { createAjoopRag } = await import("../server/ajoop-rag.mjs");
+  const rag = createAjoopRag({ env: ENV, fetchImpl: async () => { throw new Error("no ollama"); } });
+  const probe = await rag.handle({
+    method: "POST",
+    origin: ORIGIN,
+    contentType: "application/json",
+    body: JSON.stringify({ version: AJOOP_BRIDGE_PROTOCOL_VERSION, mode: "health" }),
+  });
+  check("an unbuilt RAG index answers its health probe", probe.status, 200);
+  check("an unbuilt RAG index reports itself not ready", probe.body.ready, false);
+  check("an unbuilt RAG index does not report itself available", probe.body.ok, false);
+
+  const config = { enabled: true, endpoint: "https://ajoop.kaanbalci.com/ajoop-rag" };
+  const browser = createBrowserBridge(config);
+  const health = async (body) => {
+    browser.resetAjoopAiState();
+    return browser.checkAjoopAiHealth({
+      config,
+      force: true,
+      fetchImpl: async () => browserResponse(200, body),
+    });
+  };
+  /* The regression: index initialization fails, every turn 503s, and the panel
+   * used to keep saying the local AI was connected. */
+  check("a not-ready bridge is unavailable to the browser",
+    await health({ ok: true, ready: false, mode: "rag" }), "unavailable");
+  check("a ready bridge is available to the browser",
+    await health({ ok: true, ready: true, mode: "rag", model: "qwen3:4b-instruct" }), "available");
+  check("a bridge reporting neither is unavailable",
+    await health({ ok: false, ready: false }), "unavailable");
+  /* The pre-5.1 /ajoop health body carries no index state and is judged by ok. */
+  check("the legacy health contract still reads as available",
+    await health({ ok: true, model: "qwen3:4b" }), "available");
+}
+
+{
   const { AJOOP_RAG_GENERATION } = await import("../server/ajoop-rag.mjs");
   check("RAG generation context", AJOOP_RAG_GENERATION.options.num_ctx, 4096);
   check("RAG generation prediction budget", AJOOP_RAG_GENERATION.options.num_predict, 260);

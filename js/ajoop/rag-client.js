@@ -124,7 +124,6 @@ function validateAjoopRagResponse(raw) {
 }
 
 /**
-/**
  * Records one exchange the visitor actually received.
  *
  * The history is a record of the CONVERSATION ON SCREEN, not of the requests
