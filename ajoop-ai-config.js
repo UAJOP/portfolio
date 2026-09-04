@@ -19,9 +19,10 @@ window.KAAN_AJOOP_AI = {
   /* Public edge for the local in-memory RAG endpoint. */
   endpoint: "https://ajoop.kaanbalci.com/ajoop-rag",
 
-  /* Warm measured RAG turns are normally ~1–4s. Ten seconds leaves headroom
-   * while still revealing the deterministic fallback quickly on a bad turn. */
-  timeoutMs: 10000,
+  /* Warm turns are normally ~1–4s. The bridge now allows up to 15s for rare
+   * local runner/GPU scheduling spikes, so the browser gives that healthy turn
+   * enough time to finish before falling back deterministically. */
+  timeoutMs: 18000,
 
   /* Avoid hammering a bridge that is intentionally offline. */
   retryAfterMs: 60000,
