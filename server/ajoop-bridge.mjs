@@ -11,6 +11,7 @@
 import http from "node:http";
 import { createAjoopBridge } from "./ajoop-bridge-core.mjs";
 import { AJOOP_RAG_GENERATION, createAjoopRag } from "./ajoop-rag.mjs";
+import { createAjoopSinamaAdapter } from "./ajoop-sinama.mjs";
 
 const nativeFetch = typeof fetch === "function" ? fetch : null;
 
@@ -165,6 +166,7 @@ async function ragOllamaFetch(url, options = {}) {
 
 const bridge = createAjoopBridge({ env: runtimeEnv, fetchImpl: fastOllamaFetch });
 const rag = createAjoopRag({ env: runtimeEnv, fetchImpl: ragOllamaFetch });
+const sinama = createAjoopSinamaAdapter({ rag });
 const { config } = bridge;
 
 function readBody(request, limit) {
@@ -216,7 +218,13 @@ function send(response, status, headers, body) {
 
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${config.host}:${config.port}`);
-  const handler = url.pathname === rag.path ? rag : url.pathname === config.path ? bridge : null;
+  const handler = url.pathname === sinama.path
+    ? sinama
+    : url.pathname === rag.path
+      ? rag
+      : url.pathname === config.path
+        ? bridge
+        : null;
   if (!handler) {
     send(
       response,
@@ -349,6 +357,7 @@ async function start() {
       `Ajoop RAG ${ragStatus.ready ? "ready" : "unavailable"} · ${ragStatus.chunks} chunks · ${ragStatus.embedModel}`,
     );
     console.log(`Ajoop RAG warm model ${ragWarmed ? "ready" : "unavailable"}`);
+    console.log(`Ajoop SINAMA compatibility ${config.host}:${config.port}${sinama.path}`);
   });
 }
 
@@ -359,6 +368,7 @@ start().catch(() => {
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
+    sinama.close();
     server.close(() => process.exit(0));
   });
 }
