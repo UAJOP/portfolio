@@ -5,7 +5,7 @@
   "scripts": {
     "qa": "npm run qa:data && npm run qa:i18n && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:performance && npm run qa:css && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
     "qa:js": "node qa-js-syntax.js",
-    "qa:portfolio": "node qa-portfolio-consistency.js",
+    "qa:portfolio": "node qa-portfolio-consistency.js && node scripts/qa-ajoop-sinama.mjs",
     "qa:assets": "node qa-assets.js",
     "qa:links": "node qa-internal-links.js",
     "qa:html": "html-validate \"*.html\" \"projects/*/index.html\" \"tr/*.html\" \"tr/projects/*/index.html\" \"de/*.html\" \"de/projects/*/index.html\" \"es/*.html\" \"es/projects/*/index.html\" \"fr/*.html\" \"fr/projects/*/index.html\"",
