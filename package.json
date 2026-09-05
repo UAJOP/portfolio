@@ -18,6 +18,8 @@
     "qa:ajoop:facts": "node scripts/qa-ajoop-facts.mjs",
     "qa:ajoop:retrieval": "node scripts/qa-ajoop-retrieval.mjs",
     "qa:ajoop:answer": "node scripts/qa-ajoop-answer.mjs",
+    "qa:ajoop:release": "node scripts/qa-ajoop-release.mjs",
+    "qa:ajoop:release:live": "node scripts/qa-ajoop-release-live.mjs",
     "start:ajoop:bridge": "node server/ajoop-bridge.mjs",
     "qa:request": "node scripts/qa-request-submission.mjs",
     "qa:projects": "node scripts/qa-project-data.mjs",

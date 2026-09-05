@@ -310,6 +310,112 @@ contract/repetition/contradiction guards, all five fallback locales, exact-fact
 evidence, one-retry enforcement and no-second-embedding behavior without a
 network or Ollama.
 
+## AJOOP 5.2 Release Gate
+
+Brief 5 adds no capability. It exists to answer one question — is 5.2 stable
+enough for a friends beta — and to leave behind the checks that keep the answer
+true.
+
+**The deterministic gate is `npm run qa:ajoop:release`.** It is not a second
+copy of the per-layer suites. It asserts, end to end through `createAjoopRag`,
+only the properties that would make a public answer *wrong* rather than merely
+imperfect: exact-fact routing, on-request privacy, project truth, work-history
+attribution, GENERAL quarantine, conversation state, recruiter calibration,
+generation safety and warm-path cost.
+
+**Its embeddings are adversarial by construction.** Every isolation and privacy
+case scores the record that must NOT win at ~1.0 and the correct one at ~0.0,
+and the bias string is the rival's own unique name so a shared record cannot win
+the tie instead. A pass therefore proves deterministic filtering overruled
+similarity. The same suite built on realistic embeddings would pass just as
+happily with the protection deleted — which is the failure mode this design
+exists to rule out.
+
+**The suite checks its own teeth.** Section J edits real module source, imports
+the mutant from a throwaway sibling module and requires the matching release
+invariant to break: a removed `expectedScope` contract, GENERAL answers allowed
+to carry evidence, project isolation disabled, a third generation attempt
+allowed, and `public_on_request` records made semantically retrievable. Every
+mutant is deleted afterwards and section K proves the directory is clean; a
+mutation suite that leaves residue has quietly edited the product.
+
+### expectedScope regression protection
+
+Brief 4 fixed a live failure in which the model wrote a correct, grounded
+recruiter answer and labelled it `SCOPE: GENERAL`. The validator rejected it,
+the repair prompt named the flag but not the scope, the second attempt
+reproduced the same label, and every such turn reached the fallback. The fix
+states the required scope in both the initial and the repair prompt, keyed on
+`strategy.expectedScope` rather than on any one mode.
+
+`qa:ajoop:answer` now holds that contract down generically: both scopes, both
+recruiter and non-recruiter strategies, every shipped strategy, and the negative
+cases — a strategy without an `expectedScope` injects no scope sentence at all,
+and a non-scope rejection adds no scope-correction sentence.
+
+### Recruiter claim calibration
+
+Live output claimed `gerçek zamanlı ve ölçeklenebilir AI sistemleri`. The
+records support live chat, multi-channel work and customer-facing systems; they
+do not establish *scalable*. Two changes, in the order Brief 5 asked for:
+
+1. The recruiter prompt now says plainly that exposure, a role title or
+   enterprise work never establishes scalable, production-grade,
+   enterprise-scale, senior-level or expert.
+2. A small deterministic screen, `unsupported-strength`, rejects a recruiter
+   draft that asserts one of those qualifiers when no supplied record asserts it.
+   It is a risk screen, not a semantic fact verifier.
+
+The screen only reads affirmative clauses. A clause that denies, doubts or asks
+for more evidence establishes nothing and triggers nothing — including Turkish
+negation, which is a verb suffix rather than a keyword, so `bilinmiyor`,
+`doğrulamaz` and `içermiyor` are read as denials. Getting that wrong is not a
+neutral error: the first version rejected correct repairs and pushed the
+role-fit answer into the fallback about half the time.
+
+Instruction length is part of the design here. `num_predict` is 260 and the
+recruiter prompt is the longest one shipped, so the calibration rule is stated
+in one compact pair of sentences. A longer wording measurably cost the repair
+attempt its budget and turned repairable drafts into fallbacks.
+
+### Accepted qwen3:4b limitations
+
+These are model-level and are NOT release blockers. None of them is worked
+around with a hardcoded answer, a domain special case or a second model.
+
+- **Turkish `rok` (chess castling).** `qwen3:4b-instruct` is unreliable on this
+  term and its drafts are often malformed. The release requirement is only that
+  the turn stays GENERAL with zero portfolio evidence, costs at most two
+  generation attempts, and never shows malformed prose — it repairs or falls
+  back. Its factual weakness alone is accepted.
+- **`incomplete-ending` on list-shaped answers.** A bare technology list has no
+  terminal punctuation, so a long one is rejected and repaired. Pre-existing
+  behaviour, unchanged by Brief 5, which touches only the recruiter prompt.
+- **Occasional fallback on a long recruiter answer.** The fallback is grounded,
+  names only real record titles and claims nothing further. It is a worse
+  answer, never a wrong one.
+
+### Friends-beta criteria
+
+Ship when all of these hold, and treat any one of them failing as a blocker:
+
+- no incorrect factual claim about Kaan, and no third-party work attributed to him
+- no restricted or `public_on_request` material reachable by ordinary retrieval
+- no project stack contamination between projects
+- GENERAL questions take no portfolio context and no embedding
+- recruiter answers stay calibrated: concrete evidence, a stated gap, no invented
+  metric, no unsupported strength or seniority
+- malformed generation is never shown: at most one repair, then a safe fallback
+- the warm-path cost shape is unchanged — exact fact 0 embed / 0 chat, GENERAL
+  0 embed / 1 chat, portfolio and recruiter 1 embed / 1 chat, repair 2 chats and
+  still one embedding
+
+`scripts/qa-ajoop-release-live.mjs --run` records the bounded live acceptance
+against the local models and writes `docs/ajoop-release-live-results.json`. It
+is evidence for a release decision, not a substitute for reading the answers:
+the recruiter and work-history cases are marked for manual review because
+"grounded, useful and calibrated" is not a property a script can assert.
+
 ## Why n8n left the public path
 
 Ajoop 4.3 routed the browser through a local n8n webhook. n8n can persist

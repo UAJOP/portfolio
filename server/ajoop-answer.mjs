@@ -397,7 +397,8 @@ export function answerStrategyPrompt(strategy) {
       "Give the bottom line first. Use two to four concrete evidence points, name the best-fit work, state one real gap or unknown, and end with a calibrated conclusion.",
       "Stay under 120 words and four complete sentences.",
       "Separate recorded facts from your assessment. Never claim certainty, invent a percentage, or imply guaranteed success.",
-      "State unknowns as what the portfolio does not show. Do not call work deep, scalable, senior or production-grade unless a supplied record says so.",
+      "State unknowns as what the portfolio does not show. Prefer concrete recorded facts over engineering adjectives.",
+      "Exposure, a role title or enterprise work never establishes scalable / ölçeklenebilir, production-grade, enterprise-scale, senior-level or expert. Claim only the strength the records state.",
       focus,
       scopeContractLine(strategy),
     ].filter(Boolean).join("\n");
@@ -427,6 +428,9 @@ export function repairPrompt(flags, strategy) {
     "Write a fresh answer from the same records. Do not quote or discuss the rejected draft.",
     "Use exactly one SCOPE line and one ANSWER line. No reasoning, labels, repetition or text after the answer.",
     "Answer directly; never claim a recorded field is absent when the supplied records contain it.",
+    (flags || []).includes("unsupported-strength")
+      ? "Remove unsupported strength claims. Claim only the strength the records state, and do not swap in another qualifier."
+      : "",
     answerStrategyPrompt(strategy),
   ].filter(Boolean).join("\n");
 }
@@ -466,6 +470,39 @@ export function detectAnswerRepetition(answer) {
 const META_REASONING = /\b(?:i need to (?:analy[sz]e|decide|determine)|the user is asking|let me (?:analy[sz]e|reason)|analysis:|reasoning:)\b/i;
 const ABSENCE_CLAIM = /(?:portfolio (?:does not|doesn't) (?:record|specify|contain)|not explicitly (?:specified|recorded)|portfolyoda[^.!?]{0,80}(?:kayit yok|kayıt yok|belirtilmemis|belirtilmemiş|yer almiyor|yer almıyor)|(?:nicht|pas|no) [^.!?]{0,50}(?:angegeben|specifie|spécifié|especificado|registrado))/i;
 const IGNORANCE_CLAIM = /\b(?:i do not know|i don't know|bilmiyorum|bilinmiyor|je ne sais pas|no lo se|no lo sé|ich weiss nicht|ich weiß nicht)\b/i;
+
+/* A small recruiter-only risk screen, not a general factual verifier. Match
+ * explicit strength phrases, not ordinary enterprise work or senior/expert
+ * role names. EN/TR equivalents share support; negated claims, evidence gaps
+ * and future learning needs neither trigger the guard nor establish support.
+ * Turkish negation is a suffix, so -m(i|u)yor and -maz/-mez are read as denials. */
+const STRONG_QUALIFIERS = Object.freeze([
+  /\b(?:scalable|olceklenebilir)\b/,
+  /\b(?:highly scalable|yuksek (?:olcude )?olceklenebilir)\b/,
+  /\bproduction grade\b/,
+  /\b(?:enterprise (?:scale|grade)|kurumsal olcekte)\b/,
+  /\b(?:senior level|kidemli seviyesinde)\b/,
+  /* Turkish softens the final k before a vowel suffix, so uzmanlık becomes
+   * uzmanlığa/uzmanlığı once folded. Both spellings are the same claim. */
+  /\b(?:deep expertise|derin uzmanli[kg][a-z]*)\b/,
+  /\b(?:expert (?:in|at|proficiency)|(?:alaninda|konusunda) uzman[a-z]*)\b/,
+  /\bextensive production ownership\b/,
+]);
+const CLAIM_UNESTABLISHED = /\b(?:not|never|no|without|lacks?|missing|unknown|unverified|unproven|needs?|requires?|would need|should (?:learn|develop)|yok[a-z]*|degil[a-z]*|belirsiz[a-z]*|eksik[a-z]*|kanitlanmamis[a-z]*|belirtilmemis[a-z]*|gerekiyor|gerekir|gerekebilir|ihtiyac[a-z]*|bilinm[a-z]*|[a-z]{2,}m(?:[iu]yor|az|ez)[a-z]*)\b/;
+
+function affirmativeClaimClauses(text) {
+  return String(text || "")
+    .split(/[.!?;\n]+|\b(?:but|however|ancak|ama|fakat)\b/i)
+    .map(foldQuestion)
+    .filter((clause) => clause && !CLAIM_UNESTABLISHED.test(clause));
+}
+
+function hasUnsupportedStrength(answer, records) {
+  const claims = affirmativeClaimClauses(answer);
+  const support = (records || []).flatMap((record) => affirmativeClaimClauses(record.text));
+  return STRONG_QUALIFIERS.some((qualifier) => claims.some((clause) => qualifier.test(clause))
+    && !support.some((clause) => qualifier.test(clause)));
+}
 
 function requestedFieldIsPresent(question, records) {
   const folded = foldQuestion(question);
@@ -516,6 +553,7 @@ export function validateGeneratedAnswer({ raw = "", parsed, strategy, question =
   if (META_REASONING.test(contractText)) flags.push("reasoning-leak");
   if (/<\/?think\b/i.test(parsed.answer)) flags.push("reasoning-marker");
   if (obviousLanguageLeak(parsed.answer, locale)) flags.push("language-template-leak");
+  if (strategy?.recruiter && hasUnsupportedStrength(parsed.answer, records)) flags.push("unsupported-strength");
 
   const hasDirectEvidence = requestedFieldIsPresent(question, records);
   if (hasDirectEvidence && (ABSENCE_CLAIM.test(parsed.answer) || IGNORANCE_CLAIM.test(parsed.answer))) {

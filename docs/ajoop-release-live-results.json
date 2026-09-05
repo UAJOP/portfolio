@@ -1,0 +1,1751 @@
+{
+  "title": "AJOOP 5.2 Brief 5 live acceptance",
+  "startedAt": "2026-09-05T19:21:16.907Z",
+  "baseHead": "ee375a96e396c6b99d717cd1327f7a746ee78fac",
+  "testedWorkingTree": true,
+  "preflight": {
+    "checkedAt": "2026-09-05T19:21:16.906Z",
+    "baseUrl": "http://127.0.0.1:11434",
+    "model": "qwen3:4b-instruct",
+    "embedModel": "qwen3-embedding:0.6b",
+    "installed": [
+      {
+        "name": "qwen3-embedding:0.6b",
+        "digest": "ac6da0dfba84a81fdbfbaf330198c33cd77c4cdfc53e8bc50eb581914a15621d",
+        "details": {
+          "parent_model": "/Users/ollama/.ollama/models/blobs/sha256-06507c7b42688469c4e7298b0a1e16deff06caf291cf0a5b278c308249c3e439",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "595.78M",
+          "quantization_level": "Q8_0",
+          "context_length": 32768,
+          "embedding_length": 1024
+        }
+      },
+      {
+        "name": "qwen3:4b-instruct",
+        "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560
+        }
+      },
+      {
+        "name": "qwen3:4b",
+        "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560
+        }
+      }
+    ],
+    "resident": [
+      {
+        "name": "qwen3:4b-instruct",
+        "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+        "contextLength": 4096
+      },
+      {
+        "name": "qwen3-embedding:0.6b",
+        "digest": "ac6da0dfba84a81fdbfbaf330198c33cd77c4cdfc53e8bc50eb581914a15621d",
+        "contextLength": 4096
+      }
+    ]
+  },
+  "method": "Actual createAjoopRag with measured real fetch calls to existing loopback Ollama; sequential 20-case maximum; no synthetic generation warmup.",
+  "rateLimitOverride": "100 per minute in this in-process QA instance so test pacing does not test the bridge's separately covered quota.",
+  "modelResidence": "Generation model already resident before this run; no cold-generation claim.",
+  "cases": [
+    {
+      "id": 1,
+      "question": "Kaan kim?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-fact",
+      "evidenceIds": [
+        "master-knowledge:identity-disambiguation:1",
+        "master-knowledge:identity:1",
+        "master-knowledge:spoken-languages:1"
+      ],
+      "evidenceEntityIds": [
+        "identity-disambiguation",
+        "identity",
+        "spoken-languages"
+      ],
+      "sourceEntityIds": [
+        "identity-disambiguation",
+        "identity",
+        "spoken-languages",
+        "skills:programming"
+      ],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 1,
+      "latencyMs": 2000.98,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Kaan Balcı, İstanbul'da bulunan bir AI Designer, Solution Engineer ve yazılım geliştiricidir. Portfolio'unda, \"Forward Deployed Engineer\" olarak tanımlanır ve Atölye JOYDAY'in bir ortak kurucusudur.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 128.94,
+          "ollama": {
+            "totalMs": 121.03,
+            "loadMs": 90.88,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 13,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1845.68,
+          "ollama": {
+            "totalMs": 1830.33,
+            "loadMs": 132.66,
+            "promptEvalMs": 247.51,
+            "evalMs": 1228.84,
+            "promptEvalCount": 1113,
+            "evalCount": 66,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 2,
+      "question": "Kaan hangi şirketlerde çalıştı?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-experience",
+      "evidenceIds": [
+        "master-knowledge:experience:oceans-team:1",
+        "master-knowledge:experience:punto-organization-event:1",
+        "master-knowledge:experience:outlier-ai:1"
+      ],
+      "evidenceEntityIds": [
+        "experience:oceans-team",
+        "experience:punto-organization-event",
+        "experience:outlier-ai"
+      ],
+      "sourceEntityIds": [
+        "experience:oceans-team",
+        "experience:punto-organization-event",
+        "experience:outlier-ai",
+        "experience:cbot",
+        "experience:atolye-joyday",
+        "experience:punto-organization-software"
+      ],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 1,
+      "latencyMs": 2499.99,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Kaan Balcı, Ocean's Team, Punto Organization, Outlier AI, CBOT ve Atölye Joyday şirketlerinde çalıştı.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 164.01,
+          "ollama": {
+            "totalMs": 151.63,
+            "loadMs": 88.25,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 18,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 2327.51,
+          "ollama": {
+            "totalMs": 2313.49,
+            "loadMs": 146.5,
+            "promptEvalMs": 485.18,
+            "evalMs": 776.47,
+            "promptEvalCount": 1544,
+            "evalCount": 41,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 3,
+      "question": "Kaan'ın staj deneyimi ne?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-experience",
+      "evidenceIds": [
+        "master-knowledge:experience:punto-organization-software:1"
+      ],
+      "evidenceEntityIds": [
+        "experience:punto-organization-software"
+      ],
+      "sourceEntityIds": [
+        "experience:punto-organization-software",
+        "experience:outlier-ai",
+        "experience:oceans-team",
+        "experience:punto-organization-event"
+      ],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 1,
+      "latencyMs": 3161.68,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Kaan Balcı, Punto Organization'da 2024 yılının Temmuz ayından Eylül 2024'e kadar Software Development Intern rolünde staj yapmıştır.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 160.65,
+          "ollama": {
+            "totalMs": 148.34,
+            "loadMs": 88.38,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 20,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 2996.12,
+          "ollama": {
+            "totalMs": 2994.22,
+            "loadMs": 144.2,
+            "promptEvalMs": 287.96,
+            "evalMs": 1638.59,
+            "promptEvalCount": 1094,
+            "evalCount": 50,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 4,
+      "question": "SINAMA stacki ne?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-project",
+      "evidenceIds": [
+        "master-knowledge:project:sinama:1"
+      ],
+      "evidenceEntityIds": [
+        "project:sinama"
+      ],
+      "sourceEntityIds": [
+        "project:sinama",
+        "sinama",
+        "sinama",
+        "broken"
+      ],
+      "generationAttempts": 2,
+      "validatorFlags": [
+        "incomplete-ending"
+      ],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 2,
+      "latencyMs": 3404.84,
+      "repaired": false,
+      "fallbackUsed": true,
+      "exactFact": null,
+      "answer": "Portfolyodaki ilgili kayıtlar: SINAMA — AI Agent Reliability Lab, Broken run. Şu anda güvenilir bir doğal dil özeti üretemediğim için bu kanıtların ötesinde bir iddiada bulunmuyorum.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 132.15,
+          "ollama": {
+            "totalMs": 130.68,
+            "loadMs": 87.46,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 19,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 2031.92,
+          "ollama": {
+            "totalMs": 2030.77,
+            "loadMs": 139.38,
+            "promptEvalMs": 324.02,
+            "evalMs": 631.41,
+            "promptEvalCount": 1354,
+            "evalCount": 34,
+            "doneReason": "stop"
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1228.92,
+          "ollama": {
+            "totalMs": 1219.7,
+            "loadMs": 134.53,
+            "promptEvalMs": 359.61,
+            "evalMs": 618.57,
+            "promptEvalCount": 1423,
+            "evalCount": 34,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "NOTE",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 5,
+      "question": "Merge Rush stacki ne?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-project",
+      "evidenceIds": [
+        "master-knowledge:project:merge-rush-tiny-factory:1"
+      ],
+      "evidenceEntityIds": [
+        "project:merge-rush-tiny-factory"
+      ],
+      "sourceEntityIds": [
+        "project:merge-rush-tiny-factory",
+        "mergeRush",
+        "mergeRush",
+        "2026-08-14"
+      ],
+      "generationAttempts": 2,
+      "validatorFlags": [
+        "incomplete-ending"
+      ],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 2,
+      "latencyMs": 3341.56,
+      "repaired": true,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Merge Rush: Tiny Factory stacki: Phaser 3, TypeScript, Vite, Vitest",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 168.29,
+          "ollama": {
+            "totalMs": 163.02,
+            "loadMs": 87.31,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 15,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 2056.26,
+          "ollama": {
+            "totalMs": 2050.01,
+            "loadMs": 128.15,
+            "promptEvalMs": 321.26,
+            "evalMs": 638.13,
+            "promptEvalCount": 1320,
+            "evalCount": 34,
+            "doneReason": "stop"
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1111.93,
+          "ollama": {
+            "totalMs": 1101.97,
+            "loadMs": 131.34,
+            "promptEvalMs": 341.7,
+            "evalMs": 521.02,
+            "promptEvalCount": 1389,
+            "evalCount": 28,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 6,
+      "question": "Hospital Form App stacki ne?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-project",
+      "evidenceIds": [
+        "master-knowledge:project:hospital-form-app:1"
+      ],
+      "evidenceEntityIds": [
+        "project:hospital-form-app"
+      ],
+      "sourceEntityIds": [
+        "project:hospital-form-app",
+        "hospital-form-app",
+        "hospital-form-app",
+        "hospital"
+      ],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 1,
+      "latencyMs": 1919.17,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "C#, .NET, Windows Forms, SQL Server, ADO.NET",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 177.8,
+          "ollama": {
+            "totalMs": 164.13,
+            "loadMs": 88.15,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 14,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1738.83,
+          "ollama": {
+            "totalMs": 1735.83,
+            "loadMs": 127.78,
+            "promptEvalMs": 227.48,
+            "evalMs": 410.29,
+            "promptEvalCount": 1048,
+            "evalCount": 23,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 7,
+      "question": "Hospital Appointment System stacki ne?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-project",
+      "evidenceIds": [
+        "master-knowledge:project:hospital-appointment-system:1"
+      ],
+      "evidenceEntityIds": [
+        "project:hospital-appointment-system"
+      ],
+      "sourceEntityIds": [
+        "project:hospital-appointment-system",
+        "hospital-appointment-system",
+        "hospital-appointment-system",
+        "game"
+      ],
+      "generationAttempts": 2,
+      "validatorFlags": [
+        "incomplete-ending"
+      ],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 2,
+      "latencyMs": 3647.19,
+      "repaired": true,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Python, Tkinter, MySQL, MySQL Connector, PIL, Datetime",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 423.16,
+          "ollama": {
+            "totalMs": 413.47,
+            "loadMs": 86.56,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 14,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 2219.05,
+          "ollama": {
+            "totalMs": 2215.29,
+            "loadMs": 129.56,
+            "promptEvalMs": 388.36,
+            "evalMs": 773.5,
+            "promptEvalCount": 1302,
+            "evalCount": 29,
+            "doneReason": "stop"
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1001.61,
+          "ollama": {
+            "totalMs": 992.62,
+            "loadMs": 131.15,
+            "promptEvalMs": 334.32,
+            "evalMs": 416.42,
+            "promptEvalCount": 1371,
+            "evalCount": 23,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 8,
+      "question": "CBOT'ta ne yaptı?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-experience",
+      "evidenceIds": [
+        "master-knowledge:experience:cbot:1"
+      ],
+      "evidenceEntityIds": [
+        "experience:cbot"
+      ],
+      "sourceEntityIds": [
+        "experience:cbot",
+        "skills:ai-automation",
+        "project:ai-chatbot-flow-design",
+        "chatbotFlow"
+      ],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 1,
+      "latencyMs": 7147.05,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "CBOT'ta AI Designer olarak çalışırken, bankacılık, sigorta, belediyeler ve personel beceri alanlarında konuşmalı AI, canlı chat ve çok kanal otomasyon projelerine katkılarda bulundu. Sigorta talep alım POC'ünü voice interaction, telefon doğrulama, WhatsApp geçiş, fotoğraf ve belge toplama, prompt tasarım ve araç koordinasyonu ile tasarladı ve uyguladı. Belediyelerde bir chatbot kanal yapılandırması hatası tespit edip, ekip lideriyle uyum sağlayarak 500'den fazla düğümün büyük bir kısmını web geçişi için yeniden yapılandırdı. Canlı chat QA işlemlerini müşteri ve görevli akışları, konu geçmişi, sistem mesajları, rol tabanlı izinler ve işlevsel davranışlar üzerinden gerçekleştirdi. Sistemdeki acil sorun kuyruğunu yaklaşık 63'den düşük 20'ye düşürdü.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 159.39,
+          "ollama": {
+            "totalMs": 150.07,
+            "loadMs": 89.09,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 13,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 6983.59,
+          "ollama": {
+            "totalMs": 6980.73,
+            "loadMs": 126.8,
+            "promptEvalMs": 301.01,
+            "evalMs": 5631.65,
+            "promptEvalCount": 1132,
+            "evalCount": 246,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 9,
+      "question": "Kaan Forward Deployed Engineer rolüne uygun mu?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "recruiter-fit",
+      "evidenceIds": [
+        "master-knowledge:experience:cbot:1",
+        "master-knowledge:project:sinama:1",
+        "master-knowledge:experience:atolye-joyday:1",
+        "master-knowledge:recruiter-intelligence:1"
+      ],
+      "evidenceEntityIds": [
+        "experience:cbot",
+        "project:sinama",
+        "experience:atolye-joyday",
+        "recruiter-intelligence"
+      ],
+      "sourceEntityIds": [
+        "recruiter-intelligence",
+        "experience:cbot",
+        "project:sinama",
+        "experience:atolye-joyday"
+      ],
+      "generationAttempts": 2,
+      "validatorFlags": [
+        "unsupported-strength"
+      ],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 2,
+      "latencyMs": 7361.3,
+      "repaired": true,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Kaan Balcı, CBOT ve SINAMA projesinde müşteriye yönelik AI entegrasyonu, 500+ düğüm migration ve QA süreçlerinde deneyimlidir. Atölye Joyday’de müşteri odaklı ürün yönetimi ve otomasyonu yapmıştır. SINAMA projesinde belirli bir release-readiness politikası ve 14 senaryo testi ile kalite kontrolü vardır. Portfolio, ölçeklenebilir veya üretim seviyesinde sistemlerin geliştirilmesiyle ilgili bilgi içermez.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 164.39,
+          "ollama": {
+            "totalMs": 162.08,
+            "loadMs": 89.06,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 22,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 3907.23,
+          "ollama": {
+            "totalMs": 3900.92,
+            "loadMs": 131.38,
+            "promptEvalMs": 403.36,
+            "evalMs": 2403.68,
+            "promptEvalCount": 1565,
+            "evalCount": 127,
+            "doneReason": "stop"
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 3281.89,
+          "ollama": {
+            "totalMs": 3268.59,
+            "loadMs": 131.38,
+            "promptEvalMs": 430.79,
+            "evalMs": 2582.64,
+            "promptEvalCount": 1655,
+            "evalCount": 136,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 10,
+      "question": "Neden Kaan'ı işe almalıyız?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "recruiter-hire",
+      "evidenceIds": [
+        "master-knowledge:experience:cbot:1",
+        "master-knowledge:project:sinama:1",
+        "master-knowledge:experience:outlier-ai:1",
+        "master-knowledge:recruiter-intelligence:1"
+      ],
+      "evidenceEntityIds": [
+        "experience:cbot",
+        "project:sinama",
+        "experience:outlier-ai",
+        "recruiter-intelligence"
+      ],
+      "sourceEntityIds": [
+        "recruiter-intelligence",
+        "experience:cbot",
+        "project:sinama",
+        "experience:outlier-ai"
+      ],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 1,
+      "latencyMs": 4796.36,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Kaan Balcı, CBOT ve SINAMA projesinde müşteri odaklı konversiyon AI sistemleri üzerinde deneyimli; 500+ düğüm migrasyonu, QA süreçleri ve ürün sürümü hazırlığı gibi işlerde doğrudan katkılarda bulunmuştur. SINAMA projesinde 14 senaryo ile yapılandırılmış, tekrarlanabilir testler ve sürüm karşılaştırması ile güvenilirlik laboratuvarı oluşturmuştur. Outlier AI’de 11 proje için 100+ AI üretimi değerlendirmiştir. Portfolio, iş süreçlerinde ölçeklenebilirlik ya da üretim kalitesi açısından bilgi vermemektedir.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 195.51,
+          "ollama": {
+            "totalMs": 182.87,
+            "loadMs": 85.87,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 22,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 4595.55,
+          "ollama": {
+            "totalMs": 4580.11,
+            "loadMs": 126.57,
+            "promptEvalMs": 383.86,
+            "evalMs": 3125.92,
+            "promptEvalCount": 1522,
+            "evalCount": 165,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 11,
+      "question": "Kaan'ın AI Engineer rolü için eksikleri neler?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "recruiter-gaps",
+      "evidenceIds": [
+        "master-knowledge:project:sinama:1",
+        "master-knowledge:experience:outlier-ai:1",
+        "master-knowledge:recruiter-intelligence:1",
+        "master-knowledge:experience:cbot:1"
+      ],
+      "evidenceEntityIds": [
+        "project:sinama",
+        "experience:outlier-ai",
+        "recruiter-intelligence",
+        "experience:cbot"
+      ],
+      "sourceEntityIds": [
+        "recruiter-intelligence",
+        "project:sinama",
+        "experience:outlier-ai",
+        "experience:cbot"
+      ],
+      "generationAttempts": 2,
+      "validatorFlags": [
+        "language-template-leak"
+      ],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 2,
+      "latencyMs": 5701.96,
+      "repaired": false,
+      "fallbackUsed": true,
+      "exactFact": null,
+      "answer": "Portfolyodaki ilgili kayıtlar: Kaan Balcı — role fit and hiring evidence, SINAMA — AI Agent Reliability Lab, Outlier AI — AI Training Specialist. Şu anda güvenilir bir doğal dil özeti üretemediğim için bu kanıtların ötesinde bir iddiada bulunmuyorum.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 166.46,
+          "ollama": {
+            "totalMs": 164.97,
+            "loadMs": 89.98,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 24,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 3126.19,
+          "ollama": {
+            "totalMs": 3115.38,
+            "loadMs": 150.18,
+            "promptEvalMs": 476.86,
+            "evalMs": 1569.41,
+            "promptEvalCount": 1529,
+            "evalCount": 83,
+            "doneReason": "stop"
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 2403.65,
+          "ollama": {
+            "totalMs": 2393.91,
+            "loadMs": 135.27,
+            "promptEvalMs": 420.66,
+            "evalMs": 1726.65,
+            "promptEvalCount": 1599,
+            "evalCount": 91,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "NOTE",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 12,
+      "question": "Kaan'ı diğer junior adaylardan ayıran ne?",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "recruiter-differentiation",
+      "evidenceIds": [
+        "master-knowledge:experience:cbot:1",
+        "master-knowledge:project:sinama:1",
+        "master-knowledge:experience:outlier-ai:1",
+        "master-knowledge:recruiter-intelligence:1"
+      ],
+      "evidenceEntityIds": [
+        "experience:cbot",
+        "project:sinama",
+        "experience:outlier-ai",
+        "recruiter-intelligence"
+      ],
+      "sourceEntityIds": [
+        "recruiter-intelligence",
+        "experience:cbot",
+        "project:sinama",
+        "experience:outlier-ai"
+      ],
+      "generationAttempts": 2,
+      "validatorFlags": [
+        "unsupported-strength"
+      ],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 2,
+      "latencyMs": 9343.58,
+      "repaired": true,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Kaan Balcı, CBOT’da müşteriye yönelik çok kanal otomasyonu ve 500+ düğüm geçişi yaparak, SINAMA’da 14 senaryo ile yapılandırılmış AI agent güvenilirliği laboratuvarı oluşturarak, Outlier AI’de 11 proje için 100+ AI çıktısını değerlendirmesiyle, müşteriye yönelik ürün sahibi ve uygulama süreçlerinde gerçek dünya entegrasyonu sağlar. En güçlü farklılık, müşteriye yönelik ürün sahibi, yapılandırılmış AI değerlendirme ve yazılım uygulama deneyimi kombinasyonudur. Portfolio, bu deneyimlerin ölçeklenebilirliği veya üretim seviyesiyle ilgili bilgisi yoktur.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 175.41,
+          "ollama": {
+            "totalMs": 165.38,
+            "loadMs": 87.15,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 24,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 4890.29,
+          "ollama": {
+            "totalMs": 4888.88,
+            "loadMs": 133.16,
+            "promptEvalMs": 383.48,
+            "evalMs": 3405.19,
+            "promptEvalCount": 1524,
+            "evalCount": 179,
+            "doneReason": "stop"
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 4272.4,
+          "ollama": {
+            "totalMs": 4271.05,
+            "loadMs": 131.27,
+            "promptEvalMs": 438.83,
+            "evalMs": 3580.26,
+            "promptEvalCount": 1614,
+            "evalCount": 188,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 13,
+      "question": "RAG nedir?",
+      "locale": "tr",
+      "history": [],
+      "scope": "general",
+      "answerMode": "general",
+      "evidenceIds": [],
+      "evidenceEntityIds": [],
+      "sourceEntityIds": [],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": false,
+      "embeddingCalls": 0,
+      "chatCalls": 1,
+      "latencyMs": 1081.61,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "RAG, Retrieval-Augmented Generation'in kısaltmasıdır. Bu yöntem, bilgi arama ve üretken yapay zeka modelinin birleşiminden oluşur.",
+      "calls": [
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1080.03,
+          "ollama": {
+            "totalMs": 1076.07,
+            "loadMs": 132.48,
+            "promptEvalMs": 47.05,
+            "evalMs": 768.49,
+            "promptEvalCount": 513,
+            "evalCount": 43,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 14,
+      "question": "sınama ve değerlendirme arasındaki fark nedir",
+      "locale": "tr",
+      "history": [],
+      "scope": "general",
+      "answerMode": "general",
+      "evidenceIds": [],
+      "evidenceEntityIds": [],
+      "sourceEntityIds": [],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": false,
+      "embeddingCalls": 0,
+      "chatCalls": 1,
+      "latencyMs": 1558.83,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Sınama, bir kişinin belirli bir beceri veya bilgiye sahip olup olmadığını test etmek için yapılan bir süreçtir. Değerlendirme ise bu testlerin sonuçlarına dayanarak bir kişinin genel performansını ya da yeteneklerini değerlendirmek için yapılır.",
+      "calls": [
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1552.84,
+          "ollama": {
+            "totalMs": 1536.74,
+            "loadMs": 133.81,
+            "promptEvalMs": 47.09,
+            "evalMs": 1336.07,
+            "promptEvalCount": 516,
+            "evalCount": 74,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 15,
+      "question": "GitHub nedir?",
+      "locale": "tr",
+      "history": [],
+      "scope": "general",
+      "answerMode": "general",
+      "evidenceIds": [],
+      "evidenceEntityIds": [],
+      "sourceEntityIds": [],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": false,
+      "embeddingCalls": 0,
+      "chatCalls": 1,
+      "latencyMs": 1158.07,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "GitHub, yazılım geliştirme için bir kod deposu ve işbirliği platformudur. Geliştiriciler, projelerini paylaşıp, birbirlerine katkılar yaparak birlikte geliştirirler.",
+      "calls": [
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1156.8,
+          "ollama": {
+            "totalMs": 1144.22,
+            "loadMs": 131.68,
+            "promptEvalMs": 45.64,
+            "evalMs": 950.25,
+            "promptEvalCount": 512,
+            "evalCount": 53,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 16,
+      "question": "stacki ne?",
+      "locale": "tr",
+      "history": [
+        {
+          "role": "user",
+          "content": "SINAMA stacki ne?"
+        },
+        {
+          "role": "assistant",
+          "content": "Portfolyodaki ilgili kayıtlar: SINAMA — AI Agent Reliability Lab, Broken run. Şu anda güvenilir bir doğal dil özeti üretemediğim için bu kanıtların ötesinde bir iddiada bulunmuyorum."
+        }
+      ],
+      "scope": "portfolio",
+      "answerMode": "portfolio-project",
+      "evidenceIds": [
+        "master-knowledge:project:sinama:1"
+      ],
+      "evidenceEntityIds": [
+        "project:sinama"
+      ],
+      "sourceEntityIds": [
+        "project:sinama",
+        "sinama",
+        "sinama",
+        "broken"
+      ],
+      "generationAttempts": 2,
+      "validatorFlags": [
+        "incomplete-ending"
+      ],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 2,
+      "latencyMs": 3946.61,
+      "repaired": false,
+      "fallbackUsed": true,
+      "exactFact": null,
+      "answer": "Portfolyodaki ilgili kayıtlar: SINAMA — AI Agent Reliability Lab, Broken run. Şu anda güvenilir bir doğal dil özeti üretemediğim için bu kanıtların ötesinde bir iddiada bulunmuyorum.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 171.47,
+          "ollama": {
+            "totalMs": 169.66,
+            "loadMs": 89.94,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 16,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 2256.28,
+          "ollama": {
+            "totalMs": 2254.27,
+            "loadMs": 131.69,
+            "promptEvalMs": 1230.62,
+            "evalMs": 851.97,
+            "promptEvalCount": 1419,
+            "evalCount": 46,
+            "doneReason": "stop"
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1515.33,
+          "ollama": {
+            "totalMs": 1501.49,
+            "loadMs": 134.43,
+            "promptEvalMs": 388.68,
+            "evalMs": 873.33,
+            "promptEvalCount": 1488,
+            "evalCount": 47,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "NOTE",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 17,
+      "question": "RAG nedir?",
+      "locale": "tr",
+      "history": [
+        {
+          "role": "user",
+          "content": "SINAMA stacki ne?"
+        },
+        {
+          "role": "assistant",
+          "content": "Portfolyodaki ilgili kayıtlar: SINAMA — AI Agent Reliability Lab, Broken run. Şu anda güvenilir bir doğal dil özeti üretemediğim için bu kanıtların ötesinde bir iddiada bulunmuyorum."
+        }
+      ],
+      "scope": "general",
+      "answerMode": "general",
+      "evidenceIds": [],
+      "evidenceEntityIds": [],
+      "sourceEntityIds": [],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": false,
+      "embeddingCalls": 0,
+      "chatCalls": 1,
+      "latencyMs": 1287.37,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "RAG, Retrieval-Augmented Generation'in kısaltmasıdır. Bu yöntem, bilgi arama ve üretken modelin birleştirilmesiyle daha doğru ve güvenilir sonuçlar elde edilmesini sağlar.",
+      "calls": [
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1286.13,
+          "ollama": {
+            "totalMs": 1281.07,
+            "loadMs": 134.47,
+            "promptEvalMs": 47.27,
+            "evalMs": 983.36,
+            "promptEvalCount": 513,
+            "evalCount": 55,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 18,
+      "question": "sen kimsin?",
+      "locale": "tr",
+      "history": [],
+      "scope": "general",
+      "answerMode": "self-about-ajoop",
+      "evidenceIds": [],
+      "evidenceEntityIds": [],
+      "sourceEntityIds": [],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": false,
+      "embeddingCalls": 0,
+      "chatCalls": 1,
+      "latencyMs": 1398.89,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Ben Ajoop, Kaan Balcı'nin portföyüne entegre olan bir yerel model kopya yardımcısıyım. Web veya canlı veri erişimi yok ve özel altyapı detayları paylaşılmamıştır.",
+      "calls": [
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1396.72,
+          "ollama": {
+            "totalMs": 1389.88,
+            "loadMs": 132.94,
+            "promptEvalMs": 59.02,
+            "evalMs": 1180.5,
+            "promptEvalCount": 529,
+            "evalCount": 66,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 19,
+      "question": "Is Kaan a good fit for a Forward Deployed Engineer role?",
+      "locale": "en",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "recruiter-fit",
+      "evidenceIds": [
+        "master-knowledge:experience:cbot:1",
+        "master-knowledge:project:sinama:1",
+        "master-knowledge:experience:atolye-joyday:1",
+        "master-knowledge:recruiter-intelligence:1"
+      ],
+      "evidenceEntityIds": [
+        "experience:cbot",
+        "project:sinama",
+        "experience:atolye-joyday",
+        "recruiter-intelligence"
+      ],
+      "sourceEntityIds": [
+        "recruiter-intelligence",
+        "experience:cbot",
+        "project:sinama",
+        "experience:atolye-joyday"
+      ],
+      "generationAttempts": 1,
+      "validatorFlags": [],
+      "embedding": true,
+      "embeddingCalls": 1,
+      "chatCalls": 1,
+      "latencyMs": 3913.53,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Kaan is a strong fit for a forward-deployed engineering role due to his work on CBOT’s multi-channel AI flows, SINAMA’s live AI agent reliability lab, Atölye Joyday’s customer-facing product automation, and Punto’s internal dashboard. Evidence includes live QA of customer flows, 500+ node migration, and real business product ownership. The portfolio does not record deployment in production environments or scalability metrics. His experience is applied and operational, not scalable or enterprise-grade.",
+      "calls": [
+        {
+          "endpoint": "/api/embed",
+          "model": "qwen3-embedding:0.6b",
+          "inputCount": 1,
+          "httpStatus": 200,
+          "elapsedMs": 167.4,
+          "ollama": {
+            "totalMs": 161.22,
+            "loadMs": 86.83,
+            "promptEvalMs": null,
+            "evalMs": null,
+            "promptEvalCount": 23,
+            "evalCount": null,
+            "doneReason": null
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 3741.61,
+          "ollama": {
+            "totalMs": 3739.58,
+            "loadMs": 130.92,
+            "promptEvalMs": 536.78,
+            "evalMs": 2123.48,
+            "promptEvalCount": 1566,
+            "evalCount": 112,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    },
+    {
+      "id": 20,
+      "question": "satrançta rok nasıl yapılır?",
+      "locale": "tr",
+      "history": [],
+      "scope": "general",
+      "answerMode": "general",
+      "evidenceIds": [],
+      "evidenceEntityIds": [],
+      "sourceEntityIds": [],
+      "generationAttempts": 2,
+      "validatorFlags": [
+        "incomplete-ending",
+        "repeated-phrase"
+      ],
+      "embedding": false,
+      "embeddingCalls": 0,
+      "chatCalls": 2,
+      "latencyMs": 6381.26,
+      "repaired": true,
+      "fallbackUsed": false,
+      "exactFact": null,
+      "answer": "Rok, satrançta bir taşın yerini değiştirmek için yapılan bir harettir. Rok sırasında, taşın bulunduğu yerden bir adım ileriye doğru hareket eder ve sonra bir diğer taşın bulunduğu yerde durur.",
+      "calls": [
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 5023.63,
+          "ollama": {
+            "totalMs": 5019.17,
+            "loadMs": 131.18,
+            "promptEvalMs": 46.51,
+            "evalMs": 4711.73,
+            "promptEvalCount": 517,
+            "evalCount": 260,
+            "doneReason": "length"
+          }
+        },
+        {
+          "endpoint": "/api/chat",
+          "model": "qwen3:4b-instruct",
+          "inputCount": 0,
+          "httpStatus": 200,
+          "elapsedMs": 1355.19,
+          "ollama": {
+            "totalMs": 1353.57,
+            "loadMs": 135.43,
+            "promptEvalMs": 69.03,
+            "evalMs": 1131.66,
+            "promptEvalCount": 590,
+            "evalCount": 63,
+            "doneReason": "stop"
+          }
+        }
+      ],
+      "verdict": "NOTE",
+      "blockers": [],
+      "notes": [
+        "General model knowledge must be manually reviewed; factual weakness alone is an accepted model limitation."
+      ],
+      "qualityReviewed": false
+    },
+    {
+      "id": 21,
+      "question": "Kaan'ın LinkedIn'i",
+      "locale": "tr",
+      "history": [],
+      "scope": "portfolio",
+      "answerMode": "portfolio-fact",
+      "evidenceIds": [
+        "master-knowledge:contacts:1"
+      ],
+      "evidenceEntityIds": [
+        "contacts"
+      ],
+      "sourceEntityIds": [
+        "contacts"
+      ],
+      "generationAttempts": 0,
+      "validatorFlags": [],
+      "embedding": false,
+      "embeddingCalls": 0,
+      "chatCalls": 0,
+      "latencyMs": 0.47,
+      "repaired": false,
+      "fallbackUsed": false,
+      "exactFact": "contact:linkedin",
+      "answer": "Kaan Balcı'nın LinkedIn profili: https://www.linkedin.com/in/balcikaan/",
+      "calls": [],
+      "verdict": "PASS",
+      "blockers": [],
+      "notes": [],
+      "qualityReviewed": false
+    }
+  ],
+  "manualReview": {
+    "status": "pending",
+    "requiredCaseIds": [
+      1,
+      2,
+      4,
+      9,
+      10,
+      11
+    ]
+  },
+  "initialization": {
+    "ready": true,
+    "chunks": 193,
+    "embedModel": "qwen3-embedding:0.6b",
+    "datasets": 7,
+    "datasetChunks": 121,
+    "masterKnowledgeRecords": 71,
+    "masterKnowledgeChunks": 72,
+    "indexedPublicRecords": 69,
+    "indexedOnRequestRecords": 2,
+    "privacyExcluded": 2,
+    "duplicateChunks": 0,
+    "retrievableChunks": 191,
+    "exactFacts": 22,
+    "aliasEntities": 12,
+    "aliasPhrases": 36,
+    "retrievalEntities": 42,
+    "elapsedMs": 7042.34,
+    "embeddingCalls": 9,
+    "calls": [
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 24,
+        "httpStatus": 200,
+        "elapsedMs": 1042.34,
+        "ollama": {
+          "totalMs": 1030.62,
+          "loadMs": 86.71,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 5535,
+          "evalCount": null,
+          "doneReason": null
+        }
+      },
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 24,
+        "httpStatus": 200,
+        "elapsedMs": 1023.82,
+        "ollama": {
+          "totalMs": 1015.91,
+          "loadMs": 89.48,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 5631,
+          "evalCount": null,
+          "doneReason": null
+        }
+      },
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 24,
+        "httpStatus": 200,
+        "elapsedMs": 1017.2,
+        "ollama": {
+          "totalMs": 1003.84,
+          "loadMs": 99.65,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 5471,
+          "evalCount": null,
+          "doneReason": null
+        }
+      },
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 24,
+        "httpStatus": 200,
+        "elapsedMs": 1028.36,
+        "ollama": {
+          "totalMs": 1021.86,
+          "loadMs": 88.57,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 5598,
+          "evalCount": null,
+          "doneReason": null
+        }
+      },
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 24,
+        "httpStatus": 200,
+        "elapsedMs": 849.97,
+        "ollama": {
+          "totalMs": 822.25,
+          "loadMs": 89.5,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 4002,
+          "evalCount": null,
+          "doneReason": null
+        }
+      },
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 24,
+        "httpStatus": 200,
+        "elapsedMs": 708.27,
+        "ollama": {
+          "totalMs": 689.57,
+          "loadMs": 87.29,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 2944,
+          "evalCount": null,
+          "doneReason": null
+        }
+      },
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 24,
+        "httpStatus": 200,
+        "elapsedMs": 602.55,
+        "ollama": {
+          "totalMs": 595.56,
+          "loadMs": 87.9,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 2135,
+          "evalCount": null,
+          "doneReason": null
+        }
+      },
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 24,
+        "httpStatus": 200,
+        "elapsedMs": 597.66,
+        "ollama": {
+          "totalMs": 584.55,
+          "loadMs": 96,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 1919,
+          "evalCount": null,
+          "doneReason": null
+        }
+      },
+      {
+        "endpoint": "/api/embed",
+        "model": "qwen3-embedding:0.6b",
+        "inputCount": 1,
+        "httpStatus": 200,
+        "elapsedMs": 136.49,
+        "ollama": {
+          "totalMs": 122.23,
+          "loadMs": 92.62,
+          "promptEvalMs": null,
+          "evalMs": null,
+          "promptEvalCount": 71,
+          "evalCount": null,
+          "doneReason": null
+        }
+      }
+    ]
+  },
+  "completedAt": "2026-09-05T19:22:39.067Z",
+  "summary": {
+    "PASS": 17,
+    "NOTE": 4,
+    "BLOCKER": 0
+  },
+  "performance": {
+    "exact": {
+      "cases": 2,
+      "medianMs": 1000.73,
+      "minMs": 0.47,
+      "maxMs": 2000.98,
+      "embeddingCalls": 1,
+      "chatCalls": 1,
+      "repairs": 0,
+      "fallbacks": 0
+    },
+    "general": {
+      "cases": 6,
+      "medianMs": 1343.13,
+      "minMs": 1081.61,
+      "maxMs": 6381.26,
+      "embeddingCalls": 0,
+      "chatCalls": 7,
+      "repairs": 1,
+      "fallbacks": 0
+    },
+    "portfolio": {
+      "cases": 8,
+      "medianMs": 3373.2,
+      "minMs": 1919.17,
+      "maxMs": 7147.05,
+      "embeddingCalls": 8,
+      "chatCalls": 12,
+      "repairs": 4,
+      "fallbacks": 2
+    },
+    "recruiter": {
+      "cases": 5,
+      "medianMs": 5701.96,
+      "minMs": 3913.53,
+      "maxMs": 9343.58,
+      "embeddingCalls": 5,
+      "chatCalls": 8,
+      "repairs": 3,
+      "fallbacks": 1
+    }
+  }
+}

@@ -8,10 +8,12 @@
 import {
   ANSWER_MODES,
   ROLE_FAMILIES,
+  answerStrategyPrompt,
   buildSafeFallback,
   detectAnswerRepetition,
   detectRecruiterQuestion,
   recruiterEvidenceIds,
+  repairPrompt,
   selectAnswerStrategy,
   selectEvidenceRecords,
   selectRecruiterContext,
@@ -251,6 +253,134 @@ ok("full English template in Turkish is rejected", validateGeneratedAnswer({
   locale: "tr",
 }).flags.includes("language-template-leak"));
 
+/* Recruiter strength calibration: explicit risky phrases, not a blacklist of
+ * role names, ordinary enterprise work, or discussion of missing evidence. */
+const recruiterStrategy = { expectedScope: "PORTFOLIO", mode: ANSWER_MODES.RECRUITER_FIT, recruiter: true };
+const strengthFlags = (answer, records = [], strategy = recruiterStrategy) => validateGeneratedAnswer({
+  parsed: valid(strategy.expectedScope, answer), strategy, records,
+}).flags;
+for (const answer of [
+  "Kaan builds scalable AI systems.",
+  "Kaan gerçek zamanlı ve ölçeklenebilir AI sistemleri geliştiriyor.",
+  "Kaan builds production-grade systems.",
+  "Kaan delivered enterprise-scale systems.",
+  "Kaan has senior-level engineering depth.",
+  "Kaan has deep expertise in AI.",
+  "Kaan derin uzmanlığa sahiptir.",
+  "Kaan is an expert in AI systems.",
+  "Kaan AI sistemleri konusunda uzmandır.",
+  "Kaan has extensive production ownership.",
+]) {
+  ok(`unsupported recruiter strength is rejected: ${answer}`, strengthFlags(answer).includes("unsupported-strength"));
+}
+for (const answer of [
+  "Kaan contributed to enterprise conversational AI, live-chat and multi-channel automation.",
+  "A Senior AI Engineer role would require more evidence.",
+  "The AI Training Specialist role involved reviewing model outputs.",
+  "Expert review would help assess his work.",
+  "The records do not establish scalable systems.",
+  "Deep expertise is not shown by the records.",
+  "There is no evidence of senior-level depth.",
+  "Production-grade ownership remains unverified.",
+  "He needs more evidence of scalable systems.",
+  "Ölçeklenebilir sistemler geliştirdiği kayıtlarda belirtilmemiş.",
+  "Derin uzmanlık kanıtı yoktur.",
+  "Ölçeklenebilir sistem deneyimi için daha fazla kanıt gerekir.",
+  /* Turkish denies with a verb suffix, not a keyword. These read as claims to
+   * a word-list guard, and rejecting them threw away correct repairs. */
+  "Ölçeklenebilir sistemlerde deneyimi olup olmadığı bilinmiyor.",
+  "Portfolio, ölçeklenebilir sistemleri doğrulamaz.",
+  "Kayıtlar production-grade sistemleri göstermez.",
+  "Portfolyo, derin uzmanlığa dair kanıt içermiyor.",
+  "Kaan'ın enterprise-scale deneyimi kayıtlarda görünmüyor.",
+]) {
+  ok(`calibrated recruiter language stays allowed: ${answer}`, !strengthFlags(answer).includes("unsupported-strength"));
+}
+ok("general explanation of scalable systems is not recruiter-policed", !strengthFlags(
+  "Scalable systems handle increasing demand.", [], generalStrategy,
+).includes("unsupported-strength"));
+ok("an adjacent gap cannot excuse an unsupported positive clause", strengthFlags(
+  "Kaan builds scalable AI systems, but production ownership is not recorded.",
+).includes("unsupported-strength"));
+ok("equivalent Turkish evidence supports English scalable claim", !strengthFlags(
+  "Kaan builds scalable systems.", [{ text: "Kaan ölçeklenebilir sistemler geliştirdi." }],
+).includes("unsupported-strength"));
+ok("equivalent English evidence supports Turkish scalable claim", !strengthFlags(
+  "Kaan ölçeklenebilir sistemler geliştirdi.", [{ text: "Kaan built scalable systems." }],
+).includes("unsupported-strength"));
+ok("scalable evidence does not establish highly scalable", strengthFlags(
+  "Kaan builds highly scalable systems.", [{ text: "Kaan built scalable systems." }],
+).includes("unsupported-strength"));
+ok("recorded ordinary enterprise work does not establish enterprise-scale", strengthFlags(
+  "Kaan built enterprise-scale systems.", [{ text: "Kaan contributed to enterprise conversational AI." }],
+).includes("unsupported-strength"));
+ok("canonical guardrails cannot be misread as strength evidence", strengthFlags(
+  "Kaan has senior-level depth.", [{ text: "Do not claim senior-level depth without evidence." }],
+).includes("unsupported-strength"));
+ok("a record describing a gap cannot support a positive claim", strengthFlags(
+  "Kaan builds scalable systems.", [{ text: "Evidence of scalable systems is missing." }],
+).includes("unsupported-strength"));
+ok("a denial suffix does not license an unsupported claim elsewhere", strengthFlags(
+  "Kaan ölçeklenebilir sistemler kurdu. Üretim deneyimi bilinmiyor.",
+).includes("unsupported-strength"));
+ok("an ordinary negated sentence is still not a claim", !strengthFlags(
+  "Kaan'ın ölçeklenebilir sistem deneyimi kayıtlarda bulunmuyor.",
+).includes("unsupported-strength"));
+
+ok("recruiter prompt explicitly distinguishes live-chat from scalability", answerStrategyPrompt(recruiterStrategy)
+  .includes("Exposure, a role title or enterprise work never establishes scalable / ölçeklenebilir"));
+ok("strength repair asks for concrete facts at the recorded level", repairPrompt(["unsupported-strength"], recruiterStrategy)
+  .includes("Claim only the strength the records state, and do not swap in another qualifier"));
+
+/* ---------- scope contract ----------
+ *
+ * The live regression this protects: the model wrote a correct, grounded
+ * recruiter answer but labelled it SCOPE: GENERAL, the validator rejected it,
+ * and the repair prompt named the flag without naming the scope — so the second
+ * attempt reproduced the same label and every turn reached the fallback. The
+ * contract is asserted generically, on expectedScope, never on a single mode. */
+
+const scopeLine = (scope) => `The first line must be exactly: SCOPE: ${scope}`;
+for (const scope of ["PORTFOLIO", "GENERAL"]) {
+  for (const [label, strategy] of [
+    [`recruiter ${scope}`, { mode: ANSWER_MODES.RECRUITER_FIT, recruiter: true, expectedScope: scope }],
+    [`non-recruiter ${scope}`, { mode: ANSWER_MODES.PORTFOLIO_FACT, expectedScope: scope }],
+  ]) {
+    ok(`initial prompt requires the expected scope (${label})`, answerStrategyPrompt(strategy).includes(scopeLine(scope)));
+    ok(`initial prompt names only the expected scope (${label})`, !answerStrategyPrompt(strategy)
+      .includes(scopeLine(scope === "PORTFOLIO" ? "GENERAL" : "PORTFOLIO")));
+    ok(`scope-mismatch repair requires the expected scope (${label})`, repairPrompt(["scope-mismatch"], strategy)
+      .includes(scopeLine(scope)));
+  }
+}
+/* Every shipped strategy carries the contract, so no future mode can silently
+ * lose it — this is what a removed contract has to fail against. */
+for (const [question, plan] of [
+  ["Neden Kaan'ı işe almalıyız?", {}],
+  ["Kaan Forward Deployed Engineer rolüne uygun mu?", {}],
+  ["SINAMA stacki ne?", projectPlan(["SINAMA"])],
+  ["Kaan nerede çalıştı?", { contextEligible: true, activeOrganizations: [], experienceFocus: true }],
+  ["RAG nedir?", { contextEligible: false }],
+]) {
+  const strategy = selectAnswerStrategy({ question, plan, history: [] });
+  ok(`shipped strategy carries a scope contract: ${question}`,
+    answerStrategyPrompt(strategy).includes(scopeLine(strategy.expectedScope)));
+}
+/* No expectedScope must inject no scope sentence at all — not a truncated or
+ * undefined one. */
+for (const strategy of [null, undefined, { mode: ANSWER_MODES.PORTFOLIO_FACT }, { mode: ANSWER_MODES.RECRUITER_FIT, recruiter: true }]) {
+  ok(`absent expectedScope injects no scope instruction: ${JSON.stringify(strategy)}`,
+    !/The first line must be exactly/.test(answerStrategyPrompt(strategy)));
+  ok(`absent expectedScope repairs without a scope instruction: ${JSON.stringify(strategy)}`,
+    !/The first line must be exactly/.test(repairPrompt(["scope-mismatch"], strategy)));
+}
+ok("a non-scope rejection adds no scope-correction sentence",
+  !repairPrompt(["near-repeated-sentence"], { mode: ANSWER_MODES.RECRUITER_FIT, recruiter: true, expectedScope: "PORTFOLIO" })
+    .includes("The rejected draft used the wrong scope"));
+ok("a scope rejection names the correction explicitly",
+  repairPrompt(["scope-mismatch"], { mode: ANSWER_MODES.RECRUITER_FIT, recruiter: true, expectedScope: "PORTFOLIO" })
+    .includes("The rejected draft used the wrong scope"));
+
 /* ---------- localized safe fallback ---------- */
 
 const fallbackRecords = [
@@ -406,6 +536,23 @@ for (const [question, expectedMode, expectedEvidence] of [
   check("contradiction repair uses one embedding", state.embed - state.initEmbed, 1);
   ok("contradiction flag is reported", response.body.validatorFlags.includes("evidence-contradiction"));
   ok("repaired answer no longer denies the stack", !/does not specify/i.test(response.body.answer));
+}
+
+for (const repairedAnswer of [
+  "Kaan contributed to live-chat QA and multi-channel automation at CBOT; production ownership remains a question for the interview.",
+  "Kaan builds scalable AI systems.",
+]) {
+  const repairedSuccessfully = !repairedAnswer.includes("scalable");
+  const { rag, state } = await makeRag(({ state: current }) => ` PORTFOLIO\nANSWER: ${current.chat === 1
+    ? "Kaan builds scalable AI systems."
+    : repairedAnswer}`);
+  const response = await ask(rag, "Why should we hire Kaan?", "en");
+  check(`strength guard uses at most one repair (${repairedSuccessfully})`, state.chat, 2);
+  check(`strength repair reuses its embedding (${repairedSuccessfully})`, state.embed - state.initEmbed, 1);
+  check(`strength repair fallback status (${repairedSuccessfully})`, response.body.fallbackUsed, !repairedSuccessfully);
+  check(`strength repair preserves portfolio scope (${repairedSuccessfully})`, response.body.scope, "portfolio");
+  ok(`strength flag is reported (${repairedSuccessfully})`, response.body.validatorFlags.includes("unsupported-strength"));
+  ok(`unsupported strength never reaches the user (${repairedSuccessfully})`, !response.body.answer.includes("scalable"));
 }
 
 {
