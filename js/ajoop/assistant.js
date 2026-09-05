@@ -1553,6 +1553,58 @@ function ajoopTurnProvenance(plan, model, general) {
   return model ? AJOOP_PROVENANCE_AI : plan.provenance;
 }
 
+function ajoopEvidenceMatchText(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/^[^:]+:/, "")
+    .replace(/[^a-z0-9+#.]+/g, " ")
+    .trim();
+}
+
+function ajoopEvidenceMatchesCard(evidence, card) {
+  const evidenceId = ajoopEvidenceMatchText(evidence.entityId);
+  const cardId = ajoopEvidenceMatchText(card.entityId);
+  if (evidenceId && cardId && evidenceId === cardId) return true;
+  const evidenceTitle = ajoopEvidenceMatchText(evidence.title);
+  const cardTitle = ajoopEvidenceMatchText(card.title);
+  if (!evidenceTitle || !cardTitle) return false;
+  return evidenceTitle === cardTitle
+    || (Math.min(evidenceTitle.length, cardTitle.length) >= 5
+      && (evidenceTitle.includes(cardTitle) || cardTitle.includes(evidenceTitle)));
+}
+
+/** Turns the server's curated evidence into existing card objects, preserving
+ * rich canonical cards when the deterministic plan already has the entity. */
+function ajoopModelEvidenceCards(model, plan, language) {
+  if (!model || !Array.isArray(model.evidence)) return plan?.cards || [];
+  const available = Array.isArray(plan?.cards) ? plan.cards : [];
+  const used = new Set();
+  return model.evidence.map((evidence) => {
+    const matched = available.find((card, index) => !used.has(index) && ajoopEvidenceMatchesCard(evidence, card));
+    if (matched) {
+      used.add(available.indexOf(matched));
+      return matched;
+    }
+    return {
+      type: evidence.type || "record",
+      entityId: evidence.entityId,
+      title: evidence.title,
+      summary: evidence.summary || "",
+      meta: [],
+      tags: [],
+      proof: [],
+      links: (evidence.links || []).map((link) => ({
+        label: String(link.kind || "link").replace(/_/g, " "),
+        kind: link.kind,
+        url: link.url,
+      })),
+      source: ajoopLabel("Portfolio evidence", "Portfolyo kanıtı", language),
+    };
+  });
+}
+
 /**
  * Commits the turn: one fill, one action render, one scroll.
  *
@@ -1565,6 +1617,7 @@ function finishAjoopTurn(context) {
   const { node, route, plan, language, question } = context;
   const model = context.model && context.model.ok === true ? context.model : null;
   const general = Boolean(model && model.scope === "general");
+  const modelCards = model && !general ? ajoopModelEvidenceCards(model, plan, language) : [];
   const list = ajoopMessageList();
   /* Read the scroll position BEFORE anything moves: a visitor who scrolled
    * back during the beat is left where they are. */
@@ -1581,8 +1634,8 @@ function finishAjoopTurn(context) {
     type: "bot",
     language,
     text: model ? model.answer : plan.text,
-    links: general || !plan ? [] : plan.links,
-    cards: general || !plan ? [] : plan.cards,
+    links: general || !plan || model ? [] : plan.links,
+    cards: general ? [] : model ? modelCards : plan?.cards || [],
     comparison: general || !plan ? null : plan.comparison,
     provenance: ajoopTurnProvenance(plan, model, general),
     /* The full record only when the visitor asked for it. */

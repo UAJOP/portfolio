@@ -119,8 +119,59 @@ function validateAjoopRagResponse(raw) {
   if (!answer || answer.length > AJOOP_AI_MAX_ANSWER_CHARS) return null;
   const scope = raw.scope === "general" ? "general" : raw.scope === "portfolio" ? "portfolio" : null;
   if (!scope) return null;
+  let evidence = null;
+  if (raw.evidence !== undefined) {
+    if (!Array.isArray(raw.evidence) || raw.evidence.length > 4) return null;
+    evidence = raw.evidence.map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const bounded = (value, limit) =>
+        typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, limit) : "";
+      const id = bounded(item.id, 160);
+      const source = bounded(item.source, 64);
+      const entityId = bounded(item.entityId, 128);
+      const title = bounded(item.title, 180);
+      if (!id || !source || !entityId || !title) return null;
+      if (!Array.isArray(item.links) || item.links.length > 3) return null;
+      const links = item.links.map((link) => {
+        const kind = bounded(link?.kind, 32) || "link";
+        const url = bounded(link?.url, 1000);
+        return /^(?:https?:\/\/|mailto:)/i.test(url) ? { kind, url } : null;
+      });
+      if (links.some((link) => !link)) return null;
+      return {
+        id,
+        source,
+        entityId,
+        type: bounded(item.type, 48) || "record",
+        title,
+        summary: bounded(item.summary, 320),
+        links,
+      };
+    });
+    if (evidence.some((item) => !item)) return null;
+  }
+  if (scope === "general" && evidence?.length) return null;
   const model = typeof raw.model === "string" && raw.model ? raw.model.slice(0, 64) : null;
-  return { answer, model, scope, mode: "rag" };
+  const generationAttempts = Number.isInteger(raw.generationAttempts)
+    && raw.generationAttempts >= 0
+    && raw.generationAttempts <= 2
+    ? raw.generationAttempts
+    : null;
+  const validatorFlags = Array.isArray(raw.validatorFlags)
+    ? raw.validatorFlags.filter((flag) => typeof flag === "string").slice(0, 8)
+    : [];
+  return {
+    answer,
+    model,
+    scope,
+    evidence,
+    answerMode: typeof raw.answerMode === "string" ? raw.answerMode.slice(0, 64) : null,
+    generationAttempts,
+    validatorFlags,
+    repaired: raw.repaired === true,
+    fallbackUsed: raw.fallbackUsed === true,
+    mode: "rag",
+  };
 }
 
 /**

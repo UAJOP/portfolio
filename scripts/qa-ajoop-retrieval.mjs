@@ -359,7 +359,8 @@ const makeRag = async (bias) => {
     if (String(url).includes("/api/chat")) {
       state.chat += 1;
       state.prompts.push(body.messages.map((message) => message.content).join("\n"));
-      return { ok: true, json: async () => ({ message: { content: " PORTFOLIO\nANSWER: Stubbed." } }) };
+      const scope = state.prompts.at(-1).includes("Answer strategy: general.") ? "GENERAL" : "PORTFOLIO";
+      return { ok: true, json: async () => ({ message: { content: ` ${scope}\nANSWER: Stubbed.` } }) };
     }
     state.embed += 1;
     const isQuery = state.built && body.input.length === 1;

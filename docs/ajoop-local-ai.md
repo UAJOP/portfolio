@@ -244,6 +244,72 @@ removed before semantic ranking, the phone remains available only through its
 explicit exact-fact route, and a self-contained turn receives no earlier model
 answer that could replay a sensitive value.
 
+## What changed in 5.2: answer quality and evidence
+
+`server/ajoop-answer.mjs` is the pure policy layer after the Brief 3 retrieval
+plan. It selects a small answer mode (`general`, project, experience,
+comparison, self, follow-up or recruiter), supplies a short mode-specific
+instruction to the same generation call, validates the reply and chooses the
+evidence the browser may show. It does not ingest knowledge, embed text or
+change candidate eligibility.
+
+Recruiter questions are classified by question type — fit, hire, strengths,
+gaps, risk, differentiation, best role, environment or supporting evidence —
+and by a small role family. Forward Deployed, Applied AI, Software Engineering
+and AI Product questions receive different canonical record combinations from
+the index already built at startup. The answer instruction asks for a
+bottom-line assessment, concrete evidence, the best-fit environment and a real
+unknown or thin area. It also prohibits numeric fit scores, guaranteed hiring
+claims and seniority not established by the records. This is reusable decision
+support, not one hardcoded answer per role.
+
+**Retrieved sources and displayed evidence are separate.** `sources` is the
+complete set of records the answer was allowed to use; `retrievedSources` is
+the semantic retrieval diagnostic; `evidence` is the compact UI selection.
+Evidence is filtered by active project or organization, ordered toward
+canonical records, deduplicated by logical entity and capped at two or three
+cards normally and four for recruiter answers. Build-log chunks yield to a
+canonical project record. Links come only from structured `metadata.links`;
+the model's prose is never mined for a URL. Exact facts return one canonical
+record, and GENERAL always returns an empty evidence list.
+
+The browser validates this additive `evidence` contract and matches selected
+entities to its existing rich cards when possible. Otherwise it renders a
+small text-only record card with the server-supplied canonical title and
+summary. A model answer no longer inherits every card and link from the
+deterministic plan, so its prose and its displayed proof stay aligned. Older
+bridge responses that omit `evidence` retain the previous deterministic-card
+fallback.
+
+**Generation has a bounded quality gate.** The parser requires exactly one
+`SCOPE` and one `ANSWER` marker and rejects an empty or overlong answer instead
+of truncating a claim. The validator additionally rejects an unexpected scope,
+extra contract text, repeated sentences/paragraphs/phrases, residual reasoning
+or meta-commentary, obvious language-template leakage, and the narrow
+contradiction where an answer denies a requested stack or experience field
+that is explicitly present in its records.
+
+A rejected draft is never shown. The bridge makes at most one repair call with
+the same retrieved context and a compact prompt; it never embeds again and
+there is no third generation. If repair also fails, a localized deterministic
+fallback names only the allowed portfolio record titles, or asks the visitor
+to retry for a GENERAL question. Raw drafts, prompts and validator internals
+stay server-side; the response exposes only attempt count and short diagnostic
+flags for testing.
+
+TR, EN, DE, ES and FR have localized fallback copies. Generated answers are
+explicitly requested in the selected locale, while company, project and
+technology names remain the canonical text in their records. The successful
+path still costs one chat call: zero embeddings for GENERAL, one for portfolio
+and recruiter questions. Only a malformed answer pays for the second chat;
+pure JavaScript validation adds no network step.
+
+The deterministic suite for this layer is `npm run qa:ajoop:answer`. It covers
+answer modes, recruiter role families, evidence alignment and deduplication,
+contract/repetition/contradiction guards, all five fallback locales, exact-fact
+evidence, one-retry enforcement and no-second-embedding behavior without a
+network or Ollama.
+
 ## Why n8n left the public path
 
 Ajoop 4.3 routed the browser through a local n8n webhook. n8n can persist
