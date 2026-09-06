@@ -9,14 +9,30 @@
  * playtests the frontend can switch without a big-bang backend migration.
  */
 import http from "node:http";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createAjoopBridge } from "./ajoop-bridge-core.mjs";
 import { AJOOP_RAG_GENERATION, createAjoopRag } from "./ajoop-rag.mjs";
 import { createAjoopSinamaAdapter } from "./ajoop-sinama.mjs";
+import { loadEnvFile } from "./ajoop-env-file.mjs";
 
 const nativeFetch = typeof fetch === "function" ? fetch : null;
 
+/**
+ * Local, untracked settings — currently the Qdrant credentials.
+ *
+ * A real environment variable always wins, and a missing file is not an error:
+ * this only fills in what the shell did not already supply. Without it the
+ * vector backend resolves to `memory`, which is the shipped behaviour, so a
+ * laptop with no .env.local boots exactly as it did before Ajoop 5.3.
+ */
+const { env: fileEnv, loaded } = loadEnvFile(
+  resolve(dirname(fileURLToPath(import.meta.url)), "..", ".env.local"),
+  process.env,
+);
+
 const runtimeEnv = {
-  ...process.env,
+  ...fileEnv,
   AJOOP_AI_MODEL: process.env.AJOOP_AI_MODEL || "qwen3:4b-instruct",
   AJOOP_AI_TEMPERATURE: process.env.AJOOP_AI_TEMPERATURE || "0",
   /* Warm RAG turns are normally 1–4s, but occasional runner/GPU scheduling
@@ -355,6 +371,16 @@ async function start() {
     console.log(`Ajoop bridge warm model ${warmed ? "ready" : "unavailable"}`);
     console.log(
       `Ajoop RAG ${ragStatus.ready ? "ready" : "unavailable"} · ${ragStatus.chunks} chunks · ${ragStatus.embedModel}`,
+    );
+    /* Which backend is LIVE, and — when they differ — which one was asked for.
+     * Key names only from the env file; never a value, never a hostname. */
+    const vector = rag.status();
+    console.log(
+      `Ajoop vector backend ${vector.vectorBackend}` +
+        (vector.vectorBackend === vector.vectorBackendRequested
+          ? ""
+          : ` (requested ${vector.vectorBackendRequested}, degraded)`) +
+        ` · ${loaded.length} local setting(s) loaded`,
     );
     console.log(`Ajoop RAG warm model ${ragWarmed ? "ready" : "unavailable"}`);
     console.log(`Ajoop SINAMA compatibility ${config.host}:${config.port}${sinama.path}`);

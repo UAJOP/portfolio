@@ -303,11 +303,29 @@ async function main() {
     dates.every((date, index) => index === 0 || dates[index - 1] >= date),
     "build log entries must stay in descending date order",
   );
+  /**
+   * Every entry carries a STABLE, UNIQUE id.
+   *
+   * Three entries share 2026-08-23 and three share 2026-08-22, so a date is not
+   * an identity and an array position is not one either — reordering the log
+   * would silently rename records. Anything that keys off a build-log entry
+   * (the Ajoop embedding corpus does, one chunk id per entry) needs an
+   * identifier that survives both.
+   */
+  const buildLogIds = composed.buildLog.map((entry) => entry.id);
   composed.buildLog.forEach((entry, index) => {
     check(isBilingual(entry.title), `build log[${index}].title must be a { en, tr } pair`);
     check(isBilingual(entry.detail), `build log[${index}].detail must be a { en, tr } pair`);
     check(/^\d{4}-\d{2}-\d{2}$/.test(entry.date), `build log[${index}].date must be ISO formatted`);
+    check(
+      typeof entry.id === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.id),
+      `build log[${index}].id must be a stable kebab-case identifier`,
+    );
   });
+  check(
+    new Set(buildLogIds).size === buildLogIds.length,
+    `build log ids must be unique (${buildLogIds.length} entries, ${new Set(buildLogIds).size} distinct ids)`,
+  );
   check(composed.updatedAt >= dates[0], `meta.updatedAt (${composed.updatedAt}) is older than the newest build log entry (${dates[0]})`);
 
   // --- i18n -----------------------------------------------------------------

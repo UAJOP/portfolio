@@ -2538,6 +2538,7 @@
     },
     "buildLog": [
       {
+        "id": "shared-shell-json-data-v1",
         "date": "2026-08-23",
         "area": "Portfolio",
         "title": {
@@ -2551,6 +2552,7 @@
         "status": "shipped"
       },
       {
+        "id": "react-migration-foundation-v1",
         "date": "2026-08-23",
         "area": "Portfolio",
         "title": {
@@ -2564,6 +2566,7 @@
         "status": "shipped"
       },
       {
+        "id": "asset-lcp-optimization-v1",
         "date": "2026-08-23",
         "area": "Portfolio",
         "title": {
@@ -2577,6 +2580,7 @@
         "status": "shipped"
       },
       {
+        "id": "consistency-footer-qa-hardening",
         "date": "2026-08-22",
         "area": "Portfolio",
         "title": {
@@ -2590,6 +2594,7 @@
         "status": "shipped"
       },
       {
+        "id": "semantic-card-accessibility-cleanup",
         "date": "2026-08-22",
         "area": "Portfolio",
         "title": {
@@ -2603,6 +2608,7 @@
         "status": "shipped"
       },
       {
+        "id": "architecture-v2-production-audit",
         "date": "2026-08-22",
         "area": "Portfolio",
         "title": {
@@ -2616,6 +2622,7 @@
         "status": "shipped"
       },
       {
+        "id": "portfolio-architecture-v2",
         "date": "2026-08-20",
         "area": "Portfolio",
         "title": {
@@ -2629,6 +2636,7 @@
         "status": "shipped"
       },
       {
+        "id": "sinama-semantic-judge-shadow-integration",
         "date": "2026-08-18",
         "area": "SINAMA",
         "title": {
@@ -2642,6 +2650,7 @@
         "status": "integration"
       },
       {
+        "id": "merge-rush-gameplay-pacing-retention",
         "date": "2026-08-14",
         "area": "Merge Rush",
         "title": {

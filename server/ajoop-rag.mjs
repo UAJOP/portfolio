@@ -32,6 +32,16 @@ import {
   scoreCandidate,
   selectTopChunks,
 } from "./ajoop-retrieval.mjs";
+import { createEmbedder, dotProduct } from "./ajoop-embedding.mjs";
+import {
+  AJOOP_VECTOR_BACKENDS,
+  publicVectorBackendStatus,
+  resolveQdrantConfig,
+} from "./ajoop-qdrant-config.mjs";
+import { createQdrantClient, normalizeQdrantError } from "./ajoop-qdrant.mjs";
+import { verifyQdrantCorpus } from "./ajoop-qdrant-readiness.mjs";
+import { PUBLIC_SAFE_FILTER, buildCorpusDescriptor } from "./ajoop-qdrant-points.mjs";
+import { compareRetrieval, createShadowRecorder } from "./ajoop-vector-shadow.mjs";
 
 const RAG_PATH = "/ajoop-rag";
 const RAG_PROTOCOL_VERSION = 1;
@@ -67,7 +77,6 @@ const SKIP_KEYS = new Set(["image", "gallery", "cover", "thumbnail"]);
 const LOCALE_KEYS = new Set(["en", "tr", "de", "es", "fr"]);
 const CHUNK_CHARS = 1100;
 const CHUNK_OVERLAP_LINES = 2;
-const EMBED_BATCH_SIZE = 24;
 const DEFAULT_TOP_K = 4;
 const MAX_HISTORY_ITEMS = 6;
 const MAX_HISTORY_CHARS = 700;
@@ -426,6 +435,63 @@ async function loadJson(file) {
 }
 
 /**
+ * The corpus invariant: EVERY chunk has exactly one unique id.
+ *
+ * A chunk id is the corpus primary key. The in-memory index tolerated a
+ * collision by accident — it is an array, and two entries with the same id both
+ * stayed in it — which hid a real data defect for as long as retrieval was the
+ * only consumer. A keyed store does not tolerate it: two chunks with one id
+ * become one point, and the second record is gone with no error anywhere.
+ *
+ * So this throws, at startup and at ingestion, rather than repairing. A
+ * generated suffix would make the collision invisible again and leave the
+ * canonical data wrong; the fix belongs in data/portfolio/.
+ */
+/**
+ * Total order over scored candidates. No step depends on input order.
+ *
+ * `Array.prototype.sort` is stable, which sounds like enough and is not: a
+ * stable sort preserves INPUT order among equals, and the two backends do not
+ * share an input order. The in-memory path iterates the canonical index; the
+ * Qdrant path iterates whatever order the store returned its hits in. With
+ * equal scores — identical vectors, a flat corpus, a tie between two chunks of
+ * one record — that difference alone produced different answers.
+ *
+ * So ties are broken explicitly, and the last tie-break is total: two distinct
+ * candidates always have distinct chunk ids, so the comparator never returns 0
+ * for different records and the result cannot depend on how they arrived.
+ */
+export function compareRankedCandidates(a, b) {
+  if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
+  if (b.semanticScore !== a.semanticScore) return b.semanticScore - a.semanticScore;
+  /* The record's position in the canonical local index: one shared, stable
+   * notion of "first" that neither backend can influence. */
+  const left = Number.isInteger(a.ordinal) ? a.ordinal : Number.MAX_SAFE_INTEGER;
+  const right = Number.isInteger(b.ordinal) ? b.ordinal : Number.MAX_SAFE_INTEGER;
+  if (left !== right) return left - right;
+  if (a.id === b.id) return 0;
+  return a.id < b.id ? -1 : 1;
+}
+
+export function assertUniqueChunkIds(chunks) {
+  const seen = new Map();
+  const collisions = [];
+  for (const chunk of chunks) {
+    const previous = seen.get(chunk.id);
+    if (previous) collisions.push({ id: chunk.id, first: previous.title, second: chunk.title });
+    else seen.set(chunk.id, chunk);
+  }
+  if (collisions.length) {
+    const sample = collisions
+      .slice(0, 3)
+      .map((item) => `${item.id} ("${item.first}" vs "${item.second}")`)
+      .join("; ");
+    throw new Error(`duplicate chunk id(s): ${collisions.length} collision(s) — ${sample}`);
+  }
+  return chunks.length;
+}
+
+/**
  * The whole embedding corpus: the portfolio datasets, then the master knowledge.
  *
  * The datasets are indexed exactly as before. The master knowledge is appended
@@ -435,7 +501,7 @@ async function loadJson(file) {
  * ingestion again. Restricted material never reaches this function: it is gone
  * from the tree before loadMasterKnowledge() returns.
  */
-async function buildPortfolioChunks() {
+export async function buildPortfolioChunks() {
   const chunks = [];
   for (const dataset of DATASETS) {
     const data = await loadJson(dataset.file);
@@ -474,7 +540,28 @@ async function buildPortfolioChunks() {
 
     if (dataset.mode === "items" && Array.isArray(data)) {
       data.forEach((record, index) => {
-        const id = cleanText(record?.id) || cleanText(record?.date) || String(index + 1);
+        /**
+         * An item collection must carry its OWN identity.
+         *
+         * This used to fall back to the record's date and then to its array
+         * position, and both are wrong for the same reason: neither is stable.
+         * Three build-log entries share 2026-08-23 and three share 2026-08-22,
+         * so the date fallback minted the SAME chunk id for six records — in
+         * memory they survived on distinct text, but a keyed store collapses
+         * them and four canonical records simply disappear. An array index is
+         * no better: reordering the log renames every entry after the move.
+         *
+         * Refusing outright is the point. A missing id is a data defect that
+         * must be fixed in data/portfolio/, not papered over at ingestion time
+         * with a value that happens to be unique today.
+         */
+        const id = cleanText(record?.id);
+        if (!id) {
+          throw new Error(
+            `${dataset.file} entry ${index + 1} has no stable "id"; ` +
+              "item records must carry an explicit identifier",
+          );
+        }
         chunks.push(
           ...chunkRecord({
             source: dataset.id,
@@ -515,6 +602,7 @@ async function buildPortfolioChunks() {
   }
 
   const { kept, duplicates } = dedupeChunks(chunks);
+  assertUniqueChunkIds(kept);
   return {
     chunks: kept,
     /* Returned so initialize() can build the exact-fact store and the alias
@@ -533,25 +621,10 @@ async function buildPortfolioChunks() {
   };
 }
 
-function normalizeVector(vector) {
-  if (!Array.isArray(vector) || !vector.length) return null;
-  let magnitude = 0;
-  for (const value of vector) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return null;
-    magnitude += number * number;
-  }
-  magnitude = Math.sqrt(magnitude);
-  if (!magnitude) return null;
-  return vector.map((value) => Number(value) / magnitude);
-}
-
-function dotProduct(left, right) {
-  const limit = Math.min(left.length, right.length);
-  let score = 0;
-  for (let i = 0; i < limit; i += 1) score += left[i] * right[i];
-  return score;
-}
+/* normalizeVector() and dotProduct() moved to server/ajoop-embedding.mjs
+ * unchanged, so the ingestion command embeds the corpus exactly the way this
+ * module does. Unit-length vectors are what let the in-memory dot product and
+ * a Qdrant Cosine search be compared at all. */
 
 /**
  * The model's final text, with its LINE BOUNDARIES INTACT.
@@ -682,9 +755,78 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
    * ranking loop below simply never sees it.
    */
   let retrievalIndex = [];
+  /* chunk id → the in-memory record, for mapping a Qdrant hit back onto the
+   * candidate the deterministic policy already knows how to score. */
+  let retrievalById = new Map();
   let active = 0;
   let rateWindowStart = Date.now();
   let rateCount = 0;
+
+  /* ---------- persistent vector backend (Ajoop 5.3) ---------- */
+
+  /**
+   * The vector backend, resolved once and never re-read.
+   *
+   * `memory` is the shipped behaviour and the safe resolution of anything wrong
+   * with the configuration. `shadow` runs Qdrant beside the authoritative
+   * in-memory retrieval and changes nothing a visitor sees. `qdrant` lets the
+   * store supply the semantic shortlist, which the SAME deterministic policy
+   * then filters, scores and caps — isolation, reservations and the on-request
+   * exclusion are not re-implemented for a second backend, they are applied to
+   * whatever candidates arrive.
+   */
+  const vectorConfig = resolveQdrantConfig(env);
+  const configuredBackend = vectorConfig.backend;
+  const shadowRecorder = createShadowRecorder({ limit: vectorConfig.shadowHistory });
+  let qdrantClient = null;
+  if (configuredBackend !== AJOOP_VECTOR_BACKENDS.MEMORY) {
+    try {
+      qdrantClient = createQdrantClient({ config: vectorConfig, fetchImpl });
+    } catch (error) {
+      /* Unreachable in practice — the config resolver already demoted an
+       * incomplete configuration to `memory`. Belt and braces: a client that
+       * cannot be built must not become a thrown error at import time. */
+      qdrantClient = null;
+    }
+  }
+
+  /**
+   * Readiness, which is a statement about the CLUSTER, not about local objects.
+   *
+   * `qdrantReady` previously meant "a client was constructed", which is true the
+   * instant a URL and a key parse and remains true while the cluster is empty,
+   * unreachable, holding a half-written corpus, or holding somebody else's data
+   * entirely. It now means verifyQdrantCorpus() passed against the live alias:
+   * reachable, 1024-d, Cosine, our `corpus_owner`, matching schema and index
+   * versions, a manifest marking the build complete, and exactly the point count
+   * that manifest claims.
+   *
+   * Until that check has run and passed, `vectorBackend` is `memory`. The
+   * degradation is the same in both directions — a `shadow` bridge simply never
+   * starts comparing, and a `qdrant` bridge FAILS CLOSED to the in-memory index
+   * rather than serving from a corpus nothing has vouched for.
+   */
+  let vectorBackend = AJOOP_VECTOR_BACKENDS.MEMORY;
+  let qdrantReady = false;
+  let vectorReadiness = { ok: false, reason: qdrantClient ? "unverified" : "not-configured" };
+  /**
+   * How many candidates one search asks for: the whole validated active corpus.
+   *
+   * Not a tunable. Ajoop applies its deterministic policy AFTER semantic
+   * scoring — isolation filters, family reservations, per-entity caps — so a
+   * truncated shortlist can drop the record the policy was about to promote,
+   * and the two backends then disagree for reasons that have nothing to do with
+   * the embedding. Covering the corpus exactly is what makes memory and Qdrant
+   * rankings provably identical for the same query vector.
+   */
+  let candidateLimit = 0;
+  /**
+   * The local corpus, as the descriptor readiness compares the remote one
+   * against: an expected point count, an order-independent fingerprint, and a
+   * content hash per chunk id. Built once, from the same retrieval index the
+   * memory path ranks.
+   */
+  let corpusDescriptor = null;
 
   const fetchJson = async (url, body, timeoutMs = 30000) => {
     if (typeof fetchImpl !== "function") throw new TypeError("fetch unavailable");
@@ -704,30 +846,58 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
     }
   };
 
-  const embedInputs = async (inputs) => {
-    const vectors = [];
-    for (let offset = 0; offset < inputs.length; offset += EMBED_BATCH_SIZE) {
-      const batch = inputs.slice(offset, offset + EMBED_BATCH_SIZE);
-      const parsed = await fetchJson(
-        `${config.ollamaBaseUrl}/api/embed`,
-        {
-          model: embedModel,
-          input: batch,
-          truncate: true,
-          keep_alive: -1,
-        },
-        60000,
-      );
-      if (!Array.isArray(parsed?.embeddings) || parsed.embeddings.length !== batch.length) {
-        throw new Error("malformed embedding response");
-      }
-      parsed.embeddings.forEach((vector) => {
-        const normalized = normalizeVector(vector);
-        if (!normalized) throw new Error("malformed embedding vector");
-        vectors.push(normalized);
-      });
+  /* The shared implementation, so the corpus this server ranks and the corpus
+   * the ingestion command writes to Qdrant are embedded by the same code. */
+  const embedInputs = createEmbedder({
+    baseUrl: config.ollamaBaseUrl,
+    model: embedModel,
+    fetchImpl,
+  });
+
+  /**
+   * Decide whether the configured Qdrant backend may actually be used.
+   *
+   * Read-only and never repairing. A runtime path that could create or fix its
+   * own collection would answer a misconfigured deployment with an empty index
+   * and zero results — which looks exactly like a working system that has
+   * nothing to say, and is the failure mode hardest to notice in production.
+   *
+   * Never throws: an unreachable cluster is a degradation, not an outage.
+   */
+  const verifyVectorBackend = async () => {
+    if (!qdrantClient) {
+      vectorBackend = AJOOP_VECTOR_BACKENDS.MEMORY;
+      qdrantReady = false;
+      candidateLimit = 0;
+      vectorReadiness = { ok: false, reason: "not-configured" };
+      return vectorReadiness;
     }
-    return vectors;
+    if (!corpusDescriptor) {
+      vectorBackend = AJOOP_VECTOR_BACKENDS.MEMORY;
+      qdrantReady = false;
+      candidateLimit = 0;
+      vectorReadiness = { ok: false, reason: "local-corpus-unavailable" };
+      return vectorReadiness;
+    }
+    let verified;
+    try {
+      /* The LOCAL corpus is the source of truth. The remote store is not asked
+       * whether it is healthy; it is asked whether it is this corpus. */
+      verified = await verifyQdrantCorpus(qdrantClient, vectorConfig, { descriptor: corpusDescriptor });
+    } catch (error) {
+      verified = { ok: false, reason: "unreachable", ...(normalizeQdrantError(error) || {}) };
+    }
+    vectorReadiness = verified;
+    qdrantReady = Boolean(verified.ok);
+    /* Fail closed. `qdrant` does NOT get to serve from an unverified corpus;
+     * it falls back to the in-memory index exactly as `shadow` does. */
+    vectorBackend = qdrantReady ? configuredBackend : AJOOP_VECTOR_BACKENDS.MEMORY;
+    /* EXACTLY the verified corpus size — never clamped. A clamp here would turn
+     * the safety ceiling into a silent truncation and break the parity the
+     * whole design rests on; readiness refuses an over-ceiling corpus instead,
+     * so by this line the two numbers are known to be compatible. */
+    candidateLimit = qdrantReady ? verified.corpusPoints : 0;
+    return vectorReadiness;
   };
 
   const initialize = async () => {
@@ -739,6 +909,18 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
         const vectors = await embedInputs(chunks.map((chunk) => chunk.text));
         index = chunks.map((chunk, position) => ({ ...chunk, vector: vectors[position] }));
         retrievalIndex = index.filter((chunk) => chunk.visibility !== "public_on_request");
+        /* The canonical ordinal: one shared, stable notion of "first" for the
+         * ranking tie-break, derived once from the local index so that neither
+         * backend's iteration order can influence it. */
+        retrievalIndex.forEach((chunk, position) => {
+          chunk.ordinal = position;
+        });
+        retrievalById = new Map(retrievalIndex.map((chunk) => [chunk.id, chunk]));
+        corpusDescriptor = buildCorpusDescriptor(retrievalIndex, {
+          embeddingModel: embedModel,
+          vectorSize: vectorConfig.vectorSize,
+          distance: vectorConfig.distance,
+        });
         ready = Boolean(index.length);
         aliasIndex = buildAliasIndex(master.knowledge);
         exactFacts = buildExactFacts(master.knowledge, aliasIndex);
@@ -757,10 +939,15 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
           aliasPhrases: aliasIndex.aliasCount,
           retrievalEntities: entityIndex.entities.length,
         };
+        /* Read-only, and after the in-memory index exists: the bridge is
+         * already able to serve before Qdrant is consulted at all, so a slow or
+         * dead cluster delays readiness rather than deciding it. */
+        await verifyVectorBackend();
         return { ready, chunks: index.length, embedModel, ...corpusStats };
       } catch (error) {
         index = [];
         retrievalIndex = [];
+        retrievalById = new Map();
         ready = false;
         corpusStats = {};
         exactFacts = [];
@@ -768,6 +955,7 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
         entityIndex = { entities: [], aliasCount: 0, byType: () => [] };
         chunkAffinity = new Map();
         masterTitles = new Map();
+        corpusDescriptor = null;
         return { ready: false, chunks: 0, embedModel };
       } finally {
         initializing = null;
@@ -784,18 +972,29 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
    * against the spelling the corpus uses. Only the embedding sees this; the
    * model is given the original question.
    */
-  const retrieve = async (plan, question) => {
-    /* The embedding query is the current question plus the canonical names it
-     * resolved — never earlier conversation. Concatenating old user prose is
-     * what made a new self-contained question embed as a continuation of the
-     * previous topic. */
-    const [queryVector] = await embedInputs([plan.retrievalText]);
+  /**
+   * The deterministic policy, applied to whatever candidates it is handed.
+   *
+   * This is the whole of Ajoop 5.2 retrieval below the embedding: eligibility
+   * filtering, hybrid scoring, slot reservation and the per-entity cap. It was
+   * lifted out of retrieve() UNCHANGED so that a Qdrant shortlist goes through
+   * exactly the same rules as the in-memory one. There is no second policy for
+   * a second backend; there is one policy and two candidate sources.
+   *
+   * The ONLY thing a Qdrant turn changes is WHICH candidates arrive. The
+   * semantic score is always recomputed locally from `queryVector` and the
+   * record's own vector, never taken from the backend: a store's float
+   * arithmetic, its tie ordering and its hit order are all things that can
+   * differ from the in-memory index without anything being wrong, and none of
+   * them may be allowed to decide what a visitor is told.
+   */
+  const rankCandidates = (candidates, plan, question, queryVector) => {
     const terms = lexicalTerms(question);
 
     /* Ineligible candidates are removed BEFORE scoring. A wrong-project record
      * that is out of the running cannot be rescued by similarity, which is the
      * difference between isolation and a penalty. */
-    const ranked = retrievalIndex
+    const ranked = candidates
       .filter((item) => isCandidateEligible(item, chunkAffinity, plan))
       .map((item) => {
         const scored = scoreCandidate(item, dotProduct(queryVector, item.vector), {
@@ -806,7 +1005,7 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
         });
         return { ...item, ...scored, score: scored.finalScore };
       })
-      .sort((a, b) => b.finalScore - a.finalScore);
+      .sort(compareRankedCandidates);
 
     /* An explicitly named entity reserves slots for its OWN records; a
      * professionally framed question with no named entity reserves them for the
@@ -841,6 +1040,187 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
       ? Math.min(8, experienceRecords.length)
       : plan.experienceFocus === "internship" ? 1 : undefined;
     return selectTopChunks(ranked, { topK: selectedTopK, reserveWhen, reservedSlots });
+  };
+
+  /**
+   * One Qdrant search for an ALREADY-COMPUTED query vector.
+   *
+   * Never throws. Every outcome is data, because both callers need to carry on:
+   * shadow mode records the failure and serves the memory answer, and qdrant
+   * mode falls back to the memory ranking rather than failing the turn.
+   *
+   * Hits are mapped back onto the in-memory records by chunk id. A point whose
+   * chunk id is unknown here is a leftover from an older ingestion and is
+   * dropped — using its stored payload instead would let a stale copy of the
+   * corpus answer a question the canonical knowledge no longer supports.
+   */
+  const queryQdrant = async (queryVector) => {
+    const startedAt = Date.now();
+    try {
+      const response = await qdrantClient.search(vectorConfig.collection, {
+        vector: queryVector,
+        /* The COMPLETE validated active corpus, and an exact search over it.
+         * Anything less is an approximation of the candidate set, and the
+         * deterministic policy that runs next is exactly what turns a missing
+         * candidate into a different answer. */
+        limit: candidateLimit,
+        exact: true,
+        filter: PUBLIC_SAFE_FILTER,
+      });
+      const hits = Array.isArray(response?.result) ? response.result : [];
+      const latencyMs = () => Date.now() - startedAt;
+
+      /**
+       * A PARTIAL RESPONSE IS A FAILED RESPONSE.
+       *
+       * Startup readiness proved the collection held all N records; it proves
+       * nothing about what this particular search came back with. Parity in
+       * 5.3 rests on Qdrant supplying the COMPLETE candidate set, because the
+       * deterministic policy that runs next reserves slots, isolates entities
+       * and caps per record — so a shortlist missing one candidate does not
+       * produce a slightly different ranking, it can produce a different
+       * answer. Ranking 190 of 191 candidates and calling it parity is exactly
+       * the failure this release exists to prevent.
+       *
+       * So the response is checked against the validated corpus size and, if
+       * anything is off, the whole set is DISCARDED and the authoritative
+       * in-memory ranking runs instead. No partial set is ever ranked.
+       */
+      const seen = new Set();
+      const candidates = [];
+      for (const hit of hits) {
+        const chunkId = hit?.payload?.chunk_id;
+        const record = chunkId ? retrievalById.get(chunkId) : null;
+        /* A hit the canonical knowledge does not contain means the store has
+         * drifted from the corpus readiness verified. */
+        if (!record) {
+          return { ok: false, candidates: [], hits: hits.length, error: { code: "unknown-candidate-id", status: 0 }, latencyMs: latencyMs() };
+        }
+        if (seen.has(record.id)) {
+          return { ok: false, candidates: [], hits: hits.length, error: { code: "duplicate-candidate-id", status: 0 }, latencyMs: latencyMs() };
+        }
+        seen.add(record.id);
+        candidates.push(record);
+      }
+      /* Raw hits, unique ids and mapped records must all equal the validated
+       * corpus size. Checking all three separately is what distinguishes "the
+       * store returned fewer rows" from "it returned N rows containing a
+       * duplicate" — both are incomplete, and the codes say which. */
+      if (hits.length !== candidateLimit || seen.size !== candidateLimit || candidates.length !== candidateLimit) {
+        return {
+          ok: false,
+          candidates: [],
+          hits: hits.length,
+          expected: candidateLimit,
+          error: { code: "incomplete-candidate-set", status: 0 },
+          latencyMs: latencyMs(),
+        };
+      }
+
+      /* Qdrant contributes the candidate SET and nothing else. Its scores are
+       * deliberately discarded: the ranking is recomputed locally from the same
+       * query vector and the same local vectors the in-memory path uses, so a
+       * float difference or a tie resolved the other way upstream cannot reach
+       * a visitor. Hit order is discarded for the same reason. */
+      return { ok: true, candidates, unknown: 0, hits: hits.length, latencyMs: latencyMs() };
+    } catch (error) {
+      return {
+        ok: false,
+        candidates: [],
+        unknown: 0,
+        hits: 0,
+        error: normalizeQdrantError(error),
+        latencyMs: Date.now() - startedAt,
+      };
+    }
+  };
+
+  /**
+   * `queryText` is the alias-aware retrieval form, not the visitor's message.
+   *
+   * It carries the question verbatim plus any canonical entity names resolved
+   * from it, so a visitor who typed "linkdin" or "sinamanın" still embeds
+   * against the spelling the corpus uses. Only the embedding sees this; the
+   * model is given the original question.
+   */
+  const retrieve = async (plan, question) => {
+    /* The embedding query is the current question plus the canonical names it
+     * resolved — never earlier conversation. Concatenating old user prose is
+     * what made a new self-contained question embed as a continuation of the
+     * previous topic.
+     *
+     * ONE QUERY EMBEDDING PER TURN, whatever the backend. Both retrieval paths
+     * read this same vector; a second /api/embed call because a second store
+     * exists would double the per-turn GPU cost to compare two rankings of the
+     * same question. */
+    const [queryVector] = await embedInputs([plan.retrievalText]);
+
+    const memorySelected = rankCandidates(retrievalIndex, plan, question, queryVector);
+
+    if (vectorBackend === AJOOP_VECTOR_BACKENDS.MEMORY || !qdrantClient || !qdrantReady) {
+      return memorySelected;
+    }
+
+    if (vectorBackend === AJOOP_VECTOR_BACKENDS.SHADOW) {
+      /* Deliberately NOT awaited. The authoritative answer is already decided;
+       * making the visitor wait on a comparison they will never see is the one
+       * way shadow mode could hurt them.
+       *
+       * The turn's diagnostic id is claimed HERE, before the query starts.
+       * Concurrent turns are therefore distinct from the moment they begin, and
+       * whichever Qdrant call finishes first can no longer decide which turn a
+       * comparison belongs to. */
+      const turnId = shadowRecorder.nextTurn();
+      const memoryIds = memorySelected.map((item) => item.id);
+      shadowRecorder.track(
+        turnId,
+        queryQdrant(queryVector)
+          .then((outcome) => {
+            if (!outcome.ok) {
+              shadowRecorder.recordError({ turnId, error: outcome.error, latencyMs: outcome.latencyMs, memoryIds });
+              return;
+            }
+            const shadowSelected = rankCandidates(outcome.candidates, plan, question, queryVector);
+            shadowRecorder.record({
+              turnId,
+              comparison: compareRetrieval({ memoryIds, qdrantIds: shadowSelected.map((item) => item.id) }),
+              latencyMs: outcome.latencyMs,
+              topK,
+              candidates: outcome.candidates.length,
+              candidateLimit,
+            });
+          })
+          .catch(() => {
+            /* queryQdrant() does not throw, and rankCandidates() is pure. This
+             * exists so that an unforeseen exception can never surface as an
+             * unhandled rejection that takes the bridge process down. */
+            shadowRecorder.recordError({ turnId, error: { code: "internal", status: 0 }, memoryIds });
+          }),
+      );
+      return memorySelected;
+    }
+
+    /* backend === qdrant. The store supplies the shortlist; the policy above
+     * still decides what reaches the model. An empty or failed search falls
+     * back to the in-memory ranking, so the deterministic fallback that the
+     * rest of Ajoop is built on survives a backend outage. */
+    const turnId = shadowRecorder.nextTurn();
+    const outcome = await queryQdrant(queryVector);
+    const memoryIds = memorySelected.map((item) => item.id);
+    if (!outcome.ok) {
+      shadowRecorder.recordError({ turnId, error: outcome.error, latencyMs: outcome.latencyMs, memoryIds });
+      return memorySelected;
+    }
+    const qdrantSelected = rankCandidates(outcome.candidates, plan, question, queryVector);
+    shadowRecorder.record({
+      turnId,
+      comparison: compareRetrieval({ memoryIds, qdrantIds: qdrantSelected.map((item) => item.id) }),
+      latencyMs: outcome.latencyMs,
+      topK,
+      candidates: outcome.candidates.length,
+      candidateLimit,
+    });
+    return qdrantSelected.length ? qdrantSelected : memorySelected;
   };
 
   const generateOnce = async (question, locale, history, retrieved, strategy, repairFlags = []) => {
@@ -1018,6 +1398,12 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
            * position, so the browser panel and the launcher probe are
            * unaffected by what is appended here. */
           ...corpusStats,
+          /* Three non-sensitive fields: which backend is live, which one was
+           * asked for, and whether a Qdrant client exists. No hostname, no
+           * collection name, no reason code, no API key — health is a PUBLIC
+           * endpoint and internal infrastructure does not belong in it. The
+           * full picture is server-side, through status() and shadowReport(). */
+          ...publicVectorBackendStatus(vectorConfig, { qdrantReady, activeBackend: vectorBackend }),
         },
       };
     }
@@ -1221,6 +1607,37 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
     config,
     initialize,
     handle,
-    status: () => ({ ready, chunks: index.length, embedModel, model: generationModel, ...corpusStats }),
+    status: () => ({
+      ready,
+      chunks: index.length,
+      embedModel,
+      model: generationModel,
+      ...corpusStats,
+      ...publicVectorBackendStatus(vectorConfig, { qdrantReady, activeBackend: vectorBackend }),
+      /* Why the backend is where it is. Reason codes and counts only — no
+       * hostname, no collection name, no credential. Server-side surface. */
+      vectorReadiness: { ...vectorReadiness },
+      candidateLimit,
+      shadow: shadowRecorder.summary(),
+    }),
+    /**
+     * The bounded shadow comparison, for QA and local debugging.
+     *
+     * Reachable only by importing this module — never through handle(), and so
+     * never through the public HTTPS edge. It contains chunk ids, ranks and an
+     * internal diagnostic turn number; it contains no question, no answer and
+     * no visitor data of any kind.
+     */
+    shadowReport: () => shadowRecorder.report(),
+    /**
+     * Settle background shadow work.
+     *
+     * With a turn id, settles that ONE turn. Without, settles a snapshot of
+     * whatever is in flight right now — deliberately a snapshot, so a busy
+     * bridge cannot keep this promise alive indefinitely by starting new turns.
+     */
+    shadowSettled: (turnId) => shadowRecorder.settled(turnId),
+    /** Re-run read-only cluster validation. Exposed for QA and operators. */
+    verifyVectorBackend,
   };
 }
