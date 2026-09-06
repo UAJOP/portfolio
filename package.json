@@ -21,6 +21,7 @@
     "qa:ajoop:qdrant": "node scripts/qa-ajoop-qdrant.mjs",
     "ajoop:qdrant:ingest": "node scripts/ajoop-qdrant-ingest.mjs",
     "ajoop:qdrant:smoke": "node scripts/ajoop-qdrant-smoke.mjs",
+    "ajoop:qdrant:shadow-check": "node scripts/ajoop-qdrant-shadow-check.mjs",
     "qa:ajoop:release": "node scripts/qa-ajoop-release.mjs",
     "qa:ajoop:release:live": "node scripts/qa-ajoop-release-live.mjs",
     "qa:ajoop:sinama": "node scripts/qa-ajoop-sinama.mjs",
