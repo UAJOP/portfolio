@@ -40,11 +40,11 @@ const result = {
   },
   internal: {
     observedToolEvents: [
-      { status: "success", tool: "secret.tool", arguments: { secret: true } },
-      { status: "invalid-arguments", tool: "secret.tool", arguments: { secret: true } },
-      { status: "timeout", tool: "secret.tool", result: "secret" },
+      { status: "success", result_code: "ok", tool: "secret.tool", arguments: { secret: true } },
+      { status: "rejected", result_code: "invalid-arguments", tool: "secret.tool", arguments: { secret: true } },
+      { status: "error", result_code: "timeout", tool: "secret.tool", result: "secret" },
     ],
-    toolEvents: [{ status: "success", tool: "secret.tool" }],
+    toolEvents: [{ status: "success", result_code: "ok", tool: "secret.tool" }],
     trustedToolContextChars: 1234,
   },
 };
