@@ -552,6 +552,72 @@
       }
     },
     {
+      "id": "R-01",
+      "category": "owner_reference",
+      "locale": "en",
+      "question": "What is C# used for in his work?",
+      "expect": {
+        "scope": "portfolio",
+        "answer_mode": "portfolio-fact",
+        "min_sources": 1,
+        "max_generation_attempts": 2
+      },
+      "policy": {
+        "fallback": "allowed",
+        "repair": "allowed"
+      }
+    },
+    {
+      "id": "R-02",
+      "category": "owner_reference",
+      "locale": "en",
+      "question": "What is GitHub used for in his workflow?",
+      "expect": {
+        "scope": "portfolio",
+        "answer_mode": "portfolio-fact",
+        "min_sources": 1,
+        "max_generation_attempts": 2
+      },
+      "policy": {
+        "fallback": "allowed",
+        "repair": "allowed"
+      }
+    },
+    {
+      "id": "R-03",
+      "category": "owner_reference",
+      "locale": "en",
+      "question": "What is C# used for at work?",
+      "expect": {
+        "scope": "general",
+        "answer_mode": "general",
+        "tool_forbidden": true,
+        "max_sources": 0,
+        "max_generation_attempts": 2
+      },
+      "policy": {
+        "fallback": "allowed",
+        "repair": "allowed"
+      }
+    },
+    {
+      "id": "R-04",
+      "category": "owner_reference",
+      "locale": "en",
+      "question": "What is C# used for in her work?",
+      "expect": {
+        "scope": "general",
+        "answer_mode": "general",
+        "tool_forbidden": true,
+        "max_sources": 0,
+        "max_generation_attempts": 2
+      },
+      "policy": {
+        "fallback": "allowed",
+        "repair": "allowed"
+      }
+    },
+    {
       "id": "F-01",
       "category": "ambiguous",
       "locale": "tr",

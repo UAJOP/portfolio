@@ -22,6 +22,7 @@
  * costs a slower answer; a false route costs a confidently wrong one.
  */
 import { foldQuestion, hasPhrase, removePhrase } from "./ajoop-text.mjs";
+import { mentionsPortfolioOwner } from "./ajoop-entities.mjs";
 
 /** Intl tags for the five supported locales. Formatting only, no facts. */
 const INTL_LOCALES = Object.freeze({
@@ -62,9 +63,6 @@ const BASE_FILLERS = new Set([
 const POSSESSIVE_FILLERS = new Set([
   "nedir", "nelerdir", "kimdir", "hakkinda", "what", "whats", "is", "are", "was", "about",
 ]);
-
-/** Phrases that say the question is about Kaan rather than about a concept. */
-const SUBJECT_SIGNALS = Object.freeze(["kaan", "balci", "balcikaan", "uajop", "his", "onun"]);
 
 const asText = (value) => {
   if (value === null || value === undefined) return "";
@@ -488,7 +486,7 @@ function hasValue(value) {
 
 /* ---------- the router ---------- */
 
-const mentionsSubject = (folded) => SUBJECT_SIGNALS.some((signal) => hasPhrase(folded, signal));
+const mentionsSubject = (folded) => mentionsPortfolioOwner(folded);
 
 /**
  * The fact this question asks for, or null.
@@ -514,7 +512,7 @@ export function resolveExactFact(question, facts) {
           BASE_FILLERS.has(word) ||
           fact.fillers.has(word) ||
           (subject && POSSESSIVE_FILLERS.has(word)) ||
-          SUBJECT_SIGNALS.some((signal) => hasPhrase(word, signal)),
+          mentionsPortfolioOwner(word),
       );
       if (!allowed) continue;
       const weight = topic.split(" ").length * 1000 + topic.length;

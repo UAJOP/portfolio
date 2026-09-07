@@ -60,8 +60,11 @@ const CONTEXT_SENSITIVE = new Set(["GitHub", "LinkedIn", "C#", ".NET"]);
  * that could itself be part of the entity's name would make the gate vacuous,
  * which is why "github" and "repo" are deliberately absent.
  */
+const PORTFOLIO_OWNER_REFERENCES = Object.freeze([
+  "kaan", "balci", "balcikaan", "uajop", "onun", "his",
+]);
+
 const PORTFOLIO_SIGNALS = Object.freeze([
-  "kaan", "balci", "onun", "his",
   "proje", "project", "portfolyo", "portfolio", "case study", "vaka",
   "deneyim", "experience", "tecrube", "gecmisi",
   "yapti", "yapmis", "gelistirdi", "gelistirmis", "kurdu", "yazdi",
@@ -116,9 +119,16 @@ export function buildAliasIndex(knowledge) {
   };
 }
 
+/** Whether the question explicitly refers to the portfolio owner. */
+export function mentionsPortfolioOwner(value) {
+  const folded = foldQuestion(value);
+  return PORTFOLIO_OWNER_REFERENCES.some((signal) => hasPhrase(folded, signal));
+}
+
 /** Whether the question shows it is about Kaan's work rather than a concept. */
 function hasPortfolioSignal(folded) {
-  return PORTFOLIO_SIGNALS.some((signal) => hasPhrase(folded, signal));
+  return mentionsPortfolioOwner(folded)
+    || PORTFOLIO_SIGNALS.some((signal) => hasPhrase(folded, signal));
 }
 
 /**
@@ -140,12 +150,15 @@ function hasPortfolioSignal(folded) {
 export function resolveEntities(question, index) {
   const folded = foldQuestion(question);
   if (!folded || !index?.entities?.length) return [];
+  const padded = ` ${folded} `;
   const dotless = foldPreservingDotless(question);
   const signalled = hasPortfolioSignal(folded);
   const resolved = [];
 
   for (const entity of index.entities) {
-    const matched = entity.aliases.find((alias) => hasPhrase(folded, alias));
+    const matched = entity.aliases.find((alias) =>
+      entity.exactAliases ? padded.includes(` ${alias} `) : hasPhrase(folded, alias),
+    );
     if (!matched) continue;
     if (!signalled) {
       if (entity.contextSensitive) continue;
