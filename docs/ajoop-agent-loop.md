@@ -301,6 +301,15 @@ the missing suite would have run. Every planner response is a fixture — **no
 live model** — while the registry, executor and canonical corpus underneath are
 the real ones.
 
+`npm run qa:ajoop:golden` adds the end-to-end golden suite: 46 human-reviewable
+cases that follow a real visitor sentence through planner, tool selection,
+canonical arguments, execution, attribution, grounding and SINAMA projection.
+It is offline and joins the same two command graphs; `qa:ajoop:golden:live`
+runs the same cases against the real local model and is deliberately NOT part
+of ordinary QA. See [ajoop-golden-suite.md](ajoop-golden-suite.md) — in
+particular the note on why "expected tool accuracy" is reported as
+`n/a (scripted)` offline.
+
 ## Still not implemented
 
 No web search, MCP, email, GitHub actions, contact writes, n8n path, long-term
