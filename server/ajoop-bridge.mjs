@@ -239,9 +239,12 @@ const telemetryPath = runtimeEnv.AJOOP_TELEMETRY_PATH
   ? resolve(runtimeEnv.AJOOP_TELEMETRY_PATH)
   : resolve(dirname(fileURLToPath(import.meta.url)), "..", ".ajoop-runtime", "telemetry.json");
 const telemetryWriter = createAjoopTelemetryWriter({ filePath: telemetryPath });
+/* Keep the aggregate reader as an operator-only capability. It is never logged
+ * and is consumed only by the sanitized snapshot schema below. */
+const readAgentMetrics = agent.metrics;
 let telemetryWriteWarned = false;
 const telemetrySnapshot = () => telemetry.snapshot({
-  agentMetrics: agent.metrics(),
+  agentMetrics: readAgentMetrics(),
   ragStatus: rag.status(),
   bridgeStats: bridge.stats(),
 });
