@@ -138,6 +138,89 @@ for (const question of ELIGIBLE) {
   check(`eligible: ${question}`, plan(question).contextEligible, true);
 }
 
+/* ---------- B2. a catalogued technology is not a portfolio signal ----------
+ *
+ * The corpus lists C#, .NET and GitHub because Kaan uses them, and for a while
+ * that membership alone made "What is C# used for?" a portfolio question: the
+ * explicit-entity short-circuit fired before the definition-frame rule, so the
+ * turn retrieved his skills section and answered in PORTFOLIO scope. The pair
+ * that matters is the contrast — the same technology, with and without a
+ * subject that is actually his.
+ */
+/**
+ * RESOLUTION IS NOT AUTHORITY, and both halves are asserted.
+ *
+ * These two phrasings do resolve their entity today, which makes them the pair
+ * that can prove the actual claim: Ajoop still RECOGNISES that the sentence
+ * names C# or GitHub — recognition feeds chunk affinity and is worth keeping —
+ * and that recognition no longer BUYS portfolio eligibility.
+ *
+ * Asserting only `contextEligible === false` would be satisfied just as well by
+ * a future regression that stopped resolving these aliases altogether, because
+ * the turn would then fall to the plain definition-frame branch and look
+ * identical from the outside. The entity assertion is what separates the two.
+ *
+ * The expected TYPE comes from the resolver's own classification, not from a
+ * technology list copied into this file.
+ */
+for (const [question, expectedType] of [
+  ["What is C# used for?", ENTITY_TYPES.TECHNOLOGY],
+  ["What is GitHub used for?", ENTITY_TYPES.CHANNEL],
+]) {
+  const result = plan(question);
+  const resolved = result.currentEntities;
+  ok(`the world entity still resolves: ${question}`, resolved.length > 0);
+  ok(
+    `and keeps its non-owned type: ${question}`,
+    resolved.some((entity) => entity.type === expectedType),
+  );
+  check(`but it grants no eligibility: ${question}`, result.contextEligible, false);
+  check(`for the world-entity reason: ${question}`, result.contextReason, "world-entity-definition");
+  check(`and locks no project: ${question}`, result.activeProjects.length, 0);
+}
+/**
+ * The same routing outcome, reached without any entity at all.
+ *
+ * Whether an alias survives tokenisation is orthogonal to the rule under test
+ * ("What is C# used for?" resolves C#, "what is .net" does not), so these
+ * phrasings assert the general routing only. Requiring them to resolve would
+ * turn this block into a tokeniser test and would pressure the production fix
+ * into solving a problem it should not own.
+ */
+for (const question of ["C# nedir?", "what is .net"]) {
+  const result = plan(question);
+  check(`world-entity definition stays general: ${question}`, result.contextEligible, false);
+  ok(
+    `for a general reason: ${question}`,
+    ["world-entity-definition", "definition-frame"].includes(result.contextReason),
+  );
+  check(`and locks no project: ${question}`, result.activeProjects.length, 0);
+}
+/* The same words, once the question is about him, stay portfolio. */
+for (const question of [
+  "Kaan C# biliyor mu?",
+  "Kaan C# ile ne yaptı?",
+  "Kaan'ın GitHub adresi nedir?",
+  "C# projelerinde ne yaptı?",
+]) {
+  check(`explicit person or framing stays portfolio: ${question}`, plan(question).contextEligible, true);
+}
+/* A definition frame naming one of HIS entities is still portfolio: the rule
+ * keys on who owns the subject, not on the shape of the sentence. */
+for (const question of ["SINAMA nedir?", "What is SINAMA?"]) {
+  check(`owned-entity definition stays portfolio: ${question}`, plan(question).contextEligible, true);
+}
+/* The narrowing must not reach past the current turn: an inherited project
+ * subject still makes a bare follow-up eligible. */
+{
+  const result = plan("peki hangi teknolojiler kullanılıyor?", [
+    { role: "user", content: "Kaan'ın SINAMA projesini anlat." },
+    { role: "assistant", content: "SINAMA bir değerlendirme platformu." },
+  ]);
+  check("[follow-up] an inherited project keeps the turn eligible", result.contextEligible, true);
+  check("[follow-up] and it is still recognised as a follow-up", result.followUp, true);
+}
+
 /* ---------- C. entity typing drives isolation differently ---------- */
 
 check("a project question locks to that project", plan("sinamanın stacki ne").activeProjects.join(), "SINAMA");
