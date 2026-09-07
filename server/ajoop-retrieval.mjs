@@ -77,17 +77,16 @@ export const ENTITY_TYPES = Object.freeze({
 });
 
 /**
- * The entity kinds that belong to Kaan rather than to the world.
+ * The entity kinds whose name alone makes a question about Kaan.
  *
- * Naming one of these is a portfolio signal on its own. A TECHNOLOGY or a
- * CHANNEL is not: the corpus lists C#, .NET, GitHub and LinkedIn because he
- * uses them, and that catalogue membership says nothing about whether a given
- * question is about him.
+ * A PERSON or PROJECT is a portfolio signal on its own. An ORGANIZATION is
+ * not: "CBOT nedir?" can ask what the company is without asking about Kaan's
+ * relationship to it, just as a TECHNOLOGY or CHANNEL can be named without
+ * making the question about his portfolio.
  */
 const OWNED_ENTITY_TYPES = new Set([
   ENTITY_TYPES.PERSON,
   ENTITY_TYPES.PROJECT,
-  ENTITY_TYPES.ORGANIZATION,
 ]);
 
 /**
@@ -378,12 +377,12 @@ export function assessContextEligibility({ question, currentEntities, inheritedE
   if (currentEntities.length) {
     /**
      * A named entity is a reason to retrieve only when the entity is one of
-     * KAAN'S — a person, a project, an employer. A technology or a channel is
-     * a thing in the world that the corpus happens to catalogue because he
-     * uses it, and "What is C# used for?" is a question about C#, not about
-     * him. Answering it from his skills section is the same class of mistake
-     * as answering "proje yönetimi nedir?" from his project list, which the
-     * definition-frame rule below already refuses.
+     * KAAN'S — a person or a project. An organization, technology or channel
+     * is a thing in the world that the corpus happens to catalogue because he
+     * worked with or uses it. "What is CBOT?" and "What is C# used for?" do
+     * not ask about him. Answering them from his experience or skills is the
+     * same class of mistake as answering "proje yönetimi nedir?" from his
+     * project list, which the definition-frame rule below already refuses.
      *
      * So the short-circuit is narrowed rather than removed: an owned entity
      * still wins immediately, and a technology-only mention still wins unless
@@ -455,7 +454,10 @@ export function planRetrievalTurn({ question, history = [], entityIndex }) {
 
   const active = [...currentEntities, ...(inheritedEntity ? [inheritedEntity] : [])];
   const activeProjects = namesOfType(active, ENTITY_TYPES.PROJECT);
-  const activeOrganizations = namesOfType(active, ENTITY_TYPES.ORGANIZATION);
+  /* Resolution is not authority. Keep a bare organization definition visible
+   * in `currentEntities`, but do not let it select the experience strategy or
+   * filter the corpus after eligibility has rejected the turn. */
+  const activeOrganizations = eligible ? namesOfType(active, ENTITY_TYPES.ORGANIZATION) : [];
   const framedTypes = framedRecordTypes(question);
   const experienceFocus = experienceRecordFocus(question, framedTypes);
   return {

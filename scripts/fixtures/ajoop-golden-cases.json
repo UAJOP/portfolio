@@ -425,6 +425,30 @@
       }
     },
     {
+      "id": "D-05",
+      "category": "evidence_lookup",
+      "locale": "tr",
+      "question": "Kaan CBOT'ta ne yaptı?",
+      "expect": {
+        "scope": "portfolio",
+        "tool": "portfolio.evidence_lookup",
+        "tool_input": {
+          "entity": "CBOT"
+        },
+        "arguments": {
+          "entity_id": "experience:cbot"
+        },
+        "tool_required": true,
+        "source_entity": "experience:cbot",
+        "min_sources": 1,
+        "max_generation_attempts": 2
+      },
+      "policy": {
+        "fallback": "allowed",
+        "repair": "allowed"
+      }
+    },
+    {
       "id": "E-01",
       "category": "general_zero_tool",
       "locale": "tr",
@@ -481,6 +505,40 @@
       "category": "general_zero_tool",
       "locale": "en",
       "question": "What is retrieval augmented generation?",
+      "expect": {
+        "scope": "general",
+        "answer_mode": "general",
+        "tool_forbidden": true,
+        "max_sources": 0,
+        "max_generation_attempts": 2
+      },
+      "policy": {
+        "fallback": "allowed",
+        "repair": "allowed"
+      }
+    },
+    {
+      "id": "E-05",
+      "category": "general_zero_tool",
+      "locale": "tr",
+      "question": "CBOT nedir?",
+      "expect": {
+        "scope": "general",
+        "answer_mode": "general",
+        "tool_forbidden": true,
+        "max_sources": 0,
+        "max_generation_attempts": 2
+      },
+      "policy": {
+        "fallback": "allowed",
+        "repair": "allowed"
+      }
+    },
+    {
+      "id": "E-06",
+      "category": "general_zero_tool",
+      "locale": "en",
+      "question": "What is CBOT?",
       "expect": {
         "scope": "general",
         "answer_mode": "general",
