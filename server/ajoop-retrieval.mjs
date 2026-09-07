@@ -21,7 +21,7 @@
  * is testable without Ollama.
  */
 import { foldQuestion, hasPhrase, tokenize } from "./ajoop-text.mjs";
-import { resolveEntities } from "./ajoop-entities.mjs";
+import { mentionsPortfolioOwner, resolveEntities } from "./ajoop-entities.mjs";
 
 /**
  * Hybrid ranking weights.
@@ -229,7 +229,12 @@ export function buildEntityIndex(knowledge, aliasIndex) {
   const claimed = new Set(entities.flatMap((entity) => entity.aliases));
   const known = new Set(entities.map((entity) => entity.canonical));
 
-  const addDerived = (canonical, type, extraAliases = []) => {
+  const addDerived = (
+    canonical,
+    type,
+    extraAliases = [],
+    { contextSensitive = false, exactAliases = false } = {},
+  ) => {
     const name = String(canonical || "").trim();
     if (!name || known.has(name)) return;
     const aliases = [foldQuestion(name), ...extraAliases.map(foldQuestion)].filter(Boolean);
@@ -240,7 +245,8 @@ export function buildEntityIndex(knowledge, aliasIndex) {
       descriptor: name,
       aliases: [...new Set(aliases)].sort((left, right) => right.length - left.length),
       ambiguousSpellings: [],
-      contextSensitive: false,
+      contextSensitive,
+      exactAliases,
       type,
       derived: true,
     });
@@ -258,6 +264,14 @@ export function buildEntityIndex(knowledge, aliasIndex) {
   for (const name of organizations) {
     const short = shortFormOf(name);
     addDerived(name, ENTITY_TYPES.ORGANIZATION, shortForms.get(short) === 1 ? [short] : []);
+  }
+
+  /* Programming languages are canonical portfolio-known technologies, even
+   * when they do not need a curated typo/alias entry. They remain
+   * context-sensitive: naming Python or JavaScript alone grants no portfolio
+   * authority. */
+  for (const name of knowledge?.technical_capabilities?.core_programming_languages || []) {
+    addDerived(name, ENTITY_TYPES.TECHNOLOGY, [], { contextSensitive: true, exactAliases: true });
   }
 
   for (const name of Object.keys(knowledge?.projects?.flagship || {})) addDerived(name, ENTITY_TYPES.PROJECT);
@@ -394,6 +408,7 @@ export function assessContextEligibility({ question, currentEntities, inheritedE
     const ownsSubject = currentEntities.some((entity) => OWNED_ENTITY_TYPES.has(entity.type));
     if (ownsSubject) return { eligible: true, reason: "explicit-entity" };
     if (anyPhrase(folded, DEFINITION_FRAME) && !anyPhrase(folded, PORTFOLIO_FRAMING)) {
+      if (mentionsPortfolioOwner(folded)) return { eligible: true, reason: "owner-reference" };
       return { eligible: false, reason: "world-entity-definition" };
     }
     return { eligible: true, reason: "explicit-entity" };

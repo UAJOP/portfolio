@@ -15,7 +15,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadMasterKnowledge } from "../server/ajoop-knowledge.mjs";
-import { buildAliasIndex } from "../server/ajoop-entities.mjs";
+import { buildAliasIndex, mentionsPortfolioOwner } from "../server/ajoop-entities.mjs";
 import {
   ENTITY_TYPES,
   buildChunkAffinity,
@@ -74,6 +74,17 @@ for (const canonical of ["Punto Organization", "Ocean's Team"]) {
   ok(`${canonical} was derived from the knowledge`, Boolean(entity));
   check(`${canonical} is an organization`, entity?.type, ENTITY_TYPES.ORGANIZATION);
 }
+for (const canonical of ["Python", "JavaScript"]) {
+  const entity = entityIndex.entities.find((item) => item.canonical === canonical);
+  ok(`${canonical} is derived from canonical programming capabilities`, Boolean(entity?.derived));
+  check(`${canonical} is a context-sensitive technology`, entity?.type, ENTITY_TYPES.TECHNOLOGY);
+  check(`${canonical} does not become a free-standing portfolio signal`, plan(`What is ${canonical} used for?`).contextEligible, false);
+}
+check(
+  "JavaScript does not also resolve the suffix-tolerant Java entity",
+  plan("What is JavaScript used for in his website?").currentEntities.map((entity) => entity.canonical).join(),
+  "JavaScript",
+);
 /* A short form is only granted when it is unique, which is why neither
  * hospital project may claim the word "hospital". */
 ok("punto gets its short form", plan("punto'da ne yaptı").activeOrganizations.includes("Punto Organization"));
@@ -177,6 +188,52 @@ for (const [question, expectedType] of [
   check(`but it grants no eligibility: ${question}`, result.contextEligible, false);
   check(`for the world-entity reason: ${question}`, result.contextReason, "world-entity-definition");
   check(`and locks no project: ${question}`, result.activeProjects.length, 0);
+}
+
+/* ---------- B2b. portfolio-owner provenance survives entity resolution ----------
+ *
+ * "his" and "onun" already mean the portfolio owner in the exact-fact and
+ * entity layers. Definition-style eligibility must preserve that authority;
+ * generic relation nouns such as work/research/website/workflow grant none.
+ */
+for (const [question, canonical] of [
+  ["What is C# used for in his work?", "C#"],
+  ["What is GitHub used for in his workflow?", "GitHub"],
+  ["What is Python used for in his research?", "Python"],
+  ["What is JavaScript used for in his website?", "JavaScript"],
+]) {
+  const result = plan(question);
+  check(`owner reference is recognized: ${question}`, mentionsPortfolioOwner(question), true);
+  ok(`the portfolio-known entity resolves: ${question}`, result.currentEntities.some((entity) => entity.canonical === canonical));
+  check(`owner reference grants eligibility: ${question}`, result.contextEligible, true);
+  check(`owner-reference provenance is reported: ${question}`, result.contextReason, "owner-reference");
+}
+
+{
+  const question = "onun C# deneyimi nedir?";
+  const result = plan(question);
+  check("the Turkish owner reference is recognized", mentionsPortfolioOwner(question), true);
+  check("the Turkish owner-reference question stays eligible", result.contextEligible, true);
+}
+
+for (const question of [
+  "What is C# used for?",
+  "What is C# used for at work?",
+  "What is C# used for in her work?",
+  "What is C# used for in their work?",
+]) {
+  const result = plan(question);
+  check(`no Kaan owner reference is invented: ${question}`, mentionsPortfolioOwner(question), false);
+  check(`generic definition remains general: ${question}`, result.contextEligible, false);
+  check(`generic definition keeps its world-entity reason: ${question}`, result.contextReason, "world-entity-definition");
+}
+
+{
+  const withOwner = "What is C# used for in his work?";
+  const withoutOwner = withOwner.replace("his ", "");
+  check("mutation removes the only owner-reference authority", mentionsPortfolioOwner(withoutOwner), false);
+  check("removing his makes the same C# definition ineligible", plan(withoutOwner).contextEligible, false);
+  check("the independent at-work negative remains ineligible", plan("What is C# used for at work?").contextEligible, false);
 }
 /**
  * The same routing outcome, reached without any entity at all.
