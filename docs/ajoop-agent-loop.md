@@ -245,6 +245,16 @@ stay in `observedToolEvents`, which the SINAMA adapter never reads.
 
 Rollout path: `off` → `shadow` parity → `on`.
 
+At startup, `shadow` and `on` perform one planner-only warm-up after RAG
+initialization and the existing RAG generator warm-up. It uses the production
+planner model, native fetch path, planning configuration and registry-derived
+tool declarations, with a startup-only 20-second allowance for a cold Ollama
+runner transition. Its output is discarded without creating a tool turn, so it
+cannot execute a tool, emit an event, add trusted context or change
+`agent.metrics()`. `off` performs no planner fetch. Warm-up failure is logged as
+unavailable and does not block Bridge startup; the normal per-turn planner
+timeout remains unchanged.
+
 ## No-tool compatibility
 
 When the planner asks for no tool, final generation receives no

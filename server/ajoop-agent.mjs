@@ -110,6 +110,9 @@ export const AJOOP_AGENT_PLANNING = Object.freeze({
   }),
 });
 
+/** Startup-only allowance for a cold Ollama planner runner transition. */
+export const AJOOP_AGENT_PREWARM_TIMEOUT_MS = 20_000;
+
 /**
  * Read the rollout mode. EXACT MATCH ONLY.
  *
@@ -353,10 +356,16 @@ export function createAjoopAgent({
    * open for the full generation timeout. Half, capped at 12s. */
   const plannerTimeoutMs = Math.max(1000, Math.min(Math.floor((rag.config?.ollamaTimeoutMs || 45000) / 2), 12000));
 
-  const callPlanner = async (messages) => {
+  /**
+   * The single planner transport path. Visitor turns use the ordinary bounded
+   * timeout; startup prewarm may supply its one-time cold-runner allowance.
+   * Model, planning shape, declarations, URL and fetch implementation remain
+   * identical in both cases.
+   */
+  const callPlanner = async (messages, timeoutMs = plannerTimeoutMs) => {
     if (typeof fetchImpl !== "function") throw new TypeError("fetch unavailable");
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), plannerTimeoutMs);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await fetchImpl(`${baseUrl}/api/chat`, {
         method: "POST",
@@ -373,6 +382,27 @@ export function createAjoopAgent({
       return await response.json();
     } finally {
       clearTimeout(timer);
+    }
+  };
+
+  /**
+   * Warm the planner runner without creating an execution turn. The response
+   * is deliberately ignored: even a valid tool call cannot reach the registry,
+   * event sidecar, answer context or aggregate counters from this path.
+   */
+  const prewarm = async () => {
+    if (mode === AJOOP_AGENT_MODES.OFF) return "skipped";
+    try {
+      await callPlanner(
+        [
+          { role: "system", content: PLANNER_SYSTEM },
+          { role: "user", content: "Warm the tool-selection path. Reply DONE without calling a tool." },
+        ],
+        AJOOP_AGENT_PREWARM_TIMEOUT_MS,
+      );
+      return "ready";
+    } catch (error) {
+      return "unavailable";
     }
   };
 
@@ -568,6 +598,7 @@ export function createAjoopAgent({
     config: rag.config,
     mode,
     handle,
+    prewarm,
     initialize: (...args) => rag.initialize(...args),
     status: () => ({ ...rag.status(), agent: { mode, steps: stepCeiling, tools: toolDeclarations.length } }),
     /** The model-facing declarations, for QA. Frozen, manifest-derived. */

@@ -27,6 +27,7 @@ import { fileURLToPath } from "node:url";
 import {
   AJOOP_AGENT_MODES,
   AJOOP_AGENT_PLANNING,
+  AJOOP_AGENT_PREWARM_TIMEOUT_MS,
   MAX_AGENT_STEPS,
   MAX_TRUSTED_TOOL_CONTEXT_CHARS,
   buildOllamaToolDeclarations,
@@ -211,6 +212,127 @@ function createFakePlanner(responses) {
   return { fetchImpl, sent, calls: () => sent.length };
 }
 
+/**
+ * A controlled clock, so a 20-second allowance can be PROVEN in microseconds.
+ *
+ * `callPlanner` schedules its abort with the ambient `setTimeout`, so the only
+ * way to observe the duration it actually asked for — rather than the duration
+ * a comment claims — is to be the thing it asked. Every schedule is recorded
+ * with its delay, whether it fired, and whether `clearTimeout` was called for
+ * it, which is what turns "the timer is cleaned up in a finally" from a source
+ * reading into an assertion.
+ *
+ * `tick()` deliberately uses the REAL timer captured before installation: the
+ * suite still needs to yield to the event loop between steps, and a fake clock
+ * that also faked its own yielding could never let a rejected fetch propagate.
+ */
+function createFakeClock() {
+  const realSetTimeout = globalThis.setTimeout;
+  const realClearTimeout = globalThis.clearTimeout;
+  const timers = new Map();
+  const log = [];
+  let nextId = 1;
+  let now = 0;
+  return {
+    log,
+    pending: () => timers.size,
+    install() {
+      globalThis.setTimeout = (fn, delay = 0, ...args) => {
+        const id = nextId;
+        nextId += 1;
+        timers.set(id, { fn, args, at: now + Number(delay) });
+        log.push({ id, delay: Number(delay), fired: false, cleared: false });
+        return id;
+      };
+      globalThis.clearTimeout = (id) => {
+        const entry = log.find((item) => item.id === id);
+        if (entry) entry.cleared = true;
+        timers.delete(id);
+      };
+    },
+    restore() {
+      globalThis.setTimeout = realSetTimeout;
+      globalThis.clearTimeout = realClearTimeout;
+    },
+    advance(ms) {
+      now += ms;
+      const due = [...timers.entries()].filter(([, timer]) => timer.at <= now).sort((a, b) => a[1].at - b[1].at);
+      for (const [id, timer] of due) {
+        timers.delete(id);
+        const entry = log.find((item) => item.id === id);
+        if (entry) entry.fired = true;
+        timer.fn(...timer.args);
+      }
+    },
+    tick: () => new Promise((resolve) => realSetTimeout(resolve, 0)),
+    /**
+     * A real-time watchdog, so a BROKEN implementation fails instead of hanging.
+     *
+     * The pending fixture settles only when the signal aborts. That is the
+     * point — but it means a build where the controller was never handed to
+     * fetch, or the timer never scheduled, would leave the suite waiting
+     * forever instead of reporting. Racing against a short real timer converts
+     * that into an ordinary failed assertion with a legible value.
+     */
+    guard(promise, ms = 2000) {
+      let handle = null;
+      const watchdog = new Promise((resolve) => {
+        handle = realSetTimeout(() => resolve("qa:never-settled"), ms);
+      });
+      /* NOT unref'd: the watchdog has to hold the event loop open, or Node
+       * exits on the unsettled await and reports a stack trace instead of the
+       * assertion that would say which guarantee broke. Cleared as soon as
+       * either side settles, so a passing run costs nothing. */
+      return Promise.race([promise, watchdog]).finally(() => realClearTimeout(handle));
+    },
+  };
+}
+
+/**
+ * A planner transport whose `"pending"` steps hang until the SUPPLIED signal
+ * aborts.
+ *
+ * This is the fixture that makes the abort lifecycle observable end to end. It
+ * never inspects a clock and never invents an `AbortError` of its own accord:
+ * the only thing that can settle a pending call is `options.signal` firing, so
+ * a request built with a controller that was never wired to the fetch — or a
+ * timeout that was never scheduled — leaves the call hanging and the test
+ * failing, rather than passing on a rejection the fixture manufactured.
+ */
+function createTimeoutPlanner(script) {
+  const sent = [];
+  let index = 0;
+  const fetchImpl = (url, options) => {
+    const record = {
+      url,
+      body: JSON.parse(options.body),
+      signal: options.signal,
+      abortObserved: false,
+      rejected: false,
+    };
+    sent.push(record);
+    const step = index < script.length ? script[index] : script[script.length - 1];
+    index += 1;
+    if (step !== "pending") return Promise.resolve({ ok: true, json: async () => step });
+    return new Promise((_, reject) => {
+      const signal = record.signal;
+      /* A build that never handed the fetch a signal gets exactly what it
+       * asked for: a call with no way to be cancelled. The suite reports that
+       * through the watchdog and the signal assertions rather than through a
+       * TypeError raised by the fixture, which would say less about why. */
+      if (!(signal instanceof AbortSignal)) return;
+      const onAbort = () => {
+        record.abortObserved = signal.aborted;
+        record.rejected = true;
+        reject(Object.assign(new Error("The operation was aborted."), { name: "AbortError" }));
+      };
+      if (signal.aborted) onAbort();
+      else signal.addEventListener("abort", onAbort, { once: true });
+    });
+  };
+  return { fetchImpl, sent, calls: () => sent.length };
+}
+
 const toolCallResponse = (...calls) => ({
   message: { role: "assistant", content: "", tool_calls: calls.map((call) => ({ function: call })) },
 });
@@ -235,6 +357,228 @@ const agentFor = (options = {}) => {
   });
   return { agent, rag, planner };
 };
+
+/* ---------- startup planner prewarm is isolated from execution ---------- */
+
+{
+  ok("the startup-only prewarm allowance is bounded", AJOOP_AGENT_PREWARM_TIMEOUT_MS <= 20_000);
+
+  const prewarmAgentSource = codeOf(await readFile(join(ROOT, "server", "ajoop-agent.mjs"), "utf8"));
+  ok("normal planner calls retain the ordinary timeout", /response = await callPlanner\(messages\);/.test(prewarmAgentSource));
+  ok("only prewarm supplies the startup allowance", /await callPlanner\([\s\S]*AJOOP_AGENT_PREWARM_TIMEOUT_MS/.test(prewarmAgentSource));
+  check("there is one planner HTTP request construction", (prewarmAgentSource.match(/fetchImpl\(`\$\{baseUrl\}\/api\/chat`/g) || []).length, 1);
+
+  for (const mode of [AJOOP_AGENT_MODES.OFF, AJOOP_AGENT_MODES.SHADOW, AJOOP_AGENT_MODES.ON]) {
+    const planner = createFakePlanner([
+      toolCallResponse({ name: "portfolio.project_lookup", arguments: { project: "sinama" } }),
+    ]);
+    const { agent } = agentFor({ mode, planner });
+    const before = agent.metrics();
+    const status = await agent.prewarm();
+
+    if (mode === AJOOP_AGENT_MODES.OFF) {
+      check("off prewarm is skipped", status, "skipped");
+      check("off prewarm performs zero fetches", planner.calls(), 0);
+    } else {
+      check(`${mode} prewarm reports ready`, status, "ready");
+      check(`${mode} prewarm performs exactly one fetch`, planner.calls(), 1);
+      const sent = planner.sent[0];
+      check(`${mode} prewarm uses the planner endpoint`, sent.url, `${agent.config.ollamaBaseUrl}/api/chat`);
+      check(`${mode} prewarm uses the planner model`, sent.body.model, agent.config.model);
+      same(`${mode} prewarm uses the planning shape`, {
+        stream: sent.body.stream,
+        think: sent.body.think,
+        keep_alive: sent.body.keep_alive,
+        options: sent.body.options,
+      }, AJOOP_AGENT_PLANNING);
+      same(`${mode} prewarm uses the registry declarations`, sent.body.tools, agent.toolDeclarations());
+      ok(`${mode} prewarm supplies an abort signal`, sent.signal instanceof AbortSignal);
+    }
+
+    same(`${mode} prewarm leaves metrics unchanged`, agent.metrics(), before);
+    check(`${mode} tool-call output executes no tool`, agent.metrics().tool_attempts, 0);
+  }
+
+  /**
+   * The prewarm timeout, proven by ITS OWN abort — not by a fabricated one.
+   *
+   * An earlier version of this test threw a hand-made `AbortError` from the
+   * fixture, which proved only that `prewarm` catches errors. It could not
+   * have failed if the controller had never been wired to the fetch, if the
+   * timer had never been scheduled, if the startup allowance had silently
+   * become the 7.5s visitor timeout, or if the timer were never cleared. The
+   * fixture below hangs until the real `options.signal` fires, and a
+   * controlled clock supplies the only thing that can make it fire, so each of
+   * those four regressions leaves the call pending and the suite red.
+   */
+  {
+    const clock = createFakeClock();
+    const timeoutPlanner = createTimeoutPlanner(["pending", noToolResponse]);
+    /* Counts every registry lookup the executor would have to make. Prewarm
+     * must never reach one, and a direct counter says so more precisely than
+     * an aggregate counter can. */
+    let registryLookups = 0;
+    const watchedRegistry = {
+      manifest: () => registry.manifest(),
+      get: (toolId) => {
+        registryLookups += 1;
+        return registry.get(toolId);
+      },
+    };
+    const timeoutAgent = createAjoopAgent({
+      rag: createFakeRag(),
+      registry: watchedRegistry,
+      mode: AJOOP_AGENT_MODES.ON,
+      fetchImpl: timeoutPlanner.fetchImpl,
+    });
+    const metricsBefore = timeoutAgent.metrics();
+
+    let escaped = null;
+    clock.install();
+    try {
+      const settling = timeoutAgent.prewarm().then(
+        (value) => value,
+        (error) => {
+          escaped = error;
+          return "threw";
+        },
+      );
+      await clock.tick();
+
+      check("prewarm schedules exactly one timer", clock.log.length, 1);
+      check("prewarm timeout scheduled: 20000 ms", clock.log[0]?.delay, AJOOP_AGENT_PREWARM_TIMEOUT_MS);
+      check("the scheduled prewarm timeout is the startup allowance, not the visitor timeout", clock.log[0]?.delay, 20_000);
+      check("prewarm issued exactly one planner fetch", timeoutPlanner.calls(), 1);
+      ok("prewarm handed the fetch a real AbortSignal", timeoutPlanner.sent[0]?.signal instanceof AbortSignal);
+      check("prewarm AbortSignal initially not aborted", timeoutPlanner.sent[0]?.signal?.aborted, false);
+
+      clock.advance(AJOOP_AGENT_PREWARM_TIMEOUT_MS - 1);
+      await clock.tick();
+      check("the prewarm signal is still live one millisecond early", timeoutPlanner.sent[0]?.signal?.aborted, false);
+      check("the pending prewarm fetch has not rejected early", timeoutPlanner.sent[0]?.rejected, false);
+
+      clock.advance(1);
+      const status = await clock.guard(settling);
+
+      check("timer advancement causes the prewarm AbortSignal to become aborted", timeoutPlanner.sent[0]?.signal?.aborted, true);
+      check("the pending prewarm fetch rejects because of that abort", timeoutPlanner.sent[0]?.rejected, true);
+      check("the rejection was observed with the signal already aborted", timeoutPlanner.sent[0]?.abortObserved, true);
+      check("prewarm resolves safely as unavailable", status, "unavailable");
+      check("no exception escapes a timed-out prewarm", escaped, null);
+      ok("the prewarm timeout is cleared in finally", clock.log[0]?.cleared === true);
+      check("no timer is left pending after a timed-out prewarm", clock.pending(), 0);
+      same("a timed-out prewarm leaves metrics identical", timeoutAgent.metrics(), metricsBefore);
+      check("a timed-out prewarm executes zero tools", timeoutAgent.metrics().tool_attempts, 0);
+      check("a timed-out prewarm reaches no tool definition", registryLookups, 0);
+
+      /* POST-FAILURE USABILITY, behaviourally: the same agent instance, a
+       * working planner fixture, a real visitor request. */
+      const after = await clock.guard(timeoutAgent.handle(ragRequest("Can the agent still answer after a timed-out prewarm?")));
+      check("the agent still answers after a timed-out prewarm", after?.status, 200);
+      check("the post-failure planner turn completed normally", timeoutAgent.metrics().planner_no_tool, 1);
+      check("the post-failure turn issued its own planner fetch", timeoutPlanner.calls(), 2);
+      check("the post-failure turn used the ordinary visitor timeout", clock.log[1]?.delay, 7500);
+      ok("the post-failure planner timer was cleared", clock.log[1]?.cleared === true);
+      check("no timer is left pending after the post-failure turn", clock.pending(), 0);
+      same("a timed-out prewarm produced no tool events", after?.internal?.observedToolEvents, []);
+      same("a timed-out prewarm produced no attributable tool events", after?.internal?.toolEvents, []);
+      check("the post-failure turn still executed no tools", registryLookups, 0);
+    } finally {
+      clock.restore();
+    }
+  }
+
+  /**
+   * The VISITOR-turn planner timeout, which is a different number reached by a
+   * different call site. Asserting only the prewarm allowance would leave the
+   * two free to converge; this block fails if either drifts into the other.
+   */
+  {
+    const clock = createFakeClock();
+    const hangingPlanner = createTimeoutPlanner(["pending"]);
+    const hangingRag = createFakeRag();
+    const expectedPlannerTimeoutMs = Math.max(1000, Math.min(Math.floor(hangingRag.config.ollamaTimeoutMs / 2), 12000));
+    check("the fixture core implies a 7500 ms visitor planner timeout", expectedPlannerTimeoutMs, 7500);
+    const hangingAgent = createAjoopAgent({
+      rag: hangingRag,
+      registry,
+      mode: AJOOP_AGENT_MODES.ON,
+      fetchImpl: hangingPlanner.fetchImpl,
+    });
+
+    let escaped = null;
+    clock.install();
+    try {
+      const settling = hangingAgent.handle(ragRequest("Which stack does SINAMA use?")).then(
+        (value) => value,
+        (error) => {
+          escaped = error;
+          return null;
+        },
+      );
+      await clock.tick();
+
+      check("a visitor turn schedules exactly one planner timer", clock.log.length, 1);
+      check("normal planner timer scheduled: 7500 ms", clock.log[0]?.delay, expectedPlannerTimeoutMs);
+      ok("the visitor planner timer is not the prewarm allowance", clock.log[0]?.delay !== AJOOP_AGENT_PREWARM_TIMEOUT_MS);
+      check("the visitor planner fetch received a live AbortSignal", hangingPlanner.sent[0]?.signal?.aborted, false);
+
+      clock.advance(expectedPlannerTimeoutMs - 1);
+      await clock.tick();
+      check("the visitor planner signal has not aborted early", hangingPlanner.sent[0]?.signal?.aborted, false);
+
+      clock.advance(1);
+      const result = await clock.guard(settling);
+
+      check("the visitor planner signal aborts at its own timeout", hangingPlanner.sent[0]?.signal?.aborted, true);
+      check("the pending visitor fetch rejects because of that abort", hangingPlanner.sent[0]?.abortObserved, true);
+      check("no exception escapes a timed-out visitor turn", escaped, null);
+      check("a planner timeout counts as a planner failure", hangingAgent.metrics().planner_failures, 1);
+      check("a planner timeout counts as an agent fallback", hangingAgent.metrics().agent_fallbacks, 1);
+      check("the planner is not retried after its timeout", hangingPlanner.calls(), 1);
+      check("the RAG turn still answers through the existing fallback path", result?.status, 200);
+      check("the timed-out turn supplied no trusted tool context", result?.internal?.trustedToolContextChars, 0);
+      same("the timed-out turn produced no tool events", result?.internal?.observedToolEvents, []);
+      check("the timed-out turn executed no tools", hangingAgent.metrics().tool_attempts, 0);
+      ok("the visitor planner timer is cleared", clock.log[0]?.cleared === true);
+      check("no timer is left pending after a timed-out visitor turn", clock.pending(), 0);
+    } finally {
+      clock.restore();
+    }
+  }
+
+  const unavailablePlanner = createFakePlanner([
+    () => ({ ok: false, status: 503, json: async () => ({}) }),
+  ]);
+  const { agent: unavailableAgent } = agentFor({ mode: AJOOP_AGENT_MODES.SHADOW, planner: unavailablePlanner });
+  const unavailableBefore = unavailableAgent.metrics();
+  check("an HTTP failure also returns unavailable", await unavailableAgent.prewarm(), "unavailable");
+  same("an HTTP failure changes no metrics", unavailableAgent.metrics(), unavailableBefore);
+
+  const parityPlanner = createFakePlanner([noToolResponse, noToolResponse]);
+  const { agent: parityAgent } = agentFor({ mode: AJOOP_AGENT_MODES.ON, planner: parityPlanner });
+  check("the parity prewarm succeeds", await parityAgent.prewarm(), "ready");
+  await parityAgent.handle(ragRequest("Compare planner request construction."));
+  const withoutMessages = ({ messages, ...body }) => body;
+  same(
+    "prewarm and normal turns share the exact planner request construction",
+    withoutMessages(parityPlanner.sent[0].body),
+    withoutMessages(parityPlanner.sent[1].body),
+  );
+
+  const bridgeSource = codeOf(await readFile(join(ROOT, "server", "ajoop-bridge.mjs"), "utf8"));
+  const startup = bridgeSource.slice(bridgeSource.indexOf("async function start()"));
+  const sequence = [
+    "prewarmModel()",
+    "rag.initialize()",
+    "prewarmRagModel()",
+    "agent.prewarm()",
+    "buildToolEventPolicy()",
+    "server.listen(",
+  ].map((needle) => startup.indexOf(needle));
+  ok("startup runs legacy, RAG init, RAG warm, planner warm, policy, then listen", sequence.every((position, index) => position >= 0 && (index === 0 || position > sequence[index - 1])));
+  ok("startup emits one safe planner warm status", /console\.log\(`Ajoop agent planner warm \$\{agentWarmed\}`\)/.test(startup));
+}
 
 /* ---------- A. mode resolution fails closed ---------- */
 
@@ -2097,6 +2441,7 @@ const agentFor = (options = {}) => {
     "metrics",
     "mode",
     "path",
+    "prewarm",
     "status",
     "toolDeclarations",
   ]);

@@ -423,6 +423,7 @@ async function start() {
   const warmed = await prewarmModel();
   const ragStatus = await rag.initialize();
   const ragWarmed = ragStatus.ready ? await prewarmRagModel() : false;
+  const agentWarmed = await agent.prewarm();
   const policy = await buildToolEventPolicy();
   sinama = createAjoopSinamaAdapter({ rag: agent, validateToolEvent: policy.validate });
   server.listen(config.port, config.host, () => {
@@ -443,6 +444,7 @@ async function start() {
         ` · ${loaded.length} local setting(s) loaded`,
     );
     console.log(`Ajoop RAG warm model ${ragWarmed ? "ready" : "unavailable"}`);
+    console.log(`Ajoop agent planner warm ${agentWarmed}`);
     console.log(`Ajoop SINAMA compatibility ${config.host}:${config.port}${sinama.path}`);
     /* Mode only. Never a counter value, never a tool name, never a question. */
     console.log(`Ajoop SINAMA tool-event policy ${policy.validate ? `active · ${policy.identities} canonical identities` : "unavailable (fail-closed)"}`);
