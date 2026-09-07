@@ -157,6 +157,38 @@ export async function loadPortfolioToolCorpus(dataDir = PORTFOLIO_DATA_DIR) {
 }
 
 /**
+ * The identity surface: "is this string a canonical public id, and of what".
+ *
+ * The narrowest thing a semantic validator needs, and deliberately nothing
+ * more. It answers two closed questions about a string and returns no record,
+ * no text, no metadata and no way to enumerate the corpus — so a caller holding
+ * it can check an identifier and cannot read the portfolio.
+ *
+ * EXACT LOOKUP ONLY. There is no alias table here and no separator
+ * normalisation, which is the whole point: `resolveRecord` exists to turn a
+ * model's spelling into a record, and this exists to reject anything that is
+ * not already the record's own id. An alias like `SINAMA` or `merge-rush` is a
+ * legitimate tool INPUT and is not an identity — admitting one here would let a
+ * model's spelling reach an evaluation harness as though it were canonical.
+ *
+ * Public-safe only, because it is derived from the same corpus the tools read:
+ * `public_on_request` records are not in it, so an on-request id fails for the
+ * same reason it is unreachable through a tool.
+ */
+export async function loadPortfolioEventIdentities(dataDir = PORTFOLIO_DATA_DIR) {
+  const corpus = await loadPortfolioToolCorpus(dataDir);
+  const typeOf = (id) => (typeof id === "string" ? corpus.byId.get(id)?.entityType || null : null);
+  return Object.freeze({
+    /** Whether `id` is exactly the id of a public canonical record. */
+    has: (id) => (typeof id === "string" ? corpus.byId.has(id) : false),
+    /** Whether `id` is exactly the id of a public canonical record of `type`. */
+    hasType: (id, type) => typeOf(id) === type,
+    /** How many identities back this surface. For QA and startup logging. */
+    size: corpus.records.length,
+  });
+}
+
+/**
  * Resolve a caller-supplied identifier to one canonical record.
  *
  * Four attempts, most specific first: the exact record id, the id built from a

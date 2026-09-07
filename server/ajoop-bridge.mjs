@@ -14,6 +14,10 @@ import { fileURLToPath } from "node:url";
 import { createAjoopBridge } from "./ajoop-bridge-core.mjs";
 import { AJOOP_RAG_GENERATION, createAjoopRag } from "./ajoop-rag.mjs";
 import { createAjoopSinamaAdapter } from "./ajoop-sinama.mjs";
+import { createAjoopAgent } from "./ajoop-agent.mjs";
+import { createToolRegistry } from "./ajoop-tool-registry.mjs";
+import { PORTFOLIO_TOOL_DEFINITIONS, loadPortfolioEventIdentities } from "./ajoop-portfolio-tools.mjs";
+import { createPortfolioToolEventPolicy } from "./ajoop-tool-event-policy.mjs";
 import { loadEnvFile } from "./ajoop-env-file.mjs";
 
 const nativeFetch = typeof fetch === "function" ? fetch : null;
@@ -182,7 +186,38 @@ async function ragOllamaFetch(url, options = {}) {
 
 const bridge = createAjoopBridge({ env: runtimeEnv, fetchImpl: fastOllamaFetch });
 const rag = createAjoopRag({ env: runtimeEnv, fetchImpl: ragOllamaFetch });
-const sinama = createAjoopSinamaAdapter({ rag });
+/**
+ * The agent wraps the RAG core; it does not replace it.
+ *
+ * `agent.handle` is handle-compatible, so the routing table below and the
+ * SINAMA adapter both take it unchanged, and `AJOOP_AGENT_MODE=off` — the
+ * default — leaves every request travelling the 5.3 path.
+ *
+ * The planner deliberately uses the PLAIN fetch rather than `ragOllamaFetch`.
+ * That wrapper appends Ajoop's scope-and-freshness answering rules to any
+ * system message on /api/chat, which is exactly right for generation and
+ * exactly wrong here: the planner is choosing a tool, not deciding whether a
+ * question is PORTFOLIO or GENERAL, and feeding it the answering contract would
+ * both confuse the selection and waste its small context.
+ */
+const toolRegistry = createToolRegistry(PORTFOLIO_TOOL_DEFINITIONS);
+const agent = createAjoopAgent({
+  rag,
+  registry: toolRegistry,
+  env: runtimeEnv,
+  fetchImpl: nativeFetch,
+});
+/**
+ * SINAMA is composed in `start()`, once its semantic validator exists.
+ *
+ * The validator needs the canonical corpus, which is an async load, so the
+ * adapter cannot be built at module scope without either blocking here or
+ * handing SINAMA a validator that is not ready yet. Both are worse than one
+ * assignment before `listen()`: a not-yet-ready validator fails closed, which
+ * would silently blank `tool_events` for however long the load took, and a
+ * timing-dependent silence is the hardest kind of gap to notice.
+ */
+let sinama = createAjoopSinamaAdapter({ rag: agent });
 const { config } = bridge;
 
 function readBody(request, limit) {
@@ -234,10 +269,13 @@ function send(response, status, headers, body) {
 
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${config.host}:${config.port}`);
+  /* `/ajoop-rag` routes through the agent, which delegates to the RAG core.
+   * `send()` below serialises `status`, `headers` and `body` and nothing else,
+   * so the agent's `internal` sidecar has no path to the wire. */
   const handler = url.pathname === sinama.path
     ? sinama
-    : url.pathname === rag.path
-      ? rag
+    : url.pathname === agent.path
+      ? agent
       : url.pathname === config.path
         ? bridge
         : null;
@@ -270,7 +308,7 @@ const server = http.createServer(async (request, response) => {
       body: read.body,
     });
     const body =
-      url.pathname === rag.path && result?.body?.ok && typeof result.body.answer === "string"
+      url.pathname === agent.path && result?.body?.ok && typeof result.body.answer === "string"
         ? { ...result.body, answer: sanitizeRagAnswer(result.body.answer) }
         : result.body;
     send(response, result.status, result.headers, body);
@@ -361,10 +399,32 @@ async function prewarmRagModel() {
   }
 }
 
+/**
+ * Build the semantic tool-event validator from the already-trusted components.
+ *
+ * Once, at composition time: one registry, one corpus load, no per-request
+ * reconstruction and no global mutable state. A failure here is not fatal —
+ * SINAMA simply reports no tool events, which is the fail-closed answer — but
+ * it is logged, because a bridge that silently stopped reporting evaluation
+ * metadata looks exactly like an agent that stopped using tools.
+ */
+async function buildToolEventPolicy() {
+  try {
+    const identities = await loadPortfolioEventIdentities();
+    const validate = createPortfolioToolEventPolicy({ registry: toolRegistry, identities });
+    return { validate, identities: identities.size };
+  } catch (error) {
+    console.error("[ajoop-bridge] tool event policy unavailable — SINAMA will report no tool events");
+    return { validate: null, identities: 0 };
+  }
+}
+
 async function start() {
   const warmed = await prewarmModel();
   const ragStatus = await rag.initialize();
   const ragWarmed = ragStatus.ready ? await prewarmRagModel() : false;
+  const policy = await buildToolEventPolicy();
+  sinama = createAjoopSinamaAdapter({ rag: agent, validateToolEvent: policy.validate });
   server.listen(config.port, config.host, () => {
     console.log(`Ajoop bridge listening on ${config.host}:${config.port}${config.path}`);
     console.log(`Ajoop bridge model ${config.model} · ${config.allowedOrigins.length} allowed origin(s)`);
@@ -384,6 +444,9 @@ async function start() {
     );
     console.log(`Ajoop RAG warm model ${ragWarmed ? "ready" : "unavailable"}`);
     console.log(`Ajoop SINAMA compatibility ${config.host}:${config.port}${sinama.path}`);
+    /* Mode only. Never a counter value, never a tool name, never a question. */
+    console.log(`Ajoop SINAMA tool-event policy ${policy.validate ? `active · ${policy.identities} canonical identities` : "unavailable (fail-closed)"}`);
+    console.log(`Ajoop agent mode ${agent.mode} · ${agent.toolDeclarations().length} read-only tool(s) declared`);
   });
 }
 

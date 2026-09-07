@@ -501,8 +501,12 @@ ok("mutation: disabled project isolation breaks the release invariant", await wi
 
 /* 4. Allow a third generation attempt. */
 ok("mutation: a third generation breaks the release invariant", await withMutation(
-  { "ajoop-rag.mjs": [["        const result = await generateOnce(question, locale, history, retrieved, strategy, firstFlags);",
-    "        await generateOnce(question, locale, history, retrieved, strategy, firstFlags).catch(() => null);\n        const result = await generateOnce(question, locale, history, retrieved, strategy, firstFlags);"]] },
+  /* The anchor tracks the repair call, which gained a `toolContext` argument in
+   * 5.4 Phase 2. The invariant under test is unchanged — two generation
+   * attempts, never three — but a mutation anchor is literal source text, so it
+   * has to follow the signature it mutates. */
+  { "ajoop-rag.mjs": [["        const result = await generateOnce(question, locale, history, retrieved, strategy, firstFlags, toolContext);",
+    "        await generateOnce(question, locale, history, retrieved, strategy, firstFlags, toolContext).catch(() => null);\n        const result = await generateOnce(question, locale, history, retrieved, strategy, firstFlags, toolContext);"]] },
   "ajoop-rag.mjs",
   async (mutant) => {
     const { rag, state } = await makeRag(NO_BIAS, () => " PORTFOLIO\nANSWER:", mutant.createAjoopRag);

@@ -6,10 +6,34 @@
  * only that wire contract. It never bypasses Ajoop retrieval, privacy,
  * generation guards or fallbacks, and it never fabricates tool events.
  *
+ * From Ajoop 5.4 Phase 2 the upstream handler may be the agent orchestrator
+ * rather than the RAG core directly. Both expose the same `handle()`, so this
+ * file is indifferent to which one it holds; the only difference is that the
+ * orchestrator attaches an internal sidecar carrying the turn's sanitized tool
+ * events. See `upstreamToolEvents` for why that is the only source permitted.
+ *
  * Conversation state is intentionally ephemeral: bounded in-memory history,
  * bounded session count, TTL expiry, no disk/database persistence and no
  * transcript logging.
  */
+import { isSafeToolEvent } from "./ajoop-tool-events.mjs";
+
+/**
+ * Tool names the public SINAMA contract may report.
+ *
+ * This is deliberately a local allow-list, not a registry import. SINAMA has
+ * no execution authority and must stay unable to discover or invoke tools, but
+ * a merely well-formed name such as `evil.admin` is not evidence that the
+ * portfolio agent owns that tool. The fixed unknown marker remains reportable
+ * for a real rejected attempt.
+ */
+const SINAMA_TOOL_IDS = new Set([
+  "<unknown>",
+  "portfolio.project_lookup",
+  "portfolio.profile_lookup",
+  "portfolio.evidence_lookup",
+]);
+
 
 export const AJOOP_SINAMA_PATH = "/sinama";
 export const AJOOP_SINAMA_DEFAULTS = Object.freeze({
@@ -46,6 +70,92 @@ function sanitizeAnswer(value) {
     .replace(/^SCOPE\s*:\s*(?:PORTFOLIO|GENERAL)\b[\s:—-]*/i, "")
     .replace(/^ANSWER\s*:\s*/i, "")
     .trim();
+}
+
+/**
+ * The tool events for one turn, taken ONLY from the upstream internal sidecar.
+ *
+ * Nothing here builds an event. SINAMA does not know what a tool call is, has
+ * no access to a registry, an executor or a tool result, and cannot tell from
+ * an answer's text whether a lookup happened — so any event it constructed
+ * would be a guess presented to an evaluation harness as a measurement.
+ *
+ * `internal.toolEvents` is the orchestrator's statement about which tools
+ * actually informed the answer. It is empty when the agent is off, and empty in
+ * shadow mode even though tools ran there: reporting "the required tool was
+ * used" for a turn whose result was deliberately discarded would make the
+ * evaluation wrong in the most expensive direction. The orchestrator keeps
+ * shadow observations in a separate field this function never reads.
+ *
+ * The events are already the sanitized Phase 1 records — a closed field set,
+ * canonical or enum arguments only, `{}` on any failure. They are passed
+ * through unchanged rather than re-serialised, so SINAMA reads exactly one
+ * representation of a tool call and not a second one invented here.
+ */
+function upstreamToolEvents(upstream, validateToolEvent) {
+  const events = upstream?.internal?.toolEvents;
+  if (!Array.isArray(events) || events.length > 3) return Object.freeze([]);
+
+  /**
+   * NO SEMANTIC VALIDATOR, NO EVENTS.
+   *
+   * The composition layer injects one. If it is missing — a caller that built
+   * the adapter without it, or a startup where the canonical corpus failed to
+   * load — the honest answer is that nothing here can vouch for what the
+   * sidecar says, so nothing is reported. Optional evaluation metadata going
+   * quiet is a far smaller failure than an evaluation harness being handed
+   * claims nobody checked.
+   */
+  if (typeof validateToolEvent !== "function") return Object.freeze([]);
+
+  const callIds = new Set();
+  const callIndexes = new Set();
+  let previousIndex = 0;
+  const detached = [];
+  for (const event of events) {
+    /* Layer one: structure. The generic Phase 1 contract. */
+    if (!isSafeToolEvent(event)) return Object.freeze([]);
+    if (!SINAMA_TOOL_IDS.has(event.tool)) return Object.freeze([]);
+    if (event.call_index > 3) return Object.freeze([]);
+    if (callIds.has(event.call_id) || callIndexes.has(event.call_index)) return Object.freeze([]);
+    if (event.call_index <= previousIndex) return Object.freeze([]);
+
+    /**
+     * Layer two: meaning. Could this event have come from that tool?
+     *
+     * The validator is injected rather than imported, so this adapter still
+     * holds no registry, no executor, no portfolio tool and no corpus loader.
+     * It cannot discover a tool, invoke one, or read a canonical record — it
+     * asks a question and gets a boolean.
+     *
+     * A throw is treated exactly like a `false`. A validator that failed is a
+     * validator that did not vouch for anything, and the visitor's answer must
+     * not depend on optional metadata being checkable.
+     */
+    let semanticallyValid = false;
+    try {
+      semanticallyValid = validateToolEvent(event) === true;
+    } catch (error) {
+      return Object.freeze([]);
+    }
+    if (!semanticallyValid) return Object.freeze([]);
+
+    callIds.add(event.call_id);
+    callIndexes.add(event.call_index);
+    previousIndex = event.call_index;
+    /* Validated first, then detached: what is cloned is exactly what passed
+     * both layers, and the clone shares no reference with the sidecar. */
+    detached.push(Object.freeze({
+      version: event.version,
+      call_id: event.call_id,
+      call_index: event.call_index,
+      tool: event.tool,
+      status: event.status,
+      arguments: Object.freeze({ ...event.arguments }),
+      result_code: event.result_code,
+    }));
+  }
+  return Object.freeze(detached);
 }
 
 function clampPositiveInteger(value, fallback, min, max) {
@@ -90,6 +200,16 @@ function buildConfig(rag, overrides = {}) {
 
 export function createAjoopSinamaAdapter({
   rag,
+  /**
+   * The injected semantic validator: `(event) => boolean`.
+   *
+   * Injected, not imported, so this module keeps no dependency on the registry,
+   * the executor, the portfolio tools or the canonical corpus. The composition
+   * layer builds it once from those trusted components and hands it in.
+   *
+   * Absent means fail-closed: `tool_events` is [] rather than unvalidated.
+   */
+  validateToolEvent = null,
   now = () => Date.now(),
   config: configOverrides = {},
   setIntervalImpl = globalThis.setInterval,
@@ -210,7 +330,7 @@ export function createAjoopSinamaAdapter({
       return {
         status: 200,
         headers: JSON_HEADERS,
-        body: { message: answer, tool_events: [] },
+        body: { message: answer, tool_events: upstreamToolEvents(upstream, validateToolEvent) },
       };
     } catch (error) {
       return { status: 503, headers: JSON_HEADERS, body: { error: "agent unavailable" } };

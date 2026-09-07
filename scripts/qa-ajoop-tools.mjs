@@ -1774,11 +1774,23 @@ const knowledge = await loadMasterKnowledge(resolve(ROOT, "data", "portfolio"));
 /* ---------- H. nothing existing changed ---------- */
 
 {
-  /* SINAMA still tells the truth: no tool ran, so no tool events. */
+  /**
+   * SINAMA still tells the truth — but the truth changed in Phase 2.
+   *
+   * Phase 1 asserted a hard-coded `tool_events: []`, which was honest while no
+   * agent could invoke a tool. Phase 2 gives it real events, so that literal is
+   * intentionally superseded. What must NOT change is why the array was
+   * trustworthy: the adapter still has no registry, no executor and no event
+   * builder, so it reports what the orchestrator observed or it reports
+   * nothing. It cannot construct an event, and therefore cannot invent one.
+   */
   const sinamaSource = await readFile(join(ROOT, "server", "ajoop-sinama.mjs"), "utf8");
-  ok("the sinama adapter still emits an empty tool_events array", sinamaSource.includes("tool_events: []"));
+  ok("the sinama adapter reads events only from the upstream sidecar", sinamaSource.includes("upstream?.internal?.toolEvents"));
+  ok("and rejects a malformed sidecar as a whole", sinamaSource.includes("!Array.isArray(events) || events.length > 3"));
   ok("and does not import the registry", !sinamaSource.includes("ajoop-tool-registry"));
   ok("nor the executor", !sinamaSource.includes("ajoop-tool-executor"));
+  ok("nor an event builder", !sinamaSource.includes("buildToolEvent"));
+  ok("nor the portfolio tools", !sinamaSource.includes("ajoop-portfolio-tools"));
 
   /* The RAG turn is untouched: no tools, no registry, no Ollama tool payload. */
   const ragSource = await readFile(join(ROOT, "server", "ajoop-rag.mjs"), "utf8");
@@ -1794,7 +1806,21 @@ const knowledge = await loadMasterKnowledge(resolve(ROOT, "data", "portfolio"));
   for (const path of ["/tools", "/tool", "/registry", "/debug"]) {
     ok(`the bridge exposes no ${path} route`, !bridgeSource.includes(`"${path}"`));
   }
-  ok("the bridge does not import the registry", !bridgeSource.includes("ajoop-tool-registry"));
+  /**
+   * The bridge DOES construct the registry from Phase 2 onward — that is how
+   * the agent gets one — but it must never reach past it.
+   *
+   * The registry is built and handed to `createAjoopAgent`, and nothing else.
+   * The bridge holds no tool turn, calls no executor, and reads no tool result:
+   * if it did, there would be a second execution path beside the one every
+   * guarantee in this file is written about.
+   */
+  ok("the bridge builds the registry only for the agent", /createToolRegistry\(PORTFOLIO_TOOL_DEFINITIONS\)/.test(bridgeSource));
+  ok("and hands it straight to the agent", /registry: toolRegistry/.test(bridgeSource));
+  ok("the bridge never creates a tool turn", !bridgeSource.includes("createToolTurn"));
+  ok("nor imports the executor", !bridgeSource.includes("ajoop-tool-executor"));
+  ok("nor invokes a tool", !/\.invoke\s*\(/.test(bridgeSource));
+  ok("nor reads the internal sidecar", !bridgeSource.includes("result.internal"));
 
   const pkg = JSON.parse(await readFile(join(ROOT, "package.json"), "utf8"));
   ok("the tools gate is registered", Boolean(pkg.scripts["qa:ajoop:tools"]));
@@ -1833,6 +1859,19 @@ const knowledge = await loadMasterKnowledge(resolve(ROOT, "data", "portfolio"));
   ok("the Ajoop release gate reaches it too", runsToolsSuite("qa:ajoop:release"));
   /* The direct command must also still exist, for a focused run. */
   ok("and a direct command exists", /qa-ajoop-tools\.mjs/.test(scripts["qa:ajoop:tools"] || ""));
+
+  /**
+   * Phase 2's agent gate is checked HERE, not only by the agent suite itself.
+   * If somebody removes qa-ajoop-agent.mjs from a command graph, that suite no
+   * longer runs and cannot report its own disappearance. This tools suite is a
+   * pre-existing mandatory predecessor in both graphs, so either removal is a
+   * failing mutation rather than a silent loss of coverage.
+   */
+  const runsAgentSuite = (name) =>
+    [...resolveGraph(name)].some((script) => /qa-ajoop-agent\.mjs/.test(scripts[script] || ""));
+  ok("npm run qa independently requires the agent suite", runsAgentSuite("qa"));
+  ok("the Ajoop release gate independently requires the agent suite", runsAgentSuite("qa:ajoop:release"));
+  ok("the focused agent command remains registered", /qa-ajoop-agent\.mjs/.test(scripts["qa:ajoop:agent"] || ""));
 
   /* The graph resolver must be capable of failing: a name that is not wired in
    * anywhere must report false, or the checks above prove nothing. */
