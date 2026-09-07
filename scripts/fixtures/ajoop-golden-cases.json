@@ -474,15 +474,6 @@
       "policy": {
         "fallback": "allowed",
         "repair": "allowed"
-      },
-      "known_divergence": {
-        "contracts": [
-          "answer.scope",
-          "answer.mode",
-          "grounding.max_sources"
-        ],
-        "reason": "A bare technology name that is also a catalogued skill (C#) pulls a general-knowledge question into portfolio scope, although selectAnswerStrategy() classifies it as general. Fixture keeps the intended behaviour so the divergence stays visible.",
-        "filed": "PHASE-3.1-DIVERGENCE-1"
       }
     },
     {
