@@ -210,6 +210,49 @@ for (const question of [
 for (const question of ["SINAMA nedir?", "What is SINAMA?"]) {
   check(`owned-entity definition stays portfolio: ${question}`, plan(question).contextEligible, true);
 }
+
+/* ---------- B3. organization resolution is not relationship authority ---------- */
+
+for (const question of ["CBOT nedir?", "What is CBOT?"]) {
+  const result = plan(question);
+  ok(
+    `the organization still resolves: ${question}`,
+    result.currentEntities.some((entity) => entity.canonical === "CBOT" && entity.type === ENTITY_TYPES.ORGANIZATION),
+  );
+  check(`a bare organization definition stays general: ${question}`, result.contextEligible, false);
+  check(`for the world-entity reason: ${question}`, result.contextReason, "world-entity-definition");
+  check(`and it gains no active organization authority: ${question}`, result.activeOrganizations.length, 0);
+}
+
+for (const question of [
+  "Kaan CBOT'ta ne yaptı?",
+  "Kaan'ın CBOT deneyimi nedir?",
+  "What did Kaan do at CBOT?",
+]) {
+  const result = plan(question);
+  ok(
+    `the framed organization still resolves: ${question}`,
+    result.currentEntities.some((entity) => entity.canonical === "CBOT" && entity.type === ENTITY_TYPES.ORGANIZATION),
+  );
+  check(`the Kaan relationship stays portfolio: ${question}`, result.contextEligible, true);
+  check(`and keeps the organization active: ${question}`, result.activeOrganizations.join(), "CBOT");
+}
+
+{
+  const result = plan("peki neden?", [
+    { role: "user", content: "Kaan CBOT'ta ne yaptı?" },
+    { role: "assistant", content: "CBOT deneyimini anlattım." },
+  ]);
+  check("an inherited organization remains eligible", result.contextEligible, true);
+  check("and remains the active organization", result.activeOrganizations.join(), "CBOT");
+}
+
+{
+  const result = plan("SINAMA nedir?");
+  ok("the project contrast still resolves as a project", result.currentEntities.some((entity) => entity.canonical === "SINAMA" && entity.type === ENTITY_TYPES.PROJECT));
+  check("project definition authority remains intact", result.contextEligible, true);
+  check("and the project remains active", result.activeProjects.join(), "SINAMA");
+}
 /* The narrowing must not reach past the current turn: an inherited project
  * subject still makes a bare follow-up eligible. */
 {
