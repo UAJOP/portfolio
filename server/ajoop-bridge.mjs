@@ -19,6 +19,11 @@ import { createToolRegistry } from "./ajoop-tool-registry.mjs";
 import { PORTFOLIO_TOOL_DEFINITIONS, loadPortfolioEventIdentities } from "./ajoop-portfolio-tools.mjs";
 import { createPortfolioToolEventPolicy } from "./ajoop-tool-event-policy.mjs";
 import { loadEnvFile } from "./ajoop-env-file.mjs";
+import {
+  createAjoopTelemetry,
+  createAjoopTelemetryWriter,
+  observeAjoopHandlerResult,
+} from "./ajoop-telemetry.mjs";
 
 const nativeFetch = typeof fetch === "function" ? fetch : null;
 
@@ -220,6 +225,35 @@ const agent = createAjoopAgent({
 let sinama = createAjoopSinamaAdapter({ rag: agent });
 const { config } = bridge;
 
+/**
+ * Local-only operational telemetry.
+ *
+ * No HTTP route exposes this file. The observer receives only sanitized result
+ * metadata and the agent's already-sanitized event sidecar — never the request
+ * body, question, answer, origin, tool arguments or tool results. The snapshot
+ * is ignored by git and is written after the response, so observability cannot
+ * become part of the visitor latency contract.
+ */
+const telemetry = createAjoopTelemetry();
+const telemetryPath = runtimeEnv.AJOOP_TELEMETRY_PATH
+  ? resolve(runtimeEnv.AJOOP_TELEMETRY_PATH)
+  : resolve(dirname(fileURLToPath(import.meta.url)), "..", ".ajoop-runtime", "telemetry.json");
+const telemetryWriter = createAjoopTelemetryWriter({ filePath: telemetryPath });
+/* Keep the aggregate reader as an operator-only capability. It is never logged
+ * and is consumed only by the sanitized snapshot schema below. */
+const readAgentMetrics = agent.metrics;
+let telemetryWriteWarned = false;
+const telemetrySnapshot = () => telemetry.snapshot({
+  agentMetrics: readAgentMetrics(),
+  ragStatus: rag.status(),
+  bridgeStats: bridge.stats(),
+});
+const persistTelemetry = () => telemetryWriter.write(telemetrySnapshot()).catch(() => {
+  if (telemetryWriteWarned) return;
+  telemetryWriteWarned = true;
+  console.error("[ajoop-bridge] local telemetry snapshot unavailable");
+});
+
 function readBody(request, limit) {
   return new Promise((resolve) => {
     const chunks = [];
@@ -268,7 +302,15 @@ function send(response, status, headers, body) {
 }
 
 const server = http.createServer(async (request, response) => {
+  const startedAt = Date.now();
   const url = new URL(request.url || "/", `http://${config.host}:${config.port}`);
+  const telemetryRoute = url.pathname === sinama.path
+    ? "sinama"
+    : url.pathname === agent.path
+      ? "ajoop-rag"
+      : url.pathname === config.path
+        ? "legacy"
+        : "unknown";
   /* `/ajoop-rag` routes through the agent, which delegates to the RAG core.
    * `send()` below serialises `status`, `headers` and `body` and nothing else,
    * so the agent's `internal` sidecar has no path to the wire. */
@@ -297,6 +339,14 @@ const server = http.createServer(async (request, response) => {
       { "Content-Type": "application/json; charset=utf-8" },
       { ok: false, error: "payload too large" },
     );
+    telemetry.record({
+      route: telemetryRoute,
+      status: 413,
+      latencyMs: Date.now() - startedAt,
+      scope: "unknown",
+      answerMode: "unknown",
+    });
+    void persistTelemetry();
     return;
   }
 
@@ -312,6 +362,13 @@ const server = http.createServer(async (request, response) => {
         ? { ...result.body, answer: sanitizeRagAnswer(result.body.answer) }
         : result.body;
     send(response, result.status, result.headers, body);
+    telemetry.record(observeAjoopHandlerResult({
+      route: telemetryRoute,
+      status: result.status,
+      latencyMs: Date.now() - startedAt,
+      result,
+    }));
+    void persistTelemetry();
   } catch (error) {
     console.error("[ajoop-bridge] unhandled request failure");
     send(
@@ -320,6 +377,14 @@ const server = http.createServer(async (request, response) => {
       { "Content-Type": "application/json; charset=utf-8" },
       { ok: false, error: "bridge error" },
     );
+    telemetry.record({
+      route: telemetryRoute,
+      status: 500,
+      latencyMs: Date.now() - startedAt,
+      scope: "unknown",
+      answerMode: "unknown",
+    });
+    void persistTelemetry();
   }
 });
 
@@ -427,6 +492,7 @@ async function start() {
   const policy = await buildToolEventPolicy();
   sinama = createAjoopSinamaAdapter({ rag: agent, validateToolEvent: policy.validate });
   server.listen(config.port, config.host, () => {
+    void persistTelemetry();
     console.log(`Ajoop bridge listening on ${config.host}:${config.port}${config.path}`);
     console.log(`Ajoop bridge model ${config.model} · ${config.allowedOrigins.length} allowed origin(s)`);
     console.log(`Ajoop bridge warm model ${warmed ? "ready" : "unavailable"}`);
@@ -449,6 +515,7 @@ async function start() {
     /* Mode only. Never a counter value, never a tool name, never a question. */
     console.log(`Ajoop SINAMA tool-event policy ${policy.validate ? `active · ${policy.identities} canonical identities` : "unavailable (fail-closed)"}`);
     console.log(`Ajoop agent mode ${agent.mode} · ${agent.toolDeclarations().length} read-only tool(s) declared`);
+    console.log("Ajoop local telemetry snapshot enabled");
   });
 }
 
@@ -460,6 +527,14 @@ start().catch(() => {
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
     sinama.close();
-    server.close(() => process.exit(0));
+    void persistTelemetry();
+    server.close(async () => {
+      try {
+        await telemetryWriter.flush();
+      } catch (error) {
+        /* Telemetry is best-effort and never blocks a clean shutdown. */
+      }
+      process.exit(0);
+    });
   });
 }

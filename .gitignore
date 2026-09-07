@@ -16,3 +16,7 @@ automation/config.local.json
 automation/proposals/
 .env
 .env.local
+
+# Ajoop runtime telemetry is local-only, sanitized operational state. It must
+# never be published with the public portfolio repository.
+.ajoop-runtime/
