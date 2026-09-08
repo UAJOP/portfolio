@@ -60,7 +60,7 @@
     "qa:react": "node qa-react-foundation.js",
     "qa:a11y:react": "pa11y-ci --config .pa11yci-react",
     "qa:i18n": "node scripts/qa-i18n.mjs",
-    "i18n:generate": "node scripts/generate-i18n-source.mjs",
+    "i18n:generate": "node scripts/generate-i18n.mjs",
     "i18n:extract": "node scripts/extract-i18n-source.mjs",
     "i18n:packs": "node scripts/build-locale-packs.mjs --derive",
     "i18n:routes": "node scripts/generate-localized-routes.mjs",
