@@ -3,6 +3,7 @@ import {
   AJOOP_MEMORY_AUDIENCES,
   AJOOP_MEMORY_AUTHORITIES,
   AJOOP_MEMORY_KINDS,
+  AJOOP_MEMORY_MAX_TAG_CHARS,
   AJOOP_MEMORY_MAX_TAGS,
   AJOOP_MEMORY_MAX_TEXT_CHARS,
   AJOOP_MEMORY_PROVENANCE,
@@ -131,7 +132,12 @@ check(
   check("non-owner-stated records are inactive", isAjoopMemoryRecordActive({ ...active, provenance: AJOOP_MEMORY_PROVENANCE.DERIVED }, { now: NOW }), false);
   check("sensitive persisted records are inactive", isAjoopMemoryRecordActive({ ...active, sensitivity: AJOOP_MEMORY_SENSITIVITY.SENSITIVE }, { now: NOW }), false);
   check("overlong persisted text is inactive", isAjoopMemoryRecordActive({ ...active, text: "x".repeat(AJOOP_MEMORY_MAX_TEXT_CHARS + 1) }, { now: NOW }), false);
+  check("non-normalized persisted text is inactive", isAjoopMemoryRecordActive({ ...active, text: ` ${active.text}` }, { now: NOW }), false);
   check("oversized persisted tags are inactive", isAjoopMemoryRecordActive({ ...active, tags: Array(AJOOP_MEMORY_MAX_TAGS + 1).fill("x") }, { now: NOW }), false);
+  check("non-normalized persisted tags are inactive", isAjoopMemoryRecordActive({ ...active, tags: ["Workflow"] }, { now: NOW }), false);
+  check("overlong persisted tag is inactive", isAjoopMemoryRecordActive({ ...active, tags: ["x".repeat(AJOOP_MEMORY_MAX_TAG_CHARS + 1)] }, { now: NOW }), false);
+  check("duplicate persisted tags are inactive", isAjoopMemoryRecordActive({ ...active, tags: ["workflow", "workflow"] }, { now: NOW }), false);
+  check("non-string persisted tags are inactive", isAjoopMemoryRecordActive({ ...active, tags: [42] }, { now: NOW }), false);
   check("missing createdAt is inactive", isAjoopMemoryRecordActive({ ...active, createdAt: undefined }, { now: NOW }), false);
   check("expiry before creation is inactive", isAjoopMemoryRecordActive({ ...active, expiresAt: new Date(NOW - 1).toISOString() }, { now: NOW }), false);
   check(
