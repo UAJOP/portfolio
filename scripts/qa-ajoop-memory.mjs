@@ -31,15 +31,20 @@ const NOW = Date.parse("2026-09-08T00:00:00.000Z");
 const base = Object.freeze({
   kind: AJOOP_MEMORY_KINDS.PREFERENCE,
   text: "Prefer concise implementation steps during live operations.",
-  audience: AJOOP_MEMORY_AUDIENCES.OWNER_ONLY,
+  tags: ["workflow", "Live Ops", "workflow"],
+});
+const writeContext = Object.freeze({
+  now: NOW,
+  surface: AJOOP_MEMORY_SURFACES.OWNER_PRIVATE,
+  authenticatedOwner: true,
   consent: "explicit",
   provenance: AJOOP_MEMORY_PROVENANCE.OWNER_STATED,
   sensitivity: AJOOP_MEMORY_SENSITIVITY.NORMAL,
-  tags: ["workflow", "Live Ops", "workflow"],
 });
+const evaluate = (candidate, patch = {}) => evaluateAjoopMemoryWrite(candidate, { ...writeContext, ...patch });
 
 {
-  const result = evaluateAjoopMemoryWrite(base, { now: NOW });
+  const result = evaluate(base);
   ok("an explicit normal owner memory is accepted", result.ok);
   check("accepted record uses schema v1", result.record.version, AJOOP_MEMORY_SCHEMA_VERSION);
   check("memory is owner-only", result.record.audience, AJOOP_MEMORY_AUDIENCES.OWNER_ONLY);
@@ -52,35 +57,37 @@ const base = Object.freeze({
   ok("record is frozen", Object.isFrozen(result.record));
 }
 
-for (const [label, patch, code] of [
-  ["non-object candidates are rejected", null, "invalid-candidate"],
-  ["public audience is rejected", { audience: "public" }, "owner-only-required"],
-  ["implicit consent is rejected", { consent: "implicit" }, "explicit-consent-required"],
-  ["derived provenance is not writable", { provenance: AJOOP_MEMORY_PROVENANCE.DERIVED }, "provenance-not-writable"],
-  ["connected-source provenance is not writable yet", { provenance: AJOOP_MEMORY_PROVENANCE.CONNECTED_SOURCE }, "provenance-not-writable"],
-  ["sensitive memory is rejected", { sensitivity: AJOOP_MEMORY_SENSITIVITY.SENSITIVE }, "sensitive-memory-forbidden"],
-  ["secret memory is rejected", { sensitivity: AJOOP_MEMORY_SENSITIVITY.SECRET }, "sensitive-memory-forbidden"],
-  ["unknown kinds are rejected", { kind: "misc" }, "invalid-kind"],
-  ["empty text is rejected", { text: "   " }, "empty-memory"],
-  ["overlong memory is rejected", { text: "x".repeat(AJOOP_MEMORY_MAX_TEXT_CHARS + 1) }, "memory-too-long"],
-]) {
-  const candidate = patch === null ? null : { ...base, ...patch };
-  check(label, evaluateAjoopMemoryWrite(candidate, { now: NOW }).code, code);
-}
+check("non-object candidates are rejected", evaluate(null).code, "invalid-candidate");
+check("public surface cannot write even with owner auth", evaluate(base, { surface: AJOOP_MEMORY_SURFACES.PUBLIC_PORTFOLIO }).code, "owner-private-auth-required");
+check("private surface still requires owner auth", evaluate(base, { authenticatedOwner: false }).code, "owner-private-auth-required");
+check("implicit consent is rejected", evaluate(base, { consent: "implicit" }).code, "explicit-consent-required");
+check("missing consent is rejected", evaluate(base, { consent: undefined }).code, "explicit-consent-required");
+check("derived provenance is not writable", evaluate(base, { provenance: AJOOP_MEMORY_PROVENANCE.DERIVED }).code, "provenance-not-writable");
+check("connected-source provenance is not writable yet", evaluate(base, { provenance: AJOOP_MEMORY_PROVENANCE.CONNECTED_SOURCE }).code, "provenance-not-writable");
+check("sensitive memory is rejected", evaluate(base, { sensitivity: AJOOP_MEMORY_SENSITIVITY.SENSITIVE }).code, "sensitive-memory-forbidden");
+check("secret memory is rejected", evaluate(base, { sensitivity: AJOOP_MEMORY_SENSITIVITY.SECRET }).code, "sensitive-memory-forbidden");
+check("unknown kinds are rejected", evaluate({ ...base, kind: "misc" }).code, "invalid-kind");
+check("empty text is rejected", evaluate({ ...base, text: "   " }).code, "empty-memory");
+check("overlong memory is rejected", evaluate({ ...base, text: "x".repeat(AJOOP_MEMORY_MAX_TEXT_CHARS + 1) }).code, "memory-too-long");
 
 for (const field of ["messages", "history", "transcript", "question", "answer", "raw"]) {
-  const result = evaluateAjoopMemoryWrite({ ...base, [field]: [] }, { now: NOW });
+  const result = evaluate({ ...base, [field]: [] });
   check(`raw conversation field ${field} is forbidden`, result.code, "raw-conversation-forbidden");
+}
+
+for (const field of ["version", "audience", "authority", "consent", "provenance", "sensitivity", "createdAt", "expiresAt"]) {
+  const result = evaluate({ ...base, [field]: "caller-value" });
+  check(`caller policy field ${field} is forbidden`, result.code, "caller-policy-field-forbidden");
 }
 
 {
   const tags = Array.from({ length: AJOOP_MEMORY_MAX_TAGS + 4 }, (_, index) => `Tag-${index}`);
-  const result = evaluateAjoopMemoryWrite({ ...base, tags }, { now: NOW });
+  const result = evaluate({ ...base, tags });
   check("tags are hard bounded", result.record.tags.length, AJOOP_MEMORY_MAX_TAGS);
 }
 
 for (const kind of Object.values(AJOOP_MEMORY_KINDS)) {
-  const result = evaluateAjoopMemoryWrite({ ...base, kind }, { now: NOW });
+  const result = evaluate({ ...base, kind });
   const expected = new Date(NOW + AJOOP_MEMORY_TTL_DAYS[kind] * 24 * 60 * 60 * 1000).toISOString();
   check(`${kind} uses its fixed ttl`, result.record.expiresAt, expected);
 }
@@ -113,13 +120,25 @@ check(
 );
 
 {
-  const result = evaluateAjoopMemoryWrite(base, { now: NOW });
-  check("memory is active before expiry", isAjoopMemoryRecordActive(result.record, { now: NOW + 1000 }), true);
-  check("memory expires exactly at its boundary", isAjoopMemoryRecordActive(result.record, { now: Date.parse(result.record.expiresAt) }), false);
-  check("expired memory stays inactive", isAjoopMemoryRecordActive(result.record, { now: Date.parse(result.record.expiresAt) + 1 }), false);
-  check("wrong schema records are inactive", isAjoopMemoryRecordActive({ ...result.record, version: 999 }, { now: NOW }), false);
-  check("non-owner records are inactive", isAjoopMemoryRecordActive({ ...result.record, audience: "public" }, { now: NOW }), false);
-  check("non-advisory records are inactive", isAjoopMemoryRecordActive({ ...result.record, authority: "authoritative" }, { now: NOW }), false);
+  const result = evaluate(base);
+  const active = result.record;
+  check("memory is active before expiry", isAjoopMemoryRecordActive(active, { now: NOW + 1000 }), true);
+  check("memory expires exactly at its boundary", isAjoopMemoryRecordActive(active, { now: Date.parse(active.expiresAt) }), false);
+  check("expired memory stays inactive", isAjoopMemoryRecordActive(active, { now: Date.parse(active.expiresAt) + 1 }), false);
+  check("wrong schema records are inactive", isAjoopMemoryRecordActive({ ...active, version: 999 }, { now: NOW }), false);
+  check("non-owner records are inactive", isAjoopMemoryRecordActive({ ...active, audience: "public" }, { now: NOW }), false);
+  check("non-advisory records are inactive", isAjoopMemoryRecordActive({ ...active, authority: "authoritative" }, { now: NOW }), false);
+  check("non-owner-stated records are inactive", isAjoopMemoryRecordActive({ ...active, provenance: AJOOP_MEMORY_PROVENANCE.DERIVED }, { now: NOW }), false);
+  check("sensitive persisted records are inactive", isAjoopMemoryRecordActive({ ...active, sensitivity: AJOOP_MEMORY_SENSITIVITY.SENSITIVE }, { now: NOW }), false);
+  check("overlong persisted text is inactive", isAjoopMemoryRecordActive({ ...active, text: "x".repeat(AJOOP_MEMORY_MAX_TEXT_CHARS + 1) }, { now: NOW }), false);
+  check("oversized persisted tags are inactive", isAjoopMemoryRecordActive({ ...active, tags: Array(AJOOP_MEMORY_MAX_TAGS + 1).fill("x") }, { now: NOW }), false);
+  check("missing createdAt is inactive", isAjoopMemoryRecordActive({ ...active, createdAt: undefined }, { now: NOW }), false);
+  check("expiry before creation is inactive", isAjoopMemoryRecordActive({ ...active, expiresAt: new Date(NOW - 1).toISOString() }, { now: NOW }), false);
+  check(
+    "retention ceiling cannot be extended in persisted data",
+    isAjoopMemoryRecordActive({ ...active, expiresAt: new Date(Date.parse(active.expiresAt) + 1).toISOString() }, { now: NOW }),
+    false,
+  );
 }
 
 if (failures.length) {
@@ -129,5 +148,5 @@ if (failures.length) {
 }
 
 console.log(
-  `Ajoop memory contract passed. ${passed} assertions · owner-only · explicit writes · no transcripts · no sensitive memory · no persistence.`,
+  `Ajoop memory contract passed. ${passed} assertions · owner-private auth · explicit writes · no transcripts · no sensitive memory · bounded retention · no persistence.`,
 );
