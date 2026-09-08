@@ -4,7 +4,6 @@ import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import {
   AJOOP_MEMORY_KINDS,
-  AJOOP_MEMORY_SURFACES,
   canUseAjoopMemory,
   evaluateAjoopMemoryWrite,
   isAjoopMemoryRecordActive,
@@ -50,7 +49,7 @@ const parseTags = (value) => {
 };
 
 const rowToStoredRecord = (row) => {
-  if (!row) return null;
+  if (!row || typeof row.id !== "string" || !MEMORY_ID_PATTERN.test(row.id)) return null;
   const tags = parseTags(row.tags_json);
   if (!tags) return null;
   return {
@@ -79,9 +78,9 @@ const contractRecordFromStored = (stored) => {
  *
  * This module intentionally has no HTTP route, model integration or RAG wiring.
  * Every operation re-checks the owner-private trust boundary, and every read
- * revalidates persisted rows through the A3.1 memory contract before returning
- * them. The default database lives under `.ajoop-runtime/`, which is ignored by
- * Git and never belongs in the public portfolio repository.
+ * revalidates persisted rows through the memory contract before returning them.
+ * The default database lives under `.ajoop-runtime/`, which is ignored by Git
+ * and never belongs in the public portfolio repository.
  */
 export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), now = () => Date.now() } = {}) {
   if (typeof dbPath !== "string" || !dbPath.trim()) {
@@ -248,10 +247,13 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
     const current = Number(at);
     if (!Number.isFinite(current)) return Object.freeze({ ok: false, code: "invalid-clock" });
 
-    const inactiveIds = selectAll.all()
-      .map(rowToStoredRecord)
-      .filter((stored) => !stored || !isAjoopMemoryRecordActive(contractRecordFromStored(stored), { now: current }))
-      .map((stored, index) => stored?.id ?? selectAll.all()[index]?.id)
+    const rows = selectAll.all();
+    const inactiveIds = rows
+      .filter((row) => {
+        const stored = rowToStoredRecord(row);
+        return !stored || !isAjoopMemoryRecordActive(contractRecordFromStored(stored), { now: current });
+      })
+      .map((row) => row.id)
       .filter((id) => typeof id === "string");
 
     if (!inactiveIds.length) {
@@ -277,7 +279,6 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
   };
 
   return Object.freeze({
-    dbPath: resolvedPath,
     write,
     listActive,
     deleteMemory,
@@ -285,8 +286,3 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
     close,
   });
 }
-
-export const AJOOP_MEMORY_STORE_OWNER_CONTEXT = Object.freeze({
-  surface: AJOOP_MEMORY_SURFACES.OWNER_PRIVATE,
-  authenticatedOwner: true,
-});
