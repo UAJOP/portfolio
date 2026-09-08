@@ -9,6 +9,7 @@
  * Usage:
  *   node scripts/ajoop-latency-profile.mjs
  *   node scripts/ajoop-latency-profile.mjs --runs=5
+ *   AJOOP_ENV_FILE=/path/to/.env.local node scripts/ajoop-latency-profile.mjs
  */
 import { performance } from "node:perf_hooks";
 import { dirname, resolve } from "node:path";
@@ -33,7 +34,8 @@ const RUNS = Math.max(
   ),
 );
 
-const { env: fileEnv } = loadEnvFile(resolve(ROOT, ".env.local"), process.env);
+const envFile = process.env.AJOOP_ENV_FILE ? resolve(process.env.AJOOP_ENV_FILE) : resolve(ROOT, ".env.local");
+const { env: fileEnv } = loadEnvFile(envFile, process.env);
 const env = {
   ...fileEnv,
   AJOOP_AI_ALLOWED_ORIGINS: fileEnv.AJOOP_AI_ALLOWED_ORIGINS || ORIGIN,
