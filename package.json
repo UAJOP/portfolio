@@ -29,6 +29,7 @@
     "ajoop:qdrant:smoke": "node scripts/ajoop-qdrant-smoke.mjs",
     "ajoop:qdrant:shadow-check": "node scripts/ajoop-qdrant-shadow-check.mjs",
     "ajoop:telemetry:status": "node scripts/ajoop-telemetry-status.mjs",
+    "ajoop:latency:profile": "node scripts/ajoop-latency-profile.mjs",
     "qa:ajoop:release": "node scripts/qa-ajoop-release.mjs && node scripts/qa-ajoop-tools.mjs && node scripts/qa-ajoop-agent.mjs && node scripts/qa-ajoop-telemetry.mjs && node scripts/qa-ajoop-golden.mjs",
     "qa:ajoop:release:live": "node scripts/qa-ajoop-release-live.mjs",
     "qa:ajoop:sinama": "node scripts/qa-ajoop-sinama.mjs",
