@@ -105,7 +105,7 @@ export const AJOOP_AGENT_PLANNING = Object.freeze({
   keep_alive: -1,
   options: Object.freeze({
     temperature: 0,
-    num_ctx: 2048,
+    num_ctx: 4096,
     num_predict: 160,
   }),
 });

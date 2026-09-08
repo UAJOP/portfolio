@@ -2251,7 +2251,7 @@ const agentFor = (options = {}) => {
   ok("the planner request declares no scope", !Object.hasOwn(plannerBody, "scope"));
   ok("nor a budget", !Object.hasOwn(plannerBody, "maxCalls"));
   ok("the sampling profile is the planner's", plannerBody.options.temperature === AJOOP_AGENT_PLANNING.options.temperature);
-  check("with a small context", plannerBody.options.num_ctx, 2048);
+  check("with the shared generation context", plannerBody.options.num_ctx, 4096);
   check("think is off", plannerBody.think, false);
   check("stream is off", plannerBody.stream, false);
 }
