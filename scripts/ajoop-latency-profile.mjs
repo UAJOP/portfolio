@@ -2,9 +2,10 @@
 /**
  * AJOOP local stage latency profiler.
  *
- * Runs the real local RAG + bounded agent stack in-process and measures only
- * coarse transport stages. It does not change production routing, persist
- * prompts, or print questions/answers/URLs/secrets.
+ * Runs the real local RAG + bounded agent stack in-process and measures coarse
+ * transport stages plus Ollama's own numeric timing counters. It does not
+ * change production routing, persist prompts, or print questions/answers/URLs,
+ * secrets, tool arguments or tool results.
  *
  * Usage:
  *   node scripts/ajoop-latency-profile.mjs
@@ -52,9 +53,13 @@ const TESTS = Object.freeze([
 ]);
 
 const STAGES = Object.freeze(["planner", "embedding", "qdrant", "generation"]);
+const OLLAMA_STAGES = new Set(["planner", "embedding", "generation"]);
 let activeSample = null;
 
 const blankStages = () => Object.fromEntries(STAGES.map((stage) => [stage, []]));
+const blankNative = () => Object.fromEntries(
+  [...OLLAMA_STAGES].map((stage) => [stage, []]),
+);
 
 function classifyFetch(url, options = {}) {
   const target = String(url || "");
@@ -71,14 +76,40 @@ function classifyFetch(url, options = {}) {
   return null;
 }
 
+const nsToMs = (value) => Number.isFinite(Number(value)) ? Number(value) / 1_000_000 : 0;
+
+function nativeMetric(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  return Object.freeze({
+    totalMs: nsToMs(payload.total_duration),
+    loadMs: nsToMs(payload.load_duration),
+    promptMs: nsToMs(payload.prompt_eval_duration),
+    evalMs: nsToMs(payload.eval_duration),
+    promptTokens: Number(payload.prompt_eval_count) || 0,
+    evalTokens: Number(payload.eval_count) || 0,
+  });
+}
+
 async function timedFetch(url, options = {}) {
   if (typeof fetch !== "function") throw new TypeError("fetch unavailable");
   const stage = classifyFetch(url, options);
+  const sample = activeSample;
   const started = performance.now();
+  let response;
   try {
-    return await fetch(url, options);
+    response = await fetch(url, options);
+    if (sample && stage && OLLAMA_STAGES.has(stage) && response?.ok && typeof response.clone === "function") {
+      try {
+        const payload = await response.clone().json();
+        const metric = nativeMetric(payload);
+        if (metric) sample.native[stage].push(metric);
+      } catch {
+        /* Native counters are diagnostics only; transport timing still stands. */
+      }
+    }
+    return response;
   } finally {
-    if (activeSample && stage) activeSample.stages[stage].push(performance.now() - started);
+    if (sample && stage) sample.stages[stage].push(performance.now() - started);
   }
 }
 
@@ -95,6 +126,20 @@ function quantile(values, q) {
 
 const round = (value) => Math.round(Number(value) || 0);
 const sum = (values) => values.reduce((total, value) => total + value, 0);
+const sumMetric = (entries, key) => entries.reduce((total, entry) => total + (Number(entry?.[key]) || 0), 0);
+
+function summarizeNative(samples, stage) {
+  const keys = ["totalMs", "loadMs", "promptMs", "evalMs", "promptTokens", "evalTokens"];
+  const perRun = Object.fromEntries(
+    keys.map((key) => [key, samples.map((sample) => sumMetric(sample.native[stage], key))]),
+  );
+  return Object.fromEntries(
+    keys.map((key) => [key, {
+      p50: round(quantile(perRun[key], 0.5)),
+      p95: round(quantile(perRun[key], 0.95)),
+    }]),
+  );
+}
 
 function summarize(samples) {
   const total = samples.map((sample) => sample.totalMs);
@@ -113,8 +158,17 @@ function summarize(samples) {
         calls: samples.reduce((count, sample) => count + sample.stages[stage].length, 0),
       }]),
     ),
+    native: Object.fromEntries([...OLLAMA_STAGES].map((stage) => [stage, summarizeNative(samples, stage)])),
     other: { p50: round(quantile(other, 0.5)), p95: round(quantile(other, 0.95)) },
   };
+}
+
+function printNative(label, value) {
+  if (!value) return;
+  console.log(
+    `${label.padEnd(11)}prompt ${value.promptMs.p50}ms · decode ${value.evalMs.p50}ms · ` +
+      `promptTok ${value.promptTokens.p50} · evalTok ${value.evalTokens.p50}`,
+  );
 }
 
 function printSummary(id, summary) {
@@ -126,11 +180,14 @@ function printSummary(id, summary) {
     console.log(`${stage.padEnd(11)}p50 ${value.p50}ms · p95 ${value.p95}ms · calls ${value.calls}`);
   }
   console.log(`other       p50 ${summary.other.p50}ms · p95 ${summary.other.p95}ms`);
+  printNative("planner llm", summary.native.planner);
+  printNative("embed llm", summary.native.embedding);
+  printNative("generate llm", summary.native.generation);
 }
 
 console.log("AJOOP stage latency profiler");
 console.log(`runs/case   ${RUNS}`);
-console.log("privacy     no questions, answers, URLs, tool args/results, or secrets are printed");
+console.log("privacy     only aggregate numeric timings/token counts are printed; no content or secrets");
 
 const init = await rag.initialize();
 if (!init?.ready) {
@@ -147,7 +204,7 @@ const buckets = new Map(TESTS.map((test) => [test.id, []]));
 
 for (let run = 0; run < RUNS; run += 1) {
   for (const test of TESTS) {
-    const sample = { totalMs: 0, stages: blankStages() };
+    const sample = { totalMs: 0, stages: blankStages(), native: blankNative() };
     activeSample = sample;
     const started = performance.now();
     let result;
