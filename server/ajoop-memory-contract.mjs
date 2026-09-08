@@ -233,7 +233,17 @@ export function isAjoopMemoryRecordActive(record, { now = Date.now() } = {}) {
   if (typeof record.text !== "string") return false;
   const normalizedText = record.text.replace(/\s+/g, " ").trim();
   if (!normalizedText || normalizedText.length > AJOOP_MEMORY_MAX_TEXT_CHARS) return false;
+  if (normalizedText !== record.text) return false;
+
   if (!Array.isArray(record.tags) || record.tags.length > AJOOP_MEMORY_MAX_TAGS) return false;
+  const seenTags = new Set();
+  for (const value of record.tags) {
+    if (typeof value !== "string") return false;
+    const normalizedTag = value.replace(/\s+/g, " ").trim().toLowerCase();
+    if (!normalizedTag || normalizedTag.length > AJOOP_MEMORY_MAX_TAG_CHARS) return false;
+    if (normalizedTag !== value || seenTags.has(normalizedTag)) return false;
+    seenTags.add(normalizedTag);
+  }
 
   const createdAt = Date.parse(record.createdAt);
   const expiresAt = Date.parse(record.expiresAt);
