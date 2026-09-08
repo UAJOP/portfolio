@@ -170,10 +170,11 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
   `);
 
   const deleteByIdStatement = db.prepare("DELETE FROM ajoop_memory_v1 WHERE id = ?");
+  /* A missing replacement target must NOT resurrect its source. Keep the edge
+   * as the retirement marker until the old row itself leaves bounded storage. */
   const cleanupReplacementEdges = db.prepare(`
     DELETE FROM ajoop_memory_replacements_v1
      WHERE old_id NOT IN (SELECT id FROM ajoop_memory_v1)
-        OR new_id NOT IN (SELECT id FROM ajoop_memory_v1)
   `);
 
   const selectAll = db.prepare(`
@@ -238,11 +239,12 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
     const evaluation = evaluateAjoopMemoryWrite(candidate, { ...writerContext, now: writeNow });
     if (!evaluation.ok) return evaluation;
 
-    const persisted = persistEvaluated(evaluation, writeNow);
-    if (selectReplacementByOld.get(persisted.id)) {
+    const id = memoryIdFor(evaluation.record);
+    if (selectReplacementByOld.get(id)) {
       return Object.freeze({ ok: false, code: "memory-retired" });
     }
 
+    const persisted = persistEvaluated(evaluation, writeNow);
     return Object.freeze({
       ok: true,
       code: persisted.existed ? "refreshed" : "stored",
