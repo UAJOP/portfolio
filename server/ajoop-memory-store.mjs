@@ -81,6 +81,13 @@ const contractRecordFromStored = (stored) => {
  * revalidates persisted rows through the memory contract before returning them.
  * The default database lives under `.ajoop-runtime/`, which is ignored by Git
  * and never belongs in the public portfolio repository.
+ *
+ * Corrections are explicit and provenance-preserving. Replacing a memory does
+ * not silently overwrite its old row: the old id is retired through a bounded
+ * replacement edge and the corrected record gets its own content-derived id.
+ * Active reads hide retired rows, while the old record and its edge remain only
+ * until normal retention/purge removes them. This avoids competing truths
+ * without turning correction history into an immortal audit log.
  */
 export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), now = () => Date.now() } = {}) {
   if (typeof dbPath !== "string" || !dbPath.trim()) {
@@ -114,6 +121,15 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
       ON ajoop_memory_v1(expires_at);
     CREATE INDEX IF NOT EXISTS idx_ajoop_memory_v1_kind_created_at
       ON ajoop_memory_v1(kind, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS ajoop_memory_replacements_v1 (
+      old_id TEXT PRIMARY KEY,
+      new_id TEXT NOT NULL,
+      replaced_at TEXT NOT NULL,
+      CHECK (old_id <> new_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_ajoop_memory_replacements_v1_new_id
+      ON ajoop_memory_replacements_v1(new_id);
   `);
 
   const selectById = db.prepare(`
@@ -121,6 +137,12 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
            sensitivity, tags_json, created_at, expires_at
       FROM ajoop_memory_v1
      WHERE id = ?
+  `);
+
+  const selectReplacementByOld = db.prepare(`
+    SELECT old_id, new_id, replaced_at
+      FROM ajoop_memory_replacements_v1
+     WHERE old_id = ?
   `);
 
   const upsert = db.prepare(`
@@ -142,7 +164,19 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
       updated_at = excluded.updated_at
   `);
 
+  const insertReplacement = db.prepare(`
+    INSERT INTO ajoop_memory_replacements_v1 (old_id, new_id, replaced_at)
+    VALUES (?, ?, ?)
+  `);
+
   const deleteByIdStatement = db.prepare("DELETE FROM ajoop_memory_v1 WHERE id = ?");
+  /* A missing replacement target must NOT resurrect its source. Keep the edge
+   * as the retirement marker until the old row itself leaves bounded storage. */
+  const cleanupReplacementEdges = db.prepare(`
+    DELETE FROM ajoop_memory_replacements_v1
+     WHERE old_id NOT IN (SELECT id FROM ajoop_memory_v1)
+  `);
+
   const selectAll = db.prepare(`
     SELECT id, version, kind, text, audience, authority, provenance,
            sensitivity, tags_json, created_at, expires_at
@@ -151,20 +185,22 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
   `);
 
   const listAny = db.prepare(`
-    SELECT id, version, kind, text, audience, authority, provenance,
-           sensitivity, tags_json, created_at, expires_at
-      FROM ajoop_memory_v1
-     WHERE expires_at > ?
-     ORDER BY created_at DESC, id ASC
+    SELECT m.id, m.version, m.kind, m.text, m.audience, m.authority, m.provenance,
+           m.sensitivity, m.tags_json, m.created_at, m.expires_at
+      FROM ajoop_memory_v1 AS m
+ LEFT JOIN ajoop_memory_replacements_v1 AS r ON r.old_id = m.id
+     WHERE m.expires_at > ? AND r.old_id IS NULL
+     ORDER BY m.created_at DESC, m.id ASC
      LIMIT ?
   `);
 
   const listByKind = db.prepare(`
-    SELECT id, version, kind, text, audience, authority, provenance,
-           sensitivity, tags_json, created_at, expires_at
-      FROM ajoop_memory_v1
-     WHERE expires_at > ? AND kind = ?
-     ORDER BY created_at DESC, id ASC
+    SELECT m.id, m.version, m.kind, m.text, m.audience, m.authority, m.provenance,
+           m.sensitivity, m.tags_json, m.created_at, m.expires_at
+      FROM ajoop_memory_v1 AS m
+ LEFT JOIN ajoop_memory_replacements_v1 AS r ON r.old_id = m.id
+     WHERE m.expires_at > ? AND m.kind = ? AND r.old_id IS NULL
+     ORDER BY m.created_at DESC, m.id ASC
      LIMIT ?
   `);
 
@@ -173,12 +209,7 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
     if (closed) throw new Error("AJOOP memory store is closed");
   };
 
-  const write = (candidate, writerContext = {}) => {
-    ensureOpen();
-    const writeNow = Number(writerContext.now ?? now());
-    const evaluation = evaluateAjoopMemoryWrite(candidate, { ...writerContext, now: writeNow });
-    if (!evaluation.ok) return evaluation;
-
+  const persistEvaluated = (evaluation, writeNow) => {
     const id = memoryIdFor(evaluation.record);
     const existed = Boolean(selectById.get(id));
     const updatedAt = new Date(writeNow).toISOString();
@@ -199,12 +230,93 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
       updatedAt,
     );
 
+    return { id, existed, record };
+  };
+
+  const write = (candidate, writerContext = {}) => {
+    ensureOpen();
+    const writeNow = Number(writerContext.now ?? now());
+    const evaluation = evaluateAjoopMemoryWrite(candidate, { ...writerContext, now: writeNow });
+    if (!evaluation.ok) return evaluation;
+
+    const id = memoryIdFor(evaluation.record);
+    if (selectReplacementByOld.get(id)) {
+      return Object.freeze({ ok: false, code: "memory-retired" });
+    }
+
+    const persisted = persistEvaluated(evaluation, writeNow);
     return Object.freeze({
       ok: true,
-      code: existed ? "refreshed" : "stored",
-      id,
-      record: Object.freeze({ id, ...record }),
+      code: persisted.existed ? "refreshed" : "stored",
+      id: persisted.id,
+      record: Object.freeze({ id: persisted.id, ...persisted.record }),
     });
+  };
+
+  /**
+   * Explicitly replace one active memory with a corrected owner statement.
+   *
+   * The replacement candidate passes through the exact same write contract as
+   * a normal memory. The source id must still be active and not already retired.
+   * A content-identical correction is just a refresh and creates no self-edge.
+   * A target id that is already retired is rejected to prevent replacement
+   * cycles. The old row is retained only within its original TTL and hidden from
+   * active reads immediately after the transaction commits.
+   */
+  const replaceMemory = (id, candidate, writerContext = {}) => {
+    ensureOpen();
+    if (!hasOwnerAccess(writerContext)) return accessDenied();
+    if (typeof id !== "string" || !MEMORY_ID_PATTERN.test(id)) {
+      return Object.freeze({ ok: false, code: "invalid-memory-id" });
+    }
+
+    const writeNow = Number(writerContext.now ?? now());
+    if (!Number.isFinite(writeNow)) return Object.freeze({ ok: false, code: "invalid-clock" });
+
+    const sourceRow = selectById.get(id);
+    const source = rowToStoredRecord(sourceRow);
+    if (!source || !isAjoopMemoryRecordActive(contractRecordFromStored(source), { now: writeNow })) {
+      return Object.freeze({ ok: false, code: "memory-not-active" });
+    }
+    if (selectReplacementByOld.get(id)) {
+      return Object.freeze({ ok: false, code: "memory-retired" });
+    }
+
+    const evaluation = evaluateAjoopMemoryWrite(candidate, { ...writerContext, now: writeNow });
+    if (!evaluation.ok) return evaluation;
+    const newId = memoryIdFor(evaluation.record);
+
+    if (newId === id) {
+      const persisted = persistEvaluated(evaluation, writeNow);
+      return Object.freeze({
+        ok: true,
+        code: "refreshed",
+        id,
+        previousId: id,
+        record: Object.freeze({ id, ...persisted.record }),
+      });
+    }
+
+    if (selectReplacementByOld.get(newId)) {
+      return Object.freeze({ ok: false, code: "replacement-target-retired" });
+    }
+
+    db.exec("BEGIN IMMEDIATE");
+    try {
+      const persisted = persistEvaluated(evaluation, writeNow);
+      insertReplacement.run(id, persisted.id, new Date(writeNow).toISOString());
+      db.exec("COMMIT");
+      return Object.freeze({
+        ok: true,
+        code: "replaced",
+        id: persisted.id,
+        previousId: id,
+        record: Object.freeze({ id: persisted.id, ...persisted.record }),
+      });
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
   };
 
   const listActive = ({ context = {}, kind = null, limit = AJOOP_MEMORY_LIST_LIMIT, at = now() } = {}) => {
@@ -237,8 +349,16 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
     if (typeof id !== "string" || !MEMORY_ID_PATTERN.test(id)) {
       return Object.freeze({ ok: false, code: "invalid-memory-id" });
     }
-    const result = deleteByIdStatement.run(id);
-    return Object.freeze({ ok: true, code: "deleted", deleted: Number(result.changes) === 1 });
+    db.exec("BEGIN IMMEDIATE");
+    try {
+      const result = deleteByIdStatement.run(id);
+      cleanupReplacementEdges.run();
+      db.exec("COMMIT");
+      return Object.freeze({ ok: true, code: "deleted", deleted: Number(result.changes) === 1 });
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
   };
 
   const purgeInactive = ({ context = {}, at = now() } = {}) => {
@@ -257,6 +377,7 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
       .filter((id) => typeof id === "string");
 
     if (!inactiveIds.length) {
+      cleanupReplacementEdges.run();
       return Object.freeze({ ok: true, code: "purged", removed: 0 });
     }
 
@@ -264,6 +385,7 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
     try {
       let removed = 0;
       for (const id of inactiveIds) removed += Number(deleteByIdStatement.run(id).changes);
+      cleanupReplacementEdges.run();
       db.exec("COMMIT");
       return Object.freeze({ ok: true, code: "purged", removed });
     } catch (error) {
@@ -280,6 +402,7 @@ export function createAjoopMemoryStore({ dbPath = defaultAjoopMemoryDbPath(), no
 
   return Object.freeze({
     write,
+    replaceMemory,
     listActive,
     deleteMemory,
     purgeInactive,
