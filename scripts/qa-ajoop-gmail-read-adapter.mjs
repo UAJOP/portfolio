@@ -1,6 +1,9 @@
 #!/usr/bin/env node
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import {
+  AJOOP_GMAIL_METADATA_CONCURRENCY,
   AJOOP_GMAIL_MAX_BODY_CHARS,
   AJOOP_GMAIL_MAX_RESULT_CHARS,
   AJOOP_GMAIL_MAX_THREAD_BODY_CHARS,
@@ -17,6 +20,11 @@ import {
   AJOOP_GMAIL_READONLY_SCOPE,
   createGoogleGmailReadClient,
 } from "../server/gmail-provider-client.mjs";
+import {
+  authorizeDesktopGmailRead,
+  readDesktopClientCredentials,
+  runGmailAuthBootstrap,
+} from "./ajoop-gmail-auth.mjs";
 
 let passed = 0;
 const failures = [];
@@ -52,8 +60,10 @@ const message = ({
 });
 
 class FakeGmailClient {
-  constructor({ references = [], metadata = new Map(), thread = null, errors = {} } = {}) {
+  constructor({ references = [], hasMore = false, estimatedResultCount, metadata = new Map(), thread = null, errors = {} } = {}) {
     this.references = references;
+    this.hasMore = hasMore;
+    this.estimatedResultCount = estimatedResultCount;
     this.metadata = metadata;
     this.thread = thread;
     this.errors = errors;
@@ -64,7 +74,11 @@ class FakeGmailClient {
   async searchMessages(args) {
     this.calls.push(["searchMessages", args]);
     if (this.errors.searchMessages) throw this.errors.searchMessages;
-    return this.references;
+    return {
+      references: this.references,
+      hasMore: this.hasMore,
+      ...(this.estimatedResultCount === undefined ? {} : { estimatedResultCount: this.estimatedResultCount }),
+    };
   }
 
   async getMessageMetadata(args) {
@@ -164,6 +178,78 @@ try {
   check("search result provenance is connected-source", search.provenance, "connected-source");
   check("search never emits canonical provenance", search.provenance === "canonical-portfolio", false);
 
+  const pagedReferences = Array.from({ length: 20 }, (_, index) => ({ id: `p${index}` }));
+  const pagedMetadata = new Map(pagedReferences.map(({ id }, index) => [id, message({
+    id,
+    internalDate: String(1760000010000 + index),
+  })]));
+  const paged = await executeAjoopGmailRead(
+    approved(T.GMAIL_SEARCH_MESSAGES, { query: "is:unread", limit: 20 }),
+    { gmailClient: new FakeGmailClient({
+      references: pagedReferences,
+      hasMore: true,
+      estimatedResultCount: 73,
+      metadata: pagedMetadata,
+    }) },
+  );
+  check("provider next page makes search truncation explicit", paged.data.truncated, true);
+  check("unknown omitted result count is not fabricated", paged.data.omittedResultCount, null);
+  check("provider result estimate is separately preserved", paged.data.estimatedResultCount, 73);
+
+  const complete = await executeAjoopGmailRead(
+    approved(T.GMAIL_SEARCH_MESSAGES, { query: "newer_than:1d", limit: 20 }),
+    { gmailClient: new FakeGmailClient({
+      references: pagedReferences.slice(0, 2),
+      metadata: pagedMetadata,
+    }) },
+  );
+  check("search without next page is not truncated", complete.data.truncated, false);
+  check("complete search has an exact zero omitted count", complete.data.omittedResultCount, 0);
+
+  let activeMetadataCalls = 0;
+  let maxActiveMetadataCalls = 0;
+  const concurrentReferences = Array.from({ length: 9 }, (_, index) => ({ id: `c${index}` }));
+  const concurrencyClient = {
+    async searchMessages() {
+      return { references: concurrentReferences, hasMore: false };
+    },
+    async getMessageMetadata({ messageId }) {
+      activeMetadataCalls += 1;
+      maxActiveMetadataCalls = Math.max(maxActiveMetadataCalls, activeMetadataCalls);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      activeMetadataCalls -= 1;
+      return message({ id: messageId });
+    },
+    async readThread() { return { id: "t1", messages: [] }; },
+  };
+  const concurrent = await executeAjoopGmailRead(
+    approved(T.GMAIL_SEARCH_MESSAGES, { query: "concurrency", limit: 9 }),
+    { gmailClient: concurrencyClient },
+  );
+  ok("metadata fetches run concurrently", maxActiveMetadataCalls > 1);
+  ok("metadata concurrency stays within its fixed bound", maxActiveMetadataCalls <= AJOOP_GMAIL_METADATA_CONCURRENCY);
+  deepCheck(
+    "concurrent metadata fetch preserves provider order",
+    concurrent.data.results.map(({ messageId }) => messageId),
+    concurrentReferences.map(({ id }) => id),
+  );
+  const deterministicFailureClient = {
+    async searchMessages() { return { references: [{ id: "d0" }, { id: "d1" }], hasMore: false }; },
+    async getMessageMetadata({ messageId }) {
+      if (messageId === "d0") {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        throw Object.assign(new Error("first reference failure"), { response: { status: 404 } });
+      }
+      throw Object.assign(new Error("faster later failure"), { response: { status: 429 } });
+    },
+    async readThread() { return { id: "t1", messages: [] }; },
+  };
+  const deterministicFailure = await executeAjoopGmailRead(
+    approved(T.GMAIL_SEARCH_MESSAGES, { query: "failure-order", limit: 2 }),
+    { gmailClient: deterministicFailureClient },
+  );
+  check("concurrent metadata failure follows provider reference order", deterministicFailure.error.code, "provider-not-found");
+
   const empty = await executeAjoopGmailRead(
     approved(T.GMAIL_SEARCH_MESSAGES, { query: "from:nobody@example.invalid", limit: 20 }),
     { gmailClient: new FakeGmailClient() },
@@ -243,6 +329,44 @@ try {
   const invalidBody = await readBody({ mimeType: "text/plain", headers: [], body: { data: "%%%invalid%%%" } });
   check("invalid base64 provider payload is rejected", invalidBody.error.code, "provider-response-invalid");
 
+  const boundaryBytes = Buffer.concat([
+    Buffer.alloc(191999, 0x61),
+    Buffer.from("😀", "utf8"),
+    Buffer.alloc(32, 0x62),
+  ]);
+  const boundaryBody = await readBody({
+    mimeType: "text/plain",
+    headers: [],
+    body: { data: boundaryBytes.toString("base64url") },
+  });
+  check("oversized multibyte boundary returns readable data", boundaryBody.ok, true);
+  check("oversized multibyte boundary is explicitly truncated", boundaryBody.data.messages[0].truncated, true);
+  check("oversized multibyte boundary preserves its readable prefix", boundaryBody.data.messages[0].bodyText, "a".repeat(AJOOP_GMAIL_MAX_BODY_CHARS));
+
+  const oversizedUnicode = await readBody({
+    mimeType: "text/plain",
+    headers: [],
+    body: { data: base64url("ğ😀".repeat(40000)) },
+  });
+  check("valid oversized Unicode remains readable", oversizedUnicode.ok, true);
+  check("valid oversized Unicode reports truncation", oversizedUnicode.data.messages[0].truncated, true);
+
+  const invalidUtf8 = await readBody({
+    mimeType: "text/plain",
+    headers: [],
+    body: { data: Buffer.from([0xC3, 0x28]).toString("base64url") },
+  });
+  check("non-truncated malformed UTF-8 is rejected", invalidUtf8.error.code, "provider-response-invalid");
+
+  for (const malformed of ["A=", "YQ=", "YQ===", "YQ$", "YQ==suffix", "A"]) {
+    const malformedBody = await readBody({ mimeType: "text/plain", headers: [], body: { data: malformed } });
+    check(`non-canonical base64url is rejected: ${malformed}`, malformedBody.error.code, "provider-response-invalid");
+  }
+  const canonicalBody = await readBody({ mimeType: "text/plain", headers: [], body: { data: "YQ" } });
+  check("canonical unpadded base64url remains accepted", canonicalBody.data.messages[0].bodyText, "a");
+  const canonicalPaddedBody = await readBody({ mimeType: "text/plain", headers: [], body: { data: "YQ==" } });
+  check("canonical padded base64url remains accepted", canonicalPaddedBody.data.messages[0].bodyText, "a");
+
   /* ------------------------------------------------ thread bounds/order */
 
   const unorderedThread = {
@@ -308,6 +432,33 @@ try {
     check(`provider ${status} is normalized`, result.error.code, expected);
     check(`provider ${status} raw message is not exposed`, JSON.stringify(result).includes("private provider error"), false);
   }
+  for (const reason of ["rateLimitExceeded", "userRateLimitExceeded", "dailyLimitExceeded"]) {
+    const quotaError = Object.assign(new Error("private quota response"), {
+      response: { status: 403, data: { error: { errors: [{ reason }] } } },
+    });
+    const quotaResult = await executeAjoopGmailRead(searchRequest, {
+      gmailClient: new FakeGmailClient({ errors: { searchMessages: quotaError } }),
+    });
+    check(`provider 403 ${reason} maps to rate limited`, quotaResult.error.code, "provider-rate-limited");
+    check(`provider 403 ${reason} details stay private`, JSON.stringify(quotaResult).includes(reason), false);
+  }
+  for (const reason of ["domainPolicy", "unknownReason"]) {
+    const permissionError = Object.assign(new Error("private permission response"), {
+      response: { status: 403, data: { error: { errors: [{ reason }] } } },
+    });
+    const permissionResult = await executeAjoopGmailRead(searchRequest, {
+      gmailClient: new FakeGmailClient({ errors: { searchMessages: permissionError } }),
+    });
+    check(`provider 403 ${reason} remains permission denied`, permissionResult.error.code, "provider-permission-denied");
+  }
+  const hostileReason = new Proxy({}, { getOwnPropertyDescriptor() { throw new Error("private reason getter"); } });
+  const hostileReasonError = Object.assign(new Error("private hostile reason"), {
+    response: { status: 403, data: { error: { errors: [hostileReason] } } },
+  });
+  const hostileReasonResult = await executeAjoopGmailRead(searchRequest, {
+    gmailClient: new FakeGmailClient({ errors: { searchMessages: hostileReasonError } }),
+  });
+  check("hostile 403 reason fails closed as permission denied", hostileReasonResult.error.code, "provider-permission-denied");
   const networkSecret = "ya29.synthetic-secret-token";
   const unavailable = await executeAjoopGmailRead(searchRequest, {
     gmailClient: new FakeGmailClient({ errors: { searchMessages: new Error(`Authorization: Bearer ${networkSecret}`) } }),
@@ -331,6 +482,110 @@ try {
   check("prompt-injection text remains inert data", injection.data.messages[0].bodyText, promptInjection);
   check("prompt-injection data retains connected provenance", injection.provenance, "connected-source");
 
+  /* --------------------------------------------------- OAuth bootstrap */
+
+  const authTempDirectory = await mkdtemp(path.join(tmpdir(), "ajoop-gmail-auth-"));
+  try {
+    let oauthFactoryOptions;
+    let generatedAuthOptions;
+    let tokenExchangeOptions;
+    const refreshToken = await authorizeDesktopGmailRead({
+      clientId: "desktop-id",
+      clientSecret: "desktop-secret",
+      timeoutMs: 1000,
+      oauthClientFactory: (options) => {
+        oauthFactoryOptions = options;
+        return {
+          async generateCodeVerifierAsync() { return { codeVerifier: "verifier", codeChallenge: "challenge" }; },
+          generateAuthUrl(optionsForUrl) {
+            generatedAuthOptions = optionsForUrl;
+            return "https://accounts.example.invalid/authorize";
+          },
+          async getToken(optionsForToken) {
+            tokenExchangeOptions = optionsForToken;
+            return { tokens: { refresh_token: "loopback-refresh-token" } };
+          },
+        };
+      },
+      browserOpener: async () => {
+        const callbackUrl = new URL(oauthFactoryOptions.redirectUri);
+        callbackUrl.searchParams.set("code", "authorization-code");
+        callbackUrl.searchParams.set("state", generatedAuthOptions.state);
+        const response = await fetch(callbackUrl);
+        check("loopback callback accepts matching OAuth state", response.status, 200);
+      },
+    });
+    check("maintained OAuth flow returns its refresh token", refreshToken, "loopback-refresh-token");
+    check("OAuth callback uses ephemeral IPv4 loopback", /^http:\/\/127\.0\.0\.1:\d+\/oauth2callback$/.test(oauthFactoryOptions.redirectUri), true);
+    deepCheck("OAuth flow requests only Gmail read-only scope", generatedAuthOptions.scope, [AJOOP_GMAIL_READONLY_SCOPE]);
+    check("OAuth flow uses PKCE S256", generatedAuthOptions.code_challenge_method, "S256");
+    check("OAuth flow passes its PKCE verifier to token exchange", tokenExchangeOptions.codeVerifier, "verifier");
+    check("OAuth flow passes the exact loopback redirect to token exchange", tokenExchangeOptions.redirect_uri, oauthFactoryOptions.redirectUri);
+    ok("OAuth flow generates a nontrivial random state", typeof generatedAuthOptions.state === "string" && generatedAuthOptions.state.length >= 32);
+
+    const installedPath = path.join(authTempDirectory, "installed.json");
+    const webPath = path.join(authTempDirectory, "web.json");
+    const malformedInstalledPath = path.join(authTempDirectory, "malformed-installed.json");
+    const missingClientIdPath = path.join(authTempDirectory, "missing-client-id.json");
+    const storedTokenPath = path.join(authTempDirectory, "runtime", "oauth-token.json");
+    await writeFile(installedPath, JSON.stringify({ installed: { client_id: "desktop-id", client_secret: "desktop-secret" } }));
+    await writeFile(webPath, JSON.stringify({ web: { client_id: "web-id", client_secret: "web-secret" } }));
+    await writeFile(malformedInstalledPath, JSON.stringify({ installed: { client_id: "desktop-id" } }));
+    await writeFile(missingClientIdPath, JSON.stringify({ installed: { client_secret: "desktop-secret" } }));
+
+    deepCheck(
+      "Desktop OAuth credentials are accepted",
+      await readDesktopClientCredentials(installedPath),
+      { clientId: "desktop-id", clientSecret: "desktop-secret" },
+    );
+    const credentialError = async (filePath) => {
+      try { await readDesktopClientCredentials(filePath); return null; } catch (error) { return error?.message; }
+    };
+    check("web OAuth credentials are rejected", await credentialError(webPath), "invalid-oauth-client-file");
+    check("malformed Desktop OAuth credentials are rejected", await credentialError(malformedInstalledPath), "invalid-oauth-client-file");
+    check("Desktop OAuth credentials missing client id are rejected", await credentialError(missingClientIdPath), "invalid-oauth-client-file");
+
+    let authorizationCalls = 0;
+    const createdAuth = await runGmailAuthBootstrap({
+      clientFilePath: installedPath,
+      tokenFilePath: storedTokenPath,
+      authorize: async ({ clientId, clientSecret }) => {
+        authorizationCalls += 1;
+        check("auth bootstrap passes the Desktop client id", clientId, "desktop-id");
+        check("auth bootstrap passes the Desktop client secret", clientSecret, "desktop-secret");
+        return "synthetic-refresh-token";
+      },
+    });
+    check("auth bootstrap creates a new local token", createdAuth.status, "created");
+    const storedToken = JSON.parse(await readFile(storedTokenPath, "utf8"));
+    check("stored token retains exact Gmail read-only scope", storedToken.scope, AJOOP_GMAIL_READONLY_SCOPE);
+    const existingAuth = await runGmailAuthBootstrap({
+      clientFilePath: installedPath,
+      tokenFilePath: storedTokenPath,
+      authorize: async () => { authorizationCalls += 1; return "must-not-overwrite"; },
+    });
+    check("existing valid token is preserved", existingAuth.status, "exists");
+    check("existing token does not reopen authorization", authorizationCalls, 1);
+    check("existing token is not overwritten", JSON.parse(await readFile(storedTokenPath, "utf8")).refresh_token, "synthetic-refresh-token");
+    const invalidTokenPath = path.join(authTempDirectory, "invalid-token.json");
+    await writeFile(invalidTokenPath, "{}\n");
+    let invalidExistingTokenError = null;
+    try {
+      await runGmailAuthBootstrap({
+        clientFilePath: installedPath,
+        tokenFilePath: invalidTokenPath,
+        authorize: async () => { authorizationCalls += 1; return "must-not-run"; },
+      });
+    } catch (error) {
+      invalidExistingTokenError = error?.message;
+    }
+    check("invalid existing token fails before authorization", invalidExistingTokenError, "invalid-existing-token-file");
+    check("invalid existing token is never overwritten", await readFile(invalidTokenPath, "utf8"), "{}\n");
+    check("invalid existing token does not reopen authorization", authorizationCalls, 1);
+  } finally {
+    await rm(authTempDirectory, { recursive: true, force: true });
+  }
+
   const writeGuard = new FakeGmailClient({ references: [], thread: { id: "t1", messages: [] } });
   await executeAjoopGmailRead(searchRequest, { gmailClient: writeGuard });
   await executeAjoopGmailRead(threadRequest, { gmailClient: writeGuard });
@@ -340,14 +595,30 @@ try {
 
   const adapterSource = await readFile(new URL("../server/ajoop-gmail-read-adapter.mjs", import.meta.url), "utf8");
   const providerSource = await readFile(new URL("../server/gmail-provider-client.mjs", import.meta.url), "utf8");
+  const authSource = await readFile(new URL("./ajoop-gmail-auth.mjs", import.meta.url), "utf8");
   check("adapter has no memory persistence dependency", /memory|sqlite|writeFile/.test(adapterSource), false);
   check("provider wrapper has no Gmail mutation method", /users\.(?:messages|threads)\.(?:send|modify|trash|untrash|delete|batchModify|batchDelete)/.test(providerSource), false);
   check("provider uses exact Gmail read-only scope", AJOOP_GMAIL_READONLY_SCOPE, "https://www.googleapis.com/auth/gmail.readonly");
   check("provider wrapper does not expose Authorization headers", /Authorization|Bearer/.test(providerSource), false);
+  check("auth bootstrap no longer imports deprecated local-auth", authSource.includes("@google-cloud/local-auth"), false);
+  check("auth bootstrap binds to IPv4 loopback", authSource.includes('"127.0.0.1"'), true);
+  check("auth bootstrap uses random OAuth state", /randomBytes\(32\).*state/s.test(authSource), true);
+  check("auth bootstrap uses PKCE S256", authSource.includes('code_challenge_method: "S256"'), true);
+  check("auth bootstrap requests only Gmail read-only scope", authSource.includes("scope: [AJOOP_GMAIL_READONLY_SCOPE]"), true);
   deepCheck(
     "official provider wrapper exposes only three read methods",
     Object.keys(createGoogleGmailReadClient({ auth: { request: async () => ({ data: {} }) } })).sort(),
     ["getMessageMetadata", "readThread", "searchMessages"],
+  );
+  const providerWithPage = createGoogleGmailReadClient({ auth: {
+    request: async () => ({
+      data: { messages: [{ id: "provider-message" }], nextPageToken: "private-page-token", resultSizeEstimate: 73 },
+    }),
+  } });
+  deepCheck(
+    "official wrapper preserves bounded pagination metadata without its token",
+    await providerWithPage.searchMessages({ query: "provider", limit: 20 }),
+    { references: [{ id: "provider-message" }], hasMore: true, estimatedResultCount: 73 },
   );
 } catch (error) {
   failures.push(`unexpected exception\n      ${error?.stack || error}`);

@@ -73,7 +73,6 @@
   },
   "devDependencies": {
     "@cspell/dict-tr-tr": "3.0.6",
-    "@google-cloud/local-auth": "3.0.1",
     "@lhci/cli": "0.15.1",
     "@vitejs/plugin-react": "6.1.0",
     "cspell": "10.0.1",

@@ -37,7 +37,15 @@ export function createGoogleGmailReadClient({ auth }) {
         maxResults: limit,
         includeSpamTrash: false,
       });
-      return response.data?.messages ?? [];
+      const data = response.data ?? {};
+      const estimatedResultCount = Number.isSafeInteger(data.resultSizeEstimate) && data.resultSizeEstimate >= 0
+        ? data.resultSizeEstimate
+        : null;
+      return Object.freeze({
+        references: data.messages ?? [],
+        hasMore: Boolean(data.nextPageToken),
+        ...(estimatedResultCount === null ? {} : { estimatedResultCount }),
+      });
     },
 
     async getMessageMetadata({ messageId }) {

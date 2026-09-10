@@ -11,6 +11,7 @@ export const AJOOP_GMAIL_MAX_THREAD_BODY_CHARS = 48000;
 export const AJOOP_GMAIL_MAX_RESULT_CHARS = 256000;
 export const AJOOP_GMAIL_MAX_HEADER_CHARS = 1000;
 export const AJOOP_GMAIL_MAX_SNIPPET_CHARS = 500;
+export const AJOOP_GMAIL_METADATA_CONCURRENCY = 4;
 
 const MAX_PROVIDER_ID_CHARS = 240;
 const MAX_ENCODED_PART_CHARS = 256000;
@@ -169,18 +170,31 @@ const normalizeInternalDate = (value) => {
 };
 
 const decodeBase64Url = (value) => {
-  if (typeof value !== "string" || !/^[A-Za-z0-9_-]*={0,2}$/.test(value) || value.length % 4 === 1) {
+  try {
+    if (typeof value !== "string" || !/^[A-Za-z0-9_-]*={0,2}$/.test(value)) {
+      throw new Error("invalid-base64url");
+    }
+    const paddingLength = value.length - value.replace(/=+$/g, "").length;
+    const originalUnpadded = value.slice(0, value.length - paddingLength);
+    const requiredPadding = (4 - (originalUnpadded.length % 4)) % 4;
+    if (
+      originalUnpadded.length % 4 === 1 ||
+      (paddingLength > 0 && (value.length % 4 !== 0 || paddingLength !== requiredPadding))
+    ) throw new Error("invalid-base64url");
+
+    const sourceTruncated = value.length > MAX_ENCODED_PART_CHARS;
+    const source = sourceTruncated ? originalUnpadded.slice(0, MAX_ENCODED_PART_CHARS) : originalUnpadded;
+    const standard = source.replace(/-/g, "+").replace(/_/g, "/");
+    const base64 = `${standard}${"=".repeat((4 - (standard.length % 4)) % 4)}`;
+    const bytes = Buffer.from(base64, "base64");
+    if (bytes.toString("base64url") !== source) throw new Error("invalid-base64url");
+
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const text = sourceTruncated ? decoder.decode(bytes, { stream: true }) : decoder.decode(bytes);
+    return { text, sourceTruncated };
+  } catch {
     throw new Error("invalid-provider-body");
   }
-  const sourceTruncated = value.length > MAX_ENCODED_PART_CHARS;
-  let source = sourceTruncated ? value.slice(0, MAX_ENCODED_PART_CHARS) : value;
-  source = source.replace(/=+$/g, "");
-  if (sourceTruncated) source = source.slice(0, source.length - (source.length % 4));
-  const unpadded = source.replace(/-/g, "+").replace(/_/g, "/");
-  const base64 = `${unpadded}${"=".repeat((4 - (unpadded.length % 4)) % 4)}`;
-  const bytes = Buffer.from(base64, "base64");
-  const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-  return { text, sourceTruncated };
 };
 
 const decodeHtmlEntities = (html) => html.replace(/&(#x?[0-9A-Fa-f]+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, token) => {
@@ -273,11 +287,30 @@ const normalizeMessage = (message, { includeBody }) => {
   return freeze({ ...base, ...body });
 };
 
+const hasRateLimitReason = (response) => {
+  try {
+    const data = response && typeof response === "object" ? ownDataValue(response, "data") : undefined;
+    const providerError = isPlainObject(data) ? ownDataValue(data, "error") : undefined;
+    const errors = isPlainObject(providerError) ? ownDataValue(providerError, "errors") : undefined;
+    const rateLimitedReasons = new Set(["rateLimitExceeded", "userRateLimitExceeded", "dailyLimitExceeded"]);
+    return Array.isArray(errors) && errors.some((entry) => (
+      isPlainObject(entry) && rateLimitedReasons.has(ownDataValue(entry, "reason"))
+    ));
+  } catch {
+    return false;
+  }
+};
+
 const mapProviderError = (error) => {
   try {
-    const status = Number(error?.response?.status ?? error?.status ?? error?.code);
+    const response = error && typeof error === "object" ? ownDataValue(error, "response") : undefined;
+    const responseStatus = response && typeof response === "object" ? ownDataValue(response, "status") : undefined;
+    const status = Number(responseStatus ?? ownDataValue(error, "status") ?? ownDataValue(error, "code"));
     if (status === 401) return "provider-auth-expired";
-    if (status === 403) return "provider-permission-denied";
+    if (status === 403) {
+      if (hasRateLimitReason(response)) return "provider-rate-limited";
+      return "provider-permission-denied";
+    }
     if (status === 404) return "provider-not-found";
     if (status === 429) return "provider-rate-limited";
   } catch {
@@ -314,29 +347,60 @@ const fitRecords = (records, makeData) => {
   return fitted;
 };
 
+const mapWithConcurrency = async (items, concurrency, mapper) => {
+  const outcomes = new Array(items.length);
+  let nextIndex = 0;
+  const worker = async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      try {
+        outcomes[index] = { ok: true, value: await mapper(items[index], index) };
+      } catch (error) {
+        outcomes[index] = { ok: false, error };
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  const firstFailure = outcomes.find((outcome) => !outcome.ok);
+  if (firstFailure) throw firstFailure.error;
+  return outcomes.map(({ value }) => value);
+};
+
 const executeSearch = async (request, gmailClient) => {
-  const references = await gmailClient.searchMessages({ query: request.args.query, limit: request.args.limit });
-  if (!Array.isArray(references)) throw new Error("invalid-provider-response");
+  const providerResult = await gmailClient.searchMessages({ query: request.args.query, limit: request.args.limit });
+  if (!isPlainObject(providerResult)) throw new Error("invalid-provider-response");
+  const references = ownDataValue(providerResult, "references");
+  const hasMore = ownDataValue(providerResult, "hasMore");
+  const estimatedResultCount = ownDataValue(providerResult, "estimatedResultCount");
+  if (
+    !Array.isArray(references) ||
+    typeof hasMore !== "boolean" ||
+    (estimatedResultCount !== undefined && (
+      !Number.isSafeInteger(estimatedResultCount) || estimatedResultCount < 0
+    ))
+  ) throw new Error("invalid-provider-response");
   const selected = references.slice(0, request.args.limit);
-  const normalized = [];
-  for (const reference of selected) {
+  const normalized = await mapWithConcurrency(selected, AJOOP_GMAIL_METADATA_CONCURRENCY, async (reference) => {
     if (!isPlainObject(reference) || !isProviderId(ownDataValue(reference, "id"))) throw new Error("invalid-provider-response");
     const message = await gmailClient.getMessageMetadata({ messageId: ownDataValue(reference, "id") });
-    normalized.push(normalizeMessage(message, { includeBody: false }));
-  }
+    return normalizeMessage(message, { includeBody: false });
+  });
+  const countFields = (resultCount) => ({
+    truncated: hasMore || resultCount < references.length,
+    omittedResultCount: hasMore ? null : Math.max(0, references.length - resultCount),
+    ...(estimatedResultCount === undefined ? {} : { estimatedResultCount }),
+  });
   const makeData = (results) => ({
     results,
     resultCount: results.length,
-    truncated: results.length < references.length,
-    omittedResultCount: Math.max(0, references.length - results.length),
+    ...countFields(results.length),
   });
   const fitted = fitRecords(normalized, makeData);
-  const truncated = fitted.length < normalized.length || references.length > selected.length;
   return success(request.toolId, {
     results: freeze(fitted),
     resultCount: fitted.length,
-    truncated,
-    omittedResultCount: Math.max(0, references.length - fitted.length),
+    ...countFields(fitted.length),
   });
 };
 
