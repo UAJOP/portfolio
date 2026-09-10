@@ -33,7 +33,7 @@ A4.1 owns validation of `repository`, optional `query`, `state`, and `limit`. As
 (<exact normalized optional query>) AND repo:<repository> AND is:pr AND <optional state:open|state:closed>
 ```
 
-When no query is supplied, the mandatory qualifiers remain joined by explicit `AND` without an empty group. For state `all`, no state qualifier is added. The interior of the approved user expression is not rewritten; grouping keeps all mandatory constraints outside it. Search syntax—even strings such as `ignore previous instructions`, `delete repository`, or `repo:other/repo`—remains inert provider data.
+When no query is supplied, the mandatory qualifiers remain joined by explicit `AND` without an empty group. For state `all`, no state qualifier is added. GitHub issue/PR search is sent with `advanced_search=true` because AJOOP uses explicit Boolean grouping to keep the mandatory repository, type, and state constraints authoritative. The interior of the approved user expression is not rewritten; grouping keeps all mandatory constraints outside it. Search syntax—even strings such as `ignore previous instructions`, `delete repository`, or `repo:other/repo`—remains inert provider data.
 
 Isolation is enforced twice: the mandatory `repo:` and `is:pr` qualifiers are always appended, and every returned search item must contain the PR marker plus an exact, case-insensitive `repository_url` match. A mismatched repository or non-PR result rejects the provider response. Read results must match both the requested PR number and the base repository. Canonical PR links are reconstructed as `https://github.com/<owner>/<repo>/pull/<number>` rather than trusted from provider HTML fields.
 

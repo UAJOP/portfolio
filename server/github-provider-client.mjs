@@ -94,6 +94,7 @@ export function createGitHubReadClient({ token, fetchImpl = globalThis.fetch }) 
         q: `${query === undefined ? "" : `(${query}) AND `}${buildSearchQuery({ repository, state })}`,
         per_page: limit,
         page: 1,
+        advanced_search: true,
       });
       const pullRequests = data?.items;
       const totalCount = data?.total_count;

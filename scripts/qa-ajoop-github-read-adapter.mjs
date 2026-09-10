@@ -327,6 +327,8 @@ try {
   await provider.readPullRequest({ repository: REPOSITORY, prNumber: 57 });
   check("provider uses only GET", calls.every(({ options }) => options.method === "GET"), true);
   check("search uses exact endpoint", new URL(calls[0].url).pathname, "/search/issues");
+  check("every search enables advanced mode", calls.slice(0, 9).every(({ url }) => new URL(url).searchParams.get("advanced_search") === "true"), true);
+  check("no-query search enables advanced mode", new URL(calls[0].url).searchParams.get("advanced_search"), "true");
   check("repository qualifier is exact", new URL(calls[0].url).searchParams.get("q"), `repo:${REPOSITORY} AND is:pr AND state:open`);
   check("is:pr is enforced", new URL(calls[1].url).searchParams.get("q").includes(`) AND repo:${REPOSITORY} AND is:pr AND `), true);
   check("closed state is enforced", new URL(calls[1].url).searchParams.get("q").endsWith("AND state:closed"), true);
@@ -339,6 +341,8 @@ try {
   check("OR query is grouped before mandatory constraints", new URL(calls[6].url).searchParams.get("q"), `(foo OR repo:other/repo) AND repo:${REPOSITORY} AND is:pr AND state:open`);
   check("nested parentheses remain unchanged inside group", new URL(calls[7].url).searchParams.get("q"), `((foo OR bar) AND author:synthetic) AND repo:${REPOSITORY} AND is:pr AND state:open`);
   check("plain query is grouped", new URL(calls[8].url).searchParams.get("q"), `(plain query) AND repo:${REPOSITORY} AND is:pr AND state:open`);
+  check("plain query enables advanced mode", new URL(calls[8].url).searchParams.get("advanced_search"), "true");
+  check("all-state search enables advanced mode", new URL(calls[2].url).searchParams.get("advanced_search"), "true");
   check("provider limit maps to per_page", new URL(calls[1].url).searchParams.get("per_page"), "3");
   check("provider does not auto-paginate", new URL(calls[1].url).searchParams.get("page"), "1");
   check("read uses exact endpoint", new URL(calls[9].url).pathname, `/repos/UAJOP/portfolio/pulls/57`);
