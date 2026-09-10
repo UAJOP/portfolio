@@ -111,12 +111,23 @@ export async function authorizeDesktopCalendarRead({
       code_challenge_method: "S256",
       code_challenge: codeChallenge,
     });
-    timeout = setTimeout(() => settle("reject", new Error("oauth-authorization-timeout")), timeoutMs);
-    await browserOpener(authorizationUrl);
-    const code = await callback;
-    const { tokens } = await oauthClient.getToken({ code, codeVerifier, redirect_uri: redirectUri });
-    if (typeof tokens.refresh_token !== "string" || !tokens.refresh_token) throw new Error("refresh-token-not-issued");
-    return tokens.refresh_token;
+    let rejectDeadline;
+    const deadline = new Promise((_, reject) => { rejectDeadline = reject; });
+    deadline.catch(() => {});
+    timeout = setTimeout(() => {
+      const error = new Error("oauth-authorization-timeout");
+      settle("reject", error);
+      rejectDeadline(error);
+    }, timeoutMs);
+    const interactiveFlow = (async () => {
+      await browserOpener(authorizationUrl);
+      const code = await callback;
+      const { tokens } = await oauthClient.getToken({ code, codeVerifier, redirect_uri: redirectUri });
+      if (typeof tokens.refresh_token !== "string" || !tokens.refresh_token) throw new Error("refresh-token-not-issued");
+      return tokens.refresh_token;
+    })();
+    interactiveFlow.catch(() => {});
+    return await Promise.race([interactiveFlow, deadline]);
   } finally {
     clearTimeout(timeout);
     await new Promise((resolve) => server.close(resolve));

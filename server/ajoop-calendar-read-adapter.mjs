@@ -126,6 +126,12 @@ const boundedText = (value, maxChars, { collapseWhitespace = false } = {}) => {
   return { text: truncated ? text.slice(0, maxChars) : text, truncated };
 };
 
+const normalizeOptionalBoolean = (value) => {
+  if (value === undefined) return { value: false, truncated: false };
+  if (typeof value === "boolean") return { value, truncated: false };
+  return { value: false, truncated: true };
+};
+
 const normalizeEventTime = (value) => {
   if (!isPlainObject(value)) throw new Error("invalid-provider-event-time");
   const date = ownDataValue(value, "date");
@@ -170,7 +176,9 @@ const normalizeAttendees = (attendees) => {
       continue;
     }
     const person = normalizePerson(attendee);
-    const responseStatus = boundedText(ownDataValue(attendee, "responseStatus"), MAX_STATUS_CHARS, { collapseWhitespace: true });
+    const responseStatusValue = ownDataValue(attendee, "responseStatus");
+    const responseStatus = boundedText(responseStatusValue, MAX_STATUS_CHARS, { collapseWhitespace: true });
+    const responseStatusMalformed = responseStatusValue !== undefined && typeof responseStatusValue !== "string";
     if (!person.value && !responseStatus.text) {
       truncated = true;
       continue;
@@ -179,54 +187,98 @@ const normalizeAttendees = (attendees) => {
       ...(person.value ?? { email: "", displayName: "", self: false }),
       responseStatus: responseStatus.text,
     }));
-    truncated ||= person.truncated || responseStatus.truncated;
+    truncated ||= person.truncated || responseStatus.truncated || responseStatusMalformed;
   }
   return { values: freeze(values), truncated };
+};
+
+const normalizeRecurringMetadata = (event, expectedKind = null) => {
+  const recurringEventIdValue = ownDataValue(event, "recurringEventId");
+  const recurringEventId = recurringEventIdValue === undefined ? null : (isProviderId(recurringEventIdValue) ? recurringEventIdValue : null);
+  const originalStartValue = ownDataValue(event, "originalStartTime");
+  let originalStart = null;
+  let truncated = recurringEventIdValue !== undefined && recurringEventId === null;
+  if (originalStartValue !== undefined) {
+    try {
+      originalStart = normalizeEventTime(originalStartValue);
+      if (expectedKind !== null && originalStart.value.kind !== expectedKind) throw new Error("invalid-provider-event-time");
+      truncated ||= originalStart.truncated;
+    } catch {
+      truncated = true;
+      originalStart = null;
+    }
+  }
+  return {
+    recurringEventId,
+    originalStartTime: originalStart?.value ?? null,
+    truncated,
+  };
 };
 
 const normalizeEvent = (event, expectedEventId = null) => {
   if (!isPlainObject(event)) throw new Error("invalid-provider-event");
   const eventId = ownDataValue(event, "id");
   if (!isProviderId(eventId) || (expectedEventId !== null && eventId !== expectedEventId)) throw new Error("invalid-provider-event");
+  const statusValue = ownDataValue(event, "status");
+  const status = boundedText(statusValue, MAX_STATUS_CHARS, { collapseWhitespace: true });
+  const hasStart = Object.hasOwn(event, "start");
+  const hasEnd = Object.hasOwn(event, "end");
+  if (statusValue === "cancelled" && !hasStart && !hasEnd) {
+    const recurring = normalizeRecurringMetadata(event);
+    const endTimeUnspecifiedValue = ownDataValue(event, "endTimeUnspecified");
+    const endTimeUnspecifiedMalformed = endTimeUnspecifiedValue !== undefined && endTimeUnspecifiedValue !== false;
+    return freeze({
+      eventId,
+      status: "cancelled",
+      tombstone: true,
+      summary: "",
+      description: "",
+      location: "",
+      start: null,
+      end: null,
+      allDay: null,
+      endTimeUnspecified: false,
+      organizer: null,
+      attendees: freeze([]),
+      recurringEventId: recurring.recurringEventId,
+      originalStartTime: recurring.originalStartTime,
+      truncated: recurring.truncated || endTimeUnspecifiedMalformed,
+    });
+  }
   const start = normalizeEventTime(ownDataValue(event, "start"));
   const end = normalizeEventTime(ownDataValue(event, "end"));
   if (start.value.kind !== end.value.kind) throw new Error("invalid-provider-event-time");
+  const endTimeUnspecified = normalizeOptionalBoolean(ownDataValue(event, "endTimeUnspecified"));
+  if (!endTimeUnspecified.value) {
+    const startBoundary = start.value.kind === "date-time" ? Date.parse(start.value.dateTime) : start.value.date;
+    const endBoundary = end.value.kind === "date-time" ? Date.parse(end.value.dateTime) : end.value.date;
+    if (endBoundary <= startBoundary) throw new Error("invalid-provider-event-time");
+  }
 
   const summary = boundedText(ownDataValue(event, "summary"), AJOOP_CALENDAR_MAX_SUMMARY_CHARS, { collapseWhitespace: true });
   const description = boundedText(ownDataValue(event, "description"), AJOOP_CALENDAR_MAX_DESCRIPTION_CHARS);
   const location = boundedText(ownDataValue(event, "location"), AJOOP_CALENDAR_MAX_LOCATION_CHARS, { collapseWhitespace: true });
-  const status = boundedText(ownDataValue(event, "status"), MAX_STATUS_CHARS, { collapseWhitespace: true });
   const organizer = normalizePerson(ownDataValue(event, "organizer"));
   const attendees = normalizeAttendees(ownDataValue(event, "attendees"));
-  const recurringEventIdValue = ownDataValue(event, "recurringEventId");
-  const recurringEventId = recurringEventIdValue === undefined ? null : (isProviderId(recurringEventIdValue) ? recurringEventIdValue : null);
-  const originalStartValue = ownDataValue(event, "originalStartTime");
-  let originalStart = null;
-  let optionalMetadataTruncated = recurringEventIdValue !== undefined && recurringEventId === null;
-  if (originalStartValue !== undefined) {
-    try {
-      originalStart = normalizeEventTime(originalStartValue);
-      if (originalStart.value.kind !== start.value.kind) throw new Error("invalid-provider-event-time");
-      optionalMetadataTruncated ||= originalStart.truncated;
-    } catch {
-      optionalMetadataTruncated = true;
-      originalStart = null;
-    }
-  }
-  const truncated = [summary, description, location, status, organizer, attendees, start, end].some((field) => field.truncated) || optionalMetadataTruncated;
+  const attendeesOmitted = normalizeOptionalBoolean(ownDataValue(event, "attendeesOmitted"));
+  const recurring = normalizeRecurringMetadata(event, start.value.kind);
+  const truncated = [summary, description, location, status, organizer, attendees, start, end, endTimeUnspecified, attendeesOmitted]
+    .some((field) => field.truncated) || attendeesOmitted.value || recurring.truncated;
   return freeze({
     eventId,
     status: status.text,
+    tombstone: false,
     summary: summary.text,
     description: description.text,
     location: location.text,
     start: start.value,
     end: end.value,
     allDay: start.value.kind === "date",
+    endTimeUnspecified: endTimeUnspecified.value,
     organizer: organizer.value,
     attendees: attendees.values,
-    recurringEventId,
-    originalStartTime: originalStart?.value ?? null,
+    recurringEventId: recurring.recurringEventId,
+    originalStartTime: recurring.originalStartTime,
     truncated,
   });
 };
