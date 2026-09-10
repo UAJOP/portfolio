@@ -7,6 +7,7 @@ export const AJOOP_GITHUB_DEFAULT_TOKEN_PATH = ".ajoop-runtime/github/token.txt"
 
 const TOKEN_MAX_CHARS = 512;
 const ERROR_BODY_MAX_CHARS = 4096;
+const GITHUB_API_ORIGIN = "https://api.github.com";
 
 const isSafeToken = (value) => (
   typeof value === "string" && value.length >= 20 && value.length <= TOKEN_MAX_CHARS && !/[\s\u0000-\u001F\u007F]/.test(value)
@@ -62,17 +63,15 @@ const parseJsonResponse = async (response) => {
   }
 };
 
-const buildSearchQuery = ({ repository, query, state }) => [
-  ...(query === undefined ? [] : [query]),
+const buildSearchQuery = ({ repository, state }) => [
   `repo:${repository}`,
   "is:pr",
   ...(state === "all" ? [] : [`state:${state}`]),
-].join(" ");
+].join(" AND ");
 
-export function createGitHubReadClient({ token, fetchImpl = globalThis.fetch, apiBaseUrl = "https://api.github.com" }) {
+export function createGitHubReadClient({ token, fetchImpl = globalThis.fetch }) {
   if (!isSafeToken(token) || typeof fetchImpl !== "function") throw new Error("provider-auth-required");
-  const base = new URL(apiBaseUrl);
-  if (base.protocol !== "https:" || base.username || base.password || base.search || base.hash) throw new Error("provider-auth-required");
+  const base = new URL(GITHUB_API_ORIGIN);
   const headers = Object.freeze({
     Accept: "application/vnd.github+json",
     Authorization: `Bearer ${token}`,
@@ -92,7 +91,7 @@ export function createGitHubReadClient({ token, fetchImpl = globalThis.fetch, ap
   return Object.freeze({
     async searchPullRequests({ repository, query, state, limit }) {
       const data = await getJson("/search/issues", {
-        q: buildSearchQuery({ repository, query, state }),
+        q: `${query === undefined ? "" : `(${query}) AND `}${buildSearchQuery({ repository, state })}`,
         per_page: limit,
         page: 1,
       });

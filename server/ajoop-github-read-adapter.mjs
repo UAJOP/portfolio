@@ -2,6 +2,7 @@ import {
   AJOOP_READ_CONNECTOR_ACCESS,
   AJOOP_READ_CONNECTOR_MAX_LIMIT,
   AJOOP_READ_CONNECTOR_MAX_PR_NUMBER,
+  AJOOP_READ_CONNECTOR_MAX_QUERY_CHARS,
   AJOOP_READ_CONNECTOR_PROVENANCE,
   AJOOP_READ_CONNECTOR_SCHEMA_VERSION,
   AJOOP_READ_CONNECTOR_TOOL_IDS,
@@ -19,6 +20,7 @@ const GITHUB_TOOL_IDS = new Set([
   AJOOP_READ_CONNECTOR_TOOL_IDS.GITHUB_READ_PULL_REQUEST,
 ]);
 const UNSAFE_DISPLAY_TEXT = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u061C\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u206F\uFEFF]/g;
+const UNSAFE_INPUT_TEXT = /[\u0000-\u001F\u007F-\u009F\u061C\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u206F\uFEFF]/;
 const REPOSITORY = /^([A-Za-z0-9](?:-?[A-Za-z0-9])*)\/([A-Za-z0-9._-]+)$/;
 const SHA = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const RFC3339 = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?(Z|[+-](\d{2}):(\d{2}))$/;
@@ -57,6 +59,19 @@ const ownDataValue = (source, key) => {
   return descriptor.value;
 };
 
+const hasCanonicalOwnDataKeys = (source, required, optional = []) => {
+  const keys = Reflect.ownKeys(source);
+  const allowed = new Set([...required, ...optional]);
+  if (
+    keys.some((key) => typeof key !== "string" || !allowed.has(key)) ||
+    required.some((key) => !keys.includes(key))
+  ) return false;
+  return keys.every((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(source, key);
+    return descriptor && descriptor.enumerable && Object.hasOwn(descriptor, "value") && descriptor.value !== undefined;
+  });
+};
+
 const isRepository = (value) => {
   if (typeof value !== "string" || value.length > 160 || value === "." || value === "..") return false;
   const match = REPOSITORY.exec(value);
@@ -82,16 +97,21 @@ const validateApprovedRequest = (approved) => {
     if (!isRepository(repository)) return null;
 
     if (toolId === AJOOP_READ_CONNECTOR_TOOL_IDS.GITHUB_SEARCH_PULL_REQUESTS) {
+      if (!hasCanonicalOwnDataKeys(args, ["repository", "state", "limit"], ["query"])) return null;
       const query = ownDataValue(args, "query");
       const state = ownDataValue(args, "state");
       const limit = ownDataValue(args, "limit");
       if (
-        operation !== "search_pull_requests" || (query !== undefined && (typeof query !== "string" || !query)) ||
+        operation !== "search_pull_requests" || (query !== undefined && (
+          typeof query !== "string" || !query || query.trim() !== query ||
+          query.length > AJOOP_READ_CONNECTOR_MAX_QUERY_CHARS || UNSAFE_INPUT_TEXT.test(query)
+        )) ||
         !["open", "closed", "all"].includes(state) || !Number.isInteger(limit) || limit < 1 || limit > AJOOP_READ_CONNECTOR_MAX_LIMIT
       ) return null;
       return freeze({ toolId, args: freeze({ repository, ...(query === undefined ? {} : { query }), state, limit }) });
     }
 
+    if (!hasCanonicalOwnDataKeys(args, ["repository", "prNumber"])) return null;
     const prNumber = ownDataValue(args, "prNumber");
     if (operation !== "read_pull_request" || !Number.isInteger(prNumber) || prNumber < 1 || prNumber > AJOOP_READ_CONNECTOR_MAX_PR_NUMBER) return null;
     return freeze({ toolId, args: freeze({ repository, prNumber }) });
@@ -282,7 +302,7 @@ const executeSearch = async (request, githubClient) => {
   const hasMore = ownDataValue(providerResult, "hasMore");
   if (
     !Array.isArray(pullRequests) || !Number.isSafeInteger(totalCount) || totalCount < pullRequests.length || totalCount < 0 ||
-    typeof incomplete !== "boolean" || typeof hasMore !== "boolean"
+    typeof incomplete !== "boolean" || typeof hasMore !== "boolean" || hasMore !== (totalCount > pullRequests.length)
   ) throw new Error("invalid-provider-response");
   const selected = pullRequests.slice(0, request.args.limit);
   const normalized = selected.map((item) => normalizeSearchPullRequest(item, request.args.repository));

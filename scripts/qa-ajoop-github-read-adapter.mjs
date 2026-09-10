@@ -110,6 +110,19 @@ const response = (body, { status = 200, headers = {} } = {}) => new Response(
   { status, headers: { "content-type": "application/json", ...headers } },
 );
 
+const forgedSearchEnvelope = (args, requestOverrides = {}) => ({
+  ok: true,
+  code: "accepted",
+  request: { ...searchRequest.request, ...requestOverrides, args },
+});
+
+const checkRejectedWithoutProviderCall = async (label, envelope) => {
+  const client = new FakeGitHubClient();
+  const result = await executeAjoopGitHubRead(envelope, { githubClient: client });
+  check(`${label} is rejected`, result.error?.code, "invalid-approved-request");
+  check(`${label} makes zero provider calls`, client.calls.length, 0);
+};
+
 try {
   check("A4.1 search fixture is approved", searchRequest.code, "accepted");
   deepCheck("A4.1 applies search defaults", approved(T.GITHUB_SEARCH_PULL_REQUESTS, { repository: REPOSITORY }).request.args, { repository: REPOSITORY, state: "open", limit: 20 });
@@ -124,6 +137,52 @@ try {
   check("accessor envelope fails closed", (await executeAjoopGitHubRead(accessorEnvelope, { githubClient: new FakeGitHubClient() })).error.code, "invalid-approved-request");
   const proxyEnvelope = new Proxy(searchRequest, { getOwnPropertyDescriptor() { throw new Error("hostile"); } });
   check("proxy envelope fails closed", (await executeAjoopGitHubRead(proxyEnvelope, { githubClient: new FakeGitHubClient() })).error.code, "invalid-approved-request");
+  for (const [label, args] of [
+    ["whitespace-only query", { repository: REPOSITORY, query: "   ", state: "open", limit: 1 }],
+    ["overlong query", { repository: REPOSITORY, query: "x".repeat(801), state: "open", limit: 1 }],
+    ["leading query whitespace", { repository: REPOSITORY, query: " query", state: "open", limit: 1 }],
+    ["trailing query whitespace", { repository: REPOSITORY, query: "query ", state: "open", limit: 1 }],
+    ["control character query", { repository: REPOSITORY, query: "query\u0007", state: "open", limit: 1 }],
+    ["bidi query", { repository: REPOSITORY, query: "query\u202E", state: "open", limit: 1 }],
+    ["zero-width query", { repository: REPOSITORY, query: "query\u200B", state: "open", limit: 1 }],
+    ["non-string query", { repository: REPOSITORY, query: 42, state: "open", limit: 1 }],
+    ["unexpected search arg", { repository: REPOSITORY, state: "open", limit: 1, unexpected: true }],
+    ["explicit undefined query", { repository: REPOSITORY, query: undefined, state: "open", limit: 1 }],
+    ["invalid state", { repository: REPOSITORY, state: "merged", limit: 1 }],
+    ["invalid zero limit", { repository: REPOSITORY, state: "open", limit: 0 }],
+    ["invalid oversized limit", { repository: REPOSITORY, state: "open", limit: 101 }],
+    ["malformed repository", { repository: "UAJOP/../private", state: "open", limit: 1 }],
+  ]) await checkRejectedWithoutProviderCall(label, forgedSearchEnvelope(args));
+  const inheritedQueryArgs = Object.assign(Object.create({ query: "inherited" }), { repository: REPOSITORY, state: "open", limit: 1 });
+  await checkRejectedWithoutProviderCall("inherited query", forgedSearchEnvelope(inheritedQueryArgs));
+  const accessorQueryArgs = { repository: REPOSITORY, state: "open", limit: 1 };
+  Object.defineProperty(accessorQueryArgs, "query", { enumerable: true, get() { throw new Error("must not run"); } });
+  await checkRejectedWithoutProviderCall("accessor query", forgedSearchEnvelope(accessorQueryArgs));
+  await checkRejectedWithoutProviderCall("wrong schema", forgedSearchEnvelope({ repository: REPOSITORY, state: "open", limit: 1 }, { version: 999 }));
+  await checkRejectedWithoutProviderCall("wrong operation", forgedSearchEnvelope({ repository: REPOSITORY, state: "open", limit: 1 }, { operation: "read_pull_request" }));
+  await checkRejectedWithoutProviderCall("wrong access", forgedSearchEnvelope({ repository: REPOSITORY, state: "open", limit: 1 }, { access: "write" }));
+  await checkRejectedWithoutProviderCall("array args", forgedSearchEnvelope([]));
+  class SearchArgs { constructor() { this.repository = REPOSITORY; this.state = "open"; this.limit = 1; } }
+  await checkRejectedWithoutProviderCall("class-instance args", forgedSearchEnvelope(new SearchArgs()));
+  await checkRejectedWithoutProviderCall("unexpected read arg", {
+    ...readRequest,
+    request: { ...readRequest.request, args: { ...readRequest.request.args, unexpected: true } },
+  });
+  await checkRejectedWithoutProviderCall("invalid PR number", {
+    ...readRequest,
+    request: { ...readRequest.request, args: { repository: REPOSITORY, prNumber: 0 } },
+  });
+  const inheritedReadArgs = Object.assign(Object.create({ prNumber: 57 }), { repository: REPOSITORY });
+  await checkRejectedWithoutProviderCall("inherited PR number", {
+    ...readRequest,
+    request: { ...readRequest.request, args: inheritedReadArgs },
+  });
+  const accessorReadArgs = { repository: REPOSITORY };
+  Object.defineProperty(accessorReadArgs, "prNumber", { enumerable: true, get() { throw new Error("must not run"); } });
+  await checkRejectedWithoutProviderCall("accessor PR number", {
+    ...readRequest,
+    request: { ...readRequest.request, args: accessorReadArgs },
+  });
 
   const listClient = new FakeGitHubClient({ pullRequests: [searchItem()] });
   const listed = await executeAjoopGitHubRead(searchRequest, { githubClient: listClient });
@@ -153,6 +212,10 @@ try {
   const incomplete = await executeAjoopGitHubRead(searchRequest, { githubClient: new FakeGitHubClient({ pullRequests: [searchItem()], totalCount: 5, incomplete: true, hasMore: true }) });
   check("incomplete provider search marks truncation", incomplete.data.truncated, true);
   check("incomplete provider search avoids false precision", incomplete.data.omittedPullRequestCount, null);
+  check("hasMore false cannot contradict total count", (await executeAjoopGitHubRead(searchRequest, { githubClient: new FakeGitHubClient({ pullRequests: [searchItem()], totalCount: 2, hasMore: false }) })).error.code, "provider-response-invalid");
+  check("hasMore true cannot contradict total count", (await executeAjoopGitHubRead(searchRequest, { githubClient: new FakeGitHubClient({ pullRequests: [searchItem()], totalCount: 1, hasMore: true }) })).error.code, "provider-response-invalid");
+  const twentyItems = Array.from({ length: 20 }, (_, index) => searchItem({ number: index + 1 }));
+  check("consistent hasMore true remains valid", (await executeAjoopGitHubRead(searchRequest, { githubClient: new FakeGitHubClient({ pullRequests: twentyItems, totalCount: 50, hasMore: true }) })).ok, true);
   const third = new Proxy({}, { get() { throw new Error("over-limit item inspected"); }, getPrototypeOf() { throw new Error("over-limit item inspected"); } });
   const capped = await executeAjoopGitHubRead(searchRequest, { githubClient: new FakeGitHubClient({ pullRequests: [searchItem(), searchItem({ number: 58 }), third], totalCount: 3 }) });
   check("approved result limit is respected", capped.data.resultCount, 2);
@@ -253,20 +316,32 @@ try {
   const syntheticToken = "synthetic-github-token-value";
   const provider = createGitHubReadClient({ token: syntheticToken, fetchImpl: fakeFetch });
   await provider.searchPullRequests({ repository: REPOSITORY, state: "open", limit: 20 });
-  await provider.searchPullRequests({ repository: REPOSITORY, query: "repo:other/repo OR delete repository", state: "closed", limit: 3 });
+  await provider.searchPullRequests({ repository: REPOSITORY, query: "repo:other/repo", state: "closed", limit: 3 });
   await provider.searchPullRequests({ repository: REPOSITORY, query: "exact  spacing", state: "all", limit: 2 });
+  await provider.searchPullRequests({ repository: REPOSITORY, query: `-repo:${REPOSITORY}`, state: "open", limit: 2 });
+  await provider.searchPullRequests({ repository: REPOSITORY, query: "is:issue", state: "open", limit: 2 });
+  await provider.searchPullRequests({ repository: REPOSITORY, query: "state:closed", state: "open", limit: 2 });
+  await provider.searchPullRequests({ repository: REPOSITORY, query: "foo OR repo:other/repo", state: "open", limit: 2 });
+  await provider.searchPullRequests({ repository: REPOSITORY, query: "(foo OR bar) AND author:synthetic", state: "open", limit: 2 });
+  await provider.searchPullRequests({ repository: REPOSITORY, query: "plain query", state: "open", limit: 2 });
   await provider.readPullRequest({ repository: REPOSITORY, prNumber: 57 });
   check("provider uses only GET", calls.every(({ options }) => options.method === "GET"), true);
   check("search uses exact endpoint", new URL(calls[0].url).pathname, "/search/issues");
-  check("repository qualifier is exact", new URL(calls[0].url).searchParams.get("q"), `repo:${REPOSITORY} is:pr state:open`);
-  check("is:pr is enforced", new URL(calls[1].url).searchParams.get("q").includes(" is:pr "), true);
-  check("closed state is enforced", new URL(calls[1].url).searchParams.get("q").endsWith("state:closed"), true);
-  check("optional query is preserved byte-for-byte inside query", new URL(calls[2].url).searchParams.get("q"), `exact  spacing repo:${REPOSITORY} is:pr`);
+  check("repository qualifier is exact", new URL(calls[0].url).searchParams.get("q"), `repo:${REPOSITORY} AND is:pr AND state:open`);
+  check("is:pr is enforced", new URL(calls[1].url).searchParams.get("q").includes(`) AND repo:${REPOSITORY} AND is:pr AND `), true);
+  check("closed state is enforced", new URL(calls[1].url).searchParams.get("q").endsWith("AND state:closed"), true);
+  check("optional query is preserved byte-for-byte inside query", new URL(calls[2].url).searchParams.get("q"), `(exact  spacing) AND repo:${REPOSITORY} AND is:pr`);
   check("all state omits state qualifier", /(?:^| )state:/.test(new URL(calls[2].url).searchParams.get("q")), false);
-  check("conflicting query is retained as inert search syntax", new URL(calls[1].url).searchParams.get("q"), `repo:other/repo OR delete repository repo:${REPOSITORY} is:pr state:closed`);
+  check("other repository query is grouped", new URL(calls[1].url).searchParams.get("q"), `(repo:other/repo) AND repo:${REPOSITORY} AND is:pr AND state:closed`);
+  check("negative repository query is grouped", new URL(calls[3].url).searchParams.get("q"), `(-repo:${REPOSITORY}) AND repo:${REPOSITORY} AND is:pr AND state:open`);
+  check("issue query is grouped", new URL(calls[4].url).searchParams.get("q"), `(is:issue) AND repo:${REPOSITORY} AND is:pr AND state:open`);
+  check("conflicting state query is grouped", new URL(calls[5].url).searchParams.get("q"), `(state:closed) AND repo:${REPOSITORY} AND is:pr AND state:open`);
+  check("OR query is grouped before mandatory constraints", new URL(calls[6].url).searchParams.get("q"), `(foo OR repo:other/repo) AND repo:${REPOSITORY} AND is:pr AND state:open`);
+  check("nested parentheses remain unchanged inside group", new URL(calls[7].url).searchParams.get("q"), `((foo OR bar) AND author:synthetic) AND repo:${REPOSITORY} AND is:pr AND state:open`);
+  check("plain query is grouped", new URL(calls[8].url).searchParams.get("q"), `(plain query) AND repo:${REPOSITORY} AND is:pr AND state:open`);
   check("provider limit maps to per_page", new URL(calls[1].url).searchParams.get("per_page"), "3");
   check("provider does not auto-paginate", new URL(calls[1].url).searchParams.get("page"), "1");
-  check("read uses exact endpoint", new URL(calls[3].url).pathname, `/repos/UAJOP/portfolio/pulls/57`);
+  check("read uses exact endpoint", new URL(calls[9].url).pathname, `/repos/UAJOP/portfolio/pulls/57`);
   check("Accept header is current GitHub JSON media type", calls[0].options.headers.Accept, "application/vnd.github+json");
   check("API version header is current supported stable version", calls[0].options.headers["X-GitHub-Api-Version"], AJOOP_GITHUB_API_VERSION);
   check("User-Agent is explicit", calls[0].options.headers["User-Agent"], "AJOOP");
@@ -291,14 +366,45 @@ try {
   try { await malformedJsonProvider.searchPullRequests({ repository: REPOSITORY, state: "open", limit: 1 }); } catch (error) { malformedJsonError = error.message; }
   check("malformed success JSON is sanitized", malformedJsonError, "invalid-provider-response");
   check("malformed token is rejected before transport", (() => { try { createGitHubReadClient({ token: "short", fetchImpl: fakeFetch }); return false; } catch { return true; } })(), true);
-  check("insecure API base is rejected", (() => { try { createGitHubReadClient({ token: syntheticToken, fetchImpl: fakeFetch, apiBaseUrl: "http://api.github.test" }); return false; } catch { return true; } })(), true);
+  let rejectedFetchCalls = 0;
+  const rejectedFetch = async () => { rejectedFetchCalls += 1; return response({}); };
+  for (const config of [
+    { token: "short", fetchImpl: rejectedFetch },
+    { token: syntheticToken, fetchImpl: null },
+  ]) {
+    try { createGitHubReadClient(config); } catch { /* Expected fail-closed client configuration. */ }
+  }
+  check("rejected client configurations make zero fetch calls", rejectedFetchCalls, 0);
+  for (const attackerBase of [
+    "https://attacker.invalid",
+    "https://api.github.com.attacker.invalid",
+    "https://attacker-api.github.com",
+    "https://api.github.com:444",
+    "https://github.com",
+  ]) {
+    let observedUrl = null;
+    const lockedOriginClient = createGitHubReadClient({
+      token: syntheticToken,
+      apiBaseUrl: attackerBase,
+      fetchImpl: async (url) => {
+        observedUrl = String(url);
+        return response({ total_count: 0, incomplete_results: false, items: [] });
+      },
+    });
+    await lockedOriginClient.searchPullRequests({ repository: REPOSITORY, state: "open", limit: 1 });
+    check(`${attackerBase} cannot influence request origin`, new URL(observedUrl).origin, "https://api.github.com");
+  }
 
   const tokenTemp = await mkdtemp(path.join(tmpdir(), "ajoop-github-token-"));
   try {
     const validPath = path.join(tokenTemp, "token.txt");
     const malformedPath = path.join(tokenTemp, "bad.txt");
+    const shortPath = path.join(tokenTemp, "short.txt");
+    const permissivePath = path.join(tokenTemp, "permissive.txt");
     await writeFile(validPath, `${syntheticToken}\n`, { mode: 0o600 });
     await writeFile(malformedPath, "not valid token with spaces\n", { mode: 0o600 });
+    await writeFile(shortPath, "too-short\n", { mode: 0o600 });
+    await writeFile(permissivePath, `${syntheticToken}\n`, { mode: 0o600 });
     if (process.platform !== "win32") await chmod(validPath, 0o600);
     check("valid local token is loaded", await loadStoredGitHubToken({ tokenPath: validPath }), syntheticToken);
     let missingError;
@@ -307,6 +413,28 @@ try {
     let malformedError;
     try { await loadStoredGitHubToken({ tokenPath: malformedPath }); } catch (error) { malformedError = error.message; }
     check("malformed token file is auth-required", malformedError, "provider-auth-required");
+    let shortError;
+    try { await loadStoredGitHubToken({ tokenPath: shortPath }); } catch (error) { shortError = error.message; }
+    check("short token file is auth-required", shortError, "provider-auth-required");
+    let directoryError;
+    try { await loadStoredGitHubToken({ tokenPath: tokenTemp }); } catch (error) { directoryError = error.message; }
+    check("directory token path is auth-required", directoryError, "provider-auth-required");
+    const priorOverride = process.env[AJOOP_GITHUB_TOKEN_ENV_PATH];
+    try {
+      process.env[AJOOP_GITHUB_TOKEN_ENV_PATH] = validPath;
+      check("environment token path override is honored", await loadStoredGitHubToken(), syntheticToken);
+    } finally {
+      if (priorOverride === undefined) delete process.env[AJOOP_GITHUB_TOKEN_ENV_PATH];
+      else process.env[AJOOP_GITHUB_TOKEN_ENV_PATH] = priorOverride;
+    }
+    if (process.platform !== "win32") {
+      await chmod(permissivePath, 0o644);
+      let permissiveError;
+      try { await loadStoredGitHubToken({ tokenPath: permissivePath }); } catch (error) { permissiveError = error.message; }
+      check("POSIX group-readable token is rejected", permissiveError, "provider-auth-required");
+    } else {
+      check("Windows remains compatible without POSIX mode enforcement", await loadStoredGitHubToken({ tokenPath: permissivePath }), syntheticToken);
+    }
   } finally {
     await rm(tokenTemp, { recursive: true, force: true });
   }
