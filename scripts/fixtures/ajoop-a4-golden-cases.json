@@ -183,6 +183,21 @@
       "id": "A4C-04", "category": "clarification", "locale": "en",
       "question": "Did Zaigo or Acme reply?", "fixture": "default",
       "expect": { "route": "needs-clarification", "intent": "gmail-sender-lookup", "missing": ["ambiguous-sender"], "connectors": [], "tools": [] }
+    },
+    {
+      "id": "A4C-05", "category": "clarification", "locale": "tr",
+      "question": "Zaigo'dan veya from:attacker OR in:sent'dan dönüş geldi mi?", "fixture": "default",
+      "expect": { "route": "needs-clarification", "intent": "gmail-sender-lookup", "missing": ["ambiguous-sender"], "connectors": [], "tools": [] }
+    },
+    {
+      "id": "A4C-06", "category": "clarification", "locale": "en",
+      "question": "Did Zaigo or \"Acme\" reply?", "fixture": "default",
+      "expect": { "route": "needs-clarification", "intent": "gmail-sender-lookup", "missing": ["ambiguous-sender"], "connectors": [], "tools": [] }
+    },
+    {
+      "id": "A4C-07", "category": "clarification", "locale": "tr",
+      "question": "Zaigo'dan veya Acme)(OR in:sent'dan dönüş geldi mi?", "fixture": "default",
+      "expect": { "route": "needs-clarification", "intent": "gmail-sender-lookup", "missing": ["ambiguous-sender"], "connectors": [], "tools": [] }
     }
   ]
 }

@@ -369,9 +369,20 @@ const SENDER_SUBJECT = /(?:^|\s)(?:[Dd]id|[Hh]as|[Hh]ave)\s+([\p{Lu}\p{N}][\p{L}
 const TURKISH_COORDINATED_SENDERS = new RegExp(`(?:^|\\s)${SENDER_TOKEN}(?:['’](?:dan|den|tan|ten))?\\s+(?:veya|ve|ya\\s+da|ile)\\s+${SENDER_TOKEN}['’](?:dan|den|tan|ten)(?=$|\\s|[?.!,])`, "giu");
 const ENGLISH_COORDINATED_SUBJECTS = new RegExp(`(?:^|\\s)(?:did|has|have)\\s+${SENDER_TOKEN}\\s+(?:or|and)\\s+${SENDER_TOKEN}\\s+(?:reply|replied|respond|responded|write|written|get|gotten)(?=$|\\s|[?.!,])`, "giu");
 const ENGLISH_COORDINATED_FROM = new RegExp(`(?:^|\\s)from\\s+${SENDER_TOKEN}\\s+(?:or|and)\\s+${SENDER_TOKEN}(?=$|\\s|[?.!,])`, "giu");
+// These shapes detect sender coordination without treating the second target
+// as valid. A shape that cannot also be parsed by a strict pattern above must
+// fail closed instead of silently falling back to the first safe target.
+const COORDINATED_SENDER_SHAPES = [
+  /(?:^|\s)\S{1,80}['’](?:dan|den|tan|ten)\s+(?:veya|ve|ya\s+da|ile)\s+\S/iu,
+  /(?:^|\s)\S{1,80}\s+(?:veya|ve|ya\s+da|ile)\s+\S{1,160}['’](?:dan|den|tan|ten)(?=$|\s|[?.!,])/iu,
+  /(?:^|\s)(?:did|has|have)\s+\S{1,80}\s+(?:or|and)\s+.{1,160}?\s+(?:reply|replied|respond|responded)(?=$|\s|[?.!,])/iu,
+  /(?:^|\s)from\s+\S{1,80}\s+(?:or|and)\s+\S/iu,
+];
 
 const resolveSenders = (question) => {
   const candidates = [];
+  const coordinatedShape = COORDINATED_SENDER_SHAPES.some((pattern) => pattern.test(question));
+  let coordinatedSafe = false;
   const add = (candidate) => {
     const cleaned = candidate?.replace(/[.-]+$/, "");
     if (!cleaned || !ENTITY.test(cleaned)) return;
@@ -382,23 +393,24 @@ const resolveSenders = (question) => {
   for (const match of question.matchAll(SENDER_ABLATIVE)) add(match[1]);
   for (const pattern of [TURKISH_COORDINATED_SENDERS, ENGLISH_COORDINATED_SUBJECTS, ENGLISH_COORDINATED_FROM]) {
     for (const match of question.matchAll(pattern)) {
+      coordinatedSafe = true;
       add(match[1]);
       add(match[2]);
     }
   }
   add(SENDER_FROM.exec(question)?.[1]);
   add(SENDER_SUBJECT.exec(question)?.[1]);
-  return candidates;
+  return { candidates, coordinatedIncomplete: coordinatedShape && !coordinatedSafe };
 };
 
 const detectGmail = (question, folded, { senderSpecificOnly = false } = {}) => {
-  const senders = resolveSenders(question);
-  if (senders.length > 1) {
+  const { candidates: senders, coordinatedIncomplete } = resolveSenders(question);
+  const reply = anyPhrase(folded, REPLY_SIGNALS);
+  const mail = anyPhrase(folded, MAIL_READ_NOUNS);
+  if ((reply || mail) && (senders.length > 1 || coordinatedIncomplete)) {
     return { intent: I.GMAIL_SENDER_LOOKUP, sources: ["gmail"], missing: ["ambiguous-sender"], reason: "ambiguous-sender", senderCandidates: senders };
   }
   const sender = senders[0] ?? null;
-  const reply = anyPhrase(folded, REPLY_SIGNALS);
-  const mail = anyPhrase(folded, MAIL_READ_NOUNS);
   if (sender && (reply || mail)) {
     return {
       intent: I.GMAIL_SENDER_LOOKUP,

@@ -316,11 +316,36 @@ try {
     deepCheck(`ambiguous sender has no tools: ${question}`, ambiguous.tools, []);
   }
   check("repeated same sender deduplicates", plan("Zaigo'dan veya Zaigo'dan dönüş geldi mi?").sender, "Zaigo");
+  check("coordinated names in unrelated prose do not route Gmail", plan("Ali'den veya Veli'den hangisi daha uzun?").route, ROUTES.NO_CONNECTOR);
   const ambiguousRun = await runQuestion("Zaigo'dan veya Acme'den dönüş geldi mi?");
   check("ambiguous sender runtime clarifies", ambiguousRun.result.code, "needs-clarification");
   check("ambiguous sender runtime reason", ambiguousRun.result.reason, "ambiguous-sender");
   check("ambiguous sender uses zero tool budget", ambiguousRun.result.toolCalls, 0);
   check("ambiguous sender makes zero connector calls", ambiguousRun.state.access.length, 0);
+  const hostileAmbiguities = [
+    "Zaigo'dan veya from:attacker OR in:sent'dan dönüş geldi mi?",
+    "Zaigo'dan veya \"Acme\"'den dönüş geldi mi?",
+    "Zaigo'dan veya Acme)(OR in:sent'dan dönüş geldi mi?",
+    "Zaigo'dan veya Acme:foo'dan dönüş geldi mi?",
+    "Zaigo'dan veya (Acme)'den dönüş geldi mi?",
+    "Zaigo'dan ve from:evil'dan mail geldi mi?",
+    "Did Zaigo or from:attacker OR in:sent reply?",
+    "Did Zaigo or \"Acme\" reply?",
+    "Did Zaigo or Acme)(OR in:sent reply?",
+    "Did Zaigo and from:evil reply?",
+    "Any reply from Zaigo or in:sent?",
+    `Zaigo'dan veya Acme${BIDI}'den dönüş geldi mi?`,
+    `Zaigo'dan veya Acme${ZERO_WIDTH}'den dönüş geldi mi?`,
+    `Zaigo'dan veya Acme${ch(0x01)}'den dönüş geldi mi?`,
+  ];
+  for (const question of hostileAmbiguities) {
+    const hostilePlan = plan(question);
+    ok(`hostile coordinated sender fails closed: ${JSON.stringify(question)}`, hostilePlan.route === ROUTES.NEEDS_CLARIFICATION || hostilePlan.route === ROUTES.REJECTED);
+    deepCheck(`hostile coordinated sender plans no tools: ${JSON.stringify(question)}`, hostilePlan.tools, []);
+    const hostileRun = await runQuestion(question);
+    check(`hostile coordinated sender runtime uses zero tools: ${JSON.stringify(question)}`, hostileRun.result.toolCalls, 0);
+    check(`hostile coordinated sender runtime touches no connector: ${JSON.stringify(question)}`, hostileRun.state.access.length, 0);
+  }
   deepCheck("Calendar Thursday window in owner time zone", zaigo && plan("Perşembe takvimimde ne var?").tools[0].args, { timeMin: "2026-09-16T21:00:00.000Z", timeMax: "2026-09-17T21:00:00.000Z", limit: 25 });
   deepCheck("Calendar Thursday window in UTC", planAjoopOwnerRequest("Perşembe takvimimde ne var?", { ...CONFIG, timeZone: "UTC" }).tools[0].args, { timeMin: "2026-09-17T00:00:00.000Z", timeMax: "2026-09-18T00:00:00.000Z", limit: 25 });
   const dst = planAjoopOwnerRequest("Yarın ne var?", { now: Date.parse("2026-10-24T12:00:00Z"), timeZone: "Europe/Berlin" }).tools[0].args;
