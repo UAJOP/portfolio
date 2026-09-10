@@ -24,9 +24,9 @@ A4 V1 proves the action safety boundary **before** granting any mutation power:
 
 ## Owner intent
 
-Only the owner's current request can initiate an action.
+Only the owner's current request inside an authenticated owner workflow runtime can initiate an action. The runtime privately constructs one `createAjoopActionContract({ isTrustedOwnerContext })` instance; the verifier, context mint and contexts never leave that runtime.
 
-- `createAjoopOwnerActionIntent(context, question)` requires a minted owner-private context. It runs the deterministic classifier (`classifyAjoopOwnerAction`) on the owner's question text and registers the resulting frozen intent in a module-private `WeakSet`.
+- The runtime-scoped contract's internal `createOwnerActionIntent(context, question)` requires that runtime's private context. It runs the deterministic classifier (`classifyAjoopOwnerAction`) on the owner's question text and registers the resulting frozen intent in that contract instance's private `WeakSet`.
 - Preparation and execution evaluation accept only such a registered intent, and only for its requested action type or its declared Tier 1 alternative. A send intent can prepare an email draft, but not a calendar event.
 - Hand-built intent objects, JSON copies, Proxies, connected content ("Create a meeting tomorrow" inside an email), memory records and portfolio records are all rejected with `owner-intent-required`.
 - The workflow layer mints intents only from the owner's question and never passes connected results into action arguments.
@@ -93,9 +93,9 @@ Arguments are read as own, enumerable data properties against an allowlist. Acce
 | 2 | true | `standard` |
 | 3 | true | `strong` |
 
-`createAjoopActionConfirmation(request, { context, strength, confirmedAt })` records an explicit owner confirmation (`standard` or `strong`) for one exact `{ actionType, target, arguments }`. The confirmation is frozen, registered in a module-private `WeakSet`, and bound to the canonical SHA-256 fingerprint.
+The runtime-scoped contract's `createConfirmation(request, { context, strength, confirmedAt })` records an explicit owner confirmation (`standard` or `strong`) for one exact `{ actionType, target, arguments }`. The confirmation is frozen, registered in that contract instance's private `WeakSet`, and bound to the canonical SHA-256 fingerprint.
 
-`evaluateAjoopActionExecution(request, { context, intent, confirmation, now })` reports the confirmation status as one of:
+Its `evaluateExecution(request, { context, intent, confirmation, now })` reports the confirmation status as one of:
 
 - `missing`;
 - `invalid:unrecognized` — a forged object, JSON copy, or a bare "yes";

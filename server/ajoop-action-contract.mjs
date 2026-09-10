@@ -23,7 +23,6 @@ import { AJOOP_READ_CONNECTOR_TOOL_IDS, evaluateAjoopConnectorRead } from "./ajo
 import {
   AJOOP_OWNER_UNSAFE_LINE_TEXT,
   AJOOP_OWNER_UNSAFE_MULTILINE_TEXT,
-  isAjoopOwnerPrivateContext,
 } from "./ajoop-owner-context.mjs";
 import { AJOOP_OWNER_MAX_QUESTION_CHARS, classifyAjoopOwnerAction } from "./ajoop-owner-tool-policy.mjs";
 
@@ -385,6 +384,13 @@ const PREPARERS = freeze({
 
 /* ------------------------------------------------------------------ owner intent */
 
+/**
+ * Create one action-contract capability scope. The owner workflow runtime
+ * supplies its private context verifier; neither the verifier nor any minted
+ * authority is exposed by this contract.
+ */
+export function createAjoopActionContract({ isTrustedOwnerContext } = {}) {
+if (typeof isTrustedOwnerContext !== "function") throw new TypeError("AJOOP action contract requires a private owner-context verifier");
 const intents = new WeakSet();
 
 /**
@@ -392,8 +398,8 @@ const intents = new WeakSet();
  * only the owner's own words; connected content, memory and portfolio records
  * are never valid inputs, and a hand-built intent object is never accepted.
  */
-export function createAjoopOwnerActionIntent(context, question) {
-  if (!isAjoopOwnerPrivateContext(context)) return ACCESS_DENIED;
+function createAjoopOwnerActionIntent(context, question) {
+  if (!isTrustedOwnerContext(context)) return ACCESS_DENIED;
   if (typeof question !== "string") return fail("invalid-owner-question");
   const trimmed = question.trim();
   if (!trimmed || trimmed.length > AJOOP_OWNER_MAX_QUESTION_CHARS || AJOOP_OWNER_UNSAFE_MULTILINE_TEXT.test(trimmed)) {
@@ -421,9 +427,9 @@ const intentAllows = (intent, actionType) => {
 /* ------------------------------------------------------------------ preparation */
 
 /** Prepare a Tier 1 local preview. Never performs an external call. */
-export function prepareAjoopAction(request, { context, intent } = {}) {
+function prepareAjoopAction(request, { context, intent } = {}) {
   try {
-    if (!isAjoopOwnerPrivateContext(context)) return ACCESS_DENIED;
+    if (!isTrustedOwnerContext(context)) return ACCESS_DENIED;
     if (!isPlainObject(request)) return fail("invalid-action-request");
     if (hasCallerPolicyField(request)) return fail("caller-policy-field-forbidden");
     const shape = snapshot(request, ["actionType", "arguments"]);
@@ -492,9 +498,9 @@ const readExecutionRequest = (request) => {
  * is bound to the action fingerprint; it is never inferred and never reusable
  * for a different target or different arguments.
  */
-export function createAjoopActionConfirmation(request, { context, strength, confirmedAt } = {}) {
+function createAjoopActionConfirmation(request, { context, strength, confirmedAt } = {}) {
   try {
-    if (!isAjoopOwnerPrivateContext(context)) return ACCESS_DENIED;
+    if (!isTrustedOwnerContext(context)) return ACCESS_DENIED;
     if (strength !== STRENGTHS.STANDARD && strength !== STRENGTHS.STRONG) return fail("invalid-confirmation-strength");
     if (!Number.isFinite(confirmedAt)) return fail("invalid-confirmation-clock");
     const parsed = readExecutionRequest(request);
@@ -531,7 +537,7 @@ const confirmationStatus = (confirmation, policy, fingerprint, now) => {
  * Decide what would happen to an external action request. A4 V1 never
  * executes: the result always carries `executed: false` and `externalCalls: 0`.
  */
-export function evaluateAjoopActionExecution(request, { context, intent, confirmation, now } = {}) {
+function evaluateAjoopActionExecution(request, { context, intent, confirmation, now } = {}) {
   const decision = (code, policy = null, extra = {}) => freeze({
     ok: false,
     code,
@@ -546,7 +552,7 @@ export function evaluateAjoopActionExecution(request, { context, intent, confirm
     ...extra,
   });
   try {
-    if (!isAjoopOwnerPrivateContext(context)) return decision(ACCESS_DENIED.code);
+    if (!isTrustedOwnerContext(context)) return decision(ACCESS_DENIED.code);
     const parsed = readExecutionRequest(request);
     if (parsed.error) return decision(parsed.error);
     const { policy, fingerprint } = parsed;
@@ -561,4 +567,12 @@ export function evaluateAjoopActionExecution(request, { context, intent, confirm
   } catch {
     return decision("invalid-action-request");
   }
+}
+
+return freeze({
+  createOwnerActionIntent: createAjoopOwnerActionIntent,
+  prepareAction: prepareAjoopAction,
+  createConfirmation: createAjoopActionConfirmation,
+  evaluateExecution: evaluateAjoopActionExecution,
+});
 }

@@ -3,28 +3,28 @@
  *
  *   owner request -> A4.3 deterministic plan -> A4.1 approval -> read adapter
  *   -> bounded connected context -> deterministic grounded answer
- *   (-> optional injected generator, accepted only if it passes overclaim checks)
  *
  * This is an integration seam for the trusted owner-private boundary. It owns
- * no HTTP route and is not imported by the public bridge. It requires a
- * context minted by `createAjoopOwnerPrivateContext`; a forged
- * `{ surface, authenticatedOwner }` object is refused before planning.
+ * no HTTP route and is not imported by the public bridge. Its exported runtime
+ * authenticates first, then privately mints a runtime-scoped context. Contexts
+ * never escape and a separate runtime has a separate authority scope.
  *
  * Connected data is held only in local variables for the current request. It
- * is never written to memory, a file or telemetry. Owner memory is read only
- * when a generator is injected, and only as advisory data below connected
- * evidence. Action requests go to the action contract, which has no executor.
+ * is never written to memory, a file or telemetry. Free-form generation is
+ * not used for A4 V1 current-state facts. Action requests go to the action
+ * contract, which has no executor.
  */
 import {
   AJOOP_READ_CONNECTOR_PROVENANCE,
+  AJOOP_READ_CONNECTOR_SURFACES,
   AJOOP_READ_CONNECTOR_TOOL_IDS as T,
+  canUseAjoopReadConnectors,
   evaluateAjoopConnectorRead,
 } from "./ajoop-read-connector-contract.mjs";
 import { executeAjoopGmailRead } from "./ajoop-gmail-read-adapter.mjs";
 import { executeAjoopCalendarRead } from "./ajoop-calendar-read-adapter.mjs";
 import { executeAjoopGitHubRead } from "./ajoop-github-read-adapter.mjs";
 import { executeAjoopDriveRead } from "./ajoop-drive-read-adapter.mjs";
-import { isAjoopOwnerPrivateContext } from "./ajoop-owner-context.mjs";
 import {
   AJOOP_OWNER_GMAIL_LOOKBACK_DAYS,
   AJOOP_OWNER_INTENTS as I,
@@ -34,15 +34,10 @@ import {
   planAjoopOwnerRequest,
 } from "./ajoop-owner-tool-policy.mjs";
 import { buildAjoopConnectedContext, cleanConnectedText, inspectAjoopConnectorResult } from "./ajoop-connected-context.mjs";
-import { AJOOP_OWNER_GENERATION_MAX_ANSWER_CHARS, buildAjoopOwnerGenerationMessages } from "./ajoop-owner-generation.mjs";
-import { retrieveAjoopMemory } from "./ajoop-memory-retrieval.mjs";
-import { buildAjoopMemoryReasoningContext } from "./ajoop-memory-context.mjs";
 import {
-  createAjoopOwnerActionIntent,
-  evaluateAjoopActionExecution,
+  createAjoopActionContract,
   getAjoopActionPolicy,
   listAjoopActionTypes,
-  prepareAjoopAction,
 } from "./ajoop-action-contract.mjs";
 import { foldQuestion, hasPhrase } from "./ajoop-text.mjs";
 
@@ -51,8 +46,6 @@ export const AJOOP_OWNER_WORKFLOW_MAX_LISTED_ITEMS = 10;
 export const AJOOP_OWNER_WORKFLOW_READ_DEADLINE_MS = 45000;
 export const AJOOP_OWNER_WORKFLOW_GENERATION_DEADLINE_MS = 60000;
 export const AJOOP_OWNER_WORKFLOW_MAX_DEADLINE_MS = 120000;
-const STRONGER_CONTEXT_CHARS = 6000;
-const SUMMARY_CHARS = 1500;
 const TIMED_OUT = Symbol("ajoop-owner-workflow-timed-out");
 
 /**
@@ -240,10 +233,11 @@ const composeGitHubStatus = (plan, entries, locale, timeZone) => {
   const prNumber = own(data, "prNumber");
   const repository = own(data, "repository");
   const merged = own(data, "merged") === true;
+  const mergeable = own(data, "mergeable") === true ? true : own(data, "mergeable") === false ? false : null;
   const state = own(data, "state");
   const draft = own(data, "draft") === true;
   const title = quote(own(data, "title"));
-  const claims = { source: "github", sourceAvailable: true, prNumber, repository, state, merged, draft };
+  const claims = { source: "github", sourceAvailable: true, prNumber, repository, state, merged, mergeable, draft };
   const label = `PR #${prNumber} (${repository})`;
   let answer;
   if (merged) {
@@ -255,6 +249,14 @@ const composeGitHubStatus = (plan, entries, locale, timeZone) => {
     answer = locale === "tr"
       ? `${label} açık ve henüz merge edilmemiş${draft ? " (taslak)" : ""}: ${title}.`
       : `${label} is open and not merged yet${draft ? " (draft)" : ""}: ${title}.`;
+  }
+  if (!merged) {
+    const mergeability = mergeable === true
+      ? (locale === "tr" ? " Birleştirilebilirlik: uygun." : " Mergeability: mergeable.")
+      : mergeable === false
+        ? (locale === "tr" ? " Birleştirilebilirlik: uygun değil." : " Mergeability: not mergeable.")
+        : (locale === "tr" ? " Birleştirilebilirlik henüz bilinmiyor." : " Mergeability is still unknown.");
+    answer += mergeability;
   }
   return { answered: true, answer, claims };
 };
@@ -385,53 +387,6 @@ const COMPOSERS = freeze({
   [I.JOB_APPLICATION_STATUS]: composeJobApplications,
 });
 
-/* ------------------------------------------------------------------ grounding checks */
-
-const NEGATION = ["yok", "bulunamadi", "bulamadim", "gelmemis", "gelmedi", "gorunmuyor", "hic", "no", "not", "none", "nothing", "didnt", "hasnt", "havent", "isnt", "wasnt", "henuz"];
-const UNAVAILABLE = ["okunamadi", "okuyamadim", "dogrulayamiyorum", "unavailable", "could not", "couldnt", "cannot", "unable"];
-const PARTIAL = ["kismi", "kesilmis", "eksik", "tamami degil", "bir kismi", "partial", "truncated", "incomplete", "not complete", "only part"];
-const AFFIRMATIVE = ["evet", "yes"];
-const POSITIVE_COUNT = /(?:^| )[1-9]\d* ?(?:e posta|eposta|mail|mails|email|emails|etkinlik|event|events|toplanti|meeting|meetings|dosya|file|files)/;
-const HONEST_PARTIAL = ["not complete", "tamami degil", "hepsi degil", "tumu degil", "eksiksiz degil"];
-const COMPLETE_CLAIMS = ["tamami", "tumu", "hepsi", "tum sonuclar", "eksik yok", "eksiksiz", "complete", "all results", "entire", "full list", "nothing missing"];
-const MERGED_POSITIVE = [/(?:^| )merged(?: |$)/, /(?:^| )(?:merge edil|birlestiril)(?:di|mis)(?: |$)/, /(?:^| )merge (?:oldu|olmus)(?: |$)/];
-const MERGED_NEGATED = /(?:not|never|yet to be|hasnt been|hasn t been|isnt|wasnt) merged|merge edilme(?:mis|di)|birlestirilme(?:mis|di)/;
-
-/**
- * Deterministic overclaim guard for generated current-state answers.
- * It never judges style; it only rejects claims the connector output contradicts.
- */
-export function checkAjoopCurrentStateAnswer(text, claims, intent) {
-  if (typeof text !== "string" || !text.trim()) return freeze({ ok: false, code: "empty" });
-  const folded = foldQuestion(text);
-  const has = (phrases) => phrases.some((phrase) => hasPhrase(folded, phrase));
-  const allSources = claims?.sources ? Object.values(claims.sources) : [claims];
-  if (allSources.some((source) => source?.sourceAvailable === false || source?.available === false) && !has(UNAVAILABLE)) {
-    return freeze({ ok: false, code: "unavailable-source-not-disclosed" });
-  }
-  // A negation word alone is not enough: Turkish "Not:" means "note", so affirmatives and positive counts also reject.
-  if (claims?.found === false && (!has(NEGATION) || has(AFFIRMATIVE) || POSITIVE_COUNT.test(folded))) {
-    return freeze({ ok: false, code: "absent-result-claimed-present" });
-  }
-  if (claims?.complete === false) {
-    const withoutHonestPartial = HONEST_PARTIAL.reduce((text, phrase) => text.split(` ${phrase} `).join(" "), ` ${folded} `).trim();
-    if (!has(PARTIAL) || COMPLETE_CLAIMS.some((phrase) => hasPhrase(withoutHonestPartial, phrase))) {
-      return freeze({ ok: false, code: "partial-result-claimed-complete" });
-    }
-  }
-  if (intent === I.GITHUB_PR_STATUS && claims?.sourceAvailable) {
-    const negated = MERGED_NEGATED.test(folded);
-    const positive = MERGED_POSITIVE.some((pattern) => pattern.test(folded.replace(MERGED_NEGATED, " ")));
-    if (!claims.merged && positive) return freeze({ ok: false, code: "unmerged-claimed-merged" });
-    if (claims.merged && negated) return freeze({ ok: false, code: "merged-claimed-unmerged" });
-    if (!folded.includes(`#${claims.prNumber}`) && !folded.includes(`pr ${claims.prNumber}`)) return freeze({ ok: false, code: "pull-request-not-identified" });
-  }
-  if (intent === I.DRIVE_FILE_DISCOVERY && claims?.found && claims.latestFileName && !folded.includes(foldQuestion(claims.latestFileName))) {
-    return freeze({ ok: false, code: "latest-file-not-grounded" });
-  }
-  return freeze({ ok: true, code: "grounded" });
-}
-
 /* ------------------------------------------------------------------ observer */
 
 const safeKey = (value, allowed) => (typeof value === "string" && allowed.has(value) ? value : "unknown");
@@ -479,6 +434,7 @@ const CLARIFICATIONS = {
     repository: "Hangi repository? (ör. sahip/repo)",
     "pr-number": "Geçerli bir PR numarası gerekli.",
     sender: "Kimden gelen dönüşü kontrol edeyim?",
+    "ambiguous-sender": "Hangi gönderenden gelen dönüşü kontrol edeyim?",
     file: "Hangi Drive dosyası? Dosyanın Drive bağlantısını paylaşır mısın?",
     "search-term": "Drive'da hangi dosyayı arayayım?",
   },
@@ -486,6 +442,7 @@ const CLARIFICATIONS = {
     repository: "Which repository? (for example owner/repo)",
     "pr-number": "A valid pull request number is required.",
     sender: "Whose reply should I check for?",
+    "ambiguous-sender": "Which sender should I check for?",
     file: "Which Drive file? Please share its Drive link.",
     "search-term": "What should I search for in Drive?",
   },
@@ -505,13 +462,9 @@ const ACTION_NAMES = {
   "drive.share_file": { tr: "Drive dosyası paylaşma", en: "sharing a Drive file" },
 };
 
-const extractGenerated = (value) => {
-  if (typeof value === "string") return value.trim();
-  const answer = own(value, "answer") ?? own(value, "content") ?? own(own(value, "message"), "content");
-  return typeof answer === "string" ? answer.trim() : "";
-};
-
-export function createAjoopOwnerConnectedWorkflows({
+const createAjoopOwnerConnectedWorkflows = ({
+  isTrustedOwnerContext,
+  actionContract,
   clients = {},
   timeZone,
   now = () => Date.now(),
@@ -522,13 +475,19 @@ export function createAjoopOwnerConnectedWorkflows({
   clock = () => performance.now(),
   readDeadlineMs = AJOOP_OWNER_WORKFLOW_READ_DEADLINE_MS,
   generationDeadlineMs = AJOOP_OWNER_WORKFLOW_GENERATION_DEADLINE_MS,
-} = {}) {
+} = {}) => {
   if (typeof now !== "function" || typeof clock !== "function") throw new TypeError("AJOOP owner workflows require trusted clocks");
+  if (typeof isTrustedOwnerContext !== "function" || !actionContract) throw new TypeError("AJOOP owner workflows require a private authority scope");
   // Deadlines are trusted server configuration only; they are never read from requests or environment.
   if (!isDeadline(readDeadlineMs) || !isDeadline(generationDeadlineMs)) throw new TypeError("invalid-owner-workflow-deadline");
   normalizeAjoopOwnerPolicyConfig({ now: now(), timeZone, repositoryAliases });
   if (generate !== null && typeof generate !== "function") throw new TypeError("AJOOP owner workflows generate must be a function");
   if (memoryStore !== null && typeof memoryStore?.listActive !== "function") throw new TypeError("AJOOP owner workflows memory store must be readable");
+  const {
+    createOwnerActionIntent,
+    evaluateExecution,
+    prepareAction,
+  } = actionContract;
   const clientFor = (source) => own(clients, CLIENT_KEYS[source]);
   const emit = makeEmitter(observe);
 
@@ -538,12 +497,12 @@ export function createAjoopOwnerConnectedWorkflows({
   };
 
   const runAction = (plan, { question, context, actionArguments, current, locale }) => {
-    const minted = createAjoopOwnerActionIntent(context, question);
+    const minted = createOwnerActionIntent(context, question);
     if (!minted.ok) return finish({ ok: false, code: minted.code, route: plan.route, toolCalls: 0, externalCalls: 0 }, plan);
     const policy = getAjoopActionPolicy(plan.requestedActionType);
     const args = actionArguments === undefined ? {} : actionArguments;
     if (policy.preparationSupported) {
-      const prepared = prepareAjoopAction({ actionType: policy.actionType, arguments: args }, { context, intent: minted.intent });
+      const prepared = prepareAction({ actionType: policy.actionType, arguments: args }, { context, intent: minted.intent });
       emit({ event: "action", actionType: policy.actionType, tier: policy.tier, decision: prepared.ok ? "prepared" : prepared.code });
       const code = prepared.ok ? "action-preview-prepared" : prepared.code === "needs-clarification" ? "action-needs-clarification" : "action-invalid";
       return finish({
@@ -558,14 +517,14 @@ export function createAjoopOwnerConnectedWorkflows({
         toolCalls: 0,
       }, plan);
     }
-    const execution = evaluateAjoopActionExecution(
+    const execution = evaluateExecution(
       { actionType: policy.actionType, target: {}, arguments: {} },
       { context, intent: minted.intent, now: current },
     );
     emit({ event: "action", actionType: policy.actionType, tier: policy.tier, decision: execution.code });
     let alternative = null;
     if (policy.preparedAlternative) {
-      alternative = prepareAjoopAction({ actionType: policy.preparedAlternative, arguments: args }, { context, intent: minted.intent });
+      alternative = prepareAction({ actionType: policy.preparedAlternative, arguments: args }, { context, intent: minted.intent });
     }
     const name = ACTION_NAMES[policy.actionType]?.[locale] ?? policy.actionType;
     const answer = locale === "tr"
@@ -616,41 +575,8 @@ export function createAjoopOwnerConnectedWorkflows({
     return { entries, calls };
   };
 
-  const maybeGenerate = async ({ question, context, composed, entries, plan }) => {
-    if (!generate || !composed.answered) return { answer: composed.answer, answerSource: "deterministic", generation: "not-used" };
-    const connected = buildAjoopConnectedContext(entries.filter((entry) => entry.result).map(({ toolId, result }) => ({ toolId, result })));
-    const summary = cleanConnectedText(composed.answer, SUMMARY_CHARS, { multiline: true });
-    const stronger = `VERIFIED CURRENT-STATE SUMMARY:\n${summary}\n\n${connected.ok ? connected.context : ""}`.slice(0, STRONGER_CONTEXT_CHARS);
-    let memoryContext = "";
-    if (memoryStore) {
-      try {
-        const compiled = buildAjoopMemoryReasoningContext(retrieveAjoopMemory(memoryStore, { query: question, context }), { context });
-        memoryContext = compiled.ok ? compiled.context : "";
-      } catch {
-        memoryContext = "";
-      }
-    }
-    const built = buildAjoopOwnerGenerationMessages({ question, strongerContext: stronger, memoryContext });
-    if (!built.ok) return { answer: composed.answer, answerSource: "deterministic", generation: `failed:${built.code}` };
-    let generated;
-    try {
-      const raw = await withDeadline(() => generate(freeze({ messages: built.messages })), generationDeadlineMs);
-      if (raw === TIMED_OUT) return { answer: composed.answer, answerSource: "deterministic", generation: "failed:generation-timeout" };
-      generated = extractGenerated(raw);
-    } catch {
-      return { answer: composed.answer, answerSource: "deterministic", generation: "failed:generation-error" };
-    }
-    if (!generated || generated.length > Math.min(AJOOP_OWNER_GENERATION_MAX_ANSWER_CHARS, AJOOP_OWNER_WORKFLOW_MAX_ANSWER_CHARS)) {
-      return { answer: composed.answer, answerSource: "deterministic", generation: "failed:generation-bounds" };
-    }
-    const check = checkAjoopCurrentStateAnswer(generated, composed.claims, plan.intent);
-    return check.ok
-      ? { answer: generated, answerSource: "generated", generation: "accepted" }
-      : { answer: composed.answer, answerSource: "deterministic", generation: `rejected:${check.code}` };
-  };
-
   const run = async ({ question, context, actionArguments, conversationSufficient = false } = {}) => {
-    if (!isAjoopOwnerPrivateContext(context)) return ACCESS_DENIED;
+    if (!isTrustedOwnerContext(context)) return ACCESS_DENIED;
     const current = now();
     let plan;
     try {
@@ -666,7 +592,7 @@ export function createAjoopOwnerConnectedWorkflows({
     }
     if (plan.route === ROUTES.NEEDS_CLARIFICATION) {
       const answer = plan.missing.map((field) => CLARIFICATIONS[locale][field]).join(" ");
-      return finish({ ok: true, code: "needs-clarification", route: plan.route, intent: plan.intent, missing: plan.missing, answer, toolCalls: 0 }, plan);
+      return finish({ ok: true, code: "needs-clarification", route: plan.route, intent: plan.intent, missing: plan.missing, ...(plan.reason ? { reason: plan.reason } : {}), answer, toolCalls: 0 }, plan);
     }
     if (plan.route === ROUTES.ACTION) return runAction(plan, { question: question.trim(), context, actionArguments, current, locale });
 
@@ -674,16 +600,15 @@ export function createAjoopOwnerConnectedWorkflows({
     const composed = COMPOSERS[plan.intent](plan, entries, locale, timeZone);
     const summary = buildAjoopConnectedContext(entries.filter((entry) => entry.result).map(({ toolId, result }) => ({ toolId, result })));
     const failedSources = entries.filter((entry) => !(entry.inspected.valid && entry.inspected.ok));
-    const generated = await maybeGenerate({ question, context, composed, entries, plan });
     const code = !composed.answered ? "connected-source-unavailable" : failedSources.length ? "answered-with-source-failures" : "answered";
     return finish({
       ok: composed.answered,
       code,
       route: plan.route,
       intent: plan.intent,
-      answer: generated.answer.slice(0, AJOOP_OWNER_WORKFLOW_MAX_ANSWER_CHARS),
-      answerSource: generated.answerSource,
-      generation: generated.generation,
+      answer: composed.answer.slice(0, AJOOP_OWNER_WORKFLOW_MAX_ANSWER_CHARS),
+      answerSource: "deterministic",
+      generation: "not-used",
       evidence: freeze({
         sources: freeze(entries.map(({ toolId, inspected }) => freeze({
           source: toolId.split(".")[0],
@@ -702,4 +627,45 @@ export function createAjoopOwnerConnectedWorkflows({
   };
 
   return freeze({ run });
+};
+
+/**
+ * High-level A4 owner runtime. Authentication is injected because production
+ * owner authentication is intentionally unwired until A5. The authority
+ * context and its mint remain inside this runtime closure.
+ */
+export function createAjoopOwnerWorkflowRuntime({ authenticateOwnerRequest, ...options } = {}) {
+  if (typeof authenticateOwnerRequest !== "function") throw new TypeError("AJOOP owner runtime requires authenticateOwnerRequest");
+  const trustedContexts = new WeakSet();
+  const isTrustedOwnerContext = (value) => {
+    try {
+      return value !== null && typeof value === "object" && trustedContexts.has(value) && canUseAjoopReadConnectors(value);
+    } catch {
+      return false;
+    }
+  };
+  const actionContract = createAjoopActionContract({ isTrustedOwnerContext });
+  const workflows = createAjoopOwnerConnectedWorkflows({ ...options, isTrustedOwnerContext, actionContract });
+
+  const handleOwnerRequest = async (input = {}) => {
+    const authenticationProof = own(input, "authenticationProof");
+    let authenticated = false;
+    try {
+      const outcome = await withDeadline(() => authenticateOwnerRequest(authenticationProof), options.readDeadlineMs ?? AJOOP_OWNER_WORKFLOW_READ_DEADLINE_MS);
+      authenticated = outcome !== TIMED_OUT && outcome === true;
+    } catch {
+      authenticated = false;
+    }
+    if (!authenticated) return ACCESS_DENIED;
+    const context = freeze({ surface: AJOOP_READ_CONNECTOR_SURFACES.OWNER_PRIVATE, authenticatedOwner: true });
+    trustedContexts.add(context);
+    return workflows.run({
+      question: own(input, "question"),
+      actionArguments: own(input, "actionArguments"),
+      conversationSufficient: own(input, "conversationSufficient") === true,
+      context,
+    });
+  };
+
+  return freeze({ handleOwnerRequest });
 }

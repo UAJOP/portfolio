@@ -9,17 +9,13 @@
 import http from "node:http";
 import https from "node:https";
 import { readFile } from "node:fs/promises";
-import { createAjoopOwnerPrivateContext } from "../server/ajoop-owner-context.mjs";
 import {
   AJOOP_ACTION_LIMITS as LIMITS,
   AJOOP_ACTION_TIERS as TIERS,
   AJOOP_CONFIRMATION_STRENGTHS as STRENGTHS,
-  createAjoopActionConfirmation,
-  createAjoopOwnerActionIntent,
-  evaluateAjoopActionExecution,
+  createAjoopActionContract,
   getAjoopActionPolicy,
   listAjoopActionTypes,
-  prepareAjoopAction,
 } from "../server/ajoop-action-contract.mjs";
 
 let passed = 0;
@@ -42,7 +38,18 @@ https.request = () => { network.https += 1; throw new Error("network must never 
 const ch = (...codePoints) => String.fromCodePoint(...codePoints);
 const BIDI = ch(0x202e);
 const ZERO_WIDTH = ch(0x200b);
-const OWNER = createAjoopOwnerPrivateContext();
+// QA-local capability scope. Production obtains an equivalent private scope
+// only inside createAjoopOwnerWorkflowRuntime after authentication succeeds.
+const trustedContexts = new WeakSet();
+const OWNER = Object.freeze({ surface: "owner-private", authenticatedOwner: true });
+trustedContexts.add(OWNER);
+const contract = createAjoopActionContract({ isTrustedOwnerContext: (value) => trustedContexts.has(value) });
+const {
+  createConfirmation: createAjoopActionConfirmation,
+  createOwnerActionIntent: createAjoopOwnerActionIntent,
+  evaluateExecution: evaluateAjoopActionExecution,
+  prepareAction: prepareAjoopAction,
+} = contract;
 const FORGED = Object.freeze({ surface: "owner-private", authenticatedOwner: true });
 const NOW = Date.parse("2026-09-14T09:00:00Z");
 

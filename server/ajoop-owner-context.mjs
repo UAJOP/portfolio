@@ -1,19 +1,13 @@
 /**
  * AJOOP A4 trusted owner-private context.
  *
- * A4.1 decides connector access from `{ surface, authenticatedOwner }`. Those
- * two fields are easy to forge: any JSON body spread into a context object
- * carries them. A4 workflows and actions therefore require a context minted
- * here, in process, by the trusted owner-authentication boundary. A minted
- * context is registered in a module-private WeakSet, so a parsed HTTP body,
- * a copy, a Proxy, or connected-source data can never be mistaken for one.
+ * Shared input-safety expressions for the A4 owner runtime.
  *
- * This module has no route, no environment flag and no network. Nothing in
- * the public bridge imports it.
+ * Owner authority is deliberately not created here. Each owner workflow
+ * runtime owns its private authority scope and mints a context only after its
+ * injected authenticator succeeds. This module exports no authority brand,
+ * mint function, token or verifier.
  */
-import { AJOOP_READ_CONNECTOR_SURFACES, canUseAjoopReadConnectors } from "./ajoop-read-connector-contract.mjs";
-
-const trustedContexts = new WeakSet();
 
 const codePoint = (value) => String.fromCodePoint(value);
 const range = (from, to) => `${codePoint(from)}-${codePoint(to)}`;
@@ -30,25 +24,3 @@ export const AJOOP_OWNER_UNSAFE_MULTILINE_TEXT = new RegExp(
 
 /** Global variant used to neutralize provider display text rather than reject it. */
 export const AJOOP_OWNER_UNSAFE_DISPLAY_TEXT = new RegExp(AJOOP_OWNER_UNSAFE_MULTILINE_TEXT.source, "gu");
-
-/**
- * Mint the owner-private context. Only the trusted owner-authentication
- * boundary may call this, after it has authenticated the owner itself.
- */
-export function createAjoopOwnerPrivateContext() {
-  const context = Object.freeze({
-    surface: AJOOP_READ_CONNECTOR_SURFACES.OWNER_PRIVATE,
-    authenticatedOwner: true,
-  });
-  trustedContexts.add(context);
-  return context;
-}
-
-/** True only for a context minted above; forged look-alikes, copies and Proxies are false. */
-export function isAjoopOwnerPrivateContext(value) {
-  try {
-    return value !== null && typeof value === "object" && trustedContexts.has(value) && canUseAjoopReadConnectors(value);
-  } catch {
-    return false;
-  }
-}

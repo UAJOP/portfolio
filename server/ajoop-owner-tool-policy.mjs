@@ -359,22 +359,44 @@ const detectCalendar = (folded, config) => {
 
 const MAIL_READ_NOUNS = ["mail", "mailler", "email", "emails", "e posta", "eposta", "gelen kutusu", "inbox"];
 const REPLY_SIGNALS = ["donus geldi", "donus yapti", "donus yapmis", "geri donus", "geri dondu", "cevap geldi", "cevap verdi", "cevap vermis", "yanit geldi", "yanit verdi", "yazdi mi", "yazmis mi", "replied", "reply", "responded", "heard back", "wrote back", "got back", "donus", "cevap", "yanit", "geldi mi"];
-const SENDER_ABLATIVE = /(?:^|\s)([\p{L}\p{N}][\p{L}\p{N}&.-]{0,59})['’](?:dan|den|tan|ten)(?=$|\s|[?.!,])/u;
+const SENDER_TOKEN = "([\\p{L}\\p{N}][\\p{L}\\p{N}&.-]{0,59})";
+const SENDER_ABLATIVE = new RegExp(`(?:^|\\s)${SENDER_TOKEN}['’](?:dan|den|tan|ten)(?=$|\\s|[?.!,])`, "gu");
 const SENDER_FROM = /(?:^|\s)from\s+([\p{L}\p{N}][\p{L}\p{N}&.-]{0,59})(?=$|\s|[?.!,])/iu;
 const NOT_A_SENDER = new Set(["ben", "sen", "o", "biz", "siz", "onlar", "kim", "nere", "bura", "sura", "ora", "hangi", "me", "you", "him", "her", "them", "who", "where"]);
 
 const SENDER_SUBJECT = /(?:^|\s)(?:[Dd]id|[Hh]as|[Hh]ave)\s+([\p{Lu}\p{N}][\p{L}\p{N}&.-]{0,59})\s+(?:reply|replied|respond|responded|write back|written back|get back|gotten back)(?=$|\s|[?.!,])/u;
 
-const resolveSender = (question) => {
-  const candidate = (SENDER_ABLATIVE.exec(question) ?? SENDER_FROM.exec(question) ?? SENDER_SUBJECT.exec(question))?.[1]?.replace(/[.-]+$/, "");
-  if (!candidate || !ENTITY.test(candidate)) return null;
-  const folded = foldQuestion(candidate);
-  if (NOT_A_SENDER.has(folded) || detectDayReference(folded)) return null;
-  return candidate;
+const TURKISH_COORDINATED_SENDERS = new RegExp(`(?:^|\\s)${SENDER_TOKEN}(?:['’](?:dan|den|tan|ten))?\\s+(?:veya|ve|ya\\s+da|ile)\\s+${SENDER_TOKEN}['’](?:dan|den|tan|ten)(?=$|\\s|[?.!,])`, "giu");
+const ENGLISH_COORDINATED_SUBJECTS = new RegExp(`(?:^|\\s)(?:did|has|have)\\s+${SENDER_TOKEN}\\s+(?:or|and)\\s+${SENDER_TOKEN}\\s+(?:reply|replied|respond|responded|write|written|get|gotten)(?=$|\\s|[?.!,])`, "giu");
+const ENGLISH_COORDINATED_FROM = new RegExp(`(?:^|\\s)from\\s+${SENDER_TOKEN}\\s+(?:or|and)\\s+${SENDER_TOKEN}(?=$|\\s|[?.!,])`, "giu");
+
+const resolveSenders = (question) => {
+  const candidates = [];
+  const add = (candidate) => {
+    const cleaned = candidate?.replace(/[.-]+$/, "");
+    if (!cleaned || !ENTITY.test(cleaned)) return;
+    const folded = foldQuestion(cleaned);
+    if (NOT_A_SENDER.has(folded) || detectDayReference(folded)) return;
+    if (!candidates.some((entry) => foldQuestion(entry) === folded)) candidates.push(cleaned);
+  };
+  for (const match of question.matchAll(SENDER_ABLATIVE)) add(match[1]);
+  for (const pattern of [TURKISH_COORDINATED_SENDERS, ENGLISH_COORDINATED_SUBJECTS, ENGLISH_COORDINATED_FROM]) {
+    for (const match of question.matchAll(pattern)) {
+      add(match[1]);
+      add(match[2]);
+    }
+  }
+  add(SENDER_FROM.exec(question)?.[1]);
+  add(SENDER_SUBJECT.exec(question)?.[1]);
+  return candidates;
 };
 
 const detectGmail = (question, folded, { senderSpecificOnly = false } = {}) => {
-  const sender = resolveSender(question);
+  const senders = resolveSenders(question);
+  if (senders.length > 1) {
+    return { intent: I.GMAIL_SENDER_LOOKUP, sources: ["gmail"], missing: ["ambiguous-sender"], reason: "ambiguous-sender", senderCandidates: senders };
+  }
+  const sender = senders[0] ?? null;
   const reply = anyPhrase(folded, REPLY_SIGNALS);
   const mail = anyPhrase(folded, MAIL_READ_NOUNS);
   if (sender && (reply || mail)) {
@@ -447,7 +469,9 @@ export function planAjoopOwnerRequest(question, { conversationSufficient = false
     budget,
     ...(detected.window ? { window: detected.window } : {}),
     ...(detected.sender ? { sender: detected.sender } : {}),
+    ...(detected.senderCandidates ? { senderCandidates: freeze([...detected.senderCandidates]) } : {}),
     ...(detected.searchTerm ? { searchTerm: detected.searchTerm } : {}),
+    ...(detected.reason ? { reason: detected.reason } : {}),
   };
   if (detected.missing?.length) {
     return freeze({ route: ROUTES.NEEDS_CLARIFICATION, ...base, missing: freeze([...detected.missing]), tools: freeze([]) });

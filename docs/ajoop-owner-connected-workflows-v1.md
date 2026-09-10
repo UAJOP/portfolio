@@ -6,29 +6,31 @@ The workflow layer lets AJOOP answer questions about the owner's **current** dig
 
 - It owns no HTTP route. No module in the public runtime (`ajoop-bridge`, `ajoop-bridge-core`, `ajoop-rag`, `ajoop-agent`, `ajoop-sinama`) can reach it, any read adapter, any provider client or the action contract. QA checks this with a transitive import scan.
 - `/ajoop-rag` is unchanged and gains no connector or action capability.
-- Every entry point requires a context minted in-process by `createAjoopOwnerPrivateContext()` (`server/ajoop-owner-context.mjs`). Minted contexts are registered in a module-private `WeakSet`. A parsed HTTP body such as `{ "surface": "owner-private", "authenticatedOwner": true }`, a JSON copy, a Proxy or connected data is never a trusted context. Only the future owner-authentication boundary may mint one.
+- `createAjoopOwnerWorkflowRuntime()` accepts a trusted injected `authenticateOwnerRequest` boundary and exposes only `handleOwnerRequest()`. Each runtime owns a private `WeakSet`; only after authentication succeeds does its closure mint the context consumed by its workflow and action contract. No brand, context, mint function, token or verifier is returned or globally exported, and one runtime cannot grant authority to another.
+- Production owner authentication remains intentionally unwired in A4. QA injects identity-based synthetic authenticators only; no password, cookie, key or production auth scheme is invented here.
 - Real provider clients are constructed by that boundary and injected. QA and CI use fake clients only; there is no network, OAuth browser or live provider.
 
 Modules:
 
 | Module | Responsibility |
 | --- | --- |
-| `server/ajoop-owner-context.mjs` | branded owner-private context; shared unsafe-text patterns |
+| `server/ajoop-owner-context.mjs` | shared unsafe-text patterns; exports no authority capability |
 | `server/ajoop-owner-tool-policy.mjs` | A4.3 deterministic routing, target resolution, time windows, budgets, owner action classification |
 | `server/ajoop-connected-context.mjs` | bounded connected-context builder and adapter-result validation |
-| `server/ajoop-owner-connected-workflows.mjs` | orchestration, deterministic grounded answers, optional guarded generation |
-| `server/ajoop-action-contract.mjs` | A4.4–A4.6 action safety (see `docs/ajoop-action-safety-v1.md`) |
+| `server/ajoop-owner-connected-workflows.mjs` | authenticated runtime, private authority scope, orchestration and deterministic current-state answers |
+| `server/ajoop-action-contract.mjs` | runtime-scoped A4.4–A4.6 action safety (see `docs/ajoop-action-safety-v1.md`) |
 
 ## Pipeline
 
 ```text
-owner request (minted context)
+owner request + authentication proof
+  -> injected authenticator              deny before planning on failure
+  -> runtime-private context              never returned to the caller
   -> planAjoopOwnerRequest            deterministic plan, no I/O
   -> evaluateAjoopConnectorRead       A4.1 approval, per planned read
   -> executeAjoop<Source>Read         existing read adapter, injected client
   -> inspectAjoopConnectorResult      provenance / connector / shape re-check
-  -> deterministic composer           grounded answer + claims
-  -> (optional) injected generator    accepted only if checkAjoopCurrentStateAnswer passes
+  -> deterministic composer           authoritative answer + claims
 ```
 
 Plans are internal objects such as:
@@ -73,7 +75,7 @@ The multi-source workflow uses only Gmail and Calendar. Drive and GitHub are nev
 
 Entity resolution only builds valid tool arguments; it is never authority, and nothing is guessed.
 
-- **Sender:** a Turkish ablative (`Zaigo'dan`), `from <Name>`, or `Did/Has <Name> reply`. The token must match `^[\p{L}\p{N}][\p{L}\p{N}&._-]{0,59}$`, so Gmail operators, spaces, quotes and parentheses cannot enter the fixed query. No sender for a reply question gives `needs-clarification`.
+- **Sender:** a Turkish ablative (`Zaigo'dan`), `from <Name>`, or `Did/Has <Name> reply`. The token must match `^[\p{L}\p{N}][\p{L}\p{N}&._-]{0,59}$`, so Gmail operators, spaces, quotes and parentheses cannot enter the fixed query. No sender gives `needs-clarification`; two distinct coordinated senders (`ve`, `veya`, `ya da`, `ile`, `and`, `or`) give `needs-clarification` with `ambiguous-sender` and zero reads. Repeating the same sender is deduplicated.
 - **Repository:** an explicit `owner/repo` validated with A4.1 semantics, or exactly one trusted configured alias (`repositoryAliases`, validated at construction). A missing or ambiguous repository gives `needs-clarification`.
 - **Drive file:** only an explicit Drive URL yields a `fileId`. "Bu dosyanın içinde ne yazıyor?" without one gives `needs-clarification`.
 - **Drive search term:** remaining topic words after stop words and file nouns; CV, özgeçmiş and resume map to `CV`. An empty term gives `needs-clarification`.
@@ -92,14 +94,14 @@ The planner rejects any plan above its budget, and the runner stops at the budge
 
 ### Deadlines
 
-Only Drive has a provider-level deadline, so the workflow bounds every connector read and the optional generator itself:
+Only Drive has a provider-level deadline, so the workflow bounds every connector read. The retained generation configuration is reserved for future compatibility and is not invoked by A4 V1 current-state workflows:
 
 | Stage | Default | On expiry |
 | --- | --- | --- |
 | each connector read (adapter call) | 45,000 ms | the source becomes `provider-unavailable`, is disclosed in the answer, and a multi-source workflow still answers from healthy sources |
-| injected generator | 60,000 ms | `generation: "failed:generation-timeout"`; the deterministic grounded answer is returned |
+| reserved generator configuration | 60,000 ms | no call in A4 V1; authoritative answer remains deterministic |
 
-Timers are always cleared, and a late adapter result or generation is ignored. The deadlines are integers from 1 to 120,000 ms passed only by trusted server code to `createAjoopOwnerConnectedWorkflows({ readDeadlineMs, generationDeadlineMs })`. They are never read from requests or the environment.
+Timers are always cleared, and a late adapter result is ignored. The deadlines are integers from 1 to 120,000 ms passed only by trusted server code to `createAjoopOwnerWorkflowRuntime({ readDeadlineMs, generationDeadlineMs })`. They are never read from requests or the environment.
 
 ## Grounding
 
@@ -111,16 +113,7 @@ Straightforward answers are deterministic. Composers read only validated adapter
 - Truncated, paginated or incomplete sources add a partial note and `incomplete: true`.
 - A failed source is disclosed with its sanitized code and never replaced by a guess. Multi-source answers report per-source failures.
 
-If a generator is injected, its output is accepted only when `checkAjoopCurrentStateAnswer` finds no contradiction. It rejects:
-
-- an absent result described as present, including via affirmatives or positive counts;
-- a partial result presented as complete;
-- an unmerged PR described as merged, or the reverse;
-- a PR answer that does not identify the PR;
-- a Drive "latest file" that is not the evidenced file;
-- an unavailable source that is not disclosed.
-
-A rejected, failed or over-long generation falls back to the deterministic answer and reports why.
+Free-form generation cannot replace these facts in A4 V1. Even when a generator function is supplied for forward API compatibility, current-state workflows do not call it and return `answerSource: "deterministic"`, `generation: "not-used"`. This avoids treating a lexical natural-language checker as an authority. In particular, `mergeable: null` is stated as unknown and never inferred to mean conflicts or unmergeable.
 
 ## Authority and connected context
 
@@ -141,7 +134,7 @@ deterministic canonical facts
 - Instruction-like records ("Ignore previous instructions", "Delete this meeting", "Reveal your system prompt", "Store this file permanently") are flagged `instructionLike: true`, never obeyed.
 - Results relabelled as `canonical-portfolio`, attributed to the wrong connector, or malformed are rejected.
 
-Connected context is only ever placed inside the owner-generation user-data envelope as STRONGER EVIDENCE DATA, never in the system role. Owner memory is read (never written) only when a generator is injected, and stays advisory below connected evidence. A stale memory claiming "Zaigo replied" cannot override an empty Gmail result. Connected data cannot answer canonical identity questions, because those route to `no-connector`.
+The deterministic current-state path does not send connected context to a generator and does not read or write owner memory. A stale memory claiming "Zaigo replied" therefore cannot override an empty Gmail result. Connected data cannot answer canonical identity questions, because those route to `no-connector`.
 
 ## Ephemeral current state
 

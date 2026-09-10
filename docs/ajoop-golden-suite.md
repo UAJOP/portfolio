@@ -74,6 +74,9 @@ A4 routing is deterministic policy rather than a scripted planner, so its offlin
 - connector-needed routing;
 - no-connector routing (general, portfolio, canonical fact, conversation);
 - clarification instead of guessed targets;
+- runtime-private owner authority, forged-auth denial and cross-runtime isolation;
+- deterministic current-state truth despite an injected malicious generator;
+- Turkish and English multi-sender clarification with zero reads;
 - prompt injection from connected content;
 - Tier 3 send/delete/merge denial;
 - Tier 1 preview-only preparation.

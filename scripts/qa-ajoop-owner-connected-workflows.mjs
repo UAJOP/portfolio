@@ -8,7 +8,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { AJOOP_MEMORY_AUTHORITIES, AJOOP_MEMORY_KINDS } from "../server/ajoop-memory-contract.mjs";
 import { AJOOP_READ_CONNECTOR_TOOL_IDS as T, evaluateAjoopConnectorRead } from "../server/ajoop-read-connector-contract.mjs";
-import { createAjoopOwnerPrivateContext, isAjoopOwnerPrivateContext } from "../server/ajoop-owner-context.mjs";
+import * as ownerContextModule from "../server/ajoop-owner-context.mjs";
 import {
   AJOOP_OWNER_INTENTS as I,
   AJOOP_OWNER_ROUTES as ROUTES,
@@ -23,7 +23,7 @@ import {
   buildAjoopConnectedContext,
   inspectAjoopConnectorResult,
 } from "../server/ajoop-connected-context.mjs";
-import { checkAjoopCurrentStateAnswer, createAjoopOwnerConnectedWorkflows } from "../server/ajoop-owner-connected-workflows.mjs";
+import { createAjoopOwnerWorkflowRuntime } from "../server/ajoop-owner-connected-workflows.mjs";
 
 let passed = 0;
 const failures = [];
@@ -42,7 +42,21 @@ const TIME_ZONE = "Europe/Istanbul";
 const ALIASES = Object.freeze({ portfolio: "UAJOP/portfolio" });
 const CONFIG = Object.freeze({ now: NOW, timeZone: TIME_ZONE, repositoryAliases: ALIASES });
 const SHA = "0123456789abcdef0123456789abcdef01234567";
-const OWNER = createAjoopOwnerPrivateContext();
+const OWNER = Object.freeze({ syntheticAuthenticationProof: "runtime-a" });
+const A41_CONTEXT = Object.freeze({ surface: "owner-private", authenticatedOwner: true });
+
+// QA-only convenience wrapper. Production exposes only the authenticated
+// high-level runtime; no context or authority mint leaves that runtime.
+const createAjoopOwnerConnectedWorkflows = ({ authenticationProof = OWNER, ...options } = {}) => {
+  const runtime = createAjoopOwnerWorkflowRuntime({
+    ...options,
+    authenticateOwnerRequest: async (proof) => proof === authenticationProof,
+  });
+  return Object.freeze({
+    run: ({ context, ...input } = {}) => runtime.handleOwnerRequest({ ...input, authenticationProof: context }),
+    runtime,
+  });
+};
 
 /* ------------------------------------------------------------------ synthetic provider fixtures */
 
@@ -51,8 +65,8 @@ const gmailMessage = (id, { from = "Zaigo HR <hr@zaigo.example>", subject = "Mü
   id, threadId: `thread-${id}`, internalDate, snippet, payload: { headers: [header("From", from), header("Subject", subject)] },
 });
 const calendarEvent = (id, summary, start, end, extra = {}) => ({ id, status: "confirmed", summary, start: { dateTime: start }, end: { dateTime: end }, ...extra });
-const pullRequest = ({ state = "open", merged = false, draft = false, title = "feat: synthetic change", body = "Synthetic body" } = {}) => ({
-  number: 58, state, draft, merged, mergeable: merged ? null : true, mergeable_state: "clean", title, body,
+const pullRequest = ({ state = "open", merged = false, mergeable = merged ? null : true, draft = false, title = "feat: synthetic change", body = "Synthetic body" } = {}) => ({
+  number: 58, state, draft, merged, mergeable, mergeable_state: mergeable === false ? "dirty" : mergeable === null ? "unknown" : "clean", title, body,
   user: { login: "synthetic-owner" },
   base: { ref: "main", sha: SHA, repo: { full_name: "UAJOP/portfolio" } },
   head: { ref: "feat/synthetic", sha: SHA },
@@ -183,16 +197,20 @@ const googleError = (status, reasons = []) => Object.assign(new Error("synthetic
 
 try {
   /* ---------------------------------------------------------------- owner-private boundary */
-  ok("minted owner context is trusted", isAjoopOwnerPrivateContext(OWNER));
-  check("forged owner-looking body is not trusted", isAjoopOwnerPrivateContext({ surface: "owner-private", authenticatedOwner: true }), false);
-  check("JSON copy of owner context is not trusted", isAjoopOwnerPrivateContext(JSON.parse(JSON.stringify(OWNER))), false);
-  check("Proxy of owner context is not trusted", isAjoopOwnerPrivateContext(new Proxy(OWNER, {})), false);
-  check("public surface is not trusted", isAjoopOwnerPrivateContext({ surface: "public-portfolio", authenticatedOwner: true }), false);
+  check("old global owner mint export is gone", typeof ownerContextModule.createAjoopOwnerPrivateContext, "undefined");
+  check("old global owner verifier export is gone", typeof ownerContextModule.isAjoopOwnerPrivateContext, "undefined");
+  deepCheck("runtime exposes only authenticated request handling", Object.keys(workflowsWith(makeProviders()).runtime), ["handleOwnerRequest"]);
   for (const [label, context] of [
     ["forged authenticatedOwner body", { surface: "owner-private", authenticatedOwner: true }],
     ["public surface claiming owner", { surface: "public-portfolio", authenticatedOwner: true }],
     ["missing context", undefined],
     ["Proxy context", new Proxy(OWNER, {})],
+    ["JSON copy", JSON.parse(JSON.stringify(OWNER))],
+    ["spread copy", { ...OWNER }],
+    ["Object.assign copy", Object.assign({}, OWNER)],
+    ["structured clone", structuredClone(OWNER)],
+    ["prototype trick", Object.create(OWNER)],
+    ["fake ownerPrivate", { ownerPrivate: true }],
     ["accessor context", Object.defineProperty({}, "surface", { get() { throw new Error("getter must not run"); } })],
   ]) {
     const providers = makeProviders();
@@ -200,6 +218,25 @@ try {
     check(`${label} refused`, denied.code, "owner-private-auth-required");
     check(`${label} touches no provider`, providers.state.access.length, 0);
   }
+  const runtimeBProof = Object.freeze({ syntheticAuthenticationProof: "runtime-b" });
+  const runtimeBProviders = makeProviders();
+  const runtimeB = createAjoopOwnerConnectedWorkflows({
+    authenticationProof: runtimeBProof,
+    clients: runtimeBProviders.clients,
+    timeZone: TIME_ZONE,
+    now: () => NOW,
+  });
+  const crossRuntime = await runtimeB.run({ question: "Zaigo'dan dönüş geldi mi?", context: OWNER });
+  check("runtime A proof is rejected by runtime B", crossRuntime.code, "owner-private-auth-required");
+  check("cross-runtime rejection makes zero connector calls", runtimeBProviders.state.access.length, 0);
+  const deniedAction = await runtimeB.run({
+    question: "Zaigo için mail taslağı hazırla",
+    context: OWNER,
+    actionArguments: { to: ["recruiter@example.com"], subject: "Synthetic", body: "Synthetic body" },
+  });
+  check("failed authentication denies before action preparation", deniedAction.code, "owner-private-auth-required");
+  check("failed authentication returns no prepared action", Object.hasOwn(deniedAction, "action"), false);
+  check("failed authentication makes zero external calls", runtimeBProviders.state.writes, 0);
 
   /* ---------------------------------------------------------------- policy configuration */
   const configError = (input) => { try { normalizeAjoopOwnerPolicyConfig(input); return "ok"; } catch (error) { return error.message; } };
@@ -249,7 +286,7 @@ try {
     deepCheck(`tools: ${question}`, planned.tools.map((planTool) => planTool.toolId), toolIds);
     ok(`budget respected: ${question}`, planned.tools.length <= (planned.budget ?? 0) || planned.tools.length === 0);
     for (const planTool of planned.tools) {
-      const approved = evaluateAjoopConnectorRead({ toolId: planTool.toolId, args: { ...planTool.args } }, OWNER);
+      const approved = evaluateAjoopConnectorRead({ toolId: planTool.toolId, args: { ...planTool.args } }, A41_CONTEXT);
       check(`A4.1 accepts planned ${planTool.toolId}: ${question}`, approved.code, "accepted");
       deepCheck(`plan args already canonical ${planTool.toolId}: ${question}`, approved.request?.args, planTool.args);
     }
@@ -263,6 +300,27 @@ try {
 
   const zaigo = plan("Zaigo'dan dönüş geldi mi?");
   deepCheck("Gmail sender query fixed and bounded", zaigo.tools[0].args, { query: "from:Zaigo newer_than:90d", limit: 10 });
+  for (const question of [
+    "Zaigo'dan veya Acme'den dönüş geldi mi?",
+    "Zaigo'dan ve Acme'den dönüş geldi mi?",
+    "Zaigo ya da Acme'den mail geldi mi?",
+    "Zaigo ile Acme'den dönüş var mı?",
+    "Did Zaigo or Acme reply?",
+    "Did Zaigo and Acme reply?",
+    "Has Zaigo or Acme replied?",
+    "Any reply from Zaigo or Acme?",
+  ]) {
+    const ambiguous = plan(question);
+    check(`ambiguous sender clarifies: ${question}`, ambiguous.route, ROUTES.NEEDS_CLARIFICATION);
+    check(`ambiguous sender reason: ${question}`, ambiguous.reason, "ambiguous-sender");
+    deepCheck(`ambiguous sender has no tools: ${question}`, ambiguous.tools, []);
+  }
+  check("repeated same sender deduplicates", plan("Zaigo'dan veya Zaigo'dan dönüş geldi mi?").sender, "Zaigo");
+  const ambiguousRun = await runQuestion("Zaigo'dan veya Acme'den dönüş geldi mi?");
+  check("ambiguous sender runtime clarifies", ambiguousRun.result.code, "needs-clarification");
+  check("ambiguous sender runtime reason", ambiguousRun.result.reason, "ambiguous-sender");
+  check("ambiguous sender uses zero tool budget", ambiguousRun.result.toolCalls, 0);
+  check("ambiguous sender makes zero connector calls", ambiguousRun.state.access.length, 0);
   deepCheck("Calendar Thursday window in owner time zone", zaigo && plan("Perşembe takvimimde ne var?").tools[0].args, { timeMin: "2026-09-16T21:00:00.000Z", timeMax: "2026-09-17T21:00:00.000Z", limit: 25 });
   deepCheck("Calendar Thursday window in UTC", planAjoopOwnerRequest("Perşembe takvimimde ne var?", { ...CONFIG, timeZone: "UTC" }).tools[0].args, { timeMin: "2026-09-17T00:00:00.000Z", timeMax: "2026-09-18T00:00:00.000Z", limit: 25 });
   const dst = planAjoopOwnerRequest("Yarın ne var?", { now: Date.parse("2026-10-24T12:00:00Z"), timeZone: "Europe/Berlin" }).tools[0].args;
@@ -446,9 +504,11 @@ try {
   }).run({ question: "Bu hafta iş başvurularında nerede kaldık?", context: OWNER });
   check("hung source in multi-source keeps the healthy source", hungMulti.code, "answered-with-source-failures");
   check("hung multi-source still within budget", hungMulti.toolCalls, 2);
-  const hungGeneration = await runQuestion("Portfolio PR #58 ne durumda?", { options: { generate: never, generationDeadlineMs: 40 } });
+  let hungGeneratorCalls = 0;
+  const hungGeneration = await runQuestion("Portfolio PR #58 ne durumda?", { options: { generate: () => { hungGeneratorCalls += 1; return never(); }, generationDeadlineMs: 40 } });
   check("hung generator falls back deterministically", hungGeneration.result.answerSource, "deterministic");
-  check("hung generator reported as timeout", hungGeneration.result.generation, "failed:generation-timeout");
+  check("hung generator is not invoked", hungGeneratorCalls, 0);
+  check("unused generator is reported accurately", hungGeneration.result.generation, "not-used");
   check("hung generator still answers", hungGeneration.result.code, "answered");
   check("deadlines leave no active timers", activeTimeouts(), timeoutsBefore);
   for (const [label, options] of [
@@ -491,10 +551,10 @@ try {
     check(`observer carries no connected text: ${question}`, /Ignore previous|Delete this|Reveal your|Store this|Zaigo/.test(JSON.stringify(observed)), false);
   }
   check("injection never writes memory", memoryStore.writes, 0);
-  ok("generator received messages", captured.length >= 4);
-  ok("connected injection never reaches system role", captured.every((messages) => messages.filter((message) => message.role === "system").every((message) => !/Ignore previous|Delete this|Reveal your|Store this/.test(message.content))));
-  ok("connected injection arrives only as labelled user data", captured.every((messages) => messages.length === 2 && messages[1].role === "user" && messages[1].content.includes("CONNECTED SOURCE DATA")));
-  ok("spoofed section label neutralized in generator input", captured.some((messages) => messages[1].content.includes("[label removed]")));
+  check("current-state generator is never called", captured.length, 0);
+  check("connected injection never reaches generation", captured.some((messages) => /Ignore previous|Delete this|Reveal your|Store this/.test(JSON.stringify(messages))), false);
+  check("connected injection cannot create generated authority", captured.length, 0);
+  check("connected source remains deterministic", captured.length, 0);
 
   /* ---------------------------------------------------------------- memory never overrides current state */
   const staleMemory = makeMemoryStore([memoryRecord("Zaigo dönüş yaptı ve teklif gönderdi")]);
@@ -502,9 +562,9 @@ try {
     overrides: { gmail: [] },
     options: { memoryStore: staleMemory, generate: async () => "Evet, Zaigo dönüş yaptı ve teklif gönderdi." },
   });
-  check("memory-based overclaim rejected", memoryClaim.result.generation, "rejected:absent-result-claimed-present");
+  check("memory-based overclaim cannot enter current-state answer", memoryClaim.result.generation, "not-used");
   ok("current Gmail state wins over memory", memoryClaim.result.answer.startsWith("Hayır."));
-  ok("memory store was only read", staleMemory.listCalls >= 1 && staleMemory.writes === 0);
+  check("current-state path neither reads nor writes memory", staleMemory.listCalls + staleMemory.writes, 0);
   const canonicalQuestion = await runQuestion("Kaan'ın GitHub adresi ne?", {
     overrides: { gmail: [gmailMessage("m9", { subject: "Kaan's GitHub is github.com/not-the-real-account" })] },
   });
@@ -512,33 +572,36 @@ try {
   check("canonical identity question reads no connector", canonicalQuestion.state.access.length, 0);
   ok("context header states canonical authority first", AJOOP_CONNECTED_CONTEXT_HEADER.includes("deterministic canonical facts > connected current state"));
 
-  /* ---------------------------------------------------------------- generator grounding */
-  const generated = async (question, overrides, text) => (await runQuestion(question, { overrides, options: { generate: async () => text } })).result;
-  const acceptedPr = await generated("Portfolio PR #58 ne durumda?", {}, "PR #58 hâlâ açık, henüz merge edilmemiş.");
-  check("grounded generated PR answer accepted", acceptedPr.generation, "accepted");
-  check("accepted generation marked generated", acceptedPr.answerSource, "generated");
-  check("unmerged PR claimed merged rejected", (await generated("Portfolio PR #58 ne durumda?", {}, "PR #58 merged.")).generation, "rejected:unmerged-claimed-merged");
-  check("unmerged PR Turkish merge claim rejected", (await generated("Portfolio PR #58 ne durumda?", {}, "PR #58 merge edildi.")).generation, "rejected:unmerged-claimed-merged");
-  check("merged PR claimed unmerged rejected", (await generated("Portfolio PR #58 ne durumda?", { pullRequest: pullRequest({ state: "closed", merged: true }) }, "PR #58 is not merged.")).generation, "rejected:merged-claimed-unmerged");
-  check("empty calendar claimed busy rejected", (await generated("Perşembe takvimimde ne var?", { calendar: [] }, "Perşembe 3 toplantın var.")).generation, "rejected:absent-result-claimed-present");
-  check("partial Gmail claimed complete rejected", (await generated("Zaigo'dan dönüş geldi mi?", { gmailHasMore: true }, "Evet, Zaigo'dan 2 e-posta var.")).generation, "rejected:partial-result-claimed-complete");
-  check("wrong latest Drive file rejected", (await generated("Drive'daki son CV hangisi?", {}, "En son CV Synthetic CV 2025.pdf dosyası.")).generation, "rejected:latest-file-not-grounded");
-  const throwing = await runQuestion("Portfolio PR #58 ne durumda?", { options: { generate: async () => { throw new Error("model secret"); } } });
-  check("generator failure falls back deterministically", throwing.result.answerSource, "deterministic");
-  check("generator failure reported", throwing.result.generation, "failed:generation-error");
-  check("generator overlong falls back", (await generated("Portfolio PR #58 ne durumda?", {}, `PR #58 ${"x".repeat(7000)}`)).generation, "failed:generation-bounds");
-  check("Turkish 'Not:' cannot fake a negation", checkAjoopCurrentStateAnswer("Evet, Zaigo'dan 2 e-posta var. Not: güncel.", { found: false }, I.GMAIL_SENDER_LOOKUP).code, "absent-result-claimed-present");
-  check("negation word with positive count rejected", checkAjoopCurrentStateAnswer("No problem: 3 emails arrived from Zaigo.", { found: false }, I.GMAIL_SENDER_LOOKUP).code, "absent-result-claimed-present");
-  check("honest Turkish absent answer accepted", checkAjoopCurrentStateAnswer("Hayır, Zaigo'dan gelen bir e-posta bulunamadı.", { found: false }, I.GMAIL_SENDER_LOOKUP).ok, true);
-  check("honest English absent answer accepted", checkAjoopCurrentStateAnswer("No email from Zaigo was found.", { found: false }, I.GMAIL_SENDER_LOOKUP).ok, true);
-  check("partial marker plus completeness claim rejected", checkAjoopCurrentStateAnswer("Sonuçlar kısmi değil, eksik yok; hepsi burada.", { complete: false }, I.GMAIL_SENDER_LOOKUP).code, "partial-result-claimed-complete");
-  check("honest not-complete answer accepted", checkAjoopCurrentStateAnswer("The list is not complete; results are partial.", { complete: false }, I.GMAIL_SENDER_LOOKUP).ok, true);
+  /* ---------------------------------------------------------------- deterministic current-state answers */
+  const generated = async (question, overrides, text) => {
+    let calls = 0;
+    const outcome = await runQuestion(question, { overrides, options: { generate: async () => { calls += 1; return text; } } });
+    return { ...outcome, calls, supplied: text };
+  };
+  for (const text of ["No issue; a reply arrived from Zaigo.", "Not: Evet, mail gelmiş.", "Evet, dönüş geldi.", "1 mail geldi."]) {
+    const attempt = await generated("Zaigo'dan dönüş geldi mi?", { gmail: [] }, text);
+    check(`false empty-Gmail generation not called: ${text}`, attempt.calls, 0);
+    check(`false empty-Gmail generation not authoritative: ${text}`, attempt.result.answer === text, false);
+  }
+  for (const text of ["The newest file is B. A is an older reference.", "En yeni dosya B, A eski."]) {
+    const attempt = await generated("Drive'daki son CV hangisi?", {}, text);
+    check(`false Drive generation not called: ${text}`, attempt.calls, 0);
+    check(`false Drive generation not authoritative: ${text}`, attempt.result.answer === text, false);
+    ok(`Drive deterministic answer names actual latest file: ${text}`, attempt.result.answer.includes("Synthetic CV 2026.pdf"));
+  }
+  for (const text of ["PR #58 is unmergeable.", "PR #58 has merge conflicts.", "PR birleştirilemez.", "PR'da conflict var."]) {
+    const attempt = await generated("Portfolio PR #58 ne durumda?", { pullRequest: pullRequest({ mergeable: null }) }, text);
+    check(`unknown mergeability generation not called: ${text}`, attempt.calls, 0);
+    check(`unknown mergeability claim not authoritative: ${text}`, attempt.result.answer === text, false);
+    ok(`mergeability remains unknown: ${text}`, /bilinmiyor|unknown/i.test(attempt.result.answer));
+  }
+  const unavailableGenerated = await generated("Perşembe takvimimde ne var?", { calendarError: googleError(503) }, "Calendar succeeded and is empty.");
+  check("unavailable Calendar generation not called", unavailableGenerated.calls, 0);
+  ok("unavailable Calendar remains explicit", /okunamadı|could not be read/.test(unavailableGenerated.result.answer));
   const deterministicPartial = await runQuestion("Zaigo'dan dönüş geldi mi?", { overrides: { gmailHasMore: true } });
-  check("deterministic partial answer passes its own grounding check", checkAjoopCurrentStateAnswer(deterministicPartial.result.answer, deterministicPartial.result.evidence.claims, I.GMAIL_SENDER_LOOKUP).ok, true);
+  ok("deterministic partial answer remains explicit", deterministicPartial.result.answer.includes("kısmi"));
   const deterministicEmpty = await runQuestion("Zaigo'dan dönüş geldi mi?", { overrides: { gmail: [] } });
-  check("deterministic empty answer passes its own grounding check", checkAjoopCurrentStateAnswer(deterministicEmpty.result.answer, deterministicEmpty.result.evidence.claims, I.GMAIL_SENDER_LOOKUP).ok, true);
-  check("unavailable source must be disclosed", checkAjoopCurrentStateAnswer("Takvim boş.", { source: "calendar", sourceAvailable: false }, I.CALENDAR_AGENDA).code, "unavailable-source-not-disclosed");
-  check("disclosed unavailable source accepted", checkAjoopCurrentStateAnswer("Takvim şu an okunamadı.", { source: "calendar", sourceAvailable: false }, I.CALENDAR_AGENDA).ok, true);
+  ok("deterministic empty answer remains truthful", deterministicEmpty.result.answer.startsWith("Hayır."));
 
   /* ---------------------------------------------------------------- actions through workflows */
   for (const [question, code] of [
