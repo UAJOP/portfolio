@@ -578,7 +578,8 @@ try {
   check("provider hides page token", JSON.stringify(providerSearch).includes("private-page-token"), false);
   const [, listParams, listOptions] = listDrive.state.calls[0];
   deepCheck("list params keys exact", Object.keys(listParams).sort(), ["fields", "orderBy", "pageSize", "q", "spaces"]);
-  check("list uses default JSON response", listOptions, undefined);
+  deepCheck("list uses default JSON response with only a deadline signal", Object.keys(listOptions), ["signal"]);
+  ok("list deadline signal is an AbortSignal", listOptions.signal instanceof AbortSignal);
   check("page size equals approved limit", listParams.pageSize, 7);
   check("provider orders newest modification first", listParams.orderBy, "modifiedTime desc");
   check("provider restricts search space", listParams.spaces, "drive");
@@ -643,7 +644,8 @@ try {
   deepCheck("metadata request params exact", metadataParams, { fileId: "synthetic-file-1", fields: AJOOP_DRIVE_READ_FIELDS });
   check("metadata fields mask exact", AJOOP_DRIVE_READ_FIELDS, "id,name,mimeType,createdTime,modifiedTime,size,trashed,shortcutDetails(targetId,targetMimeType)");
   check("metadata fields has no wildcard", AJOOP_DRIVE_READ_FIELDS.includes("*"), false);
-  check("metadata uses JSON response", metadataOptions, undefined);
+  deepCheck("metadata uses JSON response with only a deadline signal", Object.keys(metadataOptions), ["signal"]);
+  ok("metadata deadline signal is an AbortSignal", metadataOptions.signal instanceof AbortSignal);
   for (const [label, mimeType, exportedType, partial] of [
     ["Google Docs", M.DOCUMENT, "text/plain", false],
     ["Google Slides", M.PRESENTATION, "text/plain", false],
@@ -653,7 +655,7 @@ try {
     check(`${label} read succeeds`, outcome.result.ok, true);
     check(`${label} makes metadata then export`, outcome.calls.map(([name]) => name).join(","), "get,export");
     deepCheck(`${label} export params exact`, outcome.calls[1][1], { fileId: "synthetic-file-1", mimeType: exportedType });
-    deepCheck(`${label} uses streaming export`, outcome.calls[1][2], { responseType: "stream" });
+    deepCheck(`${label} uses streaming export with deadline signal`, [Object.keys(outcome.calls[1][2]), outcome.calls[1][2].responseType, outcome.calls[1][2].signal instanceof AbortSignal], [["responseType", "signal"], "stream", true]);
     check(`${label} content text`, outcome.result.data.contentText, "exported text");
     check(`${label} content type`, outcome.result.data.contentType, exportedType);
     check(`${label} partial semantics`, outcome.result.data.contentPartial, partial);
@@ -668,7 +670,7 @@ try {
     const outcome = await readThrough({ metadata: readMetadata({ mimeType }) });
     check(`${mimeType} makes metadata then media`, outcome.calls.map(([name]) => name).join(","), "get,get");
     deepCheck(`${mimeType} media params exact`, outcome.calls[1][1], { fileId: "synthetic-file-1", alt: "media" });
-    deepCheck(`${mimeType} uses streaming get`, outcome.calls[1][2], { responseType: "stream" });
+    deepCheck(`${mimeType} uses streaming get with deadline signal`, [Object.keys(outcome.calls[1][2]), outcome.calls[1][2].responseType, outcome.calls[1][2].signal instanceof AbortSignal], [["responseType", "signal"], "stream", true]);
     check(`${mimeType} returns text`, outcome.result.data.contentText, "blob text");
     check(`${mimeType} content type echoes file type`, outcome.result.data.contentType, mimeType);
     check(`${mimeType} is not partial`, outcome.result.data.contentPartial, false);
@@ -791,6 +793,119 @@ try {
   check("configured result bound", AJOOP_DRIVE_MAX_RESULT_CHARS, 256000);
   check("configured name bound", AJOOP_DRIVE_MAX_NAME_CHARS, 500);
   check("configured MIME bound", AJOOP_DRIVE_MAX_MIME_TYPE_CHARS, 200);
+
+  // ---------------------------------------------------------------- operation deadline and export size limit
+  const {
+    AJOOP_DRIVE_MAX_OPERATION_DEADLINE_MS,
+    AJOOP_DRIVE_OPERATION_DEADLINE_MS,
+    AJOOP_DRIVE_PROVIDER_TIMEOUT,
+  } = await import("../server/drive-provider-client.mjs");
+  const activeTimeouts = () => process.getActiveResourcesInfo().filter((name) => name === "Timeout").length;
+  const never = () => new Promise(() => {});
+  class StallingStream {
+    constructor(chunks) {
+      this.chunks = chunks;
+      this.destroyed = false;
+      this.returned = false;
+    }
+    [Symbol.asyncIterator]() {
+      let index = 0;
+      return {
+        next: () => (index < this.chunks.length ? Promise.resolve({ done: false, value: this.chunks[index++] }) : never()),
+        return: () => {
+          this.returned = true;
+          return Promise.resolve({ done: true, value: undefined });
+        },
+      };
+    }
+    destroy() { this.destroyed = true; }
+  }
+  const deadlineDrive = ({ hang = null, metadata = readMetadata({ mimeType: M.DOCUMENT }), lateStream = null, exportError = null, deadlineMs = 30 } = {}) => {
+    const state = { calls: [], streams: [] };
+    const stalling = (text) => {
+      const stream = new StallingStream([Buffer.from(text)]);
+      state.streams.push(stream);
+      return stream;
+    };
+    const files = {
+      list(params, options) {
+        state.calls.push(["list", params, options]);
+        return hang === "list" ? never() : Promise.resolve({ data: { files: [] } });
+      },
+      get(params, options) {
+        state.calls.push(["get", params, options]);
+        if (params.alt === "media") return hang === "media-request" ? never() : Promise.resolve({ data: stalling("partial media") });
+        return hang === "metadata" ? never() : Promise.resolve({ data: metadata });
+      },
+      export(params, options) {
+        state.calls.push(["export", params, options]);
+        if (exportError) return Promise.reject(exportError);
+        if (hang === "export-request") return never();
+        if (lateStream) return new Promise((resolve) => setTimeout(() => resolve({ data: lateStream }), deadlineMs * 3));
+        return Promise.resolve({ data: stalling("partial export") });
+      },
+    };
+    const provider = createGoogleDriveReadClient({ auth: { marker: "auth" }, driveFactory: () => ({ files }), deadlineMs });
+    return { provider, state };
+  };
+  const timeoutsBeforeDeadlines = activeTimeouts();
+  const stalledExport = deadlineDrive();
+  const stallStarted = Date.now();
+  const stalledResult = await executeAjoopDriveRead(readRequest, { driveClient: stalledExport.provider });
+  check("stalled export stream maps provider-unavailable", stalledResult.error?.code, "provider-unavailable");
+  ok("stalled export stream returns control within the deadline", Date.now() - stallStarted < 2000);
+  check("stalled export stream destroyed", stalledExport.state.streams[0].destroyed, true);
+  check("stalled export iterator returned", stalledExport.state.streams[0].returned, true);
+  check("stalled export leaks no partial content", JSON.stringify(stalledResult).includes("partial export"), false);
+  check("stalled export makes no retry", stalledExport.state.calls.filter(([name]) => name === "export").length, 1);
+  const stalledMedia = deadlineDrive({ metadata: readMetadata({ mimeType: "text/plain" }) });
+  check("stalled media stream maps provider-unavailable", await errorCode(executeAjoopDriveRead(readRequest, { driveClient: stalledMedia.provider })), "provider-unavailable");
+  check("stalled media stream destroyed", stalledMedia.state.streams[0].destroyed, true);
+  for (const hang of ["list", "metadata", "export-request", "media-request"]) {
+    const drive = deadlineDrive({ hang, metadata: readMetadata({ mimeType: hang === "media-request" ? "text/plain" : M.DOCUMENT }) });
+    const request = hang === "list" ? searchRequest : readRequest;
+    check(`hung ${hang} maps provider-unavailable`, await errorCode(executeAjoopDriveRead(request, { driveClient: drive.provider })), "provider-unavailable");
+  }
+  const lateStream = new FakeStream([Buffer.from("late export")]);
+  const lateDrive = deadlineDrive({ lateStream });
+  check("late export response times out", await errorCode(executeAjoopDriveRead(readRequest, { driveClient: lateDrive.provider })), "provider-unavailable");
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  check("late export stream cancelled when it finally arrives", lateStream.destroyed, true);
+  check("deadlines leave no active timers", activeTimeouts(), timeoutsBeforeDeadlines);
+  const preAborted = new AbortController();
+  preAborted.abort();
+  const preAbortedStream = new FakeStream([Buffer.from("x")]);
+  check("aborted signal stops stream read", await readStreamError(preAbortedStream, { signal: preAborted.signal }), AJOOP_DRIVE_PROVIDER_TIMEOUT);
+  check("aborted signal cancels stream", preAbortedStream.destroyed, true);
+  const liveSignal = new AbortController();
+  check("unaborted signal still reads stream", (await readBoundedUtf8Stream(new FakeStream([Buffer.from("ok")]), { signal: liveSignal.signal })).contentText, "ok");
+  check("default operation deadline conservative", AJOOP_DRIVE_OPERATION_DEADLINE_MS, 30000);
+  for (const deadlineMs of [0, -1, 1.5, "30", AJOOP_DRIVE_MAX_OPERATION_DEADLINE_MS + 1, Number.POSITIVE_INFINITY, null]) {
+    let code;
+    try {
+      createGoogleDriveReadClient({ auth: { marker: "auth" }, driveFactory: () => ({ files: {} }), deadlineMs });
+      code = "created";
+    } catch (error) {
+      code = error.message;
+    }
+    check(`invalid deadline ${String(deadlineMs)} rejected`, code, "invalid-drive-deadline");
+  }
+
+  const exportLimitDrive = deadlineDrive({ exportError: googleError(403, { reasons: ["exportSizeLimitExceeded"], bodyAsString: true }) });
+  const exportLimited = await executeAjoopDriveRead(readRequest, { driveClient: exportLimitDrive.provider });
+  check("export size limit keeps metadata", exportLimited.ok, true);
+  check("export size limit content unavailable", exportLimited.data?.contentAvailable, false);
+  check("export size limit reason explicit", exportLimited.data?.contentUnavailableReason, R.EXPORT_SIZE_LIMIT_EXCEEDED);
+  check("export size limit returns no content", exportLimited.data?.contentText, null);
+  check("export size limit makes no retry", exportLimitDrive.state.calls.filter(([name]) => name === "export").length, 1);
+  check("export size limit via parsed body", (await executeAjoopDriveRead(readRequest, { driveClient: deadlineDrive({ exportError: googleError(403, { reasons: ["exportSizeLimitExceeded"] }) }).provider })).data?.contentUnavailableReason, R.EXPORT_SIZE_LIMIT_EXCEEDED);
+  check("export size reason ignored on non-403", await errorCode(executeAjoopDriveRead(readRequest, { driveClient: deadlineDrive({ exportError: googleError(500, { reasons: ["exportSizeLimitExceeded"] }) }).provider })), "provider-unavailable");
+  const messageOnly = Object.assign(new Error("exportSizeLimitExceeded"), { status: 403, response: { status: 403, data: "exportSizeLimitExceeded" } });
+  check("export size message text is never trusted", await errorCode(executeAjoopDriveRead(readRequest, { driveClient: deadlineDrive({ exportError: messageOnly }).provider })), "provider-permission-denied");
+  check("ordinary export 403 stays permission denied", await errorCode(executeAjoopDriveRead(readRequest, { driveClient: deadlineDrive({ exportError: googleError(403, { reasons: ["cannotExportFile"], bodyAsString: true }) }).provider })), "provider-permission-denied");
+  check("adapter accepts export size reason for Workspace export", (await readWith({ metadata: readMetadata({ mimeType: M.SPREADSHEET }), content: unavailable(R.EXPORT_SIZE_LIMIT_EXCEEDED) })).data?.contentUnavailableReason, R.EXPORT_SIZE_LIMIT_EXCEEDED);
+  check("adapter rejects export size reason for media file", await errorCode(readWith({ metadata: readMetadata({ mimeType: "text/plain" }), content: unavailable(R.EXPORT_SIZE_LIMIT_EXCEEDED) })), "provider-response-invalid");
+  check("adapter rejects export size reason for PDF", await errorCode(readWith({ metadata: readMetadata({ mimeType: "application/pdf" }), content: unavailable(R.EXPORT_SIZE_LIMIT_EXCEEDED) })), "provider-response-invalid");
 
   // ---------------------------------------------------------------- error mapping
   for (const [label, error, expected] of [

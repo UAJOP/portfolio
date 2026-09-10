@@ -27,6 +27,7 @@ export const AJOOP_DRIVE_CONTENT_UNAVAILABLE_REASONS = Object.freeze({
   UNSUPPORTED_BINARY_TYPE: "unsupported-binary-type",
   UNSUPPORTED_GOOGLE_WORKSPACE_TYPE: "unsupported-google-workspace-type",
   INVALID_UTF8: "invalid-utf8",
+  EXPORT_SIZE_LIMIT_EXCEEDED: "export-size-limit-exceeded",
 });
 
 const MIME = AJOOP_DRIVE_MIME_TYPES;
@@ -269,8 +270,11 @@ const normalizeContent = (raw, mimeType) => {
     throw new Error("invalid-provider-content");
   }
   if (!contentAvailable) {
-    const expectedReason = strategy.kind === "unavailable" ? strategy.reason : REASONS.INVALID_UTF8;
-    if (reason !== expectedReason || contentType !== null || contentText !== null || contentPartial || providerTruncated) {
+    // Fetched content can only become unavailable for decoding, or for Google's export size limit on exports.
+    const allowedReasons = strategy.kind === "unavailable"
+      ? [strategy.reason]
+      : strategy.kind === "export" ? [REASONS.INVALID_UTF8, REASONS.EXPORT_SIZE_LIMIT_EXCEEDED] : [REASONS.INVALID_UTF8];
+    if (!allowedReasons.includes(reason) || contentType !== null || contentText !== null || contentPartial || providerTruncated) {
       throw new Error("invalid-provider-content");
     }
     return {

@@ -117,6 +117,8 @@ Unsupported types are a deliberate V1 boundary, not an error: metadata still suc
 
 Content that is not valid UTF-8 (for example a Latin-1 `.txt`) also returns metadata with `contentAvailable: false` and reason `invalid-utf8`. No partially decoded or replacement-character text is returned.
 
+When Google rejects a Docs, Slides, or Sheets export with its documented structured 403 reason `exportSizeLimitExceeded`, the read returns metadata with `contentAvailable: false` and reason `export-size-limit-exceeded`, instead of a misleading `provider-permission-denied`. Only that structured reason on a 403 export response counts; provider messages are never parsed, and the same reason on a media request or another status is not honoured.
+
 The provider policy (`resolveDriveContentStrategy`) lives in the adapter module. The adapter re-validates provider content against it: content for an unsupported type, a mismatched `contentType`, a Sheets result not marked partial, or an unexpected unavailable reason is `provider-response-invalid`.
 
 ### Shortcuts and folders
@@ -131,6 +133,18 @@ Export and media requests use `responseType: "stream"` and are read incrementall
 - On the first bound the stream is destroyed and `truncated: true` is reported.
 - Decoding uses a fatal, streaming `TextDecoder`. Multibyte sequences split across chunks decode correctly. A sequence cut by the byte bound is dropped, never emitted as U+FFFD. A surrogate pair is never split by the character bound. A leading BOM is removed.
 - Transport errors mid-stream destroy the stream and map to `provider-unavailable`.
+
+### Operation deadline
+
+Every provider operation (`searchFiles`, and `readFile` including its metadata request, export or media request, and every stream chunk) runs under one deadline, 30 seconds by default. Each provider await races an `AbortSignal` that is also handed to the Google client. When the deadline fires:
+
+- the pending request or stream read stops waiting immediately;
+- the stream is destroyed and its iterator returned;
+- a response that arrives after the deadline has its stream destroyed on arrival;
+- the abort listener and the timer are always removed;
+- the result is a sanitized `provider-unavailable`, and no partial content is returned.
+
+There is no retry loop. The deadline is an integer from 1 to 120,000 ms passed only by trusted server code to `createGoogleDriveReadClient({ deadlineMs })`. It is never read from requests or the environment.
 
 Names are bounded to 500 characters and MIME types to 200. Each normalized result is bounded to 256,000 serialized JavaScript UTF-16 code units. Search drops trailing records that do not fit and reports it. Read shortens `contentText` to the longest prefix whose whole result fits and sets `truncated: true`.
 
