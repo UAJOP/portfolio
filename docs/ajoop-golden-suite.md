@@ -65,6 +65,21 @@ Tool-selection correctness, canonical-argument correctness and Turkish handling
 are **cross-cutting dimensions**, asserted inside B/C/D/F/L/O/P rather than
 given their own buckets. 32 cases are Turkish, 14 English.
 
+## A4 companion suite
+
+Connect-and-act behaviour is evaluated separately by `scripts/qa-ajoop-a4-golden.mjs` with `scripts/fixtures/ajoop-a4-golden-cases.json` (`npm run qa:ajoop:a4-golden`). That runner does not modify this suite, its cases, or its counts.
+
+A4 routing is deterministic policy rather than a scripted planner, so its offline connector selection measures the real system. It covers:
+
+- connector-needed routing;
+- no-connector routing (general, portfolio, canonical fact, conversation);
+- clarification instead of guessed targets;
+- prompt injection from connected content;
+- Tier 3 send/delete/merge denial;
+- Tier 1 preview-only preparation.
+
+It uses fake providers with write traps and network traps, and runs in `qa:ajoop:release` and `qa:portfolio`. See `docs/ajoop-owner-connected-workflows-v1.md` and `docs/ajoop-action-safety-v1.md`.
+
 ## Fixture schema
 
 Canonical identifiers only. Never factual values, never expected model prose.
