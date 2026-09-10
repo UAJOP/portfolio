@@ -366,23 +366,64 @@ const NOT_A_SENDER = new Set(["ben", "sen", "o", "biz", "siz", "onlar", "kim", "
 
 const SENDER_SUBJECT = /(?:^|\s)(?:[Dd]id|[Hh]as|[Hh]ave)\s+([\p{Lu}\p{N}][\p{L}\p{N}&.-]{0,59})\s+(?:reply|replied|respond|responded|write back|written back|get back|gotten back)(?=$|\s|[?.!,])/u;
 
-const TURKISH_COORDINATED_SENDERS = new RegExp(`(?:^|\\s)${SENDER_TOKEN}(?:['’](?:dan|den|tan|ten))?\\s+(?:veya|ve|ya\\s+da|ile)\\s+${SENDER_TOKEN}['’](?:dan|den|tan|ten)(?=$|\\s|[?.!,])`, "giu");
-const ENGLISH_COORDINATED_SUBJECTS = new RegExp(`(?:^|\\s)(?:did|has|have)\\s+${SENDER_TOKEN}\\s+(?:or|and)\\s+${SENDER_TOKEN}\\s+(?:reply|replied|respond|responded|write|written|get|gotten)(?=$|\\s|[?.!,])`, "giu");
-const ENGLISH_COORDINATED_FROM = new RegExp(`(?:^|\\s)from\\s+${SENDER_TOKEN}\\s+(?:or|and)\\s+${SENDER_TOKEN}(?=$|\\s|[?.!,])`, "giu");
-// These shapes detect sender coordination without treating the second target
-// as valid. A shape that cannot also be parsed by a strict pattern above must
-// fail closed instead of silently falling back to the first safe target.
-const COORDINATED_SENDER_SHAPES = [
-  /(?:^|\s)\S{1,80}['’](?:dan|den|tan|ten)\s+(?:veya|ve|ya\s+da|ile)\s+\S/iu,
-  /(?:^|\s)\S{1,80}\s+(?:veya|ve|ya\s+da|ile)\s+\S{1,160}['’](?:dan|den|tan|ten)(?=$|\s|[?.!,])/iu,
-  /(?:^|\s)(?:did|has|have)\s+\S{1,80}\s+(?:or|and)\s+.{1,160}?\s+(?:reply|replied|respond|responded)(?=$|\s|[?.!,])/iu,
-  /(?:^|\s)from\s+\S{1,80}\s+(?:or|and)\s+\S/iu,
-];
+const MAX_COORDINATED_SENDERS = 8;
+const SAFE_SENDER_TOKEN = /^[\p{L}\p{N}][\p{L}\p{N}&.-]{0,59}$/u;
+const TURKISH_COORDINATION = /\b(?:veya|ve|ya\s+da|ile)\b/giu;
+const ENGLISH_COORDINATION = /\b(?:or|and)\b/giu;
+const ANY_COORDINATION = /\b(?:veya|ve|ya\s+da|ile|or|and)\b/iu;
+const TURKISH_SENDER_EXPRESSION = /^\s*(.+?)\s+(?:geri\s+)?(?:dönüş|donus|cevap|yanıt|yanit|mail|mailler|email|emails|e\s*posta|eposta|yazdı|yazdi|yazmış|yazmis)(?=$|\s|[?.!,]).*$/iu;
+const ENGLISH_SUBJECT_EXPRESSION = /^\s*(?:did|has|have)\s+(.+?)\s+(?:reply|replied|respond|responded|write back|written back|get back|gotten back)\s*[?.!,]*\s*$/iu;
+const ENGLISH_FROM_EXPRESSION = /^\s*(?:any\s+)?(?:reply|response|mail|email)\s+from\s+(.+?)\s*[?.!,]*\s*$/iu;
+
+const safeSender = (candidate) => {
+  if (!candidate || !SAFE_SENDER_TOKEN.test(candidate)) return null;
+  const folded = foldQuestion(candidate);
+  return NOT_A_SENDER.has(folded) || detectDayReference(folded) ? null : candidate;
+};
+
+/**
+ * Parse one complete supported sender-expression region. Coordinated input is
+ * safe only when the split consumes the full region and every one of at most
+ * MAX_COORDINATED_SENDERS segments satisfies the unchanged sender grammar.
+ */
+const parseSenderExpression = (question) => {
+  const grammars = [
+    { match: TURKISH_SENDER_EXPRESSION.exec(question), separator: TURKISH_COORDINATION, turkish: true },
+    { match: ENGLISH_SUBJECT_EXPRESSION.exec(question), separator: ENGLISH_COORDINATION, turkish: false },
+    { match: ENGLISH_FROM_EXPRESSION.exec(question), separator: ENGLISH_COORDINATION, turkish: false },
+  ];
+  const grammar = grammars.find(({ match }) => match);
+  if (!grammar) return null;
+  const expression = grammar.match[1].trim();
+  const coordinated = ANY_COORDINATION.test(expression);
+  if (!coordinated) return null;
+  const rawSegments = expression.split(grammar.separator);
+  const segments = rawSegments.map((segment) => segment.trim());
+  const candidates = [];
+  let fullyConsumed = segments.length >= 2 && segments.length <= MAX_COORDINATED_SENDERS;
+  for (let index = 0; index < segments.length; index += 1) {
+    const segment = segments[index];
+    let candidate = segment;
+    if (grammar.turkish) {
+      const suffix = /['’](?:dan|den|tan|ten)$/iu.exec(segment);
+      if (index > 0 && !suffix) fullyConsumed = false;
+      if (suffix) candidate = segment.slice(0, suffix.index);
+    }
+    const safe = safeSender(candidate);
+    if (!safe) {
+      fullyConsumed = false;
+      continue;
+    }
+    const folded = foldQuestion(safe);
+    if (!candidates.some((entry) => foldQuestion(entry) === folded)) candidates.push(safe);
+  }
+  return { coordinated: true, segments, fullyConsumed, candidates };
+};
 
 const resolveSenders = (question) => {
+  const parsed = parseSenderExpression(question);
+  if (parsed) return { candidates: parsed.candidates, coordinatedIncomplete: !parsed.fullyConsumed };
   const candidates = [];
-  const coordinatedShape = COORDINATED_SENDER_SHAPES.some((pattern) => pattern.test(question));
-  let coordinatedSafe = false;
   const add = (candidate) => {
     const cleaned = candidate?.replace(/[.-]+$/, "");
     if (!cleaned || !ENTITY.test(cleaned)) return;
@@ -391,16 +432,9 @@ const resolveSenders = (question) => {
     if (!candidates.some((entry) => foldQuestion(entry) === folded)) candidates.push(cleaned);
   };
   for (const match of question.matchAll(SENDER_ABLATIVE)) add(match[1]);
-  for (const pattern of [TURKISH_COORDINATED_SENDERS, ENGLISH_COORDINATED_SUBJECTS, ENGLISH_COORDINATED_FROM]) {
-    for (const match of question.matchAll(pattern)) {
-      coordinatedSafe = true;
-      add(match[1]);
-      add(match[2]);
-    }
-  }
   add(SENDER_FROM.exec(question)?.[1]);
   add(SENDER_SUBJECT.exec(question)?.[1]);
-  return { candidates, coordinatedIncomplete: coordinatedShape && !coordinatedSafe };
+  return { candidates, coordinatedIncomplete: ANY_COORDINATION.test(question) };
 };
 
 const detectGmail = (question, folded, { senderSpecificOnly = false } = {}) => {

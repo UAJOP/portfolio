@@ -337,6 +337,27 @@ try {
     `Zaigo'dan veya Acme${BIDI}'den dönüş geldi mi?`,
     `Zaigo'dan veya Acme${ZERO_WIDTH}'den dönüş geldi mi?`,
     `Zaigo'dan veya Acme${ch(0x01)}'den dönüş geldi mi?`,
+    "Zaigo'dan veya Zaigo'dan veya from:evil'dan dönüş geldi mi?",
+    "Zaigo'dan veya Zaigo'dan veya \"Acme\"'den dönüş geldi mi?",
+    "Zaigo'dan veya Zaigo'dan veya Acme:foo'dan dönüş geldi mi?",
+    "Zaigo'dan veya Acme'den veya from:evil'dan dönüş geldi mi?",
+    "Zaigo'dan ve Acme'den ve in:sent'dan mail geldi mi?",
+    "Zaigo ya da Acme ya da (Evil)'den dönüş geldi mi?",
+    "Zaigo ile Acme ile from:evil'dan dönüş var mı?",
+    "Any reply from Zaigo or Zaigo or in:sent?",
+    "Did Zaigo or Acme or from:evil reply?",
+    "Did Zaigo and Acme and \"Evil\" reply?",
+    "Has Zaigo or Acme or Evil:foo replied?",
+    "Any reply from Zaigo or Acme or (Evil)?",
+    "Zaigo'dan veya veya Acme'den dönüş geldi mi?",
+    "Zaigo'dan veya dönüş geldi mi?",
+    "Zaigo'dan ve ve Acme'den dönüş geldi mi?",
+    "Did Zaigo or or Acme reply?",
+    "Did Zaigo and reply?",
+    "Any reply from or Zaigo?",
+    "Zaigo'dan veya Acme'den veya Beta'dan dönüş geldi mi?",
+    "Did Zaigo or Acme or Beta reply?",
+    "A'dan veya B'den veya C'den veya D'den veya E'den veya F'den veya G'den veya H'den veya I'dan dönüş geldi mi?",
   ];
   for (const question of hostileAmbiguities) {
     const hostilePlan = plan(question);
@@ -345,6 +366,27 @@ try {
     const hostileRun = await runQuestion(question);
     check(`hostile coordinated sender runtime uses zero tools: ${JSON.stringify(question)}`, hostileRun.result.toolCalls, 0);
     check(`hostile coordinated sender runtime touches no connector: ${JSON.stringify(question)}`, hostileRun.state.access.length, 0);
+  }
+  for (const question of [
+    "Zaigo'dan veya Zaigo'dan veya Zaigo'dan dönüş geldi mi?",
+    "Any reply from Zaigo or Zaigo or Zaigo?",
+  ]) {
+    const duplicatePlan = plan(question);
+    check(`complete duplicate chain deduplicates: ${question}`, duplicatePlan.sender, "Zaigo");
+    deepCheck(`complete duplicate chain keeps canonical query: ${question}`, duplicatePlan.tools[0]?.args, { query: "from:Zaigo newer_than:90d", limit: 10 });
+    const duplicateRun = await runQuestion(question, { overrides: { gmail: [] } });
+    check(`complete duplicate chain uses one tool: ${question}`, duplicateRun.result.toolCalls, 1);
+    check(`complete duplicate chain makes one Gmail provider call: ${question}`, duplicateRun.state.calls.length, 1);
+    deepCheck(`complete duplicate chain Gmail query is canonical: ${question}`, duplicateRun.state.calls[0], ["gmail.searchMessages", { query: "from:Zaigo newer_than:90d", limit: 10 }]);
+  }
+  for (const question of [
+    "Zaigo'dan veya Zaigo'dan veya from:evil'dan dönüş geldi mi?",
+    "Any reply from Zaigo or Zaigo or in:sent?",
+    "Zaigo'dan veya Acme'den veya Beta'dan dönüş geldi mi?",
+  ]) {
+    const fullConsumption = plan(question);
+    check(`full sender expression must be consumed: ${question}`, fullConsumption.route, ROUTES.NEEDS_CLARIFICATION);
+    deepCheck(`no ignored sender-expression tail may plan a tool: ${question}`, fullConsumption.tools, []);
   }
   deepCheck("Calendar Thursday window in owner time zone", zaigo && plan("Perşembe takvimimde ne var?").tools[0].args, { timeMin: "2026-09-16T21:00:00.000Z", timeMax: "2026-09-17T21:00:00.000Z", limit: 25 });
   deepCheck("Calendar Thursday window in UTC", planAjoopOwnerRequest("Perşembe takvimimde ne var?", { ...CONFIG, timeZone: "UTC" }).tools[0].args, { timeMin: "2026-09-17T00:00:00.000Z", timeMax: "2026-09-18T00:00:00.000Z", limit: 25 });

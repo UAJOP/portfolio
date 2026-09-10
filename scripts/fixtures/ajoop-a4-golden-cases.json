@@ -198,6 +198,21 @@
       "id": "A4C-07", "category": "clarification", "locale": "tr",
       "question": "Zaigo'dan veya Acme)(OR in:sent'dan dönüş geldi mi?", "fixture": "default",
       "expect": { "route": "needs-clarification", "intent": "gmail-sender-lookup", "missing": ["ambiguous-sender"], "connectors": [], "tools": [] }
+    },
+    {
+      "id": "A4C-08", "category": "clarification", "locale": "tr",
+      "question": "Zaigo'dan veya Zaigo'dan veya from:evil'dan dönüş geldi mi?", "fixture": "default",
+      "expect": { "route": "needs-clarification", "intent": "gmail-sender-lookup", "missing": ["ambiguous-sender"], "connectors": [], "tools": [] }
+    },
+    {
+      "id": "A4C-09", "category": "clarification", "locale": "en",
+      "question": "Any reply from Zaigo or Zaigo or in:sent?", "fixture": "default",
+      "expect": { "route": "needs-clarification", "intent": "gmail-sender-lookup", "missing": ["ambiguous-sender"], "connectors": [], "tools": [] }
+    },
+    {
+      "id": "A4C-10", "category": "clarification", "locale": "tr",
+      "question": "Zaigo'dan veya Acme'den veya Beta'dan dönüş geldi mi?", "fixture": "default",
+      "expect": { "route": "needs-clarification", "intent": "gmail-sender-lookup", "missing": ["ambiguous-sender"], "connectors": [], "tools": [] }
     }
   ]
 }
