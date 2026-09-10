@@ -78,14 +78,14 @@ Invalid input is **rejected, never silently truncated or repaired**. An overlong
 ## Normalization rules
 
 - **Queries** are trimmed at the edges only. Interior whitespace is preserved, because collapsing it would rewrite a quoted provider phrase — `subject:"quarterly  report"` must stay the search the caller asked for. This holds for both Gmail and Drive query syntax.
-- **Identifiers** are trimmed and must match `[A-Za-z0-9._~+/=@-]`, which covers the shapes Gmail, Calendar and Drive actually issue while excluding path separators, URLs and interior spaces.
-- **Control characters** — NUL, ANSI escapes, bidi overrides, zero-width marks — are rejected in every string, not stripped. They carry no provider meaning and corrupt logs, terminals and later URL construction.
+- **Identifiers** are trimmed and must match `[A-Za-z0-9._~+=@-]`. Forward and backward slashes, the special values `.` and `..`, URLs and interior spaces are rejected so generic A4.1 identifiers are never path-shaped. Any provider-specific expansion of this charset requires evidence from a real adapter and is deferred to A4.2.
+- **Control characters** — NUL, ANSI escapes, the explicitly covered bidi formatting controls (including U+061C and U+202A–U+202E), zero-width/invisible formatting controls (including U+200B–U+200F and U+2060–U+206F), line separators and BOM — are rejected in every string, not stripped. They carry no provider meaning in this contract and corrupt logs, terminals and later URL construction.
 - **Timestamps** must be ISO-8601 with an explicit `Z` or numeric offset. `Date.parse` is not the gate: it accepts date-only strings, legacy non-ISO text, and overflowing calendar days such as `2026-02-30`, which it silently rolls forward into March. A datetime with no offset would also be resolved against the *host* clock's local timezone, making the normalized envelope depend on which machine validated it. Accepted instants are canonicalized to UTC.
 - **Repositories** must be exactly `owner/repo` under GitHub's own login and name rules. `.` and `..` segments are rejected — they are the shapes that turn a later path join into traversal.
 - **Explicitly `undefined` arguments** are rejected. A key that is present is a value the caller meant to send.
 - **Tool ids** are matched exactly, with no trimming or normalization.
 
-Caller payloads must be plain objects. A prototype-carrying object is rejected outright, so an allowlist built from own keys cannot be sidestepped by hiding arguments on a prototype.
+Caller payloads must be plain objects. The request tool id and every argument must be own data properties: inherited values never satisfy required fields, optional fields are considered only when own-present, and accessors are rejected without execution. Custom-prototype objects are rejected outright. Malformed reflective objects such as throwing proxies fail closed with a deterministic rejection instead of escaping an exception.
 
 ## Derived trusted metadata
 

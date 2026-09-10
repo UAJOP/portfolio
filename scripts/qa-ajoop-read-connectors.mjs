@@ -50,6 +50,16 @@ const T = AJOOP_READ_CONNECTOR_TOOL_IDS;
 const evaluate = (request, context = OWNER) => evaluateAjoopConnectorRead(request, context);
 const accepted = (toolId, args) => evaluate({ toolId, args });
 const codeOf = (toolId, args) => accepted(toolId, args).code;
+const withObjectPrototypeValue = (key, value, run) => {
+  const previous = Object.getOwnPropertyDescriptor(Object.prototype, key);
+  Object.defineProperty(Object.prototype, key, { value, configurable: true });
+  try {
+    return run();
+  } finally {
+    if (previous) Object.defineProperty(Object.prototype, key, previous);
+    else delete Object.prototype[key];
+  }
+};
 
 try {
   /* ---------------------------------------------------------------- registry */
@@ -212,6 +222,46 @@ try {
     "invalid-arguments",
   );
   check(
+    "Object.prototype toolId cannot satisfy the request envelope",
+    withObjectPrototypeValue("toolId", T.GMAIL_SEARCH_MESSAGES, () => evaluate({ args: gmailArgs }).code),
+    "unknown-tool",
+  );
+
+  const INHERITED_ARGUMENT_CASES = [
+    ["query", "polluted", T.GMAIL_SEARCH_MESSAGES, {}],
+    ["threadId", "polluted", T.GMAIL_READ_THREAD, {}],
+    ["timeMin", "2026-09-10T00:00:00Z", T.CALENDAR_LIST_EVENTS, { timeMax: "2026-09-11T00:00:00Z" }],
+    ["timeMax", "2026-09-11T00:00:00Z", T.CALENDAR_LIST_EVENTS, { timeMin: "2026-09-10T00:00:00Z" }],
+    ["eventId", "polluted", T.CALENDAR_READ_EVENT, {}],
+    ["repository", "UAJOP/portfolio", T.GITHUB_READ_PULL_REQUEST, { prNumber: 73 }],
+    ["prNumber", 73, T.GITHUB_READ_PULL_REQUEST, { repository: "UAJOP/portfolio" }],
+    ["fileId", "polluted", T.DRIVE_READ_FILE, {}],
+  ];
+  for (const [key, value, toolId, args] of INHERITED_ARGUMENT_CASES) {
+    check(
+      `Object.prototype ${key} cannot satisfy a missing own argument`,
+      withObjectPrototypeValue(key, value, () => accepted(toolId, args).ok),
+      false,
+    );
+  }
+  check(
+    "inherited optional state is ignored in favor of the default",
+    withObjectPrototypeValue("state", "closed", () =>
+      accepted(T.GITHUB_SEARCH_PULL_REQUESTS, { repository: "UAJOP/portfolio" }).request.args.state),
+    AJOOP_READ_CONNECTOR_DEFAULT_PR_STATE,
+  );
+  check(
+    "inherited optional limit is ignored in favor of the default",
+    withObjectPrototypeValue("limit", 99, () =>
+      accepted(T.GMAIL_SEARCH_MESSAGES, { query: "own query" }).request.args.limit),
+    AJOOP_READ_CONNECTOR_DEFAULT_LIMIT,
+  );
+  check(
+    "normal own-property requests still pass after prototype probes",
+    accepted(T.GMAIL_SEARCH_MESSAGES, { query: "own query" }).code,
+    "accepted",
+  );
+  check(
     "polluted __proto__ key is an unexpected argument",
     codeOf(T.GMAIL_SEARCH_MESSAGES, JSON.parse('{"query":"x","__proto__":{"limit":9999}}')),
     "unexpected-argument",
@@ -278,6 +328,34 @@ try {
     codeOf(T.GMAIL_SEARCH_MESSAGES, { query: "from:a\nto:b" }),
     "unsafe-string-argument",
   );
+
+  const QUERY_TOOLS = [
+    [T.GMAIL_SEARCH_MESSAGES, (query) => ({ query })],
+    [T.DRIVE_SEARCH_FILES, (query) => ({ query })],
+    [T.GITHUB_SEARCH_PULL_REQUESTS, (query) => ({ repository: "UAJOP/portfolio", query })],
+  ];
+  for (const [toolId, argsFor] of QUERY_TOOLS) {
+    check(
+      `${toolId} rejects Arabic Letter Mark`,
+      codeOf(toolId, argsFor("alpha\u061Cbeta")),
+      "unsafe-string-argument",
+    );
+    check(
+      `${toolId} rejects Word Joiner`,
+      codeOf(toolId, argsFor("alpha\u2060beta")),
+      "unsafe-string-argument",
+    );
+    check(
+      `${toolId} rejects an invisible function application control`,
+      codeOf(toolId, argsFor("alpha\u2061beta")),
+      "unsafe-string-argument",
+    );
+    check(
+      `${toolId} rejects a deprecated bidi formatting control`,
+      codeOf(toolId, argsFor("alpha\u206Abeta")),
+      "unsafe-string-argument",
+    );
+  }
   check(
     "gmail query at the character bound accepted",
     codeOf(T.GMAIL_SEARCH_MESSAGES, { query: "x".repeat(AJOOP_READ_CONNECTOR_MAX_QUERY_CHARS) }),
@@ -625,6 +703,13 @@ try {
       "unsafe-string-argument",
     );
     check(`${key} rejects a path separator`, codeOf(toolId, { [key]: "..\\secrets" }), "invalid-identifier");
+    for (const pathShaped of ["/", "a/b", "./secret", "../..", ".", ".."]) {
+      check(
+        `${key} rejects path-shaped identifier ${pathShaped}`,
+        codeOf(toolId, { [key]: pathShaped }),
+        "invalid-identifier",
+      );
+    }
     check(`${key} rejects a url`, codeOf(toolId, { [key]: "https://example.com/x" }), "invalid-identifier");
     check(`${key} rejects an interior space`, codeOf(toolId, { [key]: "a b" }), "invalid-identifier");
     check(
@@ -673,10 +758,35 @@ try {
   );
   check("non-current questions do not select connectors", shouldUseAjoopReadConnector({}), false);
   check("missing selection signals do not select connectors", shouldUseAjoopReadConnector(), false);
+  check("null selection policy does not throw or select", shouldUseAjoopReadConnector(null), false);
+  check("array selection policy does not select", shouldUseAjoopReadConnector([]), false);
+  check("string selection policy does not select", shouldUseAjoopReadConnector("current"), false);
+  check(
+    "class instance selection policy does not select",
+    shouldUseAjoopReadConnector(new (class SelectionPolicy {
+      requiresCurrentPersonalExternalState = true;
+    })()),
+    false,
+  );
   check(
     "a non-boolean trigger does not select connectors",
     shouldUseAjoopReadConnector({ requiresCurrentPersonalExternalState: "yes" }),
     false,
+  );
+  check(
+    "a numeric trigger does not select connectors",
+    shouldUseAjoopReadConnector({ requiresCurrentPersonalExternalState: 1 }),
+    false,
+  );
+  check(
+    "truthy non-boolean suppressors do not alter exact-boolean policy",
+    shouldUseAjoopReadConnector({
+      requiresCurrentPersonalExternalState: true,
+      deterministicFactAvailable: "true",
+      portfolioSufficient: 1,
+      conversationSufficient: {},
+    }),
+    true,
   );
   check(
     "selection policy does not grant authorization",
@@ -685,6 +795,37 @@ try {
       { surface: AJOOP_READ_CONNECTOR_SURFACES.PUBLIC_PORTFOLIO, authenticatedOwner: true },
     ).ok && shouldUseAjoopReadConnector({ requiresCurrentPersonalExternalState: true }),
     false,
+  );
+
+  /* ------------------------------------------------ hostile object behavior */
+
+  check(
+    "throwing getPrototypeOf proxy fails closed",
+    evaluate(new Proxy({}, { getPrototypeOf() { throw new Error("trap"); } })).code,
+    "invalid-request",
+  );
+  check(
+    "throwing ownKeys proxy fails closed",
+    evaluate(new Proxy({}, { ownKeys() { throw new Error("trap"); } })).code,
+    "invalid-request",
+  );
+  check(
+    "throwing descriptor proxy fails closed",
+    evaluate(new Proxy({}, { getOwnPropertyDescriptor() { throw new Error("trap"); } })).code,
+    "invalid-request",
+  );
+  check(
+    "toolId getter is rejected without execution",
+    evaluate({ get toolId() { throw new Error("getter must not run"); } }).code,
+    "invalid-request",
+  );
+  check(
+    "required argument getter is rejected without execution",
+    evaluate({
+      toolId: T.GMAIL_SEARCH_MESSAGES,
+      args: { get query() { throw new Error("getter must not run"); } },
+    }).code,
+    "invalid-argument-value",
   );
 
   /* ---------------------------------------------------------- trust metadata */

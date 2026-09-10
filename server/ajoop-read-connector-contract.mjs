@@ -95,10 +95,10 @@ const REQUEST_FIELDS = Object.freeze(["toolId", "args"]);
  * later URL construction. They are rejected rather than stripped so a caller
  * never silently gets a different search than it asked for.
  */
-const UNSAFE_TEXT = /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028\u2029\u202A-\u202E\u2066-\u2069\uFEFF]/;
+const UNSAFE_TEXT = /[\u0000-\u001F\u007F-\u009F\u061C\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u206F\uFEFF]/;
 
 /** Identifier shapes actually issued by Gmail, Calendar and Drive. */
-const SAFE_IDENTIFIER = /^[A-Za-z0-9._~+/=@-]+$/;
+const SAFE_IDENTIFIER = /^[A-Za-z0-9._~+=@-]+$/;
 
 /** GitHub logins allow single internal hyphens; repositories allow dot and underscore. */
 const GITHUB_OWNER = /^[A-Za-z0-9](?:-?[A-Za-z0-9])*$/;
@@ -168,12 +168,21 @@ const accept = (value) => Object.freeze({ ok: true, value });
  */
 const isPlainObject = (value) => {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
+  try {
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  } catch {
+    return false;
+  }
 };
 
-/** Trusted runtime context is still read own-property-only, never inherited. */
-const ownValue = (source, key) => (Object.hasOwn(source, key) ? source[key] : undefined);
+/** Read a data property without consulting a prototype or invoking an accessor. */
+const ownDataProperty = (source, key) => {
+  const descriptor = Object.getOwnPropertyDescriptor(source, key);
+  if (!descriptor) return { present: false, data: false, value: undefined };
+  if (!Object.hasOwn(descriptor, "value")) return { present: true, data: false, value: undefined };
+  return { present: true, data: true, value: descriptor.value };
+};
 
 const normalizeBoundedText = (value, maxChars) => {
   if (typeof value !== "string") return reject("invalid-string-argument");
@@ -190,6 +199,7 @@ const normalizeIdentifier = (value) => {
   const text = normalizeBoundedText(value, AJOOP_READ_CONNECTOR_MAX_ID_CHARS);
   if (!text.ok) return text;
   if (!SAFE_IDENTIFIER.test(text.value)) return reject("invalid-identifier");
+  if (text.value === "." || text.value === "..") return reject("invalid-identifier");
   return text;
 };
 
@@ -245,16 +255,24 @@ const normalizeIsoInstant = (value) => {
 const normalizeArgs = (spec, args) => {
   const keys = Object.keys(args);
   if (keys.some((key) => !spec.allowedArgs.includes(key))) return reject("unexpected-argument");
-  // An explicitly present `undefined` is a caller mistake, not an omission.
-  if (keys.some((key) => args[key] === undefined)) return reject("invalid-argument-value");
 
-  const has = (key) => Object.hasOwn(args, key);
+  // Snapshot own data properties only. Required values cannot be inherited,
+  // and accessors are rejected without executing them.
+  const values = Object.create(null);
+  for (const key of keys) {
+    const property = ownDataProperty(args, key);
+    if (!property.data || property.value === undefined) return reject("invalid-argument-value");
+    values[key] = property.value;
+  }
+
+  const has = (key) => Object.hasOwn(values, key);
+  const value = (key) => (has(key) ? values[key] : undefined);
 
   const withLimit = (base) => {
     if (!has("limit")) {
       return accept(Object.freeze({ ...base, limit: AJOOP_READ_CONNECTOR_DEFAULT_LIMIT }));
     }
-    const limit = normalizeLimit(args.limit);
+    const limit = normalizeLimit(value("limit"));
     if (!limit.ok) return limit;
     return accept(Object.freeze({ ...base, limit: limit.value }));
   };
@@ -262,27 +280,27 @@ const normalizeArgs = (spec, args) => {
   switch (spec.operation) {
     case "search_messages":
     case "search_files": {
-      const query = normalizeBoundedText(args.query, AJOOP_READ_CONNECTOR_MAX_QUERY_CHARS);
+      const query = normalizeBoundedText(value("query"), AJOOP_READ_CONNECTOR_MAX_QUERY_CHARS);
       if (!query.ok) return query;
       return withLimit({ query: query.value });
     }
 
     case "read_thread": {
-      const threadId = normalizeIdentifier(args.threadId);
+      const threadId = normalizeIdentifier(value("threadId"));
       if (!threadId.ok) return threadId;
       return accept(Object.freeze({ threadId: threadId.value }));
     }
 
     case "read_file": {
-      const fileId = normalizeIdentifier(args.fileId);
+      const fileId = normalizeIdentifier(value("fileId"));
       if (!fileId.ok) return fileId;
       return accept(Object.freeze({ fileId: fileId.value }));
     }
 
     case "list_events": {
-      const timeMin = normalizeIsoInstant(args.timeMin);
+      const timeMin = normalizeIsoInstant(value("timeMin"));
       if (!timeMin.ok) return timeMin;
-      const timeMax = normalizeIsoInstant(args.timeMax);
+      const timeMax = normalizeIsoInstant(value("timeMax"));
       if (!timeMax.ok) return timeMax;
       if (timeMax.ms <= timeMin.ms) return reject("invalid-time-range");
       if (timeMax.ms - timeMin.ms > AJOOP_READ_CONNECTOR_MAX_CALENDAR_RANGE_DAYS * DAY_MS) {
@@ -292,23 +310,23 @@ const normalizeArgs = (spec, args) => {
     }
 
     case "read_event": {
-      const eventId = normalizeIdentifier(args.eventId);
+      const eventId = normalizeIdentifier(value("eventId"));
       if (!eventId.ok) return eventId;
       return accept(Object.freeze({ eventId: eventId.value }));
     }
 
     case "search_pull_requests": {
-      const repository = normalizeRepository(args.repository);
+      const repository = normalizeRepository(value("repository"));
       if (!repository.ok) return repository;
 
-      const base = { repository: repository.value };
+      const base = Object.assign(Object.create(null), { repository: repository.value });
       if (has("query")) {
-        const query = normalizeBoundedText(args.query, AJOOP_READ_CONNECTOR_MAX_QUERY_CHARS);
+        const query = normalizeBoundedText(value("query"), AJOOP_READ_CONNECTOR_MAX_QUERY_CHARS);
         if (!query.ok) return query;
         base.query = query.value;
       }
 
-      const state = has("state") ? args.state : AJOOP_READ_CONNECTOR_DEFAULT_PR_STATE;
+      const state = has("state") ? value("state") : AJOOP_READ_CONNECTOR_DEFAULT_PR_STATE;
       if (!AJOOP_READ_CONNECTOR_PR_STATES.includes(state)) return reject("invalid-state");
       base.state = state;
 
@@ -316,9 +334,9 @@ const normalizeArgs = (spec, args) => {
     }
 
     case "read_pull_request": {
-      const repository = normalizeRepository(args.repository);
+      const repository = normalizeRepository(value("repository"));
       if (!repository.ok) return repository;
-      const prNumber = args.prNumber;
+      const prNumber = value("prNumber");
       if (!Number.isInteger(prNumber) || prNumber < 1 || prNumber > AJOOP_READ_CONNECTOR_MAX_PR_NUMBER) {
         return reject("invalid-pr-number");
       }
@@ -337,10 +355,18 @@ const normalizeArgs = (spec, args) => {
  */
 export function canUseAjoopReadConnectors(context) {
   if (context === null || typeof context !== "object" || Array.isArray(context)) return false;
-  return (
-    ownValue(context, "surface") === AJOOP_READ_CONNECTOR_SURFACES.OWNER_PRIVATE &&
-    ownValue(context, "authenticatedOwner") === true
-  );
+  try {
+    const surface = ownDataProperty(context, "surface");
+    const authenticatedOwner = ownDataProperty(context, "authenticatedOwner");
+    return (
+      surface.data &&
+      surface.value === AJOOP_READ_CONNECTOR_SURFACES.OWNER_PRIVATE &&
+      authenticatedOwner.data &&
+      authenticatedOwner.value === true
+    );
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -353,14 +379,19 @@ export function canUseAjoopReadConnectors(context) {
  * Every suppressor is evaluated before the trigger, so an ambiguous signal
  * suppresses the connector rather than reaching for one.
  */
-export function shouldUseAjoopReadConnector({
-  requiresCurrentPersonalExternalState = false,
-  deterministicFactAvailable = false,
-  portfolioSufficient = false,
-  conversationSufficient = false,
-} = {}) {
-  if (deterministicFactAvailable || portfolioSufficient || conversationSufficient) return false;
-  return requiresCurrentPersonalExternalState === true;
+export function shouldUseAjoopReadConnector(policy = {}) {
+  if (!isPlainObject(policy)) return false;
+  try {
+    const trigger = ownDataProperty(policy, "requiresCurrentPersonalExternalState");
+    const suppressors = ["deterministicFactAvailable", "portfolioSufficient", "conversationSufficient"];
+    if (suppressors.some((key) => {
+      const property = ownDataProperty(policy, key);
+      return property.data && property.value === true;
+    })) return false;
+    return trigger.data && trigger.value === true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -373,42 +404,51 @@ export function shouldUseAjoopReadConnector({
  * connected result as canonical portfolio truth.
  */
 export function evaluateAjoopConnectorRead(request, context) {
-  if (!canUseAjoopReadConnectors(context)) return reject("owner-private-auth-required");
-  if (!isPlainObject(request)) return reject("invalid-request");
+  try {
+    if (!canUseAjoopReadConnectors(context)) return reject("owner-private-auth-required");
+    if (!isPlainObject(request)) return reject("invalid-request");
 
-  if (CALLER_POLICY_FIELDS.some((field) => Object.hasOwn(request, field))) {
-    return reject("caller-policy-field-forbidden");
+    if (CALLER_POLICY_FIELDS.some((field) => Object.hasOwn(request, field))) {
+      return reject("caller-policy-field-forbidden");
+    }
+    if (Object.keys(request).some((key) => !REQUEST_FIELDS.includes(key))) {
+      return reject("unexpected-request-field");
+    }
+
+    // Tool ids are exact own data properties, not inherited or normalized text.
+    const tool = ownDataProperty(request, "toolId");
+    if (!tool.present) return reject("unknown-tool");
+    if (!tool.data) return reject("invalid-request");
+    const toolId = tool.value;
+    if (typeof toolId !== "string" || !Object.hasOwn(TOOL_SPECS, toolId)) {
+      return reject("unknown-tool");
+    }
+
+    const argsProperty = ownDataProperty(request, "args");
+    if (argsProperty.present && !argsProperty.data) return reject("invalid-arguments");
+    const args = argsProperty.present ? argsProperty.value : {};
+    if (!isPlainObject(args)) return reject("invalid-arguments");
+
+    const spec = TOOL_SPECS[toolId];
+    const normalized = normalizeArgs(spec, args);
+    if (!normalized.ok) return normalized;
+
+    return Object.freeze({
+      ok: true,
+      code: "accepted",
+      request: Object.freeze({
+        version: AJOOP_READ_CONNECTOR_SCHEMA_VERSION,
+        toolId,
+        connector: spec.connector,
+        operation: spec.operation,
+        access: AJOOP_READ_CONNECTOR_ACCESS.READ_ONLY,
+        provenance: AJOOP_READ_CONNECTOR_PROVENANCE.CONNECTED_SOURCE,
+        args: normalized.value,
+      }),
+    });
+  } catch {
+    return reject("invalid-request");
   }
-  if (Object.keys(request).some((key) => !REQUEST_FIELDS.includes(key))) {
-    return reject("unexpected-request-field");
-  }
-
-  // Tool ids are exact identifiers, not free text; no normalization is applied.
-  const toolId = request.toolId;
-  if (typeof toolId !== "string" || !Object.hasOwn(TOOL_SPECS, toolId)) {
-    return reject("unknown-tool");
-  }
-
-  const args = Object.hasOwn(request, "args") ? request.args : {};
-  if (!isPlainObject(args)) return reject("invalid-arguments");
-
-  const spec = TOOL_SPECS[toolId];
-  const normalized = normalizeArgs(spec, args);
-  if (!normalized.ok) return normalized;
-
-  return Object.freeze({
-    ok: true,
-    code: "accepted",
-    request: Object.freeze({
-      version: AJOOP_READ_CONNECTOR_SCHEMA_VERSION,
-      toolId,
-      connector: spec.connector,
-      operation: spec.operation,
-      access: AJOOP_READ_CONNECTOR_ACCESS.READ_ONLY,
-      provenance: AJOOP_READ_CONNECTOR_PROVENANCE.CONNECTED_SOURCE,
-      args: normalized.value,
-    }),
-  });
 }
 
 export function listAjoopReadConnectorToolIds() {
