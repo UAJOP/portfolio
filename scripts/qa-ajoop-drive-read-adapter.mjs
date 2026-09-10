@@ -1161,9 +1161,11 @@ try {
   for (const entry of await readdir(serverDirectory)) {
     if (!/\.m?js$/.test(entry) || ["ajoop-drive-read-adapter.mjs", "drive-provider-client.mjs"].includes(entry)) continue;
     const source = await readFile(new URL(entry, serverDirectory), "utf8");
-    if (/ajoop-drive-read-adapter|drive-provider-client|ajoop-drive-auth/.test(source)) runtimeImporters.push(entry);
+    // Only the owner-private A4 workflow seam may import the adapter; nothing imports the provider or auth bootstrap.
+    const importsAdapter = /ajoop-drive-read-adapter/.test(source) && entry !== "ajoop-owner-connected-workflows.mjs";
+    if (importsAdapter || /drive-provider-client|ajoop-drive-auth/.test(source)) runtimeImporters.push(entry);
   }
-  deepCheck("no server runtime module imports Drive adapter, provider, or auth", runtimeImporters, []);
+  deepCheck("only the owner-private workflow seam imports the Drive adapter; no module imports provider or auth", runtimeImporters, []);
   const scripts = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8")).scripts;
   check("package exposes Drive QA command", scripts["qa:ajoop:drive-read"], "node scripts/qa-ajoop-drive-read-adapter.mjs");
   check("package exposes explicit Drive auth command", scripts["ajoop:drive:auth"], "node scripts/ajoop-drive-auth.mjs");
