@@ -607,6 +607,156 @@ check("a literal wildcard origin is never echoed",
   check("a later healthy probe restores browser availability", available, "available");
 }
 
+/* ---------- a health probe and a generation turn never cancel each other ---------- */
+
+{
+  /* A5.1.1 blocker. The probe used to share the turn slot, so a visitor who
+   * started a turn while the open-panel probe was running aborted it; the abort
+   * read as a timeout, the header announced a healthy bridge unavailable, and
+   * the backoff then skipped real turns for a minute. These cases run the
+   * shipped browser bridge with fetches that honour their abort signal and
+   * record what actually reached the bridge. */
+  const config = {
+    enabled: true,
+    endpoint: "https://ai.example/ajoop-rag",
+    timeoutMs: 5000,
+    retryAfterMs: 60000,
+  };
+  const tick = () => new Promise((resolve) => setImmediate(resolve));
+  const controllable = (log, kind, ms, body, status = 200) => (url, init) => {
+    const call = { kind, aborted: false };
+    log.push(call);
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => resolve(browserResponse(status, body)), ms);
+      init.signal.addEventListener("abort", () => {
+        clearTimeout(timer);
+        call.aborted = true;
+        reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+      });
+    });
+  };
+  const HEALTHY = { ok: true, ready: true, model: "qwen3:4b" };
+  const ANSWER = { ok: true, answer: "Grounded answer.", model: "qwen3:4b" };
+  const generations = (log) => log.filter((call) => call.kind === "generate");
+
+  /* A — a healthy probe nobody interrupts. */
+  {
+    const browser = createBrowserBridge(config);
+    browser.resetAjoopAiState();
+    const log = [];
+    const verdict = await browser.checkAjoopAiHealth({
+      config,
+      force: true,
+      fetchImpl: controllable(log, "health", 20, HEALTHY),
+    });
+    check("[A] an uninterrupted healthy probe returns available", verdict, "available");
+    check("[A] the bridge reads available", browser.getAjoopAiState().state, "available");
+  }
+
+  /* B — a turn starts while the probe is running; C — the next turn after it. */
+  {
+    const browser = createBrowserBridge(config);
+    browser.resetAjoopAiState();
+    const log = [];
+    const probe = browser.checkAjoopAiHealth({
+      config,
+      force: true,
+      fetchImpl: controllable(log, "health", 40, HEALTHY),
+    });
+    check("[B] the probe is checking", browser.getAjoopAiState().state, "checking");
+    const turn = browser.beginAjoopAiTurn();
+    const reply = browser.requestAjoopAiResponse({
+      config,
+      turn,
+      payload: {},
+      fetchImpl: controllable(log, "generate", 80, ANSWER),
+    });
+    await tick();
+    check("[B] starting a turn does not abort the running probe", log.find((call) => call.kind === "health").aborted, false);
+    check("[B] starting a turn does not make the bridge unavailable", browser.getAjoopAiState().state, "checking");
+    check("[B] the probe returns its real verdict", await probe, "available");
+    check("[B] no unavailable verdict is recorded while the turn runs", browser.getAjoopAiState().state, "available");
+    const answered = await reply;
+    check("[B] the turn's generation still succeeds", answered.ok, true);
+    check("[B] the bridge ends available", browser.getAjoopAiState().state, "available");
+    check("[B] the interrupted-probe scenario records no failure", browser.getAjoopAiState().turnFailures, 0);
+
+    const before = generations(log).length;
+    const next = await browser.requestAjoopAiResponse({
+      config,
+      turn: browser.beginAjoopAiTurn(),
+      payload: {},
+      fetchImpl: controllable(log, "generate", 5, ANSWER),
+    });
+    check("[C] the next turn inside the old 60s failure window is not skipped", next.ok, true);
+    check("[C] the next turn really reached the bridge", generations(log).length, before + 1);
+  }
+
+  /* A newer turn still cancels the previous GENERATION, and only that. */
+  {
+    const browser = createBrowserBridge(config);
+    browser.resetAjoopAiState();
+    const log = [];
+    const probe = browser.checkAjoopAiHealth({
+      config,
+      force: true,
+      fetchImpl: controllable(log, "health", 60, HEALTHY),
+    });
+    const first = browser.requestAjoopAiResponse({
+      config,
+      turn: browser.beginAjoopAiTurn(),
+      payload: {},
+      fetchImpl: controllable(log, "generate", 200, ANSWER),
+    });
+    await tick();
+    const second = browser.requestAjoopAiResponse({
+      config,
+      turn: browser.beginAjoopAiTurn(),
+      payload: {},
+      fetchImpl: controllable(log, "generate", 10, ANSWER),
+    });
+    const [firstResult, secondResult, verdict] = await Promise.all([first, second, probe]);
+    check("[B2] a newer turn still cancels the previous generation", generations(log)[0].aborted, true);
+    check("[B2] the cancelled generation is stale, not failed", firstResult.reason, "stale");
+    check("[B2] the newer turn is answered", secondResult.ok, true);
+    check("[B2] neither turn cancels the probe", log.find((call) => call.kind === "health").aborted, false);
+    check("[B2] the probe keeps its real verdict", verdict, "available");
+    check("[B2] a cancelled generation counts as no failure", browser.getAjoopAiState().turnFailures, 0);
+  }
+
+  /* D — genuine health failures still produce unavailable and its backoff. */
+  {
+    const browser = createBrowserBridge(config);
+    browser.resetAjoopAiState();
+    const log = [];
+    const timedOut = await browser.checkAjoopAiHealth({
+      config: { ...config, timeoutMs: 15 },
+      force: true,
+      fetchImpl: controllable(log, "health", 10000, HEALTHY),
+    });
+    check("[D] a probe that genuinely times out is unavailable", timedOut, "unavailable");
+    check("[D] the probe was cut off by its own deadline", log[0].aborted, true);
+    const skipped = await browser.requestAjoopAiResponse({
+      config,
+      turn: browser.beginAjoopAiTurn(),
+      payload: {},
+      fetchImpl: controllable(log, "generate", 5, ANSWER),
+    });
+    check("[D] a genuine failure still starts the backoff", skipped.reason, "unavailable");
+    check("[D] the backoff skip never reached the bridge", generations(log).length, 0);
+
+    browser.resetAjoopAiState();
+    const refused = await browser.checkAjoopAiHealth({
+      config,
+      force: true,
+      fetchImpl: async () => {
+        throw new TypeError("Failed to fetch");
+      },
+    });
+    check("[D] a probe that cannot connect is unavailable", refused, "unavailable");
+  }
+}
+
 {
   const assistant = readFileSync(new URL("../js/ajoop/assistant.js", import.meta.url), "utf8");
   const openAt = assistant.indexOf("const node = openAjoopTurn(language);");

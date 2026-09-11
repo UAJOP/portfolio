@@ -2037,15 +2037,17 @@ body.overlay-modal-open {
  *
  * One identity, stated once: the name and what it is. The subtitle slot used
  * to flip between "AI Enhanced" and "Evidence Mode", which made the panel look
- * like it had two modes the visitor had somehow toggled. Service status is now
- * one dot, and where an answer came from is said on the answer. */
+ * like it had two modes the visitor had somehow toggled. Service status is a
+ * quiet line under that identity (A5.1.1), and where an answer came from is
+ * said on the answer. */
 .chatbot-header {
   display: grid;
   /* Last track is auto, not a fixed width: css/a11y.css raises the close
    * button to the 44px touch-target minimum below 820px and loads after this
    * file, so any fixed track here would be narrower than the control it holds
-   * and push it past the panel's rounded edge. */
-  grid-template-columns: 38px minmax(0, 1fr) auto auto auto;
+   * and push it past the panel's rounded edge. Tracks: mascot, identity (name,
+   * role, service line), state label, close. */
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
   gap: 10px;
   align-items: center;
   padding: 12px 14px;
@@ -2271,15 +2273,41 @@ body.overlay-modal-open {
   font-size: 11.5px;
   font-weight: 700;
 }
-/* Service status, kept deliberately quiet: shown only when a local bridge is
- * actually answering, and its meaning is in the accessible label rather than
- * in the colour. */
-.chatbot-bridge-dot {
-  width: 8px;
-  height: 8px;
+/* A5.1.1 service line. One quiet sentence under the identity — not a badge, not
+ * a dashboard. The words carry the state and the dot only repeats it, so no
+ * meaning depends on colour. It wraps inside the identity column instead of
+ * widening the header, and is hidden whenever there is no verdict to state. */
+.chatbot-header .chatbot-service {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 3px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+/* display:flex above would otherwise outrank the UA rule behind [hidden]. */
+.chatbot-header .chatbot-service[hidden] {
+  display: none;
+}
+.chatbot-service [data-chatbot-bridge-text] {
+  min-width: 0;
+}
+.chatbot-service-dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 3.5px;
   border-radius: 999px;
   background: var(--brand);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16);
+}
+/* A check in progress is not a failure, so it reads as an outline, not grey. */
+.chatbot-service[data-ajoop-service="checking"] .chatbot-service-dot {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+}
+.chatbot-service[data-ajoop-service="unavailable"] .chatbot-service-dot {
+  background: var(--muted);
 }
 .chatbot-close {
   width: 38px;
@@ -2358,8 +2386,23 @@ body.overlay-modal-open {
 }
 .chatbot-message.is-pending .chatbot-message-text {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
+  column-gap: 9px;
+  row-gap: 2px;
+  min-width: 0;
   min-height: 21px;
+}
+/* A5.1.1: what the turn is doing, in words. The dots beside it are decoration;
+ * this is the state, so it still reads for a visitor with motion reduced or no
+ * animation at all. It wraps like any other bubble text on a narrow phone. */
+.ajoop-turn-activity {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 /* Three dots, on the compositor, at the size of the text they stand in for.
  * No spinner, no skeleton, no fake character-by-character streaming: the panel
@@ -2421,6 +2464,24 @@ body.overlay-modal-open {
 .chatbot-message .ajoop-provenance[data-ajoop-provenance="ai"] {
   color: var(--brand);
   opacity: 0.9;
+}
+/* Light theme only. The dark-theme fade above reads fine on a dark bubble, but
+ * on a light one the 0.75 muted line measured ~4.0:1 and the brand-coloured AI
+ * line ~3.8:1 — under WCAG AA for 10.5px text. A lighter fade and one darker
+ * shade of the same sky blue clear 4.5:1 while the line stays smaller, bolder
+ * and quieter than the answer above it. */
+html[data-theme="light"] .chatbot-message .ajoop-provenance {
+  opacity: 0.9;
+}
+html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenance="ai"] {
+  color: #0369a1;
+  opacity: 1;
+}
+/* A5.1.1: when the provenance line also states a degraded result, it carries
+ * meaning rather than decoration, so it drops the fade in every theme. `.bot`
+ * keeps this above the light-theme fade. Ordinary answers keep the quieter line. */
+.chatbot-message.bot[data-ajoop-turn-status] .ajoop-provenance {
+  opacity: 1;
 }
 .chatbot-message.bot {
   justify-self: start;
@@ -2763,10 +2824,10 @@ body.overlay-modal-open {
     border-radius: 22px;
   }
 
-  /* Four tracks below 560px: the state label is display:none here, so it
+  /* Three tracks below 560px: the state label is display:none here, so it
    * leaves the grid entirely. */
   .chatbot-header {
-    grid-template-columns: 32px minmax(0, 1fr) auto auto;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
     gap: 9px;
     padding: 10px 12px;
   }
@@ -2820,7 +2881,7 @@ body.overlay-modal-open {
   }
 
   .chatbot-header {
-    grid-template-columns: 30px minmax(0, 1fr) auto auto;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
     gap: 8px;
     padding: 9px 10px;
   }
