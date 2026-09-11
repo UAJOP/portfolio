@@ -2500,6 +2500,102 @@ html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenanc
 .chatbot-message.bot[data-ajoop-turn-status] .ajoop-provenance {
   opacity: 1;
 }
+/* A5.1.3 connected evidence remains a quiet provenance line. The explicit
+ * label carries the meaning; the pill treatment never stands alone as status. */
+.chatbot-message .ajoop-provenance-connected {
+  display: inline-flex;
+  max-width: 100%;
+  width: fit-content;
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--brand) 25%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  opacity: 1;
+}
+.ajoop-action-preview {
+  min-width: 0;
+  margin-top: 11px;
+  padding: 11px;
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-solid) 86%, var(--brand) 14%);
+  color: var(--text);
+}
+.ajoop-action-preview-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
+.chatbot-message .ajoop-action-preview-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 900;
+}
+.ajoop-action-preview-badge {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  background: var(--surface);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.3;
+  white-space: normal;
+}
+.ajoop-action-preview-details {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+}
+.ajoop-action-preview-details > div {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.42fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+.ajoop-action-preview-details dt,
+.ajoop-action-preview-details dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.ajoop-action-preview-details dt {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+.ajoop-action-preview-details dd {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+}
+.chatbot-message .ajoop-action-preview-availability {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+@media (max-width: 380px) {
+  .ajoop-action-preview {
+    padding: 10px;
+    border-radius: 12px;
+  }
+  .ajoop-action-preview-details > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
 .chatbot-message.bot {
   justify-self: start;
   border-bottom-left-radius: 6px;
