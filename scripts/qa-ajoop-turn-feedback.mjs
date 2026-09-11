@@ -26,6 +26,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { getAjoopActionPolicy, listAjoopActionTypes } from "../server/ajoop-action-contract.mjs";
+import { AJOOP_READ_CONNECTORS } from "../server/ajoop-read-connector-contract.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => readFileSync(path.isAbsolute(file) ? file : path.join(ROOT, file), "utf8");
@@ -209,7 +211,14 @@ const EXPORTS = [
   "AJOOP_TURN_STATE",
   "AJOOP_TURN_SAFE_CODE",
   "AJOOP_TURN_SOURCES",
+  "AJOOP_PRESENTATION_SOURCE_LIMIT",
+  "AJOOP_PRESENTATION_SOURCES",
+  "AJOOP_PRESENTATION_ACTIONS",
   "normalizeAjoopTurnStatus",
+  "normalizeAjoopPresentationSources",
+  "normalizeAjoopActionPreview",
+  "ajoopProvenanceLabel",
+  "renderAjoopActionPreview",
   "ajoopTurnActivityLabel",
   "ajoopTurnOutcomeLabel",
   "ajoopTurnOutcome",
@@ -539,6 +548,228 @@ const renderSpec = (env, spec) => {
         serialize(renderSpec(env, spec)), serialize(renderSpec(baseline, spec)));
     }
   }
+}
+
+/* ---------- A5.1.3 REAL BEHAVIOR TESTS: connected presentation ---------- */
+
+{
+  const env = loadAssistant();
+  const { api } = env;
+  check("connected source list is bounded", api.AJOOP_PRESENTATION_SOURCE_LIMIT, 3);
+  check("presentation source allowlist is exact",
+    Object.keys(api.AJOOP_PRESENTATION_SOURCES).join(","), "portfolio,gmail,calendar,github,drive");
+  check("presentation sources match the A4 connected connector registry",
+    Object.keys(api.AJOOP_PRESENTATION_SOURCES).slice(1).join(","), Object.values(AJOOP_READ_CONNECTORS).join(","));
+  check("singular Gmail source remains supported",
+    api.normalizeAjoopPresentationSources({ source: "gmail" }).join(","), "gmail");
+  check("Calendar uses its product label",
+    api.ajoopProvenanceLabel("evidence", "en", ["calendar"]), "Google Calendar evidence");
+  check("GitHub uses its product label",
+    api.ajoopProvenanceLabel("evidence", "en", ["github"]), "GitHub evidence");
+  check("Drive uses its product label",
+    api.ajoopProvenanceLabel("evidence", "en", ["drive"]), "Google Drive evidence");
+  check("duplicates are removed and canonical order is stable",
+    api.normalizeAjoopPresentationSources(["calendar", "gmail", "calendar"]).join(","), "gmail,calendar");
+  check("source count is capped after stable ordering",
+    api.normalizeAjoopPresentationSources(["drive", "github", "calendar", "gmail", "portfolio"]).join(","),
+    "portfolio,gmail,calendar");
+  check("unknown source is rejected",
+    api.normalizeAjoopPresentationSources(["slack"]).join(","), "");
+  check("hostile source text is rejected",
+    api.normalizeAjoopPresentationSources([HOSTILE.message, HOSTILE.token, HOSTILE.detail]).join(","), "");
+  ok("normalized sources are frozen", Object.isFrozen(api.normalizeAjoopPresentationSources(["gmail"])));
+
+  const portfolioDefault = renderSpec(env, {
+    type: "bot", language: "en", text: "Existing public answer.", provenance: "evidence",
+  });
+  const defaultProvenance = portfolioDefault.querySelector(".ajoop-provenance");
+  check("absent source metadata preserves Portfolio evidence", defaultProvenance.textContent, "Portfolio evidence");
+  ok("absent source metadata does not opt into connected styling",
+    !defaultProvenance.classList.contains("ajoop-provenance-connected"));
+  check("absent source metadata adds no connected source attribute",
+    defaultProvenance.getAttribute("data-ajoop-sources"), null);
+
+  const portfolio = renderSpec(env, {
+    type: "bot", language: "en", text: "Explicit portfolio answer.", provenance: "evidence", source: "portfolio",
+  });
+  check("explicit Portfolio source remains supported",
+    portfolio.querySelector(".ajoop-provenance").textContent, "Portfolio evidence");
+
+  const gmail = renderSpec(env, {
+    type: "bot", language: "en", text: "One safe answer.", provenance: "evidence", source: "gmail",
+  });
+  const gmailProvenance = gmail.querySelector(".ajoop-provenance");
+  check("Gmail source renders truthful evidence wording", gmailProvenance.textContent, "Gmail evidence");
+  check("Gmail source is exposed only as a bounded code", gmailProvenance.getAttribute("data-ajoop-sources"), "gmail");
+  ok("connected provenance receives quiet visual treatment", gmailProvenance.classList.contains("ajoop-provenance-connected"));
+
+  const multi = renderSpec(env, {
+    type: "bot", language: "en", text: "Two safe sources.", provenance: "ai", sources: ["calendar", "gmail", "gmail"],
+  });
+  check("multi-source AI wording is grounded, not connected-capability wording",
+    multi.querySelector(".ajoop-provenance").textContent,
+    "AI-assisted · grounded in Gmail + Google Calendar evidence");
+  ok("source wording never claims connection or provider verification",
+    !/connected|verified by|live access/i.test(multi.querySelector(".ajoop-provenance").textContent));
+
+  const degraded = renderSpec(env, {
+    type: "bot", language: "en", text: "Partial but readable.", provenance: "evidence",
+    sources: ["gmail", "calendar"], status: { state: "partial", source: "calendar" },
+  });
+  check("partial answer keeps truthful multi-source provenance",
+    degraded.querySelector(".ajoop-provenance").textContent,
+    "Gmail + Google Calendar evidence · Google Calendar partly unavailable");
+
+  const hostile = renderSpec(env, {
+    type: "bot", language: "en", text: "Safe answer.", provenance: "evidence",
+    sources: [HOSTILE.endpoint], actionPreview: { actionType: "unknown.action", tier: 3, ...HOSTILE },
+  });
+  check("hostile source renders no false Portfolio provenance",
+    hostile.querySelector(".ajoop-provenance"), null);
+  check("hostile source adds no connected provenance marker",
+    hostile.querySelector(".ajoop-provenance-connected"), null);
+  check("rejected preview adds no card", hostile.querySelector(".ajoop-action-preview"), null);
+  noHostileText("hostile connected presentation metadata", serialize(hostile));
+
+  const unknown = renderSpec(env, {
+    type: "bot", language: "en", text: "Unknown source stays readable.", provenance: "evidence", sources: ["slack"],
+  });
+  check("unknown-only source renders no provenance claim", unknown.querySelector(".ajoop-provenance"), null);
+
+  const mixed = renderSpec(env, {
+    type: "bot", language: "en", text: "Mixed sources.", provenance: "evidence",
+    sources: [HOSTILE.endpoint, "calendar", "gmail", "slack"],
+  });
+  check("mixed valid and hostile sources render accepted sources only",
+    mixed.querySelector(".ajoop-provenance").textContent, "Gmail + Google Calendar evidence");
+
+  let accessorReads = 0;
+  const accessorSpec = { type: "bot", language: "en", text: "Accessor-safe.", provenance: "evidence" };
+  Object.defineProperty(accessorSpec, "sources", { enumerable: true, get() { accessorReads += 1; return ["gmail"]; } });
+  Object.defineProperty(accessorSpec, "actionPreview", { enumerable: true, get() { accessorReads += 1; return { actionType: "email.send", tier: 3 }; } });
+  const accessorMessage = renderSpec(env, accessorSpec);
+  check("presentation metadata accessors are never invoked", accessorReads, 0);
+  check("accessor source renders no false Portfolio provenance",
+    accessorMessage.querySelector(".ajoop-provenance"), null);
+  check("accessor action preview is dropped", accessorMessage.querySelector(".ajoop-action-preview"), null);
+
+  let singularAccessorReads = 0;
+  const singularAccessorSpec = { type: "bot", language: "en", text: "Singular accessor-safe.", provenance: "evidence" };
+  Object.defineProperty(singularAccessorSpec, "source", {
+    enumerable: true,
+    get() { singularAccessorReads += 1; return "gmail"; },
+  });
+  const singularAccessorMessage = renderSpec(env, singularAccessorSpec);
+  check("singular source accessor is never invoked", singularAccessorReads, 0);
+  check("singular source accessor renders no false Portfolio provenance",
+    singularAccessorMessage.querySelector(".ajoop-provenance"), null);
+
+  for (const [label, value] of [["undefined", undefined], ["invalid", 42]]) {
+    const invalid = renderSpec(env, {
+      type: "bot", language: "en", text: "Invalid data property.", provenance: "evidence", source: value,
+    });
+    check(`present ${label} source data property renders no provenance claim`,
+      invalid.querySelector(".ajoop-provenance"), null);
+  }
+
+  const nonEnumerable = { type: "bot", language: "en", text: "Non-enumerable.", provenance: "evidence" };
+  Object.defineProperty(nonEnumerable, "sources", { enumerable: false, value: ["gmail"] });
+  check("non-enumerable source metadata renders no provenance claim",
+    renderSpec(env, nonEnumerable).querySelector(".ajoop-provenance"), null);
+
+  const precedence = renderSpec(env, {
+    type: "bot", language: "en", text: "Sources precedence.", provenance: "evidence",
+    source: "gmail", sources: undefined,
+  });
+  check("present rejected sources field takes precedence over singular source",
+    precedence.querySelector(".ajoop-provenance"), null);
+}
+
+{
+  const env = loadAssistant();
+  const { api } = env;
+  check("browser presentation action types match the authoritative A4 registry",
+    Object.keys(api.AJOOP_PRESENTATION_ACTIONS).sort().join(","), [...listAjoopActionTypes()].sort().join(","));
+  for (const actionType of listAjoopActionTypes()) {
+    check(`browser presentation tier matches A4 policy: ${actionType}`,
+      api.AJOOP_PRESENTATION_ACTIONS[actionType].tier, getAjoopActionPolicy(actionType).tier);
+    check(`browser presentation connector matches A4 policy: ${actionType}`,
+      api.AJOOP_PRESENTATION_ACTIONS[actionType].source, getAjoopActionPolicy(actionType).connector);
+  }
+  check("unknown action type is rejected", api.normalizeAjoopActionPreview({ actionType: "gmail.raw_request", tier: 1 }), null);
+  check("unknown tier is rejected", api.normalizeAjoopActionPreview({ actionType: "email.prepare_draft", tier: 9 }), null);
+  check("caller cannot downgrade a Tier 3 action", api.normalizeAjoopActionPreview({ actionType: "email.send", tier: 1 }), null);
+
+  for (const [actionType, tier] of [
+    ["gmail.search_messages", 0],
+    ["email.prepare_draft", 1],
+    ["gmail.create_draft", 2],
+    ["email.send", 3],
+  ]) {
+    const normalized = api.normalizeAjoopActionPreview({ actionType, tier, executionAvailable: true, ...HOSTILE });
+    check(`action tier is re-derived: ${actionType}`, normalized.tier, tier);
+    check(`action execution is always unavailable: ${actionType}`, normalized.executionAvailable, false);
+    check(`action preview is always informational: ${actionType}`, normalized.previewOnly, true);
+    check(`confirmation is derived from tier: ${actionType}`, normalized.requiresConfirmation, tier >= 2);
+    ok(`normalized action is frozen: ${actionType}`, Object.isFrozen(normalized));
+  }
+
+  const preview = renderSpec(env, {
+    type: "bot", language: "en", text: "A local draft can be described.",
+    actionPreview: { actionType: "email.prepare_draft", tier: 1, preview: HOSTILE, target: HOSTILE },
+  });
+  const card = preview.querySelector(".ajoop-action-preview");
+  ok("a valid action preview renders semantic static content", card && card.tagName === "SECTION");
+  check("action preview has an accessible name", card.getAttribute("aria-label"), "Action preview");
+  ok("action preview states the proposed action", card.textContent.includes("Prepare email draft"));
+  ok("action preview states the safe target category", card.textContent.includes("Gmail"));
+  ok("action preview states the deterministic permission tier", card.textContent.includes("Tier 1 · Preview only"));
+  ok("action preview states confirmation status", card.textContent.includes("Not required for this read or local preview"));
+  ok("action preview states execution is unavailable", card.textContent.includes("Execution is unavailable in this surface."));
+  check("action preview contains no controls", card.querySelectorAll("button").length, 0);
+  check("action preview contains no links", card.querySelectorAll("a").length, 0);
+  noHostileText("valid preview with hostile extra fields", serialize(card));
+
+  for (const [actionType, tier, phrase] of [
+    ["gmail.create_draft", 2, "Would require confirmation before changing external state"],
+    ["email.send", 3, "Consequential action — strong confirmation required"],
+  ]) {
+    const rendered = api.renderAjoopActionPreview({ actionType, tier }, "en");
+    ok(`Tier ${tier} states its risk in words`, rendered.textContent.includes(phrase));
+    ok(`Tier ${tier} never presents execution`, rendered.textContent.includes("Execution is unavailable in this surface."));
+    check(`Tier ${tier} exposes no execution control`, rendered.querySelectorAll("button").length, 0);
+  }
+
+  const plain = renderSpec(env, { type: "bot", language: "en", text: "No metadata." });
+  const rejected = renderSpec(env, {
+    type: "bot", language: "en", text: "No metadata.", actionPreview: { actionType: "unknown", tier: 0 },
+  });
+  check("normal answer DOM is unchanged when action metadata is absent or rejected", serialize(rejected), serialize(plain));
+}
+
+/* ---------- A5.1.3 STATIC CONTRACT CHECKS ---------- */
+
+{
+  const source = read("js/ajoop/assistant.js");
+  const block = source.slice(
+    source.indexOf("/* ajoop-connected-presentation:start"),
+    source.indexOf("/* ajoop-connected-presentation:end */"),
+  );
+  ok("connected presentation block exists", block.length > 100);
+  for (const forbidden of [
+    "gmail-provider", "calendar-provider", "github-provider", "drive-provider",
+    "ajoop-owner-connected-workflows", "ajoop-owner-context", "ajoop-owner-tool-policy",
+    "oauth", "token.txt", ".ajoop-runtime", "googleapis", "XMLHttpRequest",
+    "sendBeacon", "localStorage", "credential", "secret",
+  ]) {
+    ok(`browser presentation imports/exposes no ${forbidden}`, !block.toLowerCase().includes(forbidden.toLowerCase()));
+  }
+  ok("browser presentation makes no network request", !/\bfetch\s*\(/.test(block));
+  ok("browser presentation creates no action controls", !/createElement\(["'](?:button|a)["']\)/.test(block));
+  ok("public turn response path remains unconnected to owner action metadata",
+    !/actionPreview:\s*(?:model|context|plan)/.test(source));
+  ok("source array normalization is bounded", /slice\(0, AJOOP_PRESENTATION_SOURCE_LIMIT\)/.test(block));
+  ok("source identity is visible text, not icon-only", /AJOOP_PRESENTATION_SOURCES\[preview\.source\]/.test(block));
 }
 
 /* ---------- 4. degraded and partial answers ---------- */

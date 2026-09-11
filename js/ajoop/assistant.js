@@ -956,15 +956,30 @@ function scrollAjoopToBottom(list) {
 const AJOOP_PROVENANCE_EVIDENCE = "evidence";
 const AJOOP_PROVENANCE_AI = "ai";
 
-function ajoopProvenanceLabel(kind, language) {
+function ajoopProvenanceLabel(kind, language, rawSources) {
+  const sources = normalizeAjoopPresentationSources(rawSources);
+  const sourceNames = sources.map((source) => AJOOP_PRESENTATION_SOURCES[source]).join(" + ");
   if (kind === AJOOP_PROVENANCE_AI) {
+    if (sources.length === 1 && sources[0] === "portfolio") {
+      return ajoopLabel(
+        "AI-assisted · grounded in portfolio evidence",
+        "AI destekli · portfolyo kanıtına dayalı",
+        language,
+      );
+    }
     return ajoopLabel(
-      "AI-assisted · grounded in portfolio evidence",
-      "AI destekli · portfolyo kanıtına dayalı",
+      "AI-assisted · grounded in {sources} evidence",
+      "AI destekli · {sources} kanıtına dayalı",
       language,
-    );
+    ).replace("{sources}", sourceNames);
   }
-  return ajoopLabel("Portfolio evidence", "Portfolyo kanıtı", language);
+  if (sources.length === 1 && sources[0] === "portfolio") {
+    return ajoopLabel("Portfolio evidence", "Portfolyo kanıtı", language);
+  }
+  return ajoopLabel("{sources} evidence", "{sources} kanıtı", language).replace(
+    "{sources}",
+    sourceNames,
+  );
 }
 
 /* ajoop-turn-feedback:start
@@ -1015,6 +1030,245 @@ const AJOOP_TURN_SOURCES = Object.freeze({
   github: "GitHub",
   drive: "Google Drive",
 });
+
+/* ajoop-connected-presentation:start
+ * A5.1.3 connected-source/action UX. This is a browser presentation contract,
+ * not a connector contract. It imports nothing, performs no I/O and accepts no
+ * free text. The public response path does not currently supply these fields,
+ * so the renderers remain dormant until a trusted boundary provides sanitized
+ * metadata. Synthetic QA drives them without calling a provider.
+ */
+const AJOOP_PRESENTATION_SOURCE_LIMIT = 3;
+const AJOOP_PRESENTATION_SOURCES = Object.freeze({
+  portfolio: "Portfolio",
+  gmail: "Gmail",
+  calendar: "Google Calendar",
+  github: "GitHub",
+  drive: "Google Drive",
+});
+const AJOOP_PRESENTATION_SOURCE_ORDER = Object.freeze(
+  Object.keys(AJOOP_PRESENTATION_SOURCES),
+);
+
+const AJOOP_PRESENTATION_ABSENT_FIELD = Object.freeze({ present: false, value: undefined });
+
+/** Distinguishes an absent property from present metadata without invoking an accessor. */
+function ajoopPresentationOwnField(source, key) {
+  try {
+    if (!source || typeof source !== "object") return AJOOP_PRESENTATION_ABSENT_FIELD;
+    const descriptor = Object.getOwnPropertyDescriptor(source, key);
+    if (!descriptor) return AJOOP_PRESENTATION_ABSENT_FIELD;
+    return Object.freeze({
+      present: true,
+      value: descriptor.enumerable && Object.hasOwn(descriptor, "value")
+        ? descriptor.value
+        : undefined,
+    });
+  } catch (error) {
+    return Object.freeze({ present: true, value: undefined });
+  }
+}
+
+/** Reads an own enumerable data property without invoking an accessor. */
+function ajoopPresentationOwnValue(source, key) {
+  return ajoopPresentationOwnField(source, key).value;
+}
+
+/**
+ * A bounded canonical list of source identifiers.
+ *
+ * Accepts the historical singular `source`, a `sources` array, or an array
+ * directly. Unknown and hostile values disappear. Canonical ordering keeps
+ * equivalent metadata visually stable regardless of provider completion order.
+ */
+function normalizeAjoopPresentationSources(raw) {
+  let candidates = raw;
+  if (!Array.isArray(raw) && raw && typeof raw === "object") {
+    const multiple = ajoopPresentationOwnField(raw, "sources");
+    const singular = ajoopPresentationOwnField(raw, "source");
+    const selected = multiple.present ? multiple.value : singular.value;
+    candidates = Array.isArray(selected) ? selected : [selected];
+  } else if (!Array.isArray(raw)) {
+    candidates = [raw];
+  }
+
+  const accepted = new Set();
+  for (const candidate of candidates.slice(0, 20)) {
+    if (
+      typeof candidate === "string"
+      && Object.prototype.hasOwnProperty.call(AJOOP_PRESENTATION_SOURCES, candidate)
+    ) {
+      accepted.add(candidate);
+    }
+  }
+  const normalized = AJOOP_PRESENTATION_SOURCE_ORDER
+    .filter((source) => accepted.has(source))
+    .slice(0, AJOOP_PRESENTATION_SOURCE_LIMIT);
+  return Object.freeze(normalized);
+}
+
+const AJOOP_PRESENTATION_ACTIONS = Object.freeze({
+  "gmail.search_messages": Object.freeze({ tier: 0, source: "gmail" }),
+  "gmail.read_thread": Object.freeze({ tier: 0, source: "gmail" }),
+  "calendar.list_events": Object.freeze({ tier: 0, source: "calendar" }),
+  "calendar.read_event": Object.freeze({ tier: 0, source: "calendar" }),
+  "github.search_pull_requests": Object.freeze({ tier: 0, source: "github" }),
+  "github.read_pull_request": Object.freeze({ tier: 0, source: "github" }),
+  "drive.search_files": Object.freeze({ tier: 0, source: "drive" }),
+  "drive.read_file": Object.freeze({ tier: 0, source: "drive" }),
+  "email.prepare_draft": Object.freeze({ tier: 1, source: "gmail" }),
+  "calendar.prepare_event": Object.freeze({ tier: 1, source: "calendar" }),
+  "github.prepare_issue": Object.freeze({ tier: 1, source: "github" }),
+  "gmail.create_draft": Object.freeze({ tier: 2, source: "gmail" }),
+  "calendar.create_event": Object.freeze({ tier: 2, source: "calendar" }),
+  "calendar.update_event": Object.freeze({ tier: 2, source: "calendar" }),
+  "github.create_issue": Object.freeze({ tier: 2, source: "github" }),
+  "github.add_label": Object.freeze({ tier: 2, source: "github" }),
+  "email.send": Object.freeze({ tier: 3, source: "gmail" }),
+  "gmail.delete_message": Object.freeze({ tier: 3, source: "gmail" }),
+  "calendar.delete_event": Object.freeze({ tier: 3, source: "calendar" }),
+  "github.merge_pull_request": Object.freeze({ tier: 3, source: "github" }),
+  "github.comment_pull_request": Object.freeze({ tier: 3, source: "github" }),
+  "drive.delete_file": Object.freeze({ tier: 3, source: "drive" }),
+  "drive.update_file": Object.freeze({ tier: 3, source: "drive" }),
+  "drive.share_file": Object.freeze({ tier: 3, source: "drive" }),
+});
+
+/**
+ * Reduces owner-private action metadata to a presentation-only shape.
+ * Policy is re-derived from a closed browser table: a caller cannot rename the
+ * action, target, tier, confirmation or execution support. Tier mismatch fails
+ * closed instead of being repaired into a potentially misleading card.
+ */
+function normalizeAjoopActionPreview(raw) {
+  const actionType = ajoopPresentationOwnValue(raw, "actionType");
+  const tier = ajoopPresentationOwnValue(raw, "tier");
+  if (
+    typeof actionType !== "string"
+    || !Object.prototype.hasOwnProperty.call(AJOOP_PRESENTATION_ACTIONS, actionType)
+  ) return null;
+  const policy = AJOOP_PRESENTATION_ACTIONS[actionType];
+  if (!Number.isInteger(tier) || tier !== policy.tier) return null;
+  return Object.freeze({
+    actionType,
+    tier: policy.tier,
+    source: policy.source,
+    requiresConfirmation: policy.tier >= 2,
+    previewOnly: true,
+    executionAvailable: false,
+  });
+}
+
+function ajoopActionTypeLabel(actionType, language) {
+  if (actionType === "gmail.search_messages") return ajoopLabel("Search Gmail messages", "Gmail iletilerinde ara", language);
+  if (actionType === "gmail.read_thread") return ajoopLabel("Read Gmail thread", "Gmail ileti dizisini oku", language);
+  if (actionType === "calendar.list_events") return ajoopLabel("Review calendar events", "Takvim etkinliklerini incele", language);
+  if (actionType === "calendar.read_event") return ajoopLabel("Read calendar event", "Takvim etkinliğini oku", language);
+  if (actionType === "github.search_pull_requests") return ajoopLabel("Search pull requests", "Pull request'lerde ara", language);
+  if (actionType === "github.read_pull_request") return ajoopLabel("Read pull request", "Pull request'i oku", language);
+  if (actionType === "drive.search_files") return ajoopLabel("Search Drive files", "Drive dosyalarında ara", language);
+  if (actionType === "drive.read_file") return ajoopLabel("Read Drive file", "Drive dosyasını oku", language);
+  if (actionType === "email.prepare_draft") return ajoopLabel("Prepare email draft", "E-posta taslağı hazırla", language);
+  if (actionType === "calendar.prepare_event") return ajoopLabel("Prepare calendar event", "Takvim etkinliği hazırla", language);
+  if (actionType === "github.prepare_issue") return ajoopLabel("Prepare GitHub issue", "GitHub issue hazırla", language);
+  if (actionType === "gmail.create_draft") return ajoopLabel("Create Gmail draft", "Gmail taslağı oluştur", language);
+  if (actionType === "calendar.create_event") return ajoopLabel("Create calendar event", "Takvim etkinliği oluştur", language);
+  if (actionType === "calendar.update_event") return ajoopLabel("Update calendar event", "Takvim etkinliğini güncelle", language);
+  if (actionType === "github.create_issue") return ajoopLabel("Create GitHub issue", "GitHub issue oluştur", language);
+  if (actionType === "github.add_label") return ajoopLabel("Add GitHub label", "GitHub etiketi ekle", language);
+  if (actionType === "email.send") return ajoopLabel("Send email", "E-posta gönder", language);
+  if (actionType === "gmail.delete_message") return ajoopLabel("Delete Gmail message", "Gmail iletisini sil", language);
+  if (actionType === "calendar.delete_event") return ajoopLabel("Delete calendar event", "Takvim etkinliğini sil", language);
+  if (actionType === "github.merge_pull_request") return ajoopLabel("Merge pull request", "Pull request'i birleştir", language);
+  if (actionType === "github.comment_pull_request") return ajoopLabel("Comment on pull request", "Pull request'e yorum yap", language);
+  if (actionType === "drive.delete_file") return ajoopLabel("Delete Drive file", "Drive dosyasını sil", language);
+  if (actionType === "drive.update_file") return ajoopLabel("Update Drive file", "Drive dosyasını güncelle", language);
+  if (actionType === "drive.share_file") return ajoopLabel("Share Drive file", "Drive dosyasını paylaş", language);
+  return null;
+}
+
+function ajoopActionTierLabel(tier, language) {
+  if (tier === 0) return ajoopLabel("Read only", "Salt okunur", language);
+  if (tier === 1) return ajoopLabel("Preview only", "Yalnızca önizleme", language);
+  if (tier === 2) {
+    return ajoopLabel(
+      "Would require confirmation before changing external state",
+      "Harici durumu değiştirmeden önce onay gerektirirdi",
+      language,
+    );
+  }
+  if (tier === 3) {
+    return ajoopLabel(
+      "Consequential action — strong confirmation required",
+      "Sonuç doğuran işlem — güçlü onay gerekli",
+      language,
+    );
+  }
+  return null;
+}
+
+function ajoopActionConfirmationLabel(preview, language) {
+  if (!preview.requiresConfirmation) {
+    return ajoopLabel(
+      "Not required for this read or local preview",
+      "Bu okuma veya yerel önizleme için gerekli değil",
+      language,
+    );
+  }
+  return preview.tier === 3
+    ? ajoopLabel("Strong confirmation would be required", "Güçlü onay gerekirdi", language)
+    : ajoopLabel("Confirmation would be required", "Onay gerekirdi", language);
+}
+
+function renderAjoopActionPreview(raw, language) {
+  const preview = normalizeAjoopActionPreview(raw);
+  if (!preview) return null;
+  const card = document.createElement("section");
+  card.className = "ajoop-action-preview";
+  card.setAttribute("aria-label", ajoopLabel("Action preview", "İşlem önizlemesi", language));
+  card.setAttribute("data-ajoop-action-tier", String(preview.tier));
+
+  const header = document.createElement("div");
+  header.className = "ajoop-action-preview-header";
+  const title = document.createElement("p");
+  title.className = "ajoop-action-preview-title";
+  title.textContent = ajoopLabel("Action preview", "İşlem önizlemesi", language);
+  const badge = document.createElement("span");
+  badge.className = "ajoop-action-preview-badge";
+  badge.textContent = ajoopLabel("Preview only", "Yalnızca önizleme", language);
+  header.appendChild(title);
+  header.appendChild(badge);
+  card.appendChild(header);
+
+  const details = document.createElement("dl");
+  details.className = "ajoop-action-preview-details";
+  const row = (term, description) => {
+    const wrapper = document.createElement("div");
+    const dt = document.createElement("dt");
+    const dd = document.createElement("dd");
+    dt.textContent = term;
+    dd.textContent = description;
+    wrapper.appendChild(dt);
+    wrapper.appendChild(dd);
+    details.appendChild(wrapper);
+  };
+  row(ajoopLabel("Proposed action", "Önerilen işlem", language), ajoopActionTypeLabel(preview.actionType, language));
+  row(ajoopLabel("Target category", "Hedef kategorisi", language), AJOOP_PRESENTATION_SOURCES[preview.source]);
+  row(ajoopLabel("Permission", "İzin", language), `Tier ${preview.tier} · ${ajoopActionTierLabel(preview.tier, language)}`);
+  row(ajoopLabel("Confirmation", "Onay", language), ajoopActionConfirmationLabel(preview, language));
+  card.appendChild(details);
+
+  const availability = document.createElement("p");
+  availability.className = "ajoop-action-preview-availability";
+  availability.textContent = ajoopLabel(
+    "Execution is unavailable in this surface.",
+    "Bu yüzeyde işlem yürütme kullanılamaz.",
+    language,
+  );
+  card.appendChild(availability);
+  return card;
+}
+/* ajoop-connected-presentation:end */
 
 /**
  * Why a turn is not a plain success, as a code rather than a message.
@@ -1213,6 +1467,11 @@ function fillAjoopMessage(message, spec) {
     message.appendChild(renderAjoopEvidenceCard(card, { detail: spec.detail, language })),
   );
   appendAjoopMessageLinks(message, spec.links);
+  const actionPreview = renderAjoopActionPreview(
+    ajoopPresentationOwnValue(spec, "actionPreview"),
+    language,
+  );
+  if (actionPreview) message.appendChild(actionPreview);
   /* A5.1.1: only a turn that is less than a plain success carries a status, so
    * an ordinary answer renders exactly as it did before turn feedback existed.
    * The status reaches the DOM as a bounded code plus localized copy; the
@@ -1223,21 +1482,34 @@ function fillAjoopMessage(message, spec) {
   if (code) message.setAttribute("data-ajoop-turn-status", code);
   else message.removeAttribute("data-ajoop-turn-status");
   if (spec.provenance) {
-    const provenance = document.createElement("p");
-    provenance.className = "ajoop-provenance";
-    provenance.setAttribute("data-ajoop-provenance", spec.provenance);
-    provenance.textContent = ajoopProvenanceLabel(spec.provenance, language);
-    /* A degraded answer says so on its provenance line — a note beside an
-     * answer that still stands, not a banner over it. */
-    const note =
-      code && code !== AJOOP_TURN_SAFE_CODE.TURN_FAILED ? ajoopTurnOutcomeLabel(status, language) : null;
-    if (note) {
-      const detail = document.createElement("span");
-      detail.className = "ajoop-provenance-note";
-      detail.textContent = ` · ${note}`;
-      provenance.appendChild(detail);
+    const multipleSources = ajoopPresentationOwnField(spec, "sources");
+    const singularSource = ajoopPresentationOwnField(spec, "source");
+    const hasSourceMetadata = multipleSources.present || singularSource.present;
+    const rawSources = multipleSources.present ? multipleSources.value : singularSource.value;
+    const sources = hasSourceMetadata
+      ? normalizeAjoopPresentationSources(rawSources)
+      : Object.freeze(["portfolio"]);
+    if (sources.length) {
+      const provenance = document.createElement("p");
+      provenance.className = "ajoop-provenance";
+      provenance.setAttribute("data-ajoop-provenance", spec.provenance);
+      provenance.textContent = ajoopProvenanceLabel(spec.provenance, language, sources);
+      if (hasSourceMetadata) {
+        provenance.classList.add("ajoop-provenance-connected");
+        provenance.setAttribute("data-ajoop-sources", sources.join(" "));
+      }
+      /* A degraded answer says so on its provenance line — a note beside an
+       * answer that still stands, not a banner over it. */
+      const note =
+        code && code !== AJOOP_TURN_SAFE_CODE.TURN_FAILED ? ajoopTurnOutcomeLabel(status, language) : null;
+      if (note) {
+        const detail = document.createElement("span");
+        detail.className = "ajoop-provenance-note";
+        detail.textContent = ` · ${note}`;
+        provenance.appendChild(detail);
+      }
+      message.appendChild(provenance);
     }
-    message.appendChild(provenance);
   }
   return message;
 }
