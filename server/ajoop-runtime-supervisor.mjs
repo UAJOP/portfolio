@@ -6,6 +6,7 @@ import { StringDecoder } from "node:string_decoder";
 import { fileURLToPath } from "node:url";
 import {
   AJOOP_BRIDGE_EXIT_CODES,
+  AJOOP_RUNTIME_DEFAULTS,
   AJOOP_RUNTIME_IDENTITY,
   AJOOP_RUNTIME_CONTROL_PROTOCOL_VERSION,
   isAjoopSupervisorStatus,
@@ -13,11 +14,16 @@ import {
   missingRequiredModels,
   probeBridge,
   probeOllama,
+  probePublicBridge,
   resolveAjoopRuntimeConfig,
   fetchBoundedJson,
+  sanitizeTunnelObservationState,
 } from "./ajoop-runtime-probes.mjs";
 
 const COMPONENT_EMPTY = Object.freeze({ ownership: "none", state: "unavailable", pid: null });
+/* The tunnel is externally owned for the life of the process. Its component
+ * records only the observed public route, never a process. */
+const TUNNEL_NOT_CHECKED = Object.freeze({ ownership: "external", state: "not-checked", pid: null });
 const STOP_HEADER = "x-ajoop-supervisor";
 const STOP_HEADER_VALUE = "ajoop-runtime-v1";
 export const MAX_CHILD_LOG_LINE_CHARS = 1024;
@@ -47,12 +53,21 @@ export function sanitizeSupervisorStatus(status) {
   const errorCode = typeof status.lastError === "string" && /^[a-z0-9:_,-]{1,80}$/.test(status.lastError)
     ? status.lastError
     : null;
+  /* Public fields derive only from the observed tunnel state, and only while
+   * the runtime is READY. Ownership and PID are fixed regardless of input. */
+  const observing = status.state === "ready" && status.localReady === true;
+  const tunnelState = observing ? sanitizeTunnelObservationState(status.components?.tunnel?.state) : "not-checked";
+  const checkedAt = tunnelState !== "not-checked"
+    && typeof status.publicCheckedAt === "string" && /^[0-9T:.+\-Z]{1,40}$/.test(status.publicCheckedAt)
+    ? status.publicCheckedAt
+    : null;
   return Object.freeze({
     schemaVersion: 1,
     identity: AJOOP_RUNTIME_IDENTITY,
     state: status.state,
     localReady: status.localReady === true,
-    publicReachable: status.publicReachable === true ? true : status.publicReachable === false ? false : null,
+    publicReachable: tunnelState === "reachable" ? true : tunnelState === "not-checked" ? null : false,
+    publicCheckedAt: checkedAt,
     startedAt: status.startedAt,
     lastTransitionAt: status.lastTransitionAt,
     lastError: errorCode,
@@ -65,7 +80,7 @@ export function sanitizeSupervisorStatus(status) {
     components: Object.freeze({
       ollama: publicComponent(status.components.ollama),
       bridge: publicComponent(status.components.bridge),
-      tunnel: Object.freeze({ ownership: "external", state: "not-managed", pid: null }),
+      tunnel: Object.freeze({ ownership: "external", state: tunnelState, pid: null }),
     }),
     vector: Object.freeze({
       backend: typeof status.vector.backend === "string" ? status.vector.backend.slice(0, 24) : "unknown",
@@ -343,17 +358,24 @@ export function createAjoopRuntimeSupervisor(options = {}) {
     acquireControl: options.acquireControl || acquireControlServer,
     probeOllama: options.probeOllama || probeOllama,
     probeBridge: options.probeBridge || probeBridge,
+    probePublic: options.probePublic || probePublicBridge,
     locateOllama: options.locateOllama || locateOllamaExecutable,
     spawnOwned: options.spawnOwned || spawnOwned,
     wait: options.wait || sleep,
+    setTimer: options.setTimer || setTimeout,
+    clearTimer: options.clearTimer || clearTimeout,
     now: options.now || isoNow,
     writeStatus: options.writeStatus || writeSupervisorStatus,
   };
+  const publicIntervalMs = Number.isSafeInteger(config.publicProbeIntervalMs) && config.publicProbeIntervalMs >= 1000
+    ? config.publicProbeIntervalMs
+    : AJOOP_RUNTIME_DEFAULTS.publicProbeIntervalMs;
   const startedAt = deps.now();
   const mutable = {
     state: "stopped",
     localReady: false,
     publicReachable: null,
+    publicCheckedAt: null,
     startedAt,
     lastTransitionAt: startedAt,
     lastError: null,
@@ -363,7 +385,7 @@ export function createAjoopRuntimeSupervisor(options = {}) {
       generationPresent: false,
       embeddingPresent: false,
     },
-    components: { ollama: { ...COMPONENT_EMPTY }, bridge: { ...COMPONENT_EMPTY } },
+    components: { ollama: { ...COMPONENT_EMPTY }, bridge: { ...COMPONENT_EMPTY }, tunnel: { ...TUNNEL_NOT_CHECKED } },
     vector: { backend: "unknown", degraded: false },
   };
   const children = { ollama: null, bridge: null };
@@ -389,7 +411,61 @@ export function createAjoopRuntimeSupervisor(options = {}) {
     });
     return statusWriteChain;
   };
+  /* PUBLIC OBSERVATION. Each READY period owns one generation. Leaving READY
+   * (failed, stopping, stopped) bumps the generation, clears the next timer and
+   * resets the observation, so a probe that settles later is discarded before
+   * it can mutate or persist anything. A result may touch only the three public
+   * fields below; state, localReady, lastError, models, components.ollama,
+   * components.bridge and child handles are out of its reach. */
+  const publicObservation = { generation: 0, timer: null, inFlight: null };
+  const clearPublicObservation = () => {
+    publicObservation.generation += 1;
+    if (publicObservation.timer !== null) {
+      deps.clearTimer(publicObservation.timer);
+      publicObservation.timer = null;
+    }
+    mutable.publicReachable = null;
+    mutable.publicCheckedAt = null;
+    mutable.components.tunnel = { ...TUNNEL_NOT_CHECKED };
+  };
+  const publicObservationCurrent = (generation) => generation === publicObservation.generation
+    && mutable.state === "ready" && mutable.localReady === true && !stopping && !stopped;
+  const schedulePublicProbe = (generation, delayMs) => {
+    if (!publicObservationCurrent(generation) || publicObservation.timer !== null || publicObservation.inFlight !== null) {
+      return;
+    }
+    publicObservation.timer = deps.setTimer(() => {
+      publicObservation.timer = null;
+      void runPublicProbe(generation);
+    }, delayMs);
+    publicObservation.timer?.unref?.();
+  };
+  const runPublicProbe = async (generation) => {
+    if (!publicObservationCurrent(generation) || publicObservation.inFlight !== null) return;
+    publicObservation.inFlight = generation;
+    let observed;
+    try {
+      observed = await deps.probePublic(config);
+    } catch {
+      observed = { state: "unreachable" };
+    } finally {
+      if (publicObservation.inFlight === generation) publicObservation.inFlight = null;
+    }
+    if (!publicObservationCurrent(generation)) return;
+    const state = sanitizeTunnelObservationState(observed?.state);
+    mutable.components.tunnel = { ...TUNNEL_NOT_CHECKED, state };
+    mutable.publicReachable = state === "reachable" ? true : state === "not-checked" ? null : false;
+    mutable.publicCheckedAt = state === "not-checked" ? null : deps.now();
+    void persist();
+    schedulePublicProbe(generation, publicIntervalMs);
+  };
+  const beginPublicObservation = () => {
+    publicObservation.generation += 1;
+    schedulePublicProbe(publicObservation.generation, 0);
+  };
+
   const transition = async (state, error = null) => {
+    if (state !== "ready") clearPublicObservation();
     mutable.state = state;
     mutable.lastError = error;
     mutable.lastTransitionAt = deps.now();
@@ -427,6 +503,7 @@ export function createAjoopRuntimeSupervisor(options = {}) {
     }
     mutable.localReady = false;
     mutable.state = "failed";
+    clearPublicObservation();
     mutable.lastError = code;
     mutable.lastTransitionAt = deps.now();
     void persist();
@@ -486,6 +563,7 @@ export function createAjoopRuntimeSupervisor(options = {}) {
     if (stopPromise) return stopPromise;
     stopPromise = (async () => {
     stopping = true;
+    clearPublicObservation();
     invalidateAttempt(activeAttempt, "startup-stopped", null, false);
     mutable.localReady = false;
     await transition("stopping");
@@ -604,6 +682,8 @@ export function createAjoopRuntimeSupervisor(options = {}) {
     mutable.localReady = true;
     await transition("ready");
     if (!attemptIsCurrent(attempt)) return finishInvalidStartup(attempt, "startup-stopped");
+    // Public observation is scheduled, never awaited: READY does not wait on the internet.
+    beginPublicObservation();
     return Object.freeze({ ok: true, status: status() });
   };
 

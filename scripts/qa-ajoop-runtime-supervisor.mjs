@@ -13,15 +13,23 @@ import { resolveRuntimeCommandConfig } from "./ajoop-runtime.mjs";
 import {
   AJOOP_BRIDGE_EXIT_CODES,
   AJOOP_BRIDGE_IDENTITY,
+  AJOOP_RUNTIME_DEFAULTS,
   AJOOP_RUNTIME_IDENTITY,
+  AJOOP_TUNNEL_OBSERVATION_STATES,
+  ajoopPublicHealthRequestInit,
   classifyAjoopBridgeListenError,
   fetchBoundedJson,
+  fetchBoundedRemoteJson,
+  isAjoopBridgeHealthIdentity,
   isAjoopSupervisorStatus,
   isAjoopSupervisorStopResponse,
   listenAjoopBridgeServer,
   missingRequiredModels,
   probeBridge,
+  probePublicBridge,
   resolveAjoopRuntimeConfig,
+  safePublicHealthUrl,
+  sanitizeTunnelObservationState,
 } from "../server/ajoop-runtime-probes.mjs";
 import {
   AJOOP_CHILD_LOG_REDACTED,
@@ -48,6 +56,58 @@ const config = resolveAjoopRuntimeConfig({});
 const testConfig = Object.freeze({ ...config, ollamaStartupMs: 20, bridgeStartupMs: 20, pollIntervalMs: 1 });
 const wait = async () => {};
 const execFileAsync = promisify(execFile);
+
+/* Hermetic network guard: any default-fetch path that tries to leave loopback
+ * (for example an un-injected public probe) is refused and counted. */
+const loopbackFetch = globalThis.fetch;
+const blockedFetchHosts = [];
+globalThis.fetch = (input, init) => {
+  let hostname = "";
+  try {
+    hostname = new URL(typeof input === "string" || input instanceof URL ? input : input?.url).hostname;
+  } catch {
+    hostname = "";
+  }
+  if (hostname !== "127.0.0.1") {
+    blockedFetchHosts.push(hostname || "invalid");
+    return Promise.reject(new TypeError("QA refuses non-loopback network access"));
+  }
+  return loopbackFetch(input, init);
+};
+
+function fakeScheduler({ eager = false } = {}) {
+  const timers = [];
+  const cleared = [];
+  const delays = [];
+  const take = (handle) => {
+    const index = timers.indexOf(handle);
+    if (index < 0) return false;
+    timers.splice(index, 1);
+    return true;
+  };
+  return {
+    setTimer(callback, delayMs) {
+      const handle = { callback, delayMs };
+      delays.push(delayMs);
+      timers.push(handle);
+      if (eager) queueMicrotask(() => { if (take(handle)) callback(); });
+      return handle;
+    },
+    clearTimer(handle) {
+      if (take(handle)) cleared.push(handle);
+    },
+    pending: () => timers.length,
+    peek: () => timers[0],
+    delays,
+    cleared,
+    fire() {
+      const handle = timers.shift();
+      if (!handle) return false;
+      handle.callback();
+      return true;
+    },
+  };
+}
 
 function child(pid, options = {}) {
   const emitter = new EventEmitter();
@@ -79,11 +139,21 @@ function harness({
   waitImpl = wait,
   statusPath = "ignored",
   spawnOwned,
+  probePublic,
+  scheduler = fakeScheduler(),
 } = {}) {
   const spawned = [];
   const writes = [];
   const controls = [];
+  const publicCalls = [];
   const supervisor = createAjoopRuntimeSupervisor({
+    probePublic: async (probeConfig) => {
+      publicCalls.push(probeConfig);
+      if (typeof probePublic === "function") return probePublic(probeConfig);
+      return probePublic || { state: "not-checked" };
+    },
+    setTimer: scheduler.setTimer,
+    clearTimer: scheduler.clearTimer,
     env: {},
     config: testConfig,
     statusPath,
@@ -112,7 +182,7 @@ function harness({
       return () => `2026-09-11T00:00:0${index++}Z`;
     })(),
   });
-  return { supervisor, spawned, writes, controls };
+  return { supervisor, spawned, writes, controls, scheduler, publicCalls };
 }
 
 const healthyOllama = {
@@ -483,7 +553,8 @@ const until = async (predicate) => {
   check("external Ollama receives zero kills", externalOllama.killCalls.length, 0);
   check("external bridge receives zero kills", external.killCalls.length, 0);
   check("stale PID fixture grants no authority", h.spawned.length, 0);
-  check("external tunnel remains untouched", h.supervisor.status().components.tunnel.state, "not-managed");
+  check("external tunnel remains untouched", h.supervisor.status().components.tunnel.state, "not-checked");
+  check("external tunnel keeps external ownership after stop", h.supervisor.status().components.tunnel.ownership, "external");
 }
 {
   const temporaryRoot = await mkdtemp(join(tmpdir(), "ajoop-runtime-ownership-"));
@@ -505,6 +576,9 @@ const until = async (predicate) => {
       acquireControl: async () => ({ ok: true, close: async () => {} }),
       probeOllama: async () => externalOllama,
       probeBridge: async () => externalBridgeProcess,
+      probePublic: async () => ({ state: "not-checked" }),
+      setTimer: () => ({}),
+      clearTimer: () => {},
       spawnOwned: () => { spawnAttempts += 1; return child(9999); },
       now: () => "x",
     });
@@ -1031,6 +1105,648 @@ const until = async (predicate) => {
     check(`harmless credential near-miss ${index + 1} remains visible`, sanitizeChildOutput(line), line);
   }
 }
+
+/* ===================== A5.2.4 observe-only public reachability ===================== */
+
+const identityBody = (overrides = {}) => ({
+  ok: true,
+  ready: true,
+  mode: "rag",
+  model: config.generationModel,
+  embedModel: config.embeddingModel,
+  chunks: 12,
+  ...AJOOP_BRIDGE_IDENTITY,
+  ...overrides,
+});
+const encoder = new TextEncoder();
+const jsonResponse = (body, { status = 200, headers = {} } = {}) => new Response(
+  typeof body === "string" ? body : JSON.stringify(body),
+  { status, headers: { "Content-Type": "application/json", ...headers } },
+);
+function streamedResponse({ status = 200, headers = {}, chunks = [], endless = false, chunkBytes = 8192, stall = false } = {}) {
+  const tracker = { pulls: 0, cancelled: false, enqueuedBytes: 0 };
+  const body = new ReadableStream({
+    pull(controller) {
+      tracker.pulls += 1;
+      if (stall) return new Promise(() => {});
+      if (endless) {
+        const chunk = new Uint8Array(chunkBytes).fill(0x20);
+        tracker.enqueuedBytes += chunk.byteLength;
+        controller.enqueue(chunk);
+        return undefined;
+      }
+      const next = chunks.shift();
+      if (next === undefined) {
+        controller.close();
+        return undefined;
+      }
+      const chunk = typeof next === "string" ? encoder.encode(next) : next;
+      tracker.enqueuedBytes += chunk.byteLength;
+      controller.enqueue(chunk);
+      return undefined;
+    },
+    cancel() {
+      tracker.cancelled = true;
+    },
+  }, { highWaterMark: 0 });
+  return { response: new Response(body, { status, headers }), tracker };
+}
+const publicConfig = Object.freeze({ ...config, publicRequestTimeoutMs: 50 });
+const probeWith = async (response, overrides = {}) => {
+  const calls = [];
+  const result = await probePublicBridge({ ...publicConfig, ...overrides }, {
+    fetchImpl: async (url, init) => {
+      calls.push({ url, init });
+      return typeof response === "function" ? response(url, init) : response;
+    },
+  });
+  return { result, calls };
+};
+const listenLoopback = (server) => new Promise((resolvePromise) => {
+  server.listen(0, "127.0.0.1", () => resolvePromise(server.address().port));
+});
+const closeLoopback = (server) => new Promise((resolvePromise) => {
+  server.closeAllConnections?.();
+  server.close(() => resolvePromise());
+});
+
+{
+  check("production public health target is fixed", config.publicHealthUrl, "https://ajoop.kaanbalci.com/ajoop-rag");
+  check("production public interval is coarse", config.publicProbeIntervalMs, 300000);
+  ok("production public timeout is bounded", config.publicRequestTimeoutMs >= 100 && config.publicRequestTimeoutMs <= 10000);
+  check("public defaults match resolved config", AJOOP_RUNTIME_DEFAULTS.publicHealthUrl, config.publicHealthUrl);
+  const envAttempt = resolveAjoopRuntimeConfig({
+    AJOOP_PUBLIC_HEALTH_URL: "http://evil.example/ajoop-rag",
+    AJOOP_RUNTIME_PUBLIC_HEALTH_URL: "http://evil.example/ajoop-rag",
+  });
+  check("environment cannot redirect public target", envAttempt.publicHealthUrl, config.publicHealthUrl);
+  check("tunnel observation states are the closed set", AJOOP_TUNNEL_OBSERVATION_STATES.join(","),
+    "not-checked,reachable,unreachable,timeout,edge-error,identity-mismatch,malformed");
+}
+{
+  const { result, calls } = await probeWith(jsonResponse(identityBody()));
+  check("1 valid public identity is reachable", result.state, "reachable");
+  check("1 valid public identity sets publicReachable true", result.reachable, true);
+  check("probe requests the configured public target exactly", calls[0]?.url, publicConfig.publicHealthUrl);
+  const init = calls[0]?.init || {};
+  check("10 probe method is POST", init.method, "POST");
+  check("10 probe body is exact health payload", init.body, '{"version":1,"mode":"health"}');
+  check("10 probe body has exactly version and mode", Object.keys(JSON.parse(init.body)).sort().join(","), "mode,version");
+  const headerNames = Object.keys(init.headers || {}).map((name) => name.toLowerCase());
+  check("11 probe sends only Content-Type", headerNames.join(","), "content-type");
+  check("11 probe Content-Type is JSON", init.headers?.["Content-Type"], "application/json");
+  ok("11 probe sends no Origin", !headerNames.includes("origin"));
+  ok("11 probe sends no Authorization", !headerNames.includes("authorization"));
+  ok("11 probe sends no Cookie", !headerNames.includes("cookie"));
+  ok("11 probe sends no question", !init.body.includes("question"));
+  check("probe never follows redirects", init.redirect, "manual");
+  check("probe omits ambient credentials", init.credentials, "omit");
+  ok("probe carries an abort signal", init.signal instanceof AbortSignal);
+
+  const notReady = await probeWith(jsonResponse(identityBody({ ok: false, ready: false })));
+  check("public identity with ready=false is still reachable", notReady.result.state, "reachable");
+  check("health readiness is not folded into publicReachable", notReady.result.reachable, true);
+  const helperInit = ajoopPublicHealthRequestInit();
+  ok("shared request init is a fresh object each call", helperInit !== ajoopPublicHealthRequestInit());
+}
+{
+  const dns = await probeWith(() => {
+    throw new TypeError("fetch failed", { cause: Object.assign(new Error("getaddrinfo"), { code: "ENOTFOUND" }) });
+  });
+  check("2 DNS failure is unreachable", dns.result.state, "unreachable");
+  check("2 DNS failure sets publicReachable false", dns.result.reachable, false);
+  const refused = await probeWith(async () => {
+    throw new TypeError("fetch failed", { cause: Object.assign(new Error("connect"), { code: "ECONNREFUSED" }) });
+  });
+  check("2 connection refusal is unreachable", refused.result.state, "unreachable");
+}
+{
+  let signal = null;
+  const hung = await probeWith((_url, init) => {
+    signal = init.signal;
+    return new Promise(() => {});
+  });
+  check("3 hung request is timeout", hung.result.state, "timeout");
+  check("3 timeout sets publicReachable false", hung.result.reachable, false);
+  check("3 timeout aborts the request signal", signal?.aborted, true);
+  const stalled = streamedResponse({ stall: true, headers: { "Content-Type": "application/json" } });
+  const stalledBody = await probeWith(stalled.response);
+  check("3 stalled body read is timeout", stalledBody.result.state, "timeout");
+}
+{
+  const legacyProduction = await probeWith(jsonResponse({
+    ok: false, ready: false, mode: "rag", model: config.generationModel, embedModel: config.embeddingModel, chunks: 0, vectorBackend: "memory",
+  }));
+  check("4 markerless legacy bridge stays identity-mismatch", legacyProduction.result.state, "identity-mismatch");
+  check("4 identity mismatch sets publicReachable false", legacyProduction.result.reachable, false);
+  const mismatches = [
+    ["wrong service", identityBody({ service: "unrelated" })],
+    ["wrong protocol", identityBody({ protocolVersion: 2 })],
+    ["wrong mode", identityBody({ mode: "health" })],
+    ["wrong generation model", identityBody({ model: "other-model" })],
+    ["wrong embedding model", identityBody({ embedModel: "other-embedding" })],
+    ["non-boolean ready", identityBody({ ready: "yes" })],
+    ["unrelated JSON object", { ok: true }],
+  ];
+  for (const [label, body] of mismatches) {
+    check(`4 ${label} is identity-mismatch`, (await probeWith(jsonResponse(body))).result.state, "identity-mismatch");
+  }
+  check("shared identity predicate rejects arrays", isAjoopBridgeHealthIdentity([identityBody()]), false);
+}
+{
+  const malformedCases = [
+    ["HTML body", new Response("<html>challenge</html>", { status: 200, headers: { "Content-Type": "text/html" } })],
+    ["invalid JSON", jsonResponse("{")],
+    ["JSON array", jsonResponse([identityBody()])],
+    ["JSON null", jsonResponse("null")],
+    ["invalid UTF-8", new Response(new Uint8Array([0x7b, 0xff, 0x7d]), { status: 200 })],
+    ["403 challenge", new Response("<html>blocked</html>", { status: 403, headers: { "Content-Type": "text/html" } })],
+    ["404", jsonResponse({ ok: false, error: "not found" }, { status: 404 })],
+    ["500", jsonResponse({ ok: false, error: "bridge error" }, { status: 500 })],
+    ["declared oversized length", jsonResponse(identityBody(), { headers: { "Content-Length": "999999" } })],
+  ];
+  for (const [label, response] of malformedCases) {
+    const { result } = await probeWith(response);
+    check(`5 ${label} is malformed`, result.state, "malformed");
+    check(`5 ${label} sets publicReachable false`, result.reachable, false);
+  }
+}
+{
+  const endless = streamedResponse({ endless: true, headers: { "Content-Type": "application/json" } });
+  check("6 oversized fixture has no Content-Length", endless.response.headers.get("content-length"), null);
+  const { result } = await probeWith(endless.response);
+  check("6 chunked oversized body is malformed", result.state, "malformed");
+  check("6 chunked oversized body sets publicReachable false", result.reachable, false);
+  check("6 chunked oversized read is cancelled", endless.tracker.cancelled, true);
+  ok("6 chunked oversized read stops near the byte cap",
+    endless.tracker.enqueuedBytes <= publicConfig.maxResponseBytes + 2 * 8192);
+}
+{
+  for (const status of [530, 502, 503, 504, 522]) {
+    const { result } = await probeWith(new Response("<html>edge</html>", { status, headers: { "Content-Type": "text/html" } }));
+    check(`${status === 530 ? 7 : 8} HTTP ${status} is edge-error`, result.state, "edge-error");
+    check(`${status === 530 ? 7 : 8} HTTP ${status} sets publicReachable false`, result.reachable, false);
+  }
+}
+{
+  for (const status of [301, 302, 307, 308]) {
+    const { result, calls } = await probeWith(new Response(null, { status, headers: { Location: "https://evil.example/ajoop-rag" } }));
+    check(`9 redirect ${status} is malformed`, result.state, "malformed");
+    check(`9 redirect ${status} sets publicReachable false`, result.reachable, false);
+    check(`9 redirect ${status} is not followed`, calls.length, 1);
+  }
+  const opaque = await probeWith({ type: "opaqueredirect", status: 0, headers: new Headers(), body: null });
+  check("9 opaque redirect is malformed", opaque.result.state, "malformed");
+  const followed = await probeWith({
+    status: 200, redirected: true, headers: new Headers(), body: jsonResponse(identityBody()).body,
+  });
+  check("9 already-redirected identity response is malformed", followed.result.state, "malformed");
+}
+{
+  for (const target of ["http://ajoop.kaanbalci.com/ajoop-rag", "https://user:pass@ajoop.kaanbalci.com/ajoop-rag", "not a url", ""]) {
+    const { result, calls } = await probeWith(jsonResponse(identityBody()), { publicHealthUrl: target });
+    check(`unsafe public target ${JSON.stringify(target)} is not checked`, result.state, "not-checked");
+    check(`unsafe public target ${JSON.stringify(target)} keeps publicReachable null`, result.reachable, null);
+    check(`unsafe public target ${JSON.stringify(target)} sends no request`, calls.length, 0);
+  }
+  check("safe HTTPS target is accepted", safePublicHealthUrl("https://ajoop.kaanbalci.com/ajoop-rag"), "https://ajoop.kaanbalci.com/ajoop-rag");
+}
+{
+  const seen = [];
+  const server = http.createServer((request, response) => {
+    let body = "";
+    request.setEncoding("utf8");
+    request.on("data", (chunk) => { body += chunk; });
+    request.on("end", () => {
+      seen.push({ method: request.method, headers: request.headers, body });
+      const payload = JSON.stringify(identityBody());
+      response.writeHead(200, { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(payload) });
+      response.end(payload);
+    });
+  });
+  const port = await listenLoopback(server);
+  const result = await fetchBoundedRemoteJson(`http://127.0.0.1:${port}/ajoop-rag`, ajoopPublicHealthRequestInit(), {
+    timeoutMs: 2000,
+    maxBytes: config.maxResponseBytes,
+  });
+  await closeLoopback(server);
+  check("real fetch bounded helper reads identity", result.kind, "response");
+  check("real wire request is POST", seen[0]?.method, "POST");
+  check("real wire body is exact health payload", seen[0]?.body, '{"version":1,"mode":"health"}');
+  check("real wire Content-Type is JSON", seen[0]?.headers["content-type"], "application/json");
+  check("real wire carries no Origin", seen[0]?.headers.origin, undefined);
+  check("real wire carries no Authorization", seen[0]?.headers.authorization, undefined);
+  check("real wire carries no Cookie", seen[0]?.headers.cookie, undefined);
+}
+{
+  const HARD_STOP = 16 * 1024 * 1024;
+  let written = 0;
+  let clientClosed = false;
+  let chunkedWithoutLength = false;
+  let resolveClosed;
+  const closed = new Promise((resolvePromise) => { resolveClosed = resolvePromise; });
+  const server = http.createServer((request, response) => {
+    request.resume();
+    response.writeHead(200, { "Content-Type": "application/json" });
+    chunkedWithoutLength = response.getHeader("content-length") === undefined;
+    const chunk = Buffer.alloc(8192, 0x20);
+    response.on("close", () => {
+      clientClosed = written < HARD_STOP;
+      resolveClosed();
+    });
+    const pump = () => {
+      while (!response.destroyed && written < HARD_STOP) {
+        written += chunk.length;
+        if (!response.write(chunk)) {
+          response.once("drain", pump);
+          return;
+        }
+      }
+      if (!response.destroyed) response.end();
+    };
+    pump();
+  });
+  const port = await listenLoopback(server);
+  const result = await fetchBoundedRemoteJson(`http://127.0.0.1:${port}/ajoop-rag`, ajoopPublicHealthRequestInit(), {
+    timeoutMs: 5000,
+    maxBytes: config.maxResponseBytes,
+  });
+  let guard;
+  await Promise.race([closed, new Promise((resolvePromise) => { guard = setTimeout(resolvePromise, 3000); })]);
+  clearTimeout(guard);
+  await closeLoopback(server);
+  check("6 real chunked server sends no Content-Length", chunkedWithoutLength, true);
+  check("6 real chunked oversized body is malformed", result.kind, "malformed");
+  check("6 real chunked oversized body closes the connection before the server finishes", clientClosed, true);
+}
+{
+  for (const status of [302, 307]) {
+    let targetHits = 0;
+    const target = http.createServer((request, response) => {
+      targetHits += 1;
+      request.resume();
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify(identityBody()));
+    });
+    const targetPort = await listenLoopback(target);
+    const redirector = http.createServer((request, response) => {
+      request.resume();
+      response.writeHead(status, { Location: `http://127.0.0.1:${targetPort}/ajoop-rag` });
+      response.end();
+    });
+    const port = await listenLoopback(redirector);
+    const result = await fetchBoundedRemoteJson(`http://127.0.0.1:${port}/ajoop-rag`, ajoopPublicHealthRequestInit(), { timeoutMs: 2000 });
+    await closeLoopback(redirector);
+    await closeLoopback(target);
+    check(`9 real ${status} redirect is reported`, result.kind, "redirect");
+    check(`9 real ${status} redirect target is never contacted`, targetHits, 0);
+  }
+}
+{
+  const fresh = harness({ ollama: healthyOllama, bridge: externalBridge });
+  check("initial publicReachable is null", fresh.supervisor.status().publicReachable, null);
+  check("initial publicCheckedAt is null", fresh.supervisor.status().publicCheckedAt, null);
+  check("initial tunnel state is not-checked", fresh.supervisor.status().components.tunnel.state, "not-checked");
+
+  const pending = deferred();
+  const scheduler = fakeScheduler();
+  const h = harness({ ollama: () => pending.promise, bridge: externalBridge, scheduler, probePublic: { state: "reachable" } });
+  const starting = h.supervisor.start();
+  await settle();
+  check("12 no public probe timer before READY", scheduler.pending(), 0);
+  check("12 no public probe call before READY", h.publicCalls.length, 0);
+  check("12 starting status keeps publicReachable null", h.supervisor.status().publicReachable, null);
+  pending.resolve(healthyOllama);
+  const result = await starting;
+  check("13 READY returns before any public probe runs", h.publicCalls.length, 0);
+  check("13 READY result keeps public observation unknown", result.status.publicReachable, null);
+  check("first public probe is armed after READY", scheduler.pending(), 1);
+  check("first public probe is armed without delay", scheduler.delays[0], 0);
+  await h.supervisor.stop();
+}
+{
+  const scheduler = fakeScheduler({ eager: true });
+  const h = harness({ ollama: healthyOllama, bridge: externalBridge, scheduler, probePublic: () => new Promise(() => {}) });
+  const result = await h.supervisor.start();
+  check("13 hung public probe does not delay READY", result.status.state, "ready");
+  check("13 hung public probe does not delay localReady", result.status.localReady, true);
+  await until(() => h.publicCalls.length === 1);
+  check("13 hung public probe actually started", h.publicCalls.length, 1);
+  check("13 hung public probe leaves runtime ready", h.supervisor.status().state, "ready");
+  check("13 hung public probe arms no second probe", scheduler.pending(), 0);
+  await h.supervisor.stop();
+}
+{
+  for (const failure of ["unreachable", "timeout", "edge-error", "identity-mismatch", "malformed"]) {
+    const scheduler = fakeScheduler();
+    const h = harness({ ollama: healthyOllama, bridge: externalBridge, scheduler, probePublic: { state: failure } });
+    await h.supervisor.start();
+    const before = h.supervisor.status();
+    scheduler.fire();
+    await until(() => h.supervisor.status().components.tunnel.state === failure);
+    const after = h.supervisor.status();
+    check(`14 ${failure}: runtime state remains ready`, after.state, "ready");
+    check(`14 ${failure}: localReady remains true`, after.localReady, true);
+    check(`14 ${failure}: lastError unchanged`, after.lastError, before.lastError);
+    check(`14 ${failure}: publicReachable false`, after.publicReachable, false);
+    check(`14 ${failure}: tunnel state recorded`, after.components.tunnel.state, failure);
+    ok(`14 ${failure}: publicCheckedAt recorded`, typeof after.publicCheckedAt === "string");
+    check(`25 ${failure}: Ollama component unchanged`, JSON.stringify(after.components.ollama), JSON.stringify(before.components.ollama));
+    check(`26 ${failure}: bridge component unchanged`, JSON.stringify(after.components.bridge), JSON.stringify(before.components.bridge));
+    check(`27 ${failure}: models unchanged`, JSON.stringify(after.models), JSON.stringify(before.models));
+    check(`${failure}: next probe uses coarse interval`, scheduler.delays.at(-1), testConfig.publicProbeIntervalMs);
+    check(`14 ${failure}: no failed status is persisted`, h.writes.some((entry) => entry.state === "failed"), false);
+    await h.supervisor.stop();
+  }
+  const scheduler = fakeScheduler();
+  const h = harness({ ollama: healthyOllama, bridge: externalBridge, scheduler, probePublic: () => { throw new Error("private probe detail"); } });
+  await h.supervisor.start();
+  scheduler.fire();
+  await until(() => h.supervisor.status().components.tunnel.state === "unreachable");
+  check("throwing public probe is unreachable", h.supervisor.status().components.tunnel.state, "unreachable");
+  check("throwing public probe keeps runtime ready", h.supervisor.status().state, "ready");
+  ok("throwing public probe leaks no detail", !JSON.stringify(h.writes).includes("private probe detail"));
+  await h.supervisor.stop();
+  const oddScheduler = fakeScheduler();
+  const odd = harness({ ollama: healthyOllama, bridge: externalBridge, scheduler: oddScheduler, probePublic: { state: "owned-restart", ownership: "owned", pid: 999 } });
+  await odd.supervisor.start();
+  oddScheduler.fire();
+  await until(() => oddScheduler.pending() === 1);
+  check("unknown probe state sanitizes to not-checked", odd.supervisor.status().components.tunnel.state, "not-checked");
+  check("unknown probe state keeps publicReachable null", odd.supervisor.status().publicReachable, null);
+  check("unknown probe state records no check time", odd.supervisor.status().publicCheckedAt, null);
+  check("probe result cannot inject tunnel pid", odd.supervisor.status().components.tunnel.pid, null);
+  await odd.supervisor.stop();
+}
+{
+  const scheduler = fakeScheduler();
+  const h = harness({ ollama: healthyOllama, bridge: externalBridge, scheduler, probePublic: { state: "reachable" } });
+  await h.supervisor.start();
+  scheduler.fire();
+  await until(() => h.supervisor.status().publicReachable === true);
+  const status = h.supervisor.status();
+  check("15 public success keeps localReady true", status.localReady, true);
+  check("15 public success sets publicReachable true", status.publicReachable, true);
+  check("15 public success records reachable", status.components.tunnel.state, "reachable");
+  check("22 reachable tunnel ownership remains external", status.components.tunnel.ownership, "external");
+  check("22 reachable tunnel pid remains null", status.components.tunnel.pid, null);
+  check("probe receives only the runtime config", h.publicCalls[0], testConfig);
+  const serialized = JSON.stringify(status);
+  ok("33 status output has no cloudflared paths or credentials",
+    !/cloudflared|cert\.pem|credentials|tunnel[_-]?token/i.test(serialized));
+  await h.supervisor.stop();
+}
+{
+  const scheduler = fakeScheduler();
+  const gates = [];
+  const h = harness({
+    ollama: healthyOllama,
+    bridge: externalBridge,
+    scheduler,
+    probePublic: () => {
+      const gate = deferred();
+      gates.push(gate);
+      return gate.promise;
+    },
+  });
+  await h.supervisor.start();
+  const duplicate = scheduler.peek();
+  scheduler.fire();
+  duplicate.callback();
+  await settle();
+  check("16 duplicate timer callback cannot start a second probe", h.publicCalls.length, 1);
+  let armedWhileInFlight = false;
+  for (let cycle = 0; cycle < 3; cycle += 1) {
+    if (cycle > 0) {
+      check(`17 cycle ${cycle} has exactly one armed timer`, scheduler.pending(), 1);
+      scheduler.fire();
+      await settle();
+    }
+    if (scheduler.pending() !== 0) armedWhileInFlight = true;
+    check(`16 cycle ${cycle} has exactly one probe in flight`, h.publicCalls.length, cycle + 1);
+    gates[cycle].resolve({ state: cycle === 1 ? "timeout" : "reachable" });
+    await until(() => scheduler.pending() === 1);
+  }
+  ok("17 no timer is armed while a public probe is in flight", !armedWhileInFlight);
+  ok("17 re-armed probes use the coarse interval", scheduler.delays.slice(1).every((delay) => delay === testConfig.publicProbeIntervalMs));
+  await h.supervisor.stop();
+}
+{
+  const scheduler = fakeScheduler();
+  const h = harness({ ollama: healthyOllama, bridge: externalBridge, scheduler, probePublic: { state: "reachable" } });
+  await h.supervisor.start();
+  scheduler.fire();
+  await until(() => scheduler.pending() === 1);
+  check("18 fixture is reachable before stop", h.supervisor.status().publicReachable, true);
+  await h.supervisor.stop();
+  check("18 stop clears the next public probe", scheduler.pending(), 0);
+  ok("18 stop cleared an armed timer", scheduler.cleared.length >= 1);
+  check("18 no public probe runs after stop", h.publicCalls.length, 1);
+  const stopped = h.supervisor.status();
+  check("34 stopped publicReachable is null", stopped.publicReachable, null);
+  check("34 stopped publicCheckedAt is null", stopped.publicCheckedAt, null);
+  check("34 stopped tunnel state is not-checked", stopped.components.tunnel.state, "not-checked");
+  const lastWrite = h.writes.at(-1);
+  check("34 final stopped write carries no public observation", `${lastWrite.state}/${lastWrite.publicReachable}/${lastWrite.components.tunnel.state}`, "stopped/null/not-checked");
+}
+{
+  let bridgeProbes = 0;
+  const spawnArgs = [];
+  const owned = child(9901);
+  const scheduler = fakeScheduler();
+  const h = harness({
+    ollama: healthyOllama,
+    bridge: () => bridgeProbes++ === 0 ? { ok: false, kind: "unused" } : externalBridge,
+    spawnOwned: (executable, args) => {
+      spawnArgs.push([executable, ...args].join(" "));
+      return owned;
+    },
+    scheduler,
+    probePublic: { state: "reachable" },
+  });
+  await h.supervisor.start();
+  for (let cycle = 0; cycle < 3; cycle += 1) {
+    scheduler.fire();
+    await until(() => scheduler.pending() === 1);
+  }
+  check("28 public observation cycles spawn nothing", spawnArgs.length, 1);
+  ok("30 no spawn argument names cloudflared", spawnArgs.every((entry) => !/cloudflared/i.test(entry)));
+  check("29 public observation cycles signal no child", owned.killCalls.length, 0);
+  check("owned bridge remains owned through public cycles", h.supervisor.status().components.bridge.ownership, "owned");
+  owned.exitCode = 1;
+  owned.emit("exit", 1, null);
+  await settle();
+  check("19 child failure reaches failed", h.supervisor.status().state, "failed");
+  check("19 FAILED clears the next public probe", scheduler.pending(), 0);
+  check("19 FAILED schedules no later public probe", h.publicCalls.length, 3);
+  check("34 failed publicReachable is null", h.supervisor.status().publicReachable, null);
+  check("34 failed publicCheckedAt is null", h.supervisor.status().publicCheckedAt, null);
+  check("34 failed tunnel state is not-checked", h.supervisor.status().components.tunnel.state, "not-checked");
+  await h.supervisor.stop();
+}
+{
+  const scheduler = fakeScheduler();
+  const gate = deferred();
+  const h = harness({ ollama: healthyOllama, bridge: externalBridge, scheduler, probePublic: () => gate.promise });
+  await h.supervisor.start();
+  scheduler.fire();
+  await settle();
+  check("20 public probe is in flight before stop", h.publicCalls.length, 1);
+  await h.supervisor.stop();
+  const writesAtStop = h.writes.length;
+  gate.resolve({ state: "reachable" });
+  await settle();
+  await settle();
+  const status = h.supervisor.status();
+  check("20 late public success cannot change stopped state", status.state, "stopped");
+  check("20 late public success cannot restore publicReachable", status.publicReachable, null);
+  check("20 late public success cannot restore tunnel state", status.components.tunnel.state, "not-checked");
+  check("20 late public success cannot set publicCheckedAt", status.publicCheckedAt, null);
+  check("20 late public success arms no timer", scheduler.pending(), 0);
+  check("20 late public success enqueues no status write", h.writes.length, writesAtStop);
+}
+{
+  let bridgeProbes = 0;
+  const owned = child(9911);
+  const scheduler = fakeScheduler();
+  const gate = deferred();
+  const h = harness({
+    ollama: healthyOllama,
+    bridge: () => bridgeProbes++ === 0 ? { ok: false, kind: "unused" } : externalBridge,
+    children: [owned],
+    scheduler,
+    probePublic: () => gate.promise,
+  });
+  await h.supervisor.start();
+  scheduler.fire();
+  await settle();
+  owned.exitCode = 1;
+  owned.emit("exit", 1, null);
+  await settle();
+  const writesAtFailure = h.writes.length;
+  gate.resolve({ state: "reachable" });
+  await settle();
+  await settle();
+  const status = h.supervisor.status();
+  check("21 late public success cannot change failed state", status.state, "failed");
+  check("21 late public success cannot restore localReady", status.localReady, false);
+  check("21 late public success cannot restore publicReachable", status.publicReachable, null);
+  check("21 late public success cannot restore tunnel state", status.components.tunnel.state, "not-checked");
+  check("21 failed runtime keeps its own error", status.lastError, "bridge-unexpected-exit");
+  check("21 late public success enqueues no status write", h.writes.length, writesAtFailure);
+  const failedIndex = h.writes.findIndex((entry) => entry.state === "failed");
+  ok("21 no persisted status after failure claims public reachability",
+    h.writes.slice(failedIndex).every((entry) => entry.publicReachable === null && entry.components.tunnel.state === "not-checked"));
+  await h.supervisor.stop();
+}
+{
+  const shutdownGate = deferred();
+  let ollamaProbes = 0;
+  const ownedOllama = child(9921, { exitOnKill: false });
+  const scheduler = fakeScheduler();
+  const h = harness({
+    ollama: () => ollamaProbes++ === 0 ? { ok: false, kind: "unavailable" } : healthyOllama,
+    bridge: externalBridge,
+    locate: { ok: true, path: "ollama.exe" },
+    children: [ownedOllama],
+    waitImpl: async () => {
+      await shutdownGate.promise;
+      ownedOllama.exitCode = 0;
+    },
+    scheduler,
+    probePublic: { state: "reachable" },
+  });
+  await h.supervisor.start();
+  scheduler.fire();
+  await until(() => h.supervisor.status().publicReachable === true);
+  const stopping = h.supervisor.stop();
+  await until(() => h.supervisor.status().state === "stopping");
+  const during = h.supervisor.status();
+  check("34 stopping publicReachable is null", during.publicReachable, null);
+  check("34 stopping publicCheckedAt is null", during.publicCheckedAt, null);
+  check("34 stopping tunnel state is not-checked", during.components.tunnel.state, "not-checked");
+  check("34 stopping clears the next public probe", scheduler.pending(), 0);
+  shutdownGate.resolve();
+  await stopping;
+  check("34 stopping then stopped keeps publicReachable null", h.supervisor.status().publicReachable, null);
+}
+{
+  const base = {
+    state: "ready", localReady: true, startedAt: "x", lastTransitionAt: "x", lastError: null,
+    models: { generation: config.generationModel, embedding: config.embeddingModel, generationPresent: true, embeddingPresent: true },
+    components: { ollama: { ownership: "external", state: "ready", pid: null }, bridge: { ownership: "external", state: "ready", pid: null } },
+    vector: { backend: "memory", degraded: false },
+  };
+  const hostileTunnel = {
+    ownership: "owned",
+    state: "reachable",
+    pid: 999,
+    credentialsFile: "C:\\Users\\operator\\.cloudflared\\tunnel.json",
+    cert: "cert.pem",
+    token: "tunnel-token-fixture",
+  };
+  const injected = sanitizeSupervisorStatus({
+    ...base, publicReachable: true, publicCheckedAt: "2026-09-11T00:00:00Z",
+    components: { ...base.components, tunnel: hostileTunnel },
+  });
+  check("22 sanitizer forces tunnel ownership external", injected.components.tunnel.ownership, "external");
+  check("23 injected tunnel pid cannot survive", injected.components.tunnel.pid, null);
+  check("23 sanitized tunnel has only allowlisted fields", Object.keys(injected.components.tunnel).join(","), "ownership,state,pid");
+  ok("33 injected tunnel credential paths cannot survive",
+    !/\.cloudflared|cert\.pem|tunnel-token-fixture|credentials/i.test(JSON.stringify(injected)));
+  const unknown = sanitizeSupervisorStatus({
+    ...base, publicReachable: true, publicCheckedAt: "2026-09-11T00:00:00Z",
+    components: { ...base.components, tunnel: { ownership: "owned", state: "restarting", pid: 4242 } },
+  });
+  check("24 unknown tunnel state sanitizes to not-checked", unknown.components.tunnel.state, "not-checked");
+  check("24 unknown tunnel state cannot carry publicReachable true", unknown.publicReachable, null);
+  check("24 unknown tunnel state cannot carry publicCheckedAt", unknown.publicCheckedAt, null);
+  for (const nonReady of [
+    { state: "failed", localReady: false },
+    { state: "stopping", localReady: false },
+    { state: "stopped", localReady: false },
+    { state: "ready", localReady: false },
+  ]) {
+    const stale = sanitizeSupervisorStatus({
+      ...base, ...nonReady, publicReachable: true, publicCheckedAt: "2026-09-11T00:00:00Z",
+      components: { ...base.components, tunnel: { ownership: "external", state: "reachable", pid: null } },
+    });
+    const label = `${nonReady.state}/${nonReady.localReady}`;
+    check(`34 ${label} sanitizes publicReachable to null`, stale.publicReachable, null);
+    check(`34 ${label} sanitizes publicCheckedAt to null`, stale.publicCheckedAt, null);
+    check(`34 ${label} sanitizes tunnel to not-checked`, stale.components.tunnel.state, "not-checked");
+  }
+  const noTunnel = sanitizeSupervisorStatus({ ...base, publicReachable: true });
+  check("publicReachable input alone cannot claim reachability", noTunnel.publicReachable, null);
+  for (const state of AJOOP_TUNNEL_OBSERVATION_STATES) {
+    check(`allowed tunnel state ${state} survives sanitizer`, sanitizeTunnelObservationState(state), state);
+  }
+  check("tunnel state sanitizer rejects non-strings", sanitizeTunnelObservationState({ toString: () => "reachable" }), "not-checked");
+  ok("sanitized status schema remains version 1", isAjoopSupervisorStatus(injected));
+}
+{
+  const probeSource = await readFile(fileURLToPath(new URL("../server/ajoop-runtime-probes.mjs", import.meta.url)), "utf8");
+  const supervisorSource = await readFile(fileURLToPath(new URL("../server/ajoop-runtime-supervisor.mjs", import.meta.url)), "utf8");
+  const importsOf = (source) => [...source.matchAll(/^import\s[\s\S]*?\sfrom\s+["']([^"']+)["'];/gm)]
+    .map((match) => match[1]).sort().join(",");
+  check("32 runtime probes import set is unchanged", importsOf(probeSource), "./ajoop-rag.mjs,node:child_process,node:util");
+  check("32 runtime supervisor import set is unchanged", importsOf(supervisorSource),
+    "./ajoop-runtime-probes.mjs,node:child_process,node:fs/promises,node:http,node:path,node:string_decoder,node:url");
+  ok("32 runtime modules import no connector, provider, agent or tool module",
+    !/connector|provider|agent|tool|gmail|calendar|drive|github/i.test(`${importsOf(probeSource)},${importsOf(supervisorSource)}`));
+  const lifecycleWords = /cloudflared|schtasks|scheduledtask|taskkill|tasklist|wmic|get-process|cert\.pem/i;
+  ok("30/31 runtime probes contain no tunnel process or Scheduled Task primitive", !lifecycleWords.test(probeSource));
+  ok("30/31 runtime supervisor contains no tunnel process or Scheduled Task primitive", !lifecycleWords.test(supervisorSource));
+  const publicCode = [probePublicBridge, fetchBoundedRemoteJson, safePublicHealthUrl, ajoopPublicHealthRequestInit]
+    .map((fn) => fn.toString()).join("\n");
+  ok("28/29/31 public probe code has no spawn, kill, exec or process access", !/spawn|kill|exec|child_process|process\./.test(publicCode));
+  const observationStart = supervisorSource.indexOf("PUBLIC OBSERVATION");
+  const observationCode = supervisorSource.slice(observationStart, supervisorSource.indexOf("const transition", observationStart));
+  ok("observation block is located", observationStart > 0 && observationCode.length > 200);
+  ok("28/29 supervisor observation block has no spawn, kill or exec", !/spawn|kill|exec/i.test(observationCode));
+}
+
+check("QA performed zero non-loopback network requests", blockedFetchHosts.length, 0);
 
 if (failures.length) {
   console.error(failures.join("\n"));

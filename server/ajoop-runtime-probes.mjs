@@ -32,7 +32,22 @@ export const AJOOP_RUNTIME_DEFAULTS = Object.freeze({
   pollIntervalMs: 500,
   shutdownMs: 5000,
   maxResponseBytes: 64 * 1024,
+  /* A5.2.4 observe-only public path. The route is owned outside AJOOP; these
+   * values only bound how the supervisor looks at it. */
+  publicHealthUrl: "https://ajoop.kaanbalci.com/ajoop-rag",
+  publicRequestTimeoutMs: 5000,
+  publicProbeIntervalMs: 300000,
 });
+
+export const AJOOP_TUNNEL_OBSERVATION_STATES = Object.freeze([
+  "not-checked",
+  "reachable",
+  "unreachable",
+  "timeout",
+  "edge-error",
+  "identity-mismatch",
+  "malformed",
+]);
 
 const boundedInteger = (value, fallback, minimum, maximum) => {
   const parsed = Number(String(value ?? "").trim());
@@ -98,6 +113,9 @@ export function resolveAjoopRuntimeConfig(env = {}) {
       30000,
     ),
     maxResponseBytes: AJOOP_RUNTIME_DEFAULTS.maxResponseBytes,
+    publicHealthUrl: AJOOP_RUNTIME_DEFAULTS.publicHealthUrl,
+    publicRequestTimeoutMs: AJOOP_RUNTIME_DEFAULTS.publicRequestTimeoutMs,
+    publicProbeIntervalMs: AJOOP_RUNTIME_DEFAULTS.publicProbeIntervalMs,
     generationModel: ragStatus.model,
     embeddingModel: ragStatus.embedModel,
     bridgeEnv: runtimeEnv,
@@ -170,16 +188,9 @@ export async function probeBridge(config, dependencies = {}) {
   });
   if (result.kind === "unused") return Object.freeze({ ok: false, kind: "unused" });
   const body = result.body;
-  const provesIdentity = result.status === 200
-    && body && typeof body === "object"
-    && body.service === AJOOP_BRIDGE_IDENTITY.service
-    && body.protocolVersion === AJOOP_BRIDGE_IDENTITY.protocolVersion
-    && body.mode === "rag"
-    && typeof body.ready === "boolean"
-    && typeof body.model === "string"
-    && typeof body.embedModel === "string";
+  const provesIdentity = result.status === 200 && isAjoopBridgeHealthIdentity(body);
   if (!provesIdentity) return Object.freeze({ ok: false, kind: "unknown-occupant" });
-  if (body.model !== config.generationModel || body.embedModel !== config.embeddingModel) {
+  if (!ajoopBridgeModelsMatch(body, config)) {
     return Object.freeze({ ok: false, kind: "incompatible-bridge" });
   }
   return Object.freeze({
@@ -191,6 +202,202 @@ export async function probeBridge(config, dependencies = {}) {
       ? body.vectorBackendRequested.slice(0, 24)
       : "unknown",
   });
+}
+
+/** The one bridge identity contract, shared by the loopback and public probes. */
+export function isAjoopBridgeHealthIdentity(body) {
+  return Boolean(
+    body && typeof body === "object" && !Array.isArray(body)
+      && body.service === AJOOP_BRIDGE_IDENTITY.service
+      && body.protocolVersion === AJOOP_BRIDGE_IDENTITY.protocolVersion
+      && body.mode === "rag"
+      && typeof body.ready === "boolean"
+      && typeof body.model === "string"
+      && typeof body.embedModel === "string",
+  );
+}
+
+function ajoopBridgeModelsMatch(body, config) {
+  return body.model === config.generationModel && body.embedModel === config.embeddingModel;
+}
+
+export function sanitizeTunnelObservationState(value) {
+  return AJOOP_TUNNEL_OBSERVATION_STATES.includes(value) ? value : "not-checked";
+}
+
+const TIMED_OUT = Symbol("timed-out");
+const PUBLIC_HEALTH_BODY = JSON.stringify({ version: 1, mode: "health" });
+
+/** Returns the target only when it is a credential-free HTTPS URL. */
+export function safePublicHealthUrl(value) {
+  if (typeof value !== "string" || !value) return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password || parsed.hash) {
+      return null;
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+/* The complete public request. No Origin, Authorization, Cookie, question or
+ * owner field exists here, so the bridge answers it in RAG admission's health
+ * branch, before planner, model, tools and connectors. */
+export function ajoopPublicHealthRequestInit() {
+  return {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: PUBLIC_HEALTH_BODY,
+  };
+}
+
+const isEdgeErrorStatus = (status) => status === 502 || status === 503 || status === 504
+  || (status >= 520 && status <= 530);
+
+/**
+ * Bounded JSON fetch for an UNTRUSTED remote peer. Unlike the loopback helper,
+ * the byte cap is enforced while the body streams, redirects are never
+ * followed, and the deadline covers both the response headers and the body.
+ *
+ * Kinds: response · redirect · http-error · malformed · timeout · unavailable.
+ */
+export async function fetchBoundedRemoteJson(url, init = {}, dependencies = {}) {
+  const fetchImpl = dependencies.fetchImpl || globalThis.fetch;
+  const timeoutMs = dependencies.timeoutMs || AJOOP_RUNTIME_DEFAULTS.publicRequestTimeoutMs;
+  const maxBytes = dependencies.maxBytes || AJOOP_RUNTIME_DEFAULTS.maxResponseBytes;
+  if (typeof fetchImpl !== "function") return Object.freeze({ kind: "unavailable" });
+
+  const controller = new AbortController();
+  let timer;
+  const expired = new Promise((resolvePromise) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      resolvePromise(TIMED_OUT);
+    }, timeoutMs);
+  });
+  let response = null;
+  let reader = null;
+  const discard = () => {
+    try {
+      const cancelled = reader ? reader.cancel() : response?.body?.cancel?.();
+      cancelled?.catch?.(() => {});
+    } catch {
+      /* Releasing an abandoned body is best effort; the result is already decided. */
+    }
+  };
+  const timeout = Object.freeze({ kind: "timeout" });
+  const malformed = (status) => Object.freeze({ kind: "malformed", status });
+
+  try {
+    const pending = Promise.resolve().then(() => fetchImpl(url, {
+      ...init,
+      redirect: "manual",
+      credentials: "omit",
+      signal: controller.signal,
+    }));
+    const fetched = await Promise.race([pending, expired]);
+    if (fetched === TIMED_OUT) {
+      pending.then((late) => {
+        try {
+          late?.body?.cancel?.()?.catch?.(() => {});
+        } catch {
+          /* A late response is never read. */
+        }
+      }, () => {});
+      return timeout;
+    }
+    response = fetched;
+    const status = Number(response?.status);
+    if (response?.type === "opaqueredirect" || response?.redirected === true || (status >= 300 && status < 400)) {
+      discard();
+      return Object.freeze({ kind: "redirect", status: Number.isInteger(status) ? status : 0 });
+    }
+    if (!Number.isInteger(status)) {
+      discard();
+      return malformed(0);
+    }
+    if (status < 200 || status >= 300) {
+      discard();
+      return Object.freeze({ kind: "http-error", status });
+    }
+    const declaredLength = response.headers?.get?.("content-length");
+    if (declaredLength !== null && declaredLength !== undefined && declaredLength !== "") {
+      const declared = Number(declaredLength);
+      if (!Number.isFinite(declared) || declared > maxBytes) {
+        discard();
+        return malformed(status);
+      }
+    }
+    if (!response.body || typeof response.body.getReader !== "function") return malformed(status);
+
+    reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    for (;;) {
+      const next = await Promise.race([reader.read(), expired]);
+      if (next === TIMED_OUT) {
+        discard();
+        return timeout;
+      }
+      if (next.done) break;
+      if (!(next.value instanceof Uint8Array)) {
+        discard();
+        return malformed(status);
+      }
+      total += next.value.byteLength;
+      if (total > maxBytes) {
+        discard();
+        return malformed(status);
+      }
+      chunks.push(next.value);
+    }
+    reader = null;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)));
+    } catch {
+      return malformed(status);
+    }
+    return Object.freeze({ kind: "response", status, body: parsed });
+  } catch {
+    discard();
+    return controller.signal.aborted ? timeout : Object.freeze({ kind: "unavailable" });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * A5.2.4 observe-only public reachability. `reachable` means the expected AJOOP
+ * bridge identity answered through the public route; it says nothing about
+ * local readiness, and the health body's `ready` is deliberately not required.
+ * An invalid target is never requested and reports `not-checked`.
+ */
+export async function probePublicBridge(config, dependencies = {}) {
+  const observe = (state) => Object.freeze({
+    state,
+    reachable: state === "reachable" ? true : state === "not-checked" ? null : false,
+  });
+  const target = safePublicHealthUrl(config?.publicHealthUrl);
+  if (!target) return observe("not-checked");
+  const result = await fetchBoundedRemoteJson(target, ajoopPublicHealthRequestInit(), {
+    fetchImpl: dependencies.fetchImpl,
+    timeoutMs: config.publicRequestTimeoutMs,
+    maxBytes: config.maxResponseBytes,
+  });
+  if (result.kind === "timeout") return observe("timeout");
+  if (result.kind === "unavailable") return observe("unreachable");
+  if (result.kind === "http-error") return observe(isEdgeErrorStatus(result.status) ? "edge-error" : "malformed");
+  if (result.kind !== "response") return observe("malformed");
+  const body = result.body;
+  if (!body || typeof body !== "object" || Array.isArray(body)) return observe("malformed");
+  if (!isAjoopBridgeHealthIdentity(body) || !ajoopBridgeModelsMatch(body, config)) {
+    return observe("identity-mismatch");
+  }
+  return observe("reachable");
 }
 
 export function withAjoopBridgeIdentity(body) {
