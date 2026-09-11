@@ -2010,13 +2010,30 @@ body.overlay-modal-open {
 .chatbot-panel {
   width: min(390px, calc(100vw - 28px));
   max-height: min(680px, calc(100vh - 120px));
+  /* A5.1.2: the dynamic viewport where supported, so a phone in landscape does
+   * not size the panel against the height its hidden browser toolbar would free. */
+  max-height: min(680px, calc(100dvh - 120px));
   display: none;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 28px;
+  /* One radius per breakpoint, set through this property, so a state rule can
+   * keep the panel's shape without repeating each breakpoint's number. */
+  --chatbot-panel-radius: 28px;
+  border-radius: var(--chatbot-panel-radius);
   background: rgba(7, 17, 31, 0.88);
   backdrop-filter: blur(22px);
   box-shadow: var(--shadow);
+}
+/* A5.1.2: on a touch-first device the dialog itself takes focus when it opens
+ * (focusAjoopEntry). After a tap or a click it draws no ring: it is a container,
+ * not a control. Opened from a keyboard it is :focus-visible and keeps the site
+ * ring from css/a11y.css, but not that rule's 6px radius, which squared off the
+ * panel's corners: the ring follows the panel's own radius at every breakpoint. */
+.portfolio-chatbot .chatbot-panel:focus:not(:focus-visible) {
+  outline: none;
+}
+.portfolio-chatbot .chatbot-panel:focus-visible {
+  border-radius: var(--chatbot-panel-radius);
 }
 .portfolio-chatbot.is-open .chatbot-panel {
   display: grid;
@@ -2769,11 +2786,21 @@ html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenanc
   border-radius: 15px;
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
+  /* A5.1.2: the page font, not the UA's 13.33px control font. Touch-first
+   * devices raise it to 16px below, where iOS stops zooming on focus. */
+  font: inherit;
+  font-size: 14px;
   outline: none;
 }
 .chatbot-form input:focus {
   border-color: rgba(56, 189, 248, 0.42);
   box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+}
+/* A5.1.2: the UA placeholder grey measured ~3.2:1 on the dark panel; --muted-2
+ * only just cleared 4.5:1 there, so the hint uses --muted in both themes. */
+.chatbot-form input::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }
 .chatbot-form button {
   width: 46px;
@@ -2821,7 +2848,7 @@ html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenanc
   .chatbot-panel {
     width: calc(100vw - 28px);
     max-height: calc(100dvh - 96px - env(safe-area-inset-bottom));
-    border-radius: 22px;
+    --chatbot-panel-radius: 22px;
   }
 
   /* Three tracks below 560px: the state label is display:none here, so it
@@ -2877,7 +2904,7 @@ html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenanc
 
   .chatbot-panel {
     width: calc(100vw - 20px);
-    border-radius: 18px;
+    --chatbot-panel-radius: 18px;
   }
 
   .chatbot-header {
@@ -2921,6 +2948,64 @@ html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenanc
   .ajoop-card,
   .ajoop-compare {
     padding: 9px;
+  }
+}
+
+/* A5.1.2 short viewports: a phone held sideways, a soft keyboard that resizes
+ * the page, a window zoomed to 400%. There is not enough height for the header,
+ * the suggestions, the composer AND a transcript, and the fixed rows used to
+ * win: the transcript collapsed to a sliver and the composer — or, once the
+ * browser scrolled to it, the header and its close button — was clipped out of
+ * an overflow:hidden panel. Here the panel itself scrolls, the transcript keeps
+ * a readable minimum, and the composer is pinned to the bottom of the panel so
+ * it is never scrolled away. Taller screens are untouched. */
+@media screen and (max-height: 540px) {
+  .portfolio-chatbot.is-open .chatbot-panel {
+    grid-template-rows: auto minmax(8.5rem, 1fr) auto auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .chatbot-form {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: linear-gradient(rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)), var(--surface-solid);
+  }
+}
+
+/* A5.1.2 touch-first devices, where the primary pointer is a finger. The
+ * composer is 16px so iOS Safari does not zoom the page when it takes focus — a
+ * zoom that outlives the keyboard and leaves the panel mis-sized — and the
+ * suggestions, the thing a visitor taps most, get a comfortable height. A mouse
+ * keeps the denser desktop row. */
+@media (hover: none) and (pointer: coarse) {
+  .chatbot-form input {
+    font-size: 16px;
+  }
+
+  .chatbot-quicks button {
+    min-height: 40px;
+  }
+
+  .chatbot-quicks .chatbot-actions-secondary button {
+    min-height: 36px;
+  }
+}
+
+/* The <=380px composer gives back 4px of send button; a finger keeps 44px. */
+@media (hover: none) and (pointer: coarse) and (max-width: 380px) {
+  .chatbot-form {
+    grid-template-columns: 1fr 44px;
+  }
+
+  .chatbot-form input {
+    min-height: 44px;
+  }
+
+  .chatbot-form button {
+    width: 44px;
+    height: 44px;
   }
 }
 .chatbot-header p:empty {
