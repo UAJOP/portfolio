@@ -967,6 +967,201 @@ function ajoopProvenanceLabel(kind, language) {
   return ajoopLabel("Portfolio evidence", "Portfolyo kanıtı", language);
 }
 
+/* ajoop-turn-feedback:start
+ * A5.1.1 truthful turn feedback: the bounded presentation contract.
+ *
+ * Keep this block DOM-free. It decides WHAT a turn may say about itself, never
+ * how it is drawn, so QA can drive every state without a browser — and so a
+ * future owner-private response can hand the renderer a source label without
+ * being able to hand it anything else.
+ *
+ * The contract is presentation metadata only:
+ *
+ *   { state, source, partial, safeCode }
+ *
+ * Every field is read through an allowlist and anything outside it is dropped,
+ * not shown. There is deliberately no field that can carry free text, so a raw
+ * provider error, an endpoint, a path or a stack trace has nowhere to travel
+ * even when a caller passes one in.
+ */
+
+/** Where a turn is. The first three are in flight; the other three are outcomes. */
+const AJOOP_TURN_STATE = Object.freeze({
+  CHECKING: "checking",
+  READING: "reading",
+  PREPARING: "preparing",
+  COMPLETED: "completed",
+  PARTIAL: "partial",
+  UNAVAILABLE: "unavailable",
+});
+
+const AJOOP_TURN_ACTIVE_STATES = Object.freeze([
+  AJOOP_TURN_STATE.CHECKING,
+  AJOOP_TURN_STATE.READING,
+  AJOOP_TURN_STATE.PREPARING,
+]);
+
+/**
+ * Sources a turn may name while it works.
+ *
+ * `portfolio` is the public default and deliberately has no name: public turns
+ * keep generic wording. The rest are product names, the same in every language,
+ * and they are LABELS ONLY — nothing in the browser connects to any of them.
+ */
+const AJOOP_TURN_SOURCES = Object.freeze({
+  portfolio: null,
+  gmail: "Gmail",
+  calendar: "Google Calendar",
+  github: "GitHub",
+  drive: "Google Drive",
+});
+
+/**
+ * Why a turn is not a plain success, as a code rather than a message.
+ *
+ *   assist-unavailable  optional AI assistance failed; the grounded answer stands
+ *   source-partial      a source answered only in part (future owner turns)
+ *   turn-failed         nothing could be prepared for the turn at all
+ */
+const AJOOP_TURN_SAFE_CODE = Object.freeze({
+  ASSIST_UNAVAILABLE: "assist-unavailable",
+  SOURCE_PARTIAL: "source-partial",
+  TURN_FAILED: "turn-failed",
+});
+
+/**
+ * Bridge reasons that say nothing about THIS answer. `not-configured` never
+ * tried, `unavailable` is the bridge's own backoff (the header already states
+ * that verdict), and a stale or duplicate turn is not a failure of anything.
+ */
+const AJOOP_TURN_QUIET_REASONS = Object.freeze([
+  "not-configured",
+  "unavailable",
+  "stale",
+  "duplicate-turn",
+]);
+
+const ajoopTurnHas = (table, value) => Object.values(table).includes(value);
+
+/** The contract, or null when there is no recognisable state to present. */
+function normalizeAjoopTurnStatus(raw) {
+  if (!raw || typeof raw !== "object" || !ajoopTurnHas(AJOOP_TURN_STATE, raw.state)) return null;
+  const source =
+    typeof raw.source === "string" &&
+    Object.prototype.hasOwnProperty.call(AJOOP_TURN_SOURCES, raw.source)
+      ? raw.source
+      : "portfolio";
+  return Object.freeze({
+    state: raw.state,
+    source,
+    partial: raw.partial === true || raw.state === AJOOP_TURN_STATE.PARTIAL,
+    safeCode: ajoopTurnHas(AJOOP_TURN_SAFE_CODE, raw.safeCode) ? raw.safeCode : null,
+  });
+}
+
+function isAjoopTurnActive(status) {
+  return Boolean(status && AJOOP_TURN_ACTIVE_STATES.includes(status.state));
+}
+
+/** What an in-flight turn says it is doing: visible words, not animation. */
+function ajoopTurnActivityLabel(status, language) {
+  const name = status ? AJOOP_TURN_SOURCES[status.source] : null;
+  const state = status ? status.state : AJOOP_TURN_STATE.CHECKING;
+  if (state === AJOOP_TURN_STATE.PREPARING) {
+    return ajoopLabel("Preparing the answer…", "Yanıt hazırlanıyor…", language);
+  }
+  if (state === AJOOP_TURN_STATE.READING) {
+    return name
+      ? ajoopLabel("Reading {source}…", "{source} okunuyor…", language).replace("{source}", name)
+      : ajoopLabel("Reading portfolio evidence…", "Portfolyo kanıtı okunuyor…", language);
+  }
+  return name
+    ? ajoopLabel("Checking {source}…", "{source} kontrol ediliyor…", language).replace("{source}", name)
+    : ajoopLabel("Looking into it…", "Bakıyorum…", language);
+}
+
+/**
+ * What a settled turn says about being less than a plain success, or null.
+ *
+ * `turn-failed` is a whole sentence because it stands in for the answer. The
+ * others are short notes that sit beside the provenance of an answer that did
+ * render, because that answer still stands.
+ */
+function ajoopTurnOutcomeLabel(status, language) {
+  if (!status) return null;
+  if (status.safeCode === AJOOP_TURN_SAFE_CODE.TURN_FAILED) {
+    return ajoopLabel(
+      "I could not prepare an answer this time. Please try again.",
+      "Bu sefer bir yanıt hazırlayamadım. Lütfen tekrar dene.",
+      language,
+    );
+  }
+  if (status.safeCode === AJOOP_TURN_SAFE_CODE.ASSIST_UNAVAILABLE) {
+    return ajoopLabel("AI assistance unavailable", "AI desteği kullanılamadı", language);
+  }
+  if (status.safeCode !== AJOOP_TURN_SAFE_CODE.SOURCE_PARTIAL && !status.partial) return null;
+  const name = AJOOP_TURN_SOURCES[status.source];
+  return name
+    ? ajoopLabel("{source} partly unavailable", "{source} kısmen kullanılamadı", language).replace("{source}", name)
+    : ajoopLabel("Some sources unavailable", "Bazı kaynaklar kullanılamadı", language);
+}
+
+/**
+ * The settled status of one turn, from what its two sources returned.
+ *
+ * `model` is the bridge's raw result object or null. The whole request failed
+ * only when there is neither a deterministic plan nor a usable model answer;
+ * optional assistance failed only when a real attempt came back unusable.
+ */
+function ajoopTurnOutcome(plan, model) {
+  const answered = Boolean(model && model.ok === true);
+  if (!plan && !answered) {
+    return normalizeAjoopTurnStatus({
+      state: AJOOP_TURN_STATE.UNAVAILABLE,
+      safeCode: AJOOP_TURN_SAFE_CODE.TURN_FAILED,
+    });
+  }
+  const attemptFailed = Boolean(
+    model && model.ok === false && !AJOOP_TURN_QUIET_REASONS.includes(model.reason),
+  );
+  return normalizeAjoopTurnStatus({
+    state: AJOOP_TURN_STATE.COMPLETED,
+    safeCode: attemptFailed ? AJOOP_TURN_SAFE_CODE.ASSIST_UNAVAILABLE : null,
+  });
+}
+
+/**
+ * The AI assistance service as the header states it, or null for no claim.
+ *
+ * `unknown` and `disabled` make no claim at all: the first has no verdict yet,
+ * and the second is a portfolio running without assistance, which is nothing to
+ * warn anyone about. A check in progress is `checking`, never a failure.
+ */
+function ajoopServiceState(bridgeState) {
+  return bridgeState === "available" || bridgeState === "checking" || bridgeState === "unavailable"
+    ? bridgeState
+    : null;
+}
+
+function ajoopServiceLabel(service, language) {
+  if (service === "available") {
+    return ajoopLabel("AI assistance available", "AI desteği kullanılabilir", language);
+  }
+  if (service === "checking") {
+    return ajoopLabel("Checking AI assistance…", "AI desteği kontrol ediliyor…", language);
+  }
+  if (service === "unavailable") {
+    /* The second clause is the point: assistance being off never means Ajoop is. */
+    return ajoopLabel(
+      "AI assistance unavailable; grounded answers still work.",
+      "AI desteği kullanılamıyor; kanıta dayalı yanıtlar çalışıyor.",
+      language,
+    );
+  }
+  return null;
+}
+/* ajoop-turn-feedback:end */
+
 /**
  * The links row, built from canonical data with the site's external rules.
  *
@@ -1018,11 +1213,30 @@ function fillAjoopMessage(message, spec) {
     message.appendChild(renderAjoopEvidenceCard(card, { detail: spec.detail, language })),
   );
   appendAjoopMessageLinks(message, spec.links);
+  /* A5.1.1: only a turn that is less than a plain success carries a status, so
+   * an ordinary answer renders exactly as it did before turn feedback existed.
+   * The status reaches the DOM as a bounded code plus localized copy; the
+   * contract has no field that could carry a raw reason. */
+  const status = normalizeAjoopTurnStatus(spec.status);
+  const code =
+    status && (status.safeCode || (status.partial ? AJOOP_TURN_SAFE_CODE.SOURCE_PARTIAL : null));
+  if (code) message.setAttribute("data-ajoop-turn-status", code);
+  else message.removeAttribute("data-ajoop-turn-status");
   if (spec.provenance) {
     const provenance = document.createElement("p");
     provenance.className = "ajoop-provenance";
     provenance.setAttribute("data-ajoop-provenance", spec.provenance);
     provenance.textContent = ajoopProvenanceLabel(spec.provenance, language);
+    /* A degraded answer says so on its provenance line — a note beside an
+     * answer that still stands, not a banner over it. */
+    const note =
+      code && code !== AJOOP_TURN_SAFE_CODE.TURN_FAILED ? ajoopTurnOutcomeLabel(status, language) : null;
+    if (note) {
+      const detail = document.createElement("span");
+      detail.className = "ajoop-provenance-note";
+      detail.textContent = ` · ${note}`;
+      provenance.appendChild(detail);
+    }
     message.appendChild(provenance);
   }
   return message;
@@ -1417,11 +1631,6 @@ function ajoopDelay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-/** The one place the thinking copy is written. Follows the reply language. */
-function ajoopThinkingLabel(language) {
-  return ajoopLabel("Thinking this through…", "Bunu düşünüyorum…", language);
-}
-
 /**
  * Drops a pending turn that was superseded before it could commit.
  *
@@ -1434,11 +1643,13 @@ function closeAjoopPendingTurn() {
 }
 
 /**
- * Opens the turn's container in its thinking state.
+ * Opens the turn's container in its first activity state.
  *
- * The animated dots are decorative and aria-hidden; the same paragraph carries
- * a visually hidden localized "Thinking…" so the transcript's live region says
- * that something is happening and then announces the answer replacing it.
+ * A5.1.1: the activity is VISIBLE text, written by the same renderer that later
+ * moves it on, so it can be read rather than inferred from motion. The dots are
+ * decorative and aria-hidden, and they stand still for reduced-motion visitors
+ * without taking any meaning with them. The transcript's live region announces
+ * the activity, then the answer that replaces it.
  */
 function openAjoopTurn(language) {
   const messageList = ajoopMessageList();
@@ -1454,22 +1665,43 @@ function openAjoopTurn(language) {
   text.className = "chatbot-message-text";
   text.setAttribute("data-chatbot-prose", "");
 
-  const spoken = document.createElement("span");
-  spoken.className = "visually-hidden";
-  spoken.textContent = ajoopThinkingLabel(language);
-  text.appendChild(spoken);
-
   const dots = document.createElement("span");
   dots.className = "ajoop-typing";
   dots.setAttribute("aria-hidden", "true");
   for (let dot = 0; dot < 3; dot += 1) dots.appendChild(document.createElement("i"));
   text.appendChild(dots);
 
+  const activity = document.createElement("span");
+  activity.className = "ajoop-turn-activity";
+  activity.setAttribute("data-ajoop-turn-activity", "");
+  text.appendChild(activity);
+
   message.appendChild(text);
+  renderAjoopTurnActivity(message, { state: AJOOP_TURN_STATE.CHECKING }, language);
   messageList.appendChild(message);
   ajoopPendingTurn = message;
   if (follow) scrollAjoopToBottom(messageList);
   return message;
+}
+
+/**
+ * Moves a pending turn to another in-flight state.
+ *
+ * The ONE path by which any turn says what it is doing. It accepts only the
+ * bounded contract, so a caller can put nothing on screen but a known state and
+ * a known source name. Settled states are refused here: they belong to
+ * finishAjoopTurn, which replaces the activity with the answer itself.
+ */
+function renderAjoopTurnActivity(node, status, language) {
+  const normalized = normalizeAjoopTurnStatus(status);
+  if (!node || !isAjoopTurnActive(normalized) || !node.classList.contains("is-pending")) return false;
+  const label = node.querySelector("[data-ajoop-turn-activity]");
+  if (!label) return false;
+  const text = ajoopTurnActivityLabel(normalized, language);
+  node.setAttribute("data-ajoop-turn-state", normalized.state);
+  /* Rewriting identical text would make the live region announce it again. */
+  if (label.textContent !== text) label.textContent = text;
+  return true;
 }
 
 /**
@@ -1505,16 +1737,24 @@ function isAjoopBridgeOffline() {
  * on an EN page from capturing English fallback labels.
  */
 function planAjoopTurn(route, settings, language, ready) {
-  const build = () =>
-    typeof planAjoopResponse === "function"
-      ? planAjoopResponse(route, {
-          language,
-          message: settings.message,
-          entityAnswer: (target, locale) => ajoopEntityAnswer(target, locale),
-          preparedAnswer: (target, locale) =>
-            ajoopPreparedAnswer(target.intent, target.answerDepth, target.depth, locale),
-        })
-      : null;
+  /* A planner exception is a turn with no deterministic answer, not a turn that
+   * never ends: it resolves to null and the commit decides what the visitor
+   * sees. The exception itself travels no further than this. */
+  const build = () => {
+    try {
+      return typeof planAjoopResponse === "function"
+        ? planAjoopResponse(route, {
+            language,
+            message: settings.message,
+            entityAnswer: (target, locale) => ajoopEntityAnswer(target, locale),
+            preparedAnswer: (target, locale) =>
+              ajoopPreparedAnswer(target.intent, target.answerDepth, target.depth, locale),
+          })
+        : null;
+    } catch (error) {
+      return null;
+    }
+  };
   if (!ready || typeof ready.then !== "function") return Promise.resolve(build());
   return Promise.race([ready, ajoopDelay(AJOOP_PACK_WAIT_MS)]).then(build, build);
 }
@@ -1525,8 +1765,9 @@ function planAjoopTurn(route, settings, language, ready) {
  * RAG-FIRST and gate-free: every conversational turn is offered to the model,
  * whatever the deterministic router made of it, and the model decides for
  * itself whether the question is about the portfolio or ordinary conversation.
- * Failure is silent by construction — the caller falls back to the plan it
- * already holds, and the visitor never learns a bridge existed.
+ * Failure never throws — the caller falls back to the plan it already holds —
+ * and what the visitor is told about it is decided by ajoopTurnOutcome: a short
+ * bounded note at most, never the bridge's reason.
  */
 function requestAjoopTurnAnswer(route, question, language, turn) {
   if (typeof requestAjoopRagTurn !== "function") return Promise.resolve(null);
@@ -1606,6 +1847,22 @@ function ajoopModelEvidenceCards(model, plan, language) {
 }
 
 /**
+ * Fills the turn's own container, or a fresh one if it was detached meanwhile.
+ *
+ * The answer and the failure line both commit through here, so a turn can only
+ * ever end one way on screen.
+ */
+function commitAjoopTurnNode(node, spec) {
+  if (node && node.isConnected) {
+    node.classList.remove("is-pending");
+    node.removeAttribute("data-ajoop-turn");
+    node.removeAttribute("data-ajoop-turn-state");
+    return fillAjoopMessage(node, spec);
+  }
+  return renderAjoopMessage(spec);
+}
+
+/**
  * Commits the turn: one fill, one action render, one scroll.
  *
  * A GENERAL answer is prose and nothing else. It must not inherit the evidence
@@ -1623,10 +1880,24 @@ function finishAjoopTurn(context) {
    * back during the beat is left where they are. */
   const follow = isAjoopNearBottom(list);
   ajoopPendingTurn = null;
+  const outcome = ajoopTurnOutcome(plan, context.model);
 
+  /* Nothing could be prepared. The turn still ENDS, in words, in its own
+   * container: removing the bubble used to leave the visitor looking at their
+   * question with no reply and no reason. The copy is the bounded failure line —
+   * never the exception, never the bridge's reason — and the panel accepts input
+   * again. Nothing is remembered, because no answer was given. */
   if (!plan && !model) {
-    if (node && node.isConnected) node.remove();
+    commitAjoopTurnNode(node, {
+      type: "bot",
+      language,
+      text: ajoopTurnOutcomeLabel(outcome, language),
+      status: outcome,
+    });
     setAjoopTurnBusy(false);
+    renderAjoopBridgeStatus();
+    setAjoopMascotState(ajoopRestingMascotState());
+    if (follow) scrollAjoopToBottom(list);
     return;
   }
 
@@ -1640,15 +1911,12 @@ function finishAjoopTurn(context) {
     provenance: ajoopTurnProvenance(plan, model, general),
     /* The full record only when the visitor asked for it. */
     detail: Boolean(plan && plan.depth === "deep"),
+    /* A plain success carries nothing extra; an answer whose AI assistance was
+     * attempted and failed says so beside its provenance. */
+    status: outcome,
   };
 
-  if (node && node.isConnected) {
-    node.classList.remove("is-pending");
-    node.removeAttribute("data-ajoop-turn");
-    fillAjoopMessage(node, spec);
-  } else {
-    renderAjoopMessage(spec);
-  }
+  commitAjoopTurnNode(node, spec);
 
   /* The model's conversation memory is written HERE, at the one point a turn
    * becomes something the visitor has read — not inside the transport, which
@@ -1674,7 +1942,9 @@ function finishAjoopTurn(context) {
     else setAjoopTurnBusy(false);
   }
 
-  if (model) renderAjoopBridgeStatus();
+  /* Any bridge result may have moved the service verdict — a success restores
+   * it, and a run of failed attempts is what finally marks it unavailable. */
+  if (context.model) renderAjoopBridgeStatus();
   setAjoopMascotState(
     !model && isAjoopBridgeOffline()
       ? AJOOP_MASCOT_STATES.OFFLINE
@@ -1684,6 +1954,20 @@ function finishAjoopTurn(context) {
   );
 
   if (follow) scrollAjoopToBottom(list);
+}
+
+/**
+ * The last resort for a turn that threw while committing.
+ *
+ * Whatever went wrong, the visitor gets the bounded failure line in the turn's
+ * own container and a panel that accepts input again. The error is not read.
+ */
+function failAjoopTurn(node, language) {
+  try {
+    finishAjoopTurn({ node, route: null, plan: null, model: null, language, question: "" });
+  } catch (error) {
+    setAjoopTurnBusy(false);
+  }
 }
 
 /* ---------- Ajoop 4.5 mascot state machine ---------- */
@@ -1744,7 +2028,8 @@ function ajoopMascotLabel(state) {
     case AJOOP_MASCOT_STATES.CLARIFYING:
       return ajoopLabel("Needs a hint", "Netleştiriyor", language);
     case AJOOP_MASCOT_STATES.OFFLINE:
-      return ajoopLabel("Local AI offline", "Yerel AI çevrimdışı", language);
+      /* Assistance is what is down, never Ajoop: grounded answers still work. */
+      return ajoopLabel("AI unavailable", "AI kullanılamıyor", language);
     default:
       return ajoopLabel("Ready", "Hazır", language);
   }
@@ -2035,33 +2320,42 @@ function renderAjoopComparison(comparison, language = ajoopReplyLanguage()) {
   return root;
 }
 
-/* ---------- Ajoop 5.1 bridge status ---------- */
+/* ---------- A5.1.1 service status ---------- */
 
 /**
- * The header's bridge indicator.
+ * The header's AI assistance line.
  *
  * Ajoop 4.4 stopped presenting "AI Enhanced" and "Evidence Mode" as two
- * products in the subtitle slot: they were never two products, and putting
- * them where the assistant names itself made the panel feel like it had modes.
- * What is left is one quiet dot, shown ONLY when a local bridge is actually
- * answering, with its meaning in an accessible label rather than in its
- * colour. Where each answer came from is said per answer, on the answer.
+ * products in the subtitle slot, and nothing here brings them back: "Portfolio
+ * Copilot" stays what the assistant is called whatever the service is doing.
+ * This is a separate, quiet line UNDER that identity, stating one service fact
+ * in words — the dot beside it only repeats them — and only when there is a
+ * verdict to state:
+ *
+ *   available    AI assistance available
+ *   checking     Checking AI assistance…
+ *   unavailable  AI assistance unavailable; grounded answers still work.
+ *
+ * It is a polite status region, so a verdict that changes while the panel is
+ * open is announced once. Header chrome, so it follows the SITE locale. Where
+ * each answer came from is still said per answer, on the answer.
  */
 function renderAjoopBridgeStatus() {
   const target = document.querySelector("[data-chatbot-bridge]");
   if (target) {
-    const online =
-      typeof getAjoopAiState === "function" && getAjoopAiState().state === "available";
-    target.hidden = !online;
-    if (online) {
-      const label = ajoopLabel(
-        "Local AI bridge connected",
-        "Yerel AI köprüsü bağlı",
-        portfolioChatbotState.language,
-      );
-      target.setAttribute("aria-label", label);
-      target.setAttribute("title", label);
+    const service = ajoopServiceState(
+      typeof getAjoopAiState === "function" ? getAjoopAiState().state : null,
+    );
+    const text = target.querySelector("[data-chatbot-bridge-text]");
+    if (service) {
+      const label = ajoopServiceLabel(service, portfolioChatbotState.language);
+      target.setAttribute("data-ajoop-service", service);
+      if (text && text.textContent !== label) text.textContent = label;
+    } else {
+      target.removeAttribute("data-ajoop-service");
+      if (text) text.textContent = "";
     }
+    target.hidden = !service;
   }
   /* The resting face may have changed with the verdict — but only while the
    * mascot is actually at rest. A bridge probe that lands mid-turn must not
@@ -2073,16 +2367,23 @@ function renderAjoopBridgeStatus() {
   }
 }
 
-/** One health probe when the panel opens, subject to the bridge's own backoff. */
+/**
+ * One health probe when the panel opens, subject to the bridge's own backoff.
+ *
+ * The status renders on both sides of the probe. checkAjoopAiHealth marks the
+ * bridge `checking` synchronously when — and only when — it is actually about
+ * to ask, so the line says "checking" for a real check and keeps the cached
+ * verdict when the backoff answers instead.
+ */
 function initializeAjoopAi() {
   if (typeof checkAjoopAiHealth !== "function") return;
   if (!isAjoopAiConfigured(getAjoopAiConfig())) {
     renderAjoopBridgeStatus();
     return;
   }
-  Promise.resolve(checkAjoopAiHealth({}))
-    .then(() => renderAjoopBridgeStatus())
-    .catch(() => renderAjoopBridgeStatus());
+  const probe = Promise.resolve(checkAjoopAiHealth({}));
+  renderAjoopBridgeStatus();
+  probe.then(() => renderAjoopBridgeStatus()).catch(() => renderAjoopBridgeStatus());
 }
 
 /**
@@ -2330,16 +2631,41 @@ function answerAjoopRoute(route, options) {
   const ready =
     typeof ensureAjoopLanguagePack === "function" ? ensureAjoopLanguagePack(language) : null;
 
+  const answer = requestAjoopTurnAnswer(route, settings.message, language, turn);
+  const beat = ajoopDelay(AJOOP_TURN_MIN_MS);
+  const isCurrent = () =>
+    typeof isAjoopAiTurnCurrent !== "function" || isAjoopAiTurnCurrent(turn);
+
+  /* A5.1.1: the turn's second state, shown only when it is true. Once the
+   * minimum beat has passed, anything still outstanding is the AI assistance
+   * preparing its answer, so the pending turn says so. A turn with nothing to
+   * wait for — assistance not configured, or the bridge's backoff answering at
+   * once — has already settled and never claims to be preparing. */
+  let assisting = true;
+  answer.then(() => {
+    assisting = false;
+  });
+  beat.then(() => {
+    if (assisting && isCurrent()) {
+      renderAjoopTurnActivity(node, { state: AJOOP_TURN_STATE.PREPARING }, language);
+    }
+  });
+
   Promise.all([
     planAjoopTurn(route, settings, language, ready),
-    requestAjoopTurnAnswer(route, settings.message, language, turn),
-    ajoopDelay(AJOOP_TURN_MIN_MS),
-  ]).then(([plan, model]) => {
-    if (typeof isAjoopAiTurnCurrent === "function" && !isAjoopAiTurnCurrent(turn)) return;
-    portfolioChatbotState.lastPlan = plan;
-    portfolioChatbotState.lastEvidence = plan && plan.cards && plan.cards.length ? plan : null;
-    finishAjoopTurn({ node, route, plan, model, language, question: settings.message });
-  });
+    answer,
+    beat,
+  ])
+    .then(([plan, model]) => {
+      if (!isCurrent()) return;
+      portfolioChatbotState.lastPlan = plan;
+      portfolioChatbotState.lastEvidence = plan && plan.cards && plan.cards.length ? plan : null;
+      finishAjoopTurn({ node, route, plan, model, language, question: settings.message });
+    })
+    .catch(() => {
+      /* A commit that threw still has to end the turn it opened. */
+      if (isCurrent()) failAjoopTurn(node, language);
+    });
 
   if (typeof rememberAjoopTurn === "function") {
     /* A greeting or a question about Ajoop sets neither subject nor intent: it
@@ -2642,9 +2968,9 @@ function setupPortfolioChatbot() {
         <div class="chatbot-identity">
           <h2 id="ajoop-dialog-title" data-chatbot-title>${escapeProjectHtml(content.title)}</h2>
           <p data-chatbot-subtitle>${escapeProjectHtml(ajoopHeaderSubtitle(getCurrentLocale()))}</p>
+          <p class="chatbot-service" data-chatbot-bridge role="status" hidden><span class="chatbot-service-dot" aria-hidden="true"></span><span data-chatbot-bridge-text></span></p>
         </div>
         <span class="ajoop-mascot-state" data-ajoop-mascot-label></span>
-        <span class="chatbot-bridge-dot" data-chatbot-bridge role="img" hidden></span>
         <button class="chatbot-close" type="button" data-chatbot-close aria-label="${escapeProjectHtml(content.closeLabel)}"><i class="bx bx-x" aria-hidden="true"></i></button>
       </div>
       <div class="chatbot-messages" data-chatbot-messages aria-live="polite"></div>

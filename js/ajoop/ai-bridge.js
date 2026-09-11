@@ -20,10 +20,12 @@
  *
  * THE BRIDGE IS NEVER A DEPENDENCY. Every failure path — not configured,
  * offline, busy, timed out, blocked by CORS, malformed JSON, empty answer —
- * resolves to the same outcome: the deterministic answer that was already
- * rendered stands, and nothing is shown to the visitor about the failure. The
- * portfolio is fully usable with the machine that runs the bridge switched
- * off, which is its normal state.
+ * resolves to the same outcome: the deterministic answer stands. What the
+ * visitor is told about it is bounded presentation owned by assistant.js
+ * (A5.1.1 turn feedback): a service verdict in words, and a short note on an
+ * answer whose assistance was attempted and failed — never a reason, a status
+ * code or an endpoint. The portfolio is fully usable with the machine that runs
+ * the bridge switched off, which is its normal state.
  *
  * Loads after evidence.js (it serializes that module's model) and before
  * assistant.js, which owns the DOM.
@@ -216,7 +218,12 @@ async function postAjoopAiRequest(body, options) {
   if (!isAjoopAiConfigured(config)) return { ok: false, reason: "not-configured" };
 
   const controller = typeof AbortController === "function" ? new AbortController() : null;
-  if (controller) ajoopAiState.inFlight = controller;
+  /* Only a GENERATION owns the slot that beginAjoopAiTurn() cancels. A health
+   * probe keeps its controller for its own deadline alone: sharing the slot let
+   * the visitor's next turn abort a running probe, the abort read as a timeout,
+   * and a healthy bridge was declared unavailable — and put into backoff — by
+   * nothing more than someone asking a question. */
+  if (controller && settings.trackTurn !== false) ajoopAiState.inFlight = controller;
   let timer = null;
   if (controller && config.timeoutMs > 0) {
     timer = setTimeout(() => controller.abort(), config.timeoutMs);
@@ -352,7 +359,7 @@ async function checkAjoopAiHealth(options) {
   ajoopAiState.state = AJOOP_AI_STATE.CHECKING;
   const result = await postAjoopAiRequest(
     { version: AJOOP_AI_PROTOCOL_VERSION, mode: "health" },
-    { config, fetchImpl: settings.fetchImpl },
+    { config, fetchImpl: settings.fetchImpl, trackTurn: false },
   );
 
   if (result.ok && isAjoopHealthReady(result.body)) {
