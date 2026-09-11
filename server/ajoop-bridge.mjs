@@ -20,6 +20,10 @@ import { PORTFOLIO_TOOL_DEFINITIONS, loadPortfolioEventIdentities } from "./ajoo
 import { createPortfolioToolEventPolicy } from "./ajoop-tool-event-policy.mjs";
 import { loadEnvFile } from "./ajoop-env-file.mjs";
 import {
+  listenAjoopBridgeServer,
+  withAjoopBridgeIdentity,
+} from "./ajoop-runtime-probes.mjs";
+import {
   createAjoopTelemetry,
   createAjoopTelemetryWriter,
   observeAjoopHandlerResult,
@@ -357,10 +361,11 @@ const server = http.createServer(async (request, response) => {
       contentType: request.headers["content-type"] || "",
       body: read.body,
     });
-    const body =
+    const body = withAjoopBridgeIdentity(
       url.pathname === agent.path && result?.body?.ok && typeof result.body.answer === "string"
         ? { ...result.body, answer: sanitizeRagAnswer(result.body.answer) }
-        : result.body;
+        : result.body,
+    );
     send(response, result.status, result.headers, body);
     telemetry.record(observeAjoopHandlerResult({
       route: telemetryRoute,
@@ -491,32 +496,39 @@ async function start() {
   const agentWarmed = await agent.prewarm();
   const policy = await buildToolEventPolicy();
   sinama = createAjoopSinamaAdapter({ rag: agent, validateToolEvent: policy.validate });
-  server.listen(config.port, config.host, () => {
-    void persistTelemetry();
-    console.log(`Ajoop bridge listening on ${config.host}:${config.port}${config.path}`);
-    console.log(`Ajoop bridge model ${config.model} · ${config.allowedOrigins.length} allowed origin(s)`);
-    console.log(`Ajoop bridge warm model ${warmed ? "ready" : "unavailable"}`);
-    console.log(
-      `Ajoop RAG ${ragStatus.ready ? "ready" : "unavailable"} · ${ragStatus.chunks} chunks · ${ragStatus.embedModel}`,
-    );
+  const listening = await listenAjoopBridgeServer(
+    server,
+    (onListening) => server.listen(config.port, config.host, onListening),
+  );
+  if (!listening.ok) {
+    console.error(`[ajoop-bridge] ${listening.code}`);
+    process.exitCode = listening.exitCode;
+    return;
+  }
+  void persistTelemetry();
+  console.log(`Ajoop bridge listening on ${config.host}:${config.port}${config.path}`);
+  console.log(`Ajoop bridge model ${config.model} · ${config.allowedOrigins.length} allowed origin(s)`);
+  console.log(`Ajoop bridge warm model ${warmed ? "ready" : "unavailable"}`);
+  console.log(
+    `Ajoop RAG ${ragStatus.ready ? "ready" : "unavailable"} · ${ragStatus.chunks} chunks · ${ragStatus.embedModel}`,
+  );
     /* Which backend is LIVE, and — when they differ — which one was asked for.
      * Key names only from the env file; never a value, never a hostname. */
-    const vector = rag.status();
-    console.log(
-      `Ajoop vector backend ${vector.vectorBackend}` +
-        (vector.vectorBackend === vector.vectorBackendRequested
-          ? ""
-          : ` (requested ${vector.vectorBackendRequested}, degraded)`) +
-        ` · ${loaded.length} local setting(s) loaded`,
-    );
-    console.log(`Ajoop RAG warm model ${ragWarmed ? "ready" : "unavailable"}`);
-    console.log(`Ajoop agent planner warm ${agentWarmed}`);
-    console.log(`Ajoop SINAMA compatibility ${config.host}:${config.port}${sinama.path}`);
+  const vector = rag.status();
+  console.log(
+    `Ajoop vector backend ${vector.vectorBackend}` +
+      (vector.vectorBackend === vector.vectorBackendRequested
+        ? ""
+        : ` (requested ${vector.vectorBackendRequested}, degraded)`) +
+      ` · ${loaded.length} local setting(s) loaded`,
+  );
+  console.log(`Ajoop RAG warm model ${ragWarmed ? "ready" : "unavailable"}`);
+  console.log(`Ajoop agent planner warm ${agentWarmed}`);
+  console.log(`Ajoop SINAMA compatibility ${config.host}:${config.port}${sinama.path}`);
     /* Mode only. Never a counter value, never a tool name, never a question. */
-    console.log(`Ajoop SINAMA tool-event policy ${policy.validate ? `active · ${policy.identities} canonical identities` : "unavailable (fail-closed)"}`);
-    console.log(`Ajoop agent mode ${agent.mode} · ${agent.toolDeclarations().length} read-only tool(s) declared`);
-    console.log("Ajoop local telemetry snapshot enabled");
-  });
+  console.log(`Ajoop SINAMA tool-event policy ${policy.validate ? `active · ${policy.identities} canonical identities` : "unavailable (fail-closed)"}`);
+  console.log(`Ajoop agent mode ${agent.mode} · ${agent.toolDeclarations().length} read-only tool(s) declared`);
+  console.log("Ajoop local telemetry snapshot enabled");
 }
 
 start().catch(() => {
