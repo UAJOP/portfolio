@@ -29,6 +29,11 @@ import {
   buildAjoopSystemPrompt,
   buildOllamaMessages,
 } from "../server/ajoop-bridge-core.mjs";
+import {
+  AJOOP_BRIDGE_IDENTITY,
+  classifyAjoopBridgeListenError,
+  withAjoopBridgeIdentity,
+} from "../server/ajoop-runtime-probes.mjs";
 
 let passed = 0;
 const failures = [];
@@ -1120,6 +1125,23 @@ check("a literal wildcard origin is never echoed",
 }
 
 /* ---------- the core keeps no request state ---------- */
+
+{
+  const health = withAjoopBridgeIdentity({
+    ok: true,
+    mode: "rag",
+    ready: true,
+    model: "generation-model",
+    embedModel: "embedding-model",
+  });
+  check("shipped RAG health declares stable service identity", health.service, AJOOP_BRIDGE_IDENTITY.service);
+  check("shipped RAG health declares protocol version", health.protocolVersion, AJOOP_BRIDGE_IDENTITY.protocolVersion);
+  check("bridge identity preserves generation model", health.model, "generation-model");
+  check("bridge identity preserves embedding model", health.embedModel, "embedding-model");
+  check("non-RAG response is not decorated", withAjoopBridgeIdentity({ mode: "legacy" }).service, undefined);
+  check("EADDRINUSE has stable bridge failure code", classifyAjoopBridgeListenError({ code: "EADDRINUSE" }).code, "bridge-bind-conflict");
+  check("other listen failure is generic", classifyAjoopBridgeListenError({ code: "EACCES" }).code, "bridge-listen-failed");
+}
 
 {
   const source = readFileSync(new URL("../server/ajoop-bridge-core.mjs", import.meta.url), "utf8");
