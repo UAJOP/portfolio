@@ -9,6 +9,10 @@
  * failure, an unavailable bridge presented as Ajoop being down, a raw provider
  * error reaching the transcript, a turn that never ends.
  *
+ * Section 12 adds A5.1.2 mobile and keyboard polish: where focus lands on open,
+ * Tab from the focused dialog, and the short-viewport and touch-first CSS rules.
+ * CSS checks there are static contracts, not geometry.
+ *
  * Node built-ins only, consistent with the other qa-* checks.
  *
  *   node scripts/qa-ajoop-turn-feedback.mjs
@@ -221,6 +225,8 @@ const EXPORTS = [
   "initializeAjoopAi",
   "ajoopHeaderSubtitle",
   "portfolioChatbotState",
+  "focusAjoopEntry",
+  "handleAjoopPanelKeydown",
 ];
 
 /**
@@ -1023,6 +1029,173 @@ const NEW_COPY = [
   const loader = read("script.js");
   ok("the runtime manifest ships nothing from server/", !/["']\.?\/?server\//.test(loader));
   ok("the public AI endpoint is not an owner endpoint", !/owner/i.test(read("ajoop-ai-config.js")));
+}
+
+/* ---------- 12. A5.1.2 mobile and keyboard ---------- */
+
+/** The dialog's own element and three controls, with every focus call recorded. */
+function mountDialog(env) {
+  const panel = env.document.createElement("div");
+  panel.setAttribute("data-chatbot-panel", "");
+  panel.setAttribute("tabindex", "-1");
+  const close = env.document.createElement("button");
+  const input = env.document.createElement("input");
+  input.setAttribute("data-chatbot-input", "");
+  const send = env.document.createElement("button");
+  for (const control of [close, input, send]) panel.appendChild(control);
+  env.document.body.appendChild(panel);
+  const focused = [];
+  for (const element of [panel, close, input, send]) {
+    element.focus = () => {
+      focused.push(element);
+      env.document.activeElement = element;
+    };
+  }
+  return { panel, close, input, send, focused };
+}
+
+{
+  /* Where focus lands when the panel opens: the composer with a mouse or a
+   * keyboard, the dialog itself on a touch-first device, so opening Ajoop on a
+   * phone does not raise the soft keyboard before anything has been read. */
+  const env = loadAssistant();
+  const dialog = mountDialog(env);
+  const pointer = (touchFirst) => {
+    env.sandbox.window.matchMedia = (query) => ({ matches: touchFirst && /pointer:\s*coarse/.test(query) });
+  };
+  pointer(false);
+  env.api.focusAjoopEntry();
+  check("with a mouse or keyboard, opening focuses the composer", dialog.focused.at(-1), dialog.input);
+  pointer(true);
+  env.api.focusAjoopEntry();
+  check("on a touch-first device, opening focuses the dialog, not the composer", dialog.focused.at(-1), dialog.panel);
+  delete env.sandbox.window.matchMedia;
+  env.api.focusAjoopEntry();
+  check("without matchMedia the composer is focused, as before", dialog.focused.at(-1), dialog.input);
+}
+
+{
+  /* Tab from the focused dialog container. The shared trap only wraps at the
+   * first and last control, so without this Shift+Tab would leave the dialog. */
+  const trapped = [];
+  const env = loadAssistant({
+    getFocusableElements: (container) => container.children.filter((child) => child.tagName !== "DIV"),
+    trapFocus: (event) => trapped.push(event.key),
+  });
+  const dialog = mountDialog(env);
+  const key = (name, shiftKey = false) => ({
+    key: name,
+    shiftKey,
+    prevented: false,
+    preventDefault() {
+      this.prevented = true;
+    },
+  });
+  env.api.portfolioChatbotState.open = true;
+
+  env.document.activeElement = dialog.panel;
+  const tab = key("Tab");
+  env.api.handleAjoopPanelKeydown(tab);
+  check("Tab from the focused dialog reaches its first control", dialog.focused.at(-1), dialog.close);
+  ok("Tab from the focused dialog is handled inside the dialog", tab.prevented);
+
+  env.document.activeElement = dialog.panel;
+  const back = key("Tab", true);
+  env.api.handleAjoopPanelKeydown(back);
+  check("Shift+Tab from the focused dialog wraps to its last control, not the inert page", dialog.focused.at(-1), dialog.send);
+  ok("Shift+Tab from the focused dialog is handled inside the dialog", back.prevented);
+
+  env.document.activeElement = dialog.input;
+  const between = key("Tab");
+  env.api.handleAjoopPanelKeydown(between);
+  check("Tab between controls still goes through the shared trap", trapped.at(-1), "Tab");
+  ok("Tab between controls is left to the browser", !between.prevented);
+
+  const escape = key("Escape");
+  env.api.handleAjoopPanelKeydown(escape);
+  ok("Escape is still handled while the panel is open", escape.prevented);
+
+  env.api.portfolioChatbotState.open = false;
+  env.document.activeElement = dialog.panel;
+  const trappedBefore = trapped.length;
+  const closed = key("Tab");
+  env.api.handleAjoopPanelKeydown(closed);
+  ok("a closed panel leaves Tab alone", !closed.prevented && trapped.length === trappedBefore);
+}
+
+{
+  /* STATIC CSS contracts. These pin the rules; they do not prove geometry. The
+   * geometry was measured in headless Chrome for the A5.1.2 report. */
+  const mediaBlock = (query) => {
+    const start = css.indexOf(`@media ${query} {`);
+    if (start < 0) return "";
+    let depth = 0;
+    for (let index = css.indexOf("{", start); index < css.length; index += 1) {
+      if (css[index] === "{") depth += 1;
+      else if (css[index] === "}" && (depth -= 1) === 0) return css.slice(start, index + 1);
+    }
+    return "";
+  };
+
+  const short = mediaBlock("screen and (max-height: 540px)");
+  ok("short viewports have their own panel rules", short);
+  ok("on a short viewport the panel scrolls instead of clipping its rows", /\.chatbot-panel \{[^}]*overflow-y: auto;/.test(short));
+  ok("on a short viewport the transcript keeps a usable minimum height",
+    /grid-template-rows: auto minmax\(8\.5rem, 1fr\) auto auto;/.test(short));
+  ok("on a short viewport the composer stays pinned to the bottom of the panel",
+    /\.chatbot-form \{[^}]*position: sticky;[^}]*bottom: 0;/.test(short));
+  ok("the pinned composer is opaque, so the transcript never shows through it",
+    /\.chatbot-form \{[^}]*background:[^;]*var\(--surface-solid\);/.test(short));
+
+  const touch = mediaBlock("(hover: none) and (pointer: coarse)");
+  ok("touch-first composer text is 16px, so iOS does not zoom on focus", /\.chatbot-form input \{\s*font-size: 16px;/.test(touch));
+  ok("touch-first suggestions are at least 40px tall", /\.chatbot-quicks button \{\s*min-height: 40px;/.test(touch));
+  ok("touch-first Start over is at least 36px tall",
+    /\.chatbot-quicks \.chatbot-actions-secondary button \{\s*min-height: 36px;/.test(touch));
+  const smallTouch = mediaBlock("(hover: none) and (pointer: coarse) and (max-width: 380px)");
+  ok("the smallest touch composer keeps a 44px send button", /\.chatbot-form button \{\s*width: 44px;\s*height: 44px;/.test(smallTouch));
+
+  ok("the composer uses the page font", /\.chatbot-form input \{[^}]*font: inherit;/.test(css));
+  ok("the placeholder is a theme token at full opacity", /\.chatbot-form input::placeholder \{\s*color: var\(--muted\);\s*opacity: 1;/.test(css));
+  ok("the panel height follows the dynamic viewport where supported", css.includes("max-height: min(680px, calc(100dvh - 120px));"));
+  /* The dialog's own focus state. css/a11y.css gives every [tabindex] element a
+   * 6px radius on :focus-visible, and a panel opened from a keyboard on a
+   * touch-first device IS :focus-visible, so its corners squared off. STATIC:
+   * this pins the cascade that prevents it; the rendered corners and ring were
+   * measured in headless Chrome for the report. */
+  const cssRules = (source) =>
+    [...source.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, selectors, body]) => ({
+      selectors: selectors.split(",").map((selector) => selector.trim()),
+      body,
+    }));
+  const specificity = (selector) => {
+    const bare = selector.replace(/::[\w-]+/g, "");
+    const ids = (bare.match(/#[\w-]+/g) || []).length;
+    const classLike = (bare.match(/\.[\w-]+|\[[^\]]+\]|:[\w-]+/g) || []).length;
+    const types = (bare.replace(/\[[^\]]+\]/g, "").match(/(?:^|[\s>+~])[a-z][\w-]*/gi) || []).length;
+    return ids * 10000 + classLike * 100 + types;
+  };
+  const styleRules = cssRules(css);
+  const panelRules = styleRules.filter(({ selectors }) => selectors.some((selector) => /(?:^|\s)\.chatbot-panel$/.test(selector)));
+  ok("no chatbot panel rule hard-codes a radius outside its property",
+    panelRules.length > 0 && panelRules.every(({ body }) => !/border-radius:\s*\d/.test(body)));
+  check("the panel radius is set once per breakpoint: default, <=560px, <=380px",
+    [...css.matchAll(/--chatbot-panel-radius:\s*([^;]+);/g)].map((match) => match[1]).join(","), "28px,22px,18px");
+  const keyboardFocus = styleRules.find(({ selectors }) => selectors.includes(".portfolio-chatbot .chatbot-panel:focus-visible"));
+  ok("the keyboard-focused dialog keeps the panel's own radius",
+    Boolean(keyboardFocus) && /border-radius:\s*var\(--chatbot-panel-radius\);/.test(keyboardFocus.body));
+  ok("the keyboard-focused dialog keeps the site focus ring",
+    Boolean(keyboardFocus) && !/outline:\s*none/.test(keyboardFocus.body));
+  ok("css/a11y.css still has the generic [tabindex]:focus-visible rule this guards against",
+    cssRules(read("css/a11y.css")).some(({ selectors }) => selectors.includes("[tabindex]:focus-visible")));
+  ok("the dialog focus rule outranks [tabindex]:focus-visible, which loads after style.css",
+    specificity(".portfolio-chatbot .chatbot-panel:focus-visible") > specificity("[tabindex]:focus-visible"));
+  const pointerFocus = styleRules.find(({ selectors }) => selectors.includes(".portfolio-chatbot .chatbot-panel:focus:not(:focus-visible)"));
+  ok("a dialog focused by a tap or a click still draws no ring",
+    Boolean(pointerFocus) && /outline:\s*none;/.test(pointerFocus.body));
+  ok("the dialog container is programmatically focusable", /data-chatbot-panel[^>]*tabindex="-1"/.test(assistantSource));
+  ok("opening no longer focuses the composer unconditionally", !/setTimeout\(\(\) => input\?\.focus\(\)/.test(assistantSource));
+  ok("Start over no longer focuses the composer unconditionally", !/\[data-chatbot-input\]"\)\?\.focus\(\)/.test(assistantSource));
 }
 
 /* ---------- report ---------- */

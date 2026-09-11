@@ -2788,7 +2788,9 @@ function resetAjoopConversation() {
   resetChatbotMessages();
   renderChatbotQuickActions();
   renderAjoopBridgeStatus();
-  document.querySelector("[data-chatbot-input]")?.focus();
+  /* The Start over button is gone once the actions re-render, so focus has to
+   * land somewhere on purpose — and not in the composer on a phone. */
+  focusAjoopEntry();
 }
 
 /**
@@ -2913,6 +2915,32 @@ function updatePortfolioChatbotLanguage(
   renderAjoopBridgeStatus();
 }
 
+/** True when the primary pointer is a finger: a phone or a tablet, not a laptop. */
+function isAjoopTouchFirst() {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(hover: none) and (pointer: coarse)").matches
+  );
+}
+
+/**
+ * Where focus lands when the panel opens or a conversation starts over.
+ *
+ * A5.1.2: on a touch-first device the composer is NOT focused. Focusing it
+ * raises the soft keyboard over half the panel before the visitor has read a
+ * word, which is the opposite of what opening an assistant should do. The
+ * dialog itself takes focus instead, so a screen reader still announces it by
+ * name and the first Tab reaches its first control. With a mouse or a keyboard
+ * the composer is the useful place to start, exactly as before.
+ */
+function focusAjoopEntry() {
+  const target = document.querySelector(
+    isAjoopTouchFirst() ? "[data-chatbot-panel]" : "[data-chatbot-input]",
+  );
+  if (target) target.focus();
+}
+
 function setChatbotOpen(
   isOpen,
   { restoreFocus = true, trigger = null } = {},
@@ -2940,8 +2968,7 @@ function setChatbotOpen(
     /* One probe per open, subject to the bridge's own backoff. No polling loop:
      * when the bridge is not configured this is a no-op. */
     if (typeof initializeAjoopAi === "function") initializeAjoopAi();
-    const input = document.querySelector("[data-chatbot-input]");
-    setTimeout(() => input?.focus(), 80);
+    setTimeout(focusAjoopEntry, 80);
   } else if (wasOpen) {
     setBackgroundInert();
     setOverlayBodyState(false);
@@ -2962,7 +2989,7 @@ function setupPortfolioChatbot() {
   widget.className = "portfolio-chatbot";
   widget.setAttribute("data-portfolio-chatbot", "");
   widget.innerHTML = `
-    <div class="chatbot-panel" data-chatbot-panel aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ajoop-dialog-title">
+    <div class="chatbot-panel" data-chatbot-panel aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ajoop-dialog-title" tabindex="-1">
       <div class="chatbot-header">
         ${ajoopMascotMarkup()}
         <div class="chatbot-identity">
@@ -3033,18 +3060,37 @@ function setupPortfolioChatbot() {
     });
   }
 
-  document.addEventListener("keydown", (event) => {
-    const panel = document.querySelector("[data-chatbot-panel]");
-    if (!portfolioChatbotState.open || !panel) return;
-    if (event.key === "Escape") {
-      event.preventDefault();
-      setChatbotOpen(false);
-      return;
-    }
-    trapFocus(event, panel);
-  });
+  document.addEventListener("keydown", handleAjoopPanelKeydown);
 
   updatePortfolioChatbotLanguage(getCurrentLocale());
+}
+
+/**
+ * Keyboard inside the open panel: Escape closes it, Tab stays inside it.
+ *
+ * A5.1.2: on a touch-first device the dialog container itself holds focus when
+ * the panel opens. The shared trap only wraps at the first and last control, so
+ * Tab from the container is sent to the first control and Shift+Tab to the last
+ * — otherwise Shift+Tab would leave the dialog for the inert page behind it.
+ */
+function handleAjoopPanelKeydown(event) {
+  const panel = document.querySelector("[data-chatbot-panel]");
+  if (!portfolioChatbotState.open || !panel) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    setChatbotOpen(false);
+    return;
+  }
+  if (event.key === "Tab" && document.activeElement === panel) {
+    const focusable = getFocusableElements(panel);
+    const target = event.shiftKey ? focusable[focusable.length - 1] : focusable[0];
+    if (target) {
+      event.preventDefault();
+      target.focus();
+      return;
+    }
+  }
+  trapFocus(event, panel);
 }
 
 setupPortfolioChatbot();

@@ -154,6 +154,8 @@ const assistant = read("js/ajoop/assistant.js");
 ok("Ajoop panel is a labelled modal dialog", /role="dialog"[\s\S]{0,120}aria-modal="true"[\s\S]{0,120}aria-labelledby/.test(assistant));
 ok("Ajoop traps focus while open", /trapFocus\(/.test(assistant));
 ok("Ajoop restores focus to its trigger", /restoreOverlayFocus\(/.test(assistant));
+ok("Ajoop dialog can hold focus itself (tabindex=-1, not in the tab order)", /data-chatbot-panel[^>]*tabindex="-1"/.test(assistant));
+ok("Ajoop does not raise the soft keyboard on a touch-first open", /function focusAjoopEntry\(\)[\s\S]{0,200}isAjoopTouchFirst\(\)/.test(assistant) && /setTimeout\(focusAjoopEntry, \d+\)/.test(assistant));
 
 /* ---------- shared overlay contract ---------- */
 
