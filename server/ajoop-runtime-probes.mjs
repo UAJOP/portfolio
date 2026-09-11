@@ -104,9 +104,11 @@ export function resolveAjoopRuntimeConfig(env = {}) {
   });
 }
 
-function connectionRefused(error) {
+function connectionFailureKind(error) {
   const code = error?.cause?.code || error?.code;
-  return code === "ECONNREFUSED" || code === "ECONNRESET";
+  if (code === "ECONNREFUSED") return "unused";
+  if (code === "ECONNRESET") return "connection-reset";
+  return null;
 }
 
 export async function fetchBoundedJson(url, options = {}, dependencies = {}) {
@@ -132,9 +134,10 @@ export async function fetchBoundedJson(url, options = {}, dependencies = {}) {
     }
     return Object.freeze({ ok: Boolean(response.ok), kind: "response", status: response.status, body });
   } catch (error) {
+    const connectionKind = connectionFailureKind(error);
     return Object.freeze({
       ok: false,
-      kind: connectionRefused(error) ? "unused" : error?.name === "AbortError" ? "timeout" : "unavailable",
+      kind: connectionKind || (error?.name === "AbortError" ? "timeout" : "unavailable"),
     });
   } finally {
     clearTimeout(timer);

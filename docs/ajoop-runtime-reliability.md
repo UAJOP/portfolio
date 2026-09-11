@@ -1,6 +1,6 @@
 # Ajoop local runtime reliability
 
-## A5.2.2 foundation
+## A5.2.3 recovery and readiness hardening
 
 `npm run ajoop:runtime:start` starts the local runtime supervisor. It owns a
 loopback-only control listener (`127.0.0.1:8790` by default), discovers an
@@ -10,6 +10,11 @@ sanitized machine-readable status through `npm run ajoop:runtime:status`.
 The control listener is the singleton mechanism. A second supervisor reports
 `supervisor-already-running`; an unrelated process occupying the control port
 reports `control-port-occupied`. Neither occupant is terminated.
+Only the instance that acquired the listener writes the shared diagnostic
+status file. Requests must carry the exact configured IPv4 loopback Host and
+port; missing or malformed Host values receive `400`, while a syntactically
+valid foreign host or wrong port receives `421`. Malformed request targets also
+receive a bounded `400`, without stopping the listener or exposing an error.
 The CLI validates the fixed supervisor identity and schema before accepting
 status or sending stop. This protects against accidental local port collisions;
 it is not intended to authenticate against a malicious same-user process.
@@ -31,6 +36,14 @@ the status to `failed` and does not respawn it. Shutdown uses the same owned
 child cleanup path for CLI signals and the local `stop` command. Windows may
 only terminate the exact owned child process handle; no process-tree or
 executable-name kill is attempted.
+Synchronous spawn throws use the same sanitized component-specific failure as
+asynchronous spawn errors, create no ownership record, and clean up only any
+earlier child handle owned by this supervisor. A repeated `start()` while
+`starting` shares that attempt; while `ready` it reports current readiness; and
+after `failed` it reports the current failure instead of an earlier success.
+Once the same supervisor instance is `stopping` or actually `stopped`, a new
+start is rejected; explicit recovery requires a fresh supervisor instance or
+process.
 
 Owned child stdout and stderr use independent, stateful line framers. A normal
 line is buffered across arbitrary stream chunks and inspected only when its
@@ -42,6 +55,13 @@ bounded and preventing a late credential from leaking. Raw child output is
 never retained in the status file. Spawn errors and startup exits invalidate
 the active startup generation, so an older readiness continuation cannot
 restore `ready`.
+
+All `start`, `status`, and `stop` commands load `.env.local` through the same
+path. Explicit process environment keys win; absent keys are filled from the
+private file; validated defaults apply last. Values and file contents are never
+printed. Status writes are serialized in transition order. A reset connection
+is treated as evidence of an unknown occupant, not an unused port, so the
+supervisor does not spawn over it.
 
 The shipped bridge health response carries a stable service/protocol marker and
 the active generation and embedding model names. An external bridge must match

@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 import { EventEmitter } from "node:events";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import http from "node:http";
+import net from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { PassThrough } from "node:stream";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import { resolveRuntimeCommandConfig } from "./ajoop-runtime.mjs";
 import {
   AJOOP_BRIDGE_EXIT_CODES,
   AJOOP_BRIDGE_IDENTITY,
@@ -27,6 +32,7 @@ import {
   attachBoundedChildLogs,
   createChildLogLineFramer,
   createAjoopRuntimeSupervisor,
+  sanitizeChildOutput,
   sanitizeSupervisorStatus,
   writeSupervisorStatus,
 } from "../server/ajoop-runtime-supervisor.mjs";
@@ -72,6 +78,7 @@ function harness({
   writeStatus,
   waitImpl = wait,
   statusPath = "ignored",
+  spawnOwned,
 } = {}) {
   const spawned = [];
   const writes = [];
@@ -93,11 +100,11 @@ function harness({
       return typeof bridge === "function" ? bridge() : bridge;
     },
     locateOllama: async () => locate,
-    spawnOwned: () => {
+    spawnOwned: spawnOwned || (() => {
       const next = children[spawned.length] || child(9000 + spawned.length);
       spawned.push(next);
       return next;
-    },
+    }),
     wait: waitImpl,
     writeStatus: writeStatus || (async (_path, status) => writes.push(sanitizeSupervisorStatus(status))),
     now: (() => {
@@ -128,8 +135,10 @@ check("missing embedding is named", missingRequiredModels([config.generationMode
 
 {
   const h = harness({ ollama: healthyOllama, bridge: externalBridge });
+  check("fresh supervisor begins with startable stopped label", h.supervisor.status().state, "stopped");
   const result = await h.supervisor.start();
   check("healthy external services reach ready", result.ok, true);
+  check("fresh supervisor initial start reaches ready", result.status.state, "ready");
   check("external Ollama is never spawned", h.spawned.length, 0);
   await h.supervisor.stop();
 }
@@ -143,15 +152,23 @@ check("missing embedding is named", missingRequiredModels([config.generationMode
   check("second supervisor cannot acquire singleton", (await blocked.start()).code, "supervisor-already-running");
 }
 {
-  const unrelated = child(9090);
+  const occupant = child(9090);
+  let closeCalls = 0;
   const blocked = createAjoopRuntimeSupervisor({
     config: testConfig,
-    acquireControl: async () => ({ ok: false, code: "control-port-occupied" }),
+    acquireControl: async () => ({
+      ok: false,
+      code: "control-port-occupied",
+      kill: (signal) => occupant.kill(signal),
+      close: async () => { closeCalls += 1; },
+    }),
     writeStatus: async () => {},
     now: () => "x",
   });
   check("unknown control occupant refuses", (await blocked.start()).code, "control-port-occupied");
-  check("unknown control occupant causes zero child kills", unrelated.killCalls.length, 0);
+  await blocked.stop();
+  check("unknown control occupant receives zero signals", occupant.killCalls.length, 0);
+  check("unknown control occupant is never closed as owned", closeCalls, 0);
 }
 {
   const h = harness({ ollama: { ok: false, kind: "unavailable" }, locate: { ok: false }, bridge: externalBridge });
@@ -159,11 +176,14 @@ check("missing embedding is named", missingRequiredModels([config.generationMode
 }
 {
   const occupant = child(8787);
-  const h = harness({ ollama: healthyOllama, bridge: { ok: false, kind: "unknown-occupant" } });
+  const h = harness({
+    ollama: healthyOllama,
+    bridge: { ok: false, kind: "unknown-occupant", kill: (signal) => occupant.kill(signal) },
+  });
   const result = await h.supervisor.start();
   check("unknown bridge occupant refuses safely", result.code, "bridge-port-occupied");
   check("unknown occupant is never spawned", h.spawned.length, 0);
-  check("unknown bridge occupant causes zero child kills", occupant.killCalls.length, 0);
+  check("unknown bridge occupant receives zero signals", occupant.killCalls.length, 0);
 }
 {
   const ownedOllama = child(9101);
@@ -383,6 +403,11 @@ const until = async (predicate) => {
   const starting = h.supervisor.start();
   await settle();
   const stopping = h.supervisor.stop();
+  const repeatedWhileStopping = await h.supervisor.start();
+  check("start during startup shutdown reports current failure", repeatedWhileStopping.ok, false);
+  check("start during startup shutdown reports stopping code", repeatedWhileStopping.code, "runtime-stopping");
+  check("start during startup shutdown reports stopping state", repeatedWhileStopping.status.state, "stopping");
+  check("start during startup shutdown creates no second attempt", h.spawned.length, 0);
   pending.resolve(healthyOllama);
   await Promise.all([starting, stopping]);
   check("stop during startup prevents later ready", h.supervisor.status().state, "stopped");
@@ -395,7 +420,10 @@ const until = async (predicate) => {
     bridge: externalBridge,
     locate: { ok: true, path: "ollama.exe" },
   });
-  const [first, second] = await Promise.all([h.supervisor.start(), h.supervisor.start()]);
+  const firstAttempt = h.supervisor.start();
+  const secondAttempt = h.supervisor.start();
+  check("concurrent start returns the same in-flight promise", firstAttempt, secondAttempt);
+  const [first, second] = await Promise.all([firstAttempt, secondAttempt]);
   check("concurrent start shares Ollama result", first.ok && second.ok, true);
   check("concurrent start cannot spawn Ollama twice", h.spawned.length, 1);
 }
@@ -407,8 +435,44 @@ const until = async (predicate) => {
   });
   await Promise.all([h.supervisor.start(), h.supervisor.start()]);
   check("concurrent start cannot spawn bridge twice", h.spawned.length, 1);
-  await h.supervisor.start();
+  const repeatedReady = await h.supervisor.start();
+  check("repeated start after ready reports current ready state", repeatedReady.status.state, "ready");
   check("repeated start after ready creates no child", h.spawned.length, 1);
+}
+{
+  const shutdownGate = deferred();
+  let ollamaProbes = 0;
+  const ownedOllama = child(9491, { exitOnKill: false });
+  const h = harness({
+    ollama: () => ollamaProbes++ === 0 ? { ok: false, kind: "unavailable" } : healthyOllama,
+    bridge: externalBridge,
+    locate: { ok: true, path: "ollama.exe" },
+    children: [ownedOllama],
+    waitImpl: async () => {
+      await shutdownGate.promise;
+      ownedOllama.exitCode = 0;
+    },
+  });
+  check("stopping contract fixture reaches ready", (await h.supervisor.start()).ok, true);
+  const spawnedBeforeStop = h.spawned.length;
+  const stopping = h.supervisor.stop();
+  await until(() => h.supervisor.status().state === "stopping");
+  const duringStopping = await h.supervisor.start();
+  check("start while stopping is rejected", duringStopping.ok, false);
+  check("start while stopping uses deterministic code", duringStopping.code, "runtime-stopping");
+  check("start while stopping returns current state", duringStopping.status.state, "stopping");
+  check("start while stopping creates no startup attempt", h.spawned.length, spawnedBeforeStop);
+  shutdownGate.resolve();
+  await stopping;
+  const afterStopped = await h.supervisor.start();
+  check("start after actual stop is rejected", afterStopped.ok, false);
+  check("start after actual stop uses deterministic code", afterStopped.code, "runtime-stopped");
+  check("start after actual stop returns current state", afterStopped.status.state, "stopped");
+  check("start after actual stop does not return historical ready", afterStopped.status.localReady, false);
+  const afterStoppedAgain = await h.supervisor.start();
+  check("multiple starts after stop return same failure code", afterStoppedAgain.code, "runtime-stopped");
+  check("multiple starts after stop return current state", afterStoppedAgain.status.state, "stopped");
+  check("multiple starts after stop never respawn", h.spawned.length, spawnedBeforeStop);
 }
 {
   const externalOllama = { ...healthyOllama, killCalls: [], kill() { this.killCalls.push("kill"); } };
@@ -420,6 +484,41 @@ const until = async (predicate) => {
   check("external bridge receives zero kills", external.killCalls.length, 0);
   check("stale PID fixture grants no authority", h.spawned.length, 0);
   check("external tunnel remains untouched", h.supervisor.status().components.tunnel.state, "not-managed");
+}
+{
+  const temporaryRoot = await mkdtemp(join(tmpdir(), "ajoop-runtime-ownership-"));
+  const statusPath = join(temporaryRoot, "status.json");
+  const externalOllama = { ...healthyOllama, killCalls: [], kill(signal) { this.killCalls.push(signal); } };
+  const externalBridgeProcess = { ...externalBridge, killCalls: [], kill(signal) { this.killCalls.push(signal); } };
+  let spawnAttempts = 0;
+  try {
+    await writeFile(statusPath, JSON.stringify({
+      state: "ready",
+      components: {
+        ollama: { ownership: "owned", pid: 7777 },
+        bridge: { ownership: "owned", pid: 8888 },
+      },
+    }), "utf8");
+    const supervisor = createAjoopRuntimeSupervisor({
+      config: testConfig,
+      statusPath,
+      acquireControl: async () => ({ ok: true, close: async () => {} }),
+      probeOllama: async () => externalOllama,
+      probeBridge: async () => externalBridgeProcess,
+      spawnOwned: () => { spawnAttempts += 1; return child(9999); },
+      now: () => "x",
+    });
+    await supervisor.start();
+    const written = JSON.parse(await readFile(statusPath, "utf8"));
+    await supervisor.stop();
+    check("real stale status file creates zero spawn authority", spawnAttempts, 0);
+    check("real stale Ollama PID is not adopted", written.components.ollama.pid, null);
+    check("real stale bridge PID is not adopted", written.components.bridge.pid, null);
+    check("externally discovered Ollama receives zero signals", externalOllama.killCalls.length, 0);
+    check("externally discovered bridge receives zero signals", externalBridgeProcess.killCalls.length, 0);
+  } finally {
+    await rm(temporaryRoot, { recursive: true, force: true });
+  }
 }
 {
   const order = [];
@@ -715,9 +814,227 @@ const until = async (predicate) => {
   check("incompatible external bridge is never killed", occupant.killCalls.length, 0);
 }
 
+{
+  const configured = resolveRuntimeCommandConfig({
+    envFilePath: "injected-.env.local",
+    baseEnv: {},
+    loadEnvFileImpl: (path, base) => ({
+      env: { ...base, AJOOP_RUNTIME_CONTROL_PORT: "18891" },
+      loaded: ["AJOOP_RUNTIME_CONTROL_PORT"],
+      present: path === "injected-.env.local",
+    }),
+  });
+  check("shared command config loads control port from injected env file", configured.controlPort, 18891);
+  const shellWins = resolveRuntimeCommandConfig({
+    envFilePath: "injected-.env.local",
+    baseEnv: { AJOOP_RUNTIME_CONTROL_PORT: "18892" },
+    loadEnvFileImpl: (_path, base) => ({ env: { ...base }, loaded: [], present: true }),
+  });
+  check("shared command config preserves process environment precedence", shellWins.controlPort, 18892);
+}
+{
+  let sharedStatus = "active-status";
+  let activeWrites = 0;
+  const active = harness({
+    ollama: healthyOllama,
+    bridge: externalBridge,
+    statusPath: "shared-status.json",
+    writeStatus: async (_path, status) => {
+      activeWrites += 1;
+      sharedStatus = JSON.stringify(status);
+    },
+  });
+  await active.supervisor.start();
+  const activeTruth = sharedStatus;
+  let losingWrites = 0;
+  const refused = createAjoopRuntimeSupervisor({
+    config: testConfig,
+    statusPath: "shared-status.json",
+    acquireControl: async () => ({ ok: false, code: "supervisor-already-running" }),
+    writeStatus: async () => {
+      losingWrites += 1;
+      sharedStatus = "losing-status";
+    },
+    now: () => "x",
+  });
+  check("second supervisor returns singleton refusal", (await refused.start()).code, "supervisor-already-running");
+  ok("active supervisor produced diagnostic status", activeWrites > 0);
+  check("refused supervisor performs zero shared status writes", losingWrites, 0);
+  check("refused supervisor preserves active status truth", sharedStatus, activeTruth);
+  await active.supervisor.stop();
+}
+{
+  let closed = 0;
+  const h = harness({
+    ollama: { ok: false, kind: "unavailable" },
+    bridge: externalBridge,
+    locate: { ok: true, path: "ollama.exe" },
+    acquireControl: async () => ({ ok: true, close: async () => { closed += 1; } }),
+    spawnOwned: () => { throw new Error("private OLLAMA_SECRET=do-not-leak"); },
+  });
+  const result = await h.supervisor.start();
+  check("synchronous Ollama spawn throw is structured", result.code, "ollama-spawn-failed");
+  check("synchronous Ollama spawn throw reaches failed", result.status.state, "failed");
+  check("synchronous Ollama spawn throw keeps localReady false", result.status.localReady, false);
+  check("synchronous Ollama spawn throw creates no ownership", result.status.components.ollama.ownership, "none");
+  check("synchronous Ollama spawn throw closes control listener", closed, 1);
+  ok("synchronous Ollama spawn result leaks no raw exception", !JSON.stringify(result).includes("do-not-leak"));
+}
+{
+  let spawnCalls = 0;
+  let closed = 0;
+  let ollamaProbes = 0;
+  const ownedOllama = child(9811);
+  const h = harness({
+    ollama: () => ollamaProbes++ === 0 ? { ok: false, kind: "unavailable" } : healthyOllama,
+    bridge: { ok: false, kind: "unused" },
+    locate: { ok: true, path: "ollama.exe" },
+    acquireControl: async () => ({ ok: true, close: async () => { closed += 1; } }),
+    spawnOwned: () => {
+      spawnCalls += 1;
+      if (spawnCalls === 1) return ownedOllama;
+      throw new Error("private BRIDGE_TOKEN=do-not-leak");
+    },
+  });
+  const result = await h.supervisor.start();
+  check("synchronous bridge spawn throw is structured", result.code, "bridge-spawn-failed");
+  check("synchronous bridge spawn throw reaches failed", result.status.state, "failed");
+  check("synchronous bridge spawn throw creates no bridge ownership", result.status.components.bridge.ownership, "none");
+  check("synchronous bridge spawn throw cleans earlier owned Ollama", ownedOllama.killCalls.join(","), "SIGTERM");
+  check("synchronous bridge spawn throw does not respawn", spawnCalls, 2);
+  check("synchronous bridge spawn throw closes control listener", closed, 1);
+  ok("synchronous bridge spawn result leaks no raw exception", !JSON.stringify(result).includes("do-not-leak"));
+}
+{
+  let bridgeProbes = 0;
+  const owned = child(9821);
+  const h = harness({
+    ollama: healthyOllama,
+    bridge: () => bridgeProbes++ === 0 ? { ok: false, kind: "unused" } : externalBridge,
+    children: [owned],
+  });
+  check("runtime reaches ready before repeated-start failure test", (await h.supervisor.start()).ok, true);
+  owned.exitCode = 1;
+  owned.emit("exit", 1, null);
+  await settle();
+  const repeated = await h.supervisor.start();
+  check("repeated start after child failure is not stale success", repeated.ok, false);
+  check("repeated start after child failure reports current code", repeated.code, "bridge-unexpected-exit");
+  check("repeated start after child failure remains failed", repeated.status.state, "failed");
+  check("repeated start after child failure does not respawn", h.spawned.length, 1);
+}
+{
+  const reset = await fetchBoundedJson("http://127.0.0.1:1", {}, {
+    fetchImpl: async () => { throw Object.assign(new Error("reset"), { code: "ECONNRESET" }); },
+  });
+  check("ECONNRESET is not classified as unused", reset.kind, "connection-reset");
+  const bridgeReset = harness({ ollama: healthyOllama, bridge: { ok: false, kind: "connection-reset" } });
+  check("bridge reset is treated as occupied", (await bridgeReset.supervisor.start()).code, "bridge-port-occupied");
+  check("bridge reset causes no spawn-over", bridgeReset.spawned.length, 0);
+  const ollamaReset = harness({ ollama: { ok: false, kind: "connection-reset" }, bridge: externalBridge, locate: { ok: true, path: "ollama.exe" } });
+  check("Ollama reset is treated as occupied", (await ollamaReset.supervisor.start()).code, "ollama-port-occupied");
+  check("Ollama reset causes no spawn-over", ollamaReset.spawned.length, 0);
+}
+{
+  const firstWrite = deferred();
+  const completed = [];
+  let calls = 0;
+  const h = harness({
+    ollama: healthyOllama,
+    bridge: externalBridge,
+    writeStatus: async (_path, status) => {
+      const state = status.state;
+      calls += 1;
+      if (calls === 1) await firstWrite.promise;
+      completed.push(state);
+    },
+  });
+  const starting = h.supervisor.start();
+  await until(() => calls === 1);
+  const stopping = h.supervisor.stop();
+  firstWrite.resolve();
+  await Promise.all([starting, stopping]);
+  check("status writes complete in transition order", completed.join(","), "starting,stopping,stopped");
+  check("serialized status writes leave stopped as final diagnostic", completed.at(-1), "stopped");
+}
+{
+  const statusFixture = sanitizeSupervisorStatus({
+    state: "ready", localReady: true, publicReachable: null, startedAt: "x", lastTransitionAt: "x", lastError: null,
+    models: { generation: config.generationModel, embedding: config.embeddingModel, generationPresent: true, embeddingPresent: true },
+    components: { ollama: { ownership: "external", state: "ready", pid: null }, bridge: { ownership: "external", state: "ready", pid: null } },
+    vector: { backend: "memory", degraded: false },
+  });
+  const control = await acquireControlServer({
+    config: { ...testConfig, controlPort: 0 },
+    getStatus: () => statusFixture,
+    requestStop: () => {},
+  });
+  const request = ({ path = "/status", host, setHost = false } = {}) => new Promise((resolvePromise, reject) => {
+    const outgoing = http.request({ hostname: "127.0.0.1", port: control.port, path, method: "GET", headers: host === undefined ? {} : { Host: host }, setHost }, (response) => {
+      let body = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => { body += chunk; });
+      response.on("end", () => resolvePromise({ status: response.statusCode, body }));
+    });
+    outgoing.on("error", reject);
+    outgoing.end();
+  });
+  const validHost = `127.0.0.1:${control.port}`;
+  check("valid IPv4 loopback Host is accepted", (await request({ host: validHost })).status, 200);
+  check("foreign Host is rejected", (await request({ host: `evil.example:${control.port}` })).status, 421);
+  check("wrong control port Host is rejected", (await request({ host: "127.0.0.1:65534" })).status, 421);
+  check("malformed Host is rejected deterministically", (await request({ host: "127.0.0.1:not-a-port" })).status, 400);
+  check("missing Host is rejected deterministically", (await request()).status, 400);
+  check("foreign absolute request target is rejected", (await request({ path: "http://evil.example/status", host: validHost })).status, 400);
+
+  const rawRequest = (payload) => new Promise((resolvePromise, reject) => {
+    const socket = net.createConnection({ host: "127.0.0.1", port: control.port }, () => socket.end(payload));
+    let response = "";
+    socket.setEncoding("utf8");
+    socket.on("data", (chunk) => { response += chunk; });
+    socket.on("end", () => resolvePromise(response));
+    socket.on("error", reject);
+  });
+  const malformed = await rawRequest(`GET http://[ HTTP/1.1\r\nHost: ${validHost}\r\nConnection: close\r\n\r\n`);
+  ok("malformed raw request target receives deterministic HTTP 400", malformed.startsWith("HTTP/1.1 400"));
+  ok("malformed raw request leaks no exception", !malformed.includes("ERR_INVALID_URL") && !malformed.includes("TypeError"));
+  check("control listener survives malformed raw request", (await request({ host: validHost })).status, 200);
+  await control.close();
+}
+
+{
+  const credentialLines = [
+    "client_secret=alpha",
+    "QDRANT_API_KEY=alpha",
+    "X-Api-Key: alpha",
+    "id_token=alpha",
+    '{"accessToken":"alpha"}',
+    '{"refreshToken":"alpha"}',
+    "credentials: alpha",
+    "https://loopback.test/callback?access_token=alpha",
+    "https://loopback.test/callback?token=alpha",
+    "http://proxy-user:proxy-password@127.0.0.1:8080",
+  ];
+  for (const [index, line] of credentialLines.entries()) {
+    check(`expanded credential syntax ${index + 1} redacts whole line`, sanitizeChildOutput(line), AJOOP_CHILD_LOG_REDACTED);
+  }
+  const harmlessLines = [
+    "client secret rotation guide loaded",
+    "QDRANT API key documentation checked",
+    "X Api Key header is supported",
+    "id token count is zero",
+    "accessToken refresh completed without a value",
+    "credentials provider initialized",
+    "proxy URL authentication is disabled",
+  ];
+  for (const [index, line] of harmlessLines.entries()) {
+    check(`harmless credential near-miss ${index + 1} remains visible`, sanitizeChildOutput(line), line);
+  }
+}
+
 if (failures.length) {
   console.error(failures.join("\n"));
   process.exitCode = 1;
 } else {
-  console.log(`Ajoop runtime supervisor foundation passed. ${passed} assertions · hermetic probes · loopback test socket only · no Ollama, no bridge.`);
+  console.log(`Ajoop runtime supervisor hardening passed. ${passed} assertions · hermetic probes · loopback test socket only · no Ollama, no bridge.`);
 }
