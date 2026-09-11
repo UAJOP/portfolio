@@ -23,7 +23,7 @@ const STOP_HEADER_VALUE = "ajoop-runtime-v1";
 export const MAX_CHILD_LOG_LINE_CHARS = 1024;
 export const AJOOP_CHILD_LOG_REDACTED = "[AJOOP child output redacted]";
 export const AJOOP_CHILD_LOG_TRUNCATED = "[AJOOP child output truncated]";
-const CHILD_LOG_CREDENTIAL = /(?:\bauthorization\s*:\s*\S|\bbearer\s+\S+|(?:^|[\s,{])["']?(?:access_token|refresh_token|token|api[_-]?key|apikey|secret|credential)["']?\s*[:=]\s*["']?\S|["']?oauth["']?\s*[:=]\s*[{[])/i;
+const CHILD_LOG_CREDENTIAL = /(?:\b(?:authorization|x-api-key)\s*:\s*\S|\bbearer\s+\S+|(?:^|[\s,{?&])["']?(?:access_token|refresh_token|id_token|accessToken|refreshToken|client_secret|qdrant_api_key|token|api[_-]?key|apikey|secret|credentials?)["']?\s*[:=]\s*["']?\S|["']?oauth["']?\s*[:=]\s*[{[]|\bhttps?:\/\/[^\s/@:]+:[^\s/@]+@)/i;
 let statusSequence = 0;
 
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
@@ -179,7 +179,6 @@ export async function acquireControlServer({ config, getStatus, requestStop, htt
   let server;
   try {
     server = httpImpl.createServer((request, response) => {
-      const url = new URL(request.url || "/", `http://${config.controlHost}:${config.controlPort}`);
       const send = (code, body) => {
         const payload = `${JSON.stringify(body)}\n`;
         response.writeHead(code, {
@@ -190,6 +189,44 @@ export async function acquireControlServer({ config, getStatus, requestStop, htt
         });
         response.end(payload);
       };
+      const actualPort = server.address()?.port || config.controlPort;
+      const rawHost = request.headers.host;
+      if (typeof rawHost !== "string" || !rawHost || rawHost !== rawHost.trim()) {
+        request.resume();
+        send(400, { ok: false, code: "invalid-host" });
+        return;
+      }
+      let parsedHost;
+      try {
+        parsedHost = new URL(`http://${rawHost}`);
+      } catch {
+        request.resume();
+        send(400, { ok: false, code: "invalid-host" });
+        return;
+      }
+      if (parsedHost.pathname !== "/" || parsedHost.search || parsedHost.hash || parsedHost.username || parsedHost.password) {
+        request.resume();
+        send(400, { ok: false, code: "invalid-host" });
+        return;
+      }
+      if (parsedHost.hostname !== config.controlHost || Number(parsedHost.port || 80) !== actualPort) {
+        request.resume();
+        send(421, { ok: false, code: "control-host-mismatch" });
+        return;
+      }
+      let url;
+      try {
+        url = new URL(request.url || "/", `http://${config.controlHost}:${actualPort}`);
+      } catch {
+        request.resume();
+        send(400, { ok: false, code: "invalid-request-target" });
+        return;
+      }
+      if (url.hostname !== config.controlHost || Number(url.port || 80) !== actualPort) {
+        request.resume();
+        send(400, { ok: false, code: "invalid-request-target" });
+        return;
+      }
       if (request.method === "GET" && url.pathname === "/status") {
         send(200, getStatus());
         return;
@@ -212,6 +249,20 @@ export async function acquireControlServer({ config, getStatus, requestStop, htt
       }
       request.resume();
       send(404, { ok: false, code: "not-found" });
+    });
+    server.on("clientError", (_error, socket) => {
+      if (!socket?.writable) return;
+      const payload = `${JSON.stringify({ ok: false, code: "malformed-request" })}\n`;
+      socket.end([
+        "HTTP/1.1 400 Bad Request",
+        "Content-Type: application/json; charset=utf-8",
+        `Content-Length: ${Buffer.byteLength(payload)}`,
+        "Cache-Control: no-store",
+        "X-Content-Type-Options: nosniff",
+        "Connection: close",
+        "",
+        payload,
+      ].join("\r\n"));
     });
     const listening = new Promise((resolvePromise, reject) => {
       server.once("error", reject);
@@ -323,14 +374,20 @@ export function createAjoopRuntimeSupervisor(options = {}) {
   let startPromise = null;
   let startupGeneration = 0;
   let activeAttempt = null;
+  let acquiredSingleton = false;
+  let statusWriteChain = Promise.resolve();
 
   const status = () => sanitizeSupervisorStatus(mutable);
-  const persist = async () => {
-    try {
-      await deps.writeStatus(statusPath, mutable);
-    } catch {
+  const persist = () => {
+    if (!acquiredSingleton) return Promise.resolve();
+    const snapshot = status();
+    statusWriteChain = statusWriteChain.then(
+      () => deps.writeStatus(statusPath, snapshot),
+      () => deps.writeStatus(statusPath, snapshot),
+    ).catch(() => {
       // Status persistence is diagnostic. It never changes ownership or readiness.
-    }
+    });
+    return statusWriteChain;
   };
   const transition = async (state, error = null) => {
     mutable.state = state;
@@ -467,12 +524,13 @@ export function createAjoopRuntimeSupervisor(options = {}) {
       await acquired?.close?.();
       return Object.freeze({ ok: false, code: attempt.code || "startup-stopped", status: status() });
     }
-    control = acquired;
-    if (!control.ok) {
-      invalidateAttempt(attempt, control.code);
-      await transition("failed", control.code);
-      return Object.freeze({ ok: false, code: control.code, status: status() });
+    if (!acquired.ok) {
+      invalidateAttempt(attempt, acquired.code);
+      await transition("failed", acquired.code);
+      return Object.freeze({ ok: false, code: acquired.code, status: status() });
     }
+    control = acquired;
+    acquiredSingleton = true;
     await transition("starting");
     if (!attemptIsCurrent(attempt)) return Object.freeze({ ok: false, code: attempt.code, status: status() });
 
@@ -480,11 +538,18 @@ export function createAjoopRuntimeSupervisor(options = {}) {
     if (!attemptIsCurrent(attempt)) return finishInvalidStartup(attempt, "startup-stopped");
     if (ollama.ok) {
       await setComponent("ollama", "external", "ready");
+    } else if (ollama.kind === "connection-reset") {
+      return failStartup("ollama-port-occupied", attempt);
     } else {
       const located = await deps.locateOllama();
       if (!attemptIsCurrent(attempt)) return finishInvalidStartup(attempt, "startup-stopped");
       if (!located.ok) return failStartup("ollama-executable-missing", attempt);
-      const child = deps.spawnOwned(located.path, ["serve"], { cwd: rootDir, env });
+      let child;
+      try {
+        child = deps.spawnOwned(located.path, ["serve"], { cwd: rootDir, env });
+      } catch {
+        return failStartup("ollama-spawn-failed", attempt);
+      }
       children.ollama = child;
       attachOwnedLifecycle("ollama", child, attempt);
       await setComponent("ollama", "owned", "starting", child);
@@ -513,10 +578,15 @@ export function createAjoopRuntimeSupervisor(options = {}) {
     } else if (bridge.kind !== "unused") {
       return failStartup("bridge-port-occupied", attempt);
     } else {
-      const child = deps.spawnOwned(process.execPath, [resolve(rootDir, "server", "ajoop-bridge.mjs")], {
-        cwd: rootDir,
-        env: config.bridgeEnv,
-      });
+      let child;
+      try {
+        child = deps.spawnOwned(process.execPath, [resolve(rootDir, "server", "ajoop-bridge.mjs")], {
+          cwd: rootDir,
+          env: config.bridgeEnv,
+        });
+      } catch {
+        return failStartup("bridge-spawn-failed", attempt);
+      }
       children.bridge = child;
       attachOwnedLifecycle("bridge", child, attempt);
       await setComponent("bridge", "owned", "starting", child);
@@ -538,6 +608,12 @@ export function createAjoopRuntimeSupervisor(options = {}) {
   };
 
   const start = () => {
+    if (mutable.state === "failed") {
+      return Promise.resolve(Object.freeze({ ok: false, code: mutable.lastError || "runtime-failed", status: status() }));
+    }
+    if (mutable.state === "ready") return Promise.resolve(Object.freeze({ ok: true, status: status() }));
+    if (stopped) return Promise.resolve(Object.freeze({ ok: false, code: "runtime-stopped", status: status() }));
+    if (stopping) return Promise.resolve(Object.freeze({ ok: false, code: "runtime-stopping", status: status() }));
     if (startPromise) return startPromise;
     startPromise = runStart();
     return startPromise;

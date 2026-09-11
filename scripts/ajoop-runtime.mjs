@@ -17,16 +17,19 @@ const rootDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const command = process.argv[2] || "status";
 const envPath = resolve(rootDir, ".env.local");
 
-function runtimeEnv() {
-  return loadEnvFile(envPath, process.env).env;
+export function resolveRuntimeCommandConfig({
+  envFilePath = envPath,
+  baseEnv = process.env,
+  loadEnvFileImpl = loadEnvFile,
+} = {}) {
+  return resolveAjoopRuntimeConfig(loadEnvFileImpl(envFilePath, baseEnv).env);
 }
 
 function print(value) {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
-async function clientRequest(path, options = {}) {
-  const config = resolveAjoopRuntimeConfig(process.env);
+async function clientRequest(config, path, options = {}) {
   return fetchBoundedJson(`http://${config.controlHost}:${config.controlPort}${path}`, options, {
     timeoutMs: config.requestTimeoutMs,
     maxBytes: config.maxResponseBytes,
@@ -34,8 +37,9 @@ async function clientRequest(path, options = {}) {
 }
 
 async function run() {
+  const config = resolveRuntimeCommandConfig();
   if (command === "status") {
-    const result = await clientRequest("/status");
+    const result = await clientRequest(config, "/status");
     if (!result.ok) {
       print({ ok: false, code: "supervisor-unavailable" });
       process.exitCode = 1;
@@ -50,7 +54,7 @@ async function run() {
     return;
   }
   if (command === "stop") {
-    const identity = await clientRequest("/status");
+    const identity = await clientRequest(config, "/status");
     if (!identity.ok || !isAjoopSupervisorStatus(identity.body)) {
       print({
         ok: false,
@@ -59,7 +63,7 @@ async function run() {
       process.exitCode = 1;
       return;
     }
-    const result = await clientRequest("/stop", {
+    const result = await clientRequest(config, "/stop", {
       method: "POST",
       headers: { [AJOOP_RUNTIME_STOP_HEADER.name]: AJOOP_RUNTIME_STOP_HEADER.value },
     });
@@ -77,7 +81,7 @@ async function run() {
     return;
   }
 
-  const supervisor = createAjoopRuntimeSupervisor({ env: runtimeEnv(), rootDir });
+  const supervisor = createAjoopRuntimeSupervisor({ config, env: config.bridgeEnv, rootDir });
   let stopping = false;
   const stop = async () => {
     if (stopping) return;
@@ -96,7 +100,9 @@ async function run() {
   await new Promise(() => {});
 }
 
-run().catch(() => {
-  print({ ok: false, code: "runtime-supervisor-failed" });
-  process.exitCode = 1;
-});
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  run().catch(() => {
+    print({ ok: false, code: "runtime-supervisor-failed" });
+    process.exitCode = 1;
+  });
+}
