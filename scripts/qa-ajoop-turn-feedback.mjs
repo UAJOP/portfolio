@@ -908,6 +908,39 @@ const GROUNDED_PLAN = { type: "answer", text: "Grounded answer.", links: [], car
   check("an AI-assisted turn carries no status", node.getAttribute("data-ajoop-turn-status"), null);
 }
 
+{
+  let browserFollowupsPlanned = 0;
+  const env = loadAssistant({
+    planAjoopActions: () => {
+      browserFollowupsPlanned += 1;
+      return { actions: [{ action: "compare", label: "Wrong browser pair" }], secondary: [] };
+    },
+  });
+  const node = env.api.openAjoopTurn("en");
+  const serverPair = ["Ajoop Portfolio Copilot", "SINAMA"];
+  env.api.finishAjoopTurn({
+    node,
+    route: { intent: "comparison" },
+    plan: { ...GROUNDED_PLAN, comparison: COMPARISON },
+    model: {
+      ok: true,
+      answer: "Ajoop Portfolio Copilot and SINAMA differ in purpose.",
+      scope: "portfolio",
+      evidence: null,
+      discourse: { turnKind: "continuation", referents: serverPair },
+      conversationState: { version: 1, scope: "portfolio", referents: serverPair, orderedReferents: [] },
+    },
+    language: "en",
+    question: "Compare AJOOP with it.",
+  });
+  check("server-resolved prose is displayed", node.querySelector(".chatbot-message-text").textContent,
+    "Ajoop Portfolio Copilot and SINAMA differ in purpose.");
+  check("message-only browser comparison is suppressed beside a server answer", node.querySelectorAll(".ajoop-comparison").length, 0);
+  check("message-only contextual follow-ups are not planned beside a server answer", browserFollowupsPlanned, 0);
+  check("remembered state uses the server-resolved pair", env.remembered.at(-1)?.conversationState?.referents.join("|"), serverPair.join("|"));
+  ok("server answer leaves only non-contextual starter actions", env.panel.quicks.querySelectorAll("button").length > 0);
+}
+
 /* ---------- 7. the turn lifecycle end to end ---------- */
 
 const turnGlobals = () => {

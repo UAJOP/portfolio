@@ -2179,7 +2179,12 @@ function finishAjoopTurn(context) {
     text: model ? model.answer : plan.text,
     links: general || !plan || model ? [] : plan.links,
     cards: general ? [] : model ? modelCards : plan?.cards || [],
-    comparison: general || !plan ? null : plan.comparison,
+    /* A browser plan is intentionally message-only. Once the validated server
+     * answered, its discourse is authoritative and a contextual comparison
+     * assembled independently here could name a different pair. Until server
+     * comparison presentation is transported explicitly, suppress that
+     * browser artifact. */
+    comparison: general || model || !plan ? null : plan.comparison,
     provenance: ajoopTurnProvenance(plan, model, general),
     /* The full record only when the visitor asked for it. */
     detail: Boolean(plan && plan.depth === "deep"),
@@ -2195,15 +2200,22 @@ function finishAjoopTurn(context) {
    * only ever saw the turns the bridge answered. A deterministic fallback is
    * still a turn the next question will refer back to. */
   if (typeof rememberAjoopRagExchange === "function") {
-    rememberAjoopRagExchange({ route, question, language, answer: spec.text });
+    rememberAjoopRagExchange({
+      route,
+      question,
+      language,
+      answer: spec.text,
+      conversationState: model?.conversationState,
+    });
   }
 
   /* Actions settle BEFORE the scroll. The row is a sibling grid track of the
    * transcript, so its height decides how much transcript is visible; settling
    * it first is what makes one scroll call enough for the whole turn. */
-  if (general) {
+  if (general || model) {
     /* Back to the canonical openers rather than follow-ups inherited from a
-     * portfolio plan the visitor never saw. */
+     * browser plan whose contextual subjects the server may have resolved
+     * differently. */
     renderChatbotQuickActions();
   } else {
     const actions =
@@ -2987,9 +2999,11 @@ function handleAjoopMessage(message) {
 
   if (typeof routeAjoopQuery !== "function") return null;
 
-  const direction =
-    typeof detectAjoopContinuation === "function" ? detectAjoopContinuation(message) : null;
-  const route = (direction && ajoopContinuationRoute(direction)) || routeAjoopQuery(message);
+  /* Typed multi-turn meaning belongs to the server. The browser route is a
+   * message-only deterministic fallback/UI plan: it must not independently
+   * inherit sessionStorage and then compete with canonical server discourse.
+   * Explicit button actions still carry their own subject below. */
+  const route = routeAjoopQuery(message, { conversation: null });
 
   /* Two project names in one sentence compare those two, in reading order; a
    * single name compares against whatever the visitor was just discussing. */

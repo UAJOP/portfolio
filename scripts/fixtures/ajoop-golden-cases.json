@@ -359,7 +359,7 @@
       "id": "D-02",
       "category": "evidence_lookup",
       "locale": "tr",
-      "question": "Atölye Joyday deneyimi için kanıt göster.",
+      "question": "Kaan'ın Atölye Joyday deneyimi için kanıt göster.",
       "expect": {
         "scope": "portfolio",
         "tool": "portfolio.evidence_lookup",
@@ -1083,7 +1083,7 @@
       "id": "P-02",
       "category": "typo_alias",
       "locale": "tr",
-      "question": "cbot deneyimi nasıldı?",
+      "question": "Kaan'ın CBOT deneyimi nasıldı?",
       "expect": {
         "scope": "portfolio",
         "tool": "portfolio.evidence_lookup",

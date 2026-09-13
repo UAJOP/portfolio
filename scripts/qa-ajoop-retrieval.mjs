@@ -87,7 +87,9 @@ check(
 );
 /* A short form is only granted when it is unique, which is why neither
  * hospital project may claim the word "hospital". */
-ok("punto gets its short form", plan("punto'da ne yaptı").activeOrganizations.includes("Punto Organization"));
+ok("punto gets its short form", plan("punto'da ne yaptı").currentEntities.some(
+  (entity) => entity.canonical === "Punto Organization",
+));
 ok(
   "no entity claims the ambiguous word hospital",
   entityIndex.entities.every((entity) => !entity.aliases.includes("hospital")),
@@ -137,7 +139,6 @@ const ELIGIBLE = [
   "hangi projeleri var?",
   "hangi teknolojileri kullanıyor?",
   "hangi şirketlerde çalıştı?",
-  "CBOT'ta ne yaptı?",
   "SINAMA ne işe yarıyor?",
   "Hospital Form App stacki ne?",
   "neden Kaan'ı işe almalıyız?",
@@ -285,6 +286,7 @@ for (const question of [
   "Kaan CBOT'ta ne yaptı?",
   "Kaan'ın CBOT deneyimi nedir?",
   "What did Kaan do at CBOT?",
+  "Tell me about Kaan's experience at CBOT.",
 ]) {
   const result = plan(question);
   ok(
@@ -324,13 +326,16 @@ for (const question of [
 /* ---------- C. entity typing drives isolation differently ---------- */
 
 check("a project question locks to that project", plan("sinamanın stacki ne").activeProjects.join(), "SINAMA");
-check("an organization question locks to that organization", plan("cbot'ta ne yaptı").activeOrganizations.join(), "CBOT");
+check("an ownerless organization relation grants no authority", plan("cbot'ta ne yaptı").contextEligible, false);
 for (const [question, expected] of [
   ["outlier'da ne yaptı", "Outlier AI"],
   ["joyday'de ne yaptı", "Atölye Joyday"],
   ["punto'da ne yaptı", "Punto Organization"],
 ]) {
-  check(`organization resolves: ${question}`, plan(question).activeOrganizations.join(), expected);
+  const result = plan(question);
+  check(`organization still resolves without authority: ${question}`, result.currentEntities.map((entity) => entity.canonical).join(), expected);
+  check(`ownerless organization relation stays general: ${question}`, result.contextEligible, false);
+  check(`ownerless organization relation activates no employer: ${question}`, result.activeOrganizations.length, 0);
 }
 /* Technology is a boost, never a lock: C# spans several projects. */
 for (const question of ["c sharp ile ne yaptı?", "dot net projeleri neler?"]) {
@@ -631,12 +636,12 @@ for (const [question, wrongBias, expectedId, forbidden, forbiddenSources] of PRO
   ok("[e2e] and keeps Merge Rush", /merge-rush|mergeRush/i.test(ids));
 }
 
-/* Organization isolation, again under adversarial similarity. */
+/* Explicit-owner organization isolation, again under adversarial similarity. */
 for (const [question, expected, wrongBias] of [
-  ["cbot'ta ne yaptı", "cbot", "joyday|outlier"],
-  ["outlier'da ne yaptı", "outlier", "cbot|joyday"],
-  ["joyday'de ne yaptı", "joyday", "cbot|punto"],
-  ["punto'da ne yaptı", "punto", "cbot|oceans"],
+  ["CBOT'ta Kaan ne yaptı?", "cbot", "joyday|outlier"],
+  ["Kaan'ın Outlier AI deneyimi neydi?", "outlier", "cbot|joyday"],
+  ["Joyday'de Kaan teknik olarak ne yaptı?", "joyday", "cbot|punto"],
+  ["Kaan Punto'da ne yaptı?", "punto", "cbot|oceans"],
 ]) {
   const { rag } = await makeRag(matches(wrongBias));
   const response = await ask(rag, question);

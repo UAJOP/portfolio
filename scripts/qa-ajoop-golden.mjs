@@ -348,7 +348,7 @@ const PUBLIC_BODY_KEYS = new Set([
   "ok", "mode", "scope", "answer", "model", "embedModel",
   "sources", "retrievedSources", "evidence", "retrievalTopScore",
   "answerMode", "generationAttempts", "validatorFlags", "repaired", "fallbackUsed",
-  "exactFact", "error",
+  "exactFact", "discourse", "conversationState", "error",
 ]);
 
 /* Defence in depth only. The allowlist above is what actually decides; these

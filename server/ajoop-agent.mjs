@@ -414,7 +414,7 @@ export function createAjoopAgent({
    * because the whole layer is optional: a planner that cannot be reached must
    * cost a visitor nothing more than the tools they would have got.
    */
-  const runToolLoop = async ({ question, history }) => {
+  const runToolLoop = async ({ question, history, discourse }) => {
     const turn = createToolTurn({ registry, scope });
     const successful = [];
     /**
@@ -436,6 +436,12 @@ export function createAjoopAgent({
      */
     const messages = [
       { role: "system", content: PLANNER_SYSTEM },
+      ...(discourse?.turnKind === "continuation" && discourse.referents?.length
+        ? [{
+            role: "system",
+            content: `Server-validated discourse referents: ${discourse.referents.join("; ")}. Use these canonical subjects for tool selection; do not infer replacements from the transcript.`,
+          }]
+        : []),
       ...history.map((item) => ({ role: item.role, content: item.content })),
       { role: "user", content: question },
     ];
@@ -541,7 +547,11 @@ export function createAjoopAgent({
     let observed = { events: [], successful: [], stats: null };
     try {
       try {
-        observed = await runToolLoop({ question: admitted.question, history: admitted.history });
+        observed = await runToolLoop({
+          question: admitted.question,
+          history: admitted.history,
+          discourse: admitted.discourse,
+        });
       } catch (error) {
         /* Belt and braces: a hostile response object can still throw from a
          * getter. Tooling is optional; the admitted RAG turn must continue. */
