@@ -780,6 +780,10 @@ check("a literal wildcard origin is never echoed",
   ok("the RAG turn source owns no DOM", !/\bdocument\.|\.innerHTML\b/.test(ragClient));
   ok("the RAG turn source reuses the one bridge transport",
     ragClient.includes("requestAjoopAiResponse({") && ragClient.includes("validate: validateAjoopRagResponse"));
+  ok("the browser sends the bounded server-returned state as a hint",
+    /conversationState:\s*\{[\s\S]*?referents: ajoopRagConversationState\.referents\.slice\(\)[\s\S]*?orderedReferents: ajoopRagConversationState\.orderedReferents\.slice\(\)/.test(ragClient));
+  ok("the browser only adopts a response state after shape validation",
+    /const conversationState = validateAjoopConversationState\(settings\.conversationState\);[\s\S]*?if \(conversationState\) ajoopRagConversationState = conversationState/.test(ragClient));
 
   /* The history must follow the conversation the visitor SAW. Writing it in
    * the transport recorded only the turns the bridge answered, so a
@@ -791,7 +795,9 @@ check("a literal wildcard origin is never echoed",
     /function finishAjoopTurn\(/.test(assistant) &&
     assistant.indexOf("rememberAjoopRagExchange({") > assistant.indexOf("function finishAjoopTurn("));
   ok("the committed answer is what gets remembered",
-    assistant.includes("rememberAjoopRagExchange({ route, question, language, answer: spec.text })"));
+    /rememberAjoopRagExchange\(\{[\s\S]*?answer: spec\.text,[\s\S]*?conversationState: model\?\.conversationState,[\s\S]*?\}\)/.test(assistant));
+  ok("typed browser routing cannot independently inherit conversation state",
+    assistant.includes("routeAjoopQuery(message, { conversation: null })"));
 
   /* A language change replaces the transcript, so it must end the turn behind
    * it through the SAME invalidation Start over uses — otherwise a reply still

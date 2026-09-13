@@ -37,6 +37,13 @@ const result = {
     evidence: [{ id: 1 }],
     answer: "SECRET ANSWER THAT MUST NEVER ENTER TELEMETRY",
     question: "SECRET QUESTION",
+    discourse: {
+      turnKind: "continuation",
+      requestedDepth: "more_detail",
+      browserHint: "accepted",
+      semanticResolutionUsed: false,
+      referents: ["SECRET REFERENT MUST NEVER ENTER TELEMETRY"],
+    },
   },
   internal: {
     observedToolEvents: [
@@ -105,6 +112,10 @@ check("attributable tools", snapshot.tools.attributable, 1);
 check("tool success", snapshot.tools.success, 1);
 check("tool rejected", snapshot.tools.rejected, 1);
 check("tool errors", snapshot.tools.errors, 1);
+check("discourse turn kind is aggregated", snapshot.discourse.byTurnKind.continuation, 1);
+check("discourse depth is aggregated", snapshot.discourse.byDepthModifier.more_detail, 1);
+check("browser hint verdict is aggregated", snapshot.discourse.byBrowserHint.accepted, 1);
+check("no semantic resolver call is counted", snapshot.discourse.semanticResolutionUsed, 0);
 check("agent allowlist", snapshot.agent.planner_attempts, 5);
 check("rag ready", snapshot.rag.ready, true);
 check("rag chunks", snapshot.rag.chunks, 191);
@@ -114,6 +125,7 @@ const serialized = JSON.stringify(snapshot);
 for (const forbidden of [
   "SECRET QUESTION",
   "SECRET ANSWER",
+  "SECRET REFERENT",
   "secret.tool",
   "secretUrl",
   "must not survive",

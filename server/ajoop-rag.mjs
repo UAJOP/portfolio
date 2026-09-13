@@ -9,6 +9,12 @@ import {
 } from "./ajoop-bridge-core.mjs";
 import { MASTER_KNOWLEDGE_SOURCE, loadMasterKnowledge } from "./ajoop-knowledge.mjs";
 import { buildAliasIndex } from "./ajoop-entities.mjs";
+import {
+  buildNextPublicConversationState,
+  discourseConstraintText,
+  publicDiscourseDiagnostic,
+  resolvePublicDiscourseTurn,
+} from "./ajoop-discourse.mjs";
 import { buildExactFacts, renderExactFact, resolveExactFact } from "./ajoop-facts.mjs";
 import { foldQuestion } from "./ajoop-text.mjs";
 import {
@@ -712,6 +718,24 @@ function sanitizeHistory(raw) {
     .slice(-MAX_HISTORY_ITEMS);
 }
 
+function unresolvedDiscourseAnswer(reason, locale) {
+  const ordered = reason === "missing-ordered-antecedent";
+  const plural = reason === "missing-plural-antecedent";
+  const copy = {
+    tr: ordered
+      ? "Hangi sıralı listeyi kastettiğini göremiyorum; önce listeyi paylaşır ya da öğeyi adıyla belirtir misin?"
+      : plural
+        ? "Hangi iki şeyi kastettiğini göremiyorum; ikisini adıyla belirtir misin?"
+        : "Neye atıfta bulunduğunu göremiyorum; konuyu adıyla belirtir misin?",
+    en: ordered
+      ? "I cannot see which ordered list you mean; please share the list first or name the item."
+      : plural
+        ? "I cannot see which two things you mean; please name them."
+        : "I cannot see what you are referring to; please name the subject.",
+  };
+  return copy[locale] || copy.en;
+}
+
 function localClock(locale, now) {
   try {
     const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Istanbul";
@@ -1278,8 +1302,10 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
       `Local clock: ${localClock(locale, now())}`,
     ].join("\n");
 
+    const resolvedConstraints = discourseConstraintText(strategy?.discourse);
     const user = [
       repairFlags.length ? repairPrompt(repairFlags, strategy) : answerStrategyPrompt(strategy),
+      ...(resolvedConstraints ? ["", "Resolved discourse constraints:", resolvedConstraints] : []),
       "",
       "Recent conversation:",
       conversation,
@@ -1485,13 +1511,29 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
     }
     if (!withinRate()) return reject({ status: 429, headers, body: { ok: false, error: "rate limited" } });
 
-    /* Answered WITHOUT the model. Generating text about a value the assistant
-     * cannot know is what produces the invented value, so the fix is not to
-     * sanitize the reply afterwards but to have no reply to sanitize: no
-     * retrieval, no generation, no GPU, no number. Scope is GENERAL and there
-     * are no sources, so the panel renders prose and nothing else. */
-    const liveData = detectAjoopLiveDataRequest(question);
-    if (liveData) {
+    const history = sanitizeHistory(raw.history);
+    const discourse = resolvePublicDiscourseTurn({
+      question,
+      history,
+      conversationState: raw.conversationState,
+      entityIndex,
+    });
+    const discourseFields = (answer, scope) => ({
+      discourse: publicDiscourseDiagnostic(discourse),
+      conversationState: buildNextPublicConversationState({
+        resolvedTurn: discourse,
+        answer,
+        scope,
+        entityIndex,
+        question,
+      }),
+    });
+
+    /* Structural ambiguity is authoritative and must run before every narrow
+     * deterministic shortcut. Otherwise a word such as LinkedIn or CV could
+     * let an antecedentless pronoun/ordinal bypass clarification. */
+    if (discourse.turnKind === "ambiguous") {
+      const answer = unresolvedDiscourseAnswer(discourse.unresolvedReason, locale);
       return answered({
         status: 200,
         headers,
@@ -1499,7 +1541,39 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
           ok: true,
           mode: "rag",
           scope: "general",
-          answer: ajoopLiveDataAnswer(liveData, locale),
+          answer,
+          model: generationModel,
+          embedModel,
+          sources: [],
+          retrievedSources: [],
+          evidence: [],
+          retrievalTopScore: 0,
+          answerMode: "clarify-reference",
+          generationAttempts: 0,
+          validatorFlags: [],
+          repaired: false,
+          fallbackUsed: false,
+          ...discourseFields(answer, "GENERAL"),
+        },
+      });
+    }
+
+    /* Answered WITHOUT the model. Generating text about a value the assistant
+     * cannot know is what produces the invented value, so the fix is not to
+     * sanitize the reply afterwards but to have no reply to sanitize: no
+     * retrieval, no generation, no GPU, no number. Scope is GENERAL and there
+     * are no sources, so the panel renders prose and nothing else. */
+    const liveData = detectAjoopLiveDataRequest(question);
+    if (liveData) {
+      const answer = ajoopLiveDataAnswer(liveData, locale);
+      return answered({
+        status: 200,
+        headers,
+        body: {
+          ok: true,
+          mode: "rag",
+          scope: "general",
+          answer,
           model: generationModel,
           embedModel,
           sources: [],
@@ -1511,11 +1585,10 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
           validatorFlags: [],
           repaired: false,
           fallbackUsed: false,
+          ...discourseFields(answer, "GENERAL"),
         },
       });
     }
-
-    const history = sanitizeHistory(raw.history);
 
     /* Answered WITHOUT retrieval, embedding or the model, for the same reason
      * as the live-data guard above: when the answer is a single canonical
@@ -1560,6 +1633,7 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
             validatorFlags: [],
             repaired: false,
             fallbackUsed: false,
+            ...discourseFields(answer, "PORTFOLIO"),
             /* Additive diagnostic: which fact answered, for tests and for the
              * evidence work in a later brief. */
             exactFact: fact.id,
@@ -1576,12 +1650,13 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
      * and how much conversation the model sees. The visitor's message is never
      * rewritten; resolved names travel with the embedding query and nowhere
      * else. */
-    const plan = planRetrievalTurn({ question, history, entityIndex });
+    const plan = planRetrievalTurn({ question, history, resolvedTurn: discourse, entityIndex });
     const strategy = {
       ...selectAnswerStrategy({ question, plan, history: plan.generationHistory }),
       activeProjects: plan.activeProjects,
       activeOrganizations: plan.activeOrganizations,
       experienceFocus: plan.experienceFocus,
+      discourse,
     };
 
     /**
@@ -1630,14 +1705,19 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
          * the model is told plainly that there are no records. This is what stops
          * a lexical collision like "sınama ve değerlendirme" from arriving as
          * portfolio evidence and being scoped accordingly. */
+        /* Strategy can narrow an authorized retrieval, never authorize one.
+         * Keep this check independent from strategy flags so a future answer
+         * mode cannot bypass a denied plan. */
         const needsRetrieval = strategy.mode !== ANSWER_MODES.SELF
-          && (plan.contextEligible || strategy.recruiter);
+          && plan.contextEligible;
         const retrieved = needsRetrieval ? await retrieve(plan, question) : [];
-        /* Recruiter questions still make exactly one semantic retrieval call,
-         * but their prose is grounded in a deterministic role-family evidence
-         * set from the index already built at startup. This prevents a random
-         * high-similarity identity/contact chunk from deciding the assessment. */
+        /* Broad recruiter questions use the deterministic role-family set.
+         * When the authorized turn names a project or organization, keep the
+         * already-filtered retrieval instead so global recruiter evidence
+         * cannot bypass that entity boundary. */
         const answerRecords = strategy.recruiter
+          && !plan.activeProjects.length
+          && !plan.activeOrganizations.length
           ? selectRecruiterContext(retrievalIndex, strategy)
           : retrieved;
         /* The model sees the selected conversation, not the last six turns. A
@@ -1692,6 +1772,7 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
             validatorFlags: result.validatorFlags,
             repaired: result.repaired,
             fallbackUsed: result.fallbackUsed,
+            ...discourseFields(result.answer, result.scope),
           },
         };
       } catch (error) {
@@ -1716,6 +1797,7 @@ export function createAjoopRag({ env = {}, fetchImpl = globalThis.fetch, now = (
       question,
       locale,
       history: Object.freeze(plan.generationHistory.map((item) => Object.freeze({ ...item }))),
+      discourse,
       execute,
       release,
     });

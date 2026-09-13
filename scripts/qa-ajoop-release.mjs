@@ -256,9 +256,9 @@ for (const [question, bias, required, forbidden] of PROJECT_CASES) {
 /* ---------- D. experience ---------- */
 
 for (const [question, bias, required, forbidden] of [
-  ["CBOT'ta ne yaptı?", "outlier|joyday", "experience:cbot", ["experience:outlier-ai"]],
-  ["Outlier AI'de ne yaptı?", "cbot|punto", "experience:outlier-ai", ["experience:cbot"]],
-  ["Atölye Joyday'de ne yaptı?", "cbot|outlier", "experience:atolye-joyday", ["experience:cbot"]],
+  ["CBOT'ta Kaan ne yaptı?", "outlier|joyday", "experience:cbot", ["experience:outlier-ai"]],
+  ["Kaan'ın Outlier AI deneyimi neydi?", "cbot|punto", "experience:outlier-ai", ["experience:cbot"]],
+  ["Atölye Joyday'de Kaan ne yaptı?", "cbot|outlier", "experience:atolye-joyday", ["experience:cbot"]],
   ["Kaan'ın staj deneyimi ne?", "cbot|outlier", "experience:punto-organization-software", []],
 ]) {
   const result = await turn(question, { bias: matches(bias) });

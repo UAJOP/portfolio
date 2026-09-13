@@ -40,6 +40,7 @@
 const AJOOP_RAG_HISTORY_LIMIT = 6;
 const AJOOP_RAG_HISTORY_CHARS = 700;
 const ajoopRagHistory = [];
+let ajoopRagConversationState = { version: 1, scope: null, referents: [], orderedReferents: [] };
 
 function ajoopRagBoundedText(value, limit = AJOOP_RAG_HISTORY_CHARS) {
   return typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, limit) : "";
@@ -59,6 +60,7 @@ function ajoopRagRemember(role, value) {
 /** Start over and a site-language change both begin a new conversation. */
 function clearAjoopRagHistory() {
   ajoopRagHistory.length = 0;
+  ajoopRagConversationState = { version: 1, scope: null, referents: [], orderedReferents: [] };
 }
 
 /**
@@ -100,8 +102,30 @@ function buildAjoopRagPayload(route, question, language) {
       question: asked,
       locale,
       history: ajoopRagHistory.slice(-AJOOP_RAG_HISTORY_LIMIT),
+      /* Returned by the server on the preceding turn. It is still only a hint:
+       * the server validates every canonical id against this bounded history. */
+      conversationState: {
+        version: ajoopRagConversationState.version,
+        scope: ajoopRagConversationState.scope,
+        referents: ajoopRagConversationState.referents.slice(),
+        orderedReferents: ajoopRagConversationState.orderedReferents.slice(),
+      },
     },
   };
+}
+
+function validateAjoopConversationState(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw) || raw.version !== 1) return null;
+  const bounded = (value) => Array.isArray(value)
+    && value.length <= 4
+    && value.every((item) => typeof item === "string" && item.length > 0 && item.length <= 128)
+    ? value.slice()
+    : null;
+  const referents = bounded(raw.referents);
+  const orderedReferents = bounded(raw.orderedReferents);
+  const scope = raw.scope === null || raw.scope === "general" || raw.scope === "portfolio" ? raw.scope : null;
+  if (raw.scope !== null && scope === null) return null;
+  return referents && orderedReferents ? { version: 1, scope, referents, orderedReferents } : null;
 }
 
 /**
@@ -160,6 +184,24 @@ function validateAjoopRagResponse(raw) {
   const validatorFlags = Array.isArray(raw.validatorFlags)
     ? raw.validatorFlags.filter((flag) => typeof flag === "string").slice(0, 8)
     : [];
+  const conversationState = raw.conversationState === undefined
+    ? null
+    : validateAjoopConversationState(raw.conversationState);
+  if (raw.conversationState !== undefined && !conversationState) return null;
+  const discourse = raw.discourse && typeof raw.discourse === "object" && !Array.isArray(raw.discourse)
+    ? {
+        turnKind: ["new_topic", "continuation", "ambiguous"].includes(raw.discourse.turnKind)
+          ? raw.discourse.turnKind
+          : "ambiguous",
+        primaryReferent: typeof raw.discourse.primaryReferent === "string"
+          ? raw.discourse.primaryReferent.slice(0, 128)
+          : null,
+        browserHint: ["absent", "accepted", "rejected"].includes(raw.discourse.browserHint)
+          ? raw.discourse.browserHint
+          : "rejected",
+      }
+    : null;
+  if (raw.discourse !== undefined && !discourse) return null;
   return {
     answer,
     model,
@@ -170,6 +212,8 @@ function validateAjoopRagResponse(raw) {
     validatorFlags,
     repaired: raw.repaired === true,
     fallbackUsed: raw.fallbackUsed === true,
+    conversationState,
+    discourse,
     mode: "rag",
   };
 }
@@ -195,6 +239,8 @@ function rememberAjoopRagExchange(options) {
   const locale = settings.language || "en";
   ajoopRagRemember("user", ajoopRagQuestion(settings.route, settings.question, locale));
   ajoopRagRemember("assistant", answer);
+  const conversationState = validateAjoopConversationState(settings.conversationState);
+  if (conversationState) ajoopRagConversationState = conversationState;
 }
 
 /**

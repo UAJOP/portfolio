@@ -138,6 +138,12 @@ export function createAjoopTelemetry({
     evidence: 0,
   };
   const tools = { observed: 0, attributable: 0, success: 0, rejected: 0, errors: 0 };
+  const discourse = {
+    byTurnKind: {},
+    byDepthModifier: {},
+    byBrowserHint: {},
+    semanticResolutionUsed: 0,
+  };
 
   const record = ({
     route,
@@ -153,6 +159,10 @@ export function createAjoopTelemetry({
     evidenceCount,
     observedToolEvents,
     toolEvents,
+    turnKind,
+    depthModifier,
+    browserHint,
+    semanticResolutionUsed,
   } = {}) => {
     const routeKey = ROUTES.has(route) ? route : "unknown";
     const scopeKey = SCOPES.has(scope) ? scope : "unknown";
@@ -170,6 +180,10 @@ export function createAjoopTelemetry({
     counters.exactFacts += typeof exactFact === "string" && exactFact.length > 0 ? 1 : 0;
     counters.sources += safeInt(sourceCount, { max: 100 });
     counters.evidence += safeInt(evidenceCount, { max: 100 });
+    increment(discourse.byTurnKind, safeKey(turnKind, "unknown"));
+    increment(discourse.byDepthModifier, safeKey(depthModifier, "unknown"));
+    increment(discourse.byBrowserHint, safeKey(browserHint, "unknown"));
+    discourse.semanticResolutionUsed += semanticResolutionUsed === true ? 1 : 0;
 
     latencyValues.push(latency);
     if (latencyValues.length > limit) latencyValues.splice(0, latencyValues.length - limit);
@@ -209,6 +223,12 @@ export function createAjoopTelemetry({
       }),
       latencyMs: latencySummary(latencyValues),
       tools: Object.freeze({ ...tools }),
+      discourse: Object.freeze({
+        byTurnKind: Object.freeze({ ...discourse.byTurnKind }),
+        byDepthModifier: Object.freeze({ ...discourse.byDepthModifier }),
+        byBrowserHint: Object.freeze({ ...discourse.byBrowserHint }),
+        semanticResolutionUsed: discourse.semanticResolutionUsed,
+      }),
       agent: sanitizeAgentMetrics(agentMetrics),
       rag: sanitizeRagStatus(ragStatus),
       bridge: sanitizeBridgeStats(bridgeStats),
@@ -249,6 +269,9 @@ export function observeAjoopHandlerResult({ route = "unknown", status = 0, laten
     ? result.internal
     : {};
   const scope = body.scope === "general" || body.scope === "portfolio" ? body.scope : "unknown";
+  const discourse = body.discourse && typeof body.discourse === "object" && !Array.isArray(body.discourse)
+    ? body.discourse
+    : {};
   return Object.freeze({
     route: ROUTES.has(route) ? route : "unknown",
     status,
@@ -263,5 +286,9 @@ export function observeAjoopHandlerResult({ route = "unknown", status = 0, laten
     evidenceCount: Array.isArray(body.evidence) ? body.evidence.length : 0,
     observedToolEvents: Array.isArray(internal.observedToolEvents) ? internal.observedToolEvents : [],
     toolEvents: Array.isArray(internal.toolEvents) ? internal.toolEvents : [],
+    turnKind: discourse.turnKind,
+    depthModifier: discourse.requestedDepth,
+    browserHint: discourse.browserHint,
+    semanticResolutionUsed: discourse.semanticResolutionUsed,
   });
 }

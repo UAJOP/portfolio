@@ -22,6 +22,7 @@
  */
 import { foldQuestion, hasPhrase, tokenize } from "./ajoop-text.mjs";
 import { mentionsPortfolioOwner, resolveEntities } from "./ajoop-entities.mjs";
+import { classifyPublicLocalReferences, resolvePublicDiscourseTurn } from "./ajoop-discourse.mjs";
 
 /**
  * Hybrid ranking weights.
@@ -99,6 +100,7 @@ const OWNED_ENTITY_TYPES = new Set([
 const CURATED_TYPES = Object.freeze({
   "Kaan Balcı": ENTITY_TYPES.PERSON,
   SINAMA: ENTITY_TYPES.PROJECT,
+  "Ajoop Portfolio Copilot": ENTITY_TYPES.PROJECT,
   "Merge Rush: Tiny Factory": ENTITY_TYPES.PROJECT,
   "Hospital Form App": ENTITY_TYPES.PROJECT,
   "Hospital Appointment System": ENTITY_TYPES.PROJECT,
@@ -131,6 +133,15 @@ const PORTFOLIO_FRAMING = Object.freeze([
   "portfolyo", "portfolyosunda", "portfolio",
   "yetenek", "yetenekleri", "beceri", "becerileri", "skills",
   "ozgecmis", "cv si",
+]);
+
+/* Work-relation language can strengthen an already-authorized portfolio turn,
+ * especially for technology questions. It is not owner provenance by itself:
+ * organization shorthand such as "CBOT'ta ne yaptı?" remains GENERAL unless
+ * the current turn or validated conversation state establishes Kaan. */
+const PROFESSIONAL_RELATION_FRAME = Object.freeze([
+  "ne yapti", "neler yapti", "what did",
+  "calisti", "worked", "kullandi", "gelistirdi", "built", "created", "wrote",
 ]);
 
 /**
@@ -407,14 +418,32 @@ export function assessContextEligibility({ question, currentEntities, inheritedE
      */
     const ownsSubject = currentEntities.some((entity) => OWNED_ENTITY_TYPES.has(entity.type));
     if (ownsSubject) return { eligible: true, reason: "explicit-entity" };
-    if (anyPhrase(folded, DEFINITION_FRAME) && !anyPhrase(folded, PORTFOLIO_FRAMING)) {
-      if (mentionsPortfolioOwner(folded)) return { eligible: true, reason: "owner-reference" };
-      return { eligible: false, reason: "world-entity-definition" };
+    /* Organization/technology/channel resolution identifies a public thing; it
+     * does not establish Kaan's relationship to it. A locally bound
+     * "onun/its" belongs to the named subject and therefore cannot serve as an
+     * owner signal. Organizations are stricter than technologies: generic
+     * company nouns and action verbs describe the organization itself, not
+     * Kaan's relationship with it. */
+    const local = classifyPublicLocalReferences(question, currentEntities);
+    const professionalFrame = anyPhrase(folded, PORTFOLIO_FRAMING)
+      || anyPhrase(folded, PROFESSIONAL_RELATION_FRAME);
+    const ownerFrame = mentionsPortfolioOwner(folded) && !local.localPossessive;
+    if (ownerFrame) return { eligible: true, reason: "owner-reference" };
+    if (currentEntities.some((entity) => entity.type === ENTITY_TYPES.ORGANIZATION)) {
+      return {
+        eligible: false,
+        reason: anyPhrase(folded, DEFINITION_FRAME) ? "world-entity-definition" : "world-entity-general",
+      };
     }
-    return { eligible: true, reason: "explicit-entity" };
+    if (professionalFrame) return { eligible: true, reason: "professional-framing" };
+    return {
+      eligible: false,
+      reason: anyPhrase(folded, DEFINITION_FRAME) ? "world-entity-definition" : "world-entity-general",
+    };
   }
   if (inheritedEntity) {
-    return { eligible: true, reason: "inherited-entity" };
+    if (OWNED_ENTITY_TYPES.has(inheritedEntity.type)) return { eligible: true, reason: "inherited-entity" };
+    return { eligible: false, reason: "inherited-world-entity" };
   }
   /* A definition frame with no entity is a general question, whatever
    * professional nouns it happens to contain: "proje yönetimi nedir?" is about
@@ -451,7 +480,12 @@ export function selectGenerationHistory(history, { followUp }) {
  */
 export function buildRetrievalText(question, currentEntities, inheritedEntity) {
   const trimmed = String(question || "").trim();
-  const names = [...new Set([...currentEntities, ...(inheritedEntity ? [inheritedEntity] : [])].map((e) => e.descriptor))];
+  const inherited = Array.isArray(inheritedEntity)
+    ? inheritedEntity
+    : inheritedEntity
+      ? [inheritedEntity]
+      : [];
+  const names = [...new Set([...currentEntities, ...inherited].map((e) => e.descriptor))];
   return names.length ? `${trimmed}\ncanonical entities: ${names.join("; ")}` : trimmed;
 }
 
@@ -461,23 +495,43 @@ export function buildRetrievalText(question, currentEntities, inheritedEntity) {
  * Returned as plain data so tests can assert the decision itself rather than
  * inferring it from an answer.
  */
-export function planRetrievalTurn({ question, history = [], entityIndex }) {
-  const currentEntities = resolveCurrentEntities(question, entityIndex);
-  const followUp = isFollowUpQuestion(question, entityIndex);
-  const inheritedEntity = followUp ? inheritPortfolioEntity(history, entityIndex) : null;
-  const { eligible, reason } = assessContextEligibility({ question, currentEntities, inheritedEntity });
+export function planRetrievalTurn({ question, history = [], conversationState, resolvedTurn, entityIndex }) {
+  const discourse = resolvedTurn || resolvePublicDiscourseTurn({ question, history, conversationState, entityIndex });
+  const currentEntities = [...discourse.currentEntities];
+  const currentNames = new Set(currentEntities.map((entity) => entity.canonical));
+  const inheritedEntities = discourse.turnKind === "continuation"
+    ? discourse.referents
+      .filter((canonical) => !currentNames.has(canonical))
+      .map((canonical) => entityIndex.entities.find((entity) => entity.canonical === canonical))
+      .filter(Boolean)
+    : [];
+  const inheritedEntity = inheritedEntities[0] || null;
+  const followUp = discourse.turnKind === "continuation";
+  const eligibility = discourse.explicitGeneralReset
+    ? { eligible: false, reason: "explicit-general-reset" }
+    : discourse.turnKind === "ambiguous"
+    ? { eligible: false, reason: discourse.unresolvedReason }
+    : discourse.turnKind === "continuation" && discourse.contextScope === "portfolio"
+      ? { eligible: true, reason: "validated-previous-portfolio" }
+    : assessContextEligibility({ question, currentEntities, inheritedEntity });
+  const { eligible, reason } = eligibility;
 
-  const active = [...currentEntities, ...(inheritedEntity ? [inheritedEntity] : [])];
+  const active = [...new Map([...currentEntities, ...inheritedEntities].map((entity) => [entity.canonical, entity])).values()];
   const activeProjects = namesOfType(active, ENTITY_TYPES.PROJECT);
   /* Resolution is not authority. Keep a bare organization definition visible
    * in `currentEntities`, but do not let it select the experience strategy or
    * filter the corpus after eligibility has rejected the turn. */
   const activeOrganizations = eligible ? namesOfType(active, ENTITY_TYPES.ORGANIZATION) : [];
   const framedTypes = framedRecordTypes(question);
-  const experienceFocus = experienceRecordFocus(question, framedTypes);
+  /* Answer strategy consumes this field before its general fallback. Never let
+   * a generic organization noun (company/employer) recreate portfolio scope
+   * after authority was denied above. */
+  const experienceFocus = eligible ? experienceRecordFocus(question, framedTypes) : null;
   return {
     currentEntities,
     inheritedEntity,
+    inheritedEntities,
+    discourse,
     followUp,
     contextEligible: eligible,
     contextReason: reason,
@@ -490,7 +544,7 @@ export function planRetrievalTurn({ question, history = [], entityIndex }) {
      * project or an employer is a stronger signal than asking about projects
      * in general, so an explicit entity keeps the whole context. */
     reservedTypes: activeProjects.length || activeOrganizations.length ? [] : framedTypes,
-    retrievalText: buildRetrievalText(question, currentEntities, inheritedEntity),
+    retrievalText: buildRetrievalText(question, currentEntities, inheritedEntities),
     generationHistory: selectGenerationHistory(history, { followUp }),
     historyMode: followUp ? "follow-up" : "self-contained",
   };

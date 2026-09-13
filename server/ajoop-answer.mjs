@@ -105,16 +105,6 @@ export function detectRecruiterQuestion(question, history = []) {
 }
 
 export function selectAnswerStrategy({ question, plan, history = [] }) {
-  const recruiter = detectRecruiterQuestion(question, history);
-  if (recruiter) {
-    return {
-      ...recruiter,
-      expectedScope: "PORTFOLIO",
-      recruiter: true,
-      evidenceLimit: 4,
-    };
-  }
-
   const folded = foldQuestion(question);
   if (phraseIn(folded, SELF_PHRASES)) {
     return {
@@ -123,6 +113,28 @@ export function selectAnswerStrategy({ question, plan, history = [] }) {
       expectedScope: "GENERAL",
       recruiter: false,
       evidenceLimit: 0,
+    };
+  }
+  /* Authority is decided by retrieval planning, never inferred from an answer
+   * shape. Recruiter vocabulary may refine an already-authorized portfolio
+   * turn, but it cannot revive a plan that was explicitly denied. */
+  if (!plan?.contextEligible) {
+    return {
+      mode: ANSWER_MODES.GENERAL,
+      roleFamily: ROLE_FAMILIES.GENERAL,
+      expectedScope: "GENERAL",
+      recruiter: false,
+      evidenceLimit: 0,
+    };
+  }
+
+  const recruiter = detectRecruiterQuestion(question, history);
+  if (recruiter) {
+    return {
+      ...recruiter,
+      expectedScope: "PORTFOLIO",
+      recruiter: true,
+      evidenceLimit: 4,
     };
   }
   if ((plan?.activeProjects || []).length > 1) {
@@ -159,15 +171,6 @@ export function selectAnswerStrategy({ question, plan, history = [] }) {
       expectedScope: "PORTFOLIO",
       recruiter: false,
       evidenceLimit: 3,
-    };
-  }
-  if (!plan?.contextEligible) {
-    return {
-      mode: ANSWER_MODES.GENERAL,
-      roleFamily: ROLE_FAMILIES.GENERAL,
-      expectedScope: "GENERAL",
-      recruiter: false,
-      evidenceLimit: 0,
     };
   }
   return {

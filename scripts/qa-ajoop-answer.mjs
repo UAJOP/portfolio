@@ -94,6 +94,23 @@ check(
   selectAnswerStrategy({ question: "RAG nedir?", plan: { ...projectPlan(), contextEligible: false } }).mode,
   ANSWER_MODES.GENERAL,
 );
+for (const question of [
+  "Outlier AI şirket ortamı nasıl?",
+  "What is the company environment at Outlier AI?",
+]) {
+  const strategy = selectAnswerStrategy({
+    question,
+    plan: {
+      ...projectPlan(),
+      contextEligible: false,
+      activeOrganizations: ["Outlier AI"],
+      experienceFocus: "overview",
+    },
+  });
+  check(`denied authority overrides recruiter mode: ${question}`, strategy.mode, ANSWER_MODES.GENERAL);
+  check(`denied authority overrides recruiter scope: ${question}`, strategy.expectedScope, "GENERAL");
+  check(`denied authority clears recruiter flag: ${question}`, strategy.recruiter, false);
+}
 check(
   "follow-up mode",
   selectAnswerStrategy({
@@ -455,14 +472,14 @@ for (const [question, expectedMode, expectedEvidence] of [
   ["Merge Rush stacki ne", ANSWER_MODES.PORTFOLIO_PROJECT, "project:merge-rush-tiny-factory"],
   ["Hospital Form App hangi teknolojileri kullanıyor?", ANSWER_MODES.PORTFOLIO_PROJECT, "project:hospital-form-app"],
   ["Hospital Appointment System hangi teknolojileri kullanıyor?", ANSWER_MODES.PORTFOLIO_PROJECT, "project:hospital-appointment-system"],
-  ["CBOT'ta ne yaptı?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:cbot"],
-  ["Outlier'da ne yaptı?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:outlier-ai"],
-  ["Joyday'de ne yaptı?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:atolye-joyday"],
-  ["Punto'da ne yaptı?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:punto-organization-software"],
+  ["CBOT'ta Kaan ne yaptı?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:cbot"],
+  ["Kaan Outlier'da ne yaptı?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:outlier-ai"],
+  ["Joyday'de Kaan ne yaptı?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:atolye-joyday"],
+  ["Kaan Punto'da ne yaptı?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:punto-organization-software"],
   ["Kaan'ın staj deneyimi ne?", ANSWER_MODES.PORTFOLIO_EXPERIENCE, "experience:punto-organization-software"],
   ["Kaan Forward Deployed Engineer rolüne uygun mu?", ANSWER_MODES.RECRUITER_FIT, "experience:cbot"],
   ["Kaan Applied AI Engineer için güçlü bir aday mı?", ANSWER_MODES.RECRUITER_FIT, "project:sinama"],
-  ["Software Engineer rolü için hangi kanıtları var?", ANSWER_MODES.RECRUITER_EVIDENCE, "skills:programming"],
+  ["Kaan'ın Software Engineer rolü için hangi kanıtları var?", ANSWER_MODES.RECRUITER_EVIDENCE, "skills:programming"],
   ["Neden Kaan'ı işe almalıyız?", ANSWER_MODES.RECRUITER_HIRE, "recruiter-intelligence"],
   ["Kaan'ın AI Engineer rolü için eksikleri neler?", ANSWER_MODES.RECRUITER_GAPS, "project:sinama"],
   ["Kaan'ı diğer junior adaylardan ayıran ne?", ANSWER_MODES.RECRUITER_DIFFERENTIATION, "recruiter-intelligence"],
