@@ -30,6 +30,7 @@ import {
   selectTopChunks,
 } from "../server/ajoop-retrieval.mjs";
 import { createAjoopRag } from "../server/ajoop-rag.mjs";
+import { buildNextPublicConversationState } from "../server/ajoop-discourse.mjs";
 
 let passed = 0;
 const failures = [];
@@ -49,7 +50,9 @@ const ENV = { AJOOP_AI_ALLOWED_ORIGINS: ORIGIN };
 
 const loaded = await loadMasterKnowledge(DATA_DIR);
 const entityIndex = buildEntityIndex(loaded.knowledge, buildAliasIndex(loaded.knowledge));
-const plan = (question, history = []) => planRetrievalTurn({ question, history, entityIndex });
+const plan = (question, history = [], conversationState) => planRetrievalTurn({
+  question, history, conversationState, entityIndex,
+});
 
 /* ---------- A. the entity index ---------- */
 
@@ -462,12 +465,312 @@ check(
 
 const heavy = [user("Kaan'ın projelerini anlat"), bot("..."), user("SINAMA nedir?"), bot("...")];
 check("a self-contained question sends no history", selectGenerationHistory(heavy, { followUp: false }).length, 0);
-ok("a follow-up sends a bounded window", selectGenerationHistory(heavy, { followUp: true }).length <= 4);
+ok("a follow-up sends a bounded active segment", selectGenerationHistory(heavy, { followUp: true, entityIndex }).length <= 4);
 {
   const general = [user("Matrix filmini anlat"), bot("Bir bilim kurgu klasiği.")];
   const result = plan("neden bu kadar etkiliydi?", general);
   ok("[history] a general follow-up keeps continuity", result.generationHistory.length > 0);
   check("[history] without becoming a portfolio question", result.contextEligible, false);
+}
+{
+  const portfolioState = { version: 1, scope: "portfolio", referents: ["SINAMA"], orderedReferents: [] };
+  const portfolioHistory = [user("SINAMA'yı anlat."), bot("SINAMA bir projedir.")];
+  const nodeQuestion = "Node.js event loop nasıl çalışır?";
+  const nodeAnswer = "Node.js event loop görevleri aşamalar halinde işler.";
+  const nodeTurn = plan(nodeQuestion, portfolioHistory, portfolioState).discourse;
+  const nodeState = buildNextPublicConversationState({
+    resolvedTurn: nodeTurn, answer: nodeAnswer, scope: "GENERAL", entityIndex, question: nodeQuestion,
+  });
+  const combined = [...portfolioHistory, user(nodeQuestion), bot(nodeAnswer)];
+  const result = plan("Bunu daha teknik anlat.", combined, nodeState);
+  check("[active-history] a fresh GENERAL segment keeps its own exchange", result.generationHistory.length, 2);
+  check("[active-history] the GENERAL segment starts at the Node.js question", result.generationHistory[0]?.content, nodeQuestion);
+  check("[active-history] stale SINAMA prose is excluded", result.generationHistory.some((item) => /SINAMA/.test(item.content)), false);
+}
+{
+  const rankingQuestion = "Kaan'ın en güçlü 3 projesini söyle.";
+  const rankingAnswer = "Portfolio bu sıralamayı sağlayamıyor.";
+  const rankingTurn = plan(rankingQuestion).discourse;
+  const rankingState = buildNextPublicConversationState({
+    resolvedTurn: rankingTurn, answer: rankingAnswer, scope: "PORTFOLIO", entityIndex, question: rankingQuestion,
+  });
+  const rankingHistory = [user(rankingQuestion), bot(rankingAnswer)];
+  const ordinalQuestion = "İkinci olanı anlat.";
+  const ordinalTurn = plan(ordinalQuestion, rankingHistory, rankingState).discourse;
+  const clarificationAnswer = "Hangi sıralı listeyi kastettiğini göremiyorum.";
+  const clarificationState = buildNextPublicConversationState({
+    resolvedTurn: ordinalTurn, answer: clarificationAnswer, scope: "GENERAL", entityIndex, question: ordinalQuestion,
+  });
+  const combined = [...rankingHistory, user(ordinalQuestion), bot(clarificationAnswer)];
+  const result = plan("Daha detaylı anlat.", combined, clarificationState);
+  check("[active-history] a post-clarification GENERAL continuation remains usable", result.followUp, true);
+  check("[active-history] clarification is the generation-history boundary", result.generationHistory.length, 2);
+  check("[active-history] post-boundary history starts at the unresolved ordinal", result.generationHistory[0]?.content, ordinalQuestion);
+  check("[active-history] pre-boundary portfolio ranking is excluded", result.generationHistory.some((item) => /en güçlü 3 projesini/.test(item.content)), false);
+
+  const detailQuestion = "Daha detaylı anlat.";
+  const detailAnswer = "Genel açıklamayı biraz daha ayrıntılandırdım.";
+  const extended = [...combined, user(detailQuestion), bot(detailAnswer)];
+  const singularQuestion = "Bunu daha teknik anlat.";
+  const singular = plan(singularQuestion, extended, clarificationState);
+  check("[active-history-textual] post-clarification singular remains a continuation", singular.discourse.turnKind, "continuation");
+  check("[active-history-textual] post-clarification singular uses history-text", singular.discourse.continuationSource, "history-text");
+  check("[active-history-textual] post-clarification singular remains general", singular.discourse.contextScope, "general");
+  check("[active-history-textual] post-clarification singular grants no portfolio authority", singular.contextEligible, false);
+  check("[active-history-textual] post-clarification singular receives the max-four safe segment", singular.generationHistory.length, 4);
+  check("[active-history-textual] safe segment starts at the ordinal boundary", singular.generationHistory[0]?.content, ordinalQuestion);
+  check("[active-history-textual] safe segment retains the clarification answer", singular.generationHistory[1]?.content, clarificationAnswer);
+  check("[active-history-textual] safe segment excludes ranking prose", singular.generationHistory.some((item) => /en güçlü 3 projesini/.test(item.content)), false);
+
+  const singularAnswer = "Genel açıklamayı teknik ayrıntılarla genişlettim.";
+  const twiceExtended = [...extended, user(singularQuestion), bot(singularAnswer)];
+  const nextSingular = plan("Onu biraz aç.", twiceExtended, clarificationState);
+  check("[active-history-textual] successive singular remains a continuation", nextSingular.discourse.turnKind, "continuation");
+  check("[active-history-textual] successive singular uses history-text", nextSingular.discourse.continuationSource, "history-text");
+  check("[active-history-textual] successive singular remains general", nextSingular.discourse.contextScope, "general");
+  check("[active-history-textual] successive singular grants no portfolio authority", nextSingular.contextEligible, false);
+  check("[active-history-textual] successive singular remains max-four bounded", nextSingular.generationHistory.length, 4);
+  check("[active-history-textual] successive singular keeps the prior GENERAL depth turn", nextSingular.generationHistory[0]?.content, detailQuestion);
+  check("[active-history-textual] successive singular keeps the immediately prior answer", nextSingular.generationHistory.at(-1)?.content, singularAnswer);
+  check("[active-history-textual] successive singular excludes ranking prose", nextSingular.generationHistory.some((item) => /en güçlü 3 projesini/.test(item.content)), false);
+
+  const second = plan("Az önceki cevabı tek cümlede özetle.", extended, clarificationState);
+  check("[active-history] a second post-clarification follow-up remains usable", second.followUp, true);
+  check("[active-history] the stable clarification segment fills the four-message bound", second.generationHistory.length, 4);
+  check("[active-history] the stable segment still begins at the ordinal", second.generationHistory[0]?.content, ordinalQuestion);
+  check("[active-history] the stable segment retains the clarification answer", second.generationHistory[1]?.content, clarificationAnswer);
+  check("[active-history] the second follow-up still excludes portfolio ranking", second.generationHistory.some((item) => /en güçlü 3 projesini/.test(item.content)), false);
+}
+{
+  const portfolioState = { version: 1, scope: "portfolio", referents: ["SINAMA"], orderedReferents: [] };
+  const portfolioHistory = [user("SINAMA'yı anlat."), bot("SINAMA bir projedir.")];
+  const result = plan("Daha teknik anlat.", portfolioHistory, portfolioState);
+  check("[active-history-positive] portfolio continuation retains authority", result.contextEligible, true);
+  check("[active-history-positive] portfolio continuation retains its active exchange", result.generationHistory.length, 2);
+  check("[active-history-positive] portfolio history still contains SINAMA", result.generationHistory.some((item) => /SINAMA/.test(item.content)), true);
+  for (const [label, state] of [
+    ["absent", undefined],
+    ["rejected", { version: 99, scope: "general", referents: [], orderedReferents: [] }],
+  ]) {
+    const fallback = plan("Daha teknik anlat.", portfolioHistory, state);
+    check(`[active-history-fallback] ${label} state retains portfolio authority`, fallback.contextEligible, true);
+    check(`[active-history-fallback] ${label} state retains bounded active history`, fallback.generationHistory.length, 2);
+  }
+}
+{
+  const generalState = { version: 1, scope: "general", referents: [], orderedReferents: [] };
+  const portfolioHistory = [user("SINAMA'yı anlat."), bot("SINAMA bir projedir.")];
+  const blocked = plan("Daha detaylı anlat.", portfolioHistory, generalState);
+  check("[active-history-boundary] accepted GENERAL over portfolio-only history sends no generation history", blocked.generationHistory.length, 0);
+  const blockedSingular = plan("Bunu daha teknik anlat.", portfolioHistory, generalState);
+  check("[active-history-boundary] accepted GENERAL portfolio-only singular clarifies", blockedSingular.discourse.turnKind, "ambiguous");
+  check("[active-history-boundary] accepted GENERAL portfolio-only singular has no textual source", blockedSingular.discourse.continuationSource, "none");
+  check("[active-history-boundary] accepted GENERAL portfolio-only singular sends no generation history", blockedSingular.generationHistory.length, 0);
+  check("[active-history-boundary] accepted GENERAL portfolio-only singular grants no authority", blockedSingular.contextEligible, false);
+
+  const generalHistory = [
+    user("Node.js event loop nasıl çalışır?"), bot("Node yanıtı 1."),
+    user("Daha teknik anlat."), bot("Node yanıtı 2."),
+    user("Biraz daha aç."), bot("Node yanıtı 3."),
+  ];
+  const bounded = plan("Tek cümlede özetle.", generalHistory, generalState);
+  check("[active-history-boundary] three completed GENERAL exchanges are bounded after segmentation", bounded.generationHistory.length, 4);
+  check("[active-history-boundary] max-four begins at the second GENERAL exchange", bounded.generationHistory[0]?.content, "Daha teknik anlat.");
+  check("[active-history-boundary] max-four retains the latest GENERAL answer", bounded.generationHistory.at(-1)?.content, "Node yanıtı 3.");
+}
+{
+  const generalState = { version: 1, scope: "general", referents: [], orderedReferents: [] };
+  const portfolioPair = [user("SINAMA'yı anlat."), bot("SINAMA bir projedir.")];
+  for (const [label, history] of [
+    ["trailing user", [...portfolioPair, user("İkinci olanı anlat.")]],
+    ["trailing assistant", [...portfolioPair, bot("Artık yanıt.")]],
+    ["assistant only", [bot("SINAMA bir projedir.")]],
+    ["user only", [user("SINAMA'yı anlat.")]],
+  ]) {
+    const result = plan("Daha detaylı anlat.", history, generalState);
+    check(`[active-history-malformed] ${label} cannot establish a completed GENERAL boundary`, result.generationHistory.length, 0);
+  }
+
+  for (const [label, history] of [
+    ["assistant then user", [bot("orphan assistant"), user("orphan user")]],
+    ["two assistants then user", [bot("orphan one"), bot("orphan two"), user("orphan user")]],
+  ]) {
+    const result = plan("Bunu daha teknik anlat.", history, generalState);
+    check(`[textual-antecedent] ${label} is structurally ambiguous`, result.discourse.turnKind, "ambiguous");
+    check(`[textual-antecedent] ${label} does not become history-text`, result.discourse.continuationSource, "none");
+    check(`[textual-antecedent] ${label} reports the missing antecedent`, result.discourse.unresolvedReason, "missing-singular-antecedent");
+    check(`[textual-antecedent] ${label} sends no generation history`, result.generationHistory.length, 0);
+    check(`[textual-antecedent] ${label} grants no portfolio authority`, result.contextEligible, false);
+  }
+
+  const nodeQuestion = "Node.js event loop nasıl çalışır?";
+  const nodeAnswer = "Node.js event loop görevleri aşamalar halinde işler.";
+  for (const [label, history] of [
+    ["leading orphan plus pair", [bot("orphan assistant"), user(nodeQuestion), bot(nodeAnswer)]],
+    ["completed pair only", [user(nodeQuestion), bot(nodeAnswer)]],
+  ]) {
+    const result = plan("Bunu daha teknik anlat.", history, generalState);
+    check(`[textual-antecedent] ${label} remains a continuation`, result.discourse.turnKind, "continuation");
+    check(`[textual-antecedent] ${label} uses canonical history-text`, result.discourse.continuationSource, "history-text");
+    check(`[textual-antecedent] ${label} keeps exactly one completed pair`, result.generationHistory.length, 2);
+    check(`[textual-antecedent] ${label} starts with Node.js`, result.generationHistory[0]?.content, nodeQuestion);
+    check(`[textual-antecedent] ${label} retains the Node.js answer`, result.generationHistory[1]?.content, nodeAnswer);
+    check(`[textual-antecedent] ${label} stays general`, result.contextEligible, false);
+  }
+}
+{
+  const pairQuestion = "Outlier AI ve CBOT nedir?";
+  const pairAnswer = "Outlier AI ve CBOT iki farklı organizasyondur.";
+  const pairTurn = plan(pairQuestion).discourse;
+  const pairState = buildNextPublicConversationState({
+    resolvedTurn: pairTurn, answer: pairAnswer, scope: "GENERAL", entityIndex, question: pairQuestion,
+  });
+  const pairHistory = [user(pairQuestion), bot(pairAnswer)];
+  for (const question of ["İkisini karşılaştır.", "Bunları karşılaştır."]) {
+    const result = plan(question, pairHistory, pairState);
+    check(`[general-world-pair] ${question} remains a continuation`, result.discourse.turnKind, "continuation");
+    check(`[general-world-pair] ${question} uses both user-established organizations`, result.discourse.referents.join("|"), "CBOT|Outlier AI");
+    check(`[general-world-pair] ${question} remains GENERAL`, result.discourse.contextScope, "general");
+    check(`[general-world-pair] ${question} grants no portfolio authority`, result.contextEligible, false);
+    check(`[general-world-pair] ${question} activates no employer retrieval filter`, result.activeOrganizations.length, 0);
+    check(`[general-world-pair] ${question} retains the completed general exchange`, result.generationHistory.length, 2);
+  }
+
+  for (const [question, expected] of [
+    ["İlkini anlat.", "Outlier AI"],
+    ["İkincisini anlat.", "CBOT"],
+  ]) {
+    const result = plan(question, pairHistory, pairState);
+    check(`[general-world-order] ${question} follows user textual order`, result.discourse.primaryReferent, expected);
+    check(`[general-world-order] ${question} remains a continuation`, result.discourse.turnKind, "continuation");
+    check(`[general-world-order] ${question} uses history ordinal`, result.discourse.continuationSource, "history-ordinal");
+    check(`[general-world-order] ${question} remains GENERAL`, result.discourse.contextScope, "general");
+    check(`[general-world-order] ${question} grants no portfolio authority`, result.contextEligible, false);
+    check(`[general-world-order] ${question} activates no employer retrieval filter`, result.activeOrganizations.length, 0);
+  }
+
+  const reverseQuestion = "CBOT ve Outlier AI nedir?";
+  const reverseAnswer = "CBOT ve Outlier AI iki farklı organizasyondur.";
+  const reverseTurn = plan(reverseQuestion).discourse;
+  const reverseState = buildNextPublicConversationState({
+    resolvedTurn: reverseTurn, answer: reverseAnswer, scope: "GENERAL", entityIndex, question: reverseQuestion,
+  });
+  const reverseOrdinal = plan("İkincisini anlat.", [user(reverseQuestion), bot(reverseAnswer)], reverseState);
+  check("[general-world-order] reverse pair proves textual rather than index order", reverseOrdinal.discourse.primaryReferent, "Outlier AI");
+  check("[general-world-order] reverse pair stays GENERAL", reverseOrdinal.discourse.contextScope, "general");
+  check("[general-world-order] reverse pair grants no authority", reverseOrdinal.contextEligible, false);
+
+  const tripleQuestion = "Outlier AI, CBOT ve Joyday nedir?";
+  const tripleAnswer = "Outlier AI, CBOT ve Joyday üç farklı organizasyondur.";
+  const tripleTurn = plan(tripleQuestion).discourse;
+  const tripleState = buildNextPublicConversationState({
+    resolvedTurn: tripleTurn, answer: tripleAnswer, scope: "GENERAL", entityIndex, question: tripleQuestion,
+  });
+  const tripleHistory = [user(tripleQuestion), bot(tripleAnswer)];
+  for (const [question, expected] of [
+    ["İlkini anlat.", "Outlier AI"],
+    ["İkincisini anlat.", "CBOT"],
+    ["Üçüncüsünü anlat.", "Atölye Joyday"],
+  ]) {
+    const result = plan(question, tripleHistory, tripleState);
+    check(`[general-world-order] triple ${question} follows textual order`, result.discourse.primaryReferent, expected);
+    check(`[general-world-order] triple ${question} stays unauthorized`, result.contextEligible, false);
+  }
+
+  const detailQuestion = "Daha detaylı anlat.";
+  const detailAnswer = "İki organizasyonun amaçlarını genel düzeyde ayrıntılandırdım.";
+  const detailTurn = plan(detailQuestion, pairHistory, pairState).discourse;
+  const detailState = buildNextPublicConversationState({
+    resolvedTurn: detailTurn, answer: detailAnswer, scope: "GENERAL", entityIndex, question: detailQuestion,
+  });
+  const extended = [...pairHistory, user(detailQuestion), bot(detailAnswer)];
+  const afterDetail = plan("İkisini karşılaştır.", extended, detailState);
+  check("[general-world-pair] pair survives one GENERAL continuation", afterDetail.discourse.referents.join("|"), "CBOT|Outlier AI");
+  check("[general-world-pair] continued pair stays GENERAL", afterDetail.discourse.contextScope, "general");
+  check("[general-world-pair] continued pair grants no authority", afterDetail.contextEligible, false);
+  check("[general-world-pair] continued pair uses the bounded GENERAL segment", afterDetail.generationHistory.length, 4);
+  const ordinalAfterDetail = plan("İkincisini anlat.", extended, detailState);
+  check("[general-world-order] pair order survives a GENERAL depth continuation", ordinalAfterDetail.discourse.primaryReferent, "CBOT");
+  check("[general-world-order] depth-chain ordinal stays GENERAL", ordinalAfterDetail.discourse.contextScope, "general");
+  check("[general-world-order] depth-chain ordinal grants no authority", ordinalAfterDetail.contextEligible, false);
+
+  const longHistory = [
+    user("SINAMA'yı anlat."), bot("SINAMA bir projedir."),
+    ...pairHistory,
+    user(detailQuestion), bot(detailAnswer),
+    user("Biraz daha aç."), bot("Genel organizasyon açıklamasını genişlettim."),
+  ];
+  const long = plan("Bunları karşılaştır.", longHistory, detailState);
+  check("[general-world-pair] long chain retains only organization referents", long.discourse.referents.join("|"), "CBOT|Outlier AI");
+  check("[general-world-pair] long chain never reaches stale SINAMA", long.discourse.referents.includes("SINAMA"), false);
+  check("[general-world-pair] long chain remains unauthorized", long.contextEligible, false);
+  check("[general-world-pair] long chain remains max-four bounded", long.generationHistory.length, 4);
+  check("[general-world-pair] long chain generation excludes SINAMA", long.generationHistory.some((item) => /SINAMA/.test(item.content)), false);
+  const longOrdinal = plan("İkincisini anlat.", longHistory, detailState);
+  check("[general-world-order] old SINAMA cannot displace fresh organization order", longOrdinal.discourse.primaryReferent, "CBOT");
+  check("[general-world-order] old SINAMA is absent from ordinal generation", longOrdinal.generationHistory.some((item) => /SINAMA/.test(item.content)), false);
+
+  const singleHistory = [user("CBOT nedir?"), bot("CBOT bir organizasyondur.")];
+  const singleOrdinal = plan("İkincisini anlat.", singleHistory, pairState);
+  check("[general-world-order] one organization cannot satisfy second ordinal", singleOrdinal.discourse.turnKind, "ambiguous");
+  check("[general-world-order] one organization reports missing order", singleOrdinal.discourse.unresolvedReason, "missing-ordered-antecedent");
+
+  for (const [label, history] of [
+    ["assistant then user", [bot("Outlier AI ve CBOT"), user("Outlier AI ve CBOT nedir?")]],
+    ["two assistants then user", [bot("Outlier AI"), bot("CBOT"), user("Outlier AI ve CBOT nedir?")]],
+  ]) {
+    const malformed = plan("İkincisini anlat.", history, pairState);
+    check(`[general-world-order] malformed ${label} cannot establish order`, malformed.discourse.turnKind, "ambiguous");
+    check(`[general-world-order] malformed ${label} supplies no referent`, malformed.discourse.referents.length, 0);
+    check(`[general-world-order] malformed ${label} grants no authority`, malformed.contextEligible, false);
+  }
+
+  for (const [label, history] of [
+    ["project pair", [user("SINAMA ve Ajoop Portfolio Copilot nedir?"), bot("İki proje hakkında yanıt.")]],
+    ["owner organization pair", [user("Kaan CBOT ve Outlier AI'da ne yaptı?"), bot("Kaan'ın iki deneyimi hakkında yanıt.")]],
+  ]) {
+    const blocked = plan("İkincisini anlat.", history, pairState);
+    check(`[general-world-order] ${label} cannot become GENERAL order`, blocked.discourse.turnKind, "ambiguous");
+    check(`[general-world-order] ${label} supplies no GENERAL ordinal referent`, blocked.discourse.referents.length, 0);
+    check(`[general-world-order] ${label} cannot restore authority`, blocked.contextEligible, false);
+  }
+}
+{
+  const generalState = { version: 1, scope: "general", referents: [], orderedReferents: [] };
+  const cbotHistory = [user("CBOT nedir?"), bot("CBOT hakkında genel bir organizasyon açıklaması.")];
+  const mixed = plan("Bunu Outlier AI ile karşılaştır.", cbotHistory, generalState);
+  check("[general-world-mixed] mixed comparison continues", mixed.discourse.turnKind, "continuation");
+  check("[general-world-mixed] mixed comparison reports history-mixed", mixed.discourse.continuationSource, "history-mixed");
+  check("[general-world-mixed] mixed comparison preserves CBOT and Outlier", mixed.discourse.referents.join("|"), "CBOT|Outlier AI");
+  check("[general-world-mixed] mixed comparison stays GENERAL", mixed.discourse.contextScope, "general");
+  check("[general-world-mixed] mixed comparison grants no authority", mixed.contextEligible, false);
+  check("[general-world-mixed] mixed comparison activates no employer retrieval", mixed.activeOrganizations.length, 0);
+
+  const singular = plan("Onun tarihi ne?", cbotHistory, generalState);
+  check("[general-world-singular] organization singular continues", singular.discourse.turnKind, "continuation");
+  check("[general-world-singular] organization singular preserves CBOT", singular.discourse.referents.join(), "CBOT");
+  check("[general-world-singular] organization singular stays GENERAL", singular.discourse.contextScope, "general");
+  check("[general-world-singular] organization singular grants no authority", singular.contextEligible, false);
+  check("[general-world-singular] organization singular activates no employer retrieval", singular.activeOrganizations.length, 0);
+
+  const pairHistory = [user("Outlier AI ve CBOT nedir?"), bot("İki organizasyon hakkında genel açıklama.")];
+  const ambiguous = plan("Bunu anlat.", pairHistory, generalState);
+  check("[general-world-singular] pair singular is ambiguous", ambiguous.discourse.turnKind, "ambiguous");
+  check("[general-world-singular] pair singular does not degrade to history-text", ambiguous.discourse.continuationSource, "none");
+  check("[general-world-singular] pair singular reports ambiguous antecedent", ambiguous.discourse.unresolvedReason, "ambiguous-singular-antecedent");
+  check("[general-world-singular] pair singular grants no authority", ambiguous.contextEligible, false);
+  check("[general-world-singular] pair singular sends no generation history", ambiguous.generationHistory.length, 0);
+
+  for (const [label, history] of [
+    ["person", [user("Kaan kimdir?"), bot("Kaan hakkında bir yanıt.")]],
+    ["owner organization", [user("Kaan CBOT'ta ne yaptı?"), bot("Kaan ve CBOT hakkında bir yanıt.")]],
+  ]) {
+    const blocked = plan("Bunu daha teknik anlat.", history, generalState);
+    check(`[general-world-negative] ${label} cannot become a GENERAL referent`, blocked.discourse.referents.length, 0);
+    check(`[general-world-negative] ${label} safely clarifies`, blocked.discourse.turnKind, "ambiguous");
+    check(`[general-world-negative] ${label} grants no authority`, blocked.contextEligible, false);
+    check(`[general-world-negative] ${label} sends no generation history`, blocked.generationHistory.length, 0);
+  }
 }
 /* Old sensitive output cannot ride along into an unrelated turn. */
 {

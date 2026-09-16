@@ -22,7 +22,11 @@
  */
 import { foldQuestion, hasPhrase, tokenize } from "./ajoop-text.mjs";
 import { mentionsPortfolioOwner, resolveEntities } from "./ajoop-entities.mjs";
-import { classifyPublicLocalReferences, resolvePublicDiscourseTurn } from "./ajoop-discourse.mjs";
+import {
+  activeDiscourseHistory,
+  classifyPublicLocalReferences,
+  resolvePublicDiscourseTurn,
+} from "./ajoop-discourse.mjs";
 
 /**
  * Hybrid ranking weights.
@@ -466,9 +470,12 @@ export function assessContextEligibility({ question, currentEntities, inheritedE
  * window, because that is the only case where the previous turns are what the
  * question means.
  */
-export function selectGenerationHistory(history, { followUp }) {
+export function selectGenerationHistory(history, { followUp, entityIndex, resolvedTurn } = {}) {
   if (!followUp) return [];
-  return (history || []).slice(-FOLLOW_UP_HISTORY_MESSAGES);
+  return activeDiscourseHistory(history, entityIndex, {
+    stateStatus: resolvedTurn?.browserHint,
+    contextScope: resolvedTurn?.contextScope,
+  }).slice(-FOLLOW_UP_HISTORY_MESSAGES);
 }
 
 /**
@@ -545,7 +552,7 @@ export function planRetrievalTurn({ question, history = [], conversationState, r
      * in general, so an explicit entity keeps the whole context. */
     reservedTypes: activeProjects.length || activeOrganizations.length ? [] : framedTypes,
     retrievalText: buildRetrievalText(question, currentEntities, inheritedEntities),
-    generationHistory: selectGenerationHistory(history, { followUp }),
+    generationHistory: selectGenerationHistory(history, { followUp, entityIndex, resolvedTurn: discourse }),
     historyMode: followUp ? "follow-up" : "self-contained",
   };
 }
