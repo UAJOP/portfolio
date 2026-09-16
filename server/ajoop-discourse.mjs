@@ -218,18 +218,71 @@ function turnStructure(question, entityIndex) {
   };
 }
 
-function activeDiscourseHistory(history, entityIndex) {
+/**
+ * The canonical bounded segment that still belongs to the active topic.
+ *
+ * Fresh user turns are the normal boundary. A server-validated GENERAL state
+ * can also de-escalate a structurally contextual turn (for example, an
+ * unresolved ordinal followed by a clarification). When that accepted state
+ * conflicts with portfolio authority in the otherwise-active segment, the
+ * earliest completed suffix without that authority is the stable server-owned
+ * boundary. Generated history must not carry the older portfolio exchange
+ * across it, and unmatched messages never establish a boundary.
+ */
+export function activeDiscourseSegment(history, entityIndex, boundary = null) {
   const bounded = Array.isArray(history) ? history : [];
-  for (let index = bounded.length - 1; index >= 0; index -= 1) {
-    if (bounded[index]?.role === "user" && turnStructure(bounded[index].content, entityIndex).fresh) {
-      return bounded.slice(index);
+  const completed = [];
+  for (let index = 0; index < bounded.length - 1; index += 1) {
+    if (bounded[index]?.role === "user" && bounded[index + 1]?.role === "assistant") {
+      completed.push(bounded[index], bounded[index + 1]);
+      index += 1;
     }
   }
-  return bounded;
+  let active = completed;
+  for (let index = completed.length - 2; index >= 0; index -= 2) {
+    if (turnStructure(completed[index].content, entityIndex).fresh) {
+      active = completed.slice(index);
+      break;
+    }
+  }
+  const acceptedGeneralBoundary = boundary?.stateStatus === "accepted"
+    && boundary?.contextScope === "general";
+  if (!acceptedGeneralBoundary || !activeHistorySupportsPortfolio(active, entityIndex)) {
+    return Object.freeze({ history: Object.freeze(active), generalBoundaryApplied: false });
+  }
+  for (let index = 0; index < active.length; index += 2) {
+    const suffix = active.slice(index);
+    if (!activeHistorySupportsPortfolio(suffix, entityIndex)) {
+      return Object.freeze({ history: Object.freeze(suffix), generalBoundaryApplied: true });
+    }
+  }
+  return Object.freeze({ history: Object.freeze([]), generalBoundaryApplied: true });
 }
 
-function nearestExplicitReferents(history, entityIndex) {
-  const users = activeDiscourseHistory(history, entityIndex).filter((item) => item.role === "user");
+export function activeDiscourseHistory(history, entityIndex, boundary = null) {
+  return activeDiscourseSegment(history, entityIndex, boundary).history;
+}
+
+function activeHistorySupportsPortfolio(active, entityIndex) {
+  const users = active.filter((item) => item.role === "user").slice(-4).reverse();
+  for (const item of users) {
+    const allEntities = typedEntities(item.content, entityIndex);
+    const entities = discourseEntities(item.content, entityIndex);
+    const local = classifyPublicLocalReferences(item.content, allEntities);
+    if ((mentionsPortfolioOwner(item.content) && !local.localPossessive)
+        || entities.some((entity) => entity.type === "person" || entity.type === "project")) return true;
+    const text = foldQuestion(item.content);
+    /* A first-person portfolio relation is an authority-bearing frame. Generic
+     * nouns (project, career, hire...) are intentionally not. */
+    if (/\bbeni\b.*\b(?:baglayan|uygun|fit)\w*\b/.test(text)
+        || /\b(?:my|me)\b.*\b(?:experience|fit|qualif\w*)\b/.test(text)) return true;
+    if (!continuationCues(item.content).continuation) return false;
+  }
+  return false;
+}
+
+function nearestExplicitReferentsInSegment(activeHistory, entityIndex) {
+  const users = activeHistory.filter((item) => item.role === "user");
   const priorReferents = (before) => {
     for (let index = before - 1; index >= 0; index -= 1) {
       const entities = discourseEntities(users[index].content, entityIndex);
@@ -254,6 +307,50 @@ function nearestExplicitReferents(history, entityIndex) {
       if (prior.length !== 1) return explicit;
       const antecedentFirst = references.contextualReferenceFirst;
       return unique(antecedentFirst ? [...prior, ...explicit] : [...explicit, ...prior]);
+    }
+    if (!continuationCues(item.content).continuation) break;
+  }
+  return [];
+}
+
+function nearestExplicitReferents(history, entityIndex) {
+  return nearestExplicitReferentsInSegment(activeDiscourseHistory(history, entityIndex), entityIndex);
+}
+
+function generalWorldReferents(referents, entityIndex) {
+  const types = new Map((entityIndex?.entities || []).map((entity) => [entity.canonical, entity.type]));
+  return referents.filter((canonical) => types.get(canonical) === "organization");
+}
+
+function nearestOrderedWorldReferentsInSegment(activeHistory, entityIndex) {
+  const users = activeHistory.filter((item) => item.role === "user");
+  const orderedOrganizations = (value) => generalWorldReferents(
+    canonicalMentionsInOrder(value, entityIndex),
+    entityIndex,
+  );
+  const priorReferents = (before) => {
+    for (let index = before - 1; index >= 0; index -= 1) {
+      const ordered = orderedOrganizations(users[index].content);
+      if (ordered.length) return ordered;
+      if (!continuationCues(users[index].content).continuation) break;
+    }
+    return [];
+  };
+  for (let index = users.length - 1; index >= 0; index -= 1) {
+    const item = users[index];
+    const ordered = orderedOrganizations(item.content);
+    if (ordered.length) {
+      const structure = turnStructure(item.content, entityIndex);
+      const contextualMixed = ordered.length === 1 && structure.cues.singular
+        && structure.comparisonRequested
+        && !structure.references.localDemonstrative
+        && !structure.references.localPossessive;
+      if (!contextualMixed) return ordered;
+      const prior = priorReferents(index);
+      if (prior.length !== 1) return ordered;
+      return unique(structure.references.contextualReferenceFirst
+        ? [...prior, ...ordered]
+        : [...ordered, ...prior]);
     }
     if (!continuationCues(item.content).continuation) break;
   }
@@ -309,22 +406,7 @@ function parseStateHint(raw, entityIndex) {
 }
 
 function historySupportsPortfolio(history, entityIndex) {
-  const users = activeDiscourseHistory(history, entityIndex)
-    .filter((item) => item.role === "user").slice(-4).reverse();
-  for (const item of users) {
-    const allEntities = typedEntities(item.content, entityIndex);
-    const entities = discourseEntities(item.content, entityIndex);
-    const local = classifyPublicLocalReferences(item.content, allEntities);
-    if ((mentionsPortfolioOwner(item.content) && !local.localPossessive)
-        || entities.some((entity) => entity.type === "person" || entity.type === "project")) return true;
-    const text = foldQuestion(item.content);
-    /* A first-person portfolio relation is an authority-bearing frame. Generic
-     * nouns (project, career, hire...) are intentionally not. */
-    if (/\bbeni\b.*\b(?:baglayan|uygun|fit)\w*\b/.test(text)
-        || /\b(?:my|me)\b.*\b(?:experience|fit|qualif\w*)\b/.test(text)) return true;
-    if (!continuationCues(item.content).continuation) return false;
-  }
-  return false;
+  return activeHistorySupportsPortfolio(activeDiscourseHistory(history, entityIndex), entityIndex);
 }
 
 function validateStateHint(raw, history, entityIndex) {
@@ -360,8 +442,25 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
       && (conversationState.scope || conversationState.referents?.length || conversationState.orderedReferents?.length),
   );
   const explicitReset = structure.explicitReset;
+  const activeSegment = activeDiscourseSegment(history, entityIndex, {
+    stateStatus: hint.status,
+    contextScope: hint.scope,
+  });
+  const activeCompletedHistory = activeSegment.history;
   const historicalReferents = nearestExplicitReferents(history, entityIndex);
   const answerReferents = latestAssistantReferents(history, entityIndex);
+  /* An accepted GENERAL state is an authority boundary produced by the prior
+   * server turn. It may de-escalate older portfolio history, so only absent or
+   * rejected state may fall back to history-derived referents and scope. */
+  const acceptedGeneralBoundary = hint.status === "accepted" && hint.scope === "general";
+  const safeSegmentReferents = nearestExplicitReferentsInSegment(activeCompletedHistory, entityIndex);
+  const fallbackHistoricalReferents = acceptedGeneralBoundary
+    ? generalWorldReferents(safeSegmentReferents, entityIndex)
+    : historicalReferents;
+  const fallbackAnswerReferents = acceptedGeneralBoundary ? [] : answerReferents;
+  const fallbackOrderedReferents = acceptedGeneralBoundary
+    ? nearestOrderedWorldReferentsInSegment(activeCompletedHistory, entityIndex)
+    : fallbackAnswerReferents;
   const explicitReferents = structure.explicitReferents;
   /* Historical state never creates a mixed turn by itself. Cross-turn mixing
    * needs comparison semantics and a genuinely contextual form; a possessive
@@ -372,7 +471,7 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
   let unresolvedReason = null;
 
   if (mixedSingular) {
-    const candidates = hint.referents.length ? hint.referents : historicalReferents;
+    const candidates = hint.referents.length ? hint.referents : fallbackHistoricalReferents;
     if (candidates.length === 1) {
       const antecedentFirst = structure.references.contextualReferenceFirst;
       referents = unique(antecedentFirst ? [...candidates, ...explicitReferents] : [...explicitReferents, ...candidates]);
@@ -387,7 +486,7 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
     referents = explicitReferents;
     if (referents.length) continuationSource = "message";
   } else if (cues.ordinal !== null) {
-    const ordered = hint.orderedReferents.length ? hint.orderedReferents : answerReferents;
+    const ordered = hint.orderedReferents.length ? hint.orderedReferents : fallbackOrderedReferents;
     if (ordered[cues.ordinal]) {
       referents = [ordered[cues.ordinal]];
       continuationSource = hint.orderedReferents.length ? "validated-state-ordinal" : "history-ordinal";
@@ -397,9 +496,9 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
   } else if (cues.exactTwo) {
     const candidates = hint.referents.length >= 2
       ? hint.referents
-      : historicalReferents.length >= 2
-        ? historicalReferents
-        : answerReferents;
+      : fallbackHistoricalReferents.length >= 2
+        ? fallbackHistoricalReferents
+        : fallbackAnswerReferents;
     if (candidates.length === 2) {
       referents = candidates;
       continuationSource = hint.referents.length >= 2 ? "validated-state-exact-two" : "history-exact-two";
@@ -411,22 +510,27 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
   } else if (cues.genericPlural) {
     const candidates = hint.referents.length >= 2
       ? hint.referents
-      : historicalReferents.length >= 2
-        ? historicalReferents
-        : answerReferents;
+      : fallbackHistoricalReferents.length >= 2
+        ? fallbackHistoricalReferents
+        : fallbackAnswerReferents;
     if (candidates.length >= 2) {
       referents = candidates;
       continuationSource = hint.referents.length >= 2 ? "validated-state-plural" : "history-plural";
     } else unresolvedReason = "missing-plural-antecedent";
   } else {
-    referents = hint.referents.length ? hint.referents : historicalReferents;
+    referents = hint.referents.length ? hint.referents : fallbackHistoricalReferents;
     if (cues.singular && referents.length > 1) {
       referents = [];
       unresolvedReason = "ambiguous-singular-antecedent";
     } else if (referents.length) continuationSource = hint.referents.length ? "validated-state" : "history";
     else if (cues.singular) {
-      const hasTextualAntecedent = history.some((item) => item.role === "user")
-        && history.some((item) => item.role === "assistant");
+      /* A de-escalating boundary exchange can itself be a deterministic
+       * clarification. It becomes textual context only after a subsequent
+       * GENERAL exchange completes; fresh GENERAL and portfolio segments use
+       * their first completed exchange normally. */
+      const hasTextualAntecedent = activeCompletedHistory.length >= 2
+        && (!acceptedGeneralBoundary || !activeHistorySupportsPortfolio(activeCompletedHistory, entityIndex))
+        && (!activeSegment.generalBoundaryApplied || activeCompletedHistory.length >= 4);
       if (hasTextualAntecedent) continuationSource = "history-text";
       else unresolvedReason = "missing-singular-antecedent";
     }
@@ -435,7 +539,9 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
   const turnKind = unresolvedReason ? "ambiguous" : fresh ? "new_topic" : "continuation";
   const contextScope = fresh
     ? null
-    : hint.scope === "portfolio" || historySupportsPortfolio(history, entityIndex)
+    : acceptedGeneralBoundary
+      ? "general"
+      : hint.scope === "portfolio" || historySupportsPortfolio(history, entityIndex)
       ? "portfolio"
       : hint.scope;
   return Object.freeze({
@@ -448,7 +554,7 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
       : hint.orderedReferents.length
         ? hint.orderedReferents
         : cues.ordinal !== null
-          ? answerReferents
+          ? fallbackOrderedReferents
           : []),
     previousTopicReference: cues.previousTopic,
     previousAnswerReference: cues.previousAnswer,

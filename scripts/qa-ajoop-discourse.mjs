@@ -441,6 +441,112 @@ for (const hostile of ["secret-owner-memory", "does-not-exist"] ) {
   check("[active-segment] stale rank grants no portfolio authority", retrieval.contextEligible, false);
 }
 {
+  /* A portfolio answer with no usable ranking produces no ordered state. The
+   * unresolved ordinal then produces the GENERAL boundary used by the next
+   * turn; this models the actual server/browser transition instead of injecting
+   * the final state in isolation. Ranking prose quality belongs to A5.3.2. */
+  const rankingQuestion = "Kaan'ın en güçlü 3 projesini söyle.";
+  const rankingAnswer = "Portfolio, Kaan'ın en güçlü 3 projesi hakkında bilgi vermez.";
+  const rankingTurn = resolveTurn(rankingQuestion);
+  const rankingState = buildNextPublicConversationState({
+    resolvedTurn: rankingTurn, answer: rankingAnswer, scope: "PORTFOLIO", entityIndex, question: rankingQuestion,
+  });
+  check("[clarification-barrier] unsupported ranking stores no referents", rankingState.referents.length, 0);
+  check("[clarification-barrier] unsupported ranking stores no order", rankingState.orderedReferents.length, 0);
+
+  const rankingHistory = [user(rankingQuestion), bot(rankingAnswer)];
+  const ordinalQuestion = "İkinci olanı anlat.";
+  const ordinalTurn = resolveTurn(ordinalQuestion, rankingHistory, rankingState);
+  check("[clarification-barrier] unresolved ordinal is ambiguous", ordinalTurn.turnKind, "ambiguous");
+  check("[clarification-barrier] unresolved ordinal keeps no old referent", ordinalTurn.referents.length, 0);
+  const clarificationAnswer = "Hangi sıralı listeyi kastettiğini göremiyorum.";
+  const clarificationState = buildNextPublicConversationState({
+    resolvedTurn: ordinalTurn, answer: clarificationAnswer, scope: "GENERAL", entityIndex, question: ordinalQuestion,
+  });
+  check("[clarification-barrier] clarification emits general state", clarificationState.scope, "general");
+
+  const clarificationHistory = [
+    ...rankingHistory, user(ordinalQuestion), bot(clarificationAnswer),
+  ];
+  const technical = resolveTurn("Bunu daha teknik anlat.", clarificationHistory, clarificationState);
+  const technicalPlan = plan("Bunu daha teknik anlat.", clarificationHistory, clarificationState);
+  check("[clarification-barrier] contextual turn remains ambiguous", technical.turnKind, "ambiguous");
+  check("[clarification-barrier] accepted general state is retained", technical.contextScope, "general");
+  check("[clarification-barrier] old portfolio referent is not resurrected", technical.referents.length, 0);
+  check("[clarification-barrier] old portfolio authority is not resurrected", technicalPlan.contextEligible, false);
+}
+{
+  const generalState = { version: 1, scope: "general", referents: [], orderedReferents: [] };
+  const bounded = resolveTurn("Daha detaylı.", sinamaHistory, generalState);
+  const boundedPlan = plan("Daha detaylı.", sinamaHistory, generalState);
+  check("[general-state-barrier] accepted state remains general", bounded.contextScope, "general");
+  check("[general-state-barrier] history contributes no old referent", bounded.referents.length, 0);
+  check("[general-state-barrier] history contributes no portfolio authority", boundedPlan.contextEligible, false);
+  check("[general-state-barrier] portfolio-only prose is excluded from generation history", boundedPlan.generationHistory.length, 0);
+}
+{
+  const valid = resolveTurn("Daha teknik anlat.", sinamaHistory, portfolioState(["SINAMA"]));
+  check("[general-state-positive] valid portfolio state continues", valid.turnKind, "continuation");
+  check("[general-state-positive] valid portfolio state retains SINAMA", valid.primaryReferent, "SINAMA");
+  check("[general-state-positive] valid portfolio state retains authority", valid.contextScope, "portfolio");
+}
+{
+  const explicitOwner = plan("Kaan Outlier AI'da ne yaptı?");
+  check("[general-state-positive] fresh explicit owner is portfolio", explicitOwner.contextEligible, true);
+  check("[general-state-positive] fresh explicit owner activates Outlier", explicitOwner.activeOrganizations.join(), "Outlier AI");
+  const ownerless = plan("Outlier AI şirket ortamı nasıl?");
+  check("[general-state-negative] ownerless organization stays general", ownerless.contextEligible, false);
+  check("[general-state-negative] ownerless organization activates no employer", ownerless.activeOrganizations.length, 0);
+}
+{
+  const nodeQuestion = "Node.js event loop nasıl çalışır?";
+  const nodeAnswer = "Node.js event loop görevleri aşamalar halinde işler.";
+  const nodeTurn = resolveTurn(nodeQuestion, sinamaHistory, portfolioState(["SINAMA"]));
+  const nodeState = buildNextPublicConversationState({
+    resolvedTurn: nodeTurn, answer: nodeAnswer, scope: "GENERAL", entityIndex, question: nodeQuestion,
+  });
+  const nodeHistory = [...sinamaHistory, user(nodeQuestion), bot(nodeAnswer)];
+  const local = resolveTurn("Bunu daha teknik anlat.", nodeHistory, nodeState);
+  const localPlan = plan("Bunu daha teknik anlat.", nodeHistory, nodeState);
+  check("[general-segment] local textual reference remains a continuation", local.turnKind, "continuation");
+  check("[general-segment] server-built state remains general", local.contextScope, "general");
+  check("[general-segment] local continuation cannot recover SINAMA", local.referents.includes("SINAMA"), false);
+  check("[general-segment] local continuation has no portfolio authority", localPlan.contextEligible, false);
+  check("[general-segment] generation keeps the completed Node.js exchange", localPlan.generationHistory.length, 2);
+  check("[general-segment] generation starts at the Node.js boundary", localPlan.generationHistory[0]?.content, nodeQuestion);
+}
+{
+  /* Build the boundary through the same fresh GENERAL transition the server
+   * uses, then make its harmless prose adversarial by mentioning two canonical
+   * projects. Those answer-only names are presentation, never authority. */
+  const generalQuestion = "Yazılım mimarisi örnekleri nelerdir?";
+  const incidentalAnswer = "Genel örneklerde SINAMA ve Ajoop Portfolio Copilot adları anılabilir.";
+  const generalTurn = resolveTurn(generalQuestion, sinamaHistory, portfolioState(["SINAMA"]));
+  const generalState = buildNextPublicConversationState({
+    resolvedTurn: generalTurn, answer: incidentalAnswer, scope: "GENERAL", entityIndex, question: generalQuestion,
+  });
+  const incidentalHistory = [...sinamaHistory, user(generalQuestion), bot(incidentalAnswer)];
+  for (const question of ["İkisini karşılaştır.", "Bunları karşılaştır.", "İkincisini anlat."]) {
+    const turn = resolveTurn(question, incidentalHistory, generalState);
+    const retrieval = plan(question, incidentalHistory, generalState);
+    check(`[answer-referent-barrier] ${question} remains ambiguous`, turn.turnKind, "ambiguous");
+    check(`[answer-referent-barrier] ${question} keeps accepted GENERAL state`, turn.contextScope, "general");
+    check(`[answer-referent-barrier] ${question} promotes no incidental answer entity`, turn.referents.length, 0);
+    check(`[answer-referent-barrier] ${question} grants no portfolio authority`, retrieval.contextEligible, false);
+    check(`[answer-referent-barrier] ${question} activates no project`, retrieval.activeProjects.length, 0);
+  }
+}
+for (const [label, state, expectedHint] of [
+  ["absent", undefined, "absent"],
+  ["invalid", { version: 99, scope: "general", referents: [], orderedReferents: [] }, "rejected"],
+]) {
+  const fallback = resolveTurn("Daha teknik anlat.", sinamaHistory, state);
+  check(`[history-fallback] ${label} state preserves continuation`, fallback.turnKind, "continuation");
+  check(`[history-fallback] ${label} state preserves SINAMA`, fallback.primaryReferent, "SINAMA");
+  check(`[history-fallback] ${label} state preserves portfolio authority`, fallback.contextScope, "portfolio");
+  check(`[history-fallback] ${label} state reports validation status`, fallback.browserHint, expectedHint);
+}
+{
   const narrowedPair = resolveTurn("bunu biraz aç", comparisonHistory, portfolioState(["SINAMA"]));
   check("[hint] a browser cannot arbitrarily narrow a validated pair", narrowedPair.browserHint, "rejected");
   check("[hint] singular reference against a pair stays ambiguous", narrowedPair.turnKind, "ambiguous");
@@ -681,6 +787,164 @@ check("semantic resolver is not used", technical.semanticResolutionUsed, false);
   check("[e2e-active-segment] stale general-ranked hint is rejected", staleOrdinal.body.discourse.browserHint, "rejected");
   check("[e2e-active-segment] stale ordinal performs no retrieval", state.embed - staleBefore.embed, 0);
   check("[e2e-active-segment] stale ordinal performs no generation", state.chat - staleBefore.chat, 0);
+
+  const rankingQuestion = "Kaan'ın en güçlü 3 projesini söyle.";
+  const ranking = await rag.handle({
+    method: "POST",
+    origin: "https://kaanbalci.com",
+    contentType: "application/json",
+    body: JSON.stringify({ version: 1, mode: "rag", question: rankingQuestion, locale: "tr", history: [] }),
+  });
+  check("[e2e-clarification-barrier] ranking answer has no ordered state", ranking.body.conversationState.orderedReferents.length, 0);
+  const rankingConversation = [user(rankingQuestion), bot(ranking.body.answer)];
+  const ordinalQuestion = "İkinci olanı anlat.";
+  const ordinal = await rag.handle({
+    method: "POST",
+    origin: "https://kaanbalci.com",
+    contentType: "application/json",
+    body: JSON.stringify({
+      version: 1, mode: "rag", question: ordinalQuestion, locale: "tr",
+      history: rankingConversation, conversationState: ranking.body.conversationState,
+    }),
+  });
+  check("[e2e-clarification-barrier] ordinal safely clarifies", ordinal.body.answerMode, "clarify-reference");
+  check("[e2e-clarification-barrier] ordinal emits general state", ordinal.body.conversationState.scope, "general");
+  const clarificationConversation = [
+    ...rankingConversation, user(ordinalQuestion), bot(ordinal.body.answer),
+  ];
+  const technicalBefore = { embed: state.embed, chat: state.chat };
+  const technical = await rag.handle({
+    method: "POST",
+    origin: "https://kaanbalci.com",
+    contentType: "application/json",
+    body: JSON.stringify({
+      version: 1, mode: "rag", question: "Bunu daha teknik anlat.", locale: "tr",
+      history: clarificationConversation, conversationState: ordinal.body.conversationState,
+    }),
+  });
+  check("[e2e-clarification-barrier] next contextual turn safely clarifies", technical.body.answerMode, "clarify-reference");
+  check("[e2e-clarification-barrier] next contextual turn stays general", technical.body.scope, "general");
+  check("[e2e-clarification-barrier] next contextual turn retains no referent", technical.body.discourse.referents.length, 0);
+  check("[e2e-clarification-barrier] next contextual turn performs no retrieval", state.embed - technicalBefore.embed, 0);
+  check("[e2e-clarification-barrier] next contextual turn performs no generation", state.chat - technicalBefore.chat, 0);
+  check("[e2e-clarification-barrier] next contextual turn exposes no sources", technical.body.sources.length, 0);
+
+  const directGeneralBefore = { embed: state.embed, chat: state.chat };
+  const directGeneral = await rag.handle({
+    method: "POST",
+    origin: "https://kaanbalci.com",
+    contentType: "application/json",
+    body: JSON.stringify({
+      version: 1, mode: "rag", question: "Daha detaylı anlat.", locale: "tr",
+      history: sinamaHistory,
+      conversationState: { version: 1, scope: "general", referents: [], orderedReferents: [] },
+    }),
+  });
+  check("[e2e-general-history-barrier] accepted GENERAL stays general", directGeneral.body.scope, "general");
+  check("[e2e-general-history-barrier] portfolio-only history performs no retrieval", state.embed - directGeneralBefore.embed, 0);
+  check("[e2e-general-history-barrier] general continuation performs one generation", state.chat - directGeneralBefore.chat, 1);
+  check("[e2e-general-history-barrier] portfolio-only history exposes no sources", directGeneral.body.sources.length, 0);
+  check("[e2e-general-history-barrier] portfolio-only history exposes no retrieved evidence", directGeneral.body.retrievedSources.length, 0);
+  check("[e2e-general-history-barrier] portfolio-only history exposes no evidence", directGeneral.body.evidence.length, 0);
+  check("[e2e-general-history-barrier] generation prompt excludes the old SINAMA question", state.prompts.at(-1).includes("SINAMA'yı anlat."), false);
+
+  for (const [label, malformedHistory] of [
+    ["assistant then user", [bot("orphan assistant"), user("orphan user")]],
+    ["two assistants then user", [bot("orphan one"), bot("orphan two"), user("orphan user")]],
+  ]) {
+    const malformedBefore = { embed: state.embed, chat: state.chat };
+    const malformed = await rag.handle({
+      method: "POST",
+      origin: "https://kaanbalci.com",
+      contentType: "application/json",
+      body: JSON.stringify({
+        version: 1, mode: "rag", question: "Bunu daha teknik anlat.", locale: "tr",
+        history: malformedHistory,
+        conversationState: { version: 1, scope: "general", referents: [], orderedReferents: [] },
+      }),
+    });
+    check(`[e2e-textual-antecedent] ${label} safely clarifies`, malformed.body.answerMode, "clarify-reference");
+    check(`[e2e-textual-antecedent] ${label} is ambiguous`, malformed.body.discourse.turnKind, "ambiguous");
+    check(`[e2e-textual-antecedent] ${label} performs no retrieval`, state.embed - malformedBefore.embed, 0);
+    check(`[e2e-textual-antecedent] ${label} performs no generation`, state.chat - malformedBefore.chat, 0);
+    check(`[e2e-textual-antecedent] ${label} exposes no sources`, malformed.body.sources.length, 0);
+    check(`[e2e-textual-antecedent] ${label} exposes no retrieved evidence`, malformed.body.retrievedSources.length, 0);
+    check(`[e2e-textual-antecedent] ${label} exposes no evidence`, malformed.body.evidence.length, 0);
+  }
+
+  const organizationQuestion = "Outlier AI ve CBOT nedir?";
+  const organizationAnswer = "Outlier AI ve CBOT iki farklı organizasyondur.";
+  const organizationTurn = resolveTurn(organizationQuestion);
+  const organizationState = buildNextPublicConversationState({
+    resolvedTurn: organizationTurn,
+    answer: organizationAnswer,
+    scope: "GENERAL",
+    entityIndex,
+    question: organizationQuestion,
+  });
+  const organizationHistory = [user(organizationQuestion), bot(organizationAnswer)];
+  for (const question of ["İkisini karşılaştır.", "Bunları karşılaştır."]) {
+    const organizationBefore = { embed: state.embed, chat: state.chat };
+    const organization = await rag.handle({
+      method: "POST",
+      origin: "https://kaanbalci.com",
+      contentType: "application/json",
+      body: JSON.stringify({
+        version: 1, mode: "rag", question, locale: "tr",
+        history: organizationHistory, conversationState: organizationState,
+      }),
+    });
+    check(`[e2e-general-world-pair] ${question} stays GENERAL`, organization.body.scope, "general");
+    check(`[e2e-general-world-pair] ${question} preserves both organizations`, organization.body.discourse.referents.join("|"), "CBOT|Outlier AI");
+    check(`[e2e-general-world-pair] ${question} performs no portfolio retrieval`, state.embed - organizationBefore.embed, 0);
+    check(`[e2e-general-world-pair] ${question} performs one general generation`, state.chat - organizationBefore.chat, 1);
+    check(`[e2e-general-world-pair] ${question} exposes no sources`, organization.body.sources.length, 0);
+    check(`[e2e-general-world-pair] ${question} exposes no retrieved evidence`, organization.body.retrievedSources.length, 0);
+    check(`[e2e-general-world-pair] ${question} exposes no evidence`, organization.body.evidence.length, 0);
+  }
+  const ordinalBefore = { embed: state.embed, chat: state.chat };
+  const ordinalOrganization = await rag.handle({
+    method: "POST",
+    origin: "https://kaanbalci.com",
+    contentType: "application/json",
+    body: JSON.stringify({
+      version: 1, mode: "rag", question: "İkincisini anlat.", locale: "tr",
+      history: organizationHistory, conversationState: organizationState,
+    }),
+  });
+  check("[e2e-general-world-order] ordinal resolves the second textual organization", ordinalOrganization.body.discourse.primaryReferent, "CBOT");
+  check("[e2e-general-world-order] ordinal stays GENERAL", ordinalOrganization.body.scope, "general");
+  check("[e2e-general-world-order] ordinal performs no portfolio retrieval", state.embed - ordinalBefore.embed, 0);
+  check("[e2e-general-world-order] ordinal performs one general generation", state.chat - ordinalBefore.chat, 1);
+  check("[e2e-general-world-order] ordinal exposes no sources", ordinalOrganization.body.sources.length, 0);
+  check("[e2e-general-world-order] ordinal exposes no retrieved evidence", ordinalOrganization.body.retrievedSources.length, 0);
+  check("[e2e-general-world-order] ordinal exposes no evidence", ordinalOrganization.body.evidence.length, 0);
+
+  const incidentalQuestion = "Yazılım mimarisi örnekleri nelerdir?";
+  const incidentalAnswer = "Genel örneklerde SINAMA ve Ajoop Portfolio Copilot adları anılabilir.";
+  const incidentalTurn = resolveTurn(incidentalQuestion, sinamaHistory, portfolioState(["SINAMA"]));
+  const incidentalState = buildNextPublicConversationState({
+    resolvedTurn: incidentalTurn, answer: incidentalAnswer, scope: "GENERAL", entityIndex, question: incidentalQuestion,
+  });
+  const incidentalHistory = [...sinamaHistory, user(incidentalQuestion), bot(incidentalAnswer)];
+  for (const question of ["İkisini karşılaştır.", "Bunları karşılaştır.", "İkincisini anlat."]) {
+    const incidentalBefore = { embed: state.embed, chat: state.chat };
+    const response = await rag.handle({
+      method: "POST",
+      origin: "https://kaanbalci.com",
+      contentType: "application/json",
+      body: JSON.stringify({
+        version: 1, mode: "rag", question, locale: "tr",
+        history: incidentalHistory, conversationState: incidentalState,
+      }),
+    });
+    check(`[e2e-answer-referent-barrier] ${question} safely clarifies`, response.body.answerMode, "clarify-reference");
+    check(`[e2e-answer-referent-barrier] ${question} stays GENERAL`, response.body.scope, "general");
+    check(`[e2e-answer-referent-barrier] ${question} performs no retrieval`, state.embed - incidentalBefore.embed, 0);
+    check(`[e2e-answer-referent-barrier] ${question} performs no generation`, state.chat - incidentalBefore.chat, 0);
+    check(`[e2e-answer-referent-barrier] ${question} exposes no sources`, response.body.sources.length, 0);
+    check(`[e2e-answer-referent-barrier] ${question} exposes no retrieved evidence`, response.body.retrievedSources.length, 0);
+  }
 
   for (const question of [
     "What is Python and what is it used for?",
