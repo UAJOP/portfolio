@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /** A5.3.1 canonical public discourse regression families. No network/Ollama. */
+import { readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadMasterKnowledge } from "../server/ajoop-knowledge.mjs";
@@ -50,6 +51,7 @@ const OWNER_RECRUITER_CONTROLS = Object.freeze([
 ]);
 
 /* A. Singular referent and presentation depth are one structural family. */
+const sinamaHistory = [user("SINAMA'yı anlat."), bot("SINAMA bir projedir.")];
 for (const [question, expectedDepth] of [
   ["Daha detaylı.", "more_detail"],
   ["onu biraz aç", "more_detail"],
@@ -63,6 +65,83 @@ for (const [question, expectedDepth] of [
   check(`[singular] ${question} retains SINAMA`, turn.primaryReferent, "SINAMA");
   check(`[depth] ${question}`, turn.requestedDepth, expectedDepth);
 }
+for (const question of [
+  "Why is that technically important?",
+  "Why does that matter for recruiters?",
+  "How does that compare technically?",
+  "Can you explain that in practical terms?",
+]) {
+  const turn = resolveTurn(question, sinamaHistory, portfolioState(["SINAMA"]));
+  check(`[long-bare-that] ${question} remains a continuation`, turn.turnKind, "continuation");
+  check(`[long-bare-that] ${question} retains its portfolio referent`, turn.primaryReferent, "SINAMA");
+}
+{
+  const question = "How does that compare technically with AJOOP?";
+  const turn = resolveTurn(question, sinamaHistory, portfolioState(["SINAMA"]));
+  check("[long-bare-that-mixed] comparison remains contextual", turn.turnKind, "continuation");
+  check("[long-bare-that-mixed] demonstrative and explicit project form the pair",
+    turn.referents.join("|"), "SINAMA|Ajoop Portfolio Copilot");
+}
+for (const question of [
+  "Pick the 2 projects that best demonstrate applied AI.",
+  "Pick the 2 projects from his portfolio that best demonstrate applied AI.",
+  "Choose the 3 project examples that best demonstrate applied AI.",
+  "Pick 2 of the projects in the portfolio that best show applied AI.",
+  "Pick the projects that best demonstrate applied AI.",
+  "Choose the project that best demonstrates applied AI.",
+]) {
+  const turn = resolveTurn(question, sinamaHistory, portfolioState(["SINAMA"]));
+  check(`[relative-that-ranking] ${question} starts fresh`, turn.turnKind, "new_topic");
+  check(`[relative-that-ranking] ${question} inherits no stale SINAMA`, turn.referents.length, 0);
+  check(`[relative-that-ranking] ${question} keeps the shared ranking shape`, plan(question).compositionIntent, "ranking");
+}
+for (const question of [
+  "Rank that among the top 3 projects.",
+  "Choose that as one of the top 3 projects.",
+  "Put that among the 3 strongest projects.",
+  "Among the top 3 projects, rank that.",
+  "Of the strongest 3 projects, choose that.",
+  "Rank the top 3 projects including that.",
+  "Pick 3 projects and include that.",
+  "Out of the top 3 projects, where does that land?",
+  "Rank the projects with that included.",
+  "Pick three projects alongside that.",
+]) {
+  const result = plan(question, sinamaHistory, portfolioState(["SINAMA"]));
+  check(`[demonstrative-that-ranking] ${question} remains contextual`, result.discourse.turnKind, "continuation");
+  check(`[demonstrative-that-ranking] ${question} retains stale-history target intentionally`, result.discourse.primaryReferent, "SINAMA");
+  check(`[demonstrative-that-ranking] ${question} still uses ranking composition`, result.compositionIntent, "ranking");
+}
+{
+  const question = "Compare the top candidates against that.";
+  const result = plan(question, sinamaHistory, portfolioState(["SINAMA"]));
+  check("[prepositional-that-comparison] demonstrative remains contextual", result.discourse.turnKind, "continuation");
+  check("[prepositional-that-comparison] stale-history target remains SINAMA", result.discourse.primaryReferent, "SINAMA");
+  check("[prepositional-that-comparison] comparison semantics survive", result.compositionIntent, "comparison");
+}
+{
+  const question = "Rank the projects with that included.";
+  const discourseUrl = new URL("../server/ajoop-discourse.mjs", import.meta.url);
+  const mutantUrl = new URL(`../server/.qa-ajoop-discourse-mutant-${process.pid}-${Date.now()}.mjs`, import.meta.url);
+  const structuralRule = `    if (!next || DEMONSTRATIVE_THAT_FOLLOW.test(next)) return false;\n    if (DEMONSTRATIVE_THAT_GOVERNOR.test(previous) || PREPOSITIONAL_THAT_GOVERNOR.test(previous) || /ing$/.test(previous)) return false;\n    return true;`;
+  const predicateListMutant = `    const collectionIndex = tokens.findLastIndex((candidate, index) =>\n      index < thatIndex && RANKING_COLLECTION_TOKEN.test(candidate),\n    );\n    const fixedPredicates = /^(?:rank\\w*|choose\\w*|pick\\w*|select\\w*|put|place\\w*)$/;\n    return !tokens.slice(collectionIndex + 1, thatIndex).some((candidate) => fixedPredicates.test(candidate));`;
+  const source = readFileSync(discourseUrl, "utf8");
+  ok("[relative-that-mutation] structural rule anchor exists", source.includes(structuralRule));
+  writeFileSync(mutantUrl, source.replace(structuralRule, predicateListMutant), "utf8");
+  try {
+    const mutant = await import(mutantUrl.href);
+    const turn = mutant.resolvePublicDiscourseTurn({
+      question,
+      history: sinamaHistory,
+      conversationState: portfolioState(["SINAMA"]),
+      entityIndex,
+    });
+    check("[relative-that-mutation] fixed predicate list breaks preposition-object that", turn.turnKind, "new_topic");
+    check("[relative-that-mutation] fixed predicate list loses prepositional SINAMA", turn.primaryReferent, null);
+  } finally {
+    unlinkSync(mutantUrl);
+  }
+}
 
 /* B. Plural referents remain an ordered set instead of collapsing to one. */
 const comparisonHistory = [
@@ -70,7 +149,6 @@ const comparisonHistory = [
   bot("SINAMA ve Ajoop Portfolio Copilot iki farklı projedir."),
 ];
 const pair = ["SINAMA", "Ajoop Portfolio Copilot"];
-const sinamaHistory = [user("SINAMA'yı anlat."), bot("SINAMA bir projedir.")];
 for (const question of [
   "Peki ikisinin ortak tarafı ne?",
   "ikisini karşılaştır",

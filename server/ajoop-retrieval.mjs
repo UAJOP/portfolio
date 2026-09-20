@@ -25,6 +25,7 @@ import { mentionsPortfolioOwner, resolveEntities } from "./ajoop-entities.mjs";
 import {
   activeDiscourseHistory,
   classifyPublicLocalReferences,
+  isPublicRankingRequest,
   resolvePublicDiscourseTurn,
 } from "./ajoop-discourse.mjs";
 
@@ -433,7 +434,8 @@ export function assessContextEligibility({ question, currentEntities, inheritedE
       || anyPhrase(folded, PROFESSIONAL_RELATION_FRAME);
     const ownerFrame = mentionsPortfolioOwner(folded) && !local.localPossessive;
     if (ownerFrame) return { eligible: true, reason: "owner-reference" };
-    if (currentEntities.some((entity) => entity.type === ENTITY_TYPES.ORGANIZATION)) {
+    const organizations = currentEntities.filter((entity) => entity.type === ENTITY_TYPES.ORGANIZATION);
+    if (organizations.length) {
       return {
         eligible: false,
         reason: anyPhrase(folded, DEFINITION_FRAME) ? "world-entity-definition" : "world-entity-general",
@@ -534,6 +536,13 @@ export function planRetrievalTurn({ question, history = [], conversationState, r
    * a generic organization noun (company/employer) recreate portfolio scope
    * after authority was denied above. */
   const experienceFocus = eligible ? experienceRecordFocus(question, framedTypes) : null;
+  const compositionIntent = isPublicRankingRequest(question)
+    ? "ranking"
+    : discourse.requestedOperation === "summarize"
+      ? "summary"
+      : discourse.requestedOperation === "compare"
+        ? "comparison"
+        : null;
   return {
     currentEntities,
     inheritedEntity,
@@ -547,6 +556,7 @@ export function planRetrievalTurn({ question, history = [], conversationState, r
     activeEntities: active.map((entity) => entity.canonical),
     framedTypes,
     experienceFocus,
+    compositionIntent,
     /* Slot reservation is for questions with no explicit focus. Naming a
      * project or an employer is a stronger signal than asking about projects
      * in general, so an explicit entity keeps the whole context. */
@@ -581,9 +591,26 @@ export function isCandidateEligible(chunk, affinity, { activeProjects, activeOrg
   return true;
 }
 
-/** Distinctive words from the question, for cheap lexical agreement. */
+const LEXICAL_STOPWORDS = new Set([
+  "kaan", "balci", "kaanin", "balcinin",
+  "does", "what", "which", "where", "when", "would", "could", "should", "have", "has", "with", "from", "about", "tell", "please",
+  "experience", "experiences", "experienced", "work", "worked", "working", "project", "projects", "portfolio",
+  "deneyim", "deneyimi", "deneyimleri", "tecrube", "calisti", "calisma", "proje", "projesi", "projeleri", "portfolyo",
+  "using", "uses", "kullanir", "kullandi", "sahip", "hangi", "nedir",
+]);
+const BROAD_LEXICAL_FRAMING = new Set([
+  "software", "development", "developer", "engineering", "engineer",
+  "technical", "technology", "technologies", "programming", "systems", "system",
+  "yazilim", "gelistirme", "muhendislik", "teknik", "teknoloji", "sistem", "sistemler",
+]);
+
+/** Distinctive capability/topic words from the question, for cheap lexical agreement. */
 export function lexicalTerms(question) {
-  return tokenize(foldQuestion(question)).filter((word) => word.length >= 4);
+  const terms = [...new Set(tokenize(foldQuestion(question))
+    .filter((word) => (word.length >= 4 || /^(?:ai|ml|c#|f#|go|r)$/.test(word))
+      && !LEXICAL_STOPWORDS.has(word)))];
+  const distinctive = terms.filter((word) => !BROAD_LEXICAL_FRAMING.has(word));
+  return distinctive.length ? distinctive : terms;
 }
 
 /**
@@ -600,8 +627,14 @@ export function scoreCandidate(chunk, semanticScore, { affinity, activeEntities,
     ? RETRIEVAL_WEIGHTS.entityAffinity
     : 0;
 
-  const haystack = foldQuestion([chunk.title, ...(chunk.tags || [])].filter(Boolean).join(" "));
-  const lexicalScore = terms.some((term) => hasPhrase(haystack, term)) ? RETRIEVAL_WEIGHTS.lexical : 0;
+  const haystack = foldQuestion([chunk.title, ...(chunk.tags || []), chunk.text].filter(Boolean).join(" "));
+  /* A single generic match such as "Kaan" must not tie a record that also
+   * contains the requested capability (Python, chatbot, reliability...). Count
+   * up to two distinct matches inside the canonical record text. This remains
+   * a bounded bonus under the existing hybrid scorer; it is not a second
+   * retrieval pass and it does not manufacture corpus absence from a miss. */
+  const lexicalMatches = new Set(terms.filter((term) => hasPhrase(haystack, term))).size;
+  const lexicalScore = Math.min(2, lexicalMatches) * RETRIEVAL_WEIGHTS.lexical;
 
   /* Priority 1 is canonical master knowledge. Modest by design: a tie-break,
    * never a reason to prefer an irrelevant canonical record. */
@@ -631,7 +664,13 @@ export function scoreCandidate(chunk, semanticScore, { affinity, activeEntities,
  * FastAPI from crowding Merge Rush out of its own answer: filtering removes the
  * WRONG project, and this makes room for the right one.
  */
-export function selectTopChunks(ranked, { topK, perEntityCap = 2, reserveWhen, reservedSlots = RESERVED_FRAMED_SLOTS }) {
+export function selectTopChunks(ranked, {
+  topK,
+  perEntityCap = 2,
+  reserveWhen,
+  reservedSlots = RESERVED_FRAMED_SLOTS,
+  reserveKey,
+}) {
   const selected = [];
   const chosen = new Set();
   const perEntity = new Map();
@@ -652,9 +691,15 @@ export function selectTopChunks(ranked, { topK, perEntityCap = 2, reserveWhen, r
    * point of reserving is coverage. The general pass below may still add a
    * second chunk of a record it really wants. */
   if (typeof reserveWhen === "function") {
+    const reservedKeys = new Set();
     for (const item of ranked) {
       if (selected.length >= Math.min(reservedSlots, topK)) break;
-      if (reserveWhen(item)) take(item, 1);
+      if (!reserveWhen(item)) continue;
+      const key = typeof reserveKey === "function" ? reserveKey(item) : null;
+      if (key && reservedKeys.has(key)) continue;
+      const before = selected.length;
+      take(item, 1);
+      if (key && selected.length > before) reservedKeys.add(key);
     }
   }
   for (const item of ranked) {

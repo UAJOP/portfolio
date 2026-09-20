@@ -580,6 +580,7 @@ function certificationRecords(knowledge) {
  */
 function projectRecords(knowledge) {
   const projects = knowledge.projects || {};
+  const owner = asText(knowledge?.identity?.full_name?.value);
 
   const flagship = Object.entries(projects.flagship || {}).map(([key, entry]) => {
     const name = asText(entry.name) || key;
@@ -606,6 +607,9 @@ function projectRecords(knowledge) {
       tags: ["project", name, key, ...(Array.isArray(entry.stack) ? entry.stack : [])],
       metadata: {
         flagship: true,
+        owner,
+        project: name,
+        role: asText(entry.role),
         status: asText(entry.status),
         category: asText(entry.category),
         stack: Array.isArray(entry.stack) ? entry.stack : [],
@@ -633,6 +637,8 @@ function projectRecords(knowledge) {
       ],
       metadata: {
         flagship: false,
+        owner,
+        project: asText(entry.name),
         category: asText(entry.category),
         stack: Array.isArray(entry.stack) ? entry.stack : [],
       },
