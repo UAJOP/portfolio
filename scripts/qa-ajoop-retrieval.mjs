@@ -14,7 +14,7 @@
  */
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadMasterKnowledge } from "../server/ajoop-knowledge.mjs";
+import { MASTER_KNOWLEDGE_SOURCE, loadMasterKnowledge } from "../server/ajoop-knowledge.mjs";
 import { buildAliasIndex, mentionsPortfolioOwner } from "../server/ajoop-entities.mjs";
 import {
   ENTITY_TYPES,
@@ -24,12 +24,22 @@ import {
   framedRecordTypes,
   inheritPortfolioEntity,
   isFollowUpQuestion,
+  lexicalTerms,
   planRetrievalTurn,
   scoreCandidate,
   selectGenerationHistory,
   selectTopChunks,
 } from "../server/ajoop-retrieval.mjs";
-import { createAjoopRag } from "../server/ajoop-rag.mjs";
+import { buildPortfolioChunks, createAjoopRag } from "../server/ajoop-rag.mjs";
+import {
+  ANSWER_MODES,
+  EVIDENCE_SUPPORT,
+  answerStrategyPrompt,
+  assessEvidenceSupport,
+  compositionSupportMetadata,
+  selectAnswerStrategy,
+  validateGeneratedAnswer,
+} from "../server/ajoop-answer.mjs";
 import { buildNextPublicConversationState } from "../server/ajoop-discourse.mjs";
 
 let passed = 0;
@@ -50,9 +60,22 @@ const ENV = { AJOOP_AI_ALLOWED_ORIGINS: ORIGIN };
 
 const loaded = await loadMasterKnowledge(DATA_DIR);
 const entityIndex = buildEntityIndex(loaded.knowledge, buildAliasIndex(loaded.knowledge));
+const { chunks: productionChunks } = await buildPortfolioChunks();
+const productionAffinity = buildChunkAffinity(productionChunks, entityIndex);
+const ownerAliases = entityIndex.entities.find((entity) => entity.type === ENTITY_TYPES.PERSON)?.aliases || [];
 const plan = (question, history = [], conversationState) => planRetrievalTurn({
   question, history, conversationState, entityIndex,
 });
+const routedStrategy = (question) => {
+  const planned = plan(question);
+  return {
+    ...selectAnswerStrategy({ question, plan: planned }),
+    activeProjects: planned.activeProjects,
+    activeOrganizations: planned.activeOrganizations,
+    framedTypes: planned.framedTypes,
+    actorAliases: ownerAliases,
+  };
+};
 
 /* ---------- A. the entity index ---------- */
 
@@ -272,6 +295,27 @@ for (const question of ["SINAMA nedir?", "What is SINAMA?"]) {
   check(`owned-entity definition stays portfolio: ${question}`, plan(question).contextEligible, true);
 }
 
+for (const question of [
+  "Is a Software Engineer a good fit for remote work?",
+  "Bu engineer pozisyonu için hangi kanıtlar önemli?",
+  "What evidence makes an engineer suitable for this role?",
+  "Solution Engineer tarafında güçlü iletişim neden önemli?",
+]) {
+  const result = plan(question);
+  check(`ownerless role assessment remains GENERAL: ${question}`, result.contextEligible, false);
+  check(`ownerless role assessment has no entity lock: ${question}`, result.activeProjects.length + result.activeOrganizations.length, 0);
+  ok(`ownerless role assessment has no portfolio reason: ${question}`,
+    ["no-portfolio-signal", "missing-singular-antecedent"].includes(result.contextReason));
+}
+for (const question of [
+  "Applied AI nedir?",
+  "Solution Engineer ne yapar?",
+  "Bir mühendis için güçlü iletişim neden önemlidir?",
+  "Bilimsel kanıt nedir?",
+]) {
+  check(`generic role/evidence knowledge remains GENERAL: ${question}`, plan(question).contextEligible, false);
+}
+
 /* ---------- B3. organization resolution is not relationship authority ---------- */
 
 for (const question of ["CBOT nedir?", "What is CBOT?"]) {
@@ -283,6 +327,39 @@ for (const question of ["CBOT nedir?", "What is CBOT?"]) {
   check(`a bare organization definition stays general: ${question}`, result.contextEligible, false);
   check(`for the world-entity reason: ${question}`, result.contextReason, "world-entity-definition");
   check(`and it gains no active organization authority: ${question}`, result.activeOrganizations.length, 0);
+}
+
+for (const question of [
+  "Compare CBOT and Outlier AI experience.",
+  "Compare CBOT and Outlier AI as employers.",
+  "Compare CBOT and Outlier AI internship experience.",
+  "CBOT ve Outlier AI deneyimini karşılaştır.",
+  "Which of CBOT and Outlier AI experiences differs more technically?",
+  "Which of CBOT and Outlier AI differs more technically?",
+  "CBOT ile Outlier AI'ı karşılaştır.",
+  "Compare CBOT and Outlier AI company culture.",
+  "CBOT ile Outlier AI deneyimlerini karşılaştır.",
+  "Between CBOT and Outlier AI, which experience differs more technically?",
+]) {
+  const result = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: result });
+  check(`[organization-authority] ownerless comparison stays GENERAL: ${question}`, result.contextEligible, false);
+  check(`[organization-authority] ownerless comparison activates no organizations: ${question}`, result.activeOrganizations.length, 0);
+  check(`[organization-authority] ownerless comparison uses GENERAL strategy: ${question}`, strategy.mode, ANSWER_MODES.GENERAL);
+  check(`[organization-authority] ownerless comparison expects GENERAL scope: ${question}`, strategy.expectedScope, "GENERAL");
+}
+
+{
+  const question = "Compare CBOT and Outlier AI experience.";
+  const result = plan(question);
+  const oldNamedExperienceComparison = result.currentEntities
+    .filter((entity) => entity.type === ENTITY_TYPES.ORGANIZATION).length >= 2
+    && framedRecordTypes(question).includes("experience")
+    && /\b(?:compare\w*|karsilastir\w*|differ\w*|fark\w*)\b/.test(question.toLowerCase());
+  check("[organization-authority-mutation] removed grammar carve-out would authorize the ownerless comparison",
+    oldNamedExperienceComparison, true);
+  check("[organization-authority-mutation] production authority rejects the same comparison",
+    result.contextEligible, false);
 }
 
 for (const question of [
@@ -803,6 +880,300 @@ check("a technology question targets skills", framedRecordTypes("hangi teknoloji
 check("a named project reserves nothing", plan("SINAMA stacki ne").reservedTypes.length, 0);
 ok("an unfocused question does reserve", plan("hangi şirketlerde çalıştı?").reservedTypes.includes("experience"));
 
+for (const [question, expected] of [
+  ["Kaan'ın en güçlü 3 projesini söyle.", "ranking"],
+  ["Kaan'ın projelerini özetle.", "summary"],
+  ["SINAMA ile Hospital Appointment System'ı karşılaştır.", "comparison"],
+  ["Which of his projects differ most technically?", "comparison"],
+]) {
+  check(`composition intent is planned once: ${question}`, plan(question).compositionIntent, expected);
+}
+for (const [question, count] of [
+  ["Teknik derinliğe göre 3 proje seç.", 3],
+  ["Choose 3 projects for technical depth.", 3],
+  ["Pick the 2 projects that best demonstrate applied AI.", 2],
+]) {
+  const planned = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  check(`[bounded-selection] plan uses ranking: ${question}`, planned.compositionIntent, "ranking");
+  check(`[bounded-selection] selected strategy uses ranking: ${question}`, strategy.compositionIntent, "ranking");
+  check(`[bounded-selection] requested count survives: ${question}`, strategy.requestedCount, count);
+}
+for (const [question, count] of [
+  ["Pick the projects that best demonstrate applied AI.", null],
+  ["Choose the project that best demonstrates applied AI.", 1],
+  ["Choose projects that best demonstrate applied AI.", null],
+  ["Choose project examples that best demonstrate applied AI.", null],
+]) {
+  const planned = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  check(`[unbounded-selection] plan uses ranking: ${question}`, planned.compositionIntent, "ranking");
+  check(`[unbounded-selection] stale-independent strategy uses ranking: ${question}`, strategy.compositionIntent, "ranking");
+  check(`[unbounded-selection] count is only inferred from singular grammar: ${question}`, strategy.requestedCount, count);
+}
+for (const question of ["3 proje var mı?", "3 proje hakkında bilgi ver."]) {
+  check(`[bounded-selection-negative] count alone is not ranking: ${question}`, plan(question).compositionIntent, null);
+}
+
+for (const question of [
+  "What differentiates Kaan from other junior candidates?",
+  "How does Kaan differ from other junior candidates?",
+  "Kaan'ı diğer junior adaylardan ayıran farklar neler?",
+]) {
+  const planned = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  check(`[recruiter-differentiation] ${question}`, strategy.mode, ANSWER_MODES.RECRUITER_DIFFERENTIATION);
+}
+{
+  const question = "What differentiates Kaan from other junior candidates based on his CBOT and Outlier AI experience?";
+  const planned = plan(question);
+  check("[recruiter-evidence-context] both evidence organizations remain active", planned.activeOrganizations.join("|"), "CBOT|Outlier AI");
+  check("[recruiter-evidence-context] evidence entities do not become comparison operands",
+    selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.RECRUITER_DIFFERENTIATION);
+}
+for (const question of [
+  "Considering his CBOT and Outlier AI experience, what differentiates Kaan from other junior candidates?",
+  "Considering his CBOT and Outlier AI experience what differentiates Kaan from other junior candidates?",
+  "Based on his CBOT and Outlier AI experience, what differentiates Kaan from other junior candidates?",
+  "Based on his CBOT and Outlier AI experience: what differentiates Kaan from other junior candidates?",
+  "From his CBOT and Outlier AI experience, what differentiates Kaan from other junior candidates?",
+]) {
+  const planned = plan(question);
+  check(`[recruiter-leading-evidence] ${question} retains both evidence organizations`, planned.activeOrganizations.join("|"), "CBOT|Outlier AI");
+  check(`[recruiter-leading-evidence] ${question} keeps recruiter differentiation`,
+    selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.RECRUITER_DIFFERENTIATION);
+}
+{
+  const punctuated = [
+    "Considering his CBOT and Outlier AI experience, what differentiates Kaan from other junior candidates?",
+    "Considering his CBOT and Outlier AI experience what differentiates Kaan from other junior candidates?",
+    "Based on his CBOT and Outlier AI experience: what differentiates Kaan from other junior candidates?",
+  ].map((question) => selectAnswerStrategy({ question, plan: plan(question) }).mode);
+  check("[operand-mutation] comma, colon, and no-punctuation evidence frames are equivalent", new Set(punctuated).size, 1);
+}
+for (const question of [
+  "Based on his CBOT and Outlier AI experience, compare Kaan with other junior candidates.",
+  "Based on his CBOT and Outlier AI experience compare Kaan with other junior candidates.",
+  "CBOT ve Outlier AI deneyimine dayanarak Kaan'ı diğer junior adaylarla karşılaştır.",
+  "CBOT ve Outlier AI deneyimlerine dayanarak Kaan'ı diğer junior adaylardan ayıran farklar neler?",
+]) {
+  const planned = plan(question);
+  check(`[comparison-evidence-context] ${question} retains both evidence organizations`, planned.activeOrganizations.join("|"), "CBOT|Outlier AI");
+  check(`[comparison-evidence-context] ${question} keeps recruiter differentiation`,
+    selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.RECRUITER_DIFFERENTIATION);
+}
+for (const question of [
+  "Which aspects of his CBOT and Outlier AI experience differentiate Kaan from other junior candidates?",
+  "What, based on his CBOT and Outlier AI experience, differentiates Kaan from other junior candidates?",
+]) {
+  const planned = plan(question);
+  check(`[interrogative-evidence-context] ${question} retains evidence organizations`, planned.activeOrganizations.join("|"), "CBOT|Outlier AI");
+  check(`[interrogative-evidence-context] ${question} keeps recruiter differentiation`,
+    selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.RECRUITER_DIFFERENTIATION);
+}
+{
+  const question = "Which aspects of his CBOT and Outlier AI experience differentiate Kaan from other junior candidates?";
+  const folded = question.toLowerCase();
+  ok("[question-frame-mutation] the old position-only rule would promote both evidence entities",
+    folded.indexOf("cbot") > folded.indexOf("which") && folded.indexOf("outlier ai") > folded.indexOf("which"));
+}
+for (const question of [
+  "Compare Kaan's CBOT and Outlier AI experience.",
+  "Compare his CBOT and Outlier AI experience.",
+  "Kaan'ın CBOT ve Outlier AI deneyimini karşılaştır.",
+  "How does Kaan's CBOT experience differ from his Outlier AI experience?",
+  "Which of Kaan's CBOT and Outlier AI experiences differs more technically?",
+]) {
+  const planned = plan(question);
+  check(`[owner-authorized-experience-comparison] eligible through the existing owner path: ${question}`,
+    planned.contextEligible, true);
+  ok(`[owner-authorized-experience-comparison] uses an existing explicit-owner or owner-reference path: ${question}`,
+    ["explicit-entity", "owner-reference"].includes(planned.contextReason));
+  check(`[owner-authorized-experience-comparison] both organizations are actual sides: ${question}`,
+    planned.activeOrganizations.join("|"), "CBOT|Outlier AI");
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  check(`[owner-authorized-experience-comparison] remains comparison: ${question}`,
+    strategy.mode, ANSWER_MODES.COMPARISON);
+  check(`[owner-authorized-experience-comparison] expects PORTFOLIO scope: ${question}`,
+    strategy.expectedScope, "PORTFOLIO");
+}
+for (const question of [
+  "What is the difference between SINAMA and AJOOP?",
+  "SINAMA ile AJOOP arasındaki fark ne?",
+]) {
+  const planned = plan(question);
+  check(`[shared-predicate-operands] ${question} retains two named sides`,
+    [...planned.activeProjects, ...planned.activeOrganizations].length, 2);
+  check(`[shared-predicate-operands] ${question} remains comparison`,
+    selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.COMPARISON);
+}
+for (const question of [
+  "How does Kaan's CBOT experience differ from his Outlier AI experience?",
+  "Which of Kaan's CBOT and Outlier AI experiences differs more technically?",
+]) {
+  const planned = plan(question);
+  check(`[predicate-operand-comparison] ${question} retains both sides`, planned.activeOrganizations.join("|"), "CBOT|Outlier AI");
+  check(`[predicate-operand-comparison] ${question} remains comparison`,
+    selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.COMPARISON);
+}
+{
+  const question = "Which project differs more, SINAMA or AJOOP?";
+  const planned = plan(question);
+  check(`[predicate-operand-comparison] ${question} retains both project sides`, planned.activeProjects.join("|"), "SINAMA|Ajoop Portfolio Copilot");
+  check(`[predicate-operand-comparison] ${question} remains comparison`,
+    selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.COMPARISON);
+}
+for (const question of [
+  "SINAMA ile AJOOP arasındaki fark ne?",
+  "How does SINAMA differ from AJOOP?",
+]) {
+  const planned = plan(question);
+  check(`[true-comparison] ${question} has two validated sides`, planned.activeProjects.length, 2);
+  check(`[true-comparison] ${question} remains comparison`, selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.COMPARISON);
+}
+for (const question of [
+  "Kaan'ın projeleri nasıl farklılaşıyor?",
+  "Kaan'ın projelerini karşılaştır.",
+]) {
+  const planned = plan(question);
+  check(`[broad-family-comparison] ${question} plans comparison`, planned.compositionIntent, "comparison");
+  check(`[broad-family-comparison] ${question} is not recruiter refinement`, selectAnswerStrategy({ question, plan: planned }).mode, ANSWER_MODES.COMPARISON);
+}
+
+/* Bound relations consume the exact master-knowledge records that production
+ * chunking exposes, including canonical owner aliases and structured roles. */
+{
+  const cbotRecords = productionChunks.filter((record) =>
+    record.source === MASTER_KNOWLEDGE_SOURCE && record.entityId === "experience:cbot");
+  check("[real-corpus-relation] canonical CBOT record is present", cbotRecords.length, 1);
+  for (const question of [
+    "Did Kaan work at CBOT?",
+    "Has Kaan worked at CBOT?",
+    "Did Kaan Balcı work at CBOT?",
+    "Kaan CBOT'ta çalıştı mı?",
+  ]) {
+    check(`[real-corpus-relation] ${question}`, assessEvidenceSupport({
+      strategy: routedStrategy(question), records: cbotRecords, question, affinity: productionAffinity,
+    }), EVIDENCE_SUPPORT.SUPPORTED);
+  }
+  check("[real-corpus-relation] Turkish work-with is not satisfied by canonical work-at evidence", assessEvidenceSupport({
+    strategy: routedStrategy("Kaan CBOT ile çalıştı mı?"), records: cbotRecords,
+    question: "Kaan CBOT ile çalıştı mı?", affinity: productionAffinity,
+  }), EVIDENCE_SUPPORT.PARTIAL);
+  check("[real-corpus-relation] canonical CBOT work-at does not cover a requested Alex participant", assessEvidenceSupport({
+    strategy: routedStrategy("Did Kaan work at CBOT with Alex?"), records: cbotRecords,
+    question: "Did Kaan work at CBOT with Alex?", affinity: productionAffinity,
+  }), EVIDENCE_SUPPORT.PARTIAL);
+
+  const sinamaRecords = productionChunks.filter((record) =>
+    record.source === MASTER_KNOWLEDGE_SOURCE && record.entityId === "project:sinama");
+  check("[real-corpus-relation] canonical SINAMA project record is present", sinamaRecords.length, 1);
+  check("[real-corpus-relation] structured project owner and role establish work-on", assessEvidenceSupport({
+    strategy: routedStrategy("Did Kaan work on SINAMA?"), records: sinamaRecords,
+    question: "Did Kaan work on SINAMA?", affinity: productionAffinity,
+  }), EVIDENCE_SUPPORT.SUPPORTED);
+  for (const question of [
+    "Did Alex work at CBOT with Kaan?",
+    "Did Kaan and Alex work at CBOT?",
+  ]) {
+    check(`[actor-alias-scope] canonical Kaan employment cannot satisfy ${question}`, assessEvidenceSupport({
+      strategy: routedStrategy(question), records: cbotRecords, question, affinity: productionAffinity,
+    }), EVIDENCE_SUPPORT.PARTIAL);
+  }
+  check("[actor-alias-scope] structured Kaan project role cannot satisfy an Alex subject", assessEvidenceSupport({
+    strategy: routedStrategy("Did Alex work on SINAMA with Kaan?"), records: sinamaRecords,
+    question: "Did Alex work on SINAMA with Kaan?", affinity: productionAffinity,
+  }), EVIDENCE_SUPPORT.PARTIAL);
+  check("[structured-owner-equality] canonical SINAMA ownership cannot satisfy a compound actor", assessEvidenceSupport({
+    strategy: routedStrategy("Did Kaan Balcı and Alex work on SINAMA?"), records: sinamaRecords,
+    question: "Did Kaan Balcı and Alex work on SINAMA?", affinity: productionAffinity,
+  }), EVIDENCE_SUPPORT.PARTIAL);
+  const crossCutting = productionChunks.find((record) =>
+    record.source === MASTER_KNOWLEDGE_SOURCE
+    && record.entityType !== "project"
+    && /SINAMA/i.test(record.text));
+  ok("[real-corpus-relation] a cross-cutting SINAMA mention exists for the negative", Boolean(crossCutting));
+  ok("[real-corpus-relation] cross-cutting mention cannot establish work-on", assessEvidenceSupport({
+    strategy: routedStrategy("Did Kaan work on SINAMA?"), records: [crossCutting],
+    question: "Did Kaan work on SINAMA?", affinity: productionAffinity,
+  }) !== EVIDENCE_SUPPORT.SUPPORTED);
+}
+
+/* Explicit composition intent must win before the legacy multi-entity mode.
+ * The ranking case walks the structured plan -> evidence support -> prompt ->
+ * validator pipeline with records that genuinely cover its criterion. */
+{
+  const question = "SINAMA, AJOOP ve Hospital Appointment System projelerinden teknik derinliğe göre 2 proje seç.";
+  const planned = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  const routedStrategy = {
+    ...strategy,
+    activeProjects: planned.activeProjects,
+    activeOrganizations: planned.activeOrganizations,
+    framedTypes: planned.framedTypes,
+  };
+  const records = planned.activeProjects.map((title, index) => ({
+    id: `named-ranking-${index}`,
+    entityId: `project:named-${index}`,
+    entityType: "project",
+    title,
+    text: `${title} teknik derinlige dair canonical evidence.`,
+  }));
+  const affinity = new Map(records.map((record) => [record.id, { projects: [record.title], organizations: [] }]));
+  const compositionSupport = compositionSupportMetadata({ strategy: routedStrategy, records, question, affinity });
+  const evidenceSupport = assessEvidenceSupport({ strategy: routedStrategy, records, question, affinity });
+  const calibrated = { ...routedStrategy, compositionSupport, evidenceSupport };
+  const prompt = answerStrategyPrompt(calibrated);
+  const validation = validateGeneratedAnswer({
+    parsed: {
+      scope: "PORTFOLIO",
+      answer: "SINAMA ranks first and Ajoop Portfolio Copilot second for the supported technical-depth criterion.",
+      contractText: "SCOPE: PORTFOLIO\nANSWER: SINAMA ranks first and Ajoop Portfolio Copilot second for the supported technical-depth criterion.",
+    },
+    strategy: calibrated,
+    question,
+    records,
+  });
+  check("[composition-precedence-ranking] intent remains ranking", planned.compositionIntent, "ranking");
+  check("[composition-precedence-ranking] neutral mode replaces legacy comparison", strategy.mode, ANSWER_MODES.PORTFOLIO_FACT);
+  check("[composition-precedence-ranking] requested count remains two", strategy.requestedCount, 2);
+  check("[composition-precedence-ranking] all named sides remain eligible", compositionSupport.eligibleCandidates.length, 3);
+  check("[composition-precedence-ranking] real criterion is calibrated", compositionSupport.criteria.join("|"), "teknik|derinlige");
+  check("[composition-precedence-ranking] criterion-covered records are supported", evidenceSupport, EVIDENCE_SUPPORT.SUPPORTED);
+  ok("[composition-precedence-ranking] prompt contains ranking instruction", prompt.includes("Rank only the supplied candidates"));
+  ok("[composition-precedence-ranking] prompt contains no named-comparison instruction", !/validated named targets|Build the comparison/.test(prompt));
+  ok("[composition-precedence-ranking] grounded ranking passes validator", validation.ok);
+}
+{
+  const question = "SINAMA ve AJOOP'u özetle.";
+  const planned = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  const prompt = answerStrategyPrompt(strategy);
+  check("[composition-precedence-summary] intent remains summary", planned.compositionIntent, "summary");
+  check("[composition-precedence-summary] neutral mode replaces legacy comparison", strategy.mode, ANSWER_MODES.PORTFOLIO_FACT);
+  ok("[composition-precedence-summary] prompt contains summary instruction", prompt.includes("Synthesize the supplied records"));
+  ok("[composition-precedence-summary] prompt contains no comparison instruction", !/Compare only|Build the comparison/.test(prompt));
+}
+{
+  const question = "SINAMA ile AJOOP'u karşılaştır.";
+  const planned = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  check("[composition-precedence-comparison] true comparison intent remains", planned.compositionIntent, "comparison");
+  check("[composition-precedence-comparison] true comparison keeps comparison mode", strategy.mode, ANSWER_MODES.COMPARISON);
+}
+for (const [label, question, intent, count, instruction] of [
+  ["summary", "Kaan'ın AI Engineer rolü için deneyimlerini özetle.", "summary", null, "Synthesize the supplied records"],
+  ["ranking", "Kaan'ın FDE rolü için en güçlü 2 deneyimini seç.", "ranking", 2, "Rank only the supplied candidates"],
+]) {
+  const planned = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  const prompt = answerStrategyPrompt(strategy);
+  check(`[recruiter-composition] ${label} intent survives`, strategy.compositionIntent, intent);
+  check(`[recruiter-composition] ${label} keeps recruiter refinement`, strategy.recruiter, true);
+  check(`[recruiter-composition] ${label} requested count`, strategy.requestedCount, count);
+  ok(`[recruiter-composition] ${label} includes composition instruction`, prompt.includes(instruction));
+}
+
 /* selectTopChunks honours both the reservation and the per-entity cap. */
 {
   const fake = (id, entityId, entityType) => ({ id, source: "s", entityId, entityType, title: id });
@@ -815,6 +1186,14 @@ ok("an unfocused question does reserve", plan("hangi şirketlerde çalıştı?")
   const reserved = selectTopChunks(ranked, { topK: 4, reserveWhen: (item) => item.entityType === "experience" });
   check("reserved slots go to the framed family first", reserved.slice(0, 2).map((i) => i.id).join(), "b1,c1");
   check("and the rest follow ranking", reserved.length, 4);
+  const logical = new Map([["a1", "a"], ["a2", "a"], ["a3", "a"], ["b1", "b"], ["c1", "c"]]);
+  const diverse = selectTopChunks(ranked, {
+    topK: 3,
+    reservedSlots: 3,
+    reserveWhen: () => true,
+    reserveKey: (item) => logical.get(item.id),
+  });
+  check("composition reservation keeps distinct logical entities", diverse.map((item) => item.id).join(), "a1,b1,c1");
 }
 {
   const affinity = new Map([["experience", { projects: [], organizations: [] }]]);
@@ -825,6 +1204,38 @@ ok("an unfocused question does reserve", plan("hangi şirketlerde çalıştı?")
   );
   check("framed record types contribute to the hybrid score", score.topicScore, 0.25);
   check("canonical source priority remains additive", score.sourceBonus, 0.05);
+}
+{
+  const oneMatch = scoreCandidate(
+    { id: "one", title: "Kaan profile", text: "Kaan profile", tags: [], priority: 9 },
+    0,
+    { affinity: new Map(), activeEntities: [], terms: ["kaan", "python"], framedTypes: [] },
+  );
+  const capabilityMatch = scoreCandidate(
+    { id: "two", title: "Programming skills", text: "Kaan uses Python", tags: [], priority: 9 },
+    0,
+    { affinity: new Map(), activeEntities: [], terms: ["kaan", "python"], framedTypes: [] },
+  );
+  check("one generic lexical match gets one bounded bonus", oneMatch.lexicalScore, 0.12);
+  check("a capability plus owner outranks the generic match", capabilityMatch.lexicalScore, 0.24);
+}
+{
+  const terms = lexicalTerms("Does Kaan have software development experience with Rust?");
+  check("broad software framing yields to the distinctive capability", terms.join(), "rust");
+  const generic = scoreCandidate(
+    { id: "generic", title: "Kaan project experience", text: "Kaan has experience with project work", tags: [], priority: 9 },
+    0,
+    { affinity: new Map(), activeEntities: [], terms, framedTypes: [] },
+  );
+  const capability = scoreCandidate(
+    { id: "rust", title: "Systems capability", text: "Built a Rust service", tags: ["Rust"], priority: 9 },
+    0,
+    { affinity: new Map(), activeEntities: [], terms, framedTypes: [] },
+  );
+  check("generic framing cannot consume the lexical bonus", generic.lexicalScore, 0);
+  ok("the distinctive capability outranks the generic record", capability.finalScore > generic.finalScore);
+  check("broad technical terms remain when they are the requested subject",
+    lexicalTerms("What software development experience does Kaan have?").join("|"), "software|development");
 }
 
 /* ---------- I. end to end, with adversarial embeddings ---------- */
@@ -843,7 +1254,7 @@ ok("an unfocused question does reserve", plan("hangi şirketlerde çalıştı?")
  * wrong mechanism. The mutation tests in the deliverable exist to catch exactly
  * that, and did.
  */
-const makeRag = async (bias) => {
+const makeRag = async (bias, { chatAnswer = null } = {}) => {
   const state = { embed: 0, chat: 0, built: false, queries: [], prompts: [] };
   const fetchImpl = async (url, init) => {
     const body = JSON.parse(init.body);
@@ -851,7 +1262,7 @@ const makeRag = async (bias) => {
       state.chat += 1;
       state.prompts.push(body.messages.map((message) => message.content).join("\n"));
       const scope = state.prompts.at(-1).includes("Answer strategy: general.") ? "GENERAL" : "PORTFOLIO";
-      return { ok: true, json: async () => ({ message: { content: ` ${scope}\nANSWER: Stubbed.` } }) };
+      return { ok: true, json: async () => ({ message: { content: chatAnswer || ` ${scope}\nANSWER: Stubbed.` } }) };
     }
     state.embed += 1;
     const isQuery = state.built && body.input.length === 1;
@@ -879,6 +1290,74 @@ const ask = (rag, question, history = []) =>
     contentType: "application/json",
     body: JSON.stringify({ version: 1, mode: "rag", question, locale: "tr", history }),
   });
+
+/* A real canonical employment record must calibrate a binary answer before
+ * validation, so a correct Yes draft is accepted without repair. */
+{
+  const question = "Did Kaan work at CBOT?";
+  const { rag, state } = await makeRag(matches("CBOT|AI Designer"), {
+    chatAnswer: "SCOPE: PORTFOLIO\nANSWER: Yes, Kaan Balcı worked at CBOT as an AI Designer.",
+  });
+  const response = await ask(rag, question);
+  ok("[real-corpus-binary] prompt receives SUPPORTED calibration",
+    /supplied evidence supports a direct synthesis/i.test(state.prompts[0] || ""));
+  check("[real-corpus-binary] correct Yes draft is accepted first time", response.body.generationAttempts, 1);
+  ok("[real-corpus-binary] validator does not report unsupported-binary",
+    !response.body.validatorFlags.includes("unsupported-binary"));
+  check("[real-corpus-binary] accepted draft avoids fallback", response.body.fallbackUsed, false);
+  check("[real-corpus-binary] one retrieval embedding is used", state.embed - state.initEmbed, 1);
+  check("[real-corpus-binary] one generation is used", state.chat, 1);
+}
+
+/* The real RAG strategy still sees Kaan as a recognized person mention, but
+ * only the parsed grammatical actor may authorize that alias family. */
+{
+  const question = "Did Alex work at CBOT with Kaan?";
+  const { rag, state } = await makeRag(matches("CBOT|AI Designer"), {
+    chatAnswer: "SCOPE: PORTFOLIO\nANSWER: Yes, Kaan Balcı worked at CBOT as an AI Designer.",
+  });
+  const response = await ask(rag, question);
+  ok("[actor-alias-scope-e2e] prompt receives partial rather than supported calibration",
+    /supplied evidence is partial/i.test(state.prompts[0] || ""));
+  check("[actor-alias-scope-e2e] unsupported Yes consumes at most one repair", response.body.generationAttempts, 2);
+  ok("[actor-alias-scope-e2e] unsupported binary is rejected",
+    response.body.validatorFlags.includes("unsupported-binary"));
+  check("[actor-alias-scope-e2e] repeated unsupported draft uses safe fallback", response.body.fallbackUsed, true);
+  check("[actor-alias-scope-e2e] retrieval still uses one query embedding", state.embed - state.initEmbed, 1);
+  check("[actor-alias-scope-e2e] initial generation plus one repair", state.chat, 2);
+}
+
+{
+  const question = "Did Kaan work at CBOT with Alex?";
+  const { rag, state } = await makeRag(matches("CBOT|AI Designer"), {
+    chatAnswer: "SCOPE: PORTFOLIO\nANSWER: Yes, Kaan Balcı worked at CBOT.",
+  });
+  const response = await ask(rag, question);
+  ok("[secondary-participant-e2e] canonical corpus calibrates the incomplete relation as partial",
+    /supplied evidence is partial/i.test(state.prompts[0] || ""));
+  check("[secondary-participant-e2e] unsupported Yes receives only one repair", response.body.generationAttempts, 2);
+  ok("[secondary-participant-e2e] incomplete binary answer is rejected",
+    response.body.validatorFlags.includes("unsupported-binary"));
+  check("[secondary-participant-e2e] repeated overclaim uses safe fallback", response.body.fallbackUsed, true);
+  check("[secondary-participant-e2e] one retrieval embedding is used", state.embed - state.initEmbed, 1);
+  check("[secondary-participant-e2e] initial generation plus one repair", state.chat, 2);
+}
+
+/* Operand grammar never mints portfolio authority. */
+{
+  const question = "Compare CBOT and Outlier AI experience.";
+  const { rag, state } = await makeRag(() => true);
+  const before = { embed: state.embed, chat: state.chat };
+  const response = await ask(rag, question);
+  check("[authority-e2e] ownerless experience comparison stays GENERAL", response.body.answerMode, ANSWER_MODES.GENERAL);
+  check("[authority-e2e] ownerless experience comparison exposes general scope", response.body.scope, "general");
+  check("[authority-e2e] ownerless experience comparison returns zero portfolio sources", response.body.sources.length, 0);
+  check("[authority-e2e] ownerless experience comparison exposes zero evidence", response.body.evidence.length, 0);
+  check("[authority-e2e] ownerless experience comparison performs zero retrieval embeddings", state.embed - before.embed, 0);
+  check("[authority-e2e] ownerless experience comparison performs one general generation", state.chat - before.chat, 1);
+  ok("[authority-e2e] ownerless experience comparison prompt contains no portfolio evidence",
+    !/Retrieved portfolio records:|supplied records/i.test(state.prompts.at(-1)));
+}
 
 /* Project truth: the wrong project is scored top and must still not appear. */
 const PROJECT_CASES = [
@@ -937,6 +1416,163 @@ for (const [question, wrongBias, expectedId, forbidden, forbiddenSources] of PRO
   const ids = response.body.sources.map((source) => source.entityId).join(" ");
   ok("[e2e] a comparison keeps SINAMA", /sinama/i.test(ids));
   ok("[e2e] and keeps Merge Rush", /merge-rush|mergeRush/i.test(ids));
+}
+
+/* Named comparison reservation beats adversarially high-scoring unrelated and
+ * cross-cutting records, across every supported entity-type shape. */
+for (const [label, question, expectedIds, namedText] of [
+  ["project + project", "SINAMA ile Hospital Appointment System'ı karşılaştır.",
+    ["project:sinama", "project:hospital-appointment-system"], /SINAMA|Hospital Appointment System/i],
+  ["reversed projects", "Hospital Appointment System ile SINAMA'yı karşılaştır.",
+    ["project:hospital-appointment-system", "project:sinama"], /SINAMA|Hospital Appointment System/i],
+  ["organization + organization", "Kaan'ın CBOT ve Outlier AI deneyimlerini karşılaştır.",
+    ["experience:cbot", "experience:outlier-ai"], /CBOT|Outlier AI/i],
+  ["project + organization", "SINAMA ile CBOT deneyimini karşılaştır.",
+    ["project:sinama", "experience:cbot"], /SINAMA|CBOT/i],
+  ["three named sides", "SINAMA, Joyday ve Hospital Appointment System'ı karşılaştır.",
+    ["project:sinama", "experience:atolye-joyday", "project:hospital-appointment-system"], /SINAMA|Joyday|Hospital Appointment System/i],
+]) {
+  const { rag, state } = await makeRag((text) => !namedText.test(text));
+  const response = await ask(rag, question);
+  const ids = response.body.sources.map((source) => source.entityId);
+  check(`[named-comparison] ${label} selects comparison mode`, response.body.answerMode, "comparison");
+  for (const id of expectedIds) {
+    ok(`[named-comparison] ${label} preserves ${id}`, ids.includes(id));
+  }
+  check(`[named-comparison] ${label} still uses one embedding and one generation`,
+    `${state.embed - state.initEmbed}/${state.chat}`, "1/1");
+}
+
+/* Exact multi-entity composition classes through the real RAG path. */
+{
+  const question = "SINAMA, AJOOP ve Hospital Appointment System projelerinden teknik derinliğe göre 2 proje seç.";
+  const { rag, state } = await makeRag(() => " PORTFOLIO\nANSWER: The supplied records support the named projects, but the available evidence does not establish a complete technical-depth order.");
+  const response = await ask(rag, question);
+  const ids = new Set(response.body.sources.map((source) => source.entityId));
+  const titles = response.body.sources.map((source) => source.title).join(" ");
+  check("[composition-precedence-e2e] named ranking uses neutral portfolio mode", response.body.answerMode, ANSWER_MODES.PORTFOLIO_FACT);
+  for (const id of ["project:sinama", "project:hospital-appointment-system"]) {
+    ok(`[composition-precedence-e2e] named ranking retains ${id}`, ids.has(id));
+  }
+  ok("[composition-precedence-e2e] named ranking retains AJOOP", /Ajoop Portfolio Copilot/i.test(titles));
+  ok("[composition-precedence-e2e] named ranking prompt is present", /Rank only the supplied candidates/.test(state.prompts.at(-1)));
+  ok("[composition-precedence-e2e] named ranking has no comparison base instruction",
+    !/Compare only the validated named targets|Build the comparison/.test(state.prompts.at(-1)));
+  check("[composition-precedence-e2e] named ranking uses one embedding and generation",
+    `${state.embed - state.initEmbed}/${state.chat}`, "1/1");
+  check("[composition-precedence-e2e] named ranking response avoids fallback", response.body.fallbackUsed, false);
+}
+{
+  const question = "SINAMA ve AJOOP'u özetle.";
+  const { rag, state } = await makeRag(() => " PORTFOLIO\nANSWER: The retrieved record describes SINAMA's agent-reliability focus.");
+  const response = await ask(rag, question);
+  const ids = new Set(response.body.sources.map((source) => source.entityId));
+  check("[composition-precedence-e2e] named summary uses neutral portfolio mode", response.body.answerMode, ANSWER_MODES.PORTFOLIO_FACT);
+  ok("[composition-precedence-e2e] named summary retains SINAMA", ids.has("project:sinama"));
+  ok("[composition-precedence-e2e] named summary prompt is present", /Synthesize the supplied records/.test(state.prompts.at(-1)));
+  ok("[composition-precedence-e2e] named summary has no comparison instruction",
+    !/Compare only|Build the comparison/.test(state.prompts.at(-1)));
+  check("[composition-precedence-e2e] named summary uses one embedding and generation",
+    `${state.embed - state.initEmbed}/${state.chat}`, "1/1");
+  check("[composition-precedence-e2e] named summary avoids fallback", response.body.fallbackUsed, false);
+}
+{
+  const question = "SINAMA ile AJOOP'u karşılaştır.";
+  const { rag, state } = await makeRag(() => " PORTFOLIO\nANSWER: SINAMA and Ajoop Portfolio Copilot have distinct recorded purposes.");
+  const response = await ask(rag, question);
+  check("[composition-precedence-e2e] true comparison keeps comparison mode", response.body.answerMode, ANSWER_MODES.COMPARISON);
+  ok("[composition-precedence-e2e] true comparison keeps named-target prompt",
+    /Compare only the validated named targets/.test(state.prompts.at(-1)));
+}
+
+/* Bounded selection is the same structural ranking class: the planner and
+ * strategy must say so independently of whatever prose the fake model emits,
+ * and retrieval must reserve distinct project candidates. */
+for (const [question, count] of [
+  ["Teknik derinliğe göre 3 proje seç.", 3],
+  ["Choose 3 projects for technical depth.", 3],
+  ["Pick the 2 projects that best demonstrate applied AI.", 2],
+]) {
+  const { rag, state } = await makeRag(() => " PORTFOLIO\nANSWER: The supplied records are noted without inventing an order.");
+  const response = await ask(rag, question);
+  const planned = plan(question);
+  const strategy = selectAnswerStrategy({ question, plan: planned });
+  const projectIds = new Set(response.body.sources
+    .map((source) => source.entityId)
+    .filter((id) => id.startsWith("project:")));
+  check(`[bounded-selection-e2e] plan composition: ${question}`, planned.compositionIntent, "ranking");
+  check(`[bounded-selection-e2e] strategy composition: ${question}`, strategy.compositionIntent, "ranking");
+  check(`[bounded-selection-e2e] requested count: ${question}`, strategy.requestedCount, count);
+  ok(`[bounded-selection-e2e] ranking prompt is present: ${question}`,
+    /Rank only the supplied candidates/.test(state.prompts.at(-1)));
+  ok(`[bounded-selection-e2e] diverse project reservation is used: ${question}`, projectIds.size >= count);
+  check(`[bounded-selection-e2e] non-ranking fake prose does not hide the structural path: ${question}`,
+    response.body.fallbackUsed, false);
+}
+
+/* Ranking family, support calibration, prompt and validator all travel through
+ * the real RAG path for both requested record families. */
+for (const [label, question, family, prefix, answer] of [
+  ["project", "Kaan'ın en güçlü 2 projesini sırala.", "project", "project:", "SINAMA ranks first and Ajoop Portfolio Copilot second."],
+  ["experience", "Kaan'ın en güçlü 2 deneyimini sırala.", "experience", "experience:", "CBOT ranks first and Outlier AI second."],
+]) {
+  const { rag, state } = await makeRag(() => ` PORTFOLIO\nANSWER: ${answer}`);
+  const response = await ask(rag, question);
+  const planned = plan(question);
+  const familyIds = new Set(response.body.sources
+    .map((source) => source.entityId)
+    .filter((id) => id.startsWith(prefix)));
+  check(`[ranking-family-e2e] ${label} plan family`, planned.framedTypes.join(), family);
+  check(`[ranking-family-e2e] ${label} composition intent`, planned.compositionIntent, "ranking");
+  ok(`[ranking-family-e2e] ${label} retrieval reserves distinct candidates`, familyIds.size >= 2);
+  ok(`[ranking-family-e2e] ${label} prompt receives supported calibration`,
+    /supplied evidence supports a direct synthesis/.test(state.prompts.at(-1)));
+  ok(`[ranking-family-e2e] ${label} prompt contains ranking instruction`,
+    /Rank only the supplied candidates/.test(state.prompts.at(-1)));
+  check(`[ranking-family-e2e] ${label} validator accepts grounded ranking`, response.body.fallbackUsed, false);
+  check(`[ranking-family-e2e] ${label} keeps one embedding and one generation`,
+    `${state.embed - state.initEmbed}/${state.chat}`, "1/1");
+}
+
+{
+  const question = "Choose 2 projects for Python.";
+  const { rag, state } = await makeRag(() => " PORTFOLIO\nANSWER: SINAMA ranks first and Ajoop Portfolio Copilot second for the supported Python evidence.");
+  const response = await ask(rag, question);
+  ok("[criterion-supported-e2e] bounded selection reaches SUPPORTED calibration",
+    /supplied evidence supports a direct synthesis/.test(state.prompts.at(-1)));
+  check("[criterion-supported-e2e] grounded ranking passes the validator", response.body.fallbackUsed, false);
+  check("[criterion-supported-e2e] still uses one embedding and one generation",
+    `${state.embed - state.initEmbed}/${state.chat}`, "1/1");
+}
+
+/* With no explicit targets, comparison candidates come from the retrieved
+ * canonical family. They still use comparison prompting and diverse slots. */
+for (const [question, familyPrefix] of [
+  ["Kaan'ın projelerini karşılaştır.", "project:"],
+  ["Kaan'ın deneyimlerini karşılaştır ve ana farkları söyle.", "experience:"],
+]) {
+  const { rag, state } = await makeRag(() => " PORTFOLIO\nANSWER: The records show distinct responsibilities and technical themes across the supported candidates.");
+  const response = await ask(rag, question);
+  const familyIds = new Set(response.body.sources
+    .map((source) => source.entityId)
+    .filter((id) => id.startsWith(familyPrefix)));
+  check(`[broad-comparison] ${question} selects comparison mode`, response.body.answerMode, ANSWER_MODES.COMPARISON);
+  ok(`[broad-comparison] ${question} retrieves diverse candidates`, familyIds.size >= 2);
+  ok(`[broad-comparison] ${question} receives comparison prompting`,
+    /Build the comparison only across supported retrieved canonical candidates/.test(state.prompts.at(-1)));
+  if (familyPrefix === "project:") {
+    ok(`[broad-comparison] ${question} is calibrated as supported synthesis`,
+      /supplied evidence supports a direct synthesis/.test(state.prompts.at(-1)));
+  }
+  check(`[broad-comparison] ${question} avoids fallback with supported synthesis`, response.body.fallbackUsed, false);
+}
+
+{
+  const world = "Compare Python and JavaScript as programming languages.";
+  const planned = plan(world);
+  const strategy = selectAnswerStrategy({ question: world, plan: planned });
+  check("[broad-comparison-negative] world comparison has no portfolio authority", planned.contextEligible, false);
+  check("[broad-comparison-negative] world comparison remains GENERAL", strategy.expectedScope, "GENERAL");
 }
 
 /* Explicit-owner organization isolation, again under adversarial similarity. */
@@ -998,8 +1634,8 @@ for (const [question, expected, wrongBias] of [
     const response = await ask(rag, question);
     check(`[e2e] answered without portfolio evidence: ${question}`, response.body.sources.length, 0);
     ok(
-      `[e2e] the model was told there are no records: ${question}`,
-      /Retrieved portfolio records:\n\(none\)/.test(state.prompts.at(-1)),
+      `[e2e] the GENERAL prompt contains no portfolio-record block: ${question}`,
+      !/Retrieved portfolio records:|supplied records/i.test(state.prompts.at(-1)),
     );
   }
   check("[e2e] quarantined questions cost no embeddings", state.embed - baseline.embed, 0);
@@ -1012,7 +1648,8 @@ for (const [question, expected, wrongBias] of [
   const response = await ask(rag, "sınama ve değerlendirme arasındaki fark nedir");
   check("[blocker] the SINAMA collision is answered", response.status, 200);
   check("[blocker] with no portfolio evidence at all", response.body.sources.length, 0);
-  ok("[blocker] and the model saw no records", /Retrieved portfolio records:\n\(none\)/.test(state.prompts.at(-1)));
+  ok("[blocker] and the GENERAL prompt contains no portfolio-record block",
+    !/Retrieved portfolio records:|supplied records/i.test(state.prompts.at(-1)));
   ok("[blocker] nor any SINAMA text", !/AI Agent Reliability Lab/.test(state.prompts.at(-1)));
 }
 

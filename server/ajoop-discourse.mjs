@@ -77,14 +77,45 @@ function ordinalPosition(text) {
   return roots.find((entry) => tokens.some((token) => entry.pattern.test(token)))?.position ?? null;
 }
 
+const RANKING_COLLECTION_TOKEN = /^(?:proje\w*|project\w*|deneyim\w*|experience\w*|sirket\w*|compan(?:y|ies)|employer\w*)$/;
+const DEMONSTRATIVE_THAT_FOLLOW = /^(?:among|as|of|in|with|for|to|and|or)$/;
+const DEMONSTRATIVE_THAT_GOVERNOR = /^(?:and|or|but|where|how|do|does|did|is|are|was|were|can|could|would|will|should)$/;
+const PREPOSITIONAL_THAT_GOVERNOR = /^(?:with|without|alongside|against|beside|besides|including|excluding|among|between|for|from|of|to|by|near|around)$/;
+
+function hasRelativeRankingThat(tokens) {
+  return tokens.some((token, thatIndex) => {
+    if (token !== "that") return false;
+    if (!tokens.slice(0, thatIndex).some((candidate) => RANKING_COLLECTION_TOKEN.test(candidate))) return false;
+    const previous = tokens[thatIndex - 1] || "";
+    const next = tokens[thatIndex + 1] || "";
+    /* Relative `that` supplies the subject of a following restrictive clause.
+     * Demonstrative `that` is instead a complete noun phrase: it may end the
+     * clause, take a following PP ("that among ..."), or follow a main-clause
+     * governor/auxiliary ("including that", "does that land"). These local
+     * grammatical slots avoid maintaining a list of ranking verbs. */
+    if (!next || DEMONSTRATIVE_THAT_FOLLOW.test(next)) return false;
+    if (DEMONSTRATIVE_THAT_GOVERNOR.test(previous) || PREPOSITIONAL_THAT_GOVERNOR.test(previous) || /ing$/.test(previous)) return false;
+    return true;
+  });
+}
+
 function referenceShape(text) {
   const tokens = tokenize(text);
   const exactTwo = tokens.some((token) => /^(?:ikisi\w*|both)$/.test(token))
     || phrases(text, ["her iki", "the two"]);
   const genericPlural = tokens.some((token) => /^(?:bunlar\w*|sunlar\w*|hangisi\w*|them|these|those)$/.test(token))
     || phrases(text, ["which one"]);
-  const singular = tokens.some((token) => /^(?:o|bu|this|that|orada|there|onu|onun|ona|onda|ondan|bunu|bunun|buna|bunda|bundan|sunu|sunun|suna|sunda|it|its)$/.test(token))
-    || phrases(text, ["that one", "this one"]);
+  /* A bare demonstrative remains a valid long-form follow-up ("why does that
+   * matter technically?"). In a self-contained bounded ranking/selection,
+   * suppress it only when `that` grammatically introduces a relative clause
+   * modifying the candidate phrase. */
+  const relativeRankingThat = rankingRequest(text)
+    && hasRelativeRankingThat(tokens);
+  const bareDemonstrative = tokens.some((token) => /^(?:o|bu|this|that)$/.test(token))
+    && !relativeRankingThat;
+  const singular = bareDemonstrative
+    || tokens.some((token) => /^(?:orada|there|onu|onun|ona|onda|ondan|bunu|bunun|buna|bunda|bundan|sunu|sunun|suna|sunda|it|its)$/.test(token))
+    || phrases(text, ["that one", "this one", "this project", "that project", "bu proje", "o proje"]);
   const previousAnswer = phrases(text, [
     "az onceki cevap", "biraz onceki cevap", "onceki cevap", "previous answer", "same answer", "aynisini",
   ]);
@@ -95,7 +126,7 @@ function referenceShape(text) {
 }
 
 function requestedOperation(text, shape, depth) {
-  if (/\b(?:karsilastir\w*|compare\w*|fark\w*|ortak\w*|difference\w*|common)\b/.test(text)) return "compare";
+  if (/\b(?:karsilastir\w*|compare\w*|fark\w*|ortak\w*|differ\w*|common)\b/.test(text)) return "compare";
   if (depth === "summary") return "summarize";
   if (depth === "shorter") return "shorten";
   if (depth === "more_detail") return "expand";
@@ -572,12 +603,20 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
 
 function rankingRequest(question) {
   const text = foldQuestion(question);
-  const collection = /\b(?:proje\w*|project\w*|deneyim\w*|experience\w*|sirket\w*|compan(?:y|ies)|employer\w*)\b/.test(text);
+  const tokens = tokenize(text);
+  const collection = tokens.some((token) => RANKING_COLLECTION_TOKEN.test(token));
   const orderingVerb = /\b(?:sirala\w*|rank\w*|listele\w*|list(?:ed|ing)?)\b/.test(text);
+  const selectionVerb = /\b(?:sec\w*|choose\w*|pick\w*|select\w*)\b/.test(text);
   const superlative = /\b(?:top|best|strongest)\b/.test(text) || phrases(text, ["en guclu", "en iyi"]);
   const boundedCount = /\b(?:[2-9]|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|two|three|four|five|six|seven|eight|nine)\b/.test(text);
-  return collection && (orderingVerb || (superlative && boundedCount));
+  const relativeSelection = selectionVerb && hasRelativeRankingThat(tokens);
+  return collection && (orderingVerb || relativeSelection || ((selectionVerb || superlative) && boundedCount));
 }
+
+/* Shared with retrieval/answer composition so the bounded ranking shape that
+ * creates ordered conversation state is also the shape that reserves diverse
+ * evidence. This is one classifier, not parallel phrase policy. */
+export const isPublicRankingRequest = rankingRequest;
 
 /** State returned by the server for the next bounded turn. */
 export function buildNextPublicConversationState({ resolvedTurn, answer, scope, entityIndex, question = "" }) {
