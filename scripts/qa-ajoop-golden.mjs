@@ -59,6 +59,7 @@ import { isSafeToolEvent, TOOL_EVENT_FIELDS } from "../server/ajoop-tool-events.
 import { loadMasterKnowledge } from "../server/ajoop-knowledge.mjs";
 import { buildAliasIndex } from "../server/ajoop-entities.mjs";
 import { buildExactFacts } from "../server/ajoop-facts.mjs";
+import { AJOOP_BRIDGE_IDENTITY } from "../server/ajoop-runtime-probes.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DATA_DIR = resolve(ROOT, "data", "portfolio");
@@ -348,7 +349,7 @@ const PUBLIC_BODY_KEYS = new Set([
   "ok", "mode", "scope", "answer", "model", "embedModel",
   "sources", "retrievedSources", "evidence", "retrievalTopScore",
   "answerMode", "generationAttempts", "validatorFlags", "repaired", "fallbackUsed",
-  "exactFact", "discourse", "conversationState", "error",
+  "exactFact", "discourse", "conversationState", "error", "service", "protocolVersion",
 ]);
 
 /* Defence in depth only. The allowlist above is what actually decides; these
@@ -786,6 +787,12 @@ async function runHttp(spec, ledger, validateToolEvent) {
   const elapsed = performance.now() - started;
   ledger.add(spec.id, "http.status", SEVERITY.HARD, response.status === 200, 200, response.status);
   assertPublicShape(ledger, spec, body);
+  ledger.add(spec.id, "public.bridge_service_identity", SEVERITY.SAFETY,
+    body.service === AJOOP_BRIDGE_IDENTITY.service,
+    AJOOP_BRIDGE_IDENTITY.service, body.service ?? null);
+  ledger.add(spec.id, "public.bridge_protocol_identity", SEVERITY.SAFETY,
+    body.protocolVersion === AJOOP_BRIDGE_IDENTITY.protocolVersion,
+    AJOOP_BRIDGE_IDENTITY.protocolVersion, body.protocolVersion ?? null);
   /* Proves the non-ASCII question survived transport: a mangled question can
    * neither resolve its exact fact nor keep portfolio scope. */
   if (spec.expect?.exact_fact) {
