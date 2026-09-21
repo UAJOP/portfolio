@@ -126,8 +126,11 @@ for (const question of [
   const structuralRule = `    if (!next || DEMONSTRATIVE_THAT_FOLLOW.test(next)) return false;\n    if (DEMONSTRATIVE_THAT_GOVERNOR.test(previous) || PREPOSITIONAL_THAT_GOVERNOR.test(previous) || /ing$/.test(previous)) return false;\n    return true;`;
   const predicateListMutant = `    const collectionIndex = tokens.findLastIndex((candidate, index) =>\n      index < thatIndex && RANKING_COLLECTION_TOKEN.test(candidate),\n    );\n    const fixedPredicates = /^(?:rank\\w*|choose\\w*|pick\\w*|select\\w*|put|place\\w*)$/;\n    return !tokens.slice(collectionIndex + 1, thatIndex).some((candidate) => fixedPredicates.test(candidate));`;
   const source = readFileSync(discourseUrl, "utf8");
-  ok("[relative-that-mutation] structural rule anchor exists", source.includes(structuralRule));
-  writeFileSync(mutantUrl, source.replace(structuralRule, predicateListMutant), "utf8");
+  const normalizedSource = source.replace(/\r\n?/g, "\n");
+  ok("[relative-that-mutation] structural rule anchor exists", normalizedSource.includes(structuralRule));
+  const mutantSource = normalizedSource.replace(structuralRule, predicateListMutant);
+  if (mutantSource === normalizedSource) throw new Error("relative-that mutation was not applied");
+  writeFileSync(mutantUrl, mutantSource, "utf8");
   try {
     const mutant = await import(mutantUrl.href);
     const turn = mutant.resolvePublicDiscourseTurn({
