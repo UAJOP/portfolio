@@ -240,6 +240,62 @@ for (const [family, expected] of [
   );
 }
 
+for (const question of [
+  "Is Kaan a good fit for a Forward Deployed Engineer role?",
+  "Kaan Forward Deployed Engineer rolüne uygun mu?",
+  "Would Kaan fit a Solution Engineer role?",
+]) {
+  const strategy = selectAnswerStrategy({ question, plan: projectPlan() });
+  const selected = selectRecruiterContext(roleIndex, strategy);
+  check(`[recruiter-fit-assessment] ${question} keeps recruiter-fit mode`, strategy.mode, ANSWER_MODES.RECRUITER_FIT);
+  check(`[recruiter-fit-assessment] ${question} remains direct yes/no shaped`, strategy.directYesNo, true);
+  check(`[recruiter-fit-assessment] ${question} keeps the forward-deployed evidence family`,
+    strategy.roleFamily, ROLE_FAMILIES.FORWARD_DEPLOYED);
+  check(`[recruiter-fit-assessment] ${question} retains deterministic role evidence`,
+    selected.map((item) => item.entityId).join(),
+    "recruiter-intelligence,experience:cbot,project:sinama,experience:atolye-joyday");
+  check(`[recruiter-fit-assessment] ${question} calibrates multiple relevant records as usable assessment evidence`,
+    assessEvidenceSupport({ strategy, records: selected, question }), EVIDENCE_SUPPORT.SUPPORTED);
+}
+
+{
+  const question = "Does the portfolio prove Kaan has AWS deployment experience for this role?";
+  const strategy = selectAnswerStrategy({ question, plan: projectPlan() });
+  const selected = selectRecruiterContext(roleIndex, strategy);
+  check("[recruiter-evidence-factual] proof question keeps recruiter-evidence mode",
+    strategy.mode, ANSWER_MODES.RECRUITER_EVIDENCE);
+  check("[recruiter-evidence-factual] proof question remains direct yes/no shaped", strategy.directYesNo, true);
+  ok("[recruiter-evidence-factual] multiple unrelated recruiter records are present", selected.length >= 2);
+  ok("[recruiter-evidence-factual] unrelated record count cannot manufacture factual support",
+    assessEvidenceSupport({ strategy, records: selected, question }) !== EVIDENCE_SUPPORT.SUPPORTED);
+}
+
+{
+  const question = "Kaan'ın en güçlü tarafları neler?";
+  const strategy = selectAnswerStrategy({ question, plan: projectPlan() });
+  const selected = selectRecruiterContext(roleIndex, strategy);
+  check("[generic-recruiter-calibration] strengths question is non-binary", strategy.directYesNo, false);
+  check("[generic-recruiter-calibration] strengths keeps recruiter-strengths mode",
+    strategy.mode, ANSWER_MODES.RECRUITER_STRENGTHS);
+  check("[generic-recruiter-calibration] one distinct strengths record remains partial",
+    assessEvidenceSupport({ strategy, records: selected.slice(0, 1), question }), EVIDENCE_SUPPORT.PARTIAL);
+  check("[generic-recruiter-calibration] two distinct strengths records are supported",
+    assessEvidenceSupport({ strategy, records: selected.slice(0, 2), question }), EVIDENCE_SUPPORT.SUPPORTED);
+}
+
+for (const question of [
+  "Kaan'ın AI Engineer rolü için eksikleri neler?",
+  "What would worry you as a hiring manager?",
+]) {
+  const strategy = selectAnswerStrategy({ question, plan: projectPlan() });
+  const selected = selectRecruiterContext(roleIndex, strategy);
+  check(`[generic-recruiter-sibling] ${question} is non-binary`, strategy.directYesNo, false);
+  check(`[generic-recruiter-sibling] ${question} keeps one-record calibration`,
+    assessEvidenceSupport({ strategy, records: selected.slice(0, 1), question }), EVIDENCE_SUPPORT.PARTIAL);
+  check(`[generic-recruiter-sibling] ${question} keeps multi-record calibration`,
+    assessEvidenceSupport({ strategy, records: selected.slice(0, 2), question }), EVIDENCE_SUPPORT.SUPPORTED);
+}
+
 const affinity = new Map([
   ["master-sinama", { projects: ["SINAMA"], organizations: [] }],
   ["detail-sinama", { projects: ["SINAMA"], organizations: [] }],
@@ -1138,6 +1194,65 @@ ok("recruiter prompt explicitly distinguishes live-chat from scalability", answe
   .includes("Exposure, a role title or enterprise work never establishes scalable / ölçeklenebilir"));
 ok("strength repair asks for concrete facts at the recorded level", repairPrompt(["unsupported-strength"], recruiterStrategy)
   .includes("Claim only the strength the records state, and do not swap in another qualifier"));
+{
+  const supportedFitStrategy = { ...recruiterStrategy, evidenceSupport: EVIDENCE_SUPPORT.SUPPORTED };
+  const fitPrompt = answerStrategyPrompt(supportedFitStrategy);
+  ok("recruiter-fit prompt no longer instructs portfolio-absence gap wording",
+    !fitPrompt.includes("State unknowns as what the portfolio does not show"));
+  ok("recruiter-fit prompt assesses transferability instead of assuming direct target-role experience",
+    fitPrompt.includes("Assess transferability to the requested role")
+      && fitPrompt.includes("not as direct experience in the requested role")
+      && fitPrompt.includes("do not use 'direct experience', 'doğrudan deneyim'")
+      && fitPrompt.includes("label his experience, work or systems with the requested role name"));
+  ok("recruiter-fit prompt frames gaps as interview validation points",
+    fitPrompt.includes("End with one interview validation point phrased as something to confirm")
+      && fitPrompt.includes("The gap sentence must say what an interview should validate or confirm"));
+  ok("recruiter-fit prompt forbids observed live corpus-absence paraphrases",
+    ["no explicit record", "no direct information", "information gap"]
+      .every((phrase) => fitPrompt.includes(`'${phrase}'`)));
+  ok("recruiter-fit prompt keeps unsupported strengths out of validation points",
+    fitPrompt.includes("Do not use scalable, production-grade, enterprise-scale, senior-level or expert anywhere, including in the validation point"));
+
+  const fitRepair = repairPrompt(
+    ["evidence-contradiction", "unproven-corpus-absence"],
+    supportedFitStrategy,
+  );
+  ok("recruiter-fit absence repair requires an interview validation point",
+    fitRepair.includes("Rewrite the gap as an interview validation point"));
+  ok("recruiter-fit absence repair forbids corpus-wide absence phrasing",
+    fitRepair.includes("Do not say that the portfolio or records do not show, record, specify or contain"));
+  ok("recruiter-fit strength repair keeps the validation point neutral",
+    repairPrompt(["unsupported-strength"], supportedFitStrategy)
+      .includes("Keep the interview validation point neutral"));
+
+  const validFit = validateGeneratedAnswer({
+    parsed: valid("PORTFOLIO", "The evidence suggests a reasonable fit based on CBOT and SINAMA. Production deployment depth remains an interview validation point."),
+    strategy: supportedFitStrategy,
+    question: "Is Kaan a good fit for a Forward Deployed Engineer role?",
+    records: supportRecords,
+    locale: "en",
+  });
+  ok("supported recruiter-fit answer accepts validation-point gap wording", validFit.ok);
+
+  const oldAbsenceShape = validateGeneratedAnswer({
+    parsed: valid("PORTFOLIO", "The portfolio does not specify production deployment depth."),
+    strategy: supportedFitStrategy,
+    question: "Is Kaan a good fit for a Forward Deployed Engineer role?",
+    records: supportRecords,
+    locale: "en",
+  });
+  ok("old recruiter-fit portfolio-absence shape still triggers evidence contradiction",
+    oldAbsenceShape.flags.includes("evidence-contradiction"));
+  ok("old recruiter-fit portfolio-absence shape still triggers corpus-absence guard",
+    oldAbsenceShape.flags.includes("unproven-corpus-absence"));
+
+  const nonFitPrompt = answerStrategyPrompt({
+    ...recruiterStrategy,
+    mode: ANSWER_MODES.RECRUITER_STRENGTHS,
+  });
+  ok("non-fit recruiter modes retain generic unknown wording",
+    nonFitPrompt.includes("State unknowns as what the portfolio does not show"));
+}
 
 /* ---------- scope contract ----------
  *
@@ -1217,6 +1332,31 @@ const uncertainYesNoFallback = buildSafeFallback({
   records: fallbackRecords,
 });
 ok("unsupported yes/no fallback stays non-binary", uncertainYesNoFallback.answer.includes("not enough for a reliable yes/no"));
+const recruiterAssessmentFallback = buildSafeFallback({
+  strategy: {
+    ...recruiterStrategy,
+    directYesNo: true,
+    evidenceSupport: EVIDENCE_SUPPORT.PARTIAL,
+  },
+  locale: "en",
+  records: fallbackRecords,
+});
+ok("recruiter assessment does not inherit ordinary uncertain-binary fallback semantics",
+  !recruiterAssessmentFallback.answer.includes("not enough for a reliable yes/no"));
+ok("recruiter assessment fallback still preserves bounded portfolio evidence",
+  recruiterAssessmentFallback.answer.includes("relevant portfolio records"));
+const recruiterEvidenceFallback = buildSafeFallback({
+  strategy: {
+    ...recruiterStrategy,
+    mode: ANSWER_MODES.RECRUITER_EVIDENCE,
+    directYesNo: true,
+    evidenceSupport: EVIDENCE_SUPPORT.UNKNOWN,
+  },
+  locale: "en",
+  records: fallbackRecords,
+});
+ok("non-fit recruiter factual yes/no preserves conservative binary fallback semantics",
+  recruiterEvidenceFallback.answer.includes("not enough for a reliable yes/no"));
 
 const localizedPartialAnswers = {
   tr: "Mevcut kanıta göre sıralama geçicidir.",
@@ -1342,6 +1482,57 @@ for (const [question, expectedMode, expectedEvidence] of [
   ok(`${question} evidence is compact`, responseEvidence.length >= 1 && responseEvidence.length <= 4);
   ok(`${question} evidence includes ${expectedEvidence}`, responseEvidence.some((item) => item.entityId === expectedEvidence));
   check(`${question} reports one attempt`, response.body.generationAttempts, 1);
+}
+
+for (const [question, locale, answer] of [
+  [
+    "Is Kaan a good fit for a Forward Deployed Engineer role?",
+    "en",
+    "Yes, the evidence suggests a reasonable fit: CBOT shows live-chat quality and multi-channel automation work, while SINAMA shows AI-agent reliability work. Production ownership remains the main interview unknown.",
+  ],
+  [
+    "Kaan Forward Deployed Engineer rolüne uygun mu?",
+    "tr",
+    "Kanıtlar makul bir uyuma işaret ediyor: CBOT canlı sohbet kalite çalışmasını, SINAMA ise AI ajan güvenilirliği çalışmasını gösteriyor. Üretim sahipliği düzeyi görüşmede doğrulanması gereken ana bilinmeyen.",
+  ],
+  [
+    "Would Kaan fit a Solution Engineer role?",
+    "en",
+    "The evidence suggests a reasonable fit: CBOT shows customer-facing conversational AI work and SINAMA shows technical AI-agent reliability work. Production ownership remains the main interview unknown.",
+  ],
+]) {
+  const { rag, state } = await makeRag(() => ` PORTFOLIO\nANSWER: ${answer}`);
+  const response = await ask(rag, question, locale);
+  check(`[recruiter-fit-e2e] ${question} keeps PORTFOLIO scope`, response.body.scope, "portfolio");
+  check(`[recruiter-fit-e2e] ${question} keeps recruiter-fit mode`, response.body.answerMode, ANSWER_MODES.RECRUITER_FIT);
+  check(`[recruiter-fit-e2e] ${question} uses one embedding and one generation`,
+    `${state.embed - state.initEmbed}/${state.chat}`, "1/1");
+  check(`[recruiter-fit-e2e] ${question} avoids fallback`, response.body.fallbackUsed, false);
+  ok(`[recruiter-fit-e2e] ${question} receives supported assessment calibration`,
+    /supplied evidence supports a direct synthesis/i.test(state.prompts.at(-1)));
+  ok(`[recruiter-fit-e2e] ${question} retains deterministic role-family evidence`,
+    ["experience:cbot", "project:sinama", "recruiter-intelligence", "experience:atolye-joyday"]
+      .every((id) => response.body.sources.some((source) => source.entityId === id)));
+}
+
+{
+  const repairedAnswer = "The evidence suggests a reasonable FDE fit: CBOT shows live-chat quality work and SINAMA shows AI-agent reliability work. Production ownership remains the main interview unknown.";
+  const { rag, state } = await makeRag(({ state: current }) => current.chat === 1
+    ? " PORTFOLIO\nANSWER: Kaan builds scalable AI systems, but the portfolio does not record relevant FDE evidence."
+    : ` PORTFOLIO\nANSWER: ${repairedAnswer}`);
+  const response = await ask(rag, "Is Kaan a good fit for a Forward Deployed Engineer role?", "en");
+  check("[recruiter-fit-repair] rejected draft receives exactly one repair", state.chat, 2);
+  check("[recruiter-fit-repair] repair reuses one retrieval embedding", state.embed - state.initEmbed, 1);
+  for (const flag of ["unsupported-strength", "evidence-contradiction", "unproven-corpus-absence"]) {
+    ok(`[recruiter-fit-repair] first draft reports ${flag}`, response.body.validatorFlags.includes(flag));
+  }
+  ok("[recruiter-fit-repair] repair prompt preserves the strength guard",
+    /Remove unsupported strength claims/.test(state.prompts[1] || ""));
+  ok("[recruiter-fit-repair] repair prompt rejects portfolio-wide absence",
+    /Do not claim the whole portfolio lacks information/.test(state.prompts[1] || ""));
+  check("[recruiter-fit-repair] calibrated second draft avoids fallback", response.body.fallbackUsed, false);
+  check("[recruiter-fit-repair] successful repair is reported", response.body.repaired, true);
+  check("[recruiter-fit-repair] repaired assessment reaches the user", response.body.answer, repairedAnswer);
 }
 
 {
