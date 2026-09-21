@@ -400,6 +400,10 @@ export function selectRecruiterContext(index, strategy) {
   return selected;
 }
 
+function isRecruiterFitAssessment(strategy) {
+  return strategy?.recruiter === true && strategy.mode === ANSWER_MODES.RECRUITER_FIT;
+}
+
 function sourceRank(item) {
   if (item.source === "master-knowledge") return 5;
   if (item.source === "project-details") return 4;
@@ -888,6 +892,13 @@ export function assessEvidenceSupport({ strategy, records = [], question = "", a
     const distinct = distinctEvidenceEntities(records, affinity);
     return distinct >= (targets.length || 2) ? EVIDENCE_SUPPORT.SUPPORTED : EVIDENCE_SUPPORT.PARTIAL;
   }
+  /* Recruiter fit is an evidence-backed assessment even when the visitor uses
+   * a yes/no-shaped sentence. Calibrate the selected role-family evidence as
+   * an assessment before ordinary factual proposition verification. */
+  if (isRecruiterFitAssessment(strategy)) {
+    const distinct = distinctEvidenceEntities(records, affinity);
+    return distinct >= 2 ? EVIDENCE_SUPPORT.SUPPORTED : EVIDENCE_SUPPORT.PARTIAL;
+  }
   if (strategy.directYesNo) {
     const structurallyRelevant = targets.length
       ? records.filter((record) => targets.some((target) => recordSupportsNamedEntity(record, target, affinity)))
@@ -1102,6 +1113,12 @@ export function answerStrategyPrompt(strategy) {
     ].filter(Boolean).join("\n");
   }
   if (strategy.recruiter) {
+    const synthesisInstruction = isRecruiterFitAssessment(strategy)
+      ? "Give the bottom line first. Use two to four concrete evidence points as transferable evidence, not as direct experience in the requested role. End with one interview validation point phrased as something to confirm; do not describe missing portfolio content."
+      : "Give the bottom line first. Use two to four concrete evidence points, name the best-fit work, state one real gap or unknown, and end with a calibrated conclusion.";
+    const gapInstruction = isRecruiterFitAssessment(strategy)
+      ? "Assess transferability to the requested role from the supplied evidence. Unless a supplied record explicitly names that role, do not use 'direct experience', 'doğrudan deneyim' or label his experience, work or systems with the requested role name; describe only the recorded work, then assess its transferability. The gap sentence must say what an interview should validate or confirm. Do not say there is 'no explicit record', 'no direct information', an 'information gap', or that the portfolio or records do not show, record, specify, contain or lack the capability. Do not use scalable, production-grade, enterprise-scale, senior-level or expert anywhere, including in the validation point, unless a supplied record states that exact strength. Prefer concrete recorded facts over engineering adjectives."
+      : "State unknowns as what the portfolio does not show. Prefer concrete recorded facts over engineering adjectives.";
     const focus = {
       [ANSWER_MODES.RECRUITER_GAPS]: "Focus on evidence-backed gaps, unknowns and where mentorship would help. Never invent a personal weakness.",
       [ANSWER_MODES.RECRUITER_RISK]: "State what a careful hiring manager should validate, based only on thin or absent portfolio evidence.",
@@ -1115,10 +1132,10 @@ export function answerStrategyPrompt(strategy) {
     }[strategy.mode];
     return [
       `Answer strategy: ${strategy.mode}; role family: ${strategy.roleFamily}.`,
-      "Give the bottom line first. Use two to four concrete evidence points, name the best-fit work, state one real gap or unknown, and end with a calibrated conclusion.",
+      synthesisInstruction,
       "Stay under 120 words and four complete sentences.",
       "Separate recorded facts from your assessment. Never claim certainty, invent a percentage, or imply guaranteed success.",
-      "State unknowns as what the portfolio does not show. Prefer concrete recorded facts over engineering adjectives.",
+      gapInstruction,
       "Exposure, a role title or enterprise work never establishes scalable / ölçeklenebilir, production-grade, enterprise-scale, senior-level or expert. Claim only the strength the records state.",
       focus,
       compositionInstruction(strategy),
@@ -1150,6 +1167,10 @@ export function answerStrategyPrompt(strategy) {
 }
 
 export function repairPrompt(flags, strategy) {
+  const fitGapRepair = isRecruiterFitAssessment(strategy)
+    && (flags || []).some((flag) => ["evidence-contradiction", "unproven-corpus-absence"].includes(flag));
+  const fitStrengthRepair = isRecruiterFitAssessment(strategy)
+    && (flags || []).includes("unsupported-strength");
   return [
     `The previous draft was rejected (${(flags || []).join(", ") || "invalid output"}).`,
     (flags || []).includes("scope-mismatch") && strategy?.expectedScope
@@ -1161,8 +1182,14 @@ export function repairPrompt(flags, strategy) {
     (flags || []).includes("unsupported-strength")
       ? "Remove unsupported strength claims. Claim only the strength the records state, and do not swap in another qualifier."
       : "",
+    fitStrengthRepair
+      ? "Keep the interview validation point neutral: do not use scalable, production-grade, enterprise-scale, senior-level or expert there."
+      : "",
     (flags || []).includes("unproven-corpus-absence")
       ? "Do not claim the whole portfolio lacks information merely because the bounded retrieval did not establish it. Describe evidence sufficiency instead."
+      : "",
+    fitGapRepair
+      ? "Rewrite the gap as an interview validation point. Do not say that the portfolio or records do not show, record, specify or contain the capability."
       : "",
     (flags || []).includes("unsupported-binary")
       ? "Do not guess a Yes/No conclusion. State that the available evidence is insufficient, then mention only the supported portion."
@@ -1383,7 +1410,8 @@ export function buildSafeFallback({ strategy, locale = "en", records = [] }) {
   if (strategy?.compositionIntent === "ranking") {
     return { scope: "PORTFOLIO", answer: RANKING_FALLBACK[language].replace("{titles}", titles.join(", ")) };
   }
-  if (strategy?.directYesNo && support !== EVIDENCE_SUPPORT.SUPPORTED) {
+  if (strategy?.directYesNo && !isRecruiterFitAssessment(strategy)
+      && support !== EVIDENCE_SUPPORT.SUPPORTED) {
     const answer = UNCERTAIN_YES_NO_FALLBACK[language].replace("{titles}", titles.join(", "));
     return { scope: "PORTFOLIO", answer };
   }
