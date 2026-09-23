@@ -1240,6 +1240,59 @@ ok("strength repair asks for concrete facts at the recorded level", repairPrompt
     question: "Kaan Forward Deployed Engineer rolüne uygun mu?",
     family: ROLE_FAMILIES.FORWARD_DEPLOYED,
   }).includes("unsupported-target-role-experience"));
+  const productionStyleFitRecords = [
+    { entityType: "recruiter-intelligence", entityId: "recruiter-intelligence", metadata: {} },
+    { entityType: "experience", entityId: "experience:cbot", metadata: { role: "AI Designer" } },
+    { entityType: "project", entityId: "project:sinama", metadata: { role: "Product Designer & Full-Stack Developer" } },
+    { entityType: "experience", entityId: "experience:atolye-joyday", metadata: { role: "Co-Founder & Digital Product Developer" } },
+    { entityType: "experience", entityId: "experience:punto-organization-software", metadata: { role: "Software Development Intern" } },
+  ];
+  ok("exact live TR direct FDE domain attribution is rejected", targetRoleFlags({
+    answer: "Kaan Balcı, CBOT’da müşteriye yönelik entegre AI akışları ve 500+ düğümün yeniden yapılandırılmasıyla, SINAMA’da AI agent’in güvenilirliği ve sürüm karşılaştırmasıyla, Atölye Joyday’da müşteri odaklı ürün süreçlerini otomatikleştirmesiyle ve Punto’da iç sistemlerde ihtiyaç analizine dayalı bir dashboard geliştirmeyle, forward-deployed mühendislik alanlarında doğrudan deneyim göstermiştir.",
+    question: "Kaan Forward Deployed Engineer rolüne uygun mu?",
+    family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    records: productionStyleFitRecords,
+  }).includes("unsupported-target-role-experience"));
+  ok("nearby unrelated Turkish need wording does not suppress direct FDE attribution", targetRoleFlags({
+    answer: "Kaan müşteri ihtiyaçlarını anlayarak Forward Deployed Engineer alanında doğrudan deneyim göstermiştir.",
+    question: "Kaan Forward Deployed Engineer rolüne uygun mu?",
+    family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+  }).includes("unsupported-target-role-experience"));
+  for (const answer of [
+    "Kaan has no Kubernetes experience and has direct experience as a Forward Deployed Engineer.",
+    "Kaan'ın AWS deneyimi yok ve Forward Deployed Engineer olarak doğrudan deneyimi vardır.",
+    "Kaan has no direct FDE experience and has direct Solution Engineering experience.",
+    "Kaan has direct Forward Deployed Engineer experience and no Kubernetes experience.",
+    "Kaan doesn't have Kubernetes experience and has direct experience as a Forward Deployed Engineer.",
+    "Kaan has the direct Forward Deployed Engineer experience required for this role.",
+    "Kaan has direct FDE experience needed for the role.",
+    "Kaan has direct FDE experience necessary for this position.",
+    "Kaan's direct Forward Deployed Engineer experience is substantial.",
+    "Kaan has direct Forward Deployed Engineer experience with no-code automation tools.",
+    "Kaan has direct Forward Deployed Engineer experience without the formal title.",
+    "Kaan has direct Forward Deployed Engineer experience despite no Kubernetes background.",
+    "Kaan has direct Forward Deployed Engineer experience, not only transferable skills.",
+    "Kaan, without the formal title, has direct Forward Deployed Engineer experience.",
+    "Kaan, despite no Kubernetes background, has direct Forward Deployed Engineer experience.",
+    "Kaan with no-code automation tools has direct Forward Deployed Engineer experience.",
+  ]) {
+    ok(`unrelated coordinated negation does not suppress direct-role attribution: ${answer}`, targetRoleFlags({
+      answer,
+      question: "Is Kaan a good fit for a Forward Deployed Engineer role?",
+      family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    }).includes("unsupported-target-role-experience"));
+  }
+  for (const answer of [
+    "Kaan, whose formal title is not documented, appears to have direct Forward Deployed Engineer experience.",
+    "Kaan, whose formal title is not documented, has direct Forward Deployed Engineer experience.",
+    "Kaan, whose role was never documented, has been shown to have direct FDE experience.",
+  ]) {
+    ok(`side-clause negation does not suppress direct-role attribution: ${answer}`, targetRoleFlags({
+      answer,
+      question: "Is Kaan a good fit for a Forward Deployed Engineer role?",
+      family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    }).includes("unsupported-target-role-experience"));
+  }
   ok("EN direct Solution Engineering experience attribution is rejected", targetRoleFlags({
     answer: "Kaan has direct Solution Engineering experience.",
     question: "Would Kaan fit a Solution Engineer role?",
@@ -1314,6 +1367,41 @@ ok("strength repair asks for concrete facts at the recorded level", repairPrompt
     question: "Would Kaan fit a Solution Engineer role?",
     family: ROLE_FAMILIES.FORWARD_DEPLOYED,
   }).includes("unsupported-target-role-experience"));
+  for (const answer of [
+    "Kaan does not have direct experience as a Forward Deployed Engineer.",
+    "Based on the available evidence, it cannot be said that Kaan has direct experience as a Forward Deployed Engineer.",
+    "There is no verified evidence to conclude that Kaan has direct experience as a Forward Deployed Engineer.",
+    "Kaan doesn't have direct experience as a Forward Deployed Engineer.",
+    "Kaan hasn't had direct experience as a Forward Deployed Engineer.",
+    "Kaan can't claim direct FDE experience.",
+    "Kaan couldn't claim direct Solution Engineering experience.",
+    "Kaan is without direct Forward Deployed Engineer experience.",
+    "Kaan has no direct Forward Deployed Engineer experience.",
+    "Kaan does not appear to have direct Forward Deployed Engineer experience.",
+    "Kaan is not known to have direct Forward Deployed Engineer experience.",
+    "Kaan cannot be said to have direct Forward Deployed Engineer experience.",
+    "Kaan cannot be shown to have direct Forward Deployed Engineer experience.",
+    "Kaan is not documented to have direct Forward Deployed Engineer experience.",
+    "Kaan does not seem to have direct Forward Deployed Engineer experience.",
+    "Kaan has not been shown to have direct Forward Deployed Engineer experience.",
+    "Kaan needs direct Forward Deployed Engineer experience.",
+    "Kaan would need direct Forward Deployed Engineer experience.",
+    "Kaan needs to have direct Forward Deployed Engineer experience.",
+    "Kaan would need to have direct Forward Deployed Engineer experience.",
+    "Kaan is required to have direct Forward Deployed Engineer experience.",
+    "Kaan requires hands-on direct Forward Deployed Engineer experience.",
+    "Kaan'ın forward-deployed mühendislik alanında doğrudan deneyimi yoktur.",
+    "Kaan'ın Forward Deployed Engineer alanında doğrudan deneyime ihtiyacı vardır.",
+    "Kaan'ın doğrudan Forward Deployed Engineer deneyimine sahip olması gerekir.",
+    "Kaan'ın doğrudan Forward Deployed Engineer deneyimine sahip olması gerekiyor.",
+    "Mevcut kanıtlara göre Kaan'ın forward-deployed mühendislik alanında doğrudan deneyimi olduğu söylenemez.",
+  ]) {
+    ok(`negative target-role experience wording remains accepted: ${answer}`, !targetRoleFlags({
+      answer,
+      question: "Is Kaan a good fit for a Forward Deployed Engineer role?",
+      family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    }).includes("unsupported-target-role-experience"));
+  }
   ok("canonical Applied AI Engineer does not license direct AI Engineer experience", targetRoleFlags({
     answer: "Kaan has direct AI Engineer experience.",
     question: "Is Kaan a good fit for an AI Engineer role?",
@@ -1359,6 +1447,7 @@ ok("strength repair asks for concrete facts at the recorded level", repairPrompt
     ["direct relevance", "His CBOT and SINAMA experience is directly relevant to forward-deployed work.", "Is Kaan a good fit for a Forward Deployed Engineer role?"],
     ["fit", "The evidence suggests a reasonable fit for Forward Deployed Engineering.", "Is Kaan a good fit for a Forward Deployed Engineer role?"],
     ["transferability", "Bu deneyimler Forward Deployed Engineer rolüne aktarılabilir.", "Kaan Forward Deployed Engineer rolüne uygun mu?"],
+    ["direct transferability", "Bu deneyimler Forward Deployed Engineer rolüne doğrudan aktarılabilir.", "Kaan Forward Deployed Engineer rolüne uygun mu?"],
     ["calibrated fit", "Kanıtlar bu role uyuma işaret ediyor.", "Kaan Forward Deployed Engineer rolüne uygun mu?"],
   ]) {
     ok(`valid recruiter-fit ${label} wording remains accepted`, !targetRoleFlags({

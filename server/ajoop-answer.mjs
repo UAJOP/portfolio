@@ -1318,6 +1318,15 @@ const EXPERIENCE_MARKER = /^(?:experience\w*|experienced|deneyim\w*|tecrube\w*)$
 const RELEVANCE_MODIFIER = /^(?:relevant|related|transferable|adjacent|applicable|suitable)$/;
 const EXPERIENCE_MODIFIER = /^(?:hands?|on|practical|professional|actual|real|world|technical|client|facing|substantial|extensive)$/;
 const ROLE_BINDING_PREPOSITION = /^(?:in|as|within|doing|working)$/;
+const TARGET_ROLE_NEGATION_OR_UNCERTAINTY = /\b(?:not|never|no|cannot|(?:ca|could|do|does|did|has|have|had|is|are|was|were|wo|would|should|must|need)nt|could not|unable|without|lacks?|missing|unknown|unresolved|insufficient|unverified|unproven|yok[a-z]*|degil[a-z]*|belirsiz[a-z]*|eksik[a-z]*|kanitlanmamis[a-z]*|belirtilmemis[a-z]*|belirleyem[a-z]*|bilinm[a-z]*|[a-z]{2,}m(?:[iu]yor|az|ez)[a-z]*)\b/;
+const EXPERIENCE_REQUIREMENT_PREDICATE = /^(?:needs?|requires?)$/;
+const EXPERIENCE_REQUIREMENT_PREFIX = /^(?:a|an|the|some|any|more|additional|further|still|also)$/;
+const EXPERIENCE_REQUIREMENT_BRIDGE = /^(?:to|have|gain|develop|possess)$/;
+const EPISTEMIC_RELATION_GOVERNOR = /^(?:say|said|conclude\w*|establish\w*|verify\w*|prove\w*|show\w*)$/;
+const EXPERIENCE_ATTRIBUTION_PREDICATE = /^(?:has|have|had|is|are|was|were|claim\w*|show\w*|demonstrat\w*|possess\w*|lacks?)$/;
+const EXPERIENCE_PREDICATE_PREFIX = /^(?:do|does|did|has|have|had|is|are|was|were|be|been|can|could|would|will|should|must|may|might|cannot|(?:ca|could|do|does|did|has|have|had|is|are|was|were|wo|would|should|must|need)nt|not|never|unable|to)$/;
+const SUBJECT_FRONTED_EPISTEMIC_GOVERNOR = /^(?:appear\w*|seem\w*|know\w*|said|show\w*|document\w*)$/;
+const POST_RELATION_PREDICATE_LINK = /^(?:is|are|was|were|remains?|seems?|oldugu|olmasi)$/;
 
 function mentionedTargetRoles(text, family) {
   const folded = foldQuestion(text);
@@ -1349,11 +1358,90 @@ function targetRoleSpans(words, family) {
 }
 
 const ROLE_RELATION_BOUNDARY = /^(?:and|but|however|while|ve|ama|ancak|fakat)$/;
-const EXPERIENCE_SUBJECT = /^(?:kaan|he|his|him|kendisi|onun)$/;
+const EXPERIENCE_SUBJECT = /^(?:kaan(?:in|s)?|he|his|him|kendisi|onun)$/;
 const ROLE_COMPLEMENT_PREFIX = /^(?:a|an|the|as|in|within)$/;
 
 function hasExperienceSubject(words, nucleusStart) {
   return words.slice(0, nucleusStart).some((word) => EXPERIENCE_SUBJECT.test(word));
+}
+
+function roleExperienceRelationBounds(words, span, nucleusStart, nucleusEnd) {
+  const relationStart = Math.min(span.start, nucleusStart);
+  const relationEnd = Math.max(span.end, nucleusEnd + 1);
+  const segmentStart = words.reduce((latest, word, index) =>
+    index < relationStart && ROLE_RELATION_BOUNDARY.test(word) ? index + 1 : latest, 0);
+  const nextBoundary = words.findIndex((word, index) =>
+    index >= relationEnd && ROLE_RELATION_BOUNDARY.test(word));
+  return {
+    relationStart,
+    relationEnd,
+    segmentStart,
+    segmentEnd: nextBoundary >= 0 ? nextBoundary : words.length,
+  };
+}
+
+function roleExperienceRelationIsRequired(words, span, nucleusStart, nucleusEnd) {
+  const { relationStart, relationEnd, segmentStart, segmentEnd } =
+    roleExperienceRelationBounds(words, span, nucleusStart, nucleusEnd);
+  const predicate = words.slice(segmentStart, relationStart);
+  const requirementIndex = predicate.findLastIndex((word) => EXPERIENCE_REQUIREMENT_PREDICATE.test(word));
+  if (requirementIndex >= 0
+      && predicate.slice(requirementIndex + 1).every((word) =>
+        EXPERIENCE_REQUIREMENT_PREFIX.test(word)
+        || EXPERIENCE_REQUIREMENT_BRIDGE.test(word)
+        || EXPERIENCE_MODIFIER.test(word))) {
+    return true;
+  }
+  const predicateText = predicate.join(" ");
+  if (/\b(?:is|are|was|were|would be) (?:required|needed) to (?:have|gain|develop|possess)$/.test(predicateText)) {
+    return true;
+  }
+  const shouldIndex = predicate.findLastIndex((word) => word === "should");
+  if (shouldIndex >= 0
+      && /^(?:learn|develop)$/.test(predicate[shouldIndex + 1] || "")
+      && predicate.slice(shouldIndex + 2).every((word) => EXPERIENCE_REQUIREMENT_PREFIX.test(word))) {
+    return true;
+  }
+  const complement = words.slice(relationEnd, segmentEnd);
+  return /^ihtiyac\w*(?: var\w*)?$/.test(complement.join(" "))
+    || /^sahip olmasi gerek(?:ir|iyor|ebilir)$/.test(complement.join(" "));
+}
+
+function roleExperienceRelationIsNegatedOrUncertain(words, span, nucleusStart, nucleusEnd) {
+  const { relationStart, relationEnd, segmentStart, segmentEnd } =
+    roleExperienceRelationBounds(words, span, nucleusStart, nucleusEnd);
+  const subjectIndex = words.reduce((latest, word, index) =>
+    index >= segmentStart && index < relationStart && EXPERIENCE_SUBJECT.test(word) ? index : latest, -1);
+  const predicateStart = subjectIndex >= 0 ? subjectIndex + 1 : segmentStart;
+  const predicate = words.slice(predicateStart, relationStart);
+  const governorIndex = predicate.findLastIndex((word) => EXPERIENCE_ATTRIBUTION_PREDICATE.test(word));
+  let governorStart = governorIndex;
+  while (governorStart > 0
+      && (EXPERIENCE_PREDICATE_PREFIX.test(predicate[governorStart - 1])
+        || (predicate[governorStart] === "to"
+          && SUBJECT_FRONTED_EPISTEMIC_GOVERNOR.test(predicate[governorStart - 1])))) {
+    governorStart -= 1;
+  }
+  const governingPredicate = governorIndex >= 0 ? predicate.slice(governorStart) : predicate;
+  if (TARGET_ROLE_NEGATION_OR_UNCERTAINTY.test(governingPredicate.join(" "))) {
+    return true;
+  }
+  const epistemicFrame = words.slice(segmentStart, subjectIndex >= 0 ? subjectIndex : relationStart);
+  if (TARGET_ROLE_NEGATION_OR_UNCERTAINTY.test(epistemicFrame.join(" "))
+      && epistemicFrame.some((word) => EPISTEMIC_RELATION_GOVERNOR.test(word))) {
+    return true;
+  }
+  const complement = words.slice(relationEnd, segmentEnd);
+  const relativeOffset = /^(?:which|that|bu)$/.test(complement[0] || "") ? 1 : 0;
+  if (POST_RELATION_PREDICATE_LINK.test(complement[relativeOffset] || "")) {
+    return TARGET_ROLE_NEGATION_OR_UNCERTAINTY.test(complement.slice(relativeOffset + 1).join(" "));
+  }
+  return /^(?:yok\w*|degil\w*|belirsiz\w*|eksik\w*|kanitlanmamis\w*|belirtilmemis\w*)$/.test(complement[0] || "");
+}
+
+function roleExperienceRelationIsAffirmative(words, span, nucleusStart, nucleusEnd) {
+  return !roleExperienceRelationIsNegatedOrUncertain(words, span, nucleusStart, nucleusEnd)
+    && !roleExperienceRelationIsRequired(words, span, nucleusStart, nucleusEnd);
 }
 
 function directlyAttributedTargetRoleIds(words, family, requestedRoles = []) {
@@ -1381,6 +1469,7 @@ function directlyAttributedTargetRoleIds(words, family, requestedRoles = []) {
 
       spans
         .filter((span) => span.start > directIndex && span.end <= experienceIndex)
+        .filter((span) => roleExperienceRelationIsAffirmative(words, span, nucleusStart, nucleusEnd))
         .forEach((span) => boundRoleIds.add(span.id));
 
       const postStart = nucleusEnd + 1;
@@ -1389,9 +1478,16 @@ function directlyAttributedTargetRoleIds(words, family, requestedRoles = []) {
           .filter((span) => span.start >= postStart + 1)
           .filter((span) => words.slice(postStart + 1, span.start)
             .every((word) => ROLE_COMPLEMENT_PREFIX.test(word)))
+          .filter((span) => roleExperienceRelationIsAffirmative(words, span, nucleusStart, nucleusEnd))
           .forEach((span) => boundRoleIds.add(span.id));
         if (/^(?:this|requested|target|bu|hedef)$/.test(words[postStart + 1] || "")
-            && /^(?:role|rol\w*)$/.test(words[postStart + 2] || "")) {
+            && /^(?:role|rol\w*)$/.test(words[postStart + 2] || "")
+            && roleExperienceRelationIsAffirmative(
+              words,
+              { start: postStart + 1, end: postStart + 3 },
+              nucleusStart,
+              nucleusEnd,
+            )) {
           requestedRoles.forEach((role) => boundRoleIds.add(role.id));
         }
       }
@@ -1400,6 +1496,7 @@ function directlyAttributedTargetRoleIds(words, family, requestedRoles = []) {
         .filter((span) => span.end <= nucleusStart && nucleusStart - span.end <= 3)
         .filter((span) => !words.slice(span.end, nucleusStart)
           .some((word) => ROLE_RELATION_BOUNDARY.test(word) || RELEVANCE_MODIFIER.test(word)))
+        .filter((span) => roleExperienceRelationIsAffirmative(words, span, nucleusStart, nucleusEnd))
         .forEach((span) => boundRoleIds.add(span.id));
     }
   }
@@ -1410,7 +1507,7 @@ function affirmativeTargetRoleClauses(text) {
   return String(text || "")
     .split(/[.!?;\n]+|\b(?:but|however|ancak|ama|fakat)\b/i)
     .map(foldQuestion)
-    .filter((clause) => clause && !CLAIM_UNESTABLISHED.test(clause));
+    .filter(Boolean);
 }
 
 function hasUnsupportedTargetRoleExperience(answer, strategy, question, records) {
