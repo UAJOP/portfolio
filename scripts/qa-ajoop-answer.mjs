@@ -1224,6 +1224,159 @@ ok("strength repair asks for concrete facts at the recorded level", repairPrompt
   ok("recruiter-fit strength repair keeps the validation point neutral",
     repairPrompt(["unsupported-strength"], supportedFitStrategy)
       .includes("Keep the interview validation point neutral"));
+  ok("target-role repair redirects direct experience to transferability",
+    repairPrompt(["unsupported-target-role-experience"], supportedFitStrategy)
+      .includes("Do not claim direct experience in the requested role. Describe the recorded work and assess its transferability to the role."));
+
+  const targetRoleFlags = ({ answer, question, family, records = supportRecords }) => validateGeneratedAnswer({
+    parsed: valid("PORTFOLIO", answer),
+    strategy: { ...supportedFitStrategy, roleFamily: family },
+    question,
+    records,
+    locale: /[çğıöşü]/i.test(answer) ? "tr" : "en",
+  }).flags;
+  ok("TR direct FDE experience attribution is rejected", targetRoleFlags({
+    answer: "Kaan Balcı forward-deployed işlevlerde doğrudan deneyim sahibidir.",
+    question: "Kaan Forward Deployed Engineer rolüne uygun mu?",
+    family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+  }).includes("unsupported-target-role-experience"));
+  ok("EN direct Solution Engineering experience attribution is rejected", targetRoleFlags({
+    answer: "Kaan has direct Solution Engineering experience.",
+    question: "Would Kaan fit a Solution Engineer role?",
+    family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+  }).includes("unsupported-target-role-experience"));
+  ok("Applied AI direct-role attribution without a recorded role is rejected", targetRoleFlags({
+    answer: "Kaan has direct Applied AI Engineering experience.",
+    question: "Is Kaan a good fit for an Applied AI Engineer role?",
+    family: ROLE_FAMILIES.APPLIED_AI,
+  }).includes("unsupported-target-role-experience"));
+  ok("canonical Solution Engineer does not license direct Forward Deployed Engineer experience", targetRoleFlags({
+    answer: "Kaan has direct experience as a Forward Deployed Engineer.",
+    question: "Is Kaan a good fit for a Forward Deployed Engineer role?",
+    family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    records: [{
+      entityType: "experience",
+      text: "Kaan worked as a Solution Engineer.",
+      metadata: { role: "Solution Engineer" },
+    }],
+  }).includes("unsupported-target-role-experience"));
+  ok("canonical AI Designer does not license direct Product Manager experience", targetRoleFlags({
+    answer: "Kaan has direct experience as a Product Manager.",
+    question: "Is Kaan a good fit for a Product Manager role?",
+    family: ROLE_FAMILIES.AI_PRODUCT,
+    records: [{
+      entityType: "experience",
+      text: "Kaan worked at CBOT as AI Designer.",
+      metadata: { role: "AI Designer" },
+    }],
+  }).includes("unsupported-target-role-experience"));
+  ok("canonical Digital Product Developer does not license direct AI Product Engineer experience", targetRoleFlags({
+    answer: "Kaan has direct experience as an AI Product Engineer.",
+    question: "Is Kaan a good fit for an AI Product Engineer role?",
+    family: ROLE_FAMILIES.AI_PRODUCT,
+    records: [{
+      entityType: "experience",
+      text: "Kaan worked as a Digital Product Developer.",
+      metadata: { role: "Digital Product Developer" },
+    }],
+  }).includes("unsupported-target-role-experience"));
+  for (const answer of [
+    "Kaan has direct hands-on experience in Solution Engineering.",
+    "Kaan has direct practical experience in Forward Deployed Engineering.",
+    "Kaan has experience directly in Solution Engineering.",
+    "Kaan has direct, hands-on experience in Solution Engineering.",
+    "Kaan has direct FDE experience.",
+  ]) {
+    ok(`direct target-role attribution is order-independent: ${answer}`, targetRoleFlags({
+      answer,
+      question: "Would Kaan fit a Solution Engineer role?",
+      family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    }).includes("unsupported-target-role-experience"));
+  }
+  ok("clause-wide Solution Engineering relevance is not bound to direct conversational-AI experience",
+    !targetRoleFlags({
+      answer: "Kaan has direct experience with enterprise conversational AI and that work is relevant to Solution Engineering.",
+      question: "Would Kaan fit a Solution Engineer role?",
+      family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    }).includes("unsupported-target-role-experience"));
+  for (const answer of [
+    "Kaan has direct experience in enterprise conversational AI, which is relevant to Solution Engineering.",
+    "Kaan has direct experience in enterprise conversational AI, a background relevant to Solution Engineering.",
+  ]) {
+    ok(`post-object relevance does not bind Solution Engineering: ${answer}`, !targetRoleFlags({
+      answer,
+      question: "Would Kaan fit a Solution Engineer role?",
+      family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    }).includes("unsupported-target-role-experience"));
+  }
+  ok("a role requirement does not attribute its direct experience to Kaan", !targetRoleFlags({
+    answer: "Solution Engineering calls for direct experience with enterprise conversational AI.",
+    question: "Would Kaan fit a Solution Engineer role?",
+    family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+  }).includes("unsupported-target-role-experience"));
+  ok("canonical Applied AI Engineer does not license direct AI Engineer experience", targetRoleFlags({
+    answer: "Kaan has direct AI Engineer experience.",
+    question: "Is Kaan a good fit for an AI Engineer role?",
+    family: ROLE_FAMILIES.APPLIED_AI,
+    records: [{
+      entityType: "experience",
+      text: "Kaan worked as an Applied AI Engineer.",
+      metadata: { role: "Applied AI Engineer" },
+    }],
+  }).includes("unsupported-target-role-experience"));
+  ok("canonical Forward Deployed Work Coordinator does not license direct FDE experience", targetRoleFlags({
+    answer: "Kaan has direct Forward Deployed Engineer experience.",
+    question: "Is Kaan a good fit for a Forward Deployed Engineer role?",
+    family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    records: [{
+      entityType: "experience",
+      text: "Kaan worked as a Forward Deployed Work Coordinator.",
+      metadata: { role: "Forward Deployed Work Coordinator" },
+    }],
+  }).includes("unsupported-target-role-experience"));
+  ok("canonical AI Engineer does not license direct ML Engineer experience", targetRoleFlags({
+    answer: "Kaan has direct experience as an ML Engineer.",
+    question: "Is Kaan a good fit for an ML Engineer role?",
+    family: ROLE_FAMILIES.APPLIED_AI,
+    records: [{
+      entityType: "experience",
+      text: "Kaan worked as an AI Engineer.",
+      metadata: { role: "AI Engineer" },
+    }],
+  }).includes("unsupported-target-role-experience"));
+  ok("FDE is an exact alias of canonical Forward Deployed Engineer", !targetRoleFlags({
+    answer: "Kaan has direct FDE experience.",
+    question: "Is Kaan a good fit for a Forward Deployed Engineer role?",
+    family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    records: [{
+      entityType: "experience",
+      text: "Kaan worked as a Forward Deployed Engineer.",
+      metadata: { role: "Forward Deployed Engineer" },
+    }],
+  }).includes("unsupported-target-role-experience"));
+  for (const [label, answer, question] of [
+    ["relevance", "His CBOT and SINAMA experience is relevant to forward-deployed work.", "Is Kaan a good fit for a Forward Deployed Engineer role?"],
+    ["direct relevance", "His CBOT and SINAMA experience is directly relevant to forward-deployed work.", "Is Kaan a good fit for a Forward Deployed Engineer role?"],
+    ["fit", "The evidence suggests a reasonable fit for Forward Deployed Engineering.", "Is Kaan a good fit for a Forward Deployed Engineer role?"],
+    ["transferability", "Bu deneyimler Forward Deployed Engineer rolüne aktarılabilir.", "Kaan Forward Deployed Engineer rolüne uygun mu?"],
+    ["calibrated fit", "Kanıtlar bu role uyuma işaret ediyor.", "Kaan Forward Deployed Engineer rolüne uygun mu?"],
+  ]) {
+    ok(`valid recruiter-fit ${label} wording remains accepted`, !targetRoleFlags({
+      answer, question, family: ROLE_FAMILIES.FORWARD_DEPLOYED,
+    }).includes("unsupported-target-role-experience"));
+  }
+  ok("canonical CBOT AI Designer experience licenses its recorded role", !targetRoleFlags({
+    answer: "Kaan has direct experience as an AI Designer.",
+    question: "Is Kaan a good fit for an AI Designer role?",
+    family: ROLE_FAMILIES.AI_PRODUCT,
+    records: [{
+      entityType: "experience",
+      entityId: "experience:cbot",
+      title: "CBOT — AI Designer",
+      text: "Kaan Balcı worked at CBOT as AI Designer.",
+      metadata: { role: "AI Designer" },
+    }],
+  }).includes("unsupported-target-role-experience"));
 
   const validFit = validateGeneratedAnswer({
     parsed: valid("PORTFOLIO", "The evidence suggests a reasonable fit based on CBOT and SINAMA. Production deployment depth remains an interview validation point."),
@@ -1533,6 +1686,22 @@ for (const [question, locale, answer] of [
   check("[recruiter-fit-repair] calibrated second draft avoids fallback", response.body.fallbackUsed, false);
   check("[recruiter-fit-repair] successful repair is reported", response.body.repaired, true);
   check("[recruiter-fit-repair] repaired assessment reaches the user", response.body.answer, repairedAnswer);
+}
+
+{
+  const repairedAnswer = "CBOT and SINAMA provide relevant adjacent evidence. The evidence suggests a reasonable fit for Forward Deployed Engineering, with client-facing delivery to validate in an interview.";
+  const { rag, state } = await makeRag(({ state: current }) => current.chat === 1
+    ? " PORTFOLIO\nANSWER: Kaan has direct experience as a Forward Deployed Engineer."
+    : ` PORTFOLIO\nANSWER: ${repairedAnswer}`);
+  const response = await ask(rag, "Is Kaan a good fit for a Forward Deployed Engineer role?", "en");
+  check("[target-role-repair] rejected draft receives exactly one repair", state.chat, 2);
+  ok("[target-role-repair] dedicated flag is reported",
+    response.body.validatorFlags.includes("unsupported-target-role-experience"));
+  ok("[target-role-repair] retry prompt requires recorded-work transferability",
+    /Do not claim direct experience in the requested role/.test(state.prompts[1] || ""));
+  check("[target-role-repair] calibrated second draft avoids fallback", response.body.fallbackUsed, false);
+  check("[target-role-repair] successful repair is reported", response.body.repaired, true);
+  check("[target-role-repair] repaired assessment reaches the user", response.body.answer, repairedAnswer);
 }
 
 {

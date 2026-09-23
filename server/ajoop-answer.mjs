@@ -36,6 +36,29 @@ export const ROLE_FAMILIES = Object.freeze({
   AI_PRODUCT: "ai-product",
 });
 
+const ROLE_FAMILY_PHRASES = Object.freeze({
+  [ROLE_FAMILIES.FORWARD_DEPLOYED]: Object.freeze(["forward deployed", "fde", "solution engineer", "solution engineering", "cozum muhendisi", "çözüm mühendisi"]),
+  [ROLE_FAMILIES.APPLIED_AI]: Object.freeze(["applied ai", "ai engineer", "yapay zeka muhendisi", "yapay zekâ mühendisi", "ml engineer"]),
+  [ROLE_FAMILIES.SOFTWARE]: Object.freeze(["software engineer", "software developer", "yazilim muhendisi", "yazılım mühendisi", "backend engineer", "full stack"]),
+  [ROLE_FAMILIES.AI_PRODUCT]: Object.freeze(["ai product", "ai designer", "product manager", "urun", "ürün", "conversational designer"]),
+});
+
+const TARGET_ROLE_IDENTITIES = Object.freeze([
+  Object.freeze({ id: "forward-deployed-engineer", family: ROLE_FAMILIES.FORWARD_DEPLOYED, aliases: Object.freeze(["fde", "forward deployed", "forward deployed engineer", "forward deployed engineering", "forward deployed work"]) }),
+  Object.freeze({ id: "solution-engineer", family: ROLE_FAMILIES.FORWARD_DEPLOYED, aliases: Object.freeze(["solution engineer", "solution engineering", "cozum muhendisi", "çözüm mühendisi", "cozum muhendisligi", "çözüm mühendisliği", "cozum muhendisliginde", "çözüm mühendisliğinde"]) }),
+  Object.freeze({ id: "applied-ai-engineer", family: ROLE_FAMILIES.APPLIED_AI, aliases: Object.freeze(["applied ai engineer", "applied ai engineering"]) }),
+  Object.freeze({ id: "ai-engineer", family: ROLE_FAMILIES.APPLIED_AI, aliases: Object.freeze(["ai engineer", "yapay zeka muhendisi", "yapay zekâ mühendisi"]) }),
+  Object.freeze({ id: "ml-engineer", family: ROLE_FAMILIES.APPLIED_AI, aliases: Object.freeze(["ml engineer"]) }),
+  Object.freeze({ id: "software-engineer", family: ROLE_FAMILIES.SOFTWARE, aliases: Object.freeze(["software engineer", "software engineering", "yazilim muhendisi", "yazılım mühendisi"]) }),
+  Object.freeze({ id: "software-developer", family: ROLE_FAMILIES.SOFTWARE, aliases: Object.freeze(["software developer"]) }),
+  Object.freeze({ id: "backend-engineer", family: ROLE_FAMILIES.SOFTWARE, aliases: Object.freeze(["backend engineer"]) }),
+  Object.freeze({ id: "ai-product-engineer", family: ROLE_FAMILIES.AI_PRODUCT, aliases: Object.freeze(["ai product engineer", "ai product engineering"]) }),
+  Object.freeze({ id: "ai-designer", family: ROLE_FAMILIES.AI_PRODUCT, aliases: Object.freeze(["ai designer"]) }),
+  Object.freeze({ id: "product-manager", family: ROLE_FAMILIES.AI_PRODUCT, aliases: Object.freeze(["product manager"]) }),
+  Object.freeze({ id: "digital-product-developer", family: ROLE_FAMILIES.AI_PRODUCT, aliases: Object.freeze(["digital product developer", "product developer"]) }),
+  Object.freeze({ id: "conversational-designer", family: ROLE_FAMILIES.AI_PRODUCT, aliases: Object.freeze(["conversational designer"]) }),
+]);
+
 const RECRUITER_SIGNAL = Object.freeze([
   "role", "rol", "pozisyon", "position", "aday", "candidate", "ise al", "işe al",
   "ise almali", "işe almalı", "neden ise", "neden işe", "would you hire", "why hire",
@@ -132,17 +155,13 @@ function recruiterHistoryText(history) {
 
 export function detectRoleFamily(question, history = []) {
   const folded = foldQuestion(`${recruiterHistoryText(history)} ${question}`);
-  if (phraseIn(folded, ["forward deployed", "fde", "solution engineer", "solution engineering", "cozum muhendisi", "çözüm mühendisi"])) {
-    return ROLE_FAMILIES.FORWARD_DEPLOYED;
-  }
-  if (phraseIn(folded, ["applied ai", "ai engineer", "yapay zeka muhendisi", "yapay zekâ mühendisi", "ml engineer"])) {
-    return ROLE_FAMILIES.APPLIED_AI;
-  }
-  if (phraseIn(folded, ["software engineer", "software developer", "yazilim muhendisi", "yazılım mühendisi", "backend engineer", "full stack"])) {
-    return ROLE_FAMILIES.SOFTWARE;
-  }
-  if (phraseIn(folded, ["ai product", "ai designer", "product manager", "urun", "ürün", "conversational designer"])) {
-    return ROLE_FAMILIES.AI_PRODUCT;
+  for (const family of [
+    ROLE_FAMILIES.FORWARD_DEPLOYED,
+    ROLE_FAMILIES.APPLIED_AI,
+    ROLE_FAMILIES.SOFTWARE,
+    ROLE_FAMILIES.AI_PRODUCT,
+  ]) {
+    if (phraseIn(folded, ROLE_FAMILY_PHRASES[family])) return family;
   }
   return ROLE_FAMILIES.GENERAL;
 }
@@ -1185,6 +1204,9 @@ export function repairPrompt(flags, strategy) {
     fitStrengthRepair
       ? "Keep the interview validation point neutral: do not use scalable, production-grade, enterprise-scale, senior-level or expert there."
       : "",
+    (flags || []).includes("unsupported-target-role-experience")
+      ? "Do not claim direct experience in the requested role. Describe the recorded work and assess its transferability to the role."
+      : "",
     (flags || []).includes("unproven-corpus-absence")
       ? "Do not claim the whole portfolio lacks information merely because the bounded retrieval did not establish it. Describe evidence sufficiency instead."
       : "",
@@ -1291,6 +1313,121 @@ function hasUnsupportedStrength(answer, records) {
     && !support.some((clause) => qualifier.test(clause)));
 }
 
+const DIRECT_EXPERIENCE_MARKER = /^(?:direct|directly|dogrudan)$/;
+const EXPERIENCE_MARKER = /^(?:experience\w*|experienced|deneyim\w*|tecrube\w*)$/;
+const RELEVANCE_MODIFIER = /^(?:relevant|related|transferable|adjacent|applicable|suitable)$/;
+const EXPERIENCE_MODIFIER = /^(?:hands?|on|practical|professional|actual|real|world|technical|client|facing|substantial|extensive)$/;
+const ROLE_BINDING_PREPOSITION = /^(?:in|as|within|doing|working)$/;
+
+function mentionedTargetRoles(text, family) {
+  const folded = foldQuestion(text);
+  return TARGET_ROLE_IDENTITIES.filter((role) => role.family === family && phraseIn(folded, role.aliases));
+}
+
+function recordedTargetRoleIds(record) {
+  if (record?.entityType !== "experience") return [];
+  const canonicalRole = foldQuestion(String(record?.metadata?.role || "")).trim();
+  if (!canonicalRole) return [];
+  return TARGET_ROLE_IDENTITIES
+    .filter((role) => role.aliases.some((alias) => foldQuestion(alias) === canonicalRole))
+    .map((role) => role.id);
+}
+
+function targetRoleSpans(words, family) {
+  const spans = [];
+  for (const role of TARGET_ROLE_IDENTITIES.filter((candidate) => candidate.family === family)) {
+    for (const alias of role.aliases) {
+      const aliasWords = tokenize(foldQuestion(alias));
+      for (let start = 0; start <= words.length - aliasWords.length; start += 1) {
+        if (aliasWords.every((word, offset) => words[start + offset] === word)) {
+          spans.push({ id: role.id, start, end: start + aliasWords.length });
+        }
+      }
+    }
+  }
+  return spans;
+}
+
+const ROLE_RELATION_BOUNDARY = /^(?:and|but|however|while|ve|ama|ancak|fakat)$/;
+const EXPERIENCE_SUBJECT = /^(?:kaan|he|his|him|kendisi|onun)$/;
+const ROLE_COMPLEMENT_PREFIX = /^(?:a|an|the|as|in|within)$/;
+
+function hasExperienceSubject(words, nucleusStart) {
+  return words.slice(0, nucleusStart).some((word) => EXPERIENCE_SUBJECT.test(word));
+}
+
+function directlyAttributedTargetRoleIds(words, family, requestedRoles = []) {
+  const directIndexes = words.flatMap((word, index) => DIRECT_EXPERIENCE_MARKER.test(word) ? [index] : []);
+  const experienceIndexes = words.flatMap((word, index) => EXPERIENCE_MARKER.test(word) ? [index] : []);
+  const spans = targetRoleSpans(words, family);
+  const boundRoleIds = new Set();
+  for (const directIndex of directIndexes) {
+    for (const experienceIndex of experienceIndexes) {
+      let directExperienceRelation = false;
+      const nucleusStart = Math.min(directIndex, experienceIndex);
+      const nucleusEnd = Math.max(directIndex, experienceIndex);
+      if (directIndex < experienceIndex) {
+        const between = words.slice(directIndex + 1, experienceIndex);
+        directExperienceRelation = between.length <= 4
+          && !between.some((word) => RELEVANCE_MODIFIER.test(word))
+          && (between.every((word) => EXPERIENCE_MODIFIER.test(word))
+            || mentionedTargetRoles(between.join(" "), family).length > 0);
+      } else if (directIndex > experienceIndex && directIndex - experienceIndex <= 3) {
+        const afterDirect = words.slice(directIndex + 1);
+        directExperienceRelation = ROLE_BINDING_PREPOSITION.test(afterDirect[0] || "")
+          && mentionedTargetRoles(afterDirect.slice(1).join(" "), family).length > 0;
+      }
+      if (!directExperienceRelation || !hasExperienceSubject(words, nucleusStart)) continue;
+
+      spans
+        .filter((span) => span.start > directIndex && span.end <= experienceIndex)
+        .forEach((span) => boundRoleIds.add(span.id));
+
+      const postStart = nucleusEnd + 1;
+      if (ROLE_BINDING_PREPOSITION.test(words[postStart] || "")) {
+        spans
+          .filter((span) => span.start >= postStart + 1)
+          .filter((span) => words.slice(postStart + 1, span.start)
+            .every((word) => ROLE_COMPLEMENT_PREFIX.test(word)))
+          .forEach((span) => boundRoleIds.add(span.id));
+        if (/^(?:this|requested|target|bu|hedef)$/.test(words[postStart + 1] || "")
+            && /^(?:role|rol\w*)$/.test(words[postStart + 2] || "")) {
+          requestedRoles.forEach((role) => boundRoleIds.add(role.id));
+        }
+      }
+
+      spans
+        .filter((span) => span.end <= nucleusStart && nucleusStart - span.end <= 3)
+        .filter((span) => !words.slice(span.end, nucleusStart)
+          .some((word) => ROLE_RELATION_BOUNDARY.test(word) || RELEVANCE_MODIFIER.test(word)))
+        .forEach((span) => boundRoleIds.add(span.id));
+    }
+  }
+  return [...boundRoleIds];
+}
+
+function affirmativeTargetRoleClauses(text) {
+  return String(text || "")
+    .split(/[.!?;\n]+|\b(?:but|however|ancak|ama|fakat)\b/i)
+    .map(foldQuestion)
+    .filter((clause) => clause && !CLAIM_UNESTABLISHED.test(clause));
+}
+
+function hasUnsupportedTargetRoleExperience(answer, strategy, question, records) {
+  if (!isRecruiterFitAssessment(strategy)) return false;
+  const family = strategy.roleFamily && strategy.roleFamily !== ROLE_FAMILIES.GENERAL
+    ? strategy.roleFamily
+    : detectRoleFamily(question);
+  if (!ROLE_FAMILY_PHRASES[family]) return false;
+  const requestedRoles = mentionedTargetRoles(question, family);
+  const establishedRoleIds = new Set((records || []).flatMap(recordedTargetRoleIds));
+  return affirmativeTargetRoleClauses(answer).some((clause) => {
+    const words = tokenize(clause);
+    const boundRoleIds = directlyAttributedTargetRoleIds(words, family, requestedRoles);
+    return boundRoleIds.some((roleId) => !establishedRoleIds.has(roleId));
+  });
+}
+
 function requestedFieldIsPresent(question, records) {
   const folded = foldQuestion(question);
   const text = (records || []).map((item) => item.text || "").join("\n");
@@ -1338,6 +1475,9 @@ export function validateGeneratedAnswer({ raw = "", parsed, strategy, question =
   if (/<\/?think\b/i.test(parsed.answer)) flags.push("reasoning-marker");
   if (obviousLanguageLeak(parsed.answer, locale)) flags.push("language-template-leak");
   if (strategy?.recruiter && hasUnsupportedStrength(parsed.answer, records)) flags.push("unsupported-strength");
+  if (hasUnsupportedTargetRoleExperience(parsed.answer, strategy, question, records)) {
+    flags.push("unsupported-target-role-experience");
+  }
 
   const hasDirectEvidence = requestedFieldIsPresent(question, records);
   const absenceClaim = ABSENCE_CLAIM.test(parsed.answer);
