@@ -8,6 +8,10 @@
  * Every function is pure; no network, filesystem or model call lives here.
  */
 import { foldQuestion, hasPhrase, tokenize } from "./ajoop-text.mjs";
+import {
+  isPublicIdentityQuestion,
+  publicIdentityAnswerInstruction,
+} from "./ajoop-public-identity.mjs";
 
 export const ANSWER_MODES = Object.freeze({
   GENERAL: "general",
@@ -80,12 +84,6 @@ const RECRUITER_KINDS = Object.freeze([
   [ANSWER_MODES.RECRUITER_HIRE, ["neden ise", "neden işe", "ise almali", "işe almalı", "why hire", "would you hire", "bring to"]],
   [ANSWER_MODES.RECRUITER_FIT, ["uygun mu", "fit", "guclu bir aday", "güçlü bir aday", "ready for", "aday mi", "aday mı"]],
   [ANSWER_MODES.RECRUITER_FIT, ["neden uygun", "why suitable", "suitable for"]],
-]);
-
-const SELF_PHRASES = Object.freeze([
-  "sen kimsin", "adin ne", "adın ne", "ne yapabiliyorsun", "hangi model", "internete erisimin", "internete erişimin",
-  "who are you", "what is your name", "what can you do", "which model", "internet access",
-  "wer bist du", "was kannst du", "quel modele", "quel modèle", "qui es tu", "quien eres", "quién eres",
 ]);
 
 const phraseIn = (text, phrases) => phrases.some((phrase) => hasPhrase(text, foldQuestion(phrase)));
@@ -248,7 +246,7 @@ function explicitComparisonOperands(question, plan, fallbackTargets) {
 export function selectAnswerStrategy({ question, plan, history = [] }) {
   const folded = foldQuestion(question);
   const shape = strategyShape(question, plan);
-  if (phraseIn(folded, SELF_PHRASES)) {
+  if (isPublicIdentityQuestion(question)) {
     return {
       ...shape,
       mode: ANSWER_MODES.SELF,
@@ -1123,7 +1121,7 @@ export function answerStrategyPrompt(strategy) {
   if (!strategy) return "Answer directly and concisely.";
   if (strategy.expectedScope === "GENERAL") {
     const instruction = strategy.mode === ANSWER_MODES.SELF
-      ? "Describe Ajoop accurately as Kaan's local-model portfolio copilot. State plainly, never hypothetically, that you have no web or live-data access, and expose no private infrastructure details."
+      ? publicIdentityAnswerInstruction()
       : "Answer the general question normally and helpfully from ordinary world knowledge. Do not mention Kaan or recruiting.";
     return [
       `Answer strategy: ${strategy.mode}.`,
@@ -1171,7 +1169,7 @@ export function answerStrategyPrompt(strategy) {
     [ANSWER_MODES.COMPARISON]: namedComparison
       ? "Compare only the validated named targets using their separate records; no single record needs to contain the whole comparison."
       : "Compare only the supported retrieved canonical candidates from the requested record family; no single record needs to contain the whole comparison.",
-    [ANSWER_MODES.SELF]: "Describe Ajoop accurately as Kaan's local-model portfolio copilot. State plainly, never hypothetically, that you have no web or live-data access, and expose no private infrastructure details.",
+    [ANSWER_MODES.SELF]: publicIdentityAnswerInstruction(),
     [ANSWER_MODES.FOLLOW_UP]: "Answer the immediate follow-up using its bounded conversation and active entity only.",
     [ANSWER_MODES.PORTFOLIO_FACT]: "Answer directly from the supplied portfolio records. If support is genuinely absent, say exactly what the portfolio does not verify and do not substitute unrelated facts.",
   };

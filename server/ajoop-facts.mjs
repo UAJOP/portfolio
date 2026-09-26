@@ -21,8 +21,9 @@
  * ordinary retrieval, which is the outcome a miss should have. A missed route
  * costs a slower answer; a false route costs a confidently wrong one.
  */
-import { foldQuestion, hasPhrase, removePhrase } from "./ajoop-text.mjs";
+import { foldQuestion, hasPhrase, removePhrase, tokenize } from "./ajoop-text.mjs";
 import { mentionsPortfolioOwner } from "./ajoop-entities.mjs";
+import { isFirstSecondPersonLocationForm } from "./ajoop-public-identity.mjs";
 
 /** Intl tags for the five supported locales. Formatting only, no facts. */
 const INTL_LOCALES = Object.freeze({
@@ -500,9 +501,18 @@ export function resolveExactFact(question, facts) {
   const folded = foldQuestion(question);
   if (!folded || !facts?.length) return null;
   const subject = mentionsSubject(folded);
+  const firstSecondPersonLocation = tokenize(folded).some((word) =>
+    isFirstSecondPersonLocationForm(word));
 
   let best = null;
   for (const fact of facts) {
+    /* Turkish location topics can absorb first/second-person morphology:
+     * `neredeyim`, `nerelisin`, `konumun`, `memleketin`. The generic bounded
+     * suffix matcher is correct for Turkish facts overall, but those forms do
+     * not ask for Kaan's canonical physical location. An incidental owner
+     * mention may be an addressee or object, so it cannot license this fact.
+     * Keep the semantic collision local to the location fact. */
+    if (fact.kind === "location" && firstSecondPersonLocation) continue;
     for (const topic of fact.topics) {
       const rest = removePhrase(folded, topic);
       if (rest === null) continue;

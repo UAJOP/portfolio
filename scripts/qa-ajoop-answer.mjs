@@ -24,6 +24,7 @@ import {
   validateGeneratedAnswer,
 } from "../server/ajoop-answer.mjs";
 import { createAjoopRag, parseScopedAnswer } from "../server/ajoop-rag.mjs";
+import { AJOOP_PUBLIC_IDENTITY } from "../server/ajoop-public-identity.mjs";
 
 let passed = 0;
 const failures = [];
@@ -1816,6 +1817,340 @@ for (const [question, locale, answer] of [
     check(`${question} uses one chat`, state.chat - before.chat, 1);
     check(`${question} has no unrelated evidence`, response.body.evidence.length, 0);
   }
+}
+
+{
+  const identityCases = [
+    ["Burası neresi?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kaanbalci\.com/i],
+    ["Neredeyim?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Bu site ne?", "Bu site Kaan Balcı'nın kaanbalci.com adresindeki kişisel portföyüdür.", /Kaan Balcı/i],
+    ["Sen kimsin?", "Ben AJOOP, Kaan Balcı'nın kişisel portföyündeki kamuya açık asistanım.", /AJOOP/i],
+    ["Burada ne yapabilirim?", "Kaan'ın projelerini, deneyimini ve becerilerini inceleyebilir; ayrıca normal genel sorular sorabilirsin.", /genel sorular/i],
+    ["Bu chatbot ne biliyor?", "Kaan hakkındaki portföy gerçeklerini yalnız kamuya açık kanıtlardan açıklarım; genel soruları yanıtlarım ama canlı veya güncel veri kaynağım yok.", /canlı veya güncel veri/i],
+    ["Bu chatbot Kaan hakkında ne biliyor?", "Kaan hakkındaki portföy gerçeklerini yalnız kamuya açık kanıtlardan açıklarım; genel soruları yanıtlarım ama canlı veya güncel veri kaynağım yok.", /kamuya açık kanıtlardan/i],
+    ["Kimin sitesindeyim?", "Kaan Balcı'nın kişisel portföy sitesindesin.", /Kaan Balcı/i],
+    ["Bu site kimin?", "Bu site Kaan Balcı'nın kişisel portföyüdür.", /Kaan Balcı/i],
+    ["Peki burası neresi?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kaanbalci\.com/i],
+    ["Peki neredeyim?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Neredeyim acaba?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Neredeyiz?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Peki neredeyiz?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Neredesin?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Neredesiniz?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Peki burası tam olarak neresi?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Peki neredeyim ben?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Neredeyim peki?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Neredeyiz peki?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Neredeyim lütfen?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Neredeyim, söyler misin?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Bana neredeyim söyler misin?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Nerelisin?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Konumun ne?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Şehrin ne?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Memleketin neresi?", "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.", /kişisel portföy/i],
+    ["Peki bu chatbot ne biliyor?", "Kaan hakkındaki portföy gerçeklerini yalnız kamuya açık kanıtlardan açıklarım; genel soruları yanıtlarım ama canlı veya güncel veri kaynağım yok.", /kamuya açık kanıtlardan/i],
+    ["Peki kimin sitesindeyim?", "Kaan Balcı'nın kişisel portföy sitesindesin.", /Kaan Balcı/i],
+  ];
+  const { rag, state } = await makeRag(({ prompt }) => {
+    const current = identityCases.find(([question]) => prompt.includes(`Current question: ${question}`));
+    return ` GENERAL\nANSWER: ${current?.[1] || "AJOOP public identity context was unavailable."}`;
+  });
+  for (const [question, , answerSignal] of identityCases) {
+    const before = { embed: state.embed, chat: state.chat, prompts: state.prompts.length };
+    const response = await ask(rag, question, "tr");
+    check(`[public-identity] ${question} uses SELF mode`, response.body.answerMode, ANSWER_MODES.SELF);
+    check(`[public-identity] ${question} remains GENERAL`, response.body.scope, "general");
+    check(`[public-identity] ${question} performs no retrieval`, state.embed - before.embed, 0);
+    check(`[public-identity] ${question} performs one generation`, state.chat - before.chat, 1);
+    check(`[public-identity] ${question} exposes no sources`, response.body.sources.length, 0);
+    check(`[public-identity] ${question} exposes no evidence`, response.body.evidence.length, 0);
+    check(`[public-identity] ${question} does not collide with an exact fact`, response.body.exactFact ?? null, null);
+    ok(`[public-identity] ${question} receives the canonical identity context`,
+      state.prompts.at(-1).includes(AJOOP_PUBLIC_IDENTITY.site)
+        && state.prompts.at(-1).includes(AJOOP_PUBLIC_IDENTITY.owner)
+        && state.prompts.at(-1).includes("not retrieved portfolio evidence"));
+    ok(`[public-identity] ${question} gets an environment-aware answer`, answerSignal.test(response.body.answer));
+    check(`[public-identity] ${question} adds exactly one prompt`, state.prompts.length - before.prompts, 1);
+  }
+  ok("[public-identity-live-contract] prompt states the current hard no-live boundary",
+    state.prompts.at(-1).includes("No web or live/current-data access is available in this public path."));
+  ok("[public-identity-live-contract] prompt has no hypothetical future capability escape",
+    !state.prompts.at(-1).includes("unless an explicit verified capability"));
+}
+
+{
+  const { rag } = await makeRag();
+  for (const question of [
+    "Bu site hangi teknolojilerle geliştirildi?",
+    "Bu site ile SINAMA'yı karşılaştır.",
+    "Bu site mobil uyumlu mu?",
+    "Kaan burada ne yapabilir?",
+    "Kimin sitesini önerirsin?",
+    "Kaan bu chatbot hakkında ne biliyor?",
+    "Bu site kimin tarafından geliştirildi?",
+    "Kaan'ı işe alırsak burada neler yapabiliriz?",
+    "Bu chatbot Kaan'ın eksikleri hakkında ne biliyor?",
+    "Burada Kaan ile ne yapabiliriz?",
+    "Burada SINAMA ile ne yapabilirim?",
+    "Burada ne yapabilirim, SINAMA'yı anlatır mısın?",
+    "Bu chatbot ne biliyor ve SINAMA nedir?",
+    "AJOOP ne ile geliştirildi, bilgi verir misin?",
+    "AJOOP projesinde ne bilinmesi gerekiyor?",
+    "SINAMA hangi modeli kullanıyor?",
+  ]) {
+    const response = await ask(rag, question, "tr");
+    ok(`[public-identity-negative] ${question} does not select SELF mode`,
+      response.body.answerMode !== ANSWER_MODES.SELF);
+  }
+}
+
+{
+  const closureCases = [
+    ["Kaan'ı işe alırsak burada neler yapabiliriz?", ANSWER_MODES.RECRUITER_FIT],
+    ["Bu chatbot Kaan'ın eksikleri hakkında ne biliyor?", ANSWER_MODES.RECRUITER_GAPS],
+    ["Burada Kaan ile ne yapabiliriz?", ANSWER_MODES.PORTFOLIO_FACT],
+    ["Burada SINAMA ile ne yapabilirim?", ANSWER_MODES.PORTFOLIO_PROJECT],
+    ["Burada ne yapabilirim, SINAMA'yı anlatır mısın?", ANSWER_MODES.PORTFOLIO_PROJECT],
+    ["Bu chatbot ne biliyor ve SINAMA nedir?", ANSWER_MODES.PORTFOLIO_PROJECT],
+    ["AJOOP ne ile geliştirildi, bilgi verir misin?", ANSWER_MODES.PORTFOLIO_PROJECT],
+    ["AJOOP projesinde ne bilinmesi gerekiyor?", ANSWER_MODES.PORTFOLIO_PROJECT],
+    ["SINAMA hangi modeli kullanıyor?", ANSWER_MODES.PORTFOLIO_PROJECT],
+  ];
+  const { rag, state } = await makeRag();
+  for (const [question, expectedMode] of closureCases) {
+    const before = { embed: state.embed, chat: state.chat };
+    const response = await ask(rag, question, "tr");
+    check(`[public-identity-closure] ${question} preserves its portfolio scope`,
+      response.body.scope, "portfolio");
+    check(`[public-identity-closure] ${question} preserves its portfolio strategy`,
+      response.body.answerMode, expectedMode);
+    check(`[public-identity-closure] ${question} performs one retrieval`,
+      state.embed - before.embed, 1);
+    check(`[public-identity-closure] ${question} performs one generation`,
+      state.chat - before.chat, 1);
+    ok(`[public-identity-closure] ${question} exposes portfolio sources`, response.body.sources.length > 0);
+    ok(`[public-identity-closure] ${question} exposes portfolio evidence`, response.body.evidence.length > 0);
+  }
+}
+
+{
+  const portfolioQuestion = "SINAMA'yı anlat.";
+  const identityQuestions = [
+    "Peki burada ne yapabiliyorsun?",
+    "Peki sen ne yapabiliyorsun burada?",
+    "Peki sen kimsin ya?",
+    "Peki sen kimsin ve ne yapabiliyorsun?",
+    "Peki internete erişimin var mı hiç?",
+    "Peki ben neredeyim?",
+    "Peki biz neredeyiz?",
+    "Peki şimdi neredeyim?",
+    "Peki burası tam olarak neresi?",
+    "Peki nerelisin?",
+    "Peki konumun ne?",
+  ];
+  const identityAnswer = "Kaan Balcı'nın kişisel portföyü olan kaanbalci.com'dasın; ben buradaki AJOOP asistanıyım.";
+  const { rag, state } = await makeRag(({ prompt }) => identityQuestions.some((question) =>
+    prompt.includes(`Current question: ${question}`))
+    ? ` GENERAL\nANSWER: ${identityAnswer}`
+    : " PORTFOLIO\nANSWER: SINAMA, Kaan'ın portföyündeki AI destekli bir proje.");
+  const portfolio = await ask(rag, portfolioQuestion, "tr");
+  const history = [
+    { role: "user", content: portfolioQuestion },
+    { role: "assistant", content: portfolio.body.answer },
+  ];
+  ok("[public-identity-discourse] setup establishes portfolio referents",
+    portfolio.body.conversationState.referents.length > 0);
+  for (const identityQuestion of identityQuestions) {
+    const before = { embed: state.embed, chat: state.chat };
+    const identity = await ask(
+      rag,
+      identityQuestion,
+      "tr",
+      history,
+      portfolio.body.conversationState,
+    );
+    check(`[public-identity-discourse] ${identityQuestion} uses SELF mode`,
+      identity.body.answerMode, ANSWER_MODES.SELF);
+    check(`[public-identity-discourse] ${identityQuestion} opens a GENERAL boundary`,
+      identity.body.scope, "general");
+    check(`[public-identity-discourse] ${identityQuestion} performs no portfolio retrieval`,
+      state.embed - before.embed, 0);
+    check(`[public-identity-discourse] ${identityQuestion} performs one generation`,
+      state.chat - before.chat, 1);
+    check(`[public-identity-discourse] ${identityQuestion} clears portfolio referents`,
+      identity.body.conversationState.referents.length, 0);
+    check(`[public-identity-discourse] ${identityQuestion} exposes no sources`,
+      identity.body.sources.length, 0);
+    check(`[public-identity-discourse] ${identityQuestion} exposes no evidence`,
+      identity.body.evidence.length, 0);
+    check(`[public-identity-discourse] ${identityQuestion} does not collide with an exact fact`,
+      identity.body.exactFact ?? null, null);
+  }
+}
+
+{
+  const { rag, state } = await makeRag();
+  for (const [question, exactFact] of [
+    ["Kaan nerede?", "identity:location"],
+    ["Kaan nerede yaşıyor?", "identity:location"],
+    ["Kaan'ın konumu ne?", "identity:location"],
+    ["Kaan'ın şehri ne?", null],
+    ["Kaan'ın memleketi neresi?", "identity:location"],
+  ]) {
+    const before = { embed: state.embed, chat: state.chat };
+    const response = await ask(rag, question, "tr");
+    check(`[public-identity-location] ${question} remains PORTFOLIO`, response.body.scope, "portfolio");
+    check(`[public-identity-location] ${question} remains a portfolio fact question`,
+      response.body.answerMode, ANSWER_MODES.PORTFOLIO_FACT);
+    check(`[public-identity-location] ${question} preserves current exact-fact support`,
+      response.body.exactFact ?? null, exactFact);
+    if (exactFact) {
+      check(`[public-identity-location] ${question} performs no embedding`, state.embed - before.embed, 0);
+      check(`[public-identity-location] ${question} performs no generation`, state.chat - before.chat, 0);
+      ok(`[public-identity-location] ${question} exposes its canonical source`, response.body.sources.length > 0);
+      ok(`[public-identity-location] ${question} exposes its canonical evidence`, response.body.evidence.length > 0);
+    }
+  }
+}
+
+{
+  const { rag, state } = await makeRag();
+  const before = { embed: state.embed, chat: state.chat };
+  const response = await ask(rag, "Neredeyim, bana bilgi verir misin?", "tr");
+  check("[public-identity-location-collision] unsupported first-person wording stays GENERAL",
+    response.body.scope, "general");
+  check("[public-identity-location-collision] unsupported first-person wording does not become SELF",
+    response.body.answerMode, ANSWER_MODES.GENERAL);
+  check("[public-identity-location-collision] first-person morphology blocks the Kaan location fact",
+    response.body.exactFact ?? null, null);
+  check("[public-identity-location-collision] blocked exact fact performs no portfolio retrieval",
+    state.embed - before.embed, 0);
+  check("[public-identity-location-collision] safe GENERAL path performs one generation",
+    state.chat - before.chat, 1);
+  check("[public-identity-location-collision] blocked exact fact exposes no sources",
+    response.body.sources.length, 0);
+  check("[public-identity-location-collision] blocked exact fact exposes no evidence",
+    response.body.evidence.length, 0);
+
+  const nounBefore = { embed: state.embed, chat: state.chat };
+  const nounForm = await ask(rag, "Konumun ne, bilgi verir misin?", "tr");
+  check("[public-identity-location-collision] second-person location noun stays GENERAL",
+    nounForm.body.scope, "general");
+  check("[public-identity-location-collision] unsupported noun wording does not become SELF",
+    nounForm.body.answerMode, ANSWER_MODES.GENERAL);
+  check("[public-identity-location-collision] second-person noun morphology blocks the Kaan location fact",
+    nounForm.body.exactFact ?? null, null);
+  check("[public-identity-location-collision] blocked noun exact fact performs no portfolio retrieval",
+    state.embed - nounBefore.embed, 0);
+  check("[public-identity-location-collision] safe noun GENERAL path performs one generation",
+    state.chat - nounBefore.chat, 1);
+  check("[public-identity-location-collision] blocked noun exact fact exposes no sources",
+    nounForm.body.sources.length, 0);
+  check("[public-identity-location-collision] blocked noun exact fact exposes no evidence",
+    nounForm.body.evidence.length, 0);
+
+  const addressedBefore = { embed: state.embed, chat: state.chat };
+  const addressed = await ask(rag, "Neredeyim, Kaan'a söyler misin?", "tr");
+  check("[public-identity-location-collision] incidental owner mention cannot license the location fact",
+    addressed.body.exactFact ?? null, null);
+  check("[public-identity-location-collision] incidental owner mention uses ordinary retrieval",
+    state.embed - addressedBefore.embed, 1);
+  check("[public-identity-location-collision] incidental owner mention uses ordinary generation",
+    state.chat - addressedBefore.chat, 1);
+}
+
+{
+  const { rag } = await makeRag();
+  const admitQuestion = async (question) => rag.admit({
+    method: "POST",
+    origin: ORIGIN,
+    contentType: "application/json",
+    body: JSON.stringify({ version: 1, mode: "rag", question, locale: "tr", history: [] }),
+  });
+  const imperative = await admitQuestion("Python nedir? Portfolyoyla bağlama.");
+  ok("[public-identity-reset] clause-final negative imperative is admitted", imperative.ok);
+  check("[public-identity-reset] clause-final negative imperative creates a general reset",
+    imperative.discourse.explicitGeneralReset, true);
+  imperative.release();
+
+  for (const question of [
+    "AJOOP'un portfolyo bağlama mantığını anlat.",
+    "AJOOP'ta portfolyo bağlama.",
+    "Portfolyo bağlama.",
+  ]) {
+    const nounUse = await admitQuestion(question);
+    ok(`[public-identity-reset] noun use is admitted: ${question}`, nounUse.ok);
+    check(`[public-identity-reset] noun use is not a general reset: ${question}`,
+      nounUse.discourse.explicitGeneralReset, false);
+    nounUse.release();
+  }
+}
+
+{
+  const { rag, state } = await makeRag(() =>
+    " PORTFOLIO\nANSWER: Kaan Balcı, yapay zekâ ürünleri ve yazılım projeleri geliştiren portföy sahibidir.");
+  const response = await ask(rag, "Kaan kim?", "tr");
+  check("[public-identity] Kaan kim remains PORTFOLIO", response.body.scope, "portfolio");
+  ok("[public-identity] Kaan kim does not collapse into SELF mode", response.body.answerMode !== ANSWER_MODES.SELF);
+  check("[public-identity] Kaan kim performs portfolio retrieval", state.embed - state.initEmbed, 1);
+  ok("[public-identity] Kaan kim exposes canonical evidence", response.body.sources.length > 0 && response.body.evidence.length > 0);
+}
+
+{
+  const identityQuestion = "Sen kimsin?";
+  const identityAnswer = "Ben AJOOP, Kaan Balcı'nın kişisel portföyündeki kamuya açık asistanım.";
+  const { rag, state } = await makeRag(({ prompt }) => prompt.includes("Current question: Python nedir?")
+    ? " GENERAL\nANSWER: Python, genel amaçlı ve yüksek seviyeli bir programlama dilidir."
+    : ` GENERAL\nANSWER: ${identityAnswer}`);
+  const identity = await ask(rag, identityQuestion, "tr");
+  const history = [
+    { role: "user", content: identityQuestion },
+    { role: "assistant", content: identity.body.answer },
+  ];
+  const before = { embed: state.embed, chat: state.chat };
+  const general = await ask(
+    rag,
+    "Python nedir? Portfolyoyla bağlama.",
+    "tr",
+    history,
+    identity.body.conversationState,
+  );
+  check("[public-identity-boundary] unrelated follow-up remains GENERAL", general.body.scope, "general");
+  check("[public-identity-boundary] unrelated follow-up uses GENERAL mode", general.body.answerMode, ANSWER_MODES.GENERAL);
+  check("[public-identity-boundary] unrelated follow-up performs no retrieval", state.embed - before.embed, 0);
+  check("[public-identity-boundary] unrelated follow-up performs one generation", state.chat - before.chat, 1);
+  check("[public-identity-boundary] unrelated follow-up exposes no sources", general.body.sources.length, 0);
+  check("[public-identity-boundary] unrelated follow-up exposes no evidence", general.body.evidence.length, 0);
+  ok("[public-identity-boundary] persistent identity context remains available without changing GENERAL scope",
+    state.prompts.at(-1).includes(AJOOP_PUBLIC_IDENTITY.site)
+      && state.prompts.at(-1).includes("An unrelated general question remains GENERAL"));
+  ok("[public-identity-boundary] unrelated answer does not mention portfolio identity",
+    !/Kaan|AJOOP|portföy/i.test(general.body.answer));
+}
+
+{
+  const identityQuestion = "Sen kimsin?";
+  const identityAnswer = "Ben AJOOP, Kaan Balcı'nın kişisel portföyündeki kamuya açık asistanım.";
+  const { rag, state } = await makeRag(() => ` GENERAL\nANSWER: ${identityAnswer}`);
+  const identity = await ask(rag, identityQuestion, "tr");
+  const history = [
+    { role: "user", content: identityQuestion },
+    { role: "assistant", content: identity.body.answer },
+  ];
+  const before = { embed: state.embed, chat: state.chat };
+  const live = await ask(
+    rag,
+    "Bugün İstanbul'da hava nasıl?",
+    "tr",
+    history,
+    identity.body.conversationState,
+  );
+  check("[public-identity-live] live-data follow-up remains GENERAL", live.body.scope, "general");
+  check("[public-identity-live] live-data guard remains deterministic", live.body.generationAttempts, 0);
+  check("[public-identity-live] live-data follow-up performs no retrieval", state.embed - before.embed, 0);
+  check("[public-identity-live] live-data follow-up performs no generation", state.chat - before.chat, 0);
+  check("[public-identity-live] live-data follow-up exposes no sources", live.body.sources.length, 0);
+  check("[public-identity-live] live-data follow-up exposes no evidence", live.body.evidence.length, 0);
 }
 
 {

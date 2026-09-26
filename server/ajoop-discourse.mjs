@@ -7,6 +7,7 @@
  * the bounded history independently supports every canonical public entity.
  */
 import { foldQuestion, hasPhrase, tokenize } from "./ajoop-text.mjs";
+import { isPublicIdentityQuestion } from "./ajoop-public-identity.mjs";
 import { mentionsPortfolioOwner, resolveEntities } from "./ajoop-entities.mjs";
 
 export const PUBLIC_DISCOURSE_STATE_VERSION = 1;
@@ -135,7 +136,8 @@ function requestedOperation(text, shape, depth) {
 }
 
 function explicitGeneralReset(text) {
-  return phrases(text, [
+  const portfolioWithoutConnection = /(?:^|\s)portfolyo(?:yla|ya) baglama$/.test(text);
+  return portfolioWithoutConnection || phrases(text, [
     "portfolyoyla baglamadan", "portfolyoya baglamadan", "portfolyodan bagimsiz",
     "without linking it to the portfolio", "without the portfolio", "not about the portfolio",
   ]);
@@ -232,7 +234,7 @@ function turnStructure(question, entityIndex) {
   const explicitReset = explicitGeneralReset(cues.text);
   const localCurrentReference = currentEntities.length > 0
     && (references.localPossessive || (!comparisonRequested && references.singularAfterEntity));
-  const fresh = explicitReset || ownerOverview
+  const fresh = isPublicIdentityQuestion(question) || explicitReset || ownerOverview
     || (explicitReferents.length > 0 && !mixedSingular)
     || localCurrentReference
     || (!hasStructuralReference && (currentEntities.length > 0 || !cues.continuation));
