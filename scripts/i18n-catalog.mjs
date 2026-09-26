@@ -7,7 +7,7 @@
  *
  * Domains
  *   ui          stable-key shell copy          data/i18n/ui.json
- *   pages       authored HTML copy             legacy phrase dictionaries + data-*-en pairs
+ *   pages       authored HTML/runtime copy     Turkish pages pack + data-*-en pairs
  *   caseStudies case-study key maps            *-case-study.data.js
  *   projects    canonical project overlays     data/portfolio/project-details.json
  *   content     remaining canonical copy       data/portfolio/*.json
@@ -150,24 +150,21 @@ export function indexableRoutes(registry = loadProjectRegistry()) {
   ];
 }
 
-/* ---------- legacy phrase dictionaries ---------- */
+/* ---------- authored page-copy source ---------- */
 
 /**
- * Reads the EN->TR compatibility dictionaries out of js/core/i18n.js without a
- * DOM. The file's runtime tail needs `document`, so evaluation stops at the
- * first function that touches it.
+ * Page copy is keyed by its English source phrase. Turkish is the canonical
+ * authored value for this historical surface; other locales mirror the same
+ * keys. Keeping it in the pack source means the browser receives only the
+ * current locale's scoped runtime subset, never the full compatibility corpus.
  */
-export function loadLegacyDictionaries() {
-  const source = read("js/core/i18n.js");
-  const cut = source.indexOf("function hasLegacyTextTranslation");
-  if (cut < 0) throw new Error("js/core/i18n.js no longer ends its data section with hasLegacyTextTranslation");
-  const sandbox = { window: {}, document: {}, console };
-  vm.createContext(sandbox);
-  vm.runInContext(
-    `${source.slice(0, cut)}\nglobalThis.__dictionaries = { text: i18nTranslations, attribute: i18nAttributeTranslations, title: i18nTitleTranslations };`,
-    sandbox,
-  );
-  return sandbox.__dictionaries;
+export function loadPageSources() {
+  const pages = readJson("data/i18n/packs/tr/pages.json");
+  return {
+    text: { tr: pages.text || {} },
+    attribute: { tr: pages.attribute || {} },
+    title: { tr: pages.title || {} },
+  };
 }
 
 /* ---------- feature-module copy literals ---------- */
@@ -467,8 +464,8 @@ export function documentAttributeStrings(file) {
  * single page that still translates at runtime.
  */
 export function runtimeTextSources() {
-  const dictionaries = loadLegacyDictionaries();
-  const translated = (value) => dictionaries.text.tr[value] !== undefined;
+  const pageSources = loadPageSources();
+  const translated = (value) => pageSources.text.tr[value] !== undefined;
   return [
     ...new Set([
       ...inlinePairs().keys(),
@@ -481,16 +478,16 @@ export function runtimeTextSources() {
 
 /** Attribute phrases the English root 404 must translate after a failed URL. */
 export function runtimeAttributeSources() {
-  const dictionaries = loadLegacyDictionaries();
-  const translated = (value) => dictionaries.attribute.tr[value] !== undefined;
+  const pageSources = loadPageSources();
+  const translated = (value) => pageSources.attribute.tr[value] !== undefined;
   return documentAttributeStrings("404.html").filter(translated).sort(compareKeys);
 }
 
 /** Every English string the runtime can resolve through the `text` dictionary. */
-export function pageTextSources(dictionaries = loadLegacyDictionaries()) {
+export function pageTextSources(pageSources = loadPageSources()) {
   return [
     ...new Set([
-      ...Object.keys(dictionaries.text.tr),
+      ...Object.keys(pageSources.text.tr),
       ...compatAttributeStrings(),
       ...inlinePairs().keys(),
     ]),
@@ -651,7 +648,7 @@ export function loadPack(locale) {
 export function buildCatalog() {
   const registry = loadRegistry();
   const projects = loadProjectRegistry();
-  const dictionaries = loadLegacyDictionaries();
+  const pageSources = loadPageSources();
   const entries = [];
 
   /* An empty English source has nothing to translate — Ajoop's blank subtitle
@@ -665,14 +662,14 @@ export function buildCatalog() {
   const ui = readJson("data/i18n/ui.json");
   for (const key of Object.keys(ui).sort()) push("ui", key, ui[key].en);
 
-  /* pages: the three runtime phrase dictionaries, keyed by English source.
+  /* pages: authored page-copy maps keyed by English source.
    *
    * `text` is the widest surface: the DOM text-node walker, every compat
    * `data-*-en` attribute pair and every inline `lt("English", "Türkçe")` call
    * all resolve through it, so they share one key space rather than three. */
-  for (const key of pageTextSources(dictionaries).sort(compareKeys)) push("pages", `text:${key}`, key);
-  for (const key of Object.keys(dictionaries.attribute.tr).sort(compareKeys)) push("pages", `attribute:${key}`, key);
-  for (const key of Object.keys(dictionaries.title.tr).sort(compareKeys)) push("pages", `title:${key}`, key);
+  for (const key of pageTextSources(pageSources).sort(compareKeys)) push("pages", `text:${key}`, key);
+  for (const key of Object.keys(pageSources.attribute.tr).sort(compareKeys)) push("pages", `attribute:${key}`, key);
+  for (const key of Object.keys(pageSources.title.tr).sort(compareKeys)) push("pages", `title:${key}`, key);
 
   /* case studies */
   for (const file of CASE_STUDY_DATA_FILES) {

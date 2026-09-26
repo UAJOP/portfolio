@@ -22,7 +22,6 @@ import {
   buildCatalog,
   loadRegistry,
   loadProjectRegistry,
-  loadLegacyDictionaries,
   indexableRoutes,
   metadataRoutes,
   projectSlugs,
@@ -267,6 +266,11 @@ for (const domain of DERIVED_TR_DOMAINS) {
   );
 }
 assert(exists("data/i18n/packs/tr/meta.json"), "Turkish page metadata is authored, not derived, and must exist");
+assert(exists("data/i18n/packs/tr/pages.json"), "Turkish page copy is authored, not derived, and must exist");
+assert(
+  Object.keys(readJson("data/i18n/packs/tr/pages.json").text || {}).length >= 700,
+  "authored Turkish page-copy source must retain the complete historical surface",
+);
 
 /* ---------- 8. generated runtime artefacts ---------- */
 
@@ -567,7 +571,6 @@ function collectInLanguage(node, out = []) {
 
 /* ---------- 13. localized copy really is localized ---------- */
 
-const dictionaries = loadLegacyDictionaries();
 for (const locale of readyLocales) {
   const pack = loadAuthoredPack(locale);
   const prefix = registry.byId.get(locale).routePrefix;

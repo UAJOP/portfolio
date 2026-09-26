@@ -41,8 +41,16 @@ ok("compact i18n runtime stays below 3 KB gzip", runtimeGzip <= 3_000, `${runtim
 
 const legacyRaw = raw(LEGACY);
 const legacyGzip = gzip(LEGACY);
-ok("legacy dictionary is materially larger than browser runtime", legacyRaw > runtimeRaw * 5);
-ok("browser avoids at least 15 KB gzip of legacy i18n", legacyGzip - runtimeGzip >= 15_000, `${legacyGzip - runtimeGzip} B`);
+/* The historical EN/TR phrase dictionaries are retired: Turkish page copy is
+ * authored in data/i18n/packs/tr/pages.json and the browser reads scoped packs.
+ * Guard against the dictionaries returning through the build-only legacy
+ * module, the browser runtime or the locale authority. */
+for (const file of [LEGACY, RUNTIME, "js/core/locale.js"]) {
+  const source = text(file);
+  for (const symbol of ["i18nTranslations", "i18nAttributeTranslations", "i18nTitleTranslations"]) {
+    ok(`${file} does not declare or read retired ${symbol}`, !source.includes(symbol));
+  }
+}
 
 const chainRaw = I18N_CHAIN.reduce((sum, file) => sum + raw(file), 0);
 const chainGzip = I18N_CHAIN.reduce((sum, file) => sum + gzip(file), 0);

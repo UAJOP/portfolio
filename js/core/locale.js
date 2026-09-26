@@ -265,17 +265,14 @@ function getUiText(key, locale = currentSiteLanguage) {
 }
 
 /** Existing bilingual strings can use this compatibility helper without
- * creating another language-state branch. Locale packs supply every locale
- * beyond the inline English/Turkish pair without touching feature code. */
+ * creating another language-state branch. Scoped locale packs supply every
+ * locale beyond the inline English/Turkish pair. */
 function getI18nText(english, turkish, locale = currentSiteLanguage) {
   const activeLocale = renderableLocaleId(locale);
   if (activeLocale === "en") return english;
   const packed = getPackPhrase(english, activeLocale);
   if (packed) return packed;
   if (activeLocale === "tr" && turkish !== undefined) return turkish;
-  if (typeof i18nTranslations !== "undefined") {
-    return i18nTranslations[activeLocale]?.[english] || english;
-  }
   return english;
 }
 

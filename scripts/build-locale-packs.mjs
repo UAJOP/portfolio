@@ -7,11 +7,12 @@
  * data/portfolio/ and are composed in at render time.
  *
  * Turkish is special: complete TR copy already exists across the runtime
- * (phrase dictionaries, case-study data files, canonical JSON, feature module
+ * (case-study data files, canonical JSON, feature module
  * `tr` branches). Rather than copying it into a pack and creating a second
  * source of Turkish truth, those domains are DERIVED from the existing sources
- * and byte-checked by `qa:i18n`. Only `meta` is authored for TR, because
- * localized page metadata is a new surface with no prior source.
+ * and byte-checked by `qa:i18n`. `pages` and `meta` are authored for TR: the
+ * pages pack became the canonical home for historical page copy when the
+ * always-loaded runtime dictionary was retired.
  *
  * German, Spanish and French packs are authored in full.
  *
@@ -32,14 +33,10 @@ import {
   stableJson,
   buildCatalog,
   loadRegistry,
-  loadLegacyDictionaries,
   loadCaseStudyData,
   loadProjectRegistry,
   localizedNodes,
   projectSlugs,
-  compatAttributeStrings,
-  inlinePairs,
-  pageTextSources,
   indexableRoutes,
   packDir,
   packFile,
@@ -53,8 +50,6 @@ import {
   PROJECT_LIST_FIELDS,
   PROJECT_STEP_FIELDS,
   META_FIELDS,
-  COMPAT_ATTRIBUTE_PAIRS,
-  decodeAttribute,
   CONTENT_REGISTRY_KEYS,
   isNeutralDynamicKey,
   loadDynamicSurface,
@@ -64,42 +59,9 @@ import {
 export const PACK_DOMAIN_FILES = ["ui", "pages", "case-studies", "projects", "content", "dynamic", "meta"];
 
 /** Domains whose Turkish content is projected from an existing canonical source. */
-export const DERIVED_TR_DOMAINS = ["ui", "pages", "case-studies", "projects", "content", "dynamic"];
+export const DERIVED_TR_DOMAINS = ["ui", "case-studies", "projects", "content", "dynamic"];
 
 /* ---------- Turkish derivation ---------- */
-
-/** Turkish side of every compat `data-*-en` / `data-*-tr` attribute pair. */
-function compatTurkish() {
-  const map = new Map();
-  for (const file of fs.readdirSync(ROOT).filter((name) => name.endsWith(".html")).sort()) {
-    const html = read(file);
-    for (const { prefix } of COMPAT_ATTRIBUTE_PAIRS) {
-      const pattern = new RegExp(`${prefix}-en="([^"]*)"[^>]*?${prefix}-tr="([^"]*)"|${prefix}-tr="([^"]*)"[^>]*?${prefix}-en="([^"]*)"`, "g");
-      for (const match of html.matchAll(pattern)) {
-        const english = decodeAttribute(match[1] ?? match[4] ?? "");
-        const turkish = decodeAttribute(match[2] ?? match[3] ?? "");
-        if (english.trim() && turkish.trim()) map.set(english, turkish);
-      }
-    }
-  }
-  return map;
-}
-
-function deriveTurkishPages() {
-  const dictionaries = loadLegacyDictionaries();
-  const text = {};
-  const compat = compatTurkish();
-  const inline = inlinePairs();
-  for (const source of pageTextSources(dictionaries).sort(compareKeys)) {
-    const value = dictionaries.text.tr[source] ?? compat.get(source) ?? inline.get(source);
-    if (value !== undefined) text[source] = value;
-  }
-  const attribute = {};
-  for (const key of Object.keys(dictionaries.attribute.tr).sort(compareKeys)) attribute[key] = dictionaries.attribute.tr[key];
-  const title = {};
-  for (const key of Object.keys(dictionaries.title.tr).sort(compareKeys)) title[key] = dictionaries.title.tr[key];
-  return { text, attribute, title };
-}
 
 function deriveTurkishCaseStudies() {
   const out = {};
@@ -208,7 +170,6 @@ function deriveTurkishUi() {
 export function deriveTurkishPack() {
   return {
     ui: deriveTurkishUi(),
-    pages: deriveTurkishPages(),
     "case-studies": deriveTurkishCaseStudies(),
     projects: deriveTurkishProjects(),
     content: deriveTurkishContent(),
