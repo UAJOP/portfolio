@@ -1299,6 +1299,53 @@ body.overlay-modal-open {
   color: var(--muted-2);
   font-size: 14px;
 }
+.copyright a {
+  margin-left: 14px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.copyright a:hover {
+  color: var(--brand);
+}
+.page-hero .privacy-updated {
+  margin-top: 12px;
+  color: var(--muted-2);
+  font-size: 15px;
+}
+.privacy-policy {
+  padding-bottom: 20px;
+}
+.privacy-policy > * {
+  max-width: 820px;
+}
+.privacy-policy h2 {
+  margin-top: 42px;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 800;
+}
+.privacy-policy p,
+.privacy-policy li {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.7;
+}
+.privacy-policy p,
+.privacy-policy ul {
+  margin-top: 14px;
+}
+.privacy-policy ul {
+  padding-left: 20px;
+}
+.privacy-policy li + li {
+  margin-top: 10px;
+}
+.privacy-policy a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
 .reveal {
   animation: fadeUp 0.8s ease both;
 }

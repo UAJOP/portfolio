@@ -89,6 +89,12 @@
     "ogTitle": "Now / Build Log | Kaan Balcı",
     "title": "Now / Build Log | Kaan Balcı"
   },
+  "privacy": {
+    "description": "kaanbalci.com'un ve AI asistanı AJOOP'un verileri nasıl ele aldığı; yalnızca site sahibinin kullandığı, salt okunur Google ve GitHub bağlayıcıları dahil.",
+    "ogDescription": "kaanbalci.com'un ve AI asistanı AJOOP'un verileri nasıl ele aldığı; yalnızca site sahibinin kullandığı, salt okunur Google ve GitHub bağlayıcıları dahil.",
+    "ogTitle": "Gizlilik Politikası | Kaan Balcı",
+    "title": "Gizlilik Politikası | Kaan Balcı"
+  },
   "projectShell": {
     "description": "Kaan Balcı portfolyo arşivindeki projeler için detaylı proje vaka çalışması sayfası.",
     "ogDescription": "Kaan Balcı portfolyo arşivindeki projeler için detaylı proje vaka çalışması sayfası.",

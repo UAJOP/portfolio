@@ -80,6 +80,7 @@ export const STATIC_ROUTES = [
   { page: "adventure.html", changefreq: "monthly", priority: "0.5", source: "adventure.html", id: "adventure" },
   { page: "joyday-paint.html", changefreq: "monthly", priority: "0.5", source: "joyday-paint.html", id: "joydayPaint" },
   { page: "ai-flow-puzzle.html", changefreq: "monthly", priority: "0.5", source: "ai-flow-puzzle.html", id: "aiFlowPuzzle" },
+  { page: "privacy.html", changefreq: "yearly", priority: "0.3", source: "privacy.html", id: "privacy" },
 ];
 
 /**

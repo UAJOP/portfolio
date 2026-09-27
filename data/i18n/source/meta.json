@@ -101,6 +101,12 @@
     "ogTitle": "AI Flow Puzzle | Kaan Balcı",
     "ogDescription": "An n8n-inspired portfolio mini game where users build chatbot automation flows by connecting nodes."
   },
+  "privacy": {
+    "title": "Privacy Policy | Kaan Balcı",
+    "description": "How kaanbalci.com and its AI assistant AJOOP handle data, including the owner-only, read-only Google and GitHub connectors.",
+    "ogTitle": "Privacy Policy | Kaan Balcı",
+    "ogDescription": "How kaanbalci.com and its AI assistant AJOOP handle data, including the owner-only, read-only Google and GitHub connectors."
+  },
   "notFound": {
     "title": "404 | Kaan Balcı",
     "description": "404 page for Kaan Balcı portfolio.",
