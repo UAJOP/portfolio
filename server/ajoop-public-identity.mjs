@@ -18,6 +18,15 @@ export const AJOOP_PUBLIC_IDENTITY_SYSTEM_LINES = Object.freeze([
   "No web or live/current-data access is available in this public path. Never imply otherwise; state this limitation plainly when relevant, and never reveal private infrastructure details.",
 ]);
 
+/* Ordinary portfolio turns keep the short pre-A5.3.3 identity. With the six
+ * canonical lines above on every turn, the 4B model changed the shape of
+ * grounded portfolio answers (longer stack lists, an owner-first employer
+ * list), so the full context is reserved for turns that need it. */
+export const AJOOP_COMPACT_IDENTITY_SYSTEM_LINE =
+  `You are ${AJOOP_PUBLIC_IDENTITY.assistant}, the AI copilot built into ${AJOOP_PUBLIC_IDENTITY.owner}'s portfolio website.`;
+export const AJOOP_COMPACT_BOUNDARY_SYSTEM_LINE =
+  "You run locally and have no web or live-data access. Never claim otherwise or reveal private infrastructure details.";
+
 const SELF_IDENTITY_PHRASES = Object.freeze([
   "sen kimsin", "adin ne", "adın ne", "ne yapabiliyorsun", "hangi model", "internete erisimin", "internete erişimin",
   "who are you", "what is your name", "what can you do", "which model", "internet access",
@@ -137,6 +146,26 @@ export function isPublicIdentityQuestion(question) {
   const tokens = tokenize(foldQuestion(question));
   const words = NEUTRAL_LEADING_DISCOURSE_MARKERS.has(tokens[0]) ? tokens.slice(1) : tokens;
   return basicPublicIdentityFrame(words) || coordinatedIdentityFrames(words);
+}
+
+const ASSISTANT_REFERENCE = /^(?:ajoop\w*|chatbot\w*|asistan\w*|assistant\w*|sen|senin|sana|seni|sende|senden|your|yourself)$/;
+const ENVIRONMENT_REFERENCE = /^(?:burasi|burada|buradaki|here)$/;
+
+/**
+ * Whether a generation turn needs the full canonical identity context: GENERAL
+ * turns (identity/SELF answers and the public/general boundary) and portfolio
+ * turns that refer to the assistant itself, to "this site"/"here", or use a
+ * first/second-person location form where the assistant and Kaan can be
+ * confused. Every other portfolio turn uses the compact identity.
+ */
+export function requiresPublicIdentityContext({ question, expectedScope }) {
+  if (expectedScope !== "PORTFOLIO") return true;
+  const words = tokenize(foldQuestion(question));
+  return words.some((word, index) => ASSISTANT_REFERENCE.test(word)
+    || ENVIRONMENT_REFERENCE.test(word)
+    || isFirstSecondPersonLocationForm(word)
+    || (word === "you" && (words[index - 1] === "are" || words[index + 1] === "are"))
+    || (/^(?:bu|this)$/.test(word) && /^(?:site\w*|website\w*)$/.test(words[index + 1] || "")));
 }
 
 export function publicIdentityAnswerInstruction() {

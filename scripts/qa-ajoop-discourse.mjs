@@ -453,6 +453,32 @@ check("[ordered-org] ordinal selects canonical organization", experienceOrdinal.
   check("[ordered-org-chain] following ordinal selects CBOT", selected.primaryReferent, "CBOT");
 }
 
+/* An employer list that opens on the portfolio owner ("Kaan Balcı, Ocean's
+ * Team, ...") is an organization collection. The owner is its subject, not its
+ * first item, and must not take a slot from the listed organizations. */
+{
+  const employersQuestion = "Kaan hangi şirketlerde çalıştı?";
+  const employerOrder = ["Ocean's Team", "Punto Organization", "Outlier AI", "CBOT"];
+  for (const answer of [
+    "Kaan Balcı, Ocean's Team, Punto Organization, Outlier AI, CBOT ve Atölye Joyday şirketlerinde çalıştı.",
+    "Ocean's Team, Punto Organization, Outlier AI, CBOT, Atölye Joyday",
+  ]) {
+    const initial = resolveTurn(employersQuestion);
+    const state = buildNextPublicConversationState({
+      resolvedTurn: initial, answer, scope: "PORTFOLIO", entityIndex, question: employersQuestion,
+    });
+    const history = [user(employersQuestion), bot(answer)];
+    for (const conversationState of [state, undefined]) {
+      const label = `${answer.slice(0, 12)} ${conversationState ? "with" : "without"} state`;
+      const first = resolveTurn("ilkinde ne yaptı?", history, conversationState);
+      check(`[owner-first-employers] ${label}: ilkinde selects the first employer`, first.primaryReferent, "Ocean's Team");
+      check(`[owner-first-employers] ${label}: owner never enters ordered referents`, first.orderedReferents.join("|"), employerOrder.join("|"));
+      check(`[owner-first-employers] ${label}: dördüncüsü keeps CBOT in the window`,
+        resolveTurn("dördüncüsünde ne yaptı?", history, conversationState).primaryReferent, "CBOT");
+    }
+  }
+}
+
 /* G. Explicit new topics beat any old browser state and preserve authority rules. */
 for (const question of [
   "Python nedir? Portfolyoyla bağlamadan kısa anlat.",

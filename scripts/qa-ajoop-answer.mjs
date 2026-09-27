@@ -24,7 +24,13 @@ import {
   validateGeneratedAnswer,
 } from "../server/ajoop-answer.mjs";
 import { createAjoopRag, parseScopedAnswer } from "../server/ajoop-rag.mjs";
-import { AJOOP_PUBLIC_IDENTITY } from "../server/ajoop-public-identity.mjs";
+import {
+  AJOOP_COMPACT_BOUNDARY_SYSTEM_LINE,
+  AJOOP_COMPACT_IDENTITY_SYSTEM_LINE,
+  AJOOP_PUBLIC_IDENTITY,
+  AJOOP_PUBLIC_IDENTITY_SYSTEM_LINES,
+  requiresPublicIdentityContext,
+} from "../server/ajoop-public-identity.mjs";
 
 let passed = 0;
 const failures = [];
@@ -1111,6 +1117,15 @@ ok("token-cut ending is rejected", validateGeneratedAnswer({
   parsed: valid("PORTFOLIO", "This otherwise plausible recruiter assessment was cut off before it could finish the final oper"),
   strategy: portfolioStrategy,
 }).flags.includes("incomplete-ending"));
+{
+  const stackList = "Merge Rush stacki: Phaser 3, TypeScript, Vite, Vitest, Responsive UI, Game State, Platform Adapter";
+  ok("a complete stack list the model ended itself is not an incomplete ending", validateGeneratedAnswer({
+    parsed: valid("PORTFOLIO", stackList), strategy: portfolioStrategy, doneReason: "stop",
+  }).ok);
+  ok("a num_predict cut is rejected even when it ends on a whole word", validateGeneratedAnswer({
+    parsed: valid("PORTFOLIO", stackList), strategy: portfolioStrategy, doneReason: "length",
+  }).flags.includes("incomplete-ending"));
+}
 ok("full English template in Turkish is rejected", validateGeneratedAnswer({
   parsed: valid("PORTFOLIO", "Worked with major models and completed tasks across projects, evaluated outputs and assessed quality."),
   strategy: portfolioStrategy,
@@ -1657,7 +1672,7 @@ const defaultReply = ({ prompt }) => {
   return ` ${scope}\nANSWER: This is a concise grounded answer.`;
 };
 
-const makeRag = async (reply = defaultReply) => {
+const makeRag = async (reply = defaultReply, { doneReason } = {}) => {
   const state = { embed: 0, chat: 0, built: false, prompts: [] };
   const fetchImpl = async (url, init) => {
     const body = JSON.parse(init.body);
@@ -1665,7 +1680,13 @@ const makeRag = async (reply = defaultReply) => {
       state.chat += 1;
       const prompt = body.messages.map((message) => message.content).join("\n");
       state.prompts.push(prompt);
-      return { ok: true, json: async () => ({ message: { content: reply({ state, prompt, body }) } }) };
+      return {
+        ok: true,
+        json: async () => ({
+          message: { content: reply({ state, prompt, body }) },
+          ...(doneReason ? { done_reason: doneReason } : {}),
+        }),
+      };
     }
     state.embed += 1;
     const query = state.built && body.input.length === 1;
@@ -1876,6 +1897,55 @@ for (const [question, locale, answer] of [
     state.prompts.at(-1).includes("No web or live/current-data access is available in this public path."));
   ok("[public-identity-live-contract] prompt has no hypothetical future capability escape",
     !state.prompts.at(-1).includes("unless an explicit verified capability"));
+}
+
+/* The full identity context is scoped. Ordinary portfolio turns keep the
+ * compact identity; identity, GENERAL-boundary, assistant-reference and
+ * assistant/Kaan location-ambiguity turns receive the canonical lines. */
+for (const [question, expectedScope, expected] of [
+  ["Merge Rush stacki ne?", "PORTFOLIO", false],
+  ["Kaan hangi şirketlerde çalıştı?", "PORTFOLIO", false],
+  ["ilkinde ne yaptı?", "PORTFOLIO", false],
+  ["Kaan nerede yaşıyor?", "PORTFOLIO", false],
+  ["Can you summarize SINAMA?", "PORTFOLIO", false],
+  ["Sen kimsin?", "GENERAL", true],
+  ["RAG nedir?", "GENERAL", true],
+  ["Sen Kaan mısın?", "PORTFOLIO", true],
+  ["Are you Kaan?", "PORTFOLIO", true],
+  ["Kaan İstanbul'da, sen neredesin?", "PORTFOLIO", true],
+  ["Bu site hangi teknolojilerle geliştirildi?", "PORTFOLIO", true],
+  ["Burada SINAMA ile ne yapabilirim?", "PORTFOLIO", true],
+  ["Bu chatbot Kaan'ın eksikleri hakkında ne biliyor?", "PORTFOLIO", true],
+]) {
+  check(`[identity-scope] ${question}`, requiresPublicIdentityContext({ question, expectedScope }), expected);
+}
+{
+  const { rag, state } = await makeRag();
+  const fullIdentity = (prompt) => AJOOP_PUBLIC_IDENTITY_SYSTEM_LINES.every((line) => prompt.includes(line));
+  const anyIdentityLine = (prompt) => AJOOP_PUBLIC_IDENTITY_SYSTEM_LINES.some((line) => prompt.includes(line));
+  await ask(rag, "Merge Rush stacki ne?", "tr");
+  const portfolioPrompt = state.prompts.at(-1);
+  ok("[identity-scope] portfolio generation keeps the compact identity",
+    portfolioPrompt.includes(AJOOP_COMPACT_IDENTITY_SYSTEM_LINE) && portfolioPrompt.includes(AJOOP_COMPACT_BOUNDARY_SYSTEM_LINE));
+  ok("[identity-scope] portfolio generation omits the canonical identity block", !anyIdentityLine(portfolioPrompt));
+  await ask(rag, "Sen kimsin?", "tr");
+  const selfPrompt = state.prompts.at(-1);
+  ok("[identity-scope] SELF generation receives the canonical identity block", fullIdentity(selfPrompt));
+  ok("[identity-scope] SELF generation has no duplicate compact identity",
+    !selfPrompt.includes(AJOOP_COMPACT_IDENTITY_SYSTEM_LINE) && !selfPrompt.includes(AJOOP_COMPACT_BOUNDARY_SYSTEM_LINE));
+  await ask(rag, "RAG nedir?", "tr");
+  ok("[identity-scope] GENERAL generation receives the canonical identity block", fullIdentity(state.prompts.at(-1)));
+}
+
+/* A stack list without a final period is complete when Ollama reports that
+ * the model stopped by itself, and still repaired when it hit num_predict. */
+for (const [doneReason, fallbackUsed] of [["stop", false], ["length", true]]) {
+  const stackList = "Merge Rush stacki: Phaser 3, TypeScript, Vite, Vitest, Responsive UI, Game State, Platform Adapter";
+  const { rag, state } = await makeRag(() => ` PORTFOLIO\nANSWER: ${stackList}`, { doneReason });
+  const response = await ask(rag, "Merge Rush stacki ne?", "tr");
+  check(`[done-reason] ${doneReason}: stack list fallback`, response.body.fallbackUsed, fallbackUsed);
+  check(`[done-reason] ${doneReason}: generation attempts`, state.chat, fallbackUsed ? 2 : 1);
+  if (!fallbackUsed) ok(`[done-reason] ${doneReason}: keeps the grounded stack list`, response.body.answer.includes("Platform Adapter"));
 }
 
 {

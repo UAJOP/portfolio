@@ -42,11 +42,11 @@ function aliasPosition(text, alias) {
 }
 
 /** Canonical public entities mentioned in textual order, never index order. */
-export function canonicalMentionsInOrder(value, entityIndex, { projectsOnly = false } = {}) {
+export function canonicalMentionsInOrder(value, entityIndex, { projectsOnly = false, types = REFERENT_TYPES } = {}) {
   const text = foldQuestion(value);
   if (!text || !entityIndex?.entities?.length) return [];
   return entityIndex.entities
-    .filter((entity) => (!projectsOnly || entity.type === "project") && REFERENT_TYPES.has(entity.type))
+    .filter((entity) => (!projectsOnly || entity.type === "project") && types.has(entity.type))
     .map((entity) => ({
       canonical: entity.canonical,
       position: Math.min(...entity.aliases.map((alias) => aliasPosition(text, alias))),
@@ -390,17 +390,24 @@ function nearestOrderedWorldReferentsInSegment(activeHistory, entityIndex) {
   return [];
 }
 
-function latestAssistantReferents(history, entityIndex) {
-  const answer = [...activeDiscourseHistory(history, entityIndex)].reverse()
+function latestAssistantAnswer(history, entityIndex) {
+  return [...activeDiscourseHistory(history, entityIndex)].reverse()
     .find((item) => item.role === "assistant")?.content || "";
-  return canonicalMentionsInOrder(answer, entityIndex);
 }
 
+function latestAssistantReferents(history, entityIndex) {
+  return canonicalMentionsInOrder(latestAssistantAnswer(history, entityIndex), entityIndex);
+}
+
+/* Positions count list items only. Filtering by type before the referent cap
+ * keeps a subject mention ("Kaan Balcı, Ocean's Team, ...") from taking the
+ * first slot or pushing a listed item out of the bounded window. */
 function orderedAnswerReferents(value, entityIndex) {
-  const allowed = new Set((entityIndex?.entities || [])
-    .filter((entity) => ORDERED_REFERENT_TYPES.has(entity.type))
-    .map((entity) => entity.canonical));
-  return canonicalMentionsInOrder(value, entityIndex).filter((canonical) => allowed.has(canonical));
+  return canonicalMentionsInOrder(value, entityIndex, { types: ORDERED_REFERENT_TYPES });
+}
+
+function latestAssistantOrderedReferents(history, entityIndex) {
+  return orderedAnswerReferents(latestAssistantAnswer(history, entityIndex), entityIndex);
 }
 
 function latestRankedAssistantReferents(history, entityIndex) {
@@ -493,7 +500,7 @@ export function resolvePublicDiscourseTurn({ question, history = [], conversatio
   const fallbackAnswerReferents = acceptedGeneralBoundary ? [] : answerReferents;
   const fallbackOrderedReferents = acceptedGeneralBoundary
     ? nearestOrderedWorldReferentsInSegment(activeCompletedHistory, entityIndex)
-    : fallbackAnswerReferents;
+    : latestAssistantOrderedReferents(history, entityIndex);
   const explicitReferents = structure.explicitReferents;
   /* Historical state never creates a mixed turn by itself. Cross-turn mixing
    * needs comparison semantics and a genuinely contextual form; a possessive

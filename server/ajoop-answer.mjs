@@ -1549,13 +1549,18 @@ function obviousLanguageLeak(answer, locale) {
   return false;
 }
 
-export function validateGeneratedAnswer({ raw = "", parsed, strategy, question = "", records = [], locale = "en", maxChars = 1800 }) {
+export function validateGeneratedAnswer({ raw = "", parsed, strategy, question = "", records = [], locale = "en", maxChars = 1800, doneReason }) {
   const flags = [];
   if (!parsed?.scope || !parsed?.answer) return { ok: false, flags: ["malformed-contract"] };
   if (parsed.scope !== strategy?.expectedScope) flags.push("scope-mismatch");
   if (parsed.answer.length > maxChars) flags.push("answer-too-long");
   if (parsed.answer.length < 3) flags.push("answer-too-short");
-  if (parsed.answer.length >= 80 && !/[.!?…]["')\]]?$/.test(parsed.answer.trim())) flags.push("incomplete-ending");
+  /* A missing final period signals a token cut only when the model did not end
+   * the reply itself. A complete stack list legitimately ends on a name
+   * ("..., Vite, Vitest"). Ollama reports done_reason "stop" for a natural end
+   * and "length" for a num_predict cut; an unknown reason keeps the heuristic. */
+  if (parsed.answer.length >= 80 && doneReason !== "stop"
+      && !/[.!?…]["')\]]?$/.test(parsed.answer.trim())) flags.push("incomplete-ending");
 
   const repetition = detectAnswerRepetition(parsed.answer);
   if (repetition) flags.push(repetition);
