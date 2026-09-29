@@ -4,6 +4,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ROOT, authoredHtmlFiles, read } from "./i18n-catalog.mjs";
+import {
+  contrast,
+  declarationsFor,
+  exactTokenBlock,
+  parseHex,
+  stripComments,
+  topLevelRules,
+} from "./css-tokens.mjs";
 
 let assertions = 0;
 const failures = [];
@@ -35,21 +43,32 @@ for (const token of tokens) {
   assert(new RegExp(`${token}\\s*:`).test(css), `portfolio-v2.css is missing ${token}`);
 }
 
-const lightBlock = css.match(/html\[data-theme="light"\]\s*\{([\s\S]*?)\n\}/)?.[1] || "";
+const LIGHT = 'html[data-theme="light"]';
+const darkTokens = exactTokenBlock(css, ":root");
+const lightTokens = exactTokenBlock(css, LIGHT);
 for (const token of [
   "--color-canvas",
+  "--color-canvas-raised",
   "--color-surface",
+  "--color-surface-raised",
+  "--color-surface-inset",
   "--color-text",
   "--color-text-secondary",
+  "--color-text-muted",
   "--color-accent",
+  "--color-accent-strong",
   "--color-action",
   "--color-action-hover",
   "--color-on-action",
   "--color-success",
+  "--color-warning",
+  "--color-danger",
   "--color-border",
+  "--color-border-subtle",
+  "--color-border-strong",
   "--shadow-md",
 ]) {
-  assert(lightBlock.includes(`${token}:`), `light theme must independently define ${token}`);
+  assert(lightTokens.has(token), `light theme must independently define ${token}`);
 }
 
 assert(!/font-family\s*:[^;]*(?:Georgia|Times New Roman|serif)/i.test(css), "Master 2 headings must not introduce a serif family");
@@ -58,6 +77,206 @@ assert(css.includes("prefers-reduced-motion: reduce"), "Master 2 must preserve r
 assert(!/body\s*\{[^}]*overflow-x\s*:\s*hidden/is.test(css), "Master 2 must not hide horizontal overflow to mask defects");
 assert(/\.btn\.primary\s*\{[^}]*background:\s*var\(--color-action\)[^}]*color:\s*var\(--color-on-action\)/s.test(css), "Primary actions must use the measured action-fill contrast tokens");
 assert(/\.btn\.primary:hover\s*\{[^}]*background:\s*var\(--color-action-hover\)[^}]*color:\s*var\(--color-on-action\)/s.test(css), "Primary hover actions must preserve the measured contrast token pair");
+
+/* ---- Compatibility aliases win in BOTH themes ---------------------------
+ * Legacy components read --brand, --surface, --muted … . style.css declares
+ * its V3 palette for those names on html[data-theme="light"] (0,1,1), which
+ * outranks a plain :root. The Master 2 alias block must therefore list every
+ * selector a legacy stylesheet uses for them, and load after that stylesheet,
+ * or light mode silently falls back to V3. */
+const ALIASES = {
+  "--bg": "var(--color-canvas)",
+  "--bg-2": "var(--color-canvas-raised)",
+  "--surface": "var(--color-surface)",
+  "--surface-solid": "var(--color-surface)",
+  "--surface-2": "var(--color-surface-raised)",
+  "--line": "var(--color-border)",
+  "--line-strong": "var(--color-border-strong)",
+  "--text": "var(--color-text)",
+  "--muted": "var(--color-text-secondary)",
+  "--muted-2": "var(--color-text-muted)",
+  "--brand": "var(--color-accent)",
+  "--brand-2": "var(--color-accent-strong)",
+  "--accent": "var(--color-accent)",
+  "--success": "var(--color-success)",
+  "--warning": "var(--color-warning)",
+  "--danger": "var(--color-danger)",
+  "--shadow": "var(--shadow-md)",
+  "--max-width": "var(--content-width)",
+  "--light-card-surface": "var(--color-surface)",
+  "--light-card-surface-soft": "var(--color-surface-raised)",
+  "--light-card-border": "var(--color-border)",
+  "--light-card-shadow": "var(--shadow-md)",
+};
+const THEME_ALIASES = Object.keys(ALIASES).filter((name) => !name.startsWith("--light-card"));
+const v2Rules = topLevelRules(css);
+const aliasRule = v2Rules.find((rule) => rule.selectors.includes(":root") && rule.selectors.includes(LIGHT));
+assert(Boolean(aliasRule), `portfolio-v2.css must declare its compatibility aliases on ":root, ${LIGHT}"`);
+for (const name of THEME_ALIASES) {
+  assert(aliasRule?.declarations.get(name) === ALIASES[name], `compatibility alias ${name} must resolve to ${ALIASES[name]} in both themes`);
+}
+for (const name of Object.keys(ALIASES).filter((key) => key.startsWith("--light-card"))) {
+  assert(lightTokens.get(name) === ALIASES[name], `light card alias ${name} must resolve to ${ALIASES[name]}`);
+}
+for (const rule of v2Rules) {
+  if (rule === aliasRule) continue;
+  for (const name of THEME_ALIASES) {
+    assert(!rule.declarations.has(name), `${name} may only be declared in the shared alias block (found on ${rule.selectors.join(", ")})`);
+  }
+}
+for (const value of aliasRule?.declarations.values() || []) {
+  assert(/^var\(--(?:color-|shadow-md|content-width)/.test(value), `compatibility aliases must resolve from Master 2 tokens, not literals (${value})`);
+}
+
+const localSheets = new Set();
+for (const file of authoredHtmlFiles()) {
+  const sheets = [...read(file).matchAll(/<link[^>]+href="\/([^"]+\.css)"[^>]*rel="stylesheet"|<link[^>]+rel="stylesheet"[^>]+href="\/([^"]+\.css)"/g)]
+    .map((match) => match[1] || match[2]);
+  const v2Index = sheets.indexOf("portfolio-v2.css");
+  assert(v2Index === sheets.length - 1, `${file}: portfolio-v2.css must be the last local stylesheet so equal-specificity aliases win`);
+  sheets.forEach((sheet) => sheet !== "portfolio-v2.css" && localSheets.add(sheet));
+}
+const aliasPattern = new RegExp(`(?:^|[;{\\s])(${Object.keys(ALIASES).map((name) => name.replace(/-/g, "\\-")).join("|")})\\s*:`);
+for (const sheet of localSheets) {
+  const legacy = read(sheet);
+  for (const rule of topLevelRules(legacy)) {
+    const overlapping = [...rule.declarations.keys()].filter((name) => name in ALIASES);
+    if (!overlapping.length) continue;
+    for (const selector of rule.selectors) {
+      assert(
+        aliasRule?.selectors.includes(selector) || (selector === LIGHT && overlapping.every((name) => lightTokens.has(name) || aliasRule?.declarations.has(name))),
+        `${sheet} sets ${overlapping.join(", ")} on "${selector}", which the Master 2 alias block does not override`,
+      );
+    }
+  }
+  /* A legacy alias inside @media would escape the top-level comparison. */
+  const nested = stripComments(legacy).match(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g) || [];
+  for (const block of nested) {
+    assert(!aliasPattern.test(block.replace(/^@media[^{]*\{/, "")), `${sheet} redeclares a compatibility alias inside @media, which bypasses the Master 2 alias block`);
+  }
+}
+
+/* Legacy "dark ink on a --brand fill" markers were tuned for the bright V3
+ * brand. Once the aliases resolve to the Master 2 accent they fall below AA in
+ * light mode, so each such selector must be re-declared in portfolio-v2.css
+ * with token colours. The AJOOP chat widget is excluded: its own light rules in
+ * style.css already put near-white text on the fill (measured ≥ 5:1), and its
+ * styling is outside the Master 2 surface. */
+const AJOOP_WIDGET = /^\.chatbot-/;
+for (const sheet of localSheets) {
+  for (const rule of topLevelRules(read(sheet))) {
+    const ink = rule.declarations.get("color");
+    const fill = rule.declarations.get("background") || rule.declarations.get("background-color") || "";
+    if (!ink || !/^#0[0-9a-f]{5}$/i.test(ink) || !/var\(--(?:brand|brand-2|accent|success|warning)\)/.test(fill)) continue;
+    for (const selector of rule.selectors) {
+      if (AJOOP_WIDGET.test(selector)) continue;
+      const override = declarationsFor(css, selector);
+      assert(
+        /^var\(--color-/.test(override.get("color") || "") && /^var\(--color-/.test(override.get("background") || ""),
+        `${sheet}: "${selector}" paints ${ink} on a brand fill; portfolio-v2.css must re-declare it with the action token pair`,
+      );
+    }
+  }
+}
+
+/* Bright V3 palette literals used as TEXT colour in legacy sheets bypass the
+ * aliases entirely (e.g. #fbbf24 on a white light-theme card is 1.6:1). Each
+ * must be re-declared in portfolio-v2.css with a token. */
+const V3_TEXT_LITERAL = /#(?:38bdf8|7dd3fc|22d3ee|0ea5e9|818cf8|a5b4fc|34d399|6ee7b7|fbbf24|fcd34d|fb7185|fda4af|0284c7|0891b2|059669|d97706|e11d48)\b/i;
+for (const sheet of localSheets) {
+  for (const rule of topLevelRules(read(sheet))) {
+    const ink = rule.declarations.get("color");
+    if (!ink || !V3_TEXT_LITERAL.test(ink)) continue;
+    for (const selector of rule.selectors) {
+      if (AJOOP_WIDGET.test(selector)) continue;
+      assert(
+        /^var\(--color-/.test(declarationsFor(css, selector).get("color") || ""),
+        `${sheet}: "${selector}" uses the V3 literal ${ink} as text; portfolio-v2.css must re-declare it with a Master 2 token`,
+      );
+    }
+  }
+}
+
+/* The V3 light body gradient must not survive under the Master 2 canvas. */
+assert(
+  declarationsFor(css, `${LIGHT} body`).get("background") === "var(--color-canvas)",
+  "light theme body must reset style.css's V3 gradient to the Master 2 canvas",
+);
+
+/* ---- Measured token contrast (WCAG AA, normal text) --------------------- */
+const ALL_SURFACES = ["--color-canvas", "--color-canvas-raised", "--color-surface", "--color-surface-raised", "--color-surface-inset"];
+const pairs = [
+  [["--color-text", "--color-text-secondary", "--color-text-muted", "--color-accent-strong",
+    "--color-success", "--color-warning", "--color-danger"], ALL_SURFACES],
+  /* Accent is the link/brand text colour; it is not used as text on the raised
+   * tier, where dark accent measures 4.22:1 (tracked as Master 3 debt). */
+  [["--color-accent"], ["--color-canvas", "--color-surface", "--color-surface-inset"]],
+];
+for (const [themeName, themeTokens] of [["dark", darkTokens], ["light", lightTokens]]) {
+  for (const [foregrounds, backgrounds] of pairs) {
+    for (const fg of foregrounds) for (const bg of backgrounds) {
+      const a = parseHex(themeTokens.get(fg));
+      const b = parseHex(themeTokens.get(bg));
+      assert(Boolean(a && b), `${themeName}: ${fg} and ${bg} must be opaque #rrggbb tokens`);
+      if (a && b) {
+        const ratio = contrast(a, b);
+        assert(ratio >= 4.5, `${themeName}: ${fg} on ${bg} is ${ratio.toFixed(2)}:1, below AA 4.5:1`);
+      }
+    }
+  }
+  /* Status chips put text on its own translucent -soft tint, which costs up to
+   * ~0.5 of contrast; the -strong text tokens must clear AA on the tint over
+   * every surface tier. */
+  for (const [text, tint] of [
+    ["--color-success-strong", "--color-success-soft"],
+    ["--color-warning-strong", "--color-warning-soft"],
+    ["--color-accent-strong", "--color-accent-soft"],
+  ]) {
+    const fgRgb = parseHex(themeTokens.get(text));
+    const soft = String(themeTokens.get(tint) || "").match(/rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\s*\)/);
+    assert(Boolean(fgRgb && soft), `${themeName}: ${text} must be #rrggbb and ${tint} rgba()`);
+    if (!fgRgb || !soft) continue;
+    const [r, g, b, alpha] = soft.slice(1).map(Number);
+    for (const bg of ALL_SURFACES) {
+      const base = parseHex(themeTokens.get(bg));
+      const chip = [r, g, b].map((channel, index) => Math.round(channel * alpha + base[index] * (1 - alpha)));
+      const ratio = contrast(fgRgb, chip);
+      assert(ratio >= 4.5, `${themeName}: ${text} on ${tint} over ${bg} is ${ratio.toFixed(2)}:1, below AA 4.5:1`);
+    }
+  }
+  for (const fill of ["--color-action", "--color-action-hover"]) {
+    const ratio = contrast(parseHex(themeTokens.get("--color-on-action")), parseHex(themeTokens.get(fill)));
+    assert(ratio >= 4.5, `${themeName}: --color-on-action on ${fill} is ${ratio.toFixed(2)}:1, below AA 4.5:1`);
+  }
+}
+
+for (const [selector, token] of [
+  [".build-log-status.is-shipped", "var(--color-success-strong)"],
+  [".project-status.is-live", "var(--color-success-strong)"],
+  [".build-log-status.is-building", "var(--color-warning-strong)"],
+  [".build-log-status.is-integration", "var(--color-accent-strong)"],
+  [".journey-grid span", "var(--color-accent-strong)"],
+]) {
+  assert(declarationsFor(css, selector).get("color") === token, `${selector} text must use ${token} (measured on its tint/surface)`);
+}
+
+/* ---- Project detail (25 routes × 5 locales share these rules) ----------- */
+const tokenOnly = (value) => typeof value === "string" && /^var\(--color-[a-z-]+\)$/.test(value);
+for (const [selector, property] of [
+  [".project-detail-meta article", "background"],
+  [".process-steps article", "background"],
+  [".project-detail-meta span", "color"],
+  [".project-detail-meta strong", "color"],
+  [".process-steps h3", "color"],
+  [".process-steps p", "color"],
+  [".process-steps span", "background"],
+  [".process-steps span", "color"],
+]) {
+  assert(
+    tokenOnly(declarationsFor(css, selector).get(property)),
+    `${selector} must take its ${property} from a Master 2 --color-* token in both themes`,
+  );
+}
 
 for (const file of authoredHtmlFiles()) {
   const html = read(file);

@@ -68,7 +68,7 @@
     "qa:runtime": "node scripts/qa-runtime-modules.mjs",
     "qa:performance": "node scripts/qa-performance-budget.mjs",
     "qa:css": "node scripts/qa-css-architecture.mjs",
-    "qa:design": "node scripts/qa-master2-design.mjs",
+    "qa:design": "node scripts/qa-master2-design.mjs && node scripts/qa-design-token-parity.mjs",
     "qa:a11y:static": "node scripts/qa-accessibility.mjs",
     "qa:recruiter": "node scripts/qa-recruiter-ux.mjs",
     "qa:analytics": "node scripts/qa-analytics.mjs",
