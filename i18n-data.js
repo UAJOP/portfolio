@@ -181,14 +181,14 @@ window.KAAN_I18N = {
     },
     "nav.close": {
       "en": "Close navigation",
-      "tr": "Navigasyonu kapat",
+      "tr": "Menüyü kapat",
       "de": "Navigation schließen",
       "es": "Cerrar navegación",
       "fr": "Fermer la navigation"
     },
     "nav.open": {
       "en": "Open navigation",
-      "tr": "Navigasyonu aç",
+      "tr": "Menüyü aç",
       "de": "Navigation öffnen",
       "es": "Abrir navegación",
       "fr": "Ouvrir la navigation"
@@ -224,7 +224,7 @@ window.KAAN_I18N = {
     "training": {
       "en": "Training",
       "tr": "Eğitim",
-      "de": "Weiterbildung",
+      "de": "Training",
       "es": "Formación",
       "fr": "Formation"
     }
@@ -269,6 +269,7 @@ window.KAAN_I18N = {
       "3 PASS · 2 FAIL · 0 ERROR",
       "404 | Kaan Balcı",
       "5 PASS · 0 FAIL · 0 ERROR",
+      "AI Designer + Software Developer",
       "AI Designer & Software Developer",
       "AI Designer • Software Developer • Automation Builder",
       "AI Flow Designer & Frontend Developer",
@@ -293,6 +294,7 @@ window.KAAN_I18N = {
       "Merge Rush: Tiny Factory Case Study | Kaan Balcı",
       "Now / Build Log | Kaan Balcı",
       "Outlier AI – AI Training Specialist",
+      "Product Designer + Full-Stack Developer",
       "Product Designer & Full-Stack Developer",
       "Punto Organization – Event Operations Supervisor",
       "Python, C#, JavaScript, PHP, Java, Kotlin, C++",

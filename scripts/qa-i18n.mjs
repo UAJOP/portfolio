@@ -40,7 +40,7 @@ import {
 } from "./i18n-catalog.mjs";
 import { coverageFor, loadAuthoredPack, DERIVED_TR_DOMAINS, deriveTurkishPack } from "./build-locale-packs.mjs";
 import { browserRouteTable, isLegacyStub } from "./site-routes.mjs";
-import { commonMessageMatrix, loadMessageDomain, interpolateMessage, messageCatalogErrors } from "./i18n-messages.mjs";
+import { commonMessageMatrix, runtimeMessageMatrix, RUNTIME_COMMON_KEYS, loadMessageDomain, interpolateMessage, messageCatalogErrors } from "./i18n-messages.mjs";
 
 let assertions = 0;
 const failures = [];
@@ -121,6 +121,12 @@ for (const locale of productionLocaleIds) {
   const messages = loadMessageDomain(locale, "common");
   const errors = messageCatalogErrors(commonReference, messages);
   assert(errors.length === 0, `${locale} common message catalog is invalid: ${errors.join(", ")}`);
+}
+for (const file of authoredHtmlFiles()) {
+  const source = read(file);
+  for (const match of source.matchAll(/\bdata-message-key="([^"]+)"/g)) {
+    assert(commonKeys.includes(match[1]), `${file} references unknown stable message key ${match[1]}`);
+  }
 }
 assert(interpolateMessage("Hello {name}", { name: "Kaan" }) === "Hello Kaan", "stable message interpolation must replace declared placeholders");
 assert(interpolateMessage("{name}, hello {name}", { name: "Kaan" }) === "Kaan, hello Kaan", "stable message interpolation must support a repeated placeholder");
@@ -330,7 +336,11 @@ vm.runInNewContext(generatedData, dataSandbox, { filename: "i18n-data.js" });
 const runtimeConfig = dataSandbox.window.KAAN_I18N;
 assert(Boolean(runtimeConfig), "generated i18n-data.js must assign window.KAAN_I18N");
 assert(JSON.stringify(runtimeConfig.locales) === JSON.stringify(registry.locales), "generated locale registry is stale");
-assert(JSON.stringify(runtimeConfig.ui) === JSON.stringify(ui), "generated UI catalog is stale");
+assert(JSON.stringify(runtimeConfig.ui) === JSON.stringify(runtimeMessageMatrix(registry)), "generated runtime UI catalog is stale");
+assert(
+  Object.keys(runtimeConfig.ui).sort(compareKeys).join("\0") === [...RUNTIME_COMMON_KEYS].sort(compareKeys).join("\0"),
+  "generated runtime UI must contain only shell messages used after render",
+);
 assert(JSON.stringify(runtimeConfig.glossary) === JSON.stringify(glossary), "generated glossary is stale");
 
 const allRoutes = indexableRoutes(projects);
@@ -819,6 +829,11 @@ for (const locale of readyLocales) {
   const sandbox = { window: {} };
   vm.createContext(sandbox);
   vm.runInContext(read(`i18n/pack-${locale}-core.js`), sandbox);
+  const shippedUi = Object.keys(sandbox.window.KAAN_I18N_PACKS[locale].ui || {}).sort(compareKeys);
+  assert(
+    shippedUi.join("\0") === [...RUNTIME_COMMON_KEYS].sort(compareKeys).join("\0"),
+    `${locale} core pack must ship only runtime shell messages`,
+  );
   const shipped = Object.keys(sandbox.window.KAAN_I18N_PACKS[locale].pages?.text || {});
   for (const key of shipped) assert(runtimeSubset.has(key), `${locale} core pack ships ${JSON.stringify(key)}, which the runtime never looks up`);
   assert(

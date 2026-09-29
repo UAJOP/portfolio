@@ -275,11 +275,13 @@ function packTranslators(locale) {
   const pack = loadAuthoredPack(locale);
   const text = pack.pages?.text || {};
   const attribute = pack.pages?.attribute || {};
+  const messages = pack.ui || {};
   const caseStudies = pack["case-studies"] || {};
   return {
     pack,
     translateText: (key) => text[key] || null,
     translateAttribute: (key) => attribute[key] || null,
+    messageValue: (key) => messages[key] || null,
     caseStudyFor: (id) => caseStudies[id] || null,
     meta: pack.meta || {},
   };
@@ -345,6 +347,7 @@ function buildDocument({ route, locale, translators, indexable }) {
   html = localizeDocument(html, {
     translateText: translators.translateText,
     translateAttribute: translators.translateAttribute,
+    messageValue: translators.messageValue,
     caseStudyValue: (key) => (key && caseCopy ? caseCopy[key] ?? null : null),
     compatValue: (attributeByName) => {
       for (const prefix of ["data-pv2", "data-flagship", "data-sinama", "data-mr"]) {

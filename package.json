@@ -3,7 +3,7 @@
   "private": true,
   "description": "Automated preflight checks for kaanbalci.com",
   "scripts": {
-    "qa": "npm run qa:data && npm run qa:i18n && npm run qa:routes && npm run qa:routes:http && npm run qa:foundation && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:performance && npm run qa:css && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
+    "qa": "npm run qa:data && npm run qa:i18n && npm run qa:routes && npm run qa:routes:http && npm run qa:foundation && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:performance && npm run qa:css && npm run qa:design && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling",
     "qa:js": "node qa-js-syntax.js",
     "qa:portfolio": "node qa-portfolio-consistency.js && node scripts/qa-ajoop-sinama.mjs && node scripts/qa-ajoop-discourse.mjs && node scripts/qa-ajoop-tools.mjs && node scripts/qa-ajoop-agent.mjs && node scripts/qa-ajoop-telemetry.mjs && node scripts/qa-ajoop-memory.mjs && node scripts/qa-ajoop-memory-store.mjs && node scripts/qa-ajoop-memory-retrieval.mjs && node scripts/qa-ajoop-memory-context.mjs && node scripts/qa-ajoop-owner-generation.mjs && node scripts/qa-ajoop-memory-correction.mjs && node scripts/qa-ajoop-read-connectors.mjs && node scripts/qa-ajoop-gmail-read-adapter.mjs && node scripts/qa-ajoop-calendar-read-adapter.mjs && node scripts/qa-ajoop-github-read-adapter.mjs && node scripts/qa-ajoop-drive-read-adapter.mjs && node scripts/qa-ajoop-owner-connected-workflows.mjs && node scripts/qa-ajoop-action-safety.mjs && node scripts/qa-ajoop-a4-golden.mjs && node scripts/qa-ajoop-golden.mjs && node scripts/qa-ajoop-turn-feedback.mjs",
     "qa:assets": "node qa-assets.js",
@@ -68,6 +68,7 @@
     "qa:runtime": "node scripts/qa-runtime-modules.mjs",
     "qa:performance": "node scripts/qa-performance-budget.mjs",
     "qa:css": "node scripts/qa-css-architecture.mjs",
+    "qa:design": "node scripts/qa-master2-design.mjs",
     "qa:a11y:static": "node scripts/qa-accessibility.mjs",
     "qa:recruiter": "node scripts/qa-recruiter-ux.mjs",
     "qa:analytics": "node scripts/qa-analytics.mjs",
@@ -88,7 +89,8 @@
     "i18n:packs": "node scripts/build-locale-packs.mjs --derive",
     "i18n:routes": "node scripts/generate-localized-routes.mjs",
     "i18n:coverage": "node scripts/build-locale-packs.mjs --coverage",
-    "i18n:build": "npm run i18n:extract && npm run i18n:packs && npm run i18n:generate && npm run i18n:routes"
+    "i18n:build": "npm run i18n:extract && npm run i18n:packs && npm run i18n:generate && npm run i18n:routes",
+    "i18n:migrate:master2": "node scripts/migrate-master2-i18n.mjs"
   },
   "devDependencies": {
     "@cspell/dict-tr-tr": "3.0.6",

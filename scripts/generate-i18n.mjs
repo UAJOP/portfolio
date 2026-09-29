@@ -32,12 +32,13 @@ import {
 } from "./i18n-catalog.mjs";
 import { loadAuthoredPack } from "./build-locale-packs.mjs";
 import { browserRouteTable } from "./site-routes.mjs";
-import { commonMessageMatrix } from "./i18n-messages.mjs";
+import { commonMessageMatrix, runtimeMessageMatrix, runtimeMessages } from "./i18n-messages.mjs";
 
 const checkOnly = process.argv.includes("--check");
 
 const registry = loadRegistry();
 const ui = commonMessageMatrix(registry);
+const runtimeUi = runtimeMessageMatrix(registry);
 const glossary = readJson("data/i18n/glossary.json");
 const formatting = readJson("data/i18n/formatting.json");
 
@@ -87,7 +88,7 @@ const runtime = {
   defaultLocale: registry.defaultLocale,
   locales: registry.locales,
   routeTable: browserRouteTable(),
-  ui,
+  ui: runtimeUi,
   glossary,
   formatting,
 };
@@ -203,7 +204,7 @@ function scopePayload(scope, authored) {
       if (value !== undefined) attribute[source] = value;
     }
     return {
-      ui: authored.ui ?? {},
+      ui: runtimeMessages(authored.ui ?? {}),
       content: authored.content ?? {},
       pages: { text, attribute },
       dynamic: pickDynamic(authored.dynamic, CORE_DYNAMIC),

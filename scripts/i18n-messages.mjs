@@ -2,6 +2,21 @@ import { readJson, loadRegistry, compareKeys } from "./i18n-catalog.mjs";
 
 export const messageFile = (locale, domain) => `data/i18n/messages/${locale}/${domain}.json`;
 
+/* Only these shell messages are read after page render. Page-level semantic
+ * messages are baked into localized HTML and must not be duplicated into the
+ * global runtime payload or every locale's core pack. */
+export const RUNTIME_COMMON_KEYS = [
+  "language.selectorAria",
+  "language.selectorLabel",
+  "nav.close",
+  "nav.open",
+  "theme.dark",
+  "theme.light",
+  "theme.switchToDark",
+  "theme.switchToLight",
+  "training",
+];
+
 export function loadMessageDomain(locale, domain = "common") {
   return readJson(messageFile(locale, domain));
 }
@@ -15,6 +30,15 @@ export function commonMessageMatrix(registry = loadRegistry()) {
     }
   }
   return matrix;
+}
+
+export function runtimeMessageMatrix(registry = loadRegistry()) {
+  const matrix = commonMessageMatrix(registry);
+  return Object.fromEntries(RUNTIME_COMMON_KEYS.map((key) => [key, matrix[key]]));
+}
+
+export function runtimeMessages(messages) {
+  return Object.fromEntries(RUNTIME_COMMON_KEYS.map((key) => [key, messages[key]]));
 }
 
 export function placeholderNames(value) {

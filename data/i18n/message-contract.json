@@ -1,6 +1,12 @@
 {
   "schemaVersion": 1,
-  "productionLocales": ["en", "tr", "de", "es", "fr"],
+  "productionLocales": [
+    "en",
+    "tr",
+    "de",
+    "es",
+    "fr"
+  ],
   "domains": {
     "common": {
       "path": "data/i18n/messages/{locale}/common.json",
@@ -10,7 +16,10 @@
     },
     "reactPreview": {
       "path": "data/i18n/messages/{locale}/react-preview.json",
-      "locales": ["en", "tr"],
+      "locales": [
+        "en",
+        "tr"
+      ],
       "keyModel": "stable-semantic",
       "consumer": "development-only-react-preview"
     },
@@ -30,8 +39,8 @@
       "newKeysAllowed": false,
       "migrationOwner": "Master 2 page-by-page content migration",
       "baseline": {
-        "entryCount": 1043,
-        "sha256": "39221af633eafa628464dfa63b0174000b288dc654926e6bb5cc843d3e15ebd0"
+        "entryCount": 1031,
+        "sha256": "d558699725b0b1eb809cd277423b4d3c50192c55ae15a4fe19ae3e431b6d6c4c"
       }
     }
   },

@@ -11,6 +11,8 @@
  *     `preserveWhitespace()`
  *   - `aria-label`, `alt`, `title` and `placeholder` translate from the same
  *     attribute dictionary the runtime uses
+ *   - `data-message-key` resolves stable semantic page copy before the
+ *     historical phrase-key compatibility walker is consulted
  *   - `data-case-i18n*` and the `data-*-en` / `data-*-tr` compat pairs are
  *     pre-applied, so the static page already says what the runtime would.
  *
@@ -144,6 +146,7 @@ export function localizeDocument(html, options) {
   const {
     translateText,
     translateAttribute,
+    messageValue = () => null,
     caseStudyValue = () => null,
     compatValue = () => null,
     rewriteUrl = (value) => value,
@@ -217,6 +220,7 @@ export function localizeDocument(html, options) {
     /* Elements whose whole content is one translated string are replaced
      * wholesale, exactly as the runtime sets their textContent. */
     const replacement =
+      messageValue(attributeByName.get("data-message-key")?.value) ??
       caseStudyValue(attributeByName.get("data-case-i18n")?.value) ??
       compatValue(attributeByName);
     if (replacement !== null && replacement !== undefined) {

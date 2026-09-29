@@ -12,40 +12,40 @@
 
 :root {
   /* --- Canvas and surfaces (dark: the flagship identity) ----------------- */
-  --canvas: #060d17;
-  --canvas-raised: #0a1524;
-  --surface: #0e1b2d;
-  --surface-elevated: #142438;
-  --surface-interactive: #1a2d45;
-  --surface-inset: #08111d;
+  --canvas: #07111b;
+  --canvas-raised: #0a1725;
+  --surface: #0e1b2b;
+  --surface-elevated: #122338;
+  --surface-interactive: #172b42;
+  --surface-inset: #08131f;
 
   /* --- Text -------------------------------------------------------------- */
-  --text-primary: #f4f8fd;
-  --text-secondary: #b6c6da;
-  --text-muted: #8195ad;
+  --text-primary: #f4f7fb;
+  --text-secondary: #c0cbd8;
+  --text-muted: #8796a9;
   /* Ink for text sitting ON an accent fill. */
   --text-on-accent: #041018;
 
   /* --- Accent ------------------------------------------------------------ */
   /* --accent is for fills, borders and focus rings, where contrast rules do
      not apply. --accent-text is the only accent safe for text on the canvas. */
-  --accent: #3db8f5;
-  --accent-strong: #7dd3fc;
-  --accent-text: #5cc4f7;
-  --accent-soft: rgba(61, 184, 245, 0.14);
-  --accent-line: rgba(61, 184, 245, 0.34);
+  --accent: #5a86bd;
+  --accent-strong: #8aafd8;
+  --accent-text: #8aafd8;
+  --accent-soft: rgba(90, 134, 189, 0.14);
+  --accent-line: rgba(90, 134, 189, 0.34);
 
   /* Secondary accent, used sparingly for category separation. */
   --accent-alt: #6366f1;
   --accent-alt-soft: rgba(99, 102, 241, 0.18);
 
   /* --- Status ------------------------------------------------------------ */
-  --success: #34d399;
-  --success-soft: rgba(52, 211, 153, 0.14);
-  --warning: #fbbf24;
-  --warning-soft: rgba(251, 191, 36, 0.14);
-  --danger: #fb7185;
-  --danger-soft: rgba(251, 113, 133, 0.14);
+  --success: #55bd8c;
+  --success-soft: rgba(85, 189, 140, 0.12);
+  --warning: #d7a94b;
+  --warning-soft: rgba(215, 169, 75, 0.12);
+  --danger: #df7b88;
+  --danger-soft: rgba(223, 123, 136, 0.12);
 
   /* --- Borders ----------------------------------------------------------- */
   --border-subtle: rgba(255, 255, 255, 0.08);
@@ -123,16 +123,16 @@
 html[data-theme="light"] {
   /* Light is a designed surface system: a faintly cool paper canvas with white
      cards lifted off it, not a bleached copy of the dark palette. */
-  --canvas: #f4f7fb;
-  --canvas-raised: #eef3f9;
+  --canvas: #f2f4f7;
+  --canvas-raised: #e8edf2;
   --surface: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-interactive: #f4f8fc;
-  --surface-inset: #eaf0f7;
+  --surface-interactive: #f8fafc;
+  --surface-inset: #e9eef3;
 
-  --text-primary: #0a1626;
-  --text-secondary: #3d4f66;
-  --text-muted: #5b6d85;
+  --text-primary: #0b1828;
+  --text-secondary: #425268;
+  --text-muted: #65748a;
   --text-on-accent: #ffffff;
 
   /*
@@ -141,21 +141,21 @@ html[data-theme="light"] {
    * white on #0b7fc4 reaches only 4.33:1 as a button fill, and the accent and
    * warning chips landed at 4.43:1 and 4.38:1 — all just under AA.
    */
-  --accent: #0a6ba6;
-  --accent-strong: #075e93;
-  --accent-text: #075e93;
-  --accent-soft: rgba(10, 107, 166, 0.1);
-  --accent-line: rgba(10, 107, 166, 0.3);
+  --accent: #34689f;
+  --accent-strong: #214f82;
+  --accent-text: #214f82;
+  --accent-soft: rgba(52, 104, 159, 0.1);
+  --accent-line: rgba(52, 104, 159, 0.3);
 
   --accent-alt: #4f46e5;
   --accent-alt-soft: rgba(79, 70, 229, 0.1);
 
-  --success: #047857;
-  --success-soft: rgba(4, 120, 87, 0.1);
-  --warning: #92400e;
-  --warning-soft: rgba(146, 64, 14, 0.1);
-  --danger: #be123c;
-  --danger-soft: rgba(190, 18, 60, 0.1);
+  --success: #267a58;
+  --success-soft: rgba(38, 122, 88, 0.1);
+  --warning: #8b6419;
+  --warning-soft: rgba(139, 100, 25, 0.1);
+  --danger: #a94656;
+  --danger-soft: rgba(169, 70, 86, 0.1);
 
   --border-subtle: rgba(10, 22, 38, 0.08);
   --border-default: rgba(10, 22, 38, 0.14);
