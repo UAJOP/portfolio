@@ -147,7 +147,7 @@ As of #23 the repository also contains a React foundation, running **beside** th
 
 Nothing public changed. Every page listed above is still served by the existing static architecture, and the React preview is `noindex`, unlinked and absent from `sitemap.xml`.
 
-- source: `src/react/` (Vite is rooted there, so the repository root stays a plain static site)
+- source: `src/react/` (Vite is rooted there, so React source remains isolated from the current production artifact)
 - output: `dist-react/`, git-ignored, so GitHub Pages cannot publish it
 - mounted under `/react-preview/`, never at a production route
 - pre-rendered to real HTML at build time, then hydrated

@@ -99,11 +99,9 @@ Target: **0 hydration errors and 0 React warnings** in the console. This is veri
 
 ## 7. Route migration policy
 
-The current production URLs are flat files at the site root: `/`, `/works.html`, `/about.html`, `/sinama-case-study.html`, and so on. They are listed in `sitemap.xml` and are the canonical URLs.
+Clean Public URLs V1 supersedes the original flat-file route policy. Canonical public URLs are directory routes such as `/`, `/works/`, `/about/` and `/sinama-case-study/`. The old `.html` addresses remain generated compatibility stubs and must never become canonical navigation again.
 
-**These URLs do not change.** They are indexed, they are what recruiter deep links point at, and there is no SEO benefit that would justify breaking them.
-
-That has a concrete consequence for the pre-render step: migrated routes emit `works.html`, not `works/index.html`. The route table already treats the output path as a per-route decision (`output` in `src/react/routing/routes.jsx`), so this is a configuration choice rather than a rewrite. The preview uses directory-index output only because it is not bound by existing URLs.
+React production migration must therefore pre-render real directory-index documents (for example `works/index.html`) that serve the clean route. Route identity comes from `data/site/routes.json`; React must consume that contract rather than restating an older `.html` map.
 
 ### Hosting reality
 
@@ -133,7 +131,7 @@ portfolio-data.js              generated, committed, classic script
 window.KAAN_PORTFOLIO          synchronous, contract unchanged
 ```
 
-A runtime fetch was rejected deliberately. GitHub Pages serves the repository directly with no build step, and every consumer — Recruiter Mode, Ajoop, Build Log, Labs, the SINAMA Evidence Explorer — reads the registry synchronously during boot. Fetching would have made the whole legacy runtime asynchronous to solve a problem the generator solves at build time.
+A runtime fetch was rejected deliberately. The production site now ships through the bounded `dist-site` GitHub Pages artifact, but legacy browser consumers still read the committed compatibility registry synchronously during boot. Fetching would have made the whole legacy runtime asynchronous to solve a problem the generator solves at build time.
 
 What shipped:
 
@@ -221,7 +219,7 @@ What exists today, and what it does not do.
 **Exists:**
 
 - React 19, React DOM, React Router 7, Vite 8 and `@vitejs/plugin-react`, all pinned exactly in one root `package.json`.
-- `src/react/` — the React source tree, with Vite rooted there so the repository root stays a pure static site.
+- `src/react/` — the React source tree, isolated from the bounded production artifact until a route is deliberately migrated.
 - Three preview routes under `/react-preview/`, pre-rendered to real HTML at build time.
 - A pre-render pipeline that fails the build if a route renders empty.
 - Theme and language proofs using the production storage keys.
@@ -230,7 +228,7 @@ What exists today, and what it does not do.
 **Does not exist, by design:**
 
 - Any change to a public production page. The live site is byte-identical to before this pass, apart from one build-log entry.
-- Any React code on a public route. `dist-react/` is git-ignored, so GitHub Pages cannot serve it.
+- Any React code on a public route. `dist-react/` is development output and the Pages artifact allowlist does not publish it.
 - Any migrated content, data, or feature.
 
 The preview is an engineering artifact. It is `noindex`, is not linked from any public surface, and is absent from `sitemap.xml`, the navigation, Recruiter Mode and Ajoop.

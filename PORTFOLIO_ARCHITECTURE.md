@@ -1,5 +1,7 @@
 # Portfolio Architecture V2
 
+> **Current deployment note (Master 1):** the repository root is no longer the GitHub Pages source. Production follows `source → generation → blocking QA → dist-site → Pages artifact` with Pages in Actions workflow mode. Clean directory routes are canonical; old `.html` pages are generated compatibility stubs. Historical sections below that describe direct root deployment or flat canonical URLs are implementation history, not current authority.
+
 ## Why this exists
 
 The portfolio grew from a static personal site into a product with Recruiter Mode, Ajoop, Command Palette, bilingual copy, case studies, games, request intake, accessibility QA and multiple active flagship products.
@@ -246,7 +248,7 @@ Everything served from `kaanbalci.com` today:
 
 `portfolio-data.js → script.js bootloader → legacy-script.js → portfolio-v2.js`
 
-Flat `.html` files at the repository root, no build step, deployed by GitHub Pages. This is the production reference and remains authoritative until a page has been migrated and proven at parity.
+Authored and generated static documents remain the production UI reference until React parity is proven, but publication is bounded through `dist-site`. Canonical public navigation uses clean directory routes from `data/site/routes.json`; legacy `.html` files are compatibility endpoints only.
 
 ### PARALLEL — React/Vite foundation
 
