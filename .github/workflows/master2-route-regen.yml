@@ -1,0 +1,43 @@
+name: Master 2 localized route regeneration
+
+on:
+  push:
+    branches:
+      - design/site-experience-content-v2
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v5
+        with:
+          ref: design/site-experience-content-v2
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Regenerate localized route artifacts
+        run: npm run i18n:routes
+
+      - name: Commit deterministic generated outputs
+        shell: bash
+        run: |
+          git add tr de es fr sitemap.xml
+          if git diff --cached --quiet; then
+            echo "Localized route artifacts are already in step."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(i18n): regenerate localized route artifacts"
+          git push origin HEAD:design/site-experience-content-v2
