@@ -76,6 +76,7 @@
     "Outlier",
     "parametric",
     "Phaser",
+    "pipefail",
     "Playables",
     "playtesting",
     "PostgreSQL",

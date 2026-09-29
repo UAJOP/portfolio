@@ -309,9 +309,23 @@ check(!/react/.test(manifest.scripts?.qa || ""), "the React build must not be fo
 // Pa11y and Lighthouse must keep auditing the production pages, not the preview.
 // The preview gets its own separate accessibility config so it adds coverage
 // instead of displacing any.
-const pa11yUrls = JSON.parse(read(".pa11yci")).urls || [];
+// Pa11y entries may be plain URLs or pa11y-ci objects ({ url, actions, … }),
+// which the light-theme and desktop cases use. The 11 original production
+// pages must all stay covered; the matrix may only grow around them.
+const pa11yUrls = (JSON.parse(read(".pa11yci")).urls || []).map((entry) =>
+  typeof entry === "string" ? entry : String(entry?.url || ""),
+);
 const lighthouseUrls = JSON.parse(read("lighthouserc.json")).ci?.collect?.url || [];
-check(pa11yUrls.length === 11, `Pa11y must keep auditing all 11 production pages (found ${pa11yUrls.length})`);
+const PRODUCTION_A11Y_PATHS = [
+  "/", "/works/", "/games/", "/sinama-case-study/", "/merge-rush-case-study/", "/labs/",
+  "/now/", "/blog/", "/certificates/", "/request/", "/about/",
+];
+const pa11yPlainPaths = new Set(pa11yUrls.map((url) => {
+  try { const parsed = new URL(url); return parsed.search ? null : parsed.pathname; } catch { return null; }
+}));
+PRODUCTION_A11Y_PATHS.forEach((pathname) => {
+  check(pa11yPlainPaths.has(pathname), `Pa11y must keep auditing production page ${pathname}`);
+});
 check(lighthouseUrls.length === 11, `Lighthouse must keep auditing all 11 production pages (found ${lighthouseUrls.length})`);
 check(!pa11yUrls.some((url) => url.includes("react")), "Pa11y production coverage must not be replaced by preview URLs");
 check(

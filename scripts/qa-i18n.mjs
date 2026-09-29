@@ -1024,7 +1024,9 @@ for (const [, script] of GENERATORS) assert(Boolean(packageJson.scripts?.[script
 const workflowPath = ".github/workflows/site-preflight.yml";
 if (exists(workflowPath)) {
   const workflow = read(workflowPath);
-  assert(workflow.includes("npm run qa:i18n"), "Site Preflight must run blocking qa:i18n");
+  /* qa:i18n is a member of npm run qa (asserted above); CI runs that whole
+   * contract as one blocking step rather than restating its members. */
+  assert(/^\s*npm run qa(?:\s|$)/m.test(workflow), "Site Preflight must run the blocking npm run qa contract, which includes qa:i18n");
 }
 
 /* ---------- 23. no hand-edited localized route ---------- */
