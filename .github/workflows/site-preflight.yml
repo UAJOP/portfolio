@@ -44,6 +44,11 @@ jobs:
           set -o pipefail
           npm run qa:i18n 2>&1 | tee qa-results/i18n.txt
 
+      - name: Check site ownership and deployment boundary
+        run: |
+          set -o pipefail
+          npm run qa:foundation 2>&1 | tee qa-results/site-foundation.txt
+
       # BLOCKING: clean public URLs — no .html in links, canonicals, hreflang
       # or the sitemap; every route a real directory document; every legacy
       # .html URL a stub that forwards to its clean route.
@@ -226,3 +231,48 @@ jobs:
             './**/*.md'
           fail: false
           jobSummary: true
+
+  deploy-pages:
+    name: Build and deploy bounded Pages artifact
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - quality-audit
+      - link-audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build bounded Pages artifact
+        run: npm run build:site
+
+      - name: Verify bounded Pages artifact
+        run: npm run qa:site:artifact
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist-site
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
