@@ -28,7 +28,7 @@ production selector, sitemap and reciprocal `hreflang` graph.
 - text direction
 - the existing `kaanbalci-site-language` preference key
 
-`data/i18n/ui.json` contains stable-key UI copy for core shell behavior. `data/i18n/glossary.json` defines protected product, technology and career terminology whose canonical casing must not be mutated by locale-sensitive CSS casing.
+`data/i18n/messages/<locale>/common.json` contains stable-key UI copy for core shell behavior. `data/i18n/message-contract.json` declares production completeness and compatibility domains. `data/i18n/glossary.json` defines protected product, technology and career terminology whose canonical casing must not be mutated by locale-sensitive CSS casing.
 
 `npm run i18n:generate` deterministically produces:
 
@@ -130,7 +130,7 @@ This is an explicit compatibility boundary:
 
 - existing authored copy may continue using it
 - locale ownership no longer lives there
-- new core UI should use stable keys from `data/i18n/ui.json`
+- new core UI must use stable keys from `data/i18n/messages/<locale>/common.json`
 - future locale packs may temporarily map existing English compatibility phrases without feature-code changes
 - the compatibility surface must not grow through new per-locale HTML attributes
 

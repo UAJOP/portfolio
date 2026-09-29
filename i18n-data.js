@@ -165,13 +165,6 @@ window.KAAN_I18N = {
     "projectRoute": "projects/{slug}/"
   },
   "ui": {
-    "language.selectorLabel": {
-      "en": "Language",
-      "tr": "Dil",
-      "de": "Sprache",
-      "es": "Idioma",
-      "fr": "Langue"
-    },
     "language.selectorAria": {
       "en": "Language selector",
       "tr": "Dil seçici",
@@ -179,12 +172,12 @@ window.KAAN_I18N = {
       "es": "Selector de idioma",
       "fr": "Sélecteur de langue"
     },
-    "nav.open": {
-      "en": "Open navigation",
-      "tr": "Navigasyonu aç",
-      "de": "Navigation öffnen",
-      "es": "Abrir navegación",
-      "fr": "Ouvrir la navigation"
+    "language.selectorLabel": {
+      "en": "Language",
+      "tr": "Dil",
+      "de": "Sprache",
+      "es": "Idioma",
+      "fr": "Langue"
     },
     "nav.close": {
       "en": "Close navigation",
@@ -192,6 +185,13 @@ window.KAAN_I18N = {
       "de": "Navigation schließen",
       "es": "Cerrar navegación",
       "fr": "Fermer la navigation"
+    },
+    "nav.open": {
+      "en": "Open navigation",
+      "tr": "Navigasyonu aç",
+      "de": "Navigation öffnen",
+      "es": "Abrir navegación",
+      "fr": "Ouvrir la navigation"
     },
     "theme.dark": {
       "en": "Dark",
@@ -314,6 +314,23 @@ window.KAAN_I18N = {
     "notes": {
       "en": "Brand, product and technical names keep their canonical casing. Career terms may be localized only through reviewed locale packs. `languageNeutralStrings` records copy that is deliberately identical across every locale — flow diagrams, result summaries, technology lists and canonical titles — so qa:i18n can reject untranslated prose without flagging these.",
       "tr": "Marka, ürün ve teknik adların özgün yazımı korunur. Kariyer terimleri yalnızca gözden geçirilmiş dil paketleriyle yerelleştirilir. `languageNeutralStrings`, her dilde bilerek aynı bırakılan metinleri kaydeder."
+    }
+  },
+  "formatting": {
+    "en": {
+      "intlLocale": "en-US"
+    },
+    "tr": {
+      "intlLocale": "tr-TR"
+    },
+    "de": {
+      "intlLocale": "de-DE"
+    },
+    "es": {
+      "intlLocale": "es-ES"
+    },
+    "fr": {
+      "intlLocale": "fr-FR"
     }
   }
 };

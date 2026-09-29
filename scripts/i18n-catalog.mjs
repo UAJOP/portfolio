@@ -6,7 +6,7 @@
  * sources and returns a stable, sorted description of the translatable surface.
  *
  * Domains
- *   ui          stable-key shell copy          data/i18n/ui.json
+ *   ui          stable-key shell copy          data/i18n/messages/<locale>/common.json
  *   pages       authored HTML/runtime copy     Turkish pages pack + data-*-en pairs
  *   caseStudies case-study key maps            *-case-study.data.js
  *   projects    canonical project overlays     data/portfolio/project-details.json
@@ -640,8 +640,8 @@ export function buildCatalog() {
   };
 
   /* ui */
-  const ui = readJson("data/i18n/ui.json");
-  for (const key of Object.keys(ui).sort()) push("ui", key, ui[key].en);
+  const ui = readJson("data/i18n/messages/en/common.json");
+  for (const key of Object.keys(ui).sort()) push("ui", key, ui[key]);
 
   /* pages: authored page-copy maps keyed by English source.
    *

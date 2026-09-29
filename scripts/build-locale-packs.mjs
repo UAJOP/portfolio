@@ -55,11 +55,12 @@ import {
   loadDynamicSurface,
   DYNAMIC_SURFACES,
 } from "./i18n-catalog.mjs";
+import { loadMessageDomain } from "./i18n-messages.mjs";
 
 export const PACK_DOMAIN_FILES = ["ui", "pages", "case-studies", "projects", "content", "dynamic", "meta"];
 
 /** Domains whose Turkish content is projected from an existing canonical source. */
-export const DERIVED_TR_DOMAINS = ["ui", "case-studies", "projects", "content", "dynamic"];
+export const DERIVED_TR_DOMAINS = ["case-studies", "projects", "content", "dynamic"];
 
 /* ---------- Turkish derivation ---------- */
 
@@ -161,10 +162,7 @@ function deriveTurkishDynamic() {
 }
 
 function deriveTurkishUi() {
-  const ui = readJson("data/i18n/ui.json");
-  const out = {};
-  for (const key of Object.keys(ui).sort(compareKeys)) if (ui[key].tr !== undefined) out[key] = ui[key].tr;
-  return out;
+  return loadMessageDomain("tr", "common");
 }
 
 export function deriveTurkishPack() {
@@ -264,6 +262,13 @@ function derivedTurkishFiles() {
   return DERIVED_TR_DOMAINS.map((domain) => [packFile("tr", domain), stableJson(derived[domain])]);
 }
 
+function derivedCommonMessageFiles() {
+  const registry = loadRegistry();
+  return registry.locales
+    .filter((locale) => locale.id !== registry.defaultLocale)
+    .map((locale) => [packFile(locale.id, "ui"), stableJson(loadMessageDomain(locale.id, "common"))]);
+}
+
 /* The coverage helpers above are imported by the generators and by qa:i18n, so
  * the CLI only runs when this file is the entry point. */
 const isEntryPoint = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
@@ -275,18 +280,19 @@ if (command === "--noop") {
 } else if (command === "--derive") {
   fs.mkdirSync(path.join(ROOT, packDir("tr")), { recursive: true });
   for (const [file, content] of derivedTurkishFiles()) fs.writeFileSync(path.join(ROOT, file), content);
-  console.log(`[i18n:packs] derived ${DERIVED_TR_DOMAINS.length} Turkish pack domains from canonical sources.`);
+  for (const [file, content] of derivedCommonMessageFiles()) fs.writeFileSync(path.join(ROOT, file), content);
+  console.log(`[i18n:packs] derived stable common messages for every locale and ${DERIVED_TR_DOMAINS.length} Turkish domains.`);
 } else if (command === "--check") {
-  const stale = derivedTurkishFiles().filter(([file, content]) => {
+  const stale = [...derivedTurkishFiles(), ...derivedCommonMessageFiles()].filter(([file, content]) => {
     const absolute = path.join(ROOT, file);
     const existing = fs.existsSync(absolute) ? fs.readFileSync(absolute, "utf8").replace(/\r\n/g, "\n") : null;
     return existing !== content;
   });
   if (stale.length) {
-    console.error(`Derived Turkish pack is stale:\n${stale.map(([file]) => `  - ${file}`).join("\n")}\n\nRun: npm run i18n:packs`);
+    console.error(`Derived locale pack output is stale:\n${stale.map(([file]) => `  - ${file}`).join("\n")}\n\nRun: npm run i18n:packs`);
     process.exit(1);
   }
-  console.log("Derived Turkish pack is in step with canonical sources.");
+  console.log("Derived locale pack output is in step with canonical message sources.");
 } else if (command === "--scaffold") {
   const locale = argv[1];
   if (!locale) throw new Error("--scaffold needs a locale id");

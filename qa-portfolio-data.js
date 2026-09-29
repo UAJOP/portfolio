@@ -27,8 +27,20 @@ const read = (file) => fs.readFileSync(path.join(__dirname, file), "utf8");
 const exists = (file) => fs.existsSync(path.join(__dirname, file));
 
 const DATA_DIR = "data/portfolio";
-const I18N_FILE = "data/i18n/react-shell.json";
+const REACT_I18N_FILES = {
+  en: "data/i18n/messages/en/react-preview.json",
+  tr: "data/i18n/messages/tr/react-preview.json",
+};
+const I18N_FILE = REACT_I18N_FILES.en;
 const GENERATED = "portfolio-data.js";
+
+const loadReactStringMatrix = () => {
+  const byLocale = Object.fromEntries(
+    Object.entries(REACT_I18N_FILES).map(([locale, file]) => [locale, JSON.parse(read(file))]),
+  );
+  const keys = Object.keys(byLocale.en || {});
+  return Object.fromEntries(keys.map((key) => [key, { en: byLocale.en[key], tr: byLocale.tr[key] }]));
+};
 
 /** The five canonical destinations. These values are protected product truth. */
 const CANONICAL_SOCIALS = {
@@ -103,7 +115,7 @@ async function main() {
     );
   });
 
-  check(exists(I18N_FILE), `${I18N_FILE} is missing`);
+  Object.values(REACT_I18N_FILES).forEach((file) => check(exists(file), `${file} is missing`));
 
   if (failures.length) return report();
 
@@ -332,7 +344,7 @@ async function main() {
   if (exists(I18N_FILE)) {
     let strings = {};
     try {
-      strings = JSON.parse(read(I18N_FILE));
+      strings = loadReactStringMatrix();
     } catch (error) {
       failures.push(`${I18N_FILE} is not valid JSON: ${error.message}`);
     }
@@ -358,7 +370,7 @@ async function main() {
     /localhost:\d+/,
     /\b127\.0\.0\.1\b/,
   ];
-  const serialized = JSON.stringify(composed) + JSON.stringify(exists(I18N_FILE) ? read(I18N_FILE) : "");
+  const serialized = JSON.stringify(composed) + Object.values(REACT_I18N_FILES).map((file) => exists(file) ? read(file) : "").join("");
   forbidden.forEach((pattern) => {
     const match = serialized.match(pattern);
     check(!match, `canonical data contains something that looks private: ${match && match[0]}`);
@@ -371,7 +383,7 @@ async function main() {
   );
   check(
     !exists("src/react/data/translations.js"),
-    "React shell strings must live in data/i18n/react-shell.json, not in a JS module",
+    "React shell strings must live in data/i18n/messages/<locale>/react-preview.json, not in a JS module",
   );
 
   const reactData = "src/react/data/portfolio.js";
@@ -398,14 +410,15 @@ async function main() {
   const i18nModule = "src/react/i18n/translate.js";
   check(exists(i18nModule), `${i18nModule} is missing`);
   if (exists(i18nModule)) {
-    check(read(i18nModule).includes("@data/i18n/react-shell.json"), `${i18nModule} must read the canonical i18n JSON`);
+    check(read(i18nModule).includes("@data/i18n/messages/en/react-preview.json"), `${i18nModule} must read the canonical EN i18n JSON`);
+    check(read(i18nModule).includes("@data/i18n/messages/tr/react-preview.json"), `${i18nModule} must read the canonical TR i18n JSON`);
   }
 
   // Every i18n key the React tree asks for must exist, and every key defined
   // must still be used. A missing key renders as the raw key in the UI; an
   // orphan key is dead translation work that will rot.
   if (exists(I18N_FILE)) {
-    const strings = JSON.parse(read(I18N_FILE));
+    const strings = loadReactStringMatrix();
     const reactFiles = [];
     const walk = (dir) => {
       fs.readdirSync(path.join(__dirname, dir), { withFileTypes: true }).forEach((entry) => {

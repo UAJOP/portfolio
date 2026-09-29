@@ -12,6 +12,7 @@
  */
 
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import vm from "node:vm";
 import {
@@ -39,6 +40,7 @@ import {
 } from "./i18n-catalog.mjs";
 import { coverageFor, loadAuthoredPack, DERIVED_TR_DOMAINS, deriveTurkishPack } from "./build-locale-packs.mjs";
 import { browserRouteTable, isLegacyStub } from "./site-routes.mjs";
+import { commonMessageMatrix, loadMessageDomain, interpolateMessage, messageCatalogErrors } from "./i18n-messages.mjs";
 
 let assertions = 0;
 const failures = [];
@@ -49,8 +51,11 @@ const assert = (condition, message) => {
 const exists = (file) => fileExists(file);
 
 const registry = loadRegistry();
-const ui = readJson("data/i18n/ui.json");
+const ui = commonMessageMatrix(registry);
 const glossary = readJson("data/i18n/glossary.json");
+const messageContract = readJson("data/i18n/message-contract.json");
+const formatting = readJson("data/i18n/formatting.json");
+const catalog = buildCatalog();
 const localeIds = registry.locales.map((item) => item.id);
 const active = registry.locales.filter((item) => item.active);
 const inactive = registry.locales.filter((item) => !item.active);
@@ -105,12 +110,56 @@ for (const id of ["tr", "de", "es", "fr"]) {
 
 /* ---------- 4. UI catalog and packs ---------- */
 
+assert(messageContract.schemaVersion === 1, "stable message contract schema must be recognized");
+assert(
+  JSON.stringify(messageContract.productionLocales) === JSON.stringify(productionLocaleIds),
+  "stable message contract must cover every production locale in registry order",
+);
+const commonKeys = Object.keys(loadMessageDomain("en", "common")).sort(compareKeys);
+const commonReference = loadMessageDomain("en", "common");
+for (const locale of productionLocaleIds) {
+  const messages = loadMessageDomain(locale, "common");
+  const errors = messageCatalogErrors(commonReference, messages);
+  assert(errors.length === 0, `${locale} common message catalog is invalid: ${errors.join(", ")}`);
+}
+assert(interpolateMessage("Hello {name}", { name: "Kaan" }) === "Hello Kaan", "stable message interpolation must replace declared placeholders");
+assert(interpolateMessage("{name}, hello {name}", { name: "Kaan" }) === "Kaan, hello Kaan", "stable message interpolation must support a repeated placeholder");
+let invalidInterpolationRejected = false;
+try { interpolateMessage("Hello {name}", {}); } catch { invalidInterpolationRejected = true; }
+assert(invalidInterpolationRejected, "stable message interpolation must reject missing placeholders");
+
+/* Mutation checks exercise the same validator used above. */
+const firstCommonKey = commonKeys[0];
+const missingMutation = { ...commonReference };
+delete missingMutation[firstCommonKey];
+assert(messageCatalogErrors(commonReference, missingMutation).includes(`missing:${firstCommonKey}`), "common-message validator must reject a missing key mutation");
+assert(messageCatalogErrors(commonReference, { ...commonReference, "qa.extra": "x" }).includes("extra:qa.extra"), "common-message validator must reject a stale extra key mutation");
+assert(messageCatalogErrors(commonReference, { ...commonReference, [firstCommonKey]: "" }).includes(`empty:${firstCommonKey}`), "common-message validator must reject an empty value mutation");
+const placeholderReference = { greeting: "Hello {name}" };
+assert(messageCatalogErrors(placeholderReference, { greeting: "Hello {person}" }).includes("placeholders:greeting"), "common-message validator must reject a placeholder mismatch mutation");
+
+const compatibility = messageContract.domains.historicalPageCompatibility;
+const compatibilityKeys = catalog.entries.filter((entry) => entry.domain === "pages").map((entry) => entry.key).sort(compareKeys);
+const compatibilityHash = crypto.createHash("sha256").update(JSON.stringify(compatibilityKeys)).digest("hex");
+assert(compatibility.newKeysAllowed === false, "historical phrase-identity compatibility domain must be closed to new keys");
+assert(compatibilityKeys.length === compatibility.baseline.entryCount, "historical phrase-identity compatibility key count changed; migrate copy to a stable key instead");
+assert(compatibilityHash === compatibility.baseline.sha256, "historical phrase-identity compatibility keys changed; migrate copy to a stable key instead");
+
+for (const locale of productionLocaleIds) {
+  const definition = registry.byId.get(locale);
+  const config = formatting[locale];
+  assert(Boolean(config?.intlLocale), `${locale} needs an Intl locale configuration`);
+  assert(Intl.DateTimeFormat.supportedLocalesOf([config?.intlLocale || ""]).length === 1, `${locale} Intl date locale must be supported`);
+  assert(Intl.NumberFormat.supportedLocalesOf([config?.intlLocale || ""]).length === 1, `${locale} Intl number locale must be supported`);
+  assert(Intl.PluralRules.supportedLocalesOf([config?.intlLocale || ""]).length === 1, `${locale} Intl plural locale must be supported`);
+  assert(config.intlLocale.toLowerCase().startsWith(definition.htmlLang.toLowerCase()), `${locale} Intl locale must agree with htmlLang`);
+}
+
 for (const [key, pack] of Object.entries(ui)) {
   assert(Boolean(pack.en), `${key} missing English UI copy`);
   for (const locale of active) assert(Boolean(pack[locale.id]), `${key} missing active locale ${locale.id}`);
 }
 
-const catalog = buildCatalog();
 assert(catalog.entries.length > 2000, `translatable catalog looks truncated: ${catalog.entries.length} entries`);
 
 const packLocales = registry.locales.filter((item) => item.id !== registry.defaultLocale).map((item) => item.id);

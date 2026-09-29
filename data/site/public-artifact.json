@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "outputDirectory": "dist-site",
+  "browserDirectories": [
+    "assets",
+    "css",
+    "i18n",
+    "js"
+  ],
+  "excludedBrowserFiles": [
+    "js/core/i18n.js"
+  ],
+  "rootRuntimeFiles": [
+    "CNAME",
+    "robots.txt",
+    "sitemap.xml",
+    "404.html",
+    "project-detail.html",
+    "script.js",
+    "style.css",
+    "portfolio-v2.css",
+    "portfolio-v2.js",
+    "portfolio-data.js",
+    "i18n-data.js",
+    "ajoop-ai-config.js",
+    "request-config.js",
+    "case-study.css",
+    "case-study.js",
+    "adventure-game.js",
+    "ai-flow-puzzle.js",
+    "joyday-paint.js",
+    "ai-flow-puzzle-case-study.data.js",
+    "atolye-joyday-case-study.data.js",
+    "hospital-system-case-study.data.js",
+    "sinama-case-study.data.js"
+  ],
+  "generatedDeploymentFiles": [
+    ".nojekyll"
+  ],
+  "forbiddenPrefixes": [
+    ".git/",
+    ".github/",
+    ".claude/",
+    ".ajoop-runtime/",
+    "automation/",
+    "data/",
+    "docs/",
+    "node_modules/",
+    "scripts/",
+    "server/",
+    "src/",
+    "tests/"
+  ],
+  "forbiddenExtensions": [
+    ".md",
+    ".mjs",
+    ".json",
+    ".patch",
+    ".yml",
+    ".yaml"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "productionLocales": ["en", "tr", "de", "es", "fr"],
+  "domains": {
+    "common": {
+      "path": "data/i18n/messages/{locale}/common.json",
+      "locales": "productionLocales",
+      "keyModel": "stable-semantic",
+      "consumer": "static-site-shell"
+    },
+    "reactPreview": {
+      "path": "data/i18n/messages/{locale}/react-preview.json",
+      "locales": ["en", "tr"],
+      "keyModel": "stable-semantic",
+      "consumer": "development-only-react-preview"
+    },
+    "metadata": {
+      "english": "data/i18n/source/meta.json",
+      "translations": "data/i18n/packs/{locale}/meta.json",
+      "keyModel": "stable-route-and-field"
+    },
+    "structuredRuntime": {
+      "english": "data/i18n/source/dynamic.json",
+      "translations": "data/i18n/packs/{locale}/dynamic.json",
+      "keyModel": "stable-feature-and-field"
+    },
+    "historicalPageCompatibility": {
+      "translations": "data/i18n/packs/{locale}/pages.json",
+      "keyModel": "english-phrase-compatibility",
+      "newKeysAllowed": false,
+      "migrationOwner": "Master 2 page-by-page content migration",
+      "baseline": {
+        "entryCount": 1043,
+        "sha256": "39221af633eafa628464dfa63b0174000b288dc654926e6bb5cc843d3e15ebd0"
+      }
+    }
+  },
+  "placeholderSyntax": "{name}",
+  "productionFallbackPolicy": "forbidden-by-qa",
+  "developmentFallbackPolicy": "show-key"
+}

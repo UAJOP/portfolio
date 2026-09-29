@@ -52,6 +52,10 @@ const argValue = (name) => {
 };
 const sample = args.includes("--sample");
 const customNotFound = !args.includes("--no-custom-404");
+const SERVE_ROOT = path.resolve(argValue("--root") || ROOT);
+if (SERVE_ROOT !== ROOT && !fs.existsSync(SERVE_ROOT)) {
+  throw new Error(`route HTTP root does not exist: ${SERVE_ROOT}`);
+}
 
 const site = loadSiteRoutes();
 const registry = loadRegistry();
@@ -98,8 +102,8 @@ function startPagesServer() {
       response.writeHead(400).end();
       return;
     }
-    const absolute = path.join(ROOT, pathname);
-    if (!absolute.startsWith(ROOT)) {
+    const absolute = path.join(SERVE_ROOT, pathname);
+    if (absolute !== SERVE_ROOT && !absolute.startsWith(`${SERVE_ROOT}${path.sep}`)) {
       response.writeHead(403).end();
       return;
     }
@@ -116,7 +120,7 @@ function startPagesServer() {
     }
     if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
       response.writeHead(404, { "Content-Type": TYPES[".html"] });
-      response.end(fs.readFileSync(path.join(ROOT, "404.html")));
+      response.end(fs.readFileSync(path.join(SERVE_ROOT, "404.html")));
       return;
     }
     response.writeHead(200, { "Content-Type": TYPES[path.extname(file).toLowerCase()] || "application/octet-stream" });
@@ -175,12 +179,12 @@ async function run(base) {
     assert(Boolean(definition), `localized route registry references unknown locale ${locale}`);
     if (!definition || locale === registry.defaultLocale) continue;
     assert(
-      fs.existsSync(path.join(ROOT, definition.routePrefix)),
+      fs.existsSync(path.join(SERVE_ROOT, definition.routePrefix)),
       `required locale directory is missing: ${definition.routePrefix}/`,
     );
     for (const route of allRoutes) {
       const file = ROUTES.documentPathFor(route.page, locale);
-      assert(fs.existsSync(path.join(ROOT, file)), `required localized route document is missing: ${file}`);
+      assert(fs.existsSync(path.join(SERVE_ROOT, file)), `required localized route document is missing: ${file}`);
     }
   }
 
@@ -289,8 +293,9 @@ async function run(base) {
     for (const route of [...allRoutes, ...COMPANION_ROUTES]) documents.push(ROUTES.documentPathFor(route.page, locale));
   }
   for (const file of documents) {
-    if (!fs.existsSync(path.join(ROOT, file))) continue;
-    for (const [, raw] of read(file).matchAll(/\s(?:src|href|data-cert|data-case-gallery)="(\/[^"/][^"]*)"/g)) {
+    const absolute = path.join(SERVE_ROOT, file);
+    if (!fs.existsSync(absolute)) continue;
+    for (const [, raw] of fs.readFileSync(absolute, "utf8").matchAll(/\s(?:src|href|data-cert|data-case-gallery)="(\/[^"/][^"]*)"/g)) {
       const value = raw.replaceAll("&amp;", "&").split("#")[0].split("?")[0];
       if (!ROUTES.isLocalizableRoute(ROUTES.canonicalRouteKey(value))) assets.add(value);
     }
