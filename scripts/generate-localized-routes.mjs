@@ -374,7 +374,13 @@ function buildDocument({ route, locale, translators, indexable }) {
     );
   }
 
-  return html.replace(/^<!DOCTYPE html>\n?(?:<!--[\s\S]*?-->\n?)?/i, `<!DOCTYPE html>\n${GENERATED_NOTICE(locale, route)}\n`);
+  /* Consume either checkout newline convention, then emit one canonical blank
+   * line after the ownership header. This keeps Windows and Linux generation
+   * byte-equivalent instead of accidentally retaining a source CRLF. */
+  return html.replace(
+    /^<!DOCTYPE html>\r?\n?(?:<!--[\s\S]*?-->\r?\n?)?/i,
+    `<!DOCTYPE html>\n${GENERATED_NOTICE(locale, route)}\n\n`,
+  );
 }
 
 /* ---------- legacy compatibility stubs ---------- */
