@@ -163,6 +163,7 @@
   "mergeRush.status.title": "Les systèmes implémentés sont clairement séparés du travail encore en cours d’affinage.",
   "nav.close": "Fermer la navigation",
   "nav.open": "Ouvrir la navigation",
+  "projectDetail.loading": "Veuillez patienter pendant la préparation du projet d’archive sélectionné.",
   "request.flow.step1.body": "Décrivez l’objectif, le problème, le calendrier et les coordonnées.",
   "request.flow.step2.body": "J’examine la direction technique, les besoins d’intégration et les prochaines étapes possibles.",
   "request.flow.step3.body": "Je réponds via le moyen de contact que vous avez choisi.",

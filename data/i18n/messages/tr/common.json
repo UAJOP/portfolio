@@ -163,6 +163,7 @@
   "mergeRush.status.title": "Uygulanan sistemler, hâlâ iyileştirilmekte olan çalışmalardan ayrılıyor.",
   "nav.close": "Menüyü kapat",
   "nav.open": "Menüyü aç",
+  "projectDetail.loading": "Seçilen arşiv projesi hazırlanırken lütfen bekleyin.",
   "request.flow.step1.body": "Hedefi, problemi, zaman planını ve iletişim bilgilerini anlat.",
   "request.flow.step2.body": "Teknik yönü, entegrasyon ihtiyaçlarını ve olası sonraki adımları kontrol ederim.",
   "request.flow.step3.body": "Seçtiğin iletişim yöntemi üzerinden dönüş yaparım.",
