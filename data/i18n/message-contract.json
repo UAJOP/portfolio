@@ -12,7 +12,7 @@
       "path": "data/i18n/messages/{locale}/common.json",
       "locales": "productionLocales",
       "keyModel": "stable-semantic",
-      "consumer": "static-site-shell"
+      "consumer": "build-time-static-copy-and-runtime-shell-subset"
     },
     "reactPreview": {
       "path": "data/i18n/messages/{locale}/react-preview.json",

@@ -41,6 +41,20 @@ export function runtimeMessages(messages) {
   return Object.fromEntries(RUNTIME_COMMON_KEYS.map((key) => [key, messages[key]]));
 }
 
+export function semanticSourceMessageMap(locale, domain = "common") {
+  const english = loadMessageDomain("en", domain);
+  const localized = loadMessageDomain(locale, domain);
+  const seen = new Map();
+  const ambiguous = new Set();
+  for (const [key, source] of Object.entries(english)) {
+    if (typeof source !== "string" || !source.trim()) continue;
+    if (seen.has(source)) ambiguous.add(source);
+    else seen.set(source, localized[key]);
+  }
+  for (const source of ambiguous) seen.delete(source);
+  return seen;
+}
+
 export function placeholderNames(value) {
   return [...new Set(
     [...String(value).matchAll(/\{([a-z][a-zA-Z0-9]*)\}/g)].map((match) => match[1]),

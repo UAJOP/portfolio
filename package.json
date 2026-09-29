@@ -83,7 +83,7 @@
     "preview:react": "vite preview",
     "qa:react": "node qa-react-foundation.js",
     "qa:a11y:react": "pa11y-ci --config .pa11yci-react",
-    "qa:i18n": "node scripts/build-locale-packs.mjs --check && node scripts/generate-i18n.mjs --check && node scripts/qa-i18n.mjs",
+    "qa:i18n": "node scripts/build-locale-packs.mjs --check && node scripts/generate-i18n.mjs --check && node scripts/qa-i18n.mjs && node scripts/qa-rendered-locale-copy.mjs",
     "i18n:generate": "node scripts/generate-i18n.mjs",
     "i18n:extract": "node scripts/extract-i18n-source.mjs",
     "i18n:packs": "node scripts/build-locale-packs.mjs --derive",

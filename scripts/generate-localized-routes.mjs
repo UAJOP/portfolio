@@ -58,6 +58,7 @@ import {
   isLegacyStub,
 } from "./site-routes.mjs";
 import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-ownership.mjs";
+import { semanticSourceMessageMap } from "./i18n-messages.mjs";
 
 const checkOnly = process.argv.includes("--check");
 
@@ -276,11 +277,13 @@ function packTranslators(locale) {
   const text = pack.pages?.text || {};
   const attribute = pack.pages?.attribute || {};
   const messages = pack.ui || {};
+  const semanticBySource = semanticSourceMessageMap(locale);
   const caseStudies = pack["case-studies"] || {};
+  const semantic = (source) => semanticBySource.get(source) || null;
   return {
     pack,
-    translateText: (key) => text[key] || null,
-    translateAttribute: (key) => attribute[key] || null,
+    translateText: (key) => semantic(key) || text[key] || null,
+    translateAttribute: (key) => semantic(key) || attribute[key] || null,
     messageValue: (key) => messages[key] || null,
     caseStudyFor: (id) => caseStudies[id] || null,
     meta: pack.meta || {},
