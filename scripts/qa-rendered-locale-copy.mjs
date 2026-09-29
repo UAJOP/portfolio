@@ -22,8 +22,8 @@ function visibleStrings(file){
   for(const match of html.matchAll(/\b(?:aria-label|alt|title|placeholder)="([^"]*)"/g)){const value=decode(match[1]);if(value)values.add(value);}
   return values;
 }
-const official=new Set(["Google API Services User Data Policy","Legacy of the Lost"]);
-const technicalTokens=["Python","JavaScript","TypeScript","FastAPI","PostgreSQL","MySQL","MSSQL","SQLite","Firebase","GitHub","Phaser","Unity","Unreal","REST APIs","C#/.NET","n8n"];
+const official=new Set(["Google API Services User Data Policy","Legacy of the Lost","Google Sheets · CRM Update · Email Notify","(42 Saat) Sıfırdan Komple Java Geliştirici Kursu","Uygulama Geliştirerek C# Öğrenin: A’dan Z’ye Eğitim Seti","Build Responsive Real-World Websites with HTML and CSS","Unreal Engine 5 C++ Developer: Learn C++ & Make Video Games","Atıl Samancıoğlu · Academy Club","Introduction to Packet Tracer"]);
+const technicalTokens=["Python","JavaScript","TypeScript","FastAPI","PostgreSQL","MySQL","MSSQL","SQLite","Firebase","GitHub","Phaser","Unity","Unreal","REST APIs","C#/.NET","n8n","Conversational AI","LLM","AI Flow","workflow automation","agent evaluation"];
 function languageNeutral(value){
   if(official.has(value)) return true;
   if(/[{}\[\]]/.test(value)) return true;
