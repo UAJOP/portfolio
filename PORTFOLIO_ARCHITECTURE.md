@@ -335,7 +335,7 @@ The temporary parity fixture from #23 (`src/react/data/foundation.js`) is delete
 
 Both architectures now **originate from the same canonical JSON source**. React consumes it directly; the legacy runtime consumes a deterministic generated compatibility artifact whose parity is enforced by `qa:data`. That is a guarantee built from three parts — one canonical source, a deterministic generator, and a blocking stale-artifact check — rather than the two runtimes literally reading the same file.
 
-React-shell UI strings moved the same way, into `data/i18n/react-shell.json`. This covers the React shell and its preview only — the production translation system in `legacy-script.js` is untouched, and page copy migrates with each page.
+React-shell UI strings use per-locale stable-key files under `data/i18n/messages/{en,tr}/react-preview.json`. This covers the development-only React preview; production shared UI uses `messages/<locale>/common.json`, while historical page copy migrates with each page rather than in one sweep.
 
 ## Shared React shell (#24)
 

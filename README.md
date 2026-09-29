@@ -74,7 +74,7 @@ Every public page is a clean directory URL, authored where it is served
 ## Core files
 
 - `data/portfolio/*.json` — **canonical source of truth** for flagship/project/recruiter/build/labs data
-- `data/i18n/react-shell.json` — React-shell UI strings
+- `data/i18n/messages/<locale>/` — stable-key shared UI and React-preview messages
 - `portfolio-data.js` — generated legacy compatibility artifact (do not edit by hand)
 - `scripts/generate-portfolio-data.mjs` — regenerates it deterministically from the JSON
 - `portfolio-v2.js` — V2 runtime and evidence surfaces

@@ -142,7 +142,7 @@ What shipped:
 - `portfolio-data.js` generated and **committed**, because the committed file is what Pages actually serves.
 - `qa-portfolio-data.js` — blocking; fails on a stale artifact and never regenerates it.
 - React imports the same JSON at build time through Vite's `@data` alias; `src/react/data/foundation.js` is deleted.
-- React-shell strings moved to `data/i18n/react-shell.json`.
+- React-shell strings moved to `data/i18n/messages/{en,tr}/react-preview.json`.
 
 Both architectures now **originate from the same canonical JSON source**. React consumes it directly; the legacy runtime consumes a deterministic generated compatibility artifact whose parity is enforced by `qa:data`.
 

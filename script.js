@@ -22,6 +22,7 @@
     "i18n-data.js",
     "js/core/locale-routes.js",
     "js/core/locale.js",
+    "js/core/i18n-format.js",
     "js/core/analytics-config.js",
     "js/core/analytics.js",
     "js/core/shell.js",

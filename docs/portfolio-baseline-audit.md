@@ -64,7 +64,7 @@ The dominant architectural risk is concentration: `legacy-script.js` (6,638 line
 | `data/portfolio/projects.json` | 5 flagship projects: `sinama`, `mergeRush`, `joyday`, `chatbotFlow`, `hospital`. Per-language fields. | Medium | Canonical. |
 | `data/portfolio/profile.json`, `socials.json`, `labs.json`, `recruiter-profiles.json`, `sinama-evidence.json`, `build-log.json` | Profile, social links, labs entries, recruiter snapshots, SINAMA evidence, Now-page log. | Low | Canonical. |
 | `data/portfolio/meta.json` | Version `2.0.0`, `updatedAt` `2026-08-23`. | Low | Stamped into the generated registry. |
-| `data/i18n/react-shell.json` | React shell translations. | Low | Not used by legacy pages. |
+| `data/i18n/messages/{en,tr}/react-preview.json` | React preview translations. | Low | Development-only; not deployed. |
 | `*-case-study.data.js` (4 files) | Per-case-study `window.caseStudyPageData`. | Medium | Separate from canonical JSON — a second content channel. |
 
 ### 2.3 Build & QA — not shipped

@@ -1,20 +1,21 @@
 /**
  * React-shell translation utility.
  *
- * The strings themselves live in `data/i18n/react-shell.json`, keyed as
- * `key -> { en, tr }` — the same bilingual shape the portfolio registry uses, so
- * both data layers read the same way.
+ * The strings live beside production messages in per-locale, stable-key source
+ * files. The preview intentionally supports EN/TR only until it becomes a
+ * production surface; active production locale coverage is enforced separately.
  *
  * Scope note: this covers the React shell and the design-system preview only.
  * The production translation system in `legacy-script.js` is untouched, and page
  * copy migrates with each page rather than in one sweep.
  */
-import strings from "@data/i18n/react-shell.json";
+import en from "@data/i18n/messages/en/react-preview.json";
+import tr from "@data/i18n/messages/tr/react-preview.json";
 
 export const SUPPORTED_LANGUAGES = ["en", "tr"];
 export const DEFAULT_LANGUAGE = "en";
 
-export { strings };
+export const strings = { en, tr };
 
 /**
  * Returns the translated string.
@@ -23,7 +24,5 @@ export { strings };
  * visible in the UI and in a Pa11y run instead of silently blanking a label.
  */
 export function translate(language, key) {
-  const entry = strings[key];
-  if (!entry) return key;
-  return entry[language] || entry[DEFAULT_LANGUAGE] || key;
+  return strings[language]?.[key] || strings[DEFAULT_LANGUAGE]?.[key] || key;
 }
