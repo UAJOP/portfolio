@@ -49,7 +49,9 @@ function setupProjectCardNavigation() {
   document.querySelectorAll("[data-project-link]").forEach((card) => {
     const slug = card.getAttribute("data-project-link");
     if (!slug) return;
-    const url = slug.endsWith(".html") ? siteUrl(slug) : projectUrl(slug);
+    /* A bare slug names a canonical project; anything with a path (a case study
+     * route such as /sinama-case-study/) is a page route in its own right. */
+    const url = slug.includes("/") || slug.includes(".") ? siteUrl(slug) : projectUrl(slug);
 
     card.addEventListener("click", (event) => {
       if (shouldIgnoreCardActivation(event)) return;

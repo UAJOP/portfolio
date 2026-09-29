@@ -228,25 +228,26 @@ check(
 
 // --- Production isolation ---------------------------------------------------
 // The single most important property of this pass: the live site is untouched.
+/* Production pages are clean directory routes (Clean Public URLs V1), each
+ * served by its own index.html; the 404 page stays a root document. */
 const productionPages = [
   "index.html",
-  "about.html",
-  "works.html",
-  "games.html",
-  "labs.html",
+  "about/index.html",
+  "works/index.html",
+  "games/index.html",
+  "labs/index.html",
   "404.html",
-  "sinama-case-study.html",
-  "merge-rush-case-study.html",
+  "sinama-case-study/index.html",
+  "merge-rush-case-study/index.html",
 ];
 
 productionPages.forEach((page) => {
   check(exists(page), `production page was removed: ${page}`);
   if (!exists(page)) return;
   const source = read(page);
-  /* 404.html is served for failures at arbitrary path depth, so its runtime
-   * reference is root-relative; authored routes retain the document-relative
-   * form. Both resolve to the same production file. */
-  check(/\bsrc="\/?script\.js"/.test(source), `${page} no longer boots the production runtime`);
+  /* Pages live at several depths and the 404 is served at any failed path, so
+   * every page boots the runtime root-relatively. */
+  check(/\bsrc="\/script\.js"/.test(source), `${page} no longer boots the production runtime`);
   check(!source.includes(OUT_DIR), `${page} must not reference the React build output`);
   check(!source.includes("react-preview"), `${page} must not link the React preview`);
   check(!/<script[^>]+type="module"/.test(source), `${page} must not load a module bundle; production has no build step`);

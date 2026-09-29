@@ -46,11 +46,11 @@
         "links": [
           {
             "label": "About",
-            "url": "about.html"
+            "url": "/about/"
           },
           {
             "label": "Experience",
-            "url": "blog.html"
+            "url": "/blog/"
           }
         ]
       },
@@ -59,11 +59,11 @@
         "links": [
           {
             "label": "AI Case Study",
-            "url": "projects/ai-chatbot-flow-design/"
+            "url": "/projects/ai-chatbot-flow-design/"
           },
           {
             "label": "Experience",
-            "url": "blog.html"
+            "url": "/blog/"
           }
         ]
       },
@@ -72,11 +72,11 @@
         "links": [
           {
             "label": "View Works",
-            "url": "works.html"
+            "url": "/works/"
           },
           {
             "label": "View Atölye Joyday Case Study",
-            "url": "atolye-joyday-case-study.html"
+            "url": "/atolye-joyday-case-study/"
           }
         ]
       },
@@ -85,7 +85,7 @@
         "links": [
           {
             "label": "View Atölye Joyday Case Study",
-            "url": "atolye-joyday-case-study.html"
+            "url": "/atolye-joyday-case-study/"
           },
           {
             "label": "Open Atölye Joyday Website",
@@ -98,11 +98,11 @@
         "links": [
           {
             "label": "About",
-            "url": "about.html"
+            "url": "/about/"
           },
           {
             "label": "Works",
-            "url": "works.html"
+            "url": "/works/"
           }
         ]
       },
@@ -136,7 +136,7 @@
           },
           {
             "label": "Experience",
-            "url": "blog.html"
+            "url": "/blog/"
           }
         ]
       },
@@ -145,7 +145,7 @@
         "links": [
           {
             "label": "Certificates",
-            "url": "single-work.html"
+            "url": "/certificates/"
           }
         ]
       },
@@ -154,11 +154,11 @@
         "links": [
           {
             "label": "Works",
-            "url": "works.html"
+            "url": "/works/"
           },
           {
             "label": "About",
-            "url": "about.html"
+            "url": "/about/"
           }
         ]
       },
@@ -173,11 +173,11 @@
         "links": [
           {
             "label": "About",
-            "url": "about.html"
+            "url": "/about/"
           },
           {
             "label": "Experience",
-            "url": "blog.html"
+            "url": "/blog/"
           }
         ]
       },
@@ -192,7 +192,7 @@
         "links": [
           {
             "label": "Experience",
-            "url": "blog.html"
+            "url": "/blog/"
           },
           {
             "label": "CV",
@@ -211,7 +211,7 @@
         "links": [
           {
             "label": "Experience",
-            "url": "blog.html"
+            "url": "/blog/"
           },
           {
             "label": "Contact",
@@ -230,7 +230,7 @@
         "links": [
           {
             "label": "About",
-            "url": "about.html"
+            "url": "/about/"
           },
           {
             "label": "CV",
@@ -249,11 +249,11 @@
         "links": [
           {
             "label": "Projects",
-            "url": "works.html"
+            "url": "/works/"
           },
           {
             "label": "About",
-            "url": "about.html"
+            "url": "/about/"
           }
         ]
       }
@@ -292,30 +292,30 @@
       [
         "SINAMA — AI Agent Reliability Lab",
         "Live AI agent reliability lab: multi-turn evaluation, regression evidence and release-readiness decisions",
-        "sinama-case-study.html",
+        "/sinama-case-study/",
         "View Case Study"
       ],
       [
         "AI Chatbot Flow Design",
         "Enterprise customer-workflow translation and multi-channel AI delivery",
-        "projects/ai-chatbot-flow-design/"
+        "/projects/ai-chatbot-flow-design/"
       ],
       [
         "AI Flow Puzzle",
         "Live node-logic, fallback and validation demo",
-        "ai-flow-puzzle-case-study.html",
+        "/ai-flow-puzzle-case-study/",
         "View Case Study"
       ],
       [
         "Atölye Joyday Official Website",
         "Customer-facing deployment: reservation journey and operational automation",
-        "atolye-joyday-case-study.html",
+        "/atolye-joyday-case-study/",
         "View Case Study"
       ],
       [
         "Hospital Form App",
         "C# Windows Forms and SQL Server workflow project preserved as a source archive.",
-        "hospital-system-case-study.html",
+        "/hospital-system-case-study/",
         "View Case Study"
       ]
     ],
@@ -365,7 +365,7 @@
         "hint": "Landing page",
         "keywords": "home landing",
         "type": "nav",
-        "value": "index.html"
+        "value": "/"
       },
       {
         "id": "works",
@@ -373,7 +373,7 @@
         "hint": "Project catalog",
         "keywords": "projects works portfolio",
         "type": "nav",
-        "value": "works.html"
+        "value": "/works/"
       },
       {
         "id": "sinama-case-study",
@@ -381,7 +381,7 @@
         "hint": "AI agent reliability lab case study",
         "keywords": "sinama ai agent reliability lab regression evaluation case study",
         "type": "nav",
-        "value": "sinama-case-study.html"
+        "value": "/sinama-case-study/"
       },
       {
         "id": "sinama-live",
@@ -398,7 +398,7 @@
         "hint": "Playable mini games",
         "keywords": "games oyun mini web canvas",
         "type": "nav",
-        "value": "games.html"
+        "value": "/games/"
       },
       {
         "id": "joyday-paint",
@@ -406,7 +406,7 @@
         "hint": "Virtual action painting game",
         "keywords": "joyday painting action canvas paint game png",
         "type": "nav",
-        "value": "joyday-paint.html"
+        "value": "/joyday-paint/"
       },
       {
         "id": "ai-flow-puzzle-play",
@@ -414,7 +414,7 @@
         "hint": "n8n-style chatbot workflow game",
         "keywords": "ai flow puzzle n8n chatbot workflow automation game",
         "type": "nav",
-        "value": "ai-flow-puzzle.html"
+        "value": "/ai-flow-puzzle/"
       },
       {
         "id": "ai-flow-puzzle-case-study",
@@ -422,7 +422,7 @@
         "hint": "Design and technical case study",
         "keywords": "ai flow puzzle case study node validation fallback",
         "type": "nav",
-        "value": "ai-flow-puzzle-case-study.html"
+        "value": "/ai-flow-puzzle-case-study/"
       },
       {
         "id": "adventure",
@@ -430,7 +430,7 @@
         "hint": "Career merge mini game",
         "keywords": "adventure game mini career merge job kaan",
         "type": "nav",
-        "value": "adventure.html"
+        "value": "/adventure/"
       },
       {
         "id": "joyday-case-study",
@@ -438,7 +438,7 @@
         "hint": "Live business and digital product case study",
         "keywords": "atolye joyday case study reservation digital product",
         "type": "nav",
-        "value": "atolye-joyday-case-study.html"
+        "value": "/atolye-joyday-case-study/"
       },
       {
         "id": "joyday-live",
@@ -455,7 +455,7 @@
         "hint": "2024 C# Windows Forms source-archive case study",
         "keywords": "hospital system form app c# windows forms sql server case study",
         "type": "nav",
-        "value": "hospital-system-case-study.html"
+        "value": "/hospital-system-case-study/"
       },
       {
         "id": "hospital-system-source",
@@ -525,7 +525,7 @@
         "hint": "Interactive canvas model",
         "keywords": "3d math canvas model rotate",
         "type": "nav",
-        "value": "labs.html#algorithmic-3d-lab"
+        "value": "/labs/#algorithmic-3d-lab"
       },
       {
         "id": "easter",

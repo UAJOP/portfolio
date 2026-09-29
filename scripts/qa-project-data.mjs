@@ -18,8 +18,20 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
+import { loadRegistry } from "./i18n-catalog.mjs";
+import { loadRouteRuntime } from "./site-routes.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const ROUTES = loadRouteRuntime(loadRegistry());
+
+/**
+ * The destination a link names, independent of URL spelling: the clean-route
+ * migration turned `blog.html` into `/blog/` without moving the destination,
+ * so internal links compare as canonical route keys. External URLs compare
+ * verbatim.
+ */
+const destinationKey = (url) =>
+  /^([a-z][a-z0-9+.-]*:|\/\/)/i.test(String(url)) ? String(url) : `route:${ROUTES.canonicalRouteKey(String(url).split(/[?#]/)[0])}`;
 const read = (p) => readFileSync(join(ROOT, p), "utf8");
 const readJson = (p) => JSON.parse(read(p));
 
@@ -122,10 +134,13 @@ for (const [slug, want] of Object.entries(baseline.records)) {
   check(`4. ${slug}: year unchanged`, got.year, want.year);
   check(`4. ${slug}: image unchanged`, got.image, want.image);
   check(
-    `10. ${slug}: link targets unchanged`,
-    (got.links || []).map((l) => l.url).join(" | "),
-    want.linkUrls.join(" | "),
+    `10. ${slug}: link destinations unchanged`,
+    (got.links || []).map((l) => destinationKey(l.url)).join(" | "),
+    want.linkUrls.map(destinationKey).join(" | "),
   );
+  for (const link of got.links || []) {
+    ok(`10. ${slug}: ${link.url} is a clean public URL`, !/\.html(?:$|[?#])/.test(link.url));
+  }
   check(`4. ${slug}: stack entry count unchanged`, (got.stack || []).length, want.stackCount);
   check(`4. ${slug}: gallery entry count unchanged`, (got.gallery || []).length, want.galleryCount);
   check(
@@ -239,14 +254,14 @@ for (const id of referencedIds) {
 for (const [id, project] of Object.entries(projects)) {
   const href = (project.links && project.links.caseStudy) || "";
   const match =
-    href.match(/^projects\/([^/]+)\/$/) ||
+    href.match(/^\/?projects\/([^/]+)\/$/) ||
     href.match(/project-detail\.html\?project=([^&]+)$/);
   if (!match) continue;
   const slug = decodeURIComponent(match[1]);
   ok(`12. projects.${id} caseStudy slug resolves: ${slug}`, Boolean(details[slug]));
   ok(
-    `12. projects.${id} caseStudy uses the canonical route`,
-    href.startsWith("projects/"),
+    `12. projects.${id} caseStudy uses the canonical root-relative route`,
+    href === `/projects/${slug}/`,
   );
 }
 
@@ -296,6 +311,7 @@ for (const [id, project] of Object.entries(sourceProjects)) {
    * self-reference, not a shared fact, so it has no counterpart to agree with.
    * Both the canonical route and the legacy query URL are accepted. */
   const ownDetailRoutes = new Set([
+    `/projects/${project.detailSlug}/`,
     `projects/${project.detailSlug}/`,
     `project-detail.html?project=${project.detailSlug}`,
   ]);

@@ -7,6 +7,11 @@
   "useGitignore": true,
   "ignorePaths": [
     "assets/**",
+    "tr/**",
+    "de/**",
+    "es/**",
+    "fr/**",
+    "dist-react/**",
     "node_modules/**",
     ".git/**",
     ".lighthouseci/**",

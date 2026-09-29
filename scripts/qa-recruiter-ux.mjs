@@ -17,6 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { authoredHtmlFiles } from "./i18n-catalog.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -59,7 +60,10 @@ for (const m of hero.matchAll(/<a[^>]*href="([^"]+)"[^>]*>/g)) {
   if (/^(https?:|mailto:|tel:|#)/.test(href)) continue;
   const target = href.split("#")[0].split("?")[0];
   if (!target) continue;
-  ok(`hero CTA resolves — ${href}`, exists(decodeURIComponent(target)));
+  ok(`hero CTA is a clean root-relative URL — ${href}`, target.startsWith("/") && !/\.html$/.test(target));
+  /* A clean route is served by its directory's index document. */
+  const file = decodeURIComponent(target.replace(/^\//, "")).replace(/(^|\/)$/, "$1index.html");
+  ok(`hero CTA resolves — ${href}`, exists(file));
 }
 
 /* Positioning and availability must be stated, not implied. */
@@ -79,12 +83,15 @@ ok("Recruiter Mode exposes the CV", /cv:\s*"[^"]+"/.test(read("js/features/recru
 ok("command palette exposes the CV", /View Resume|Özgeçmiş/.test(read("js/features/ultimate.js")));
 ok("the resume opener routes through the single constant", /window\.open\(resumeLink/.test(read("js/core/shell.js")));
 
-for (const page of fs.readdirSync(ROOT).filter((f) => f.endsWith(".html"))) {
+/* Authored pages; legacy `.html` stubs only forward to these. */
+const PAGES = authoredHtmlFiles();
+
+for (const page of PAGES) {
   ok(`${page}: header exposes Recruiter Mode (its CV and contact path)`, /data-recruiter-toggle/.test(read(page)));
 }
 
-for (const page of ["index.html", "about.html", "works.html"]) {
-  ok(`${page}: exposes a contact path`, /mailto:|request\.html/i.test(read(page)));
+for (const page of ["index.html", "about/index.html", "works/index.html"]) {
+  ok(`${page}: exposes a contact path`, /mailto:|href="\/request\/"/i.test(read(page)));
 }
 
 /* The request form is for project inquiries; a recruiter must also have a
@@ -116,11 +123,11 @@ for (const [id, project] of Object.entries(projects)) {
 }
 
 /* Cards on the two recruiter-facing browse surfaces must show it. */
-for (const page of ["index.html", "works.html"]) {
+for (const page of ["index.html", "works/index.html"]) {
   const html = read(page);
   const cards = (html.match(/<article class="(?:project-card|flagship-focus-card)[\s\S]*?<\/article>/g) || []);
   const withRole = cards.filter((c) => c.includes('class="project-role"'));
-  if (page === "works.html") {
+  if (page === "works/index.html") {
     check(`${page}: every project card shows a role`, withRole.length, cards.length);
   } else {
     ok(`${page}: project cards show a role (${withRole.length})`, withRole.length > 0);
@@ -201,16 +208,23 @@ ok("returning recruiters get a resume affordance", /is-recruiter-intent/.test(re
 
 /* ---------- 6. nothing regressed into legacy routes ---------- */
 
-for (const page of fs.readdirSync(ROOT).filter((f) => f.endsWith(".html"))) {
+for (const page of PAGES) {
   ok(
     `${page}: no legacy project query URL reintroduced`,
-    !/href="project-detail\.html\?project=/.test(read(page)),
+    !/href="\/?project-detail\.html\?project=/.test(read(page)),
   );
+}
+
+/* Recruiter Mode's evidence links are canonical clean routes. */
+const recruiterRoutes = [...read("js/features/recruiter.js").matchAll(/^\s*"(\/[^"]*)",$/gm)].map((m) => m[1]);
+ok("Recruiter Mode lists its evidence routes", recruiterRoutes.length >= 5);
+for (const route of recruiterRoutes) {
+  ok(`Recruiter Mode evidence route is a clean URL: ${route}`, route.endsWith("/") && !/\.html/.test(route));
 }
 
 /* ---------- 7. games are framed as engineering, not filler ---------- */
 
-const games = read("games.html");
+const games = read("games/index.html");
 ok("games page frames the work in engineering terms", /interactive|system|engineering|product|Phaser|gameplay/i.test(games));
 
 /* ---------- report ---------- */

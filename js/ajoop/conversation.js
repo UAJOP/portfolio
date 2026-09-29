@@ -352,7 +352,7 @@ function ajoopRoleActions(profile, route, language, registry) {
   }
   actions.push(
     ajoopAction("role:recruiter", ajoopPlanText("Recruiter Mode", "İK Modu", language), "nav", {
-      url: `index.html?role=${encodeURIComponent(profile.id)}`,
+      url: `/?role=${encodeURIComponent(profile.id)}`,
     }),
   );
   return actions;

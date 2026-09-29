@@ -28,8 +28,8 @@ const portfolioChatbotContent = {
       about: {
         text: "Kaan Balcı is an AI Designer & Software Developer focused on conversational AI, solution engineering, LLM evaluation, workflow automation and user-centered software products. He has contributed to 50+ academic, personal, freelance and team-based projects.",
         links: [
-          { label: "About", url: "about.html" },
-          { label: "Experience", url: "blog.html" },
+          { label: "About", url: "/about/" },
+          { label: "Experience", url: "/blog/" },
         ],
       },
       ai: {
@@ -37,18 +37,18 @@ const portfolioChatbotContent = {
         links: [
           {
             label: "AI Case Study",
-            url: "projects/ai-chatbot-flow-design/",
+            url: "/projects/ai-chatbot-flow-design/",
           },
-          { label: "Experience", url: "blog.html" },
+          { label: "Experience", url: "/blog/" },
         ],
       },
       projects: {
         text: "The strongest project areas are AI Chatbot Flow Design, Atölye Joyday Official Website, Hospital Appointment System, Hospital Form App, Drivenfinity and Cars Dataset Analysis. The Works page now combines selected case studies and the main public GitHub repository catalog with dynamic detail pages.",
         links: [
-          { label: "View Works", url: "works.html" },
+          { label: "View Works", url: "/works/" },
           {
             label: "View Atölye Joyday Case Study",
-            url: "atolye-joyday-case-study.html",
+            url: "/atolye-joyday-case-study/",
           },
         ],
       },
@@ -57,7 +57,7 @@ const portfolioChatbotContent = {
         links: [
           {
             label: "View Atölye Joyday Case Study",
-            url: "atolye-joyday-case-study.html",
+            url: "/atolye-joyday-case-study/",
           },
           {
             label: "Open Atölye Joyday Website",
@@ -68,8 +68,8 @@ const portfolioChatbotContent = {
       stack: {
         text: "Main stack: Python, C#/.NET, JavaScript, PHP, Java, Kotlin, C++, MySQL, MSSQL, Firebase, Unity, Unreal Engine, n8n, AI Flow and LLM evaluation workflows.",
         links: [
-          { label: "About", url: "about.html" },
-          { label: "Works", url: "works.html" },
+          { label: "About", url: "/about/" },
+          { label: "Works", url: "/works/" },
         ],
       },
       cv: {
@@ -85,18 +85,18 @@ const portfolioChatbotContent = {
         text: "Kaan is currently positioning primarily as a Forward Deployed Engineer, supported by evidence across Applied AI, AI reliability, solution engineering, automation and product-minded software delivery.",
         links: [
           { label: "Contact", url: "mailto:kaanb8776@gmail.com" },
-          { label: "Experience", url: "blog.html" },
+          { label: "Experience", url: "/blog/" },
         ],
       },
       certificates: {
         text: "Kaan has 25+ certifications across Udemy, Cisco and related platforms. The Certificates page shows a clean gallery with preview modal support.",
-        links: [{ label: "Certificates", url: "single-work.html" }],
+        links: [{ label: "Certificates", url: "/certificates/" }],
       },
       default: {
         text: "I could not match that exactly, but I can help with Kaan's AI experience, projects, tech stack, Joyday work, CV, certificates or contact details. Try one of the quick questions below.",
         links: [
-          { label: "Works", url: "works.html" },
-          { label: "About", url: "about.html" },
+          { label: "Works", url: "/works/" },
+          { label: "About", url: "/about/" },
         ],
       },
     },
@@ -123,8 +123,8 @@ const portfolioChatbotContent = {
       about: {
         text: "Kaan Balcı; conversational AI, solution engineering, LLM değerlendirme, workflow otomasyonu ve kullanıcı odaklı yazılım ürünlerine odaklanan bir AI Designer & Software Developer. 50+ akademik, kişisel, freelance ve ekip projesine katkı sağladı.",
         links: [
-          { label: "Hakkımda", url: "about.html" },
-          { label: "Deneyim", url: "blog.html" },
+          { label: "Hakkımda", url: "/about/" },
+          { label: "Deneyim", url: "/blog/" },
         ],
       },
       ai: {
@@ -132,18 +132,18 @@ const portfolioChatbotContent = {
         links: [
           {
             label: "AI Case Study",
-            url: "projects/ai-chatbot-flow-design/",
+            url: "/projects/ai-chatbot-flow-design/",
           },
-          { label: "Deneyim", url: "blog.html" },
+          { label: "Deneyim", url: "/blog/" },
         ],
       },
       projects: {
         text: "En güçlü proje alanları: AI Chatbot Flow Design, Atölye Joyday Official Website, Hospital Appointment System, Hospital Form App, Drivenfinity ve Cars Dataset Analysis. Projeler sayfası artık seçili case study’leri ve ana public GitHub repository kataloğunu dinamik detay sayfalarıyla birlikte topluyor.",
         links: [
-          { label: "Projeleri Gör", url: "works.html" },
+          { label: "Projeleri Gör", url: "/works/" },
           {
             label: "Atölye Joyday Vaka Çalışmasını Gör",
-            url: "atolye-joyday-case-study.html",
+            url: "/atolye-joyday-case-study/",
           },
         ],
       },
@@ -152,7 +152,7 @@ const portfolioChatbotContent = {
         links: [
           {
             label: "Atölye Joyday Vaka Çalışmasını Gör",
-            url: "atolye-joyday-case-study.html",
+            url: "/atolye-joyday-case-study/",
           },
           {
             label: "Atölye Joyday Canlı Sitesini Aç",
@@ -163,8 +163,8 @@ const portfolioChatbotContent = {
       stack: {
         text: "Ana stack: Python, C#/.NET, JavaScript, PHP, Java, Kotlin, C++, MySQL, MSSQL, Firebase, Unity, Unreal Engine, n8n, AI Flow ve LLM değerlendirme iş akışları.",
         links: [
-          { label: "Hakkımda", url: "about.html" },
-          { label: "Projeler", url: "works.html" },
+          { label: "Hakkımda", url: "/about/" },
+          { label: "Projeler", url: "/works/" },
         ],
       },
       cv: {
@@ -180,18 +180,18 @@ const portfolioChatbotContent = {
         text: "Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor; Applied AI, AI reliability, solution engineering, otomasyon ve ürün odaklı yazılım geliştirme kanıtları bu yönü destekliyor.",
         links: [
           { label: "İletişim", url: "mailto:kaanb8776@gmail.com" },
-          { label: "Deneyim", url: "blog.html" },
+          { label: "Deneyim", url: "/blog/" },
         ],
       },
       certificates: {
         text: "Kaan'ın Udemy, Cisco ve benzeri platformlardan 25+ sertifikası var. Certificates sayfasında modern galeri ve büyük önizleme modalı bulunuyor.",
-        links: [{ label: "Sertifikalar", url: "single-work.html" }],
+        links: [{ label: "Sertifikalar", url: "/certificates/" }],
       },
       default: {
         text: "Bunu tam eşleştiremedim ama Kaan'ın AI deneyimi, projeleri, tech stack'i, Joyday çalışmaları, CV'si, sertifikaları veya iletişim bilgileri hakkında yardımcı olabilirim. Aşağıdaki hazır sorulardan birini deneyebilirsin.",
         links: [
-          { label: "Projeler", url: "works.html" },
-          { label: "Hakkımda", url: "about.html" },
+          { label: "Projeler", url: "/works/" },
+          { label: "Hakkımda", url: "/about/" },
         ],
       },
     },
@@ -323,18 +323,18 @@ function enhanceAjoopDialogDepth() {
   const linkSets = {
     en: {
       about: [
-        { label: "About", url: "about.html" },
-        { label: "Experience", url: "blog.html" },
+        { label: "About", url: "/about/" },
+        { label: "Experience", url: "/blog/" },
       ],
       projects: [
-        { label: "View Works", url: "works.html" },
+        { label: "View Works", url: "/works/" },
         {
           label: "View Atölye Joyday Case Study",
-          url: "atolye-joyday-case-study.html",
+          url: "/atolye-joyday-case-study/",
         },
         {
           label: "View Hospital System Case Study",
-          url: "hospital-system-case-study.html",
+          url: "/hospital-system-case-study/",
         },
         {
           label: "Open Hospital System Source Archive",
@@ -345,9 +345,9 @@ function enhanceAjoopDialogDepth() {
       ai: [
         {
           label: "AI Case Study",
-          url: "projects/ai-chatbot-flow-design/",
+          url: "/projects/ai-chatbot-flow-design/",
         },
-        { label: "Experience", url: "blog.html" },
+        { label: "Experience", url: "/blog/" },
       ],
       contact: [
         { label: "Email", url: "mailto:kaanb8776@gmail.com" },
@@ -357,18 +357,18 @@ function enhanceAjoopDialogDepth() {
     },
     tr: {
       about: [
-        { label: "Hakkımda", url: "about.html" },
-        { label: "Deneyim", url: "blog.html" },
+        { label: "Hakkımda", url: "/about/" },
+        { label: "Deneyim", url: "/blog/" },
       ],
       projects: [
-        { label: "Projeleri Gör", url: "works.html" },
+        { label: "Projeleri Gör", url: "/works/" },
         {
           label: "Atölye Joyday Vaka Çalışmasını Gör",
-          url: "atolye-joyday-case-study.html",
+          url: "/atolye-joyday-case-study/",
         },
         {
           label: "Hospital System Vaka Çalışmasını Gör",
-          url: "hospital-system-case-study.html",
+          url: "/hospital-system-case-study/",
         },
         {
           label: "Hospital System Kaynak Arşivini Aç",
@@ -379,9 +379,9 @@ function enhanceAjoopDialogDepth() {
       ai: [
         {
           label: "AI Case Study",
-          url: "projects/ai-chatbot-flow-design/",
+          url: "/projects/ai-chatbot-flow-design/",
         },
-        { label: "Deneyim", url: "blog.html" },
+        { label: "Deneyim", url: "/blog/" },
       ],
       contact: [
         { label: "E-posta", url: "mailto:kaanb8776@gmail.com" },
@@ -478,7 +478,7 @@ function enhanceAjoopDialogDepth() {
         "His experience page is useful if you want the timeline: it lists AI work, freelance AI evaluation, Joyday, Punto, Ocean's Team, Gameathon and Mobidictum.",
       ],
       links: [
-        { label: "Experience", url: "blog.html" },
+        { label: "Experience", url: "/blog/" },
         {
           label: "CV",
           url: resumeLink,
@@ -494,7 +494,7 @@ function enhanceAjoopDialogDepth() {
         "If the job mixes AI flows, customer requirements, integrations, dashboards and web/product thinking, Kaan's profile fits well.",
       ],
       links: [
-        { label: "Experience", url: "blog.html" },
+        { label: "Experience", url: "/blog/" },
         { label: "Contact", url: "mailto:kaanb8776@gmail.com" },
       ],
     },
@@ -507,8 +507,8 @@ function enhanceAjoopDialogDepth() {
         "Live weather is outside my current static-site scope. Site navigation, CV, projects and recruiter summary are fully in scope.",
       ],
       links: [
-        { label: "Projects", url: "works.html" },
-        { label: "About", url: "about.html" },
+        { label: "Projects", url: "/works/" },
+        { label: "About", url: "/about/" },
       ],
     },
     cv: {
@@ -530,8 +530,8 @@ function enhanceAjoopDialogDepth() {
         "That is outside my current answer set, but I can expand. For now, ask me about Kaan's projects, AI background, work history or availability.",
       ],
       links: [
-        { label: "Works", url: "works.html" },
-        { label: "About", url: "about.html" },
+        { label: "Works", url: "/works/" },
+        { label: "About", url: "/about/" },
       ],
     },
   });
@@ -581,7 +581,7 @@ function enhanceAjoopDialogDepth() {
         "Zaman çizelgesi için Deneyim sayfası iyi: AI işleri, freelance AI evaluation, Joyday, Punto, Ocean's Team, Gameathon ve Mobidictum yer alıyor.",
       ],
       links: [
-        { label: "Deneyim", url: "blog.html" },
+        { label: "Deneyim", url: "/blog/" },
         {
           label: "CV",
           url: resumeLink,
@@ -597,7 +597,7 @@ function enhanceAjoopDialogDepth() {
         "İş AI akışı, müşteri gereksinimi, entegrasyon, dashboard ve web/product düşüncesini karıştırıyorsa Kaan'ın profili iyi oturur.",
       ],
       links: [
-        { label: "Deneyim", url: "blog.html" },
+        { label: "Deneyim", url: "/blog/" },
         { label: "İletişim", url: "mailto:kaanb8776@gmail.com" },
       ],
     },
@@ -610,8 +610,8 @@ function enhanceAjoopDialogDepth() {
         "Canlı hava durumu şu an statik site kapsamının dışında. Site navigasyonu, CV, projeler ve İK özeti tamamen kapsamımda.",
       ],
       links: [
-        { label: "Projeler", url: "works.html" },
-        { label: "Hakkımda", url: "about.html" },
+        { label: "Projeler", url: "/works/" },
+        { label: "Hakkımda", url: "/about/" },
       ],
     },
     cv: {
@@ -633,8 +633,8 @@ function enhanceAjoopDialogDepth() {
         "Bu cevap setimin biraz dışında kaldı ama genişletilebilir. Şimdilik Kaan'ın projeleri, AI geçmişi, iş deneyimi veya uygunluğu hakkında sorabilirsin.",
       ],
       links: [
-        { label: "Projeler", url: "works.html" },
-        { label: "Hakkımda", url: "about.html" },
+        { label: "Projeler", url: "/works/" },
+        { label: "Hakkımda", url: "/about/" },
       ],
     },
   });
@@ -767,7 +767,7 @@ enhanceAjoopDialogDepth();
       links: [
         {
           label: "View Atölye Joyday Case Study",
-          url: "atolye-joyday-case-study.html",
+          url: "/atolye-joyday-case-study/",
         },
         {
           label: "Open Atölye Joyday Website",
@@ -784,8 +784,8 @@ enhanceAjoopDialogDepth();
         "The practical stack is strongest around AI flows, web interfaces, database-backed systems, automation and game prototypes.",
       ],
       links: [
-        { label: "About", url: "about.html" },
-        { label: "Works", url: "works.html" },
+        { label: "About", url: "/about/" },
+        { label: "Works", url: "/works/" },
       ],
     },
     availability: {
@@ -798,7 +798,7 @@ enhanceAjoopDialogDepth();
       ],
       links: [
         { label: "Contact", url: "mailto:kaanb8776@gmail.com" },
-        { label: "Experience", url: "blog.html" },
+        { label: "Experience", url: "/blog/" },
       ],
     },
     certificates: {
@@ -809,7 +809,7 @@ enhanceAjoopDialogDepth();
         "For technical breadth, certificates add context around C#, Java, SQL, Linux, web design, Cisco networking and Unreal/Unity learning.",
         "I would treat the certificates as supporting proof; the project case studies are the main proof.",
       ],
-      links: [{ label: "Certificates", url: "single-work.html" }],
+      links: [{ label: "Certificates", url: "/certificates/" }],
     },
     education: {
       text: [
@@ -820,7 +820,7 @@ enhanceAjoopDialogDepth();
         "Education summary: Computer Programming graduate with ongoing Visual Communication Design studies.",
       ],
       links: [
-        { label: "About", url: "about.html" },
+        { label: "About", url: "/about/" },
         {
           label: "CV",
           url: resumeLink,
@@ -841,7 +841,7 @@ enhanceAjoopDialogDepth();
       links: [
         {
           label: "Atölye Joyday Vaka Çalışmasını Gör",
-          url: "atolye-joyday-case-study.html",
+          url: "/atolye-joyday-case-study/",
         },
         {
           label: "Atölye Joyday Canlı Sitesini Aç",
@@ -858,8 +858,8 @@ enhanceAjoopDialogDepth();
         "Pratik stack en çok AI akışları, web arayüzleri, veritabanı destekli sistemler, otomasyon ve oyun prototiplerinde güçleniyor.",
       ],
       links: [
-        { label: "Hakkımda", url: "about.html" },
-        { label: "Projeler", url: "works.html" },
+        { label: "Hakkımda", url: "/about/" },
+        { label: "Projeler", url: "/works/" },
       ],
     },
     availability: {
@@ -872,7 +872,7 @@ enhanceAjoopDialogDepth();
       ],
       links: [
         { label: "İletişim", url: "mailto:kaanb8776@gmail.com" },
-        { label: "Deneyim", url: "blog.html" },
+        { label: "Deneyim", url: "/blog/" },
       ],
     },
     certificates: {
@@ -883,7 +883,7 @@ enhanceAjoopDialogDepth();
         "Teknik genişlik için sertifikalar C#, Java, SQL, Linux, web tasarım, Cisco networking ve Unreal/Unity öğrenimini destekliyor.",
         "Sertifikaları destekleyici kanıt gibi okumak lazım; ana kanıt case study sayfaları.",
       ],
-      links: [{ label: "Sertifikalar", url: "single-work.html" }],
+      links: [{ label: "Sertifikalar", url: "/certificates/" }],
     },
     education: {
       text: [
@@ -894,7 +894,7 @@ enhanceAjoopDialogDepth();
         "Eğitim özeti: Bilgisayar Programcılığı mezuniyeti ve devam eden Görsel İletişim Tasarımı eğitimi.",
       ],
       links: [
-        { label: "Hakkımda", url: "about.html" },
+        { label: "Hakkımda", url: "/about/" },
         {
           label: "CV",
           url: resumeLink,
@@ -1798,7 +1798,7 @@ function ajoopRoleAnswer(profile, language, route) {
     .filter(Boolean);
   links.push({
     label: ajoopLabel("Open Recruiter Mode", "İK Modunu aç", language),
-    url: `index.html?role=${encodeURIComponent(profile.id)}`,
+    url: `/?role=${encodeURIComponent(profile.id)}`,
   });
 
   if (route && route.facet === "gaps") return ajoopRoleGapAnswer(profile, language, links);

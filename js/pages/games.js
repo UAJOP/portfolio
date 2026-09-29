@@ -22,7 +22,7 @@ function enhanceAdventureNavigation() {
       hint: "Career merge mini game",
       keywords: "adventure game mini career merge job kaan",
       type: "nav",
-      value: "adventure.html",
+      value: "/adventure/",
     });
     addCommand("tr", {
       id: "adventure",
@@ -30,7 +30,7 @@ function enhanceAdventureNavigation() {
       hint: "Kariyer merge mini oyunu",
       keywords: "macera oyun kariyer merge job iş kaan",
       type: "nav",
-      value: "adventure.html",
+      value: "/adventure/",
     });
   }
 
@@ -46,8 +46,8 @@ function enhanceAdventureNavigation() {
           "In the mini game, you merge books, keyboard, mouse, monitor, JavaScript, Python, C#, database, AI Flow, portfolio and interview steps until Job Offer appears.",
         ],
         links: [
-          { label: "Play Adventure", url: "adventure.html" },
-          { label: "View Works", url: "works.html" },
+          { label: "Play Adventure", url: "/adventure/" },
+          { label: "View Works", url: "/works/" },
         ],
       };
     }
@@ -60,8 +60,8 @@ function enhanceAdventureNavigation() {
           "Mini oyunda kitap, klavye, mouse, monitör, JavaScript, Python, C#, veritabanı, AI Flow, portfolyo ve mülakat adımlarını birleştirerek Job Offer seviyesine ulaşıyorsun.",
         ],
         links: [
-          { label: "Macera'yı Oyna", url: "adventure.html" },
-          { label: "Projeleri Gör", url: "works.html" },
+          { label: "Macera'yı Oyna", url: "/adventure/" },
+          { label: "Projeleri Gör", url: "/works/" },
         ],
       };
     }
@@ -97,7 +97,7 @@ function setupGameCards() {
     card.addEventListener("click", (event) => {
       if (shouldIgnoreCardActivation(event)) return;
       const url = card.dataset.gameLink;
-      if (url) window.location.href = url;
+      if (url) window.location.href = siteUrl(url);
     });
   });
 }
@@ -115,13 +115,13 @@ function enhanceJoydayGameNavigation() {
           "It includes Kaan's Career Adventure, Joyday Action Painting and AI Flow Puzzle, an n8n-style chatbot workflow logic game.",
         ],
         links: [
-          { label: "Open Games", url: "games.html" },
-          { label: "Play AI Flow Puzzle", url: "ai-flow-puzzle.html" },
+          { label: "Open Games", url: "/games/" },
+          { label: "Play AI Flow Puzzle", url: "/ai-flow-puzzle/" },
           {
             label: "View AI Flow Puzzle Case Study",
-            url: "ai-flow-puzzle-case-study.html",
+            url: "/ai-flow-puzzle-case-study/",
           },
-          { label: "Play Joyday Painting", url: "joyday-paint.html" },
+          { label: "Play Joyday Painting", url: "/joyday-paint/" },
         ],
       };
     }
@@ -133,13 +133,13 @@ function enhanceJoydayGameNavigation() {
           "İçinde Kaan'ın Kariyer Macerası, PNG çıktı alabilen Joyday Action Painting ve n8n mantıklı chatbot workflow oyunu AI Flow Puzzle yer alıyor.",
         ],
         links: [
-          { label: "Oyunları Aç", url: "games.html" },
-          { label: "AI Flow Puzzle Oyna", url: "ai-flow-puzzle.html" },
+          { label: "Oyunları Aç", url: "/games/" },
+          { label: "AI Flow Puzzle Oyna", url: "/ai-flow-puzzle/" },
           {
             label: "AI Flow Puzzle Vaka Çalışmasını Gör",
-            url: "ai-flow-puzzle-case-study.html",
+            url: "/ai-flow-puzzle-case-study/",
           },
-          { label: "Joyday Painting Oyna", url: "joyday-paint.html" },
+          { label: "Joyday Painting Oyna", url: "/joyday-paint/" },
         ],
       };
     }

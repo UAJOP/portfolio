@@ -44,6 +44,14 @@ jobs:
           set -o pipefail
           npm run qa:i18n 2>&1 | tee qa-results/i18n.txt
 
+      # BLOCKING: clean public URLs — no .html in links, canonicals, hreflang
+      # or the sitemap; every route a real directory document; every legacy
+      # .html URL a stub that forwards to its clean route.
+      - name: Check clean public route contract
+        run: |
+          set -o pipefail
+          npm run qa:routes 2>&1 | tee qa-results/routes.txt
+
       # BLOCKING: deterministic byte/resource budgets keep the historical
       # translation dictionary and full locale packs out of the common browser
       # path without relying on noisy Lighthouse timings.
@@ -90,13 +98,23 @@ jobs:
         run: |
           python3 -m http.server 4173 > qa-results/local-server.log 2>&1 &
           for attempt in {1..30}; do
-            if curl --fail --silent http://127.0.0.1:4173/index.html > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
               exit 0
             fi
             sleep 1
           done
           cat qa-results/local-server.log
           exit 1
+
+      # BLOCKING: every clean route, legacy .html stub, asset and sitemap URL
+      # answers correctly from a real static server, as a direct load or a
+      # refresh would. Python's server has no custom 404 page, so that one
+      # body check is left to the in-process GitHub Pages-shaped server that
+      # `npm run qa` already runs.
+      - name: Smoke-test clean routes over HTTP
+        run: |
+          set -o pipefail
+          node scripts/qa-routes-http.mjs --base http://127.0.0.1:4173 --no-custom-404 2>&1 | tee qa-results/routes-http.txt
 
       - name: Audit accessibility on mobile viewport
         run: npm run qa:a11y -- --json > qa-results/accessibility.json 2> qa-results/accessibility-errors.txt

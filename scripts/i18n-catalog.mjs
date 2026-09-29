@@ -24,6 +24,7 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { loadSiteRoutes } from "./site-routes.mjs";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -59,29 +60,22 @@ export function routePrefixFor(locale, registry = loadRegistry()) {
 /**
  * The canonical indexable route inventory, in sitemap order.
  *
- * `page` is the repo-relative English path; "" is the site root. Priorities and
- * change frequencies mirror the pre-09C sitemap so English output is unchanged.
+ * Derived from data/site/routes.json (see scripts/site-routes.mjs), never
+ * restated here. `page` is the clean route key — "" for the site root,
+ * "works/" for /works/ — and `source` is the authored English document that
+ * serves it. `legacy` is the pre-migration `.html` path that now holds a
+ * generated compatibility stub.
  */
-export const STATIC_ROUTES = [
-  { page: "", changefreq: "weekly", priority: "1.0", source: "index.html", id: "home" },
-  { page: "works.html", changefreq: "monthly", priority: "0.9", source: "works.html", id: "works" },
-  { page: "sinama-case-study.html", changefreq: "monthly", priority: "0.9", source: "sinama-case-study.html", id: "sinamaCaseStudy" },
-  { page: "merge-rush-case-study.html", changefreq: "monthly", priority: "0.9", source: "merge-rush-case-study.html", id: "mergeRushCaseStudy" },
-  { page: "now.html", changefreq: "weekly", priority: "0.8", source: "now.html", id: "now" },
-  { page: "blog.html", changefreq: "monthly", priority: "0.8", source: "blog.html", id: "blog" },
-  { page: "about.html", changefreq: "monthly", priority: "0.8", source: "about.html", id: "about" },
-  { page: "games.html", changefreq: "monthly", priority: "0.7", source: "games.html", id: "games" },
-  { page: "labs.html", changefreq: "monthly", priority: "0.7", source: "labs.html", id: "labs" },
-  { page: "ai-flow-puzzle-case-study.html", changefreq: "monthly", priority: "0.7", source: "ai-flow-puzzle-case-study.html", id: "aiFlowPuzzleCaseStudy" },
-  { page: "atolye-joyday-case-study.html", changefreq: "monthly", priority: "0.7", source: "atolye-joyday-case-study.html", id: "joydayCaseStudy" },
-  { page: "hospital-system-case-study.html", changefreq: "monthly", priority: "0.7", source: "hospital-system-case-study.html", id: "hospitalCaseStudy" },
-  { page: "single-work.html", changefreq: "monthly", priority: "0.6", source: "single-work.html", id: "certificates" },
-  { page: "request.html", changefreq: "monthly", priority: "0.6", source: "request.html", id: "request" },
-  { page: "adventure.html", changefreq: "monthly", priority: "0.5", source: "adventure.html", id: "adventure" },
-  { page: "joyday-paint.html", changefreq: "monthly", priority: "0.5", source: "joyday-paint.html", id: "joydayPaint" },
-  { page: "ai-flow-puzzle.html", changefreq: "monthly", priority: "0.5", source: "ai-flow-puzzle.html", id: "aiFlowPuzzle" },
-  { page: "privacy.html", changefreq: "yearly", priority: "0.3", source: "privacy.html", id: "privacy" },
-];
+const SITE_ROUTES = loadSiteRoutes();
+
+export const STATIC_ROUTES = SITE_ROUTES.pages.map((page) => ({
+  page: page.route,
+  changefreq: page.changefreq,
+  priority: page.priority,
+  source: page.source,
+  id: page.id,
+  legacy: page.legacy,
+}));
 
 /**
  * Non-indexable surfaces.
@@ -92,33 +86,18 @@ export const STATIC_ROUTES = [
  * shell stays a compatibility endpoint rather than becoming a query-string
  * duplicate of the canonical project route in five languages.
  */
-export const COMPANION_ROUTES = [
-  { page: "404.html", source: "404.html", id: "notFound", indexable: false },
-  { page: "project-detail.html", source: "project-detail.html", id: "projectShell", indexable: false },
-];
+export const COMPANION_ROUTES = SITE_ROUTES.companions.map((companion) => ({
+  page: companion.document,
+  source: companion.document,
+  id: companion.id,
+  indexable: false,
+}));
 
 export const NON_INDEXABLE_SOURCES = COMPANION_ROUTES.map((route) => route.source);
 
 /** Every authored page that owns its own `<head>` metadata. */
 export function metadataRoutes() {
   return [...STATIC_ROUTES, ...COMPANION_ROUTES];
-}
-
-/**
- * The two depths a generated localized page needs.
- *
- * `siteRoot` reaches the repository root, where assets live; `localeRoot`
- * reaches the locale's own root, where sibling pages live. On `/de/works.html`
- * they are `../` and ``; on `/de/projects/slug/`, `../../../` and `../../`.
- */
-export function routeDepths(routeKey, localePrefix) {
-  const segments = routeKey.endsWith("/")
-    ? routeKey.split("/").filter(Boolean).length
-    : routeKey.split("/").length - 1;
-  return {
-    localeRoot: "../".repeat(segments),
-    siteRoot: "../".repeat(segments + (localePrefix ? 1 : 0)),
-  };
 }
 
 export function loadProjectRegistry() {
@@ -295,11 +274,12 @@ export const COMPAT_ATTRIBUTE_PAIRS = [
   { prefix: "data-pv2-aria", target: "aria-label" },
 ];
 
+/**
+ * Every authored English document: the clean-route pages plus the companions.
+ * Legacy `.html` stubs and generated locale trees are output, not source.
+ */
 export function authoredHtmlFiles() {
-  return fs
-    .readdirSync(ROOT)
-    .filter((file) => file.endsWith(".html"))
-    .sort();
+  return [...STATIC_ROUTES.map((route) => route.source), ...NON_INDEXABLE_SOURCES].sort(compareKeys);
 }
 
 /** Every distinct English string carried by a compat attribute pair. */

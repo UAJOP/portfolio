@@ -44,7 +44,7 @@
           "en": "View Experience",
           "tr": "Deneyimi Gör"
         },
-        "url": "blog.html"
+        "url": "/blog/"
       }
     ],
     "overview": {
@@ -168,7 +168,7 @@
           "en": "View Case Study",
           "tr": "Vaka Çalışmasını Gör"
         },
-        "url": "atolye-joyday-case-study.html"
+        "url": "/atolye-joyday-case-study/"
       },
       {
         "label": {
@@ -670,7 +670,7 @@
           "en": "View Case Study",
           "tr": "Vaka Çalışmasını Gör"
         },
-        "url": "hospital-system-case-study.html"
+        "url": "/hospital-system-case-study/"
       },
       {
         "label": {

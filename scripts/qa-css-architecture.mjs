@@ -16,6 +16,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { authoredHtmlFiles } from "./i18n-catalog.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -37,13 +38,13 @@ const COMMON_CSS = ["style.css", "css/a11y.css", "portfolio-v2.css"];
 
 /* Page-scoped: stylesheet -> the only pages allowed to load it. */
 const SCOPED_CSS = {
-  "css/games/adventure.css": ["adventure.html"],
-  "css/games/joyday-paint.css": ["joyday-paint.html"],
-  "css/games/ai-flow-puzzle.css": ["ai-flow-puzzle.html"],
+  "css/games/adventure.css": ["adventure/index.html"],
+  "css/games/joyday-paint.css": ["joyday-paint/index.html"],
+  "css/games/ai-flow-puzzle.css": ["ai-flow-puzzle/index.html"],
   "case-study.css": [
-    "sinama-case-study.html", "merge-rush-case-study.html",
-    "hospital-system-case-study.html", "atolye-joyday-case-study.html",
-    "ai-flow-puzzle-case-study.html",
+    "sinama-case-study/index.html", "merge-rush-case-study/index.html",
+    "hospital-system-case-study/index.html", "atolye-joyday-case-study/index.html",
+    "ai-flow-puzzle-case-study/index.html",
   ],
 };
 
@@ -74,10 +75,11 @@ for (const file of onDisk) {
 
 /* ---------- 2. page stylesheet references ---------- */
 
-const htmlFiles = fs.readdirSync(ROOT).filter((f) => f.endsWith(".html")).sort();
-/* 404.html addresses its assets root-absolutely because GitHub Pages serves
- * that one document at whatever URL failed, at any depth. Both forms name the
- * same repository file, so the leading slash is normalized away here. */
+/* Authored documents; legacy `.html` stubs carry no stylesheets. */
+const htmlFiles = authoredHtmlFiles();
+/* Every page addresses its stylesheets root-absolutely, so a page at
+ * /tr/works/ and the 404 served at any failed depth resolve the same file.
+ * Depth-relative references are a failure, not a variant to normalize. */
 const sheetsOf = (html) =>
   [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)]
     .map((m) => (m[0].match(/href="([^"]+)"/) || [])[1])
@@ -88,7 +90,11 @@ for (const file of htmlFiles) {
   const html = read(file);
   const sheets = sheetsOf(html);
 
-  /* every local stylesheet a page references must exist */
+  /* every local stylesheet a page references must be root-relative and exist */
+  for (const raw of [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)].map((m) => (m[0].match(/href="([^"]+)"/) || [])[1])) {
+    if (!raw || /^https?:/.test(raw)) continue;
+    ok(`${file}: stylesheet is root-relative — ${raw}`, raw.startsWith("/"));
+  }
   for (const href of sheets) {
     ok(`${file}: stylesheet resolves — ${href}`, exists(decodeURIComponent(href)));
   }

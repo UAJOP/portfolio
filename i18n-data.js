@@ -65,53 +65,105 @@ window.KAAN_I18N = {
       "dir": "ltr"
     }
   ],
-  "routes": [
-    "",
-    "404.html",
-    "about.html",
-    "adventure.html",
-    "ai-flow-puzzle-case-study.html",
-    "ai-flow-puzzle.html",
-    "atolye-joyday-case-study.html",
-    "blog.html",
-    "games.html",
-    "hospital-system-case-study.html",
-    "joyday-paint.html",
-    "labs.html",
-    "merge-rush-case-study.html",
-    "now.html",
-    "privacy.html",
-    "project-detail.html",
-    "projects/agency-db/",
-    "projects/ai-chatbot-flow-design/",
-    "projects/atolye-joyday-official-website/",
-    "projects/calculator-android-studio/",
-    "projects/calculator-javascript/",
-    "projects/cars-dataset-analysis/",
-    "projects/control-panel/",
-    "projects/drivenfinity/",
-    "projects/dunker-madness/",
-    "projects/escape-island/",
-    "projects/extract-shoot-zero/",
-    "projects/hospital-appointment-system/",
-    "projects/hospital-form-app/",
-    "projects/ic-supply/",
-    "projects/legacy-of-the-lost/",
-    "projects/mandelas-web-site-project/",
-    "projects/my-java-projects/",
-    "projects/my-museum/",
-    "projects/portfolio-website/",
-    "projects/porto-25/",
-    "projects/pyhton-projects/",
-    "projects/tank-savage/",
-    "projects/unity-essentials/",
-    "projects/warehouse-war/",
-    "projects/weather-app/",
-    "request.html",
-    "sinama-case-study.html",
-    "single-work.html",
-    "works.html"
-  ],
+  "routeTable": {
+    "pages": [
+      {
+        "id": "home",
+        "route": "",
+        "legacy": "index.html"
+      },
+      {
+        "id": "works",
+        "route": "works/",
+        "legacy": "works.html"
+      },
+      {
+        "id": "sinamaCaseStudy",
+        "route": "sinama-case-study/",
+        "legacy": "sinama-case-study.html"
+      },
+      {
+        "id": "mergeRushCaseStudy",
+        "route": "merge-rush-case-study/",
+        "legacy": "merge-rush-case-study.html"
+      },
+      {
+        "id": "now",
+        "route": "now/",
+        "legacy": "now.html"
+      },
+      {
+        "id": "blog",
+        "route": "blog/",
+        "legacy": "blog.html"
+      },
+      {
+        "id": "about",
+        "route": "about/",
+        "legacy": "about.html"
+      },
+      {
+        "id": "games",
+        "route": "games/",
+        "legacy": "games.html"
+      },
+      {
+        "id": "labs",
+        "route": "labs/",
+        "legacy": "labs.html"
+      },
+      {
+        "id": "aiFlowPuzzleCaseStudy",
+        "route": "ai-flow-puzzle-case-study/",
+        "legacy": "ai-flow-puzzle-case-study.html"
+      },
+      {
+        "id": "joydayCaseStudy",
+        "route": "atolye-joyday-case-study/",
+        "legacy": "atolye-joyday-case-study.html"
+      },
+      {
+        "id": "hospitalCaseStudy",
+        "route": "hospital-system-case-study/",
+        "legacy": "hospital-system-case-study.html"
+      },
+      {
+        "id": "certificates",
+        "route": "certificates/",
+        "legacy": "single-work.html"
+      },
+      {
+        "id": "request",
+        "route": "request/",
+        "legacy": "request.html"
+      },
+      {
+        "id": "adventure",
+        "route": "adventure/",
+        "legacy": "adventure.html"
+      },
+      {
+        "id": "joydayPaint",
+        "route": "joyday-paint/",
+        "legacy": "joyday-paint.html"
+      },
+      {
+        "id": "aiFlowPuzzle",
+        "route": "ai-flow-puzzle/",
+        "legacy": "ai-flow-puzzle.html"
+      },
+      {
+        "id": "privacy",
+        "route": "privacy/",
+        "legacy": "privacy.html"
+      }
+    ],
+    "companions": [
+      "404.html",
+      "project-detail.html"
+    ],
+    "projectRoute": "projects/{slug}/"
+  },
   "ui": {
     "language.selectorLabel": {
       "en": "Language",

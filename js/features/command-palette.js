@@ -14,7 +14,9 @@ function executeCommand(command) {
     }
     if (command.external)
       window.open(command.value, "_blank", "noopener,noreferrer");
-    else window.location.href = command.value;
+    /* Command values are canonical routes; siteUrl keeps them in the current
+     * locale and correct from any page depth. */
+    else window.location.href = siteUrl(command.value);
   } else if (command.type === "resume") {
     if (typeof trackAnalyticsEvent === "function") {
       trackAnalyticsEvent(ANALYTICS_EVENTS.CV_OPEN, { source: "header" });

@@ -1,5 +1,6 @@
 const fs = require("fs");
 const vm = require("vm");
+const { authoredHtmlFiles, fileFor } = require("./scripts/qa-site-routes.cjs");
 
 const failures = [];
 const check = (condition, message) => {
@@ -60,28 +61,15 @@ check(!fs.existsSync("flagship-copy.js"), "flagship-copy.js must stay retired");
 check(fs.existsSync("legacy-script.js"), "legacy-script.js compatibility runtime is missing");
 
 const requiredBootPages = [
-  "index.html",
-  "works.html",
-  "games.html",
-  "blog.html",
-  "about.html",
-  "request.html",
-  "single-work.html",
+  ...["home", "works", "games", "blog", "about", "request", "certificates", "sinamaCaseStudy", "mergeRushCaseStudy", "labs", "now"].map(fileFor),
   "404.html",
-  "sinama-case-study.html",
-  "merge-rush-case-study.html",
-  "labs.html",
-  "now.html",
   "project-detail.html",
 ];
 requiredBootPages.forEach((file) => {
   const source = read(file);
-  /* 404.html loads the bootloader root-absolutely: GitHub Pages serves it at
-   * whatever URL failed, so a relative path would resolve against that. */
-  check(
-    source.includes('src="script.js"') || source.includes('src="/script.js"'),
-    `${file} must load the global script bootloader`,
-  );
+  /* Every page loads the bootloader root-absolutely: pages live at several
+   * depths and the 404 is served at whatever URL failed. */
+  check(source.includes('src="/script.js"'), `${file} must load the global script bootloader from the site root`);
   check(!source.includes("flagship-copy.js"), `${file} still references retired flagship-copy.js`);
 });
 
@@ -99,16 +87,17 @@ const normalizedIndex = normalizeWhitespace(index);
 check(normalizedIndex.includes("Hiring a Forward Deployed Engineer?"), "homepage recruiter CTA must use the canonical target identity");
 check(/"jobTitle"\s*:\s*"Forward Deployed Engineer"/.test(index), "homepage structured data must use the canonical current target title");
 
-const games = read("games.html");
+const games = read(fileFor("games"));
 check(!games.includes("<h3>Interview Run</h3>"), "Interview Run must not return as an active game card without an explicit product decision");
 check(games.includes("Merge Rush: Tiny Factory"), "Games must keep Merge Rush as the active product lead");
 
 const sitemap = read("sitemap.xml");
-check(sitemap.includes("/labs.html"), "sitemap must include Labs");
-check(sitemap.includes("/now.html"), "sitemap must include Build Log");
-check(!sitemap.includes("/project-detail.html"), "noindex dynamic project-detail must stay out of sitemap");
+check(sitemap.includes("<loc>https://kaanbalci.com/labs/</loc>"), "sitemap must include Labs at its clean URL");
+check(sitemap.includes("<loc>https://kaanbalci.com/now/</loc>"), "sitemap must include Build Log at its clean URL");
+check(!sitemap.includes("project-detail"), "noindex dynamic project-detail must stay out of sitemap");
+check(!/\.html<\/loc>/.test(sitemap), "sitemap must list clean URLs only, never .html");
 
-const request = read("request.html");
+const request = read(fileFor("request"));
 check(request.includes("no-cors"), "request page must disclose the no-cors confirmation limitation");
 
 const architecture = read("PORTFOLIO_ARCHITECTURE.md");
@@ -121,11 +110,14 @@ check(normalizedArchitecture.includes("does not claim a live llm"), "architectur
 // registry + V2 runtime itself, or relies on script.js to inject them. Both
 // paths must stay unambiguous and free of duplicate runtime loads.
 const runtimeFiles = ["portfolio-data.js", "script.js", "legacy-script.js", "portfolio-v2.js"];
-const htmlFiles = fs.readdirSync(".").filter((file) => file.endsWith(".html"));
+/* Authored documents; legacy `.html` stubs load no runtime and render no
+ * footer, and are held to their own contract by qa:routes. */
+const htmlFiles = authoredHtmlFiles;
 
 htmlFiles.forEach((file) => {
   const source = read(file);
-  const scriptSrcs = [...source.matchAll(/<script[^>]+src="([^"]+)"/g)].map((match) => match[1]);
+  /* Root-relative script sources name the same repository files at every depth. */
+  const scriptSrcs = [...source.matchAll(/<script[^>]+src="([^"]+)"/g)].map((match) => match[1].replace(/^\//, ""));
 
   runtimeFiles.forEach((runtime) => {
     const occurrences = scriptSrcs.filter((src) => src === runtime).length;
@@ -194,9 +186,10 @@ check(
 // silently no-op on every other page.
 check(
   !legacyRuntime.includes('value: "algorithmic-3d-lab"'),
-  "the 3D lab command must navigate to labs.html#algorithmic-3d-lab instead of scrolling to a section that no longer exists on most pages",
+  "the 3D lab command must navigate to /labs/#algorithmic-3d-lab instead of scrolling to a section that no longer exists on most pages",
 );
-check(read("labs.html").includes('id="algorithmic-3d-lab"'), "labs.html must keep the algorithmic-3d-lab anchor target");
+check(legacyRuntime.includes('value: "/labs/#algorithmic-3d-lab"'), "the 3D lab command must use the clean Labs route");
+check(read(fileFor("labs")).includes('id="algorithmic-3d-lab"'), "the Labs page must keep the algorithmic-3d-lab anchor target");
 check(
   (registry?.labs || []).some((item) => (item.url || "").includes("algorithmic-3d-lab")),
   "registry Labs must keep the Algorithmic 3D Lab entry that the command palette points at",
@@ -252,12 +245,12 @@ htmlFiles.forEach((file) => {
 
     const target = (open.match(/data-(?:project|game)-link="([^"]*)"/) || [])[1];
     if (!target) return;
-    // Canonical project route since BRIEF 02. The legacy
-    // project-detail.html?project=<slug> URL still resolves, but internal
-    // links point at the unique page.
-    const expected = target.endsWith(".html") || target.includes(".html?")
+    // Canonical project route since BRIEF 02; clean root-relative since Clean
+    // Public URLs V1. A bare slug names a project; a path names a page route.
+    check(!/\.html/.test(target), `${file}: card target "${target}" must be a clean route, not a .html URL`);
+    const expected = target.includes("/")
       ? target
-      : `projects/${encodeURIComponent(target)}/`;
+      : `/projects/${encodeURIComponent(target)}/`;
     const titleHref = (card.match(/<h3[^>]*>\s*<a[^>]+href="([^"]*)"/) || [])[1];
     check(titleHref === expected, `${file}: card targeting "${target}" must expose that destination as a real title anchor (found ${titleHref || "none"})`);
   });
@@ -313,7 +306,7 @@ htmlFiles.forEach((file) => {
 
   const brand = footer.match(/<a[^>]*class="footer-brand"[^>]*>/);
   check(Boolean(brand), `${file} footer must expose the Kaan Balcı brand link`);
-  if (brand) check(/href="index\.html"/.test(brand[0]), `${file} footer brand must link back to index.html`);
+  if (brand) check(/href="\/"/.test(brand[0]), `${file} footer brand must link back to the clean site root /`);
 
   const socialAnchors = [...footer.matchAll(/<a\b([^>]*)>/g)]
     .map((match) => match[1])

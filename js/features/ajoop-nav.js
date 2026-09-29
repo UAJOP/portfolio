@@ -44,19 +44,19 @@ function enhanceAjoopNavigationActions() {
           };
     if (content.answers?.who)
       content.answers.who.links = [
-        { label: labels.about, url: "about.html" },
+        { label: labels.about, url: "/about/" },
         { label: labels.cv, url: resumeLink },
       ];
     if (content.answers?.projects)
       content.answers.projects.links = [
-        { label: labels.works, url: "works.html" },
+        { label: labels.works, url: "/works/" },
         {
           label: labels.joyday,
-          url: "atolye-joyday-case-study.html",
+          url: "/atolye-joyday-case-study/",
         },
         {
           label: labels.hospitalCase,
-          url: "hospital-system-case-study.html",
+          url: "/hospital-system-case-study/",
         },
         {
           label: labels.hospitalSource,
@@ -68,7 +68,7 @@ function enhanceAjoopNavigationActions() {
       content.answers.joyday.links = [
         {
           label: labels.joyday,
-          url: "atolye-joyday-case-study.html",
+          url: "/atolye-joyday-case-study/",
         },
         { label: labels.live, url: "https://atolyejoyday.com/" },
       ];
@@ -83,8 +83,8 @@ function enhanceAjoopNavigationActions() {
       content.answers.contact.links = content.answers.cv?.links || [];
     if (content.answers?.default)
       content.answers.default.links = [
-        { label: labels.works, url: "works.html" },
-        { label: labels.about, url: "about.html" },
+        { label: labels.works, url: "/works/" },
+        { label: labels.about, url: "/about/" },
         { label: labels.mail, url: "mailto:kaanb8776@gmail.com" },
       ];
   });

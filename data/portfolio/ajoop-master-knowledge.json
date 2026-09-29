@@ -545,7 +545,7 @@
         "links": {
           "live": "https://sinama.kaanbalci.com",
           "github": "https://github.com/UAJOP/sinama",
-          "case_study": "https://kaanbalci.com/sinama-case-study.html"
+          "case_study": "https://kaanbalci.com/sinama-case-study/"
         },
         "conflict_note": "Older web crawl mentions 5 scenarios; current repository data says 14. Use current repository data."
       },
@@ -1117,10 +1117,10 @@
     "latest_cv": "CV-KAAN-BALCI(1).pdf uploaded 2026-09-04",
     "linkedin_export": "Profile.pdf uploaded 2026-09-04",
     "live_portfolio": "https://kaanbalci.com",
-    "portfolio_works": "https://kaanbalci.com/works.html",
-    "portfolio_about": "https://kaanbalci.com/about.html",
-    "portfolio_certificates": "https://kaanbalci.com/single-work.html",
-    "portfolio_games": "https://kaanbalci.com/games.html",
+    "portfolio_works": "https://kaanbalci.com/works/",
+    "portfolio_about": "https://kaanbalci.com/about/",
+    "portfolio_certificates": "https://kaanbalci.com/certificates/",
+    "portfolio_games": "https://kaanbalci.com/games/",
     "github": "https://github.com/UAJOP",
     "linkedin": "https://www.linkedin.com/in/balcikaan/",
     "portfolio_repo": "https://github.com/UAJOP/portfolio"

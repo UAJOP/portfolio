@@ -94,15 +94,13 @@ An unknown or missing slug falls through to the existing **Project Not Found** s
 
 ### Path depth
 
-Generated pages sit two directories deep, so every repo-relative URL needs a prefix. The page declares it:
+Since Clean Public URLs V1 every first-party URL is root-relative, so a page two directories deep resolves exactly like the site root and declares no depth:
 
 ```html
-<body data-project-slug="my-museum" data-site-root="../../">
+<body data-project-slug="my-museum">
 ```
 
-`siteUrl(path)` rebases repo-relative paths and `projectUrl(slug)` builds `<prefix>projects/<slug>/`. Root pages declare nothing, get `""`, and behave exactly as before.
-
-The prefix is **relative (`../../`), not root-absolute (`/`)**, on purpose: root-absolute paths break when the site is served from a subdirectory or over `file://`, and the repository's local QA workflow serves static files directly.
+`siteUrl(path)` localizes routes and serves assets from the site root; `projectUrl(slug)` builds `/{locale}/projects/<slug>/`. See [clean-public-routes.md](clean-public-routes.md) for the full route contract. (The earlier relative `../../` prefix existed to keep `file://` browsing working; clean directory URLs need an HTTP server anyway.)
 
 ---
 
@@ -239,7 +237,7 @@ They stay. `project-detail.html?project=<slug>` may exist in:
 - the CV,
 - browser bookmarks.
 
-Breaking them would lose real traffic for no benefit. The cost of keeping them is one `noindex` page and one branch in the slug resolver.
+Breaking them would lose real traffic for no benefit. The cost of keeping them is one `noindex` page and one branch in the slug resolver. Since Clean Public URLs V1 the shell also forwards a known slug to its canonical `/{locale}/projects/<slug>/` route.
 
 ---
 

@@ -1,5 +1,5 @@
 /**
- * Algorithmic 3D Lab (labs.html only).
+ * Algorithmic 3D Lab (the /labs/ page only).
  *
  * Extracted from js/features/creative.js by BRIEF 03. It gates on the
  * #math-3d-canvas element, which exists on exactly one page, so ~250 lines of

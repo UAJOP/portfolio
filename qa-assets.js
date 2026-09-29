@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { authoredHtmlFiles, fileFor } = require("./scripts/qa-site-routes.cjs");
 
 const failures = [];
 const check = (condition, message) => {
@@ -9,20 +10,28 @@ const read = (file) => fs.readFileSync(path.join(__dirname, file), "utf8");
 const exists = (file) => fs.existsSync(path.join(__dirname, file));
 const size = (file) => fs.statSync(path.join(__dirname, file)).size;
 
-const htmlFiles = fs.readdirSync(__dirname).filter((file) => file.endsWith(".html"));
-const runtimeFiles = fs
-  .readdirSync(__dirname)
-  .filter((file) => /\.(?:html|css|js)$/.test(file))
-  .filter((file) => !file.startsWith("qa-"));
+/* Authored documents live at their clean route (`works/index.html`); legacy
+ * `.html` stubs reference no assets. */
+const htmlFiles = authoredHtmlFiles;
+const runtimeFiles = [
+  ...htmlFiles,
+  ...fs
+    .readdirSync(__dirname)
+    .filter((file) => /\.(?:css|js)$/.test(file))
+    .filter((file) => !file.startsWith("qa-")),
+];
 const runtimeSources = runtimeFiles.map((file) => [file, read(file)]);
 
-const quotedAssetPattern = /["']((?:https:\/\/kaanbalci\.com\/)?assets\/[^"']+)["']/g;
+/* Assets are addressed root-relatively (`/assets/...`); absolute production
+ * URLs and pre-migration bare paths are accepted as input too. */
+const quotedAssetPattern = /["']((?:https:\/\/kaanbalci\.com)?\/?assets\/[^"']+)["']/g;
 const referencedAssets = new Map();
 
 runtimeSources.forEach(([file, source]) => {
   for (const match of source.matchAll(quotedAssetPattern)) {
     const asset = match[1]
-      .replace("https://kaanbalci.com/", "")
+      .replace("https://kaanbalci.com", "")
+      .replace(/^\//, "")
       .split(/[?#]/)[0];
     if (!referencedAssets.has(asset)) referencedAssets.set(asset, new Set());
     referencedAssets.get(asset).add(file);
@@ -39,7 +48,8 @@ htmlFiles.forEach((file) => {
   const imageTags = source.match(/<img\b[^>]*>/g) || [];
   imageTags.forEach((tag) => {
     const src = (tag.match(/\bsrc="([^"]+)"/) || [])[1] || "";
-    if (!src.startsWith("assets/")) return;
+    check(!src.startsWith("assets/"), `${file} image uses a depth-relative path: ${src}`);
+    if (!src.startsWith("/assets/")) return;
     assetBackedImageCount += 1;
     check(/\bwidth="\d+"/.test(tag), `${file} image lacks intrinsic width: ${src}`);
     check(/\bheight="\d+"/.test(tag), `${file} image lacks intrinsic height: ${src}`);
@@ -57,9 +67,9 @@ if (exists(profileAsset)) check(size(profileAsset) <= 80 * 1024, "optimized prof
 if (exists(logoAsset)) check(size(logoAsset) <= 24 * 1024, "optimized logo exceeds the 24 KB critical-asset budget");
 
 const index = read("index.html");
-const about = read("about.html");
+const about = read(fileFor("about"));
 const findImageTag = (source, asset) =>
-  (source.match(/<img\b[^>]*>/g) || []).find((tag) => tag.includes(`src="${asset}"`)) || "";
+  (source.match(/<img\b[^>]*>/g) || []).find((tag) => tag.includes(`src="/${asset}"`)) || "";
 const indexProfile = findImageTag(index, profileAsset);
 const aboutProfile = findImageTag(about, profileAsset);
 
@@ -79,7 +89,7 @@ htmlFiles.forEach((file) => {
   check(!source.includes("assets/CV_foto_mavi.png"), `${indexValue === 0 ? "index.html" : "about.html"} still ships the large profile PNG`);
 });
 
-["works.html", "games.html"].forEach((file) => {
+[fileFor("works"), fileFor("games")].forEach((file) => {
   const source = read(file);
   const cards = source.match(/<article\b[^>]*class="[^"]*project-card[^"]*"[\s\S]*?<\/article>/g) || [];
   cards.forEach((card) => {
