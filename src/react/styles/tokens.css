@@ -34,6 +34,9 @@
   --accent-text: #8aafd8;
   --accent-soft: rgba(90, 134, 189, 0.14);
   --accent-line: rgba(90, 134, 189, 0.34);
+  --action-fill: #4673aa;
+  --action-fill-hover: #426da0;
+  --action-text: #ffffff;
 
   /* Secondary accent, used sparingly for category separation. */
   --accent-alt: #6366f1;
@@ -146,6 +149,9 @@ html[data-theme="light"] {
   --accent-text: #214f82;
   --accent-soft: rgba(52, 104, 159, 0.1);
   --accent-line: rgba(52, 104, 159, 0.3);
+  --action-fill: #34689f;
+  --action-fill-hover: #214f82;
+  --action-text: #ffffff;
 
   --accent-alt: #4f46e5;
   --accent-alt-soft: rgba(79, 70, 229, 0.1);

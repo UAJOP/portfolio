@@ -18,6 +18,11 @@
   --color-accent: #5a86bd;
   --color-accent-strong: #8aafd8;
   --color-accent-soft: rgba(90, 134, 189, 0.14);
+  /* Action fills are deliberately darker than decorative accent so white text
+   * clears WCAG AA without muting links, focus rings or technical highlights. */
+  --color-action: #4673aa;
+  --color-action-hover: #426da0;
+  --color-on-action: #ffffff;
   --color-success: #55bd8c;
   --color-success-soft: rgba(85, 189, 140, 0.12);
   --color-warning: #d7a94b;
@@ -107,6 +112,9 @@ html[data-theme="light"] {
   --color-accent: #34689f;
   --color-accent-strong: #214f82;
   --color-accent-soft: rgba(52, 104, 159, 0.1);
+  --color-action: #34689f;
+  --color-action-hover: #214f82;
+  --color-on-action: #ffffff;
   --color-success: #267a58;
   --color-success-soft: rgba(38, 122, 88, 0.1);
   --color-warning: #8b6419;
@@ -366,16 +374,16 @@ html[data-theme="light"] .site-header {
 }
 
 .btn.primary {
-  border: 1px solid var(--color-accent);
-  background: var(--color-accent);
-  color: #fff;
+  border: 1px solid var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
   box-shadow: none;
 }
 
 .btn.primary:hover {
-  border-color: var(--color-accent-strong);
-  background: var(--color-accent-strong);
-  color: #07111b;
+  border-color: var(--color-action-hover);
+  background: var(--color-action-hover);
+  color: var(--color-on-action);
   transform: translateY(-1px);
 }
 

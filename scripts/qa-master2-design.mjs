@@ -19,6 +19,9 @@ const tokens = [
   "--color-text",
   "--color-text-secondary",
   "--color-accent",
+  "--color-action",
+  "--color-action-hover",
+  "--color-on-action",
   "--color-success",
   "--color-border",
   "--font-sans",
@@ -39,6 +42,9 @@ for (const token of [
   "--color-text",
   "--color-text-secondary",
   "--color-accent",
+  "--color-action",
+  "--color-action-hover",
+  "--color-on-action",
   "--color-success",
   "--color-border",
   "--shadow-md",
@@ -50,6 +56,8 @@ assert(!/font-family\s*:[^;]*(?:Georgia|Times New Roman|serif)/i.test(css), "Mas
 assert(!/#(?:00ffff|00e5ff|00ffff)|\bcyan\b/i.test(css), "Master 2 must not regress to a cyan/neon palette");
 assert(css.includes("prefers-reduced-motion: reduce"), "Master 2 must preserve reduced-motion behavior");
 assert(!/body\s*\{[^}]*overflow-x\s*:\s*hidden/is.test(css), "Master 2 must not hide horizontal overflow to mask defects");
+assert(/\.btn\.primary\s*\{[^}]*background:\s*var\(--color-action\)[^}]*color:\s*var\(--color-on-action\)/s.test(css), "Primary actions must use the measured action-fill contrast tokens");
+assert(/\.btn\.primary:hover\s*\{[^}]*background:\s*var\(--color-action-hover\)[^}]*color:\s*var\(--color-on-action\)/s.test(css), "Primary hover actions must preserve the measured contrast token pair");
 
 for (const file of authoredHtmlFiles()) {
   const html = read(file);
