@@ -517,9 +517,14 @@ body[data-page="labs"] .page-hero > p:not(.eyebrow) {
   color: var(--color-on-action);
 }
 
+/* The header keeps its place in the legacy overlay scale: page content <= 3,
+ * header 50, image modal 100, AJOOP and the Joyday finish dialog 120, Recruiter
+ * Mode / Command Palette / case gallery 160, skip link 200. Above that scale it
+ * painted over every open dialog and took the clicks meant for their close
+ * buttons. Guarded by scripts/qa-master2-design.mjs. */
 .site-header {
   position: sticky;
-  z-index: 1000;
+  z-index: 50;
   top: 0;
   display: flex;
   align-items: center;
@@ -539,6 +544,12 @@ body[data-page="labs"] .page-hero > p:not(.eyebrow) {
 
 html[data-theme="light"] .site-header {
   background: var(--color-header);
+}
+
+/* The open mobile menu lives inside the header: lift it over the floating
+ * AJOOP launcher (120) and easter trigger (82), still under every dialog. */
+.site-header:has(.nav-links.is-open) {
+  z-index: 130;
 }
 
 /* The brand is identity, never the flex item that absorbs a shortage. */
