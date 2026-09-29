@@ -128,6 +128,52 @@ for(const locale of locales){
   }
 }
 
+/* Short UI labels fall below the prose threshold above, and a string that was
+ * never added to the catalog passes through generation as English while pack
+ * coverage still reads 100%. UI slots (section labels, buttons, status badges,
+ * filter chips, definition labels, select options, image alt text) are copy by
+ * construction, so an English slot string may survive in a locale only when a
+ * reviewed source says so: a glossary name (protected term, project name or
+ * language-neutral string), a common message whose locale value equals English
+ * ("Build Log", a word the locale shares) or a historical pages identity. No
+ * phrase list lives here; new copy gets a stable message key. Game routes are
+ * checked on their portfolio shell only (header, footer, masthead); in-game
+ * labels are runtime-localized and tracked as Master 3 debt. */
+const SLOT_CLASS=/\b(?:eyebrow|btn|project-status|filter-btn)\b/;
+const GAME_SOURCES=new Set(["adventure/index.html","joyday-paint/index.html","ai-flow-puzzle/index.html"]);
+function slotStrings(html,shellOnly){
+  html=html.replace(/<(script|style|noscript|title)\b[\s\S]*?<\/\1>/gi," ");
+  if(shellOnly) html=[...html.matchAll(/<(header|footer)\b[\s\S]*?<\/\1>|<section[^>]*class="[^"]*page-hero[\s\S]*?<\/section>/g)].map((m)=>m[0]).join(" ");
+  const out=new Set();
+  for(const match of html.matchAll(/<(a|button|p|span|dt|option|th)\b([^>]*)>((?:<(?:i|span|svg)\b[^>]*>(?:<\/(?:i|span)>)?|[^<])*)<\/\1>/g)){
+    const [,tag,attributes,inner]=match;
+    const className=attributes.match(/\bclass="([^"]*)"/)?.[1]||"";
+    if(!(SLOT_CLASS.test(className)||tag==="dt"||tag==="option"||tag==="th")) continue;
+    const text=decode(inner.replace(/<[^>]+>/g," "));
+    if(text&&/[A-Za-z]{2}/.test(text)) out.add(text);
+  }
+  for(const match of html.matchAll(/<img\b[^>]*\salt="([^"]+)"/g)) out.add(decode(match[1]));
+  return out;
+}
+const glossary=JSON.parse(read("data/i18n/glossary.json"));
+const glossaryNames=new Set([...(glossary.protectedTerms||[]),...(glossary.projectNames||[]),...(glossary.languageNeutralStrings||[])]);
+const pagePacks=Object.fromEntries(locales.map((id)=>[id,JSON.parse(read(`data/i18n/packs/${id}/pages.json`))]));
+const reviewedIdentity=(locale,value)=>glossaryNames.has(value)||pagePacks[locale].text?.[value]===value||pagePacks[locale].attribute?.[value]===value||Object.entries(messages.en).some(([key,english])=>english===value&&messages[locale][key]===value);
+for(const route of all){
+  if(!fs.existsSync(path.join(ROOT,route.source))) continue;
+  const shellOnly=GAME_SOURCES.has(route.source);
+  const english=slotStrings(read(route.source),shellOnly);
+  for(const locale of locales){
+    const localized=routes.documentPathFor(route.page,locale);
+    if(!fs.existsSync(path.join(ROOT,localized))) continue;
+    const visible=slotStrings(read(localized),shellOnly);
+    for(const value of english){
+      assertions+=1;
+      if(visible.has(value)&&!reviewedIdentity(locale,value)) failures.push(`${localized}: untranslated UI label ${JSON.stringify(value)} (give it a stable data-message-key in data/i18n/messages, or declare it in data/i18n/glossary.json if it is a name)`);
+    }
+  }
+}
+
 if(failures.length){
  console.error(`Rendered locale copy QA failed: ${failures.length} leak(s), ${assertions} assertions`);
  failures.slice(0,80).forEach((failure)=>console.error(`  x ${failure}`));
