@@ -5,6 +5,22 @@ export const messageFile = (locale, domain) => `data/i18n/messages/${locale}/${d
 /* Only these shell messages are read after page render. Page-level semantic
  * messages are baked into localized HTML and must not be duplicated into the
  * global runtime payload or every locale's core pack. */
+export const SEMANTIC_PAGE_SOURCES = new Set([
+  "index.html",
+  "works/index.html",
+  "about/index.html",
+  "request/index.html",
+  "labs/index.html",
+  "blog/index.html",
+  "games/index.html",
+  "sinama-case-study/index.html",
+  "merge-rush-case-study/index.html",
+  "adventure/index.html",
+  "joyday-paint/index.html",
+  "ai-flow-puzzle/index.html",
+  "project-detail.html",
+]);
+
 export const RUNTIME_COMMON_KEYS = [
   "language.selectorAria",
   "language.selectorLabel",
