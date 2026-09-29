@@ -1,14 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const GENERATED_ROUTE_MARKERS = [
-  "GENERATED FILE. Do not edit.",
-  "GENERATED legacy compatibility stub",
-];
+const GENERATED_PAGE_HEADER = /^<!DOCTYPE html>\r?\n<!--\r?\nGENERATED FILE\. Do not edit\.\r?\nLocale: [a-z]{2,3}\r?\nCanonical route: \/[^\r\n]*\r?\nSource: [^\r\n]+\.html\r?\nGenerator: scripts\/generate-localized-routes\.mjs\r?\nCopy: data\/i18n\/packs\/[a-z]{2,3}\/\r?\n-->\r?\n/;
+const GENERATED_LEGACY_HEADER = /^<!DOCTYPE html>\r?\n<!--\r?\nGENERATED legacy compatibility stub\. Do not edit\.\r?\nLegacy URL: \/[^\r\n]+\.html\r?\nCanonical route: \/[^\r\n]*\r?\nLocale: [a-z]{2,3}\r?\nGenerator: scripts\/generate-localized-routes\.mjs\r?\nRegistry: data\/site\/routes\.json\r?\n-->\r?\n/;
 
-/** Only documents carrying an explicit route-generator marker are disposable. */
+/** Only documents beginning with a complete, exact generator header are disposable. */
 export function isGeneratorOwnedRouteDocument(source) {
-  return GENERATED_ROUTE_MARKERS.some((marker) => String(source || "").includes(marker));
+  const document = String(source || "");
+  return GENERATED_PAGE_HEADER.test(document) || GENERATED_LEGACY_HEADER.test(document);
 }
 
 export function classifyRouteOrphans(root, files) {

@@ -43,7 +43,11 @@ import {
   COMPANION_ROUTES,
 } from "./i18n-catalog.mjs";
 import { loadSiteRoutes, loadRouteRuntime, isLegacyStub, browserRouteTable } from "./site-routes.mjs";
-import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-ownership.mjs";
+import {
+  findRouteOrphans,
+  isGeneratorOwnedRouteDocument,
+  removeOwnedRouteOrphans,
+} from "./generated-route-ownership.mjs";
 
 let assertions = 0;
 const failures = [];
@@ -100,12 +104,18 @@ assert(simulatedMissingDirectory.includes("tr/"), "missing locale directory simu
 const simulatedMissingPage = missingLocalizedOutputs((file) => file === "tr/works/index.html" ? false : exists(file));
 assert(simulatedMissingPage.includes("tr/works/index.html"), "missing localized page simulation must fail for tr/works/index.html");
 
-/* Regression: an unmarked locale orphan must be diagnosed and must survive. */
+/* Regression: only the exact leading generator headers establish ownership. */
+assert(isGeneratorOwnedRouteDocument(read("tr/works/index.html")), "real generated locale page must be generator-owned");
+assert(isGeneratorOwnedRouteDocument(read("tr/works.html")), "real generated legacy stub must be generator-owned");
+const markerImitation = "<!doctype html><html><body><p>GENERATED FILE. Do not edit.</p></body></html>\n";
+assert(!isGeneratorOwnedRouteDocument(markerImitation), "generator marker text in an authored page body must not establish ownership");
+
+/* An unowned locale orphan must be diagnosed and survive cleanup. */
 const orphanFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-route-ownership-"));
 try {
   const fixture = "tr/googleexample.html";
   fs.mkdirSync(path.join(orphanFixtureRoot, "tr"), { recursive: true });
-  fs.writeFileSync(path.join(orphanFixtureRoot, fixture), "<!doctype html><title>User file</title>\n");
+  fs.writeFileSync(path.join(orphanFixtureRoot, fixture), markerImitation);
   const classified = findRouteOrphans(orphanFixtureRoot, ["tr"], new Set());
   assert(classified.some(({ file, owned }) => file === fixture && !owned), "route generator must detect tr/googleexample.html as unowned");
   let diagnostic = "";

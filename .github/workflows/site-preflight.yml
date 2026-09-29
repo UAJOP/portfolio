@@ -107,15 +107,14 @@ jobs:
           cat qa-results/local-server.log
           exit 1
 
-      # BLOCKING: every clean route, legacy .html stub, asset and sitemap URL
-      # answers correctly from a real static server, as a direct load or a
-      # refresh would. Python's server has no custom 404 page, so that one
-      # body check is covered by the same blocking route command's in-process
-      # GitHub Pages-shaped mode during the local QA gate.
+      # BLOCKING: the suite starts its own GitHub Pages-shaped server so
+      # extensionless `.html` lookup, clean directory loads, legacy stubs and
+      # the custom 404 are validated with the authoritative host semantics.
+      # The Python server above remains available for Pa11y and Lighthouse.
       - name: Smoke-test clean routes over HTTP
         run: |
           set -o pipefail
-          npm run qa:routes:http -- --base http://127.0.0.1:4173 --no-custom-404 2>&1 | tee qa-results/routes-http.txt
+          npm run qa:routes:http 2>&1 | tee qa-results/routes-http.txt
 
       - name: Audit accessibility on mobile viewport
         run: npm run qa:a11y -- --json > qa-results/accessibility.json 2> qa-results/accessibility-errors.txt

@@ -149,7 +149,7 @@ Legacy input is normalized on the way in (`/tr/about.html` → `about/` →
 | Script | Guards |
 | --- | --- |
 | `qa:routes` | registry = migration table; project slugs unchanged; `routeFor`/`routeForProject`; every language switch (including legacy input, query, hash); every (locale, route) document exists at its directory; every stub forwards correctly; no `.html` in any first-party link, canonical, hreflang, og:url, JSON-LD or the sitemap; every first-party src/href resolves; Ajoop, Recruiter Mode, Command Palette and canonical data carry clean destinations |
-| `qa:routes:http` | the same site over real HTTP from a GitHub Pages-shaped server: every clean route 200 with its own canonical, every legacy URL forwards, trailing-slash redirects, assets, sitemap URLs, real 404s. `--base <url>` targets any server (CI runs it against `python -m http.server`); `--sample` smoke-tests production |
+| `qa:routes:http` | the same site over real HTTP from a GitHub Pages-shaped server: every clean route 200 with its own canonical, every legacy URL forwards, trailing-slash redirects, assets, sitemap URLs, real 404s. CI uses the suite's authoritative in-process server; `--base <url>` targets an external server and `--sample` smoke-tests production |
 | `qa:html` | validates every published document, derived from the registry |
 | `qa:i18n`, `qa:seo`, `qa:links`, … | updated to the clean contract — they assert clean root-relative URLs rather than tolerating `.html` |
 
@@ -162,11 +162,17 @@ The canonical checkout is also the production AJOOP Bridge working directory.
 The clean URLs in `ajoop-master-knowledge.json` must not reach retrieval before
 the matching Pages routes are live. Release in this order, without overlap:
 
-1. merge and deploy the site;
-2. run the production route smoke test;
-3. ingest the Qdrant collection;
-4. restart AJOOP Bridge;
-5. run AJOOP health and link acceptance.
+0. While feature work is unmerged, keep Bridge stopped; do not start or restart
+   it from the feature checkout.
+1. Push the branch and open the pull request.
+2. Wait for CI to pass.
+3. Merge the pull request.
+4. Switch the canonical checkout to `main` and pull the merged `main`.
+5. Wait for the GitHub Pages deployment to complete.
+6. Run the production clean-route smoke test.
+7. Run the Qdrant ingest from merged `main`.
+8. Restart AJOOP Bridge.
+9. Verify local and public AJOOP health and clean links.
 
 - Ajoop's server-side answers take links from
   `data/portfolio/ajoop-master-knowledge.json`, which now carries clean URLs. A
