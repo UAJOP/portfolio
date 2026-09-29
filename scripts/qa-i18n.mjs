@@ -951,7 +951,9 @@ for (const [file, script] of GENERATORS) {
 }
 
 const packageJson = readJson("package.json");
-assert(packageJson.scripts?.["qa:i18n"] === "node scripts/qa-i18n.mjs", "package.json must expose qa:i18n");
+const qaI18nScript = String(packageJson.scripts?.["qa:i18n"] || "");
+assert(qaI18nScript.includes("node scripts/generate-i18n.mjs --check"), "qa:i18n must reject stale generated i18n runtime artifacts");
+assert(qaI18nScript.includes("node scripts/qa-i18n.mjs"), "package.json must expose blocking i18n QA");
 assert(String(packageJson.scripts?.qa || "").includes("qa:i18n"), "qa:i18n must block npm run qa");
 for (const [, script] of GENERATORS) assert(Boolean(packageJson.scripts?.[script]), `package.json must expose ${script}`);
 

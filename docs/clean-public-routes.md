@@ -61,8 +61,10 @@ tr/works.html               ← generated legacy stub
 ```
 
 A direct load, a refresh, an external link and a crawler all get a real
-document. `/works` (no slash) is redirected to `/works/` by the host. There is
-no SPA fallback and no 404 interception.
+document. GitHub Pages may resolve `/works` through `works.html` before the
+directory route; that generated compatibility document forwards to `/works/`.
+The canonical `/works/` URL still direct-loads its real `works/index.html`.
+There is no SPA fallback and no 404 interception.
 
 `index.html` and `404.html` keep their names: the first is the home document
 (`/`), the second is the file GitHub Pages serves for every failed URL.
@@ -114,7 +116,8 @@ canonical already names `/` and `/tr/`.
 `project-detail.html` stays: it is the template the project generator derives
 `projects/<slug>/index.html` from, and the compatibility endpoint for old
 `/project-detail.html?project=<slug>` links. When opened with a known slug the
-runtime forwards to `/{locale}/projects/<slug>/` (keeping the fragment); an
+runtime forwards to `/{locale}/projects/<slug>/`, preserving meaningful query
+parameters and the fragment while dropping `project` and tracking noise; an
 unknown slug stays on its not-found state. It is `noindex`, has no canonical,
 and there is no `/project-detail/` route.
 
@@ -154,6 +157,16 @@ Filesystem assertions may name `.html` files. Public-URL assertions never
 accept one.
 
 ## Operational notes
+
+The canonical checkout is also the production AJOOP Bridge working directory.
+The clean URLs in `ajoop-master-knowledge.json` must not reach retrieval before
+the matching Pages routes are live. Release in this order, without overlap:
+
+1. merge and deploy the site;
+2. run the production route smoke test;
+3. ingest the Qdrant collection;
+4. restart AJOOP Bridge;
+5. run AJOOP health and link acceptance.
 
 - Ajoop's server-side answers take links from
   `data/portfolio/ajoop-master-knowledge.json`, which now carries clean URLs. A

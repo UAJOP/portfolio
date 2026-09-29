@@ -57,6 +57,7 @@ import {
   renderLegacyStub,
   isLegacyStub,
 } from "./site-routes.mjs";
+import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-ownership.mjs";
 
 const checkOnly = process.argv.includes("--check");
 
@@ -475,7 +476,7 @@ for (const [file, html] of planned) {
 }
 if (normalize(readIfExists("sitemap.xml")) !== normalize(sitemap)) differences.push("sitemap.xml");
 
-/** Locale route trees this generator owns, so stale ones can be removed safely. */
+/** Locale route trees may contain user files; inspect every document before cleanup. */
 function ownedLocaleDirs() {
   return registry.locales
     .filter((locale) => locale.id !== registry.defaultLocale)
@@ -484,31 +485,24 @@ function ownedLocaleDirs() {
 }
 
 const stale = ownedLocaleDirs().filter((prefix) => !readyLocales.some((entry) => entry.locale === prefix));
-for (const prefix of stale) differences.push(`${prefix}/ (stale locale route tree)`);
 
 /**
  * Documents inside a live locale tree that no route plans any more — the
  * pre-migration `/tr/works.html` pages become stubs, but a route removed from
- * the registry would otherwise leave an orphan behind. A locale tree holds
- * generated output only, so anything unplanned in it is stale by definition.
+ * the registry would otherwise leave an orphan behind. Ownership is determined
+ * from an explicit generator marker; an unknown file is a blocking diagnostic.
  */
-function staleLocaleDocuments() {
-  const orphans = [];
-  for (const { locale } of readyLocales) {
-    const prefix = routePrefixFor(locale, registry);
-    const walk = (dir) => {
-      for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
-        const rel = `${dir}${entry.name}`;
-        if (entry.isDirectory()) walk(`${rel}/`);
-        else if (!planned.has(rel)) orphans.push(rel);
-      }
-    };
-    if (fs.existsSync(path.join(ROOT, prefix))) walk(prefix);
-  }
-  return orphans.sort();
+const scannedPrefixes = [
+  ...readyLocales.map(({ locale }) => routePrefixFor(locale, registry)),
+  ...stale,
+];
+const orphans = findRouteOrphans(ROOT, scannedPrefixes, new Set(planned.keys()));
+for (const { file, owned } of orphans) {
+  differences.push(`${file} (${owned ? "orphaned generated document" : "unowned locale document; cleanup blocked"})`);
 }
-const orphans = staleLocaleDocuments();
-for (const file of orphans) differences.push(`${file} (orphaned generated document)`);
+for (const prefix of stale) {
+  if (!orphans.some(({ file }) => file.startsWith(prefix))) differences.push(`${prefix}/ (empty stale locale route tree)`);
+}
 
 if (checkOnly) {
   if (differences.length) {
@@ -532,22 +526,28 @@ for (const [file, html] of englishPlanned) {
   throw new Error(`${file} exists and is not a page or a legacy stub; refusing to overwrite it`);
 }
 
-for (const prefix of stale) fs.rmSync(path.join(ROOT, prefix), { recursive: true, force: true });
-for (const file of orphans) fs.rmSync(path.join(ROOT, file), { force: true });
+removeOwnedRouteOrphans(ROOT, orphans);
+for (const prefix of stale) {
+  const absolute = path.join(ROOT, prefix);
+  if (fs.existsSync(absolute) && !fs.readdirSync(absolute).length) fs.rmdirSync(absolute);
+}
 for (const [file, html] of [...englishPlanned, ...planned]) {
   const absolute = path.join(ROOT, file);
   fs.mkdirSync(path.dirname(absolute), { recursive: true });
   fs.writeFileSync(absolute, html);
 }
 /* Removing orphans can leave empty directories behind in a locale tree. */
-for (const { locale } of readyLocales) {
+for (const prefix of [
+  ...readyLocales.map(({ locale }) => routePrefixFor(locale, registry)),
+  ...stale,
+]) {
   const prune = (dir) => {
     const absolute = path.join(ROOT, dir);
     if (!fs.existsSync(absolute)) return;
     for (const entry of fs.readdirSync(absolute, { withFileTypes: true })) if (entry.isDirectory()) prune(`${dir}${entry.name}/`);
     if (!fs.readdirSync(absolute).length) fs.rmdirSync(absolute);
   };
-  prune(routePrefixFor(locale, registry));
+  prune(prefix);
 }
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"), sitemap);
 

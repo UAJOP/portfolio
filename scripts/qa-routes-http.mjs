@@ -11,7 +11,8 @@
  *     interception)
  *   - every legacy `.html` URL answers 200 with a stub that forwards to its
  *     clean route, and that route answers 200
- *   - a directory URL without its trailing slash is redirected to it
+ *   - an extensionless legacy URL either redirects to the clean directory or
+ *     resolves through its matching `.html` compatibility document
  *   - every first-party asset the published pages reference answers 200
  *   - every sitemap URL answers 200
  *   - an unknown URL answers 404 (with the site's recovery page where the host
@@ -56,9 +57,10 @@ const site = loadSiteRoutes();
 const registry = loadRegistry();
 const ROUTES = loadRouteRuntime(registry, site);
 const allRoutes = indexableRoutes(loadProjectRegistry());
-const locales = registry.locales
-  .map((locale) => locale.id)
-  .filter((id) => id === registry.defaultLocale || fs.existsSync(path.join(ROOT, registry.byId.get(id).routePrefix)));
+const locales = [
+  registry.defaultLocale,
+  ...(registry.localizedRoutes?.generate || []).filter((id) => id !== registry.defaultLocale),
+];
 
 /* ---------- a GitHub Pages-shaped static server ---------- */
 
@@ -81,10 +83,10 @@ const TYPES = {
 };
 
 /**
- * GitHub Pages' rules for a static branch deploy: a file is served as itself,
- * a directory with a trailing slash by its index.html, a directory without one
- * is redirected to add it, and anything else gets the custom 404.html with a
- * 404 status. There is no rewrite, no extension guessing and no SPA fallback.
+ * GitHub Pages' rules for a static branch deploy: a file is served as itself;
+ * an extensionless request may resolve the matching `.html` file; otherwise a
+ * directory without a slash redirects and a directory with one serves its
+ * index.html. Unknown paths get the custom 404. There is no SPA fallback.
  */
 function startPagesServer() {
   const server = http.createServer((request, response) => {
@@ -102,7 +104,10 @@ function startPagesServer() {
       return;
     }
     let file = absolute;
-    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
+    const extensionlessHtml = !pathname.endsWith("/") && !path.extname(pathname) ? `${absolute}.html` : null;
+    if (extensionlessHtml && fs.existsSync(extensionlessHtml) && fs.statSync(extensionlessHtml).isFile()) {
+      file = extensionlessHtml;
+    } else if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
       if (!pathname.endsWith("/")) {
         response.writeHead(301, { Location: `${url.pathname}/${url.search}` }).end();
         return;
@@ -165,6 +170,20 @@ const pick = (list, count) => {
 };
 
 async function run(base) {
+  for (const locale of locales) {
+    const definition = registry.byId.get(locale);
+    assert(Boolean(definition), `localized route registry references unknown locale ${locale}`);
+    if (!definition || locale === registry.defaultLocale) continue;
+    assert(
+      fs.existsSync(path.join(ROOT, definition.routePrefix)),
+      `required locale directory is missing: ${definition.routePrefix}/`,
+    );
+    for (const route of allRoutes) {
+      const file = ROUTES.documentPathFor(route.page, locale);
+      assert(fs.existsSync(path.join(ROOT, file)), `required localized route document is missing: ${file}`);
+    }
+  }
+
   /* 1. clean routes load directly, each with its own canonical */
   const routeUrls = [];
   for (const locale of locales) {
@@ -211,11 +230,42 @@ async function run(base) {
     assert(response.status === 200, `${pathname} must keep answering, got ${response.status}`);
   }
 
-  /* 4. a directory URL without its slash is sent to the clean URL */
-  for (const pathname of ["/works", "/tr/works", "/projects/hospital-form-app"]) {
+  /* 4. GitHub Pages extensionless lookup and directory routing. */
+  const assertCompatibility = async (pathname, target) => {
     const response = await get(base, pathname, { redirect: "manual" });
-    assert(response.status >= 300 && response.status < 400, `${pathname} must redirect to its trailing-slash URL, got ${response.status}`);
-    if (response.location) assert(new URL(response.location, `${base}${pathname}`).pathname === `${pathname}/`, `${pathname} redirects to ${response.location}`);
+    if (response.status >= 300 && response.status < 400) {
+      assert(new URL(response.location, base).pathname === target, `${pathname} redirects to ${response.location}, expected ${target}`);
+      return;
+    }
+    assert(response.status === 200, `${pathname} must resolve through its compatibility document, got ${response.status}`);
+    assert(/GENERATED legacy compatibility stub/.test(response.body), `${pathname} 200 response must be the compatibility document`);
+    assert(response.body.includes(`location.replace(${JSON.stringify(target)}`), `${pathname} compatibility document must forward to ${target}`);
+    assert(response.body.includes(`url=${target}"`), `${pathname} compatibility document must refresh to ${target}`);
+  };
+  const assertClean = async (pathname) => {
+    const response = await get(base, pathname, { redirect: "manual" });
+    assert(response.status === 200, `${pathname} clean route must answer 200, got ${response.status}`);
+    assert(!/GENERATED legacy compatibility stub/.test(response.body), `${pathname} clean route must not be a compatibility stub`);
+    const canonical = response.body.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"/)?.[1] ||
+      response.body.match(/<link[^>]*href="([^"]+)"[^>]*rel="canonical"/)?.[1];
+    assert(canonical && new URL(canonical).pathname === pathname, `${pathname} clean route canonical is ${canonical}`);
+  };
+  for (const [pathname, target] of [
+    ["/works", "/works/"],
+    ["/works.html", "/works/"],
+    ["/tr/works", "/tr/works/"],
+    ["/tr/works.html", "/tr/works/"],
+    ["/single-work", "/certificates/"],
+    ["/single-work.html", "/certificates/"],
+  ]) {
+    await assertCompatibility(pathname, target);
+  }
+  for (const pathname of ["/works/", "/tr/works/", "/certificates/"]) await assertClean(pathname);
+
+  const projectWithoutSlash = await get(base, "/projects/hospital-form-app", { redirect: "manual" });
+  assert(projectWithoutSlash.status >= 300 && projectWithoutSlash.status < 400, `/projects/hospital-form-app must redirect, got ${projectWithoutSlash.status}`);
+  if (projectWithoutSlash.location) {
+    assert(new URL(projectWithoutSlash.location, base).pathname === "/projects/hospital-form-app/", "project route must add its trailing slash");
   }
 
   /* 5. the legacy project shell stays a working, unindexed compatibility endpoint */
@@ -273,7 +323,7 @@ try {
 } catch (error) {
   failures.push(`smoke test aborted: ${error.cause?.message || error.message}`);
 } finally {
-  server?.close();
+  if (server) await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
 }
 
 if (failures.length) {

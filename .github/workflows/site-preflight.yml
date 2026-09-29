@@ -97,6 +97,7 @@ jobs:
       - name: Start local site
         run: |
           python3 -m http.server 4173 > qa-results/local-server.log 2>&1 &
+          echo $! > qa-results/local-server.pid
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
               exit 0
@@ -109,12 +110,12 @@ jobs:
       # BLOCKING: every clean route, legacy .html stub, asset and sitemap URL
       # answers correctly from a real static server, as a direct load or a
       # refresh would. Python's server has no custom 404 page, so that one
-      # body check is left to the in-process GitHub Pages-shaped server that
-      # `npm run qa` already runs.
+      # body check is covered by the same blocking route command's in-process
+      # GitHub Pages-shaped mode during the local QA gate.
       - name: Smoke-test clean routes over HTTP
         run: |
           set -o pipefail
-          node scripts/qa-routes-http.mjs --base http://127.0.0.1:4173 --no-custom-404 2>&1 | tee qa-results/routes-http.txt
+          npm run qa:routes:http -- --base http://127.0.0.1:4173 --no-custom-404 2>&1 | tee qa-results/routes-http.txt
 
       - name: Audit accessibility on mobile viewport
         run: npm run qa:a11y -- --json > qa-results/accessibility.json 2> qa-results/accessibility-errors.txt
@@ -122,6 +123,7 @@ jobs:
       - name: Start React preview server
         run: |
           npm run preview:react > qa-results/react-preview-server.log 2>&1 &
+          echo $! > qa-results/react-preview-server.pid
           for attempt in {1..30}; do
             if curl --fail --silent http://localhost:4174/react-preview/ > /dev/null; then
               exit 0
@@ -176,6 +178,25 @@ jobs:
           fs.writeFileSync('qa-results/lighthouse-summary.json', JSON.stringify(summary, null, 2));
           console.table(summary);
           NODE
+
+      - name: Stop local servers
+        if: always()
+        run: |
+          for pidfile in qa-results/local-server.pid qa-results/react-preview-server.pid; do
+            if [ ! -f "$pidfile" ]; then
+              continue
+            fi
+            pid="$(cat "$pidfile")"
+            if kill -0 "$pid" 2>/dev/null; then
+              kill "$pid" 2>/dev/null || true
+              for attempt in {1..10}; do
+                kill -0 "$pid" 2>/dev/null || break
+                sleep 1
+              done
+              kill -9 "$pid" 2>/dev/null || true
+            fi
+            wait "$pid" 2>/dev/null || true
+          done
 
       - name: Upload audit reports
         if: always()

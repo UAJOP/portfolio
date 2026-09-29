@@ -26,6 +26,7 @@
  */
 
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import vm from "node:vm";
 import {
@@ -42,6 +43,7 @@ import {
   COMPANION_ROUTES,
 } from "./i18n-catalog.mjs";
 import { loadSiteRoutes, loadRouteRuntime, isLegacyStub, browserRouteTable } from "./site-routes.mjs";
+import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-ownership.mjs";
 
 let assertions = 0;
 const failures = [];
@@ -59,7 +61,7 @@ const ROUTES = loadRouteRuntime(registry, site);
 const projects = loadProjectRegistry();
 const locales = registry.locales.map((locale) => locale.id);
 const localizedLocales = (registry.localizedRoutes?.generate || []).filter((id) => id !== registry.defaultLocale);
-const publishedLocales = [registry.defaultLocale, ...localizedLocales.filter((id) => exists(registry.byId.get(id).routePrefix))];
+const publishedLocales = [registry.defaultLocale, ...localizedLocales];
 const allRoutes = indexableRoutes(projects);
 
 const HTML_PAGE_URL = /(?:^|\/)[a-z0-9-]+\.html(?:$|[?#])/i;
@@ -73,6 +75,51 @@ const decode = (value) =>
     .replaceAll("&amp;", "&");
 const isExternal = (url) => /^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(url);
 const isOwnAbsolute = (url) => url === ORIGIN || url.startsWith(`${ORIGIN}/`);
+
+function missingLocalizedOutputs(fileExists = exists) {
+  const missing = [];
+  for (const locale of localizedLocales) {
+    const definition = registry.byId.get(locale);
+    if (!definition) {
+      missing.push(`unknown locale ${locale}`);
+      continue;
+    }
+    if (!fileExists(definition.routePrefix)) missing.push(`${definition.routePrefix}/`);
+    for (const route of allRoutes) {
+      const file = ROUTES.documentPathFor(route.page, locale);
+      if (!fileExists(file)) missing.push(file);
+    }
+  }
+  return missing;
+}
+for (const file of missingLocalizedOutputs()) assert(false, `required localized output is missing: ${file}`);
+
+/* Regression: expected locales/pages remain in the validation set when absent. */
+const simulatedMissingDirectory = missingLocalizedOutputs((file) => file === "tr" ? false : exists(file));
+assert(simulatedMissingDirectory.includes("tr/"), "missing locale directory simulation must fail for tr/");
+const simulatedMissingPage = missingLocalizedOutputs((file) => file === "tr/works/index.html" ? false : exists(file));
+assert(simulatedMissingPage.includes("tr/works/index.html"), "missing localized page simulation must fail for tr/works/index.html");
+
+/* Regression: an unmarked locale orphan must be diagnosed and must survive. */
+const orphanFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-route-ownership-"));
+try {
+  const fixture = "tr/googleexample.html";
+  fs.mkdirSync(path.join(orphanFixtureRoot, "tr"), { recursive: true });
+  fs.writeFileSync(path.join(orphanFixtureRoot, fixture), "<!doctype html><title>User file</title>\n");
+  const classified = findRouteOrphans(orphanFixtureRoot, ["tr"], new Set());
+  assert(classified.some(({ file, owned }) => file === fixture && !owned), "route generator must detect tr/googleexample.html as unowned");
+  let diagnostic = "";
+  try {
+    removeOwnedRouteOrphans(orphanFixtureRoot, classified);
+  } catch (error) {
+    diagnostic = error.message;
+  }
+  assert(diagnostic.includes("unowned locale document"), "unowned orphan cleanup must emit a clear ownership diagnostic");
+  assert(diagnostic.includes(fixture), "unowned orphan diagnostic must name tr/googleexample.html");
+  assert(fs.existsSync(path.join(orphanFixtureRoot, fixture)), "tr/googleexample.html must survive refused orphan cleanup");
+} finally {
+  fs.rmSync(orphanFixtureRoot, { recursive: true, force: true });
+}
 
 /* ---------- 1. the route registry is the migration table ---------- */
 
@@ -208,6 +255,57 @@ for (const [from, locale, expected] of [
   ["/works", "tr", "/tr/works/"],
 ]) {
   equal(switchLocale(from, locale), expected, `language switch ${from} -> ${locale}`);
+}
+
+/** The legacy project shell uses the same query-preservation contract. */
+function legacyProjectRedirect(search, hash = "") {
+  let replaced = null;
+  const sandbox = {
+    window: {
+      KAAN_LOCALE_ROUTES: { preservedRouteSearch: ROUTES.preservedRouteSearch },
+      location: { search, hash, replace: (value) => { replaced = value; } },
+    },
+    document: {
+      body: { dataset: {} },
+      querySelector: (selector) => selector === "[data-project-detail]" ? {} : null,
+    },
+    projectDetailData: { "hospital-form-app": {} },
+    projectUrl: (slug) => `/projects/${slug}/`,
+    URLSearchParams,
+  };
+  vm.createContext(sandbox);
+  const source = read("js/portfolio/project-detail.js").replace(
+    /\nredirectLegacyProjectShell\(\);\s*\nrenderProjectDetail\(\);\s*$/,
+    "\n",
+  );
+  vm.runInContext(source, sandbox, { filename: "js/portfolio/project-detail.js" });
+  const redirected = sandbox.redirectLegacyProjectShell();
+  return { redirected, replaced };
+}
+
+for (const [search, hash, expected] of [
+  ["?project=hospital-form-app", "", "/projects/hospital-form-app/"],
+  ["?project=hospital-form-app&role=applied-ai", "", "/projects/hospital-form-app/?role=applied-ai"],
+  ["?project=hospital-form-app&source=ajoop", "", "/projects/hospital-form-app/?source=ajoop"],
+  [
+    "?project=hospital-form-app&role=applied-ai&source=ajoop",
+    "#x",
+    "/projects/hospital-form-app/?role=applied-ai&source=ajoop#x",
+  ],
+  [
+    "?project=hospital-form-app&utm_source=campaign&role=applied-ai&gclid=click",
+    "",
+    "/projects/hospital-form-app/?role=applied-ai",
+  ],
+]) {
+  const result = legacyProjectRedirect(search, hash);
+  assert(result.redirected, `legacy project shell must redirect ${search}${hash}`);
+  equal(result.replaced, expected, `legacy project shell target for ${search}${hash}`);
+}
+for (const search of ["?project=unknown-project", "?project=..%2Fhospital-form-app"]) {
+  const result = legacyProjectRedirect(search, "#x");
+  assert(!result.redirected, `legacy project shell must not redirect malformed/unknown ${search}`);
+  equal(result.replaced, null, `legacy project shell must not replace location for ${search}`);
 }
 
 /* Every route in every locale, from every locale: clean, prefix-exact, lossless. */

@@ -197,8 +197,10 @@ function setupProjectCopyLink() {
 /**
  * Legacy `project-detail.html?project=<slug>` links (old bookmarks, crawled
  * URLs, external posts) are forwarded to the canonical `/projects/<slug>/`
- * route in the same locale, keeping any fragment. `replace()` keeps the shell
- * out of history, so Back does not bounce the reader into it again.
+ * route in the same locale, keeping meaningful query parameters and any
+ * fragment. The shared route contract removes only path identity and tracking
+ * noise. `replace()` keeps the shell out of history, so Back does not bounce
+ * the reader into it again.
  *
  * Only a known slug moves: an unknown one stays on the shell, which renders its
  * not-found state with a way back to Works. A generated project page declares
@@ -210,7 +212,10 @@ function redirectLegacyProjectShell() {
   const slug = new URLSearchParams(window.location.search).get("project");
   if (!slug || !Object.prototype.hasOwnProperty.call(projectDetailData, slug)) return false;
   if (typeof window.location.replace !== "function") return false;
-  window.location.replace(`${projectUrl(slug)}${window.location.hash || ""}`);
+  const routes = window.KAAN_LOCALE_ROUTES;
+  if (!routes || typeof routes.preservedRouteSearch !== "function") return false;
+  const search = routes.preservedRouteSearch(window.location.search);
+  window.location.replace(`${projectUrl(slug)}${search}${window.location.hash || ""}`);
   return true;
 }
 
