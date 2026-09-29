@@ -3,9 +3,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
-  ROOT, COMPANION_ROUTES, indexableRoutes, loadProjectRegistry, loadRegistry, read,
+  ROOT, COMPANION_ROUTES, authoredHtmlFiles, indexableRoutes, loadProjectRegistry, loadRegistry, read,
 } from "./i18n-catalog.mjs";
 import { loadSiteRoutes, loadRouteRuntime } from "./site-routes.mjs";
+import { loadMessageDomain } from "./i18n-messages.mjs";
 
 const registry=loadRegistry();
 const routes=loadRouteRuntime(registry,loadSiteRoutes());
@@ -54,6 +55,34 @@ for(const route of all){
     }
   }
 }
+/* Stable-key bindings are exact, so short labels (below the prose threshold
+ * above, e.g. the theme toggle's "Dark") are checked by key instead: every
+ * text-only data-message-key element in a generated locale document must carry
+ * that locale's message, on every route, not only the semantic-source pages. */
+const messages=Object.fromEntries(["en",...locales].map((id)=>[id,loadMessageDomain(id,"common")]));
+const keyedText=/<([a-z][a-z0-9]*)\b([^>]*\bdata-message-key="([^"]+)"[^>]*)>([^<]*)<\/\1>/g;
+for(const file of authoredHtmlFiles()){
+  const html=read(file);
+  for(const match of html.matchAll(/<[^>]*\bdata-theme-label\b[^>]*>/g)){
+    assertions+=1;
+    if(!/\bdata-message-key="theme\.dark"/.test(match[0])) failures.push(`${file}: theme label must bind data-message-key="theme.dark" so every locale route is localized at build time`);
+  }
+}
+const localizedDocuments=[...all.map((route)=>route.page)];
+for(const locale of locales){
+  for(const page of localizedDocuments){
+    const localized=routes.documentPathFor(page,locale);
+    if(!fs.existsSync(path.join(ROOT,localized))) continue;
+    const html=read(localized).replace(/<script[\s\S]*?<\/script>/gi," ");
+    for(const [, , , key, text] of html.matchAll(keyedText)){
+      const expected=messages[locale][key];
+      if(typeof expected!=="string"||expected===messages.en[key]) continue;
+      assertions+=1;
+      if(decode(text)!==decode(expected)) failures.push(`${localized}: ${key} renders ${JSON.stringify(decode(text))}, expected ${JSON.stringify(expected)}`);
+    }
+  }
+}
+
 if(failures.length){
  console.error(`Rendered locale copy QA failed: ${failures.length} leak(s), ${assertions} assertions`);
  failures.slice(0,80).forEach((failure)=>console.error(`  x ${failure}`));
