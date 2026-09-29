@@ -1200,6 +1200,12 @@ body[data-page="home"] .hero + .section-block > .section-heading > p:not(.eyebro
   font-size: 1rem;
 }
 
+/* Same slot grammar as .case-section-heading: extra lead paragraphs stack. */
+body[data-page="home"] .hero + .section-block > .section-heading > p:not(.eyebrow) ~ p:not(.eyebrow) {
+  grid-row: auto;
+  margin-top: var(--space-3);
+}
+
 /* Selected work: SINAMA leads as an editorial feature; the next two share a
  * row. Media is large enough to read as evidence. */
 body[data-page="home"] .hero + .section-block {
@@ -2528,6 +2534,14 @@ html[data-theme="light"] .case-meta-grid > div {
   align-self: end;
   margin: 0;
   font-size: 1.02rem;
+}
+
+/* Only the first lead paragraph owns the slot beside the title. Further ones
+ * stack beneath it in the same column; given the same grid area they would be
+ * painted over each other (AI Flow Puzzle "Technical implementation" has two). */
+.case-section-heading > p:not(.eyebrow) ~ p:not(.eyebrow) {
+  grid-row: auto;
+  margin-top: var(--space-3);
 }
 
 .case-copy {

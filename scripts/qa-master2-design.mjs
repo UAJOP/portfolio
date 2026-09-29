@@ -395,6 +395,65 @@ assert(
   `Home must only reuse intentionally shared labels; found ${[...new Set(repeatedKeys)].join(", ")}`,
 );
 
+/* ---- A fixed lead slot holds one paragraph, or the stylesheet stacks extras --
+ * Mastheads and case-section headings give their lead paragraph an explicit
+ * grid row beside the title. Every lead paragraph in the container matches
+ * that rule, so a second one lands in the same cell and is painted over the
+ * first, which no overflow, clipping or contrast check notices. Extra lead
+ * paragraphs are allowed only where the stylesheet stacks them, or where a
+ * page or container context releases the slot back to grid-row: auto (legal,
+ * utility and error mastheads). */
+const VOID_ELEMENTS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+function leadParagraphCounts(html, classToken) {
+  const counts = [];
+  const opening = new RegExp(`<[a-zA-Z][\\w-]*\\b[^>]*\\bclass="((?:[^"]*\\s)?${classToken}(?:\\s[^"]*)?)"[^>]*>`, "g");
+  const tag = /<(\/?)([a-zA-Z][\w-]*)\b([^>]*)>/g;
+  for (const start of html.matchAll(opening)) {
+    let depth = 0;
+    let leads = 0;
+    tag.lastIndex = start.index;
+    for (let match = tag.exec(html); match; match = tag.exec(html)) {
+      const [, closing, name, attributes] = match;
+      if (VOID_ELEMENTS.has(name.toLowerCase()) || attributes.trimEnd().endsWith("/")) continue;
+      if (closing) {
+        depth -= 1;
+        if (depth === 0) break;
+        continue;
+      }
+      if (depth === 1 && name.toLowerCase() === "p" && !/\bclass="[^"]*\beyebrow\b/.test(attributes)) leads += 1;
+      depth += 1;
+    }
+    counts.push({ count: leads, classes: start[1].split(/\s+/) });
+  }
+  return counts;
+}
+/* Unconditional rules that hand a lead paragraph back to grid-row: auto, as
+ * { className, pages }: `body[data-page="legal"] .page-hero > p:not(.eyebrow)`
+ * releases .page-hero on legal pages; `.error-hero > p:not(.eyebrow)` releases
+ * any container that also carries .error-hero. */
+const slotReleases = [];
+for (const rule of v2Rules) {
+  if (rule.declarations.get("grid-row") !== "auto") continue;
+  for (const selector of rule.selectors) {
+    const match = selector.match(/^(?:(body(?:\[[^\]]*\]|:is\([^)]*\)))\s+)?\.([\w-]+) > p:not\(\.eyebrow\)$/);
+    if (match) slotReleases.push({ className: match[2], pages: match[1] ? new Set([...match[1].matchAll(/data-page="([^"]+)"/g)].map((page) => page[1])) : null });
+  }
+}
+for (const container of [".page-hero", ".case-section-heading"]) {
+  const lead = `${container} > p:not(.eyebrow)`;
+  const fixedSlot = /^\d/.test(declarationsFor(css, lead).get("grid-row") || "");
+  const stacks = declarationsFor(css, `${lead} ~ p:not(.eyebrow)`).get("grid-row") === "auto";
+  if (!fixedSlot || stacks) continue;
+  for (const file of authoredHtmlFiles()) {
+    const html = read(file);
+    const page = html.match(/<body\b[^>]*\bdata-page="([^"]+)"/)?.[1];
+    for (const { count, classes } of leadParagraphCounts(html, container.slice(1))) {
+      const released = slotReleases.some((release) => classes.includes(release.className) && (!release.pages || release.pages.has(page)));
+      assert(released || count <= 1, `${file}: a ${container} holds ${count} lead paragraphs, but ${lead} has one fixed grid cell; stack the extras (${lead} ~ p:not(.eyebrow) { grid-row: auto }) or merge the copy`);
+    }
+  }
+}
+
 if (failures.length) {
   console.error(`Master 2 design QA failed: ${failures.length} failure(s), ${assertions} assertions`);
   failures.forEach((failure) => console.error(`  x ${failure}`));
