@@ -9,7 +9,7 @@
  * BRIEF 09C makes the URL authoritative. A page served from a localized static
  * route IS that locale: no saved preference and no browser language may
  * override it, because canonical and hreflang promise search engines that
- * /de/works.html is the German page. Preference and browser detection now only
+ * /de/works/ is the German page. Preference and browser detection now only
  * influence where the language selector takes you, never what the current URL
  * renders as.
  */
@@ -445,10 +445,10 @@ function syncLanguageSelectors(locale = currentSiteLanguage) {
 /**
  * Recovery links on the root 404 document.
  *
- * GitHub Pages serves that one document at whatever URL failed, so its relative
- * links would resolve against the broken path — `/de/typo/works.html` rather
- * than the German works page. Every internal link is therefore rewritten to a
- * root-absolute URL in the locale the failed path asked for.
+ * GitHub Pages serves that one document at whatever URL failed. Its links are
+ * root-relative English routes, so they never resolve against the broken path;
+ * each is rewritten into the locale the failed path asked for, so a German
+ * reader at `/de/typo/` recovers to `/de/works/` rather than `/works/`.
  */
 function localizeRecoveryLinks(locale = currentSiteLanguage) {
   if (!document.documentElement.hasAttribute("data-route-locale-from-path")) return;

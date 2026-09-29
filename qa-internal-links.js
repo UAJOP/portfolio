@@ -7,6 +7,7 @@
  */
 const fs = require("fs");
 const vm = require("vm");
+const { authoredHtmlFiles, fileForUrl } = require("./scripts/qa-site-routes.cjs");
 
 const failures = [];
 const check = (condition, message) => {
@@ -26,7 +27,9 @@ const roles = Object.keys(registry.recruiterProfiles);
 // generated registry, which is the same object the runtime resolves against.
 const slugs = new Set(Object.keys(registry.projectDetails));
 
-const htmlFiles = fs.readdirSync(".").filter((file) => file.endsWith(".html"));
+/* Authored documents at their clean routes. Generated localized trees are
+ * link-checked by qa:i18n and legacy stubs by qa:routes. */
+const htmlFiles = authoredHtmlFiles;
 const idsByFile = {};
 htmlFiles.forEach((file) => {
   idsByFile[file] = new Set(
@@ -46,12 +49,14 @@ htmlFiles.forEach((file) => {
 
     const [pathAndQuery, fragment] = reference.split("#");
     const [path, query] = pathAndQuery.split("?");
-    /* 404.html addresses its assets root-absolutely because GitHub Pages serves
-     * that one document at whatever URL failed, at any depth. A leading slash
-     * names the repository root, so it resolves the same as a bare path. */
-    const target = (path || file).replace(/^\//, "");
+    /* Every first-party URL is root-relative: pages live at several depths and
+     * the 404 is served at whatever URL failed, so a bare path would resolve
+     * differently on each. Pages are clean directory routes, never `.html`. */
+    check(path.startsWith("/"), `${file} -> depth-relative reference: ${reference}`);
+    check(!/^\/?(?:[a-z]{2}\/)?[a-z0-9-]+\.html$/.test(path), `${file} -> links a .html page instead of its clean route: ${reference}`);
+    const target = fileForUrl(path || `/${file}`);
 
-    if (!fs.existsSync(decodeURIComponent(target))) {
+    if (!target || !fs.existsSync(target)) {
       failures.push(`${file} -> missing target: ${reference}`);
       return;
     }
@@ -62,7 +67,7 @@ htmlFiles.forEach((file) => {
 
     // Canonical project route since BRIEF 02: /projects/<slug>/. The directory
     // existing is not enough — it must be a known slug with a generated page.
-    const canonicalProject = target.match(/^projects\/([^/]+)\/$/);
+    const canonicalProject = path.match(/^\/projects\/([^/]+)\/$/);
     if (canonicalProject) {
       projectLinks += 1;
       const slug = decodeURIComponent(canonicalProject[1]);
@@ -93,14 +98,17 @@ htmlFiles.forEach((file) => {
   const brand = footer.match(/<a[^>]*class="footer-brand"[^>]*href="([^"]+)"/) ||
     footer.match(/<a[^>]*href="([^"]+)"[^>]*class="footer-brand"/);
   check(brand, `${file} -> footer brand link is missing`);
-  if (brand) check(fs.existsSync(brand[1]), `${file} -> footer brand link does not resolve: ${brand[1]}`);
+  if (brand) {
+    check(brand[1] === "/", `${file} -> footer brand must link to the clean site root, got ${brand[1]}`);
+    check(fs.existsSync(fileForUrl(brand[1]) || ""), `${file} -> footer brand link does not resolve: ${brand[1]}`);
+  }
 });
 
 Object.values(registry.projects).forEach((project) => {
   Object.entries(project.links || {}).forEach(([name, url]) => {
     if (/^https?:/.test(url)) return;
-    const path = url.split("?")[0].split("#")[0];
-    check(fs.existsSync(path), `registry project ${project.id}.${name} does not resolve: ${url}`);
+    check(url.startsWith("/") && !/\.html/.test(url), `registry project ${project.id}.${name} is not a clean root-relative route: ${url}`);
+    check(fs.existsSync(fileForUrl(url) || ""), `registry project ${project.id}.${name} does not resolve: ${url}`);
   });
 });
 

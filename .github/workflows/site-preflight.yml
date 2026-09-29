@@ -44,6 +44,14 @@ jobs:
           set -o pipefail
           npm run qa:i18n 2>&1 | tee qa-results/i18n.txt
 
+      # BLOCKING: clean public URLs — no .html in links, canonicals, hreflang
+      # or the sitemap; every route a real directory document; every legacy
+      # .html URL a stub that forwards to its clean route.
+      - name: Check clean public route contract
+        run: |
+          set -o pipefail
+          npm run qa:routes 2>&1 | tee qa-results/routes.txt
+
       # BLOCKING: deterministic byte/resource budgets keep the historical
       # translation dictionary and full locale packs out of the common browser
       # path without relying on noisy Lighthouse timings.
@@ -89,8 +97,9 @@ jobs:
       - name: Start local site
         run: |
           python3 -m http.server 4173 > qa-results/local-server.log 2>&1 &
+          echo $! > qa-results/local-server.pid
           for attempt in {1..30}; do
-            if curl --fail --silent http://127.0.0.1:4173/index.html > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
               exit 0
             fi
             sleep 1
@@ -98,12 +107,22 @@ jobs:
           cat qa-results/local-server.log
           exit 1
 
+      # BLOCKING: the suite starts its own GitHub Pages-shaped server so
+      # extensionless `.html` lookup, clean directory loads, legacy stubs and
+      # the custom 404 are validated with the authoritative host semantics.
+      # The Python server above remains available for Pa11y and Lighthouse.
+      - name: Smoke-test clean routes over HTTP
+        run: |
+          set -o pipefail
+          npm run qa:routes:http 2>&1 | tee qa-results/routes-http.txt
+
       - name: Audit accessibility on mobile viewport
         run: npm run qa:a11y -- --json > qa-results/accessibility.json 2> qa-results/accessibility-errors.txt
 
       - name: Start React preview server
         run: |
           npm run preview:react > qa-results/react-preview-server.log 2>&1 &
+          echo $! > qa-results/react-preview-server.pid
           for attempt in {1..30}; do
             if curl --fail --silent http://localhost:4174/react-preview/ > /dev/null; then
               exit 0
@@ -158,6 +177,25 @@ jobs:
           fs.writeFileSync('qa-results/lighthouse-summary.json', JSON.stringify(summary, null, 2));
           console.table(summary);
           NODE
+
+      - name: Stop local servers
+        if: always()
+        run: |
+          for pidfile in qa-results/local-server.pid qa-results/react-preview-server.pid; do
+            if [ ! -f "$pidfile" ]; then
+              continue
+            fi
+            pid="$(cat "$pidfile")"
+            if kill -0 "$pid" 2>/dev/null; then
+              kill "$pid" 2>/dev/null || true
+              for attempt in {1..10}; do
+                kill -0 "$pid" 2>/dev/null || break
+                sleep 1
+              done
+              kill -9 "$pid" 2>/dev/null || true
+            fi
+            wait "$pid" 2>/dev/null || true
+          done
 
       - name: Upload audit reports
         if: always()

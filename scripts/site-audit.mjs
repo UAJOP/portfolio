@@ -15,9 +15,13 @@
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname, resolve, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { authoredHtmlFiles, loadRegistry } from "./i18n-catalog.mjs";
+import { loadSiteRoutes, loadRouteRuntime } from "./site-routes.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const SITE_ORIGIN = "https://kaanbalci.com";
+const SITE = loadSiteRoutes();
+const SITE_ORIGIN = SITE.origin;
+const ROUTES = loadRouteRuntime(loadRegistry(), SITE);
 
 /* Pages intentionally excluded from sitemap.xml, with the reason. */
 const SITEMAP_EXEMPT = new Map([
@@ -32,9 +36,9 @@ const notes = [];
 const fail = (page, rule, detail) => failures.push({ page, rule, detail });
 const warn = (page, rule, detail) => warnings.push({ page, rule, detail });
 
-const htmlFiles = readdirSync(ROOT)
-  .filter((f) => f.endsWith(".html"))
-  .sort();
+/* Authored documents at their clean routes; legacy `.html` stubs and
+ * generated locale trees are audited by qa:routes and qa:i18n. */
+const htmlFiles = authoredHtmlFiles();
 
 const read = (f) => readFileSync(join(ROOT, f), "utf8");
 
@@ -83,12 +87,14 @@ for (const file of htmlFiles) {
   if (!description) fail(file, "description", "missing meta description");
   if (h1Count === 0) fail(file, "h1", "no <h1> on page");
   if (h1Count > 1) fail(file, "h1", h1Count + " <h1> elements (expected exactly 1)");
-  if (!canonical && !isErrorPage) fail(file, "canonical", "missing rel=canonical");
+  /* Companions (404, legacy project shell) are not destinations: no canonical. */
+  const isCompanion = SITEMAP_EXEMPT.has(file);
+  if (!canonical && !isCompanion) fail(file, "canonical", "missing rel=canonical");
+  if (canonical && isCompanion) fail(file, "canonical", "a noindex companion must not claim a canonical URL");
 
   /* A self-referential canonical is the expectation for every indexable page. */
   if (canonical) {
-    const expected =
-      file === "index.html" ? SITE_ORIGIN + "/" : SITE_ORIGIN + "/" + file;
+    const expected = SITE_ORIGIN + "/" + ROUTES.canonicalRouteKey(file);
     if (canonical !== expected) {
       warn(file, "canonical", "points to " + canonical + ", expected " + expected);
     }
@@ -142,10 +148,13 @@ for (const file of htmlFiles) {
   for (const raw of refs) {
     if (isExternal(raw)) continue;
     refCount += 1;
-    /* Strip query string and fragment before resolving to a file on disk. */
+    /* Strip query string and fragment, then resolve the URL to the file that
+     * serves it: a clean route to its directory index, anything else as-is. */
     const clean = raw.split("#")[0].split("?")[0];
     if (!clean) continue;
-    const target = normalize(join(ROOT, decodeURIComponent(clean)));
+    const isPage = ROUTES.isLocalizableRoute(ROUTES.canonicalRouteKey(clean));
+    const file_ = isPage ? ROUTES.documentPathFor(clean, ROUTES.localeFromRoutePath(clean)) : clean.replace(/^\/+/, "");
+    const target = normalize(join(ROOT, decodeURIComponent(file_)));
     const key = file + "::" + clean;
     if (checkedRefs.has(key)) continue;
     checkedRefs.add(key);
@@ -167,7 +176,7 @@ if (!existsSync(sitemapPath)) {
   const xml = readFileSync(sitemapPath, "utf8");
   sitemapPages = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)]
     .map((m) => m[1].replace(SITE_ORIGIN + "/", ""))
-    .map((p) => (p === "" ? "index.html" : p));
+    .map((p) => ROUTES.documentPathFor(p, ROUTES.localeFromRoutePath(p)));
 
   for (const p of sitemapPages) {
     if (!existsSync(join(ROOT, p))) {

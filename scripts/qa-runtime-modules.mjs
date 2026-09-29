@@ -17,6 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { authoredHtmlFiles } from "./i18n-catalog.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -189,7 +190,8 @@ if (insertBlock) {
 
 /* ---------- 4. pages declare a page type the manifest knows ---------- */
 
-const htmlFiles = fs.readdirSync(ROOT).filter((f) => f.endsWith(".html")).sort();
+/* Authored documents only: legacy `.html` stubs load no runtime at all. */
+const htmlFiles = authoredHtmlFiles();
 const pageOf = {};
 
 for (const file of htmlFiles) {
@@ -211,7 +213,7 @@ for (const file of htmlFiles) {
 
   const srcs = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1]);
   for (const src of srcs) {
-    const normalized = src.replace(/^\.\.\/\.\.\//, "").replace(/^\//, "");
+    const normalized = src.replace(/^\//, "");
     const allowedEarlyBootstrap = normalized === EARLY_BOOTSTRAP;
     ok(`${file}: does not bypass the manifest with ${src}`, !src.includes("js/") || allowedEarlyBootstrap);
   }
@@ -221,16 +223,16 @@ for (const file of htmlFiles) {
 /* ---------- 5. page types get the modules their DOM needs ---------- */
 
 const REQUIRED = [
-  ["request.html", "js/request/form.js", "[data-request-form]"],
-  ["request.html", "js/request/submission.js", "[data-request-form]"],
-  ["works.html", "js/portfolio/works.js", "[data-filter-btn]"],
-  ["games.html", "js/portfolio/works.js", "[data-game-link]"],
-  ["games.html", "js/pages/games.js", "[data-game-link]"],
+  ["request/index.html", "js/request/form.js", "[data-request-form]"],
+  ["request/index.html", "js/request/submission.js", "[data-request-form]"],
+  ["works/index.html", "js/portfolio/works.js", "[data-filter-btn]"],
+  ["games/index.html", "js/portfolio/works.js", "[data-game-link]"],
+  ["games/index.html", "js/pages/games.js", "[data-game-link]"],
   ["project-detail.html", "js/portfolio/project-detail.js", "[data-project-detail]"],
-  ["single-work.html", "js/features/certificates.js", "[data-cert]"],
-  ["adventure.html", "js/pages/games.js", "adventure"],
-  ["joyday-paint.html", "js/pages/games.js", "joyday"],
-  ["labs.html", "js/pages/labs.js", "#math-3d-canvas"],
+  ["certificates/index.html", "js/features/certificates.js", "[data-cert]"],
+  ["adventure/index.html", "js/pages/games.js", "adventure"],
+  ["joyday-paint/index.html", "js/pages/games.js", "joyday"],
+  ["labs/index.html", "js/pages/labs.js", "#math-3d-canvas"],
 ];
 
 const modulesFor = (page) => [...COMMON, ...(PAGE_MODULES[page] || [])];
@@ -273,21 +275,21 @@ ok(
 
 /* The pages the audit called out as paying for code they never used. */
 const MUST_NOT_LOAD = [
-  ["games.html", "js/request/form.js"],
-  ["games.html", "js/portfolio/project-detail.js"],
-  ["about.html", "js/request/form.js"],
-  ["about.html", "js/portfolio/works.js"],
-  ["about.html", "js/portfolio/project-detail.js"],
-  ["blog.html", "js/request/form.js"],
-  ["blog.html", "js/portfolio/works.js"],
-  ["adventure.html", "js/request/form.js"],
-  ["adventure.html", "js/portfolio/project-detail.js"],
-  ["joyday-paint.html", "js/request/form.js"],
-  ["ai-flow-puzzle.html", "js/request/form.js"],
-  ["works.html", "js/request/form.js"],
-  ["request.html", "js/portfolio/project-detail.js"],
-  ["about.html", "js/pages/labs.js"],
-  ["works.html", "js/pages/labs.js"],
+  ["games/index.html", "js/request/form.js"],
+  ["games/index.html", "js/portfolio/project-detail.js"],
+  ["about/index.html", "js/request/form.js"],
+  ["about/index.html", "js/portfolio/works.js"],
+  ["about/index.html", "js/portfolio/project-detail.js"],
+  ["blog/index.html", "js/request/form.js"],
+  ["blog/index.html", "js/portfolio/works.js"],
+  ["adventure/index.html", "js/request/form.js"],
+  ["adventure/index.html", "js/portfolio/project-detail.js"],
+  ["joyday-paint/index.html", "js/request/form.js"],
+  ["ai-flow-puzzle/index.html", "js/request/form.js"],
+  ["works/index.html", "js/request/form.js"],
+  ["request/index.html", "js/portfolio/project-detail.js"],
+  ["about/index.html", "js/pages/labs.js"],
+  ["works/index.html", "js/pages/labs.js"],
 ];
 for (const [file, module] of MUST_NOT_LOAD) {
   const page = pageOf[file];
@@ -307,8 +309,8 @@ for (const slug of generated) {
   const body = (html.match(/<body\b[^>]*>/i) || [""])[0];
   check(`projects/${slug}/: data-page marker`, (body.match(/data-page="([^"]*)"/) || [])[1], "projectDetail");
   check(`projects/${slug}/: canonical slug marker`, (body.match(/data-project-slug="([^"]*)"/) || [])[1], slug);
-  check(`projects/${slug}/: site-root depth`, (body.match(/data-site-root="([^"]*)"/) || [])[1], "../../");
-  ok(`projects/${slug}/: loads the bootloader`, /src="\.\.\/\.\.\/script\.js"/.test(html));
+  ok(`projects/${slug}/: declares no relative depth`, !/data-site-root=/.test(body));
+  ok(`projects/${slug}/: loads the bootloader from the site root`, /src="\/script\.js"/.test(html));
   const directRuntimeSources = [...html.matchAll(/<script[^>]+src="([^"]*\/js\/[^"]+)"/g)]
     .map((match) => match[1])
     .filter((src) => !src.endsWith("/js/core/locale-bootstrap.js"));
@@ -335,36 +337,48 @@ const sampleProject = {
   year: "2026",
 };
 
-const mediaSandbox = (siteRoot, {
+/* The production route module, loaded against the generated route table, so
+ * these checks exercise the same URL policy the browser runs. */
+const loadRealRoutes = (document, location) => {
+  const routeSandbox = { window: { location }, document, URL };
+  vm.createContext(routeSandbox);
+  vm.runInContext(read("i18n-data.js"), routeSandbox, { filename: "i18n-data.js" });
+  vm.runInContext(read("js/core/locale-routes.js"), routeSandbox, { filename: "js/core/locale-routes.js" });
+  return routeSandbox.window.KAAN_LOCALE_ROUTES;
+};
+
+const mediaSandbox = ({
   locale = "en",
   projectSlug = "sample",
   search = "",
   href = "https://kaanbalci.com/projects/sample/",
-  localeRoot,
-  localized = false,
+  routed = true,
 } = {}) => {
   const listeners = {};
   const root = { innerHTML: "" };
-  const dataset = { siteRoot };
+  const dataset = {};
   if (projectSlug) dataset.projectSlug = projectSlug;
-  if (localeRoot !== undefined) dataset.localeRoot = localeRoot;
+  const replaced = [];
   const document = {
     body: { dataset },
     title: "",
+    documentElement: { getAttribute: () => null },
     addEventListener(type, listener) { listeners[type] = listener; },
     querySelector(selector) { return selector === "[data-project-detail]" ? root : null; },
   };
-  const localizedInternalHref = (value, _locale, depths) => {
-    const path = String(value || "");
-    if (/^(?:assets\/.*|[^/]+\.(?:webp|png|jpg|jpeg|gif|svg))$/i.test(path)) return `${depths.siteRoot}${path}`;
-    return `${depths.localeRoot ?? depths.siteRoot}${path}`;
+  const location = {
+    search,
+    href,
+    hash: "",
+    pathname: new URL(href).pathname,
+    replace(target) { replaced.push(target); },
   };
   const sandbox = {
     document,
     window: {
       KAAN_PORTFOLIO: { projectDetails: { sample: sampleProject } },
-      location: { search, href },
-      ...(localized ? { KAAN_LOCALE_ROUTES: { localizedInternalHref } } : {}),
+      location,
+      ...(routed ? { KAAN_LOCALE_ROUTES: loadRealRoutes(document, location) } : {}),
     },
     URL,
     URLSearchParams,
@@ -389,10 +403,10 @@ const mediaSandbox = (siteRoot, {
   for (const file of ["js/core/media.js", "js/portfolio/routing.js", "js/portfolio/project-detail.js"]) {
     vm.runInContext(read(file), sandbox, { filename: file });
   }
-  return { sandbox, listeners, root };
+  return { sandbox, listeners, root, replaced };
 };
 
-const canonicalMedia = mediaSandbox("../../");
+const canonicalMedia = mediaSandbox();
 check("canonical project slug resolves from its generated-page marker", canonicalMedia.sandbox.resolveCurrentProjectSlug(), "sample");
 ok(
   "canonical project renderer executes automatically when its module loads",
@@ -402,20 +416,25 @@ for (const marker of ["project-detail-grid", "process-steps", "detail-gallery", 
   ok(`canonical project automatic boot renders ${marker}`, canonicalMedia.root.innerHTML.includes(marker));
 }
 ok(
-  "canonical project hero uses the site-root-aware URL policy",
-  canonicalMedia.root.innerHTML.includes('src="../../assets/hero.webp"'),
+  "canonical project hero uses the root-relative URL policy",
+  canonicalMedia.root.innerHTML.includes('src="/assets/hero.webp"'),
 );
 for (const image of sampleProject.gallery) {
   ok(
-    `canonical gallery rebases ${image} through the site root`,
-    canonicalMedia.root.innerHTML.includes(`src="../../${image}"`),
+    `canonical gallery serves ${image} from the site root`,
+    canonicalMedia.root.innerHTML.includes(`src="/${image}"`),
   );
 }
 ok(
   "canonical media URLs resolve to /assets instead of /projects/<slug>/assets",
-  new URL("../../assets/gallery-a.webp", canonicalMedia.sandbox.window.location.href).pathname ===
+  new URL("/assets/gallery-a.webp", canonicalMedia.sandbox.window.location.href).pathname ===
     "/assets/gallery-a.webp",
 );
+ok(
+  "canonical project links back to the clean Works route",
+  canonicalMedia.root.innerHTML.includes('href="/works/"') && !/href="[^"]*\.html/.test(canonicalMedia.root.innerHTML),
+);
+ok("a generated project page never redirects itself", canonicalMedia.replaced.length === 0);
 
 const brokenImage = (source) => ({
   tagName: "IMG",
@@ -424,54 +443,78 @@ const brokenImage = (source) => ({
   getAttribute(name) { return name === "src" ? source : null; },
   set src(value) { this.assignedSource = value; },
 });
-const canonicalFallback = brokenImage("../../assets/missing.webp");
+const canonicalFallback = brokenImage("/assets/missing.webp");
 canonicalMedia.listeners.error({ target: canonicalFallback });
 check(
-  "canonical missing media fallback is rebased through the site root",
+  "canonical missing media fallback is served from the site root",
   canonicalFallback.assignedSource,
-  "../../assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
+  "/assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
 );
-const canonicalJoydayFallback = brokenImage("../../assets/missing-joyday.webp");
+const canonicalJoydayFallback = brokenImage("/assets/missing-joyday.webp");
 canonicalMedia.listeners.error({ target: canonicalJoydayFallback });
 check(
-  "canonical Joyday fallback is rebased through the site root",
+  "canonical Joyday fallback is served from the site root",
   canonicalJoydayFallback.assignedSource,
-  "../../assets/joyday-homepage-preview.webp",
+  "/assets/joyday-homepage-preview.webp",
 );
 
-const legacyMedia = mediaSandbox("", {
+/* Without the route module (an isolated harness) the renderer still emits
+ * root-relative URLs rather than depth-relative ones. */
+const unroutedMedia = mediaSandbox({ routed: false });
+ok(
+  "project media stays root-relative without the route module",
+  unroutedMedia.root.innerHTML.includes('src="/assets/hero.webp"'),
+);
+
+const legacyMedia = mediaSandbox({
   projectSlug: null,
   search: "?project=sample",
   href: "https://kaanbalci.com/project-detail.html?project=sample",
 });
 check("legacy project slug resolves from the query string", legacyMedia.sandbox.resolveCurrentProjectSlug(), "sample");
+check(
+  "legacy project-detail.html?project=<slug> forwards to the canonical clean route",
+  legacyMedia.replaced.join(" | "),
+  "/projects/sample/",
+);
 ok(
-  "legacy project-detail route still auto-renders the full body",
+  "legacy project-detail route still renders the full body while it forwards",
   legacyMedia.root.innerHTML.includes("project-detail-grid"),
 );
 ok(
-  "legacy project hero keeps its root-page relative URL",
-  legacyMedia.root.innerHTML.includes('src="assets/hero.webp"'),
+  "legacy project hero uses the same root-relative URL policy",
+  legacyMedia.root.innerHTML.includes('src="/assets/hero.webp"'),
 );
-for (const image of sampleProject.gallery) {
-  ok(
-    `legacy gallery keeps its root-page relative URL for ${image}`,
-    legacyMedia.root.innerHTML.includes(`src="${image}"`),
-  );
-}
-const legacyFallback = brokenImage("assets/missing.webp");
+const legacyFallback = brokenImage("/assets/missing.webp");
 legacyMedia.listeners.error({ target: legacyFallback });
 check(
-  "legacy missing media fallback keeps its root-page relative URL",
+  "legacy missing media fallback is served from the site root",
   legacyFallback.assignedSource,
-  "assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
+  "/assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
 );
 
-const localizedMedia = mediaSandbox("../../../", {
+const unknownLegacy = mediaSandbox({
+  projectSlug: null,
+  search: "?project=not-a-real-project",
+  href: "https://kaanbalci.com/project-detail.html?project=not-a-real-project",
+});
+ok("an unknown legacy slug stays on the shell instead of redirecting", unknownLegacy.replaced.length === 0);
+
+const localizedLegacy = mediaSandbox({
+  locale: "de",
+  projectSlug: null,
+  search: "?project=sample",
+  href: "https://kaanbalci.com/de/project-detail.html?project=sample",
+});
+check(
+  "localized legacy shell forwards to the same-locale canonical route",
+  localizedLegacy.replaced.join(" | "),
+  "/de/projects/sample/",
+);
+
+const localizedMedia = mediaSandbox({
   locale: "fr",
-  localeRoot: "../../",
   href: "https://kaanbalci.com/fr/projects/sample/",
-  localized: true,
 });
 ok(
   "localized canonical project auto-boots with the URL locale overlay",
@@ -481,13 +524,17 @@ ok(
 );
 ok(
   "localized canonical project keeps gallery assets at the site root",
-  localizedMedia.root.innerHTML.includes('src="../../../assets/gallery-a.webp"'),
+  localizedMedia.root.innerHTML.includes('src="/assets/gallery-a.webp"'),
 );
 const localizedProjectLinks = [...localizedMedia.root.innerHTML.matchAll(/href="([^"]*projects\/sample\/)"/g)]
   .map((match) => match[1]);
 ok(
-  "localized Previous / Next project links preserve the locale root",
-  localizedProjectLinks.length === 2 && localizedProjectLinks.every((hrefValue) => hrefValue === "../../projects/sample/"),
+  "localized Previous / Next project links stay in the locale",
+  localizedProjectLinks.length === 2 && localizedProjectLinks.every((hrefValue) => hrefValue === "/fr/projects/sample/"),
+);
+ok(
+  "localized project links back to the localized clean Works route",
+  localizedMedia.root.innerHTML.includes('href="/fr/works/"'),
 );
 
 const shellSource = read("js/core/shell.js");
@@ -554,7 +601,7 @@ ok("window.KAAN_PORTFOLIO is still the data contract", /window\.KAAN_PORTFOLIO\s
 const localScripts = (file, page) => {
   const html = read(file);
   const direct = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)]
-    .map((m) => m[1].replace(/^\.\.\/\.\.\//, ""))
+    .map((m) => m[1].replace(/^\//, ""))
     .filter((s) => !/^https?:/.test(s) && s !== "script.js");
   return [...new Set([...direct, "script.js", ...modulesFor(page)])].filter(exists);
 };

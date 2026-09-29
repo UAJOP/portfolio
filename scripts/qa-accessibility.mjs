@@ -19,6 +19,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { authoredHtmlFiles } from "./i18n-catalog.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -37,7 +38,9 @@ const attr = (tag, name) => {
 };
 const tagsOf = (html, name) => html.match(new RegExp(`<${name}\\b[^>]*>`, "gi")) || [];
 
-const rootPages = fs.readdirSync(ROOT).filter((f) => f.endsWith(".html")).sort();
+/* Authored documents. Legacy `.html` compatibility stubs are one-line
+ * redirects, checked for language, title and a real link by qa:routes. */
+const rootPages = authoredHtmlFiles();
 const generated = fs.existsSync(path.join(ROOT, "projects"))
   ? fs.readdirSync(path.join(ROOT, "projects"), { withFileTypes: true })
       .filter((e) => e.isDirectory())
@@ -47,10 +50,9 @@ const allPages = [...rootPages, ...generated];
 
 for (const file of allPages) {
   const html = read(file);
-  const isGenerated = file.startsWith("projects/");
-  /* 404.html loads its assets root-absolutely: GitHub Pages serves that one
-   * document at whatever URL failed, so a relative path would break at depth. */
-  const prefix = file === "404.html" ? "/" : isGenerated ? "../../" : "";
+  /* Every page loads its assets root-absolutely: pages live at several depths
+   * and the 404 is served at whatever URL failed. */
+  const prefix = "/";
 
   /* ---------- language ---------- */
   const htmlTag = (html.match(/<html\b[^>]*>/i) || [""])[0];
@@ -121,7 +123,7 @@ for (const file of allPages) {
 
 /* ---------- forms ---------- */
 
-const requestHtml = read("request.html");
+const requestHtml = read("request/index.html");
 const formInputs = [
   ...tagsOf(requestHtml, "input"),
   ...tagsOf(requestHtml, "select"),

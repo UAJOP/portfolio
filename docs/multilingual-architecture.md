@@ -214,15 +214,20 @@ V1 had no crawlable localized URLs. V2 generates a real document per (locale,
 route):
 
 ```
-English    /            /works.html            /projects/<slug>/
-Turkish    /tr/         /tr/works.html         /tr/projects/<slug>/
-German     /de/         /de/works.html         /de/projects/<slug>/
+English    /            /works/            /projects/<slug>/
+Turkish    /tr/         /tr/works/         /tr/projects/<slug>/
+German     /de/         /de/works/         /de/projects/<slug>/
 Spanish    /es/         …
 French     /fr/         …
 ```
 
+Since Clean Public URLs V1 every page is a directory URL served by its own
+`index.html`; the pre-migration `.html` URLs are generated compatibility stubs.
+Routes come from `data/site/routes.json` — see
+[clean-public-routes.md](clean-public-routes.md).
+
 English keeps the unprefixed root. `/en/` does not exist and `qa:i18n` fails if
-it ever appears. The inventory is 42 indexable English routes (17 authored
+it ever appears. The inventory is 43 indexable English routes (18 authored
 pages + 25 canonical projects) plus two companion surfaces — `404.html` and the
 legacy `project-detail.html` shell — which are localized for readers but never
 given SEO treatment.
@@ -232,7 +237,7 @@ given SEO treatment.
 This is the behavioural change V1 deferred. A page served from a localized
 route **is** that locale. Neither a saved preference nor a browser language may
 override it, because canonical and `hreflang` promise search engines that
-`/de/works.html` is the German page.
+`/de/works/` is the German page.
 
 Resolution order:
 
@@ -246,8 +251,8 @@ page declares one on `<html data-route-locale>`, and every authored English page
 now declares `data-route-locale="en"`, so:
 
 - a German browser opening `/` gets **English**, and is not redirected
-- a reader with `tr` saved who opens `/works.html` gets **English**
-- a reader who opens `/fr/about.html` with `de` saved gets **French**
+- a reader with `tr` saved who opens `/works/` gets **English**
+- a reader who opens `/fr/about/` with `de` saved gets **French**
 
 Preference and browser detection now only influence where the language selector
 takes you, never what the current URL renders as.
@@ -259,29 +264,27 @@ locale = equivalent localized route*. `scripts/generate-localized-routes.mjs`
 evaluates that same production file in a sandbox, so generation and runtime
 cannot disagree about what a localized route is.
 
-It handles the home route, authored `.html` pages, case studies, game pages,
+It handles the home route, clean page routes, case studies, game pages,
 canonical `/projects/<slug>/`, the query-string legacy shell, hash fragments and
-safe search parameters. Locale prefixes cannot stack — `/tr/de/works.html`
-collapses rather than growing. Fragments survive a language switch; tracking
-parameters do not. The legacy `project-detail.html?project=<slug>` shell maps
-onto the canonical `/{locale}/projects/<slug>/` route rather than becoming a
-query-string duplicate in five languages.
+search parameters, and normalizes legacy `.html` input (`/tr/about.html` →
+`/tr/about/`). Locale prefixes cannot stack — `/tr/de/works/` collapses rather
+than growing. The query and fragment survive a language switch; only `project`
+and tracking parameters do not. The legacy `project-detail.html?project=<slug>`
+shell maps onto the canonical `/{locale}/projects/<slug>/` route rather than
+becoming a query-string duplicate in five languages.
 
 Only paths in the known route inventory take a locale prefix. Assets keep one
 root-relative identity: there is no `/de/assets/`, and inventing one would 404
 every image on a localized page.
 
-### Two depths, not one
+### Root-relative, no depth
 
-A generated page declares both:
-
-- `data-site-root` — reaches the repository root, where assets live
-- `data-locale-root` — reaches the locale's own root, where sibling pages live
-
-On `/de/works.html` these are `../` and ``; on `/de/projects/slug/`,
-`../../../` and `../../`. Conflating them is how the BRIEF 09A gallery-path bug
-happened, so `qa:i18n` asserts both at every depth and resolves every `src` and
-`href` in every generated document against the filesystem.
+Every first-party URL is root-relative (`/style.css`, `/assets/…`, `/de/works/`),
+so a URL means the same thing at every depth and pages declare no
+`data-site-root`/`data-locale-root`. This retires the two-depth model — and the
+BRIEF 09A gallery-path class of bug with it. `qa:i18n` fails on any
+depth-relative `src` or `href` in a generated document and resolves every one
+against the filesystem.
 
 ### The language selector navigates
 

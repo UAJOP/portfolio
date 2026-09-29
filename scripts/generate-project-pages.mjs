@@ -29,18 +29,19 @@ import { fileURLToPath } from "node:url";
 import {
   loadRegistry as loadLocaleRegistry,
   indexableRoutes,
-  routePrefixFor,
 } from "./i18n-catalog.mjs";
+import { loadSiteRoutes, loadRouteRuntime, absoluteRouteUrl, renderSitemap } from "./site-routes.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SITE_ORIGIN = "https://kaanbalci.com";
+const site = loadSiteRoutes();
+const SITE_ORIGIN = site.origin;
 const OUTPUT_DIR = path.join(ROOT, "projects");
-const SHELL_SOURCE = path.join(ROOT, "project-detail.html");
+const SHELL_SOURCE = path.join(ROOT, site.projects.template);
 const DEFAULT_SOCIAL_IMAGE = "assets/portfolio_website_cover.webp";
 
-/* Generated pages sit two levels deep. Relative rather than root-absolute so
- * the site still works from a subdirectory and over file://. */
-const DEPTH_PREFIX = "../../";
+/* Every first-party URL is root-relative, so a generated page two directories
+ * deep resolves assets and routes exactly like the site root does. */
+const SITE_ROOT = "/";
 
 const checkOnly = process.argv.includes("--check");
 
@@ -63,6 +64,7 @@ const indexableLocaleIds = (localeRegistry.localizedRoutes?.indexable || []).fil
 );
 const sitemapLocaleIds = [localeRegistry.defaultLocale, ...indexableLocaleIds];
 const routes = indexableRoutes(registry);
+const ROUTES = loadRouteRuntime(localeRegistry, site);
 
 if (!slugs.length) throw new Error("the canonical registry contains no project detail records");
 
@@ -112,9 +114,8 @@ const truncate = (text, limit = 160) => {
 const absoluteUrl = (repoRelative) =>
   `${SITE_ORIGIN}/${String(repoRelative || "").replace(/^\/+/, "")}`;
 
-const canonicalFor = (slug) => `${SITE_ORIGIN}/projects/${slug}/`;
-const localizedAbsolute = (page, locale) =>
-  `${SITE_ORIGIN}/${routePrefixFor(locale, localeRegistry)}${page}`;
+const canonicalFor = (slug) => `${SITE_ORIGIN}${ROUTES.routeForProject(slug)}`;
+const localizedAbsolute = (page, locale) => absoluteRouteUrl(ROUTES, page, locale, SITE_ORIGIN);
 
 function alternateLinks(page) {
   if (!indexableLocaleIds.length) return "";
@@ -155,16 +156,17 @@ const schemaTypeFor = (project) => {
 const rawShell = fs.readFileSync(SHELL_SOURCE, "utf8");
 
 /**
- * Rebases every repo-relative href/src in the shell onto the generated page's
- * depth. Absolute URLs, protocol-relative URLs, fragments and root-relative
- * paths are left untouched.
+ * Makes any site-relative href/src in the shell root-relative. The authored
+ * shell already uses root-relative paths; this keeps a stray relative one from
+ * silently breaking two directories deep. Absolute URLs, protocol-relative
+ * URLs, fragments and root-relative paths are left untouched.
  */
 function rebaseShellPaths(html) {
   return html.replace(
     /\b(href|src)="([^"]*)"/g,
     (match, attr, value) => {
       if (!value || /^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(value)) return match;
-      return `${attr}="${DEPTH_PREFIX}${value}"`;
+      return `${attr}="${SITE_ROOT}${value}"`;
     },
   );
 }
@@ -260,10 +262,11 @@ function renderProjectPage(slug, project) {
     `<head>${charset}${buildHeadMetadata(slug, project)}${rest}</head>`,
   );
 
-  /* Declarative slug marker plus the depth prefix the renderer needs. */
+  /* Declarative slug marker: the renderer resolves the project from it rather
+   * than from the URL, so a stray query string cannot change the project. */
   html = html.replace(
     /<body([^>]*)>/i,
-    `<body$1 data-project-slug="${escapeHtml(slug)}" data-site-root="${DEPTH_PREFIX}">`,
+    `<body$1 data-project-slug="${escapeHtml(slug)}">`,
   );
 
   /* The raw shell carries the real project heading instead of a "Loading…"
@@ -287,23 +290,10 @@ function renderProjectPage(slug, project) {
 
 /* ---------- sitemap ---------- */
 
-function renderSitemap() {
-  const entries = [];
-  for (const route of routes) {
-    for (const locale of sitemapLocaleIds) {
-      entries.push([localizedAbsolute(route.page, locale), route.changefreq, route.priority]);
-    }
-  }
-
-  const body = entries
-    .map(
-      ([loc, changefreq, priority]) =>
-        `  <url><loc>${loc}</loc><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`,
-    )
-    .join("\n");
-
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
-}
+/* Shared with generate-localized-routes.mjs so the two generators can never
+ * write two different sitemaps. */
+const buildSitemap = () =>
+  renderSitemap({ routes: ROUTES, indexableRoutes: routes, locales: sitemapLocaleIds, origin: SITE_ORIGIN });
 
 /* ---------- write / check ---------- */
 
@@ -321,7 +311,7 @@ function generatorOwnedDirs() {
 }
 
 const planned = new Map(slugs.map((slug) => [slug, renderProjectPage(slug, projects[slug])]));
-const sitemap = renderSitemap();
+const sitemap = buildSitemap();
 
 const differences = [];
 const readIfExists = (file) => (fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null);

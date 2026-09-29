@@ -52,18 +52,24 @@ It also injects `portfolio-v2.css` when a legacy page does not already include i
 
 ## Main pages
 
-- `index.html` — concise landing page led by flagship evidence
-- `works.html` — curated professional project catalog
-- `sinama-case-study.html` — Applied AI / reliability flagship case study + evidence explorer
-- `merge-rush-case-study.html` — game / interactive flagship case study + QA evidence
-- `blog.html` — professional experience timeline
-- `about.html` — profile and capability map
-- `request.html` — structured project inquiry
-- `now.html` — living product / engineering build log
-- `labs.html` — technical experiments separated from the main professional narrative
-- `games.html` — active game product + playable browser work
-- `single-work.html` — training and certificates
-- `project-detail.html` — dynamic archive project detail route (`noindex`)
+Every public page is a clean directory URL, authored where it is served
+(`/works/` is `works/index.html`). Routes are declared once in
+`data/site/routes.json`; see [docs/clean-public-routes.md](docs/clean-public-routes.md).
+
+- `/` (`index.html`) — concise landing page led by flagship evidence
+- `/works/` — curated professional project catalog
+- `/sinama-case-study/` — Applied AI / reliability flagship case study + evidence explorer
+- `/merge-rush-case-study/` — game / interactive flagship case study + QA evidence
+- `/blog/` — professional experience timeline
+- `/about/` — profile and capability map
+- `/request/` — structured project inquiry
+- `/now/` — living product / engineering build log
+- `/labs/` — technical experiments separated from the main professional narrative
+- `/games/` — active game product + playable browser work
+- `/certificates/` — training and certificates
+- `/projects/<slug>/` — generated canonical project pages
+- `project-detail.html` — legacy query-string project shell (`noindex`, forwards to `/projects/<slug>/`)
+- `works.html`, `about.html`, … — generated legacy stubs that forward to the clean URLs
 
 ## Core files
 
@@ -118,11 +124,13 @@ npm run qa
 GitHub Actions Site Preflight enforces these as **blocking** checks:
 
 - canonical data contract and generated-registry parity (`qa:data`)
+- clean public URLs: no `.html` in links, canonicals, hreflang or the sitemap; every route a real directory document; every legacy `.html` URL a forwarding stub (`qa:routes`)
+- the same routes over real HTTP, as a direct load or refresh would request them (`qa:routes:http`)
 - JavaScript syntax for every root `.js` file (`qa:js`)
 - portfolio architecture, footer and truth consistency (`qa:portfolio`)
 - critical asset existence, budgets, intrinsic dimensions and loading policy (`qa:assets`)
 - deterministic internal links, anchors, role deep links and project slugs (`qa:links`)
-- structural HTML errors (`qa:html`)
+- structural HTML errors across every published document (`qa:html`)
 - English and Turkish spelling (`qa:spelling`)
 - mobile WCAG 2 AA across 11 pages with Pa11y (`qa:a11y`)
 
@@ -166,4 +174,8 @@ See [`REACT_MIGRATION_PLAN.md`](REACT_MIGRATION_PLAN.md) for the phase plan, the
 
 ## Deployment
 
-The repository is configured for GitHub Pages with the custom domain in `CNAME`.
+The repository is configured for GitHub Pages with the custom domain in `CNAME`. Pages deploys the `main` branch as-is, so every clean URL is a committed `index.html`; there is no rewrite layer. Serve the working tree over HTTP to preview it (directory URLs do not work over `file://`):
+
+```bash
+python -m http.server 8000
+```

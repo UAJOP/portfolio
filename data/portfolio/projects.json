@@ -55,7 +55,7 @@
       }
     ],
     "links": {
-      "caseStudy": "sinama-case-study.html",
+      "caseStudy": "/sinama-case-study/",
       "live": "https://sinama.kaanbalci.com",
       "github": "https://github.com/UAJOP/sinama"
     },
@@ -80,7 +80,7 @@
       "tr": "Chatbot QA, stabilizasyon, büyük ölçekli flow restructuring, channel configuration, multi-channel handoff ve insurance-claims intake POC üzerinden kurumsal customer-workflow kanıtı."
     },
     "links": {
-      "caseStudy": "projects/ai-chatbot-flow-design/"
+      "caseStudy": "/projects/ai-chatbot-flow-design/"
     }
   },
   "joyday": {
@@ -99,7 +99,7 @@
       "tr": "Hizmet keşfi, rezervasyon journey'leri ve operasyon otomasyonunun tek customer-facing workflow'a çevrilip günlük kullanıma alındığı canlı işletme ürünü."
     },
     "links": {
-      "caseStudy": "atolye-joyday-case-study.html",
+      "caseStudy": "/atolye-joyday-case-study/",
       "live": "https://atolyejoyday.com/"
     }
   },
@@ -202,8 +202,8 @@
       }
     ],
     "links": {
-      "caseStudy": "merge-rush-case-study.html",
-      "games": "games.html"
+      "caseStudy": "/merge-rush-case-study/",
+      "games": "/games/"
     },
     "currentFocus": {
       "en": "Gameplay pacing, retention and production readiness",
@@ -226,7 +226,7 @@
       "tr": "Hasta, doktor ve sekreter flow'larında multi-role workflow mantığı, stateful operasyonlar ve randevu koordinasyonunu gösteren veritabanı destekli Windows Forms sistemi."
     },
     "links": {
-      "caseStudy": "hospital-system-case-study.html",
+      "caseStudy": "/hospital-system-case-study/",
       "github": "https://github.com/UAJOP/Hospital-System"
     }
   }

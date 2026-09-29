@@ -200,7 +200,7 @@ function extendCreativeCommands() {
       hint: "Interactive canvas model",
       keywords: "3d math canvas model rotate",
       type: "nav",
-      value: "labs.html#algorithmic-3d-lab",
+      value: "/labs/#algorithmic-3d-lab",
     });
   if (!hasCommand("en", "easter"))
     ultimateContent.en.commands.push({
@@ -217,7 +217,7 @@ function extendCreativeCommands() {
       hint: "İnteraktif canvas modeli",
       keywords: "3d matematik canvas model döndür",
       type: "nav",
-      value: "labs.html#algorithmic-3d-lab",
+      value: "/labs/#algorithmic-3d-lab",
     });
   if (!hasCommand("tr", "easter"))
     ultimateContent.tr.commands.push({

@@ -20,7 +20,7 @@ function renderProjectDetail(language = (typeof getCurrentLocale === "function" 
         <p class="eyebrow">${lt("Project Not Found", "Proje Bulunamadı")}</p>
         <h1>${lt("This project detail page is not available yet.", "Bu proje için detay sayfası henüz hazırlanmadı.")}</h1>
         <p>${lt("Go back to the works page and choose another project.", "Projeler sayfasına dönüp başka bir çalışma seçebilirsin.")}</p>
-        <div class="hero-actions left"><a class="btn primary" href="${siteUrl("works.html")}">${lt("Back to Works", "Projelere Dön")}</a></div>
+        <div class="hero-actions left"><a class="btn primary" href="${siteUrl("/works/")}">${lt("Back to Works", "Projelere Dön")}</a></div>
       </section>
     `;
     document.title = lt("Project Not Found | Kaan Balcı", "Proje Bulunamadı | Kaan Balcı");
@@ -73,7 +73,7 @@ function renderProjectDetail(language = (typeof getCurrentLocale === "function" 
   root.innerHTML = `
     <section class="project-detail-hero section-shell reveal">
       <div class="project-detail-copy">
-        <a class="back-link" href="${siteUrl("works.html")}"><i class="bx bx-arrow-back"></i>${lt("Back to works", "Projelere dön")}</a>
+        <a class="back-link" href="${siteUrl("/works/")}"><i class="bx bx-arrow-back"></i>${lt("Back to works", "Projelere dön")}</a>
         <p class="eyebrow">${escapeProjectHtml(category)}</p>
         <h1>${escapeProjectHtml(title)}</h1>
         <p>${escapeProjectHtml(subtitle)}</p>
@@ -160,7 +160,7 @@ function renderProjectDetail(language = (typeof getCurrentLocale === "function" 
 
     <section class="section-shell detail-navigation reveal">
       <a class="btn ghost" href="${projectUrl(previousSlug)}"><i class="bx bx-left-arrow-alt"></i>${lt("Previous Project", "Önceki Proje")}</a>
-      <a class="btn primary" href="${siteUrl("works.html")}">${lt("All Works", "Tüm Projeler")}</a>
+      <a class="btn primary" href="${siteUrl("/works/")}">${lt("All Works", "Tüm Projeler")}</a>
       <a class="btn ghost" href="${projectUrl(nextSlug)}">${lt("Next Project", "Sonraki Proje")}<i class="bx bx-right-arrow-alt"></i></a>
     </section>
   `;
@@ -194,9 +194,35 @@ function setupProjectCopyLink() {
   });
 }
 
+/**
+ * Legacy `project-detail.html?project=<slug>` links (old bookmarks, crawled
+ * URLs, external posts) are forwarded to the canonical `/projects/<slug>/`
+ * route in the same locale, keeping meaningful query parameters and any
+ * fragment. The shared route contract removes only path identity and tracking
+ * noise. `replace()` keeps the shell out of history, so Back does not bounce
+ * the reader into it again.
+ *
+ * Only a known slug moves: an unknown one stays on the shell, which renders its
+ * not-found state with a way back to Works. A generated project page declares
+ * its slug, so it can never redirect itself.
+ */
+function redirectLegacyProjectShell() {
+  if (document.body && document.body.dataset.projectSlug) return false;
+  if (!document.querySelector("[data-project-detail]")) return false;
+  const slug = new URLSearchParams(window.location.search).get("project");
+  if (!slug || !Object.prototype.hasOwnProperty.call(projectDetailData, slug)) return false;
+  if (typeof window.location.replace !== "function") return false;
+  const routes = window.KAAN_LOCALE_ROUTES;
+  if (!routes || typeof routes.preservedRouteSearch !== "function") return false;
+  const search = routes.preservedRouteSearch(window.location.search);
+  window.location.replace(`${projectUrl(slug)}${search}${window.location.hash || ""}`);
+  return true;
+}
+
 /* The first language presentation runs while this page-scoped module is still
  * absent, so its optional render guard cannot populate the detail body. Boot
  * once as soon as the renderer and its routing dependency are both available;
  * later locale changes continue to re-render through the existing subscriber. */
+redirectLegacyProjectShell();
 renderProjectDetail();
 

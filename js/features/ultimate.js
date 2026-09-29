@@ -30,7 +30,7 @@ const ultimateContent = {
         hint: "Landing page",
         keywords: "home landing",
         type: "nav",
-        value: "index.html",
+        value: "/",
       },
       {
         id: "works",
@@ -38,7 +38,7 @@ const ultimateContent = {
         hint: "Project catalog",
         keywords: "projects works portfolio",
         type: "nav",
-        value: "works.html",
+        value: "/works/",
       },
       {
         id: "sinama-case-study",
@@ -47,7 +47,7 @@ const ultimateContent = {
         keywords:
           "sinama ai agent reliability lab regression evaluation case study",
         type: "nav",
-        value: "sinama-case-study.html",
+        value: "/sinama-case-study/",
       },
       {
         id: "sinama-live",
@@ -64,7 +64,7 @@ const ultimateContent = {
         hint: "Playable mini games",
         keywords: "games oyun mini web canvas",
         type: "nav",
-        value: "games.html",
+        value: "/games/",
       },
       {
         id: "joyday-paint",
@@ -72,7 +72,7 @@ const ultimateContent = {
         hint: "Virtual action painting game",
         keywords: "joyday painting action canvas paint game png",
         type: "nav",
-        value: "joyday-paint.html",
+        value: "/joyday-paint/",
       },
       {
         id: "ai-flow-puzzle-play",
@@ -80,7 +80,7 @@ const ultimateContent = {
         hint: "n8n-style chatbot workflow game",
         keywords: "ai flow puzzle n8n chatbot workflow automation game",
         type: "nav",
-        value: "ai-flow-puzzle.html",
+        value: "/ai-flow-puzzle/",
       },
       {
         id: "ai-flow-puzzle-case-study",
@@ -88,7 +88,7 @@ const ultimateContent = {
         hint: "Design and technical case study",
         keywords: "ai flow puzzle case study node validation fallback",
         type: "nav",
-        value: "ai-flow-puzzle-case-study.html",
+        value: "/ai-flow-puzzle-case-study/",
       },
       {
         id: "adventure",
@@ -96,7 +96,7 @@ const ultimateContent = {
         hint: "Career merge mini game",
         keywords: "adventure game mini career merge job kaan",
         type: "nav",
-        value: "adventure.html",
+        value: "/adventure/",
       },
       {
         id: "joyday-case-study",
@@ -104,7 +104,7 @@ const ultimateContent = {
         hint: "Live business and digital product case study",
         keywords: "atolye joyday case study reservation digital product",
         type: "nav",
-        value: "atolye-joyday-case-study.html",
+        value: "/atolye-joyday-case-study/",
       },
       {
         id: "joyday-live",
@@ -122,7 +122,7 @@ const ultimateContent = {
         keywords:
           "hospital system form app c# windows forms sql server case study",
         type: "nav",
-        value: "hospital-system-case-study.html",
+        value: "/hospital-system-case-study/",
       },
       {
         id: "hospital-system-source",
@@ -192,7 +192,7 @@ const ultimateContent = {
         hint: "Interactive canvas model",
         keywords: "3d math canvas model rotate",
         type: "nav",
-        value: "labs.html#algorithmic-3d-lab",
+        value: "/labs/#algorithmic-3d-lab",
       },
       {
         id: "easter",
@@ -227,7 +227,7 @@ const ultimateContent = {
         hint: "Landing page",
         keywords: "home ana sayfa",
         type: "nav",
-        value: "index.html",
+        value: "/",
       },
       {
         id: "works",
@@ -235,7 +235,7 @@ const ultimateContent = {
         hint: "Proje kataloğu",
         keywords: "projeler portfolio works",
         type: "nav",
-        value: "works.html",
+        value: "/works/",
       },
       {
         id: "sinama-case-study",
@@ -244,7 +244,7 @@ const ultimateContent = {
         keywords:
           "sinama ai agent reliability lab regression evaluation vaka çalışması",
         type: "nav",
-        value: "sinama-case-study.html",
+        value: "/sinama-case-study/",
       },
       {
         id: "sinama-live",
@@ -261,7 +261,7 @@ const ultimateContent = {
         hint: "Oynanabilir mini oyunlar",
         keywords: "oyunlar oyun mini web canvas",
         type: "nav",
-        value: "games.html",
+        value: "/games/",
       },
       {
         id: "joyday-paint",
@@ -269,7 +269,7 @@ const ultimateContent = {
         hint: "Sanal action painting oyunu",
         keywords: "joyday painting action canvas boya oyun png",
         type: "nav",
-        value: "joyday-paint.html",
+        value: "/joyday-paint/",
       },
       {
         id: "ai-flow-puzzle-play",
@@ -277,7 +277,7 @@ const ultimateContent = {
         hint: "n8n tarzı chatbot workflow oyunu",
         keywords: "ai flow puzzle n8n chatbot workflow otomasyon oyun",
         type: "nav",
-        value: "ai-flow-puzzle.html",
+        value: "/ai-flow-puzzle/",
       },
       {
         id: "ai-flow-puzzle-case-study",
@@ -285,7 +285,7 @@ const ultimateContent = {
         hint: "Tasarım ve teknik vaka çalışması",
         keywords: "ai flow puzzle vaka çalışması node doğrulama fallback",
         type: "nav",
-        value: "ai-flow-puzzle-case-study.html",
+        value: "/ai-flow-puzzle-case-study/",
       },
       {
         id: "adventure",
@@ -293,7 +293,7 @@ const ultimateContent = {
         hint: "Kariyer merge mini oyunu",
         keywords: "macera oyun kariyer merge job iş kaan",
         type: "nav",
-        value: "adventure.html",
+        value: "/adventure/",
       },
       {
         id: "joyday-case-study",
@@ -301,7 +301,7 @@ const ultimateContent = {
         hint: "Canlı işletme ve dijital ürün vaka çalışması",
         keywords: "atölye joyday vaka çalışması rezervasyon dijital ürün",
         type: "nav",
-        value: "atolye-joyday-case-study.html",
+        value: "/atolye-joyday-case-study/",
       },
       {
         id: "joyday-live",
@@ -319,7 +319,7 @@ const ultimateContent = {
         keywords:
           "hospital system form app c# windows forms sql server vaka çalışması",
         type: "nav",
-        value: "hospital-system-case-study.html",
+        value: "/hospital-system-case-study/",
       },
       {
         id: "hospital-system-source",
@@ -389,7 +389,7 @@ const ultimateContent = {
         hint: "İnteraktif canvas modeli",
         keywords: "3d matematik canvas model döndür",
         type: "nav",
-        value: "labs.html#algorithmic-3d-lab",
+        value: "/labs/#algorithmic-3d-lab",
       },
       {
         id: "easter",
@@ -408,8 +408,8 @@ function getUltimateContent(language = getCurrentLocale()) {
 
 function getCatalogSearchLabels(language = getCurrentLocale()) {
   const base = getUltimateContent(language);
-  const path = (window.location.pathname || "").toLowerCase();
-  const isGamesCatalog = path.includes("games.html") || path.endsWith("/games");
+  /* The page declares its type; the URL shape is locale- and route-dependent. */
+  const isGamesCatalog = document.body?.dataset.page === "games";
   if (!isGamesCatalog)
     return {
       label: base.projectSearchLabel,

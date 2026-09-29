@@ -105,7 +105,7 @@
           }
         ],
         "links": {
-          "caseStudy": "sinama-case-study.html",
+          "caseStudy": "/sinama-case-study/",
           "live": "https://sinama.kaanbalci.com",
           "github": "https://github.com/UAJOP/sinama"
         },
@@ -130,7 +130,7 @@
           "tr": "Chatbot QA, stabilizasyon, büyük ölçekli flow restructuring, channel configuration, multi-channel handoff ve insurance-claims intake POC üzerinden kurumsal customer-workflow kanıtı."
         },
         "links": {
-          "caseStudy": "projects/ai-chatbot-flow-design/"
+          "caseStudy": "/projects/ai-chatbot-flow-design/"
         },
         "role": {
           "en": "AI Designer",
@@ -153,7 +153,7 @@
           "tr": "Hizmet keşfi, rezervasyon journey'leri ve operasyon otomasyonunun tek customer-facing workflow'a çevrilip günlük kullanıma alındığı canlı işletme ürünü."
         },
         "links": {
-          "caseStudy": "atolye-joyday-case-study.html",
+          "caseStudy": "/atolye-joyday-case-study/",
           "live": "https://atolyejoyday.com/"
         },
         "role": {
@@ -260,8 +260,8 @@
           }
         ],
         "links": {
-          "caseStudy": "merge-rush-case-study.html",
-          "games": "games.html"
+          "caseStudy": "/merge-rush-case-study/",
+          "games": "/games/"
         },
         "currentFocus": {
           "en": "Gameplay pacing, retention and production readiness",
@@ -284,7 +284,7 @@
           "tr": "Hasta, doktor ve sekreter flow'larında multi-role workflow mantığı, stateful operasyonlar ve randevu koordinasyonunu gösteren veritabanı destekli Windows Forms sistemi."
         },
         "links": {
-          "caseStudy": "hospital-system-case-study.html",
+          "caseStudy": "/hospital-system-case-study/",
           "github": "https://github.com/UAJOP/Hospital-System"
         },
         "role": {
@@ -339,7 +339,7 @@
               "en": "View Experience",
               "tr": "Deneyimi Gör"
             },
-            "url": "blog.html"
+            "url": "/blog/"
           }
         ],
         "overview": {
@@ -463,7 +463,7 @@
               "en": "View Case Study",
               "tr": "Vaka Çalışmasını Gör"
             },
-            "url": "atolye-joyday-case-study.html"
+            "url": "/atolye-joyday-case-study/"
           },
           {
             "label": {
@@ -965,7 +965,7 @@
               "en": "View Case Study",
               "tr": "Vaka Çalışmasını Gör"
             },
-            "url": "hospital-system-case-study.html"
+            "url": "/hospital-system-case-study/"
           },
           {
             "label": {
@@ -2676,7 +2676,7 @@
           "en": "Build n8n-inspired chatbot flows with intent, fallback and validation nodes.",
           "tr": "Intent, fallback ve validation node'larıyla n8n-inspired chatbot flow'ları kur."
         },
-        "url": "ai-flow-puzzle.html",
+        "url": "/ai-flow-puzzle/",
         "tags": [
           "JavaScript",
           "Node Logic",
@@ -2694,7 +2694,7 @@
           "en": "A vanilla-JS parametric mesh with perspective projection, depth sorting and pointer interaction.",
           "tr": "Perspective projection, depth sorting ve pointer interaction içeren vanilla-JS parametric mesh."
         },
-        "url": "labs.html#algorithmic-3d-lab",
+        "url": "/labs/#algorithmic-3d-lab",
         "tags": [
           "Canvas",
           "3D Projection",
@@ -2712,7 +2712,7 @@
           "en": "A playful merge-style interpretation of learning, tools, experience and portfolio proof.",
           "tr": "Öğrenme, araçlar, deneyim ve portfolyo kanıtını merge mantığıyla yorumlayan mini oyun."
         },
-        "url": "adventure.html",
+        "url": "/adventure/",
         "tags": [
           "Canvas",
           "Merge",
@@ -2730,7 +2730,7 @@
           "en": "Virtual action-painting tools with multiple canvas shapes and PNG export.",
           "tr": "Birden fazla tuval formu, sanal action-painting araçları ve PNG export."
         },
-        "url": "joyday-paint.html",
+        "url": "/joyday-paint/",
         "tags": [
           "Canvas",
           "Creative",

@@ -39,30 +39,30 @@ const recruiterItems = {
       [
         "SINAMA — AI Agent Reliability Lab",
         "Live AI agent reliability lab: multi-turn evaluation, regression evidence and release-readiness decisions",
-        "sinama-case-study.html",
+        "/sinama-case-study/",
         "View Case Study",
       ],
       [
         "AI Chatbot Flow Design",
         "Enterprise customer-workflow translation and multi-channel AI delivery",
-        "projects/ai-chatbot-flow-design/",
+        "/projects/ai-chatbot-flow-design/",
       ],
       [
         "AI Flow Puzzle",
         "Live node-logic, fallback and validation demo",
-        "ai-flow-puzzle-case-study.html",
+        "/ai-flow-puzzle-case-study/",
         "View Case Study",
       ],
       [
         "Atölye Joyday Official Website",
         "Customer-facing deployment: reservation journey and operational automation",
-        "atolye-joyday-case-study.html",
+        "/atolye-joyday-case-study/",
         "View Case Study",
       ],
       [
         "Hospital Form App",
         "C# Windows Forms and SQL Server workflow project preserved as a source archive.",
-        "hospital-system-case-study.html",
+        "/hospital-system-case-study/",
         "View Case Study",
       ],
     ],
@@ -106,30 +106,30 @@ const recruiterItems = {
       [
         "SINAMA — AI Agent Reliability Lab",
         "Canlı AI agent reliability lab'ı: multi-turn evaluation, regression kanıtı ve release-readiness kararları",
-        "sinama-case-study.html",
+        "/sinama-case-study/",
         "Vaka Çalışmasını Gör",
       ],
       [
         "AI Chatbot Akış Tasarımı",
         "Kurumsal müşteri workflow çevirisi ve multi-channel AI delivery",
-        "projects/ai-chatbot-flow-design/",
+        "/projects/ai-chatbot-flow-design/",
       ],
       [
         "AI Flow Puzzle",
         "Canlı node mantığı, fallback ve doğrulama demosu",
-        "ai-flow-puzzle-case-study.html",
+        "/ai-flow-puzzle-case-study/",
         "Vaka Çalışmasını Gör",
       ],
       [
         "Atölye Joyday Resmi Web Sitesi",
         "Customer-facing deployment: rezervasyon journey'si ve operasyon otomasyonu",
-        "atolye-joyday-case-study.html",
+        "/atolye-joyday-case-study/",
         "Vaka Çalışmasını Gör",
       ],
       [
         "Hospital Form App",
         "Kaynak arşivi olarak korunan C# Windows Forms ve SQL Server iş akışı projesi.",
-        "hospital-system-case-study.html",
+        "/hospital-system-case-study/",
         "Vaka Çalışmasını Gör",
       ],
     ],
@@ -166,7 +166,7 @@ function renderRecruiterDrawer(language = getCurrentLocale()) {
       <h3>${getI18nText("Experience evidence", "Deneyim kanıtları", language)}</h3>
       <ul class="recruiter-proof-list">${data.proof.map((item) => `<li>${escapeProjectHtml(item)}</li>`).join("")}</ul>
       <h3>${escapeProjectHtml(content.projectsTitle)}</h3>
-      <div class="recruiter-links">${data.projects.map((item) => `<a href="${escapeProjectHtml(item[2])}">${escapeProjectHtml(item[0])}<small>${escapeProjectHtml(item[1])}</small>${item[3] ? `<span>${escapeProjectHtml(item[3])}</span>` : ""}</a>`).join("")}</div>
+      <div class="recruiter-links">${data.projects.map((item) => `<a href="${escapeProjectHtml(siteUrl(item[2]))}">${escapeProjectHtml(item[0])}<small>${escapeProjectHtml(item[1])}</small>${item[3] ? `<span>${escapeProjectHtml(item[3])}</span>` : ""}</a>`).join("")}</div>
       <div class="recruiter-actions">
         <button class="btn primary" type="button" onclick="openDrivePreviews()">${escapeProjectHtml(data.buttons.cv)}</button>
         <a class="btn ghost" href="mailto:kaanb8776@gmail.com">${escapeProjectHtml(data.buttons.contact)}</a>

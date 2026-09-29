@@ -65,6 +65,21 @@ function analyticsKebab(value) {
     .toLowerCase();
 }
 
+/**
+ * The canonical first-party path for analytics identity.
+ *
+ * `/tr/sinama-case-study/`, `/sinama-case-study/` and the legacy
+ * `/sinama-case-study.html` are one destination, so they share one key: the
+ * shared route contract strips the locale prefix and normalizes legacy input.
+ * Without the router (an isolated test harness) only the index document is
+ * folded, which is the pre-clean-URL behaviour.
+ */
+function analyticsRoutePath(pathname) {
+  const routes = typeof window !== "undefined" ? window.KAAN_LOCALE_ROUTES : null;
+  if (routes && typeof routes.canonicalRouteKey === "function") return `/${routes.canonicalRouteKey(pathname)}`;
+  return pathname.replace(/\/index\.html$/i, "/");
+}
+
 function analyticsUrlKey(rawUrl, baseUrl = "https://kaanbalci.com/") {
   try {
     const url = new URL(String(rawUrl || ""), baseUrl);
@@ -72,7 +87,7 @@ function analyticsUrlKey(rawUrl, baseUrl = "https://kaanbalci.com/") {
     const pathname = url.pathname.replace(/\/{2,}/g, "/");
     const ownHost = /^(www\.)?kaanbalci\.com$/i.test(url.hostname);
     return ownHost
-      ? pathname.replace(/\/index\.html$/i, "/")
+      ? analyticsRoutePath(pathname)
       : `${url.origin.toLowerCase()}${pathname}`;
   } catch (error) {
     return "";
@@ -84,8 +99,9 @@ function analyticsLinkKind(rawUrl) {
     const url = new URL(String(rawUrl || ""), "https://kaanbalci.com/");
     if (/^(www\.)?github\.com$/i.test(url.hostname)) return "github";
     if (/^(www\.)?kaanbalci\.com$/i.test(url.hostname)) {
-      if (/\/projects\/[^/]+\/?$/i.test(url.pathname)) return "project";
-      if (/case-study\.html$/i.test(url.pathname)) return "project";
+      const path = analyticsRoutePath(url.pathname);
+      if (/\/projects\/[^/]+\/?$/i.test(path)) return "project";
+      if (/case-study(?:\/|\.html)$/i.test(path)) return "project";
       return "";
     }
     return /^https?:$/.test(url.protocol) ? "live" : "";
@@ -309,7 +325,7 @@ function trackAnalyticsNavigation(rawUrl, source, overrides = {}) {
         contact_type: "email",
       });
     }
-    if (/\/request\.html$/i.test(url.pathname)) {
+    if (/^\/request(?:\/|\.html)$/i.test(analyticsRoutePath(url.pathname))) {
       return trackAnalyticsEvent(ANALYTICS_EVENTS.CONTACT_OPEN, {
         source,
         contact_type: "request",

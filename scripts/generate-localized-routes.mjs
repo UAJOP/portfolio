@@ -1,15 +1,23 @@
 #!/usr/bin/env node
 /**
- * generate-localized-routes.mjs — crawlable localized static routes (BRIEF 09C).
+ * generate-localized-routes.mjs — crawlable clean static routes (BRIEF 09C,
+ * Clean Public URLs V1).
  *
  * Builds one real document per (locale, route) from the English source plus the
- * reviewed locale pack:
+ * reviewed locale pack, and one compatibility stub per pre-migration URL:
  *
- *     /tr/  /tr/works.html  /tr/projects/<slug>/
- *     /de/  /de/works.html  /de/projects/<slug>/
- *     /es/  …               /fr/…
+ *     /tr/  /tr/works/  /tr/projects/<slug>/        tr/works/index.html …
+ *     /de/  /de/works/  /de/projects/<slug>/
+ *     /es/  …           /fr/…
+ *     /works.html  /tr/works.html  …                 legacy stubs -> clean URL
  *
- * English keeps the unprefixed root. There is no `/en/`.
+ * English keeps the unprefixed root and is authored in place (`works/index.html`
+ * serves `/works/`). There is no `/en/`. Routes, sources and legacy paths all
+ * come from data/site/routes.json via scripts/site-routes.mjs.
+ *
+ * Every page is a directory, so GitHub Pages serves each URL as a real file on
+ * a direct load or refresh — no rewrite rules, no SPA fallback, no 404
+ * interception.
  *
  * SEO exposure is gated separately from generation. `localizedRoutes.generate`
  * in data/i18n/locales.json decides which route trees exist; `indexable`
@@ -25,7 +33,6 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import vm from "node:vm";
 import {
   ROOT,
   read,
@@ -35,18 +42,27 @@ import {
   indexableRoutes,
   buildCatalog,
   routePrefixFor,
-  routeDepths,
   truncateDescription,
+  STATIC_ROUTES,
   COMPANION_ROUTES,
   CASE_STUDY_DATA_FILES,
-  compareKeys,
 } from "./i18n-catalog.mjs";
 import { loadAuthoredPack, coverageFor } from "./build-locale-packs.mjs";
 import { localizeDocument, escapeHtml, decodeHtml, normalizeText } from "./localized-html.mjs";
+import {
+  loadSiteRoutes,
+  loadRouteRuntime,
+  absoluteRouteUrl,
+  renderSitemap,
+  renderLegacyStub,
+  isLegacyStub,
+} from "./site-routes.mjs";
+import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-ownership.mjs";
 
-const SITE_ORIGIN = "https://kaanbalci.com";
 const checkOnly = process.argv.includes("--check");
 
+const site = loadSiteRoutes();
+const SITE_ORIGIN = site.origin;
 const registry = loadRegistry();
 const projects = loadProjectRegistry();
 const gate = registry.localizedRoutes || { generate: [], indexable: [] };
@@ -65,24 +81,20 @@ for (const id of indexableLocales) {
 
 /**
  * The route mapper is the production module, evaluated here against the same
- * generated registry the browser gets. Generation and runtime cannot disagree
- * about what a localized route is, because there is only one implementation.
+ * route table the browser gets. Generation and runtime cannot disagree about
+ * what a localized route is, because there is only one implementation.
  */
-const routeSandbox = { window: {} };
-vm.createContext(routeSandbox);
-vm.runInContext(read("i18n-data.js"), routeSandbox);
-vm.runInContext(read("js/core/locale-routes.js"), routeSandbox);
-const ROUTES = routeSandbox.window.KAAN_LOCALE_ROUTES;
+const ROUTES = loadRouteRuntime(registry, site);
 
 const ALL_ROUTES = indexableRoutes(projects);
 
-
-
 /* ---------- case-study data ---------- */
 
-const caseStudyByPage = new Map();
+/** Case-study copy keyed by the English source document that renders it. */
+const caseStudyBySource = new Map();
 for (const file of CASE_STUDY_DATA_FILES) {
-  caseStudyByPage.set(`${file.replace(/\.data\.js$/, "")}.html`, file.replace(/\.data\.js$/, ""));
+  const id = file.replace(/\.data\.js$/, "");
+  caseStudyBySource.set(ROUTES.documentPathFor(`${id}/`), id);
 }
 
 /* ---------- head metadata ---------- */
@@ -100,6 +112,8 @@ const HEAD_REPLACEMENTS = [
   [/<meta[^>]*\bname="twitter:description"[^>]*>/i, null],
 ];
 const ALTERNATE_LINKS = /<link[^>]*\brel=["']alternate["'][^>]*>/gi;
+const CANONICAL_LINK = /<link[^>]*\brel=["']canonical["'][^>]*>/i;
+const OG_URL_META = /<meta[^>]*\bproperty=["']og:url["'][^>]*>/i;
 
 /** Removes the tags the generator re-emits with localized values. */
 function stripHeadMetadata(head) {
@@ -115,11 +129,13 @@ function stripHeadMetadata(head) {
  * lifting tags out of it would otherwise leave lines of trailing whitespace
  * that fail HTML validation.
  */
-const tidyWhitespace = (text) => text.replace(/^[ \t]+$\n?/gm, "").replace(/[ \t]+$/gm, "");
+/* Strip indentation from blank lines without consuming their newline. The
+ * prior optional `\n` collapsed LF-only blank lines on Linux but retained the
+ * CRLF line on Windows, making localized 404 output platform-dependent. */
+const tidyWhitespace = (text) => text.replace(/^[ \t]+$/gm, "").replace(/[ \t]+$/gm, "");
 
 function absoluteFor(routeKey, locale) {
-  const localized = ROUTES.localizedRouteKey(routeKey, locale);
-  return `${SITE_ORIGIN}/${localized}`;
+  return absoluteRouteUrl(ROUTES, routeKey, locale, SITE_ORIGIN);
 }
 
 /**
@@ -141,19 +157,27 @@ function alternateLinks(routeKey, indexable) {
   return links.join("");
 }
 
-function buildHead(head, { routeKey, locale, meta, indexable }) {
+/**
+ * Localized `<head>` metadata.
+ *
+ * A companion (the 404 page, the legacy project shell) is never a canonical
+ * destination, so it gets `noindex` and no canonical or `og:url` claim at all —
+ * a canonical pointing at `/tr/404.html` would advertise a `.html` URL the
+ * site no longer publishes.
+ */
+function buildHead(head, { routeKey, locale, meta, indexable, companion }) {
   const definition = registry.byId.get(locale);
   const canonical = absoluteFor(routeKey, locale);
   const robots = indexable ? "index, follow" : "noindex, follow";
   const injected = [
     `<title>${escapeHtml(meta.title)}</title>`,
     `<meta name="description" content="${escapeHtml(meta.description)}"/>`,
-    `<link rel="canonical" href="${escapeHtml(canonical)}"/>`,
+    companion ? "" : `<link rel="canonical" href="${escapeHtml(canonical)}"/>`,
     `<meta name="robots" content="${robots}"/>`,
     `<meta property="og:locale" content="${escapeHtml(definition.ogLocale || definition.htmlLang || locale)}"/>`,
     `<meta property="og:title" content="${escapeHtml(meta.ogTitle)}"/>`,
     `<meta property="og:description" content="${escapeHtml(meta.ogDescription)}"/>`,
-    `<meta property="og:url" content="${escapeHtml(canonical)}"/>`,
+    companion ? "" : `<meta property="og:url" content="${escapeHtml(canonical)}"/>`,
     `<meta name="twitter:title" content="${escapeHtml(meta.ogTitle)}"/>`,
     `<meta name="twitter:description" content="${escapeHtml(meta.ogDescription)}"/>`,
     alternateLinks(routeKey, indexable),
@@ -169,22 +193,33 @@ function buildHead(head, { routeKey, locale, meta, indexable }) {
 }
 
 /**
- * English keeps its authored metadata and unprefixed URL, but activation still
- * makes it a reciprocal member of the alternate-language graph. The route
- * generator owns these links on the English sources too, so activation and
- * deactivation remain deterministic and no generated page is hand-edited.
+ * English keeps its authored metadata and unprefixed URL, but its canonical
+ * identity is owned here: `rel=canonical` and `og:url` are rewritten to the
+ * registry's clean URL, so an authored page can never advertise a `.html`
+ * address. Activation also makes it a reciprocal member of the alternate-
+ * language graph, and the generator owns those links on the English sources
+ * too, so activation and deactivation stay deterministic.
+ *
+ * Companions carry neither a canonical nor an `og:url`: they are not
+ * destinations.
  */
 function buildEnglishDocument(route, file, indexable) {
   const source = read(file);
   const headMatch = source.match(/<head>([\s\S]*?)<\/head>/i);
   if (!headMatch) throw new Error(`${file} has no <head>`);
 
-  const withoutAlternates = headMatch[1].replace(ALTERNATE_LINKS, "");
-  let head = withoutAlternates;
+  let head = headMatch[1].replace(ALTERNATE_LINKS, "");
+  const canonicalUrl = absoluteFor(route.page, registry.defaultLocale);
   if (indexable) {
-    const canonical = withoutAlternates.match(/<link[^>]*\brel=["']canonical["'][^>]*>/i);
-    if (!canonical) throw new Error(`${file} has no canonical for hreflang activation`);
-    head = withoutAlternates.replace(canonical[0], `${canonical[0]}${alternateLinks(route.page, true)}`);
+    const canonical = head.match(CANONICAL_LINK);
+    if (!canonical) throw new Error(`${file} has no canonical link to own`);
+    /* Only the URL value is owned; the authored tag keeps its attribute order,
+     * so a page that already agrees is byte-stable. */
+    const setAttribute = (tag, name, value) => tag.replace(new RegExp(`\\b${name}=(["'])[^"']*\\1`, "i"), `${name}="${escapeHtml(value)}"`);
+    head = head.replace(canonical[0], `${setAttribute(canonical[0], "href", canonicalUrl)}${alternateLinks(route.page, true)}`);
+    head = head.replace(OG_URL_META, (tag) => setAttribute(tag, "content", canonicalUrl));
+  } else {
+    head = head.replace(CANONICAL_LINK, "").replace(OG_URL_META, "");
   }
   head = tidyWhitespace(head);
   return source.replace(/<head>[\s\S]*?<\/head>/i, `<head>${head}</head>`);
@@ -192,9 +227,11 @@ function buildEnglishDocument(route, file, indexable) {
 
 /**
  * Rewrites JSON-LD so structured data agrees with the page it sits on.
- * Only language-scoped fields move; identity, URLs and `sameAs` are facts.
+ * Only language-scoped fields move: the page's own `url` and
+ * `mainEntityOfPage`. Identity, other URLs and `sameAs` are facts.
  */
 function localizeJsonLd(head, { locale, canonical, meta }) {
+  const englishCanonical = canonical.replace(`/${locale}/`, "/");
   return head.replace(
     /<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi,
     (match, body) => {
@@ -210,8 +247,8 @@ function localizeJsonLd(head, { locale, canonical, meta }) {
         const out = { ...node };
         if (typeof out.description === "string") out.description = meta.ogDescription;
         if (out.inLanguage !== undefined) out.inLanguage = locale;
-        if (typeof out.url === "string" && out.url.startsWith(`${SITE_ORIGIN}/`) && out.url === canonical.replace(`/${locale}/`, "/")) {
-          out.url = canonical;
+        for (const key of ["url", "mainEntityOfPage"]) {
+          if (out[key] === englishCanonical) out[key] = canonical;
         }
         for (const key of Object.keys(out)) {
           if (key !== "description" && key !== "inLanguage") out[key] = apply(out[key]);
@@ -225,11 +262,11 @@ function localizeJsonLd(head, { locale, canonical, meta }) {
 
 /* ---------- document build ---------- */
 
-const GENERATED_NOTICE = (locale, routeKey) => `<!--
+const GENERATED_NOTICE = (locale, route) => `<!--
 GENERATED FILE. Do not edit.
 Locale: ${locale}
-Canonical route: /${ROUTES.localizedRouteKey(routeKey, locale)}
-Source: ${routeKey === "" ? "index.html" : routeKey}
+Canonical route: /${ROUTES.localizedRouteKey(route.page, locale)}
+Source: ${route.source}
 Generator: scripts/generate-localized-routes.mjs
 Copy: data/i18n/packs/${locale}/
 -->`;
@@ -266,27 +303,33 @@ function projectMeta(slug, translators) {
   return { title, description, ogTitle: title, ogDescription: description };
 }
 
+/**
+ * Removes pre-migration depth declarations. Every first-party URL is now
+ * root-relative, so a page has no depth to declare; the runtime treats an
+ * undeclared site root as "/".
+ */
+const stripDepthDeclarations = (attributes) =>
+  attributes.replace(/\sdata-site-root="[^"]*"/i, "").replace(/\sdata-locale-root="[^"]*"/i, "");
+
 function buildDocument({ route, locale, translators, indexable }) {
   const routeKey = route.page;
-  const localePrefix = routePrefixFor(locale, registry);
-  const { localeRoot, siteRoot } = routeDepths(routeKey, localePrefix);
+  const companion = route.indexable === false;
   const source = read(route.source);
 
   const meta = route.slug ? projectMeta(route.slug, translators) : translators.meta[route.id];
   if (!meta?.title) throw new Error(`${locale} pack has no metadata for route ${route.id}`);
 
-  const caseStudyId = caseStudyByPage.get(route.source);
+  const caseStudyId = caseStudyBySource.get(route.source);
   const caseCopy = caseStudyId ? translators.caseStudyFor(caseStudyId) : null;
 
-  const rewriteUrl = (value) =>
-    ROUTES.localizedInternalHref(value, locale, { siteRoot, localeRoot });
+  const rewriteUrl = (value) => ROUTES.localizedInternalHref(value, locale);
 
   let html = source;
 
   /* head: metadata, canonical, alternates, structured data */
   const headMatch = html.match(/<head>([\s\S]*?)<\/head>/i);
   if (!headMatch) throw new Error(`${route.source} has no <head>`);
-  let head = buildHead(headMatch[1], { routeKey, locale, meta, indexable });
+  let head = buildHead(headMatch[1], { routeKey, locale, meta, indexable, companion });
   head = localizeJsonLd(head, { locale, canonical: absoluteFor(routeKey, locale), meta });
   html = html.replace(/<head>[\s\S]*?<\/head>/i, `<head>${head}</head>`);
 
@@ -297,13 +340,7 @@ function buildDocument({ route, locale, translators, indexable }) {
     `<html lang="${escapeHtml(definition.htmlLang || locale)}" dir="${escapeHtml(definition.dir || "ltr")}" data-route-locale="${escapeHtml(locale)}">`,
   );
 
-  /* body: declare both depths so assets and page links resolve independently */
-  html = html.replace(/<body([^>]*)>/i, (match, attributes) => {
-    const cleaned = attributes
-      .replace(/\sdata-site-root="[^"]*"/i, "")
-      .replace(/\sdata-locale-root="[^"]*"/i, "");
-    return `<body${cleaned} data-site-root="${siteRoot}" data-locale-root="${localeRoot}">`;
-  });
+  html = html.replace(/<body([^>]*)>/i, (match, attributes) => `<body${stripDepthDeclarations(attributes)}>`);
 
   html = localizeDocument(html, {
     translateText: translators.translateText,
@@ -340,27 +377,48 @@ function buildDocument({ route, locale, translators, indexable }) {
     );
   }
 
-  return html.replace(/^<!DOCTYPE html>\n?(?:<!--[\s\S]*?-->\n?)?/i, `<!DOCTYPE html>\n${GENERATED_NOTICE(locale, routeKey)}\n`);
+  /* Consume either checkout newline convention, then emit one canonical blank
+   * line after the ownership header. This keeps Windows and Linux generation
+   * byte-equivalent instead of accidentally retaining a source CRLF. */
+  return html.replace(
+    /^<!DOCTYPE html>\r?\n?(?:<!--[\s\S]*?-->\r?\n?)?/i,
+    `<!DOCTYPE html>\n${GENERATED_NOTICE(locale, route)}\n\n`,
+  );
 }
 
-/* ---------- sitemap ---------- */
+/* ---------- legacy compatibility stubs ---------- */
 
-function renderSitemap() {
-  const entries = [];
-  const locales = [registry.defaultLocale, ...indexableLocales];
-  for (const route of ALL_ROUTES) {
-    for (const locale of locales) {
-      entries.push([
-        `${SITE_ORIGIN}/${ROUTES.localizedRouteKey(route.page, locale)}`,
-        route.changefreq,
-        route.priority,
-      ]);
-    }
+const englishMeta = readJson("data/i18n/source/meta.json");
+
+/**
+ * One stub per (locale, pre-migration `.html` URL). The home page needs none:
+ * `/index.html` and `/tr/index.html` are the home documents themselves, and
+ * their canonical already names the clean `/` and `/tr/`.
+ */
+function legacyStubs(locale, translators) {
+  const definition = registry.byId.get(locale);
+  const prefix = routePrefixFor(locale, registry);
+  const stubs = new Map();
+  for (const route of STATIC_ROUTES) {
+    if (!route.legacy || route.legacy === ROUTES.documentPathFor(route.page)) continue;
+    const meta = locale === registry.defaultLocale ? englishMeta[route.id] : translators.meta[route.id];
+    if (!meta?.title) throw new Error(`${locale} has no metadata title for legacy route ${route.id}`);
+    const targetPath = `/${ROUTES.localizedRouteKey(route.page, locale)}`;
+    stubs.set(
+      `${prefix}${route.legacy}`,
+      renderLegacyStub({
+        locale,
+        htmlLang: definition.htmlLang || locale,
+        dir: definition.dir || "ltr",
+        legacyPath: `${prefix}${route.legacy}`,
+        targetPath,
+        canonicalUrl: absoluteFor(route.page, locale),
+        title: meta.title,
+        notice: site.legacyNotice?.[locale] || site.legacyNotice?.[registry.defaultLocale] || "",
+      }),
+    );
   }
-  const body = entries
-    .map(([loc, changefreq, priority]) => `  <url><loc>${loc}</loc><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`)
-    .join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
+  return stubs;
 }
 
 /* ---------- plan ---------- */
@@ -386,22 +444,29 @@ const englishPlanned = new Map(
     ...ALL_ROUTES.map((route) => ({ route, indexable: true })),
     ...COMPANION_ROUTES.map((route) => ({ route, indexable: false })),
   ].map(({ route, indexable }) => {
-    const file = (route.page || "index.html").replace(/\/$/, "/index.html");
+    const file = ROUTES.documentPathFor(route.page);
     return [file, buildEnglishDocument(route, file, indexable)];
   }),
 );
+for (const [file, html] of legacyStubs(registry.defaultLocale, null)) englishPlanned.set(file, html);
+
 const planned = new Map();
 for (const { locale } of readyLocales) {
   const translators = packTranslators(locale);
   const indexable = indexableLocales.includes(locale);
-  const prefix = routePrefixFor(locale, registry);
   for (const route of [...ALL_ROUTES, ...COMPANION_ROUTES]) {
-    const file = `${prefix}${route.page || "index.html"}`.replace(/\/$/, "/index.html");
+    const file = ROUTES.documentPathFor(route.page, locale);
     planned.set(file, buildDocument({ route, locale, translators, indexable: indexable && route.indexable !== false }));
   }
+  for (const [file, html] of legacyStubs(locale, translators)) planned.set(file, html);
 }
 
-const sitemap = renderSitemap();
+const sitemap = renderSitemap({
+  routes: ROUTES,
+  indexableRoutes: ALL_ROUTES,
+  locales: [registry.defaultLocale, ...indexableLocales],
+  origin: SITE_ORIGIN,
+});
 
 /* ---------- write / check ---------- */
 
@@ -420,7 +485,7 @@ for (const [file, html] of planned) {
 }
 if (normalize(readIfExists("sitemap.xml")) !== normalize(sitemap)) differences.push("sitemap.xml");
 
-/** Locale route trees this generator owns, so stale ones can be removed safely. */
+/** Locale route trees may contain user files; inspect every document before cleanup. */
 function ownedLocaleDirs() {
   return registry.locales
     .filter((locale) => locale.id !== registry.defaultLocale)
@@ -429,7 +494,24 @@ function ownedLocaleDirs() {
 }
 
 const stale = ownedLocaleDirs().filter((prefix) => !readyLocales.some((entry) => entry.locale === prefix));
-for (const prefix of stale) differences.push(`${prefix}/ (stale locale route tree)`);
+
+/**
+ * Documents inside a live locale tree that no route plans any more — the
+ * pre-migration `/tr/works.html` pages become stubs, but a route removed from
+ * the registry would otherwise leave an orphan behind. Ownership is determined
+ * from an explicit generator marker; an unknown file is a blocking diagnostic.
+ */
+const scannedPrefixes = [
+  ...readyLocales.map(({ locale }) => routePrefixFor(locale, registry)),
+  ...stale,
+];
+const orphans = findRouteOrphans(ROOT, scannedPrefixes, new Set(planned.keys()));
+for (const { file, owned } of orphans) {
+  differences.push(`${file} (${owned ? "orphaned generated document" : "unowned locale document; cleanup blocked"})`);
+}
+for (const prefix of stale) {
+  if (!orphans.some(({ file }) => file.startsWith(prefix))) differences.push(`${prefix}/ (empty stale locale route tree)`);
+}
 
 if (checkOnly) {
   if (differences.length) {
@@ -444,20 +526,45 @@ if (checkOnly) {
   process.exit(0);
 }
 
-for (const prefix of stale) fs.rmSync(path.join(ROOT, prefix), { recursive: true, force: true });
+/* A root legacy path is only ever overwritten when it is still the authored
+ * pre-migration page or already a generated stub — never some unrelated file
+ * that happens to share the name. */
 for (const [file, html] of englishPlanned) {
-  fs.writeFileSync(path.join(ROOT, file), html);
+  const existing = readIfExists(file);
+  if (!isLegacyStub(html) || existing === null || isLegacyStub(existing) || /<html[\s>]/i.test(existing)) continue;
+  throw new Error(`${file} exists and is not a page or a legacy stub; refusing to overwrite it`);
 }
-for (const [file, html] of planned) {
+
+removeOwnedRouteOrphans(ROOT, orphans);
+for (const prefix of stale) {
+  const absolute = path.join(ROOT, prefix);
+  if (fs.existsSync(absolute) && !fs.readdirSync(absolute).length) fs.rmdirSync(absolute);
+}
+for (const [file, html] of [...englishPlanned, ...planned]) {
   const absolute = path.join(ROOT, file);
   fs.mkdirSync(path.dirname(absolute), { recursive: true });
   fs.writeFileSync(absolute, html);
 }
+/* Removing orphans can leave empty directories behind in a locale tree. */
+for (const prefix of [
+  ...readyLocales.map(({ locale }) => routePrefixFor(locale, registry)),
+  ...stale,
+]) {
+  const prune = (dir) => {
+    const absolute = path.join(ROOT, dir);
+    if (!fs.existsSync(absolute)) return;
+    for (const entry of fs.readdirSync(absolute, { withFileTypes: true })) if (entry.isDirectory()) prune(`${dir}${entry.name}/`);
+    if (!fs.readdirSync(absolute).length) fs.rmdirSync(absolute);
+  };
+  prune(prefix);
+}
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"), sitemap);
 
 const indexableCount = ALL_ROUTES.length * (1 + indexableLocales.length);
+const stubCount = [...englishPlanned.values(), ...planned.values()].filter(isLegacyStub).length;
 console.log(
   `[i18n:routes] ${ALL_ROUTES.length} English indexable documents · ${COMPANION_ROUTES.length} English companions · ${planned.size} localized documents across ${readyLocales.map((entry) => entry.locale).join(", ") || "no complete locales"}\n` +
+    `[i18n:routes] ${stubCount} legacy .html compatibility stubs\n` +
     (incompleteLocales.length
       ? `[i18n:routes] skipped, pack incomplete: ${incompleteLocales.map((entry) => `${entry.locale} ${entry.coverage.percent.toFixed(1)}%`).join(" · ")}\n`
       : "") +

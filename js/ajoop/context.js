@@ -248,8 +248,8 @@ function ajoopCaseStudyEntity(pathname, registry) {
     const links = projects[id].links || {};
     const caseStudy = String(links.caseStudy || "").toLowerCase();
     if (!caseStudy || match) return;
-    /* Registry links are repo-relative ("sinama-case-study.html",
-     * "projects/ai-chatbot-flow-design/"); the live path carries a locale
+    /* Registry links are canonical clean routes ("/sinama-case-study/",
+     * "/projects/ai-chatbot-flow-design/"); the live path carries a locale
      * prefix on localized routes, so compare on the tail. */
     const tail = caseStudy.replace(/\/+$/, "");
     if (tail && path.replace(/\/+$/, "").endsWith(tail)) match = id;

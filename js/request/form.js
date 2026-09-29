@@ -205,7 +205,7 @@ function enhanceRequestCommandsAndAjoop() {
       hint: "Send a website, AI or automation request",
       keywords: "request form project hire job service website ai automation",
       type: "nav",
-      value: "request.html",
+      value: "/request/",
     });
     addCommand("tr", {
       id: "request",
@@ -213,7 +213,7 @@ function enhanceRequestCommandsAndAjoop() {
       hint: "Web, AI veya otomasyon talebi gönder",
       keywords: "talep form proje iş hizmet web sitesi ai otomasyon",
       type: "nav",
-      value: "request.html",
+      value: "/request/",
     });
   }
 
@@ -229,7 +229,7 @@ function enhanceRequestCommandsAndAjoop() {
           "For new work, use the Request page first. It has direct website form logic plus Google Forms and email fallbacks.",
         ],
         links: [
-          { label: "Open Request Form", url: "request.html" },
+          { label: "Open Request Form", url: "/request/" },
           {
             label: "Online Form",
             url:
@@ -249,7 +249,7 @@ function enhanceRequestCommandsAndAjoop() {
           "Talep sayfası direkt site formu, Google Forms fallback ve e-posta alternatifiyle çalışacak şekilde tasarlandı.",
         ],
         links: [
-          { label: "Talep Formunu Aç", url: "request.html" },
+          { label: "Talep Formunu Aç", url: "/request/" },
           {
             label: "Online Form",
             url:

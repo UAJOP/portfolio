@@ -10,7 +10,7 @@
       "en": "Build n8n-inspired chatbot flows with intent, fallback and validation nodes.",
       "tr": "Intent, fallback ve validation node'larıyla n8n-inspired chatbot flow'ları kur."
     },
-    "url": "ai-flow-puzzle.html",
+    "url": "/ai-flow-puzzle/",
     "tags": [
       "JavaScript",
       "Node Logic",
@@ -28,7 +28,7 @@
       "en": "A vanilla-JS parametric mesh with perspective projection, depth sorting and pointer interaction.",
       "tr": "Perspective projection, depth sorting ve pointer interaction içeren vanilla-JS parametric mesh."
     },
-    "url": "labs.html#algorithmic-3d-lab",
+    "url": "/labs/#algorithmic-3d-lab",
     "tags": [
       "Canvas",
       "3D Projection",
@@ -46,7 +46,7 @@
       "en": "A playful merge-style interpretation of learning, tools, experience and portfolio proof.",
       "tr": "Öğrenme, araçlar, deneyim ve portfolyo kanıtını merge mantığıyla yorumlayan mini oyun."
     },
-    "url": "adventure.html",
+    "url": "/adventure/",
     "tags": [
       "Canvas",
       "Merge",
@@ -64,7 +64,7 @@
       "en": "Virtual action-painting tools with multiple canvas shapes and PNG export.",
       "tr": "Birden fazla tuval formu, sanal action-painting araçları ve PNG export."
     },
-    "url": "joyday-paint.html",
+    "url": "/joyday-paint/",
     "tags": [
       "Canvas",
       "Creative",

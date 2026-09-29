@@ -154,17 +154,38 @@ ok(
 
 const catalog = core.buildAnalyticsProjectCatalog(registry);
 check("all 25 canonical detail slugs remain analytics identifiers", Object.keys(registry.projectDetails).filter((slug) => catalog.slugs.has(slug)).length, 25);
-for (const [url, expectedSlug, expectedKind] of [
-  ["sinama-case-study.html", "sinama", "project"],
-  ["merge-rush-case-study.html", "merge-rush", "project"],
-  ["projects/ai-chatbot-flow-design/", "ai-chatbot-flow-design", "project"],
-  ["atolye-joyday-case-study.html", "atolye-joyday-official-website", "project"],
-  ["https://github.com/UAJOP/Hospital-System", "hospital-form-app", "github"],
-  ["https://atolyejoyday.com/", "atolye-joyday-official-website", "live"],
-]) {
-  const project = core.analyticsProjectForUrl(url, registry);
-  check(`${url}: resolves canonical analytics slug`, project?.slug, expectedSlug);
-  check(`${url}: resolves interaction kind`, project?.kind, expectedKind);
+/* The route contract folds every spelling of one destination onto one key:
+ * the clean route, its localized forms and the pre-migration `.html` URL.
+ * The real route module is installed for these checks, exactly as the browser
+ * loads it before analytics.js. */
+const routeSandbox = { window: {} };
+vm.createContext(routeSandbox);
+vm.runInContext(read("i18n-data.js"), routeSandbox, { filename: "i18n-data.js" });
+vm.runInContext(read("js/core/locale-routes.js"), routeSandbox, { filename: "js/core/locale-routes.js" });
+globalThis.window = { KAAN_LOCALE_ROUTES: routeSandbox.window.KAAN_LOCALE_ROUTES };
+try {
+  for (const [url, expectedSlug, expectedKind] of [
+    ["/sinama-case-study/", "sinama", "project"],
+    ["/tr/sinama-case-study/", "sinama", "project"],
+    ["sinama-case-study.html", "sinama", "project"],
+    ["/merge-rush-case-study/", "merge-rush", "project"],
+    ["/de/merge-rush-case-study/", "merge-rush", "project"],
+    ["/projects/ai-chatbot-flow-design/", "ai-chatbot-flow-design", "project"],
+    ["/fr/projects/ai-chatbot-flow-design/", "ai-chatbot-flow-design", "project"],
+    ["projects/ai-chatbot-flow-design/", "ai-chatbot-flow-design", "project"],
+    ["/atolye-joyday-case-study/", "atolye-joyday-official-website", "project"],
+    ["/es/atolye-joyday-case-study/", "atolye-joyday-official-website", "project"],
+    ["https://github.com/UAJOP/Hospital-System", "hospital-form-app", "github"],
+    ["https://atolyejoyday.com/", "atolye-joyday-official-website", "live"],
+  ]) {
+    const project = core.analyticsProjectForUrl(url, registry);
+    check(`${url}: resolves canonical analytics slug`, project?.slug, expectedSlug);
+    check(`${url}: resolves interaction kind`, project?.kind, expectedKind);
+  }
+  check("localized first-party URL keys drop the locale prefix", core.analyticsUrlKey("/tr/works/"), "/works/");
+  check("legacy first-party URL keys resolve to the clean route", core.analyticsUrlKey("/single-work.html"), "/certificates/");
+} finally {
+  delete globalThis.window;
 }
 check(
   "raw query and hash are removed from first-party URL keys",

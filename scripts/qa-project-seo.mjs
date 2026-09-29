@@ -20,6 +20,10 @@ import path from "node:path";
 import vm from "node:vm";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { authoredHtmlFiles, STATIC_ROUTES } from "./i18n-catalog.mjs";
+
+const LEGACY_PAGES = new Set(STATIC_ROUTES.map((route) => route.legacy).filter(Boolean));
+const isLegacyPage = (file) => LEGACY_PAGES.has(file) && file !== "index.html";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SITE_ORIGIN = "https://kaanbalci.com";
@@ -200,12 +204,12 @@ for (const slug of slugs) {
   /* slug marker + runtime dependencies */
   const body = (html.match(/<body\b[^>]*>/i) || [])[0] || "";
   check(`${label}: declares its slug`, attr(body, "data-project-slug"), slug);
-  check(`${label}: declares its site-root depth`, attr(body, "data-site-root"), "../../");
+  ok(`${label}: declares no relative depth (every URL is root-relative)`, attr(body, "data-site-root") === null);
   ok(`${label}: mounts the project detail renderer`, /<main[^>]*data-project-detail[^>]*>/.test(html));
   for (const dep of ["portfolio-data.js", "script.js", "portfolio-v2.js"]) {
-    ok(`${label}: loads ${dep} from the site root`, html.includes(`src="../../${dep}"`));
+    ok(`${label}: loads ${dep} from the site root`, html.includes(`src="/${dep}"`));
   }
-  ok(`${label}: loads style.css from the site root`, html.includes(`href="../../style.css"`));
+  ok(`${label}: loads style.css from the site root`, html.includes(`href="/style.css"`));
 
   /* exactly one H1, carrying the project title so the page is meaningful
    * before JavaScript replaces the section */
@@ -217,17 +221,17 @@ for (const slug of slugs) {
     en(project.title),
   );
 
-  /* no path that only works from the site root */
-  const bare = html.match(/\b(?:href|src)="(?!https?:|\/\/|mailto:|tel:|#|\.\.\/)[^"]+"/g) || [];
-  ok(`${label}: no un-rebased relative paths (${bare.slice(0, 2).join(", ")})`, bare.length === 0);
+  /* no path that depends on the page's depth: two directories deep, a
+   * relative `style.css` would resolve under /projects/<slug>/ */
+  const bare = html.match(/\b(?:href|src)="(?!https?:|\/|mailto:|tel:|#)[^"]+"/g) || [];
+  ok(`${label}: no depth-relative paths (${bare.slice(0, 2).join(", ")})`, bare.length === 0);
 
-  /* every rebased path must resolve from two directories deep */
-  const rebased = [...html.matchAll(/\b(?:href|src)="\.\.\/\.\.\/([^"#?]+)/g)].map((m) => m[1]);
-  for (const rel of new Set(rebased)) {
-    ok(
-      `${label}: ../../${rel} resolves from the project directory`,
-      fs.existsSync(path.join(ROOT, decodeURIComponent(rel))),
-    );
+  /* every root-relative first-party path must resolve on disk */
+  const rooted = [...html.matchAll(/\b(?:href|src)="\/(?!\/)([^"#?]*)/g)].map((m) => decode(m[1]));
+  for (const rel of new Set(rooted)) {
+    const target = rel === "" || rel.endsWith("/") ? `${rel}index.html` : rel;
+    ok(`${label}: /${rel} resolves on disk`, fs.existsSync(path.join(ROOT, target)));
+    ok(`${label}: /${rel} is not a legacy .html page URL`, !/^[a-z0-9-]+\.html$/.test(rel) || !isLegacyPage(rel));
   }
 
   /* generated marker */
@@ -290,9 +294,10 @@ for (const slug of slugs) {
 }
 ok("sitemap excludes legacy query-string project URLs", !locs.some((l) => l.includes("project-detail.html")));
 ok("sitemap has no duplicate URLs", locs.length === new Set(locs).size);
-for (const page of ["", "works.html", "games.html", "about.html", "blog.html", "request.html"]) {
+for (const page of ["", "works/", "games/", "about/", "blog/", "request/", "certificates/", "privacy/"]) {
   ok(`sitemap still lists ${page || "the homepage"}`, locs.includes(`${SITE_ORIGIN}/${page}`));
 }
+ok("sitemap lists clean URLs only", !locs.some((l) => /\.html$/.test(l)));
 
 /* Every sitemap URL must resolve to a file on disk. */
 for (const loc of locs) {
@@ -308,7 +313,7 @@ ok("robots.txt still declares the sitemap", /Sitemap:/.test(robotsTxt));
 
 /* ---------- 5. internal links prefer the canonical route ---------- */
 
-const htmlFiles = fs.readdirSync(ROOT).filter((f) => f.endsWith(".html"));
+const htmlFiles = authoredHtmlFiles();
 for (const file of htmlFiles) {
   const html = read(file);
   const legacyLinks = [...html.matchAll(/href="project-detail\.html\?project=([a-z0-9-]+)"/g)];

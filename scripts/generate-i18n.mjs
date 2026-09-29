@@ -31,6 +31,7 @@ import {
   runtimeAttributeSources,
 } from "./i18n-catalog.mjs";
 import { loadAuthoredPack } from "./build-locale-packs.mjs";
+import { browserRouteTable } from "./site-routes.mjs";
 
 const checkOnly = process.argv.includes("--check");
 
@@ -65,6 +66,8 @@ for (const [key, translations] of Object.entries(ui)) {
 /**
  * Every route key the runtime may localize. Non-indexable surfaces are included
  * because users still navigate them; they simply never receive SEO treatment.
+ * Only counted here: the browser derives the same set from the route table
+ * plus the canonical project route shape, so it is not shipped twice.
  */
 const routeInventory = [
   ...indexableRoutes().map((route) => route.page),
@@ -73,12 +76,15 @@ const routeInventory = [
 
 /* ---------- i18n-data.js ---------- */
 
+/* The route table is the browser's copy of data/site/routes.json: ids, clean
+ * route keys and the legacy `.html` keys they replaced. locale-routes.js reads
+ * it to answer routeFor(), routeForProject() and legacy normalization. */
 const runtime = {
   schemaVersion: registry.schemaVersion,
   storageKey: registry.storageKey,
   defaultLocale: registry.defaultLocale,
   locales: registry.locales,
-  routes: routeInventory,
+  routeTable: browserRouteTable(),
   ui,
   glossary,
 };

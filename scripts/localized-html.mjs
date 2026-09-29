@@ -24,7 +24,7 @@ const RAW_TEXT_ELEMENTS = new Set(["script", "style", "noscript", "textarea", "t
 export const TRANSLATABLE_ATTRIBUTES = ["aria-label", "alt", "title", "placeholder"];
 
 /** Attributes that address a document rather than describe one. */
-const URL_ATTRIBUTES = new Set(["href", "src", "poster", "action", "data-case-gallery"]);
+const URL_ATTRIBUTES = new Set(["href", "src", "poster", "action", "data-case-gallery", "data-cert"]);
 
 export function escapeHtml(value) {
   return String(value == null ? "" : value)

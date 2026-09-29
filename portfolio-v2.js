@@ -21,6 +21,9 @@
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+  /* Registry links are canonical routes; the shared router localizes them and
+   * keeps them valid from any page depth. External URLs pass through. */
+  const pageHref = (value) => (typeof siteUrl === "function" ? siteUrl(value) : value);
 
   function applyUnifiedCopy() {
     const language = lang();
@@ -47,8 +50,8 @@
   function projectLinkMarkup(projectId, language = lang(), openEvidence = "Open evidence") {
     const project = registry.projects[projectId];
     if (!project) return "";
-    const href = project.links?.caseStudy || project.links?.live || "works.html";
-    return `<a href="${esc(href)}"><strong>${esc(project.name)}</strong><small>${esc(pick(project.summary, language))}</small><span>${esc(openEvidence)}</span></a>`;
+    const href = project.links?.caseStudy || project.links?.live || "/works/";
+    return `<a href="${esc(pageHref(href))}"><strong>${esc(project.name)}</strong><small>${esc(pick(project.summary, language))}</small><span>${esc(openEvidence)}</span></a>`;
   }
 
   function getRoleFromUrl() {
@@ -207,18 +210,18 @@
       };
       target.answers.roles = {
         text: lt(`Kaan is currently positioning primarily as a Forward Deployed Engineer. Evidence focuses: ${focusSummary(language)}. SINAMA leads for AI deployment, evaluation and reliability; the CBOT work leads for customer discovery, scoping and enterprise workflow delivery; Joyday proves end-to-end customer-facing delivery; SINAMA backend + Hospital cover full-stack delivery, and Merge Rush is supporting product-systems evidence.`, `Kaan öncelikli olarak Forward Deployed Engineer yönünde konumlanıyor. Kanıt odakları: ${focusSummary(language)}. AI deployment, evaluation ve reliability için SINAMA; customer discovery, scoping ve kurumsal workflow delivery için CBOT çalışması; uçtan uca customer-facing delivery için Joyday; full-stack delivery için SINAMA backend + Hospital öne çıkar, Merge Rush ise destekleyici product-systems kanıtı.`, language),
-        links: [{ label: lt("Open Recruiter Mode", "İK Modunu aç", language), url: "index.html?role=applied-ai" }, { label: lt("About", "Hakkımda", language), url: "about.html" }]
+        links: [{ label: lt("Open Recruiter Mode", "İK Modunu aç", language), url: "/?role=applied-ai" }, { label: lt("About", "Hakkımda", language), url: "/about/" }]
       };
       target.answers.availability = target.answers.roles;
       target.answers.latestBuild = {
         text: registry.buildLog.slice(0, 3).map((entry) => `${entry.date} · ${entry.area} · ${pick(entry.title, language)} — ${pick(entry.detail, language)}`),
-        links: [{ label: "Build Log", url: "now.html" }]
+        links: [{ label: "Build Log", url: "/now/" }]
       };
       target.answers.projects = {
         text: [
           lt("The primary evidence is SINAMA, the CBOT chatbot flow work and Atölye Joyday. SINAMA proves AI evaluation and release readiness; the CBOT work proves enterprise customer-workflow delivery; Joyday proves end-to-end ownership of a live customer product. Merge Rush and the Hospital system add the product-engineering and workflow-software breadth behind them.", "Ana kanıt SINAMA, CBOT chatbot flow çalışması ve Atölye Joyday. SINAMA AI evaluation ve release readiness kanıtı; CBOT çalışması kurumsal customer-workflow delivery kanıtı; Joyday canlı bir müşteri ürününün uçtan uca sahiplenilmesi. Merge Rush ve Hospital sistemi ise arkalarındaki product-engineering ve workflow-software genişliğini ekliyor.", language)
         ],
-        links: [{ label: lt("Works", "Projeler", language), url: "works.html" }, { label: "SINAMA", url: p.sinama.links.caseStudy }, { label: "AI Chatbot Flow Design", url: p.chatbotFlow.links.caseStudy }]
+        links: [{ label: lt("Works", "Projeler", language), url: "/works/" }, { label: "SINAMA", url: p.sinama.links.caseStudy }, { label: "AI Chatbot Flow Design", url: p.chatbotFlow.links.caseStudy }]
       };
     });
 
@@ -248,14 +251,14 @@
     if (typeof ultimateContent === "undefined") return;
     const commands = {
       en: [
-        { id: "labs-v2", label: "Open Kaan Labs", hint: "Technical experiments", keywords: "labs experiments canvas ai flow", type: "nav", value: "labs.html" },
-        { id: "now-v2", label: "Open Build Log", hint: "What is being built now", keywords: "now build log latest status", type: "nav", value: "now.html" },
-        { id: "applied-ai-role", label: "Evidence by Capability", hint: "Open capability-focused evidence", keywords: "evidence capability focus recruiter applied ai discovery scoping", type: "nav", value: "index.html?role=applied-ai" }
+        { id: "labs-v2", label: "Open Kaan Labs", hint: "Technical experiments", keywords: "labs experiments canvas ai flow", type: "nav", value: "/labs/" },
+        { id: "now-v2", label: "Open Build Log", hint: "What is being built now", keywords: "now build log latest status", type: "nav", value: "/now/" },
+        { id: "applied-ai-role", label: "Evidence by Capability", hint: "Open capability-focused evidence", keywords: "evidence capability focus recruiter applied ai discovery scoping", type: "nav", value: "/?role=applied-ai" }
       ],
       tr: [
-        { id: "labs-v2", label: "Kaan Labs'i Aç", hint: "Teknik deneyler", keywords: "labs deneyler canvas ai flow", type: "nav", value: "labs.html" },
-        { id: "now-v2", label: "Build Log'u Aç", hint: "Şu an ne geliştiriliyor", keywords: "now build log son durum güncel", type: "nav", value: "now.html" },
-        { id: "applied-ai-role", label: "Yetkinliğe Göre Kanıt", hint: "Yetkinlik odaklı kanıt görünümü", keywords: "kanıt yetkinlik odak ik recruiter applied ai discovery scoping", type: "nav", value: "index.html?role=applied-ai" }
+        { id: "labs-v2", label: "Kaan Labs'i Aç", hint: "Teknik deneyler", keywords: "labs deneyler canvas ai flow", type: "nav", value: "/labs/" },
+        { id: "now-v2", label: "Build Log'u Aç", hint: "Şu an ne geliştiriliyor", keywords: "now build log son durum güncel", type: "nav", value: "/now/" },
+        { id: "applied-ai-role", label: "Yetkinliğe Göre Kanıt", hint: "Yetkinlik odaklı kanıt görünümü", keywords: "kanıt yetkinlik odak ik recruiter applied ai discovery scoping", type: "nav", value: "/?role=applied-ai" }
       ]
     };
     ["en", "tr"].forEach((language) => {
@@ -281,7 +284,7 @@
 
   function renderLabCards() {
     document.querySelectorAll("[data-labs-grid]").forEach((container) => {
-      container.innerHTML = registry.labs.map((item) => `<article class="lab-card"><div class="lab-card-top"><span>${esc(pick(item.type))}</span><i class="bx bx-flask"></i></div><h3>${esc(item.title)}</h3><p>${esc(pick(item.description))}</p><div class="project-tags">${item.tags.map((tag) => `<span>${esc(tag)}</span>`).join("")}</div><a href="${esc(item.url)}">${lt("Open experiment", "Deneyi aç")}<i class="bx bx-right-arrow-alt"></i></a></article>`).join("");
+      container.innerHTML = registry.labs.map((item) => `<article class="lab-card"><div class="lab-card-top"><span>${esc(pick(item.type))}</span><i class="bx bx-flask"></i></div><h3>${esc(item.title)}</h3><p>${esc(pick(item.description))}</p><div class="project-tags">${item.tags.map((tag) => `<span>${esc(tag)}</span>`).join("")}</div><a href="${esc(pageHref(item.url))}">${lt("Open experiment", "Deneyi aç")}<i class="bx bx-right-arrow-alt"></i></a></article>`).join("");
     });
   }
 

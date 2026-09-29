@@ -28,7 +28,7 @@ import {
   routePrefixFor,
   runtimeTextSources,
   runtimeAttributeSources,
-  routeDepths,
+  authoredHtmlFiles,
   truncateDescription,
   compareKeys,
   COMPANION_ROUTES,
@@ -38,6 +38,7 @@ import {
   CASE_STUDY_DATA_FILES,
 } from "./i18n-catalog.mjs";
 import { coverageFor, loadAuthoredPack, DERIVED_TR_DOMAINS, deriveTurkishPack } from "./build-locale-packs.mjs";
+import { browserRouteTable, isLegacyStub } from "./site-routes.mjs";
 
 let assertions = 0;
 const failures = [];
@@ -284,12 +285,16 @@ assert(JSON.stringify(runtimeConfig.ui) === JSON.stringify(ui), "generated UI ca
 assert(JSON.stringify(runtimeConfig.glossary) === JSON.stringify(glossary), "generated glossary is stale");
 
 const allRoutes = indexableRoutes(projects);
-const expectedInventory = [...allRoutes.map((route) => route.page), ...COMPANION_ROUTES.map((route) => route.source)].sort(compareKeys);
+/* The browser's route table is data/site/routes.json, projected — never a
+ * second hand-kept list. */
 assert(
-  JSON.stringify(runtimeConfig.routes) === JSON.stringify(expectedInventory),
-  "generated route inventory is stale",
+  JSON.stringify(runtimeConfig.routeTable) === JSON.stringify(browserRouteTable()),
+  "generated route table is stale: run npm run i18n:generate",
 );
-assert(!runtimeConfig.routes.some((route) => /^(?:tr|de|es|fr)\//.test(route)), "the route inventory must hold canonical keys, not localized ones");
+const runtimeRouteKeys = (runtimeConfig.routeTable?.pages || []).map((page) => page.route);
+assert(!runtimeRouteKeys.some((route) => /^(?:tr|de|es|fr)\//.test(route)), "the route table must hold canonical keys, not localized ones");
+assert(!runtimeRouteKeys.some((route) => /\.html$/.test(route)), "the route table must hold clean routes, never .html paths");
+assert(runtimeConfig.routes === undefined, "the route inventory ships once, as the route table");
 
 /* ---------- 9. bootstrap contract ---------- */
 
@@ -355,6 +360,9 @@ for (const contract of [
   "localizedInternalHref",
   "localizedHrefForCurrentPage",
   "isLocalizableRoute",
+  "routeFor",
+  "routeForProject",
+  "documentPathFor",
 ]) {
   assert(routeSource.includes(`function ${contract}`), `route mapper missing ${contract}`);
 }
@@ -410,7 +418,7 @@ for (const external of [
 ]) {
   for (const locale of localeIds) {
     assert(
-      ROUTES.localizedInternalHref(external, locale, { siteRoot: "../", localeRoot: "" }) === external,
+      ROUTES.localizedInternalHref(external, locale) === external,
       `${external} must survive a switch to ${locale} untouched`,
     );
   }
@@ -419,16 +427,21 @@ for (const external of [
 /* Assets keep one root-relative identity: there is no /de/assets/. */
 for (const asset of ["assets/logo.webp", "style.css", "css/a11y.css", "script.js", "CV-KAAN-BALCI.pdf"]) {
   for (const locale of localeIds) {
-    const mapped = ROUTES.localizedInternalHref(asset, locale, { siteRoot: "../", localeRoot: "" });
-    assert(!/^(?:tr|de|es|fr)\//.test(mapped), `${asset} must not take a locale prefix in ${locale}`);
-    assert(mapped === `../${asset}`, `${asset} must resolve to the site root in ${locale}, got ${mapped}`);
+    for (const input of [asset, `/${asset}`, `../${asset}`]) {
+      const mapped = ROUTES.localizedInternalHref(input, locale);
+      assert(!/^\/?(?:tr|de|es|fr)\//.test(mapped), `${input} must not take a locale prefix in ${locale}`);
+      assert(mapped === `/${asset}`, `${input} must resolve to the site root in ${locale}, got ${mapped}`);
+    }
   }
 }
 
-/* Tracking parameters do not survive a language switch; meaningful ones do. */
+/* Tracking and identity parameters do not survive a language switch; every
+ * meaningful one does, in its original order. */
 assert(ROUTES.preservedRouteSearch("?utm_source=x&role=applied-ai&fbclid=1") === "?role=applied-ai", "role must survive a locale switch");
 assert(ROUTES.preservedRouteSearch("?utm_source=x&gclid=1") === "", "tracking parameters must not survive a locale switch");
 assert(ROUTES.preservedRouteSearch("?project=weather-app") === "", "the legacy slug parameter is re-expressed as a path, not carried");
+assert(ROUTES.preservedRouteSearch("?x=1") === "?x=1", "an arbitrary query parameter must survive a locale switch");
+assert(ROUTES.preservedRouteSearch("?source=ajoop&role=applied-ai") === "?source=ajoop&role=applied-ai", "query order and values must survive a locale switch");
 
 /* ---------- 12. generated localized documents ---------- */
 
@@ -437,7 +450,7 @@ for (const locale of generateLocales) {
   const prefix = registry.byId.get(locale).routePrefix;
   if (!exists(prefix)) continue;
   for (const route of [...allRoutes, ...COMPANION_ROUTES]) {
-    const file = `${prefix}/${route.page || "index.html"}`.replace(/\/$/, "/index.html");
+    const file = ROUTES.documentPathFor(route.page, locale);
     localizedDocuments.push({ locale, route, file });
   }
 }
@@ -475,10 +488,17 @@ for (const { locale, route, file } of localizedDocuments) {
   assert(new RegExp(`<html[^>]*lang="${definition.htmlLang}"`).test(html), `${file} must declare lang="${definition.htmlLang}"`);
   assert(new RegExp(`data-route-locale="${locale}"`).test(html), `${file} must declare its route locale`);
 
-  /* canonical points at the same-locale page, never back to English */
+  /* canonical points at the same-locale clean page, never back to English.
+   * Companions (404, legacy project shell) are not destinations: no canonical. */
+  const companion = route.indexable === false;
   const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
   const expectedCanonical = `${SITE_ORIGIN}/${ROUTES.localizedRouteKey(route.page, locale)}`;
-  assert(canonical === expectedCanonical, `${file} canonical must be ${expectedCanonical}, got ${canonical}`);
+  if (companion) {
+    assert(canonical === undefined, `${file} is a companion and must not claim a canonical URL, got ${canonical}`);
+  } else {
+    assert(canonical === expectedCanonical, `${file} canonical must be ${expectedCanonical}, got ${canonical}`);
+    assert(!/\.html(?:$|[?#])/.test(canonical || ""), `${file} canonical must be a clean URL`);
+  }
 
   /* robots follows the activation gate */
   const robots = html.match(/<meta name="robots" content="([^"]+)"/)?.[1];
@@ -493,7 +513,8 @@ for (const { locale, route, file } of localizedDocuments) {
   assert(title.trim().length > 0, `${file} needs a title`);
   assert(description.trim().length > 0, `${file} needs a description`);
   assert(html.includes(`<meta property="og:locale" content="${definition.ogLocale}"`), `${file} needs og:locale`);
-  assert(html.includes(`<meta property="og:url" content="${expectedCanonical}"`), `${file} og:url must match canonical`);
+  if (companion) assert(!/<meta property="og:url"/.test(html), `${file} is a companion and must not claim an og:url`);
+  else assert(html.includes(`<meta property="og:url" content="${expectedCanonical}"`), `${file} og:url must match canonical`);
   assert(/<meta property="og:title"/.test(html), `${file} needs og:title`);
   assert(/<meta property="og:description"/.test(html), `${file} needs og:description`);
   assert(/<meta name="twitter:title"/.test(html), `${file} needs twitter:title`);
@@ -503,33 +524,30 @@ for (const { locale, route, file } of localizedDocuments) {
   const hasHreflang = /hreflang=/.test(html);
   assert(hasHreflang === indexable, `${file} must ${indexable ? "publish" : "not publish"} hreflang alternates`);
 
-  /* Nested asset paths: two independent depths. `siteRoot` reaches the repo
-   * root where assets live, `localeRoot` reaches this locale's own root where
-   * sibling pages live. Conflating them is how the BRIEF 09A gallery-path bug
-   * happened, so both are asserted explicitly at every depth. */
-  const depths = routeDepths(route.page, definition.routePrefix);
-  assert(html.includes(`data-site-root="${depths.siteRoot}"`), `${file} must declare data-site-root="${depths.siteRoot}"`);
-  assert(html.includes(`data-locale-root="${depths.localeRoot}"`), `${file} must declare data-locale-root="${depths.localeRoot}"`);
+  /* Every first-party URL is root-relative, so one page means the same thing
+   * at every depth — `/tr/`, `/tr/works/`, `/tr/projects/<slug>/` — with no
+   * depth to declare and no `../` chain to get wrong. That is the rule that
+   * retires the BRIEF 09A gallery-path class of bug, so it is asserted on
+   * every src and href of every generated page. */
+  assert(!/<body[^>]*\sdata-(?:site|locale)-root=/.test(html), `${file} must not declare a relative depth any more`);
   for (const src of html.match(/\bsrc="([^"]+)"/g) || []) {
-    const value = src.slice(5, -1);
-    if (/^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(value)) continue;
-    assert(
-      exists(path.posix.normalize(path.posix.join(path.posix.dirname(file), value))),
-      `${file} references a missing asset: ${value}`,
-    );
+    const value = decode(src.slice(5, -1));
+    if (/^([a-z][a-z0-9+.-]*:|\/\/)/i.test(value)) continue;
+    assert(value.startsWith("/"), `${file} has a depth-relative src: ${value}`);
+    assert(exists(value.slice(1).split("?")[0]), `${file} references a missing asset: ${value}`);
   }
   for (const href of html.match(/\bhref="([^"]+)"/g) || []) {
-    const value = href.slice(6, -1);
-    if (/^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(value)) continue;
-    const target = path.posix.normalize(path.posix.join(path.posix.dirname(file), value.split("#")[0].split("?")[0]));
-    const resolved = target.endsWith("/") ? `${target}index.html` : target;
-    assert(exists(resolved), `${file} links to a missing route or asset: ${value}`);
+    const value = decode(href.slice(6, -1));
+    if (/^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(value)) continue;
+    assert(value.startsWith("/"), `${file} has a depth-relative href: ${value}`);
+    const pathname = value.split("#")[0].split("?")[0];
+    assert(!/\.html$/.test(pathname), `${file} links to a .html URL instead of a clean route: ${value}`);
+    const isPage = ROUTES.isLocalizableRoute(ROUTES.canonicalRouteKey(pathname));
+    const target = isPage ? ROUTES.documentPathFor(pathname, ROUTES.localeFromRoutePath(pathname)) : pathname.slice(1);
+    assert(exists(target), `${file} links to a missing route or asset: ${value}`);
     /* internal page links stay inside this locale */
-    if (/\.html$/.test(resolved) || resolved.endsWith("/index.html")) {
-      assert(
-        resolved.startsWith(`${definition.routePrefix}/`),
-        `${file} links out of its locale: ${value} resolves to ${resolved}`,
-      );
+    if (isPage) {
+      assert(ROUTES.localeFromRoutePath(pathname) === locale, `${file} links out of its locale: ${value}`);
     }
   }
 
@@ -575,7 +593,7 @@ for (const locale of readyLocales) {
   const pack = loadAuthoredPack(locale);
   const prefix = registry.byId.get(locale).routePrefix;
   for (const route of STATIC_ROUTES) {
-    const file = `${prefix}/${route.page || "index.html"}`.replace(/\/$/, "/index.html");
+    const file = ROUTES.documentPathFor(route.page, locale);
     if (!exists(file)) continue;
     const html = read(file);
     const meta = pack.meta?.[route.id];
@@ -614,14 +632,14 @@ if (indexableLocales.length) {
   const matrixLocales = [registry.defaultLocale, ...indexableLocales];
   for (const route of allRoutes) {
     for (const locale of matrixLocales) {
-      const file = `${routePrefixFor(locale, registry)}${route.page || "index.html"}`.replace(/\/$/, "/index.html");
+      const file = ROUTES.documentPathFor(route.page, locale);
       if (!exists(file)) continue;
       const html = read(file);
       for (const other of matrixLocales) {
         const href = `${SITE_ORIGIN}/${ROUTES.localizedRouteKey(route.page, other)}`;
         const lang = registry.byId.get(other).htmlLang;
         assert(html.includes(`hreflang="${lang}" href="${href}"`), `${file} missing ${lang} alternate`);
-        const targetFile = `${routePrefixFor(other, registry)}${route.page || "index.html"}`.replace(/\/$/, "/index.html");
+        const targetFile = ROUTES.documentPathFor(route.page, other);
         assert(exists(targetFile), `${file} advertises ${lang} alternate ${href}, which has no document`);
       }
       const xDefault = `${SITE_ORIGIN}/${ROUTES.localizedRouteKey(route.page, registry.defaultLocale)}`;
@@ -660,10 +678,14 @@ for (const id of localeIds) {
 assert(!sitemapUrls.some((url) => url.includes("404")), "the 404 page must never be in the sitemap");
 assert(!sitemapUrls.some((url) => url.includes("project-detail.html")), "the legacy project shell must never be in the sitemap");
 assert(!sitemapUrls.some((url) => url.includes("?")), "the sitemap must hold no query-string URLs");
+assert(!sitemapUrls.some((url) => /\.html$/.test(url)), "the sitemap must hold clean URLs only, never .html");
+assert(!sitemapUrls.some((url) => /\/index\.html/.test(url)), "the sitemap must name directories, not index documents");
 
 /* ---------- 16. English routes are unchanged and explicitly English ---------- */
 
-const rootHtml = fs.readdirSync(ROOT).filter((file) => file.endsWith(".html")).sort();
+/* Authored English documents: clean-route pages and companions. Legacy `.html`
+ * stubs are generated output and are checked by qa:routes. */
+const rootHtml = authoredHtmlFiles();
 const projectHtml = fs.existsSync(path.join(ROOT, "projects"))
   ? fs.readdirSync(path.join(ROOT, "projects")).sort().map((slug) => `projects/${slug}/index.html`).filter(exists)
   : [];
@@ -683,9 +705,7 @@ for (const file of englishHtml) {
     assert(/<html[^>]*data-route-locale="en"/.test(source), `${file} must declare itself English so a saved preference cannot claim it`);
   }
 
-  const bootstrapPath = file.startsWith("projects/") ? "../../js/core/locale-bootstrap.js" : "js/core/locale-bootstrap.js";
-  const rootBootstrap = file === "404.html" ? "/js/core/locale-bootstrap.js" : bootstrapPath;
-  assert(source.includes(`src="${rootBootstrap}"`), `${file} missing locale bootstrap`);
+  assert(source.includes(`src="/js/core/locale-bootstrap.js"`), `${file} missing root-relative locale bootstrap`);
   assert(source.indexOf("locale-bootstrap.js") < source.indexOf("<body"), `${file} locale bootstrap must run before body parse`);
 
   const hasHreflang = /hreflang=/.test(source);
@@ -703,11 +723,14 @@ for (const file of englishHtml) {
   assert(enCount === trCount, `${file} data-pv2 EN/TR compatibility attributes must stay paired`);
   assert(!/data-(?:pv2|flagship|sinama|mr)-(?:de|es|fr)=/.test(source), `${file} must not grow one-attribute-per-locale patterns`);
 
-  /* English pages carry no locale prefix anywhere. */
+  /* English pages carry no locale prefix anywhere, and every first-party
+   * link is a root-relative clean URL. */
   for (const href of source.match(/\bhref="([^"]+)"/g) || []) {
     const value = href.slice(6, -1);
     if (/^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(value)) continue;
     assert(!/^\/?(?:tr|de|es|fr)\//.test(value), `${file} links into a localized route: ${value}`);
+    assert(value.startsWith("/"), `${file} has a depth-relative href: ${value}`);
+    assert(!/\.html(?:$|[?#])/.test(value), `${file} links to a .html URL instead of a clean route: ${value}`);
   }
 }
 assert(runtimePageCount >= 19, `expected the authored English runtime pages, got ${runtimePageCount}`);
@@ -928,7 +951,9 @@ for (const [file, script] of GENERATORS) {
 }
 
 const packageJson = readJson("package.json");
-assert(packageJson.scripts?.["qa:i18n"] === "node scripts/qa-i18n.mjs", "package.json must expose qa:i18n");
+const qaI18nScript = String(packageJson.scripts?.["qa:i18n"] || "");
+assert(qaI18nScript.includes("node scripts/generate-i18n.mjs --check"), "qa:i18n must reject stale generated i18n runtime artifacts");
+assert(qaI18nScript.includes("node scripts/qa-i18n.mjs"), "package.json must expose blocking i18n QA");
 assert(String(packageJson.scripts?.qa || "").includes("qa:i18n"), "qa:i18n must block npm run qa");
 for (const [, script] of GENERATORS) assert(Boolean(packageJson.scripts?.[script]), `package.json must expose ${script}`);
 
@@ -952,12 +977,22 @@ for (const locale of generateLocales) {
     }
   };
   walkLocale(prefix);
+  /* The matrix is the clean-route documents plus one legacy compatibility stub
+   * per pre-migration `.html` URL (qa:routes owns what a stub must say). */
+  const stubs = new Set(
+    STATIC_ROUTES.filter((route) => route.legacy && route.legacy !== ROUTES.documentPathFor(route.page)).map(
+      (route) => `${prefix}/${route.legacy}`,
+    ),
+  );
   for (const file of seen) {
     assert(file.endsWith(".html"), `${file} does not belong in a generated locale route tree`);
-    assert(read(file).includes("GENERATED FILE. Do not edit."), `${file} looks hand-edited: it carries no generator marker`);
+    const html = read(file);
+    if (stubs.has(file)) assert(isLegacyStub(html), `${file} must be a generated legacy stub, not a page`);
+    else assert(html.includes("GENERATED FILE. Do not edit."), `${file} looks hand-edited: it carries no generator marker`);
   }
-  const planned = new Set(localizedDocuments.filter((item) => item.locale === locale).map((item) => item.file));
+  const planned = new Set([...localizedDocuments.filter((item) => item.locale === locale).map((item) => item.file), ...stubs]);
   for (const file of seen) assert(planned.has(file), `${file} is not part of the planned route matrix`);
+  for (const file of planned) assert(seen.has(file), `${file} is planned but missing from /${prefix}/`);
 }
 
 /* ---------- 24. docs ---------- */

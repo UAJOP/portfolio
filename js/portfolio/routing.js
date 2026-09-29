@@ -6,7 +6,7 @@
  * Behaviour is unchanged; this file is a verbatim slice.
  */
 /* project-detail-data:start
- * Detail records rendered by project-detail.html?project=<slug>.
+ * Detail records rendered by /projects/<slug>/ (and the legacy shell).
  *
  * CANONICAL SOURCE: data/portfolio/project-details.json
  * Do NOT add project facts here. Edit that JSON and run `npm run data:generate`.
@@ -44,55 +44,44 @@ function translateProjectDisplayLabel(label, language = (typeof getCurrentLocale
  * Project URL and slug resolution for both route shapes.
  *
  *   canonical : /projects/<slug>/            (generated static page)
- *   legacy    : /project-detail.html?project=<slug>
+ *   legacy    : /project-detail.html?project=<slug>   (compatibility shell)
  *
- * Generated pages sit two directories deep, so every repo-relative URL the
- * renderer emits needs a prefix. That prefix is declared by the page itself
- * (`<body data-site-root="../../">`) rather than inferred from the pathname,
- * and it stays relative rather than root-absolute so the site keeps working
- * from a subdirectory and over file://. Root pages declare nothing and get
- * "", which is exactly the behaviour that existed before.
+ * Every first-party URL is root-relative (Clean Public URLs V1), so one URL
+ * means the same thing on /, /tr/works/ and /de/projects/<slug>/ alike and no
+ * page has a depth to declare. The site root is "/" unless a page declares
+ * `<body data-site-root>`, which keeps the site relocatable without rewriting
+ * any route string.
  */
 
-/** Prefix that turns a repo-relative path into one valid on the current page. */
+/** Pathname of the site root: the prefix every emitted URL starts from. */
 function siteRootPrefix() {
-  return (document.body && document.body.dataset.siteRoot) || "";
+  const routes = window.KAAN_LOCALE_ROUTES;
+  if (routes) return routes.siteRootPathname();
+  return (document.body && document.body.dataset.siteRoot) || "/";
+}
+
+/** A URL is external, protocol-relative or a bare fragment: never rewritten. */
+function isExternalUrl(url) {
+  return /^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(String(url || ""));
 }
 
 /**
- * Prefix that reaches the current locale's root.
+ * Turns a route or asset path into the URL to emit on the current page,
+ * keeping page links inside the current locale.
  *
- * Localized generated pages declare it; English pages have none, and their
- * locale root is the site root, which is exactly the pre-09C behaviour.
- */
-function localeRootPrefix() {
-  const declared = document.body && document.body.dataset.localeRoot;
-  return declared === undefined || declared === null ? siteRootPrefix() : declared;
-}
-
-/** A URL is already resolved if it is absolute, root-relative or a fragment. */
-function isResolvedUrl(url) {
-  return /^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(String(url || ""));
-}
-
-/**
- * Rebases a repo-relative path onto the current page's depth, keeping page
- * links inside the current locale.
- *
- * Every URL the renderers emit goes through here, so a German page never links
- * a reader back into English by accident, and assets never grow a locale
- * prefix they do not have on disk.
+ * Accepts root-relative clean routes (`/works/`, `/?role=applied-ai`) and
+ * site-relative paths (`projects/<slug>/`, `assets/logo.webp`). Every URL the
+ * renderers emit goes through here, so a German page never links a reader back
+ * into English by accident, assets never grow a locale prefix they do not have
+ * on disk, and a pre-migration `works.html` still lands on `/works/`.
  */
 function siteUrl(path) {
   const value = String(path || "");
-  if (!value || isResolvedUrl(value)) return value;
+  if (!value || isExternalUrl(value)) return value;
   const routes = window.KAAN_LOCALE_ROUTES;
-  if (!routes) return `${siteRootPrefix()}${value}`;
+  if (!routes) return value.startsWith("/") ? value : `${siteRootPrefix()}${value}`;
   const locale = typeof getCurrentLocale === "function" ? getCurrentLocale() : "en";
-  return routes.localizedInternalHref(value, locale, {
-    siteRoot: siteRootPrefix(),
-    localeRoot: localeRootPrefix(),
-  });
+  return routes.localizedInternalHref(value, locale, { siteRoot: siteRootPrefix() });
 }
 
 /** The canonical URL for a project, in the current locale. */
