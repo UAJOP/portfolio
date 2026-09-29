@@ -517,11 +517,11 @@ body[data-page="labs"] .page-hero > p:not(.eyebrow) {
   color: var(--color-on-action);
 }
 
-/* The header keeps its place in the legacy overlay scale: page content <= 3,
- * header 50, image modal 100, AJOOP and the Joyday finish dialog 120, Recruiter
- * Mode / Command Palette / case gallery 160, skip link 200. Above that scale it
- * painted over every open dialog and took the clicks meant for their close
- * buttons. Guarded by scripts/qa-master2-design.mjs. */
+/* Overlay stacking scale: page content <= 3, header 50, easter trigger 82,
+ * floating AJOOP shell 120, header with its mobile menu open 130, every
+ * full-screen dialog 160 (section 14), skip link 200. A header above the
+ * dialog layer painted over open dialogs and took the clicks meant for their
+ * close buttons. Guarded by scripts/qa-master2-design.mjs. */
 .site-header {
   position: sticky;
   z-index: 50;
@@ -547,7 +547,8 @@ html[data-theme="light"] .site-header {
 }
 
 /* The open mobile menu lives inside the header: lift it over the floating
- * AJOOP launcher (120) and easter trigger (82), still under every dialog. */
+ * AJOOP shell (120) and easter trigger (82), still under the dialog layer
+ * (160), which a dialog opened while the menu stays open must cover. */
 .site-header:has(.nav-links.is-open) {
   z-index: 130;
 }
@@ -3545,6 +3546,15 @@ body[data-page="legal"] .page-hero > p:not(.eyebrow) {
 
 html[data-theme="light"] :is(.command-palette, .recruiter-drawer, .case-modal, .image-modal) {
   background: var(--color-scrim);
+}
+
+/* The dialog layer. style.css and case-study.css already place Recruiter Mode,
+ * the Command Palette and the case gallery at 160; the certificate image modal
+ * (100) and the Joyday finish dialog (120) join them so an open mobile menu
+ * (130) can never paint over a dialog. */
+.image-modal,
+.joyday-finish-modal {
+  z-index: 160;
 }
 
 .command-box,

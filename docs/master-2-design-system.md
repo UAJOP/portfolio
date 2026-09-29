@@ -38,7 +38,7 @@ Headings are weight 700 (h3/h4 600) with tight tracking, `text-wrap: balance` an
 - **Experience / Now**: ledgers. A sticky summary beside dated entries; the build log is a dated changelog.
 - **Games / Labs**: Games is image-led cards with softer corners; Labs is a mono technical index.
 - **Request**: the form leads (first in source order); process and alternatives are a quiet sticky aside.
-- **Overlays**: Recruiter Mode is a scannable evidence sheet of ruled sections; the Command Palette is query, results (label over hint) and keyboard hints; the AJOOP shell keeps its behaviour and sits compactly above its launcher. Stacking follows the legacy overlay scale: page content ≤ 3, the sticky header 50 (130 while its mobile menu is open, over the floating launcher and easter trigger), image modal 100, AJOOP and the Joyday finish dialog 120, Recruiter Mode, Command Palette and the case gallery 160, skip link 200. `qa:design` fails a header that would paint over an open dialog.
+- **Overlays**: Recruiter Mode is a scannable evidence sheet of ruled sections; the Command Palette is query, results (label over hint) and keyboard hints; the AJOOP shell keeps its behaviour and sits compactly above its launcher. Stacking scale: page content ≤ 3, sticky header 50, easter trigger 82, floating AJOOP shell 120, header with its mobile menu open 130, every full-screen dialog 160 (Recruiter Mode, Command Palette, case gallery, certificate image modal, Joyday finish dialog), skip link 200. `qa:design` fails a header or open mobile menu that would paint over a dialog, and an open menu that would sit under the floating controls.
 
 ## Tokens
 

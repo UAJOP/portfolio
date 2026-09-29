@@ -458,7 +458,8 @@ for (const container of [".page-hero", ".case-section-heading"]) {
  * Each full-screen overlay takes its z-index from the stylesheet that owns it.
  * A header above that scale paints over the open dialog (its close button sat
  * under the header) and takes the clicks meant for it. The open mobile menu
- * may rise over the floating AJOOP launcher and easter trigger, not a dialog. */
+ * may rise over the floating AJOOP shell and easter trigger, never over a
+ * dialog: a dialog can open while the menu is still open. */
 const zIndexOf = (sheet, selector) => Number(declarationsFor(css, selector).get("z-index") ?? declarationsFor(read(sheet), selector).get("z-index"));
 const headerZ = Number(declarationsFor(css, ".site-header").get("z-index"));
 const openMenuZ = Number(declarationsFor(css, ".site-header:has(.nav-links.is-open)").get("z-index") ?? headerZ);
@@ -472,6 +473,7 @@ for (const [sheet, selector] of [
   const dialogZ = zIndexOf(sheet, selector);
   assert(Number.isFinite(dialogZ), `${selector} must declare its z-index in ${sheet}`);
   assert(headerZ < dialogZ, `.site-header (z-index ${headerZ}) must stack below the ${selector} dialog (${dialogZ})`);
+  assert(openMenuZ < dialogZ, `the open mobile menu (z-index ${openMenuZ}) must stack below the ${selector} dialog (${dialogZ})`);
 }
 for (const [sheet, selector] of [["style.css", ".portfolio-chatbot"], ["style.css", ".easter-trigger"]]) {
   const floatingZ = zIndexOf(sheet, selector);
