@@ -63,6 +63,11 @@ const messages=Object.fromEntries(["en",...locales].map((id)=>[id,loadMessageDom
 const keyedText=/<([a-z][a-z0-9]*)\b([^>]*\bdata-message-key="([^"]+)"[^>]*)>([^<]*)<\/\1>/g;
 for(const file of authoredHtmlFiles()){
   const html=read(file);
+  for(const match of html.matchAll(/<button\b[^>]*\bdata-theme-toggle\b[^>]*>/g)){
+    assertions+=2;
+    if(!/\bdata-message-aria-label-key="theme\.switchToLight"/.test(match[0])) failures.push(`${file}: theme toggle aria-label must bind data-message-aria-label-key="theme.switchToLight"`);
+    if(!/\bdata-message-title-key="theme\.switchToLight"/.test(match[0])) failures.push(`${file}: theme toggle title must bind data-message-title-key="theme.switchToLight"`);
+  }
   for(const match of html.matchAll(/<[^>]*\bdata-theme-label\b[^>]*>/g)){
     assertions+=1;
     if(!/\bdata-message-key="theme\.dark"/.test(match[0])) failures.push(`${file}: theme label must bind data-message-key="theme.dark" so every locale route is localized at build time`);
@@ -85,10 +90,9 @@ for(const locale of locales){
 
 /* Accessible names are short, so the prose threshold above never sees them.
  * A localized document must not keep an English aria-label from its source.
- * KNOWN_ARIA_DEBT lists pre-existing leaks tracked for Master 3: the theme
- * toggle (relabelled by the runtime after load) and game-shell internals.
+ * KNOWN_ARIA_DEBT lists pre-existing game-shell leaks tracked for Master 3.
  * Anything not listed here fails. */
-const KNOWN_ARIA_DEBT=new Set(["Switch theme","Game stats","Puzzle stats","AI workflow board","Kaan career merge mini game","Stroke thickness","Paint intensity","Export style","Joyday artwork preview"]);
+const KNOWN_ARIA_DEBT=new Set(["Game stats","Puzzle stats","AI workflow board","Kaan career merge mini game","Stroke thickness","Paint intensity","Export style","Joyday artwork preview"]);
 const ariaLabels=(html)=>new Set([...html.matchAll(/\saria-label="([^"]+)"/g)].map((m)=>decode(m[1])));
 for(const route of all){
   const sourceFile=route.source;
@@ -102,6 +106,24 @@ for(const route of all){
       if(KNOWN_ARIA_DEBT.has(value)) continue;
       assertions+=1;
       if(labels.has(value)) failures.push(`${localized}: untranslated aria-label ${JSON.stringify(value)}`);
+    }
+  }
+}
+
+/* Stable attribute keys must be present before runtime JavaScript executes.
+ * Theme state can still relabel the control after boot, but every generated
+ * document starts with the locale's light-theme action in both name sources. */
+for(const locale of locales){
+  const expected=messages[locale]["theme.switchToLight"];
+  for(const page of localizedDocuments){
+    const localized=routes.documentPathFor(page,locale);
+    if(!fs.existsSync(path.join(ROOT,localized))) continue;
+    for(const match of read(localized).matchAll(/<button\b[^>]*\bdata-theme-toggle\b[^>]*>/g)){
+      assertions+=2;
+      const aria=match[0].match(/\baria-label="([^"]*)"/)?.[1];
+      const title=match[0].match(/\btitle="([^"]*)"/)?.[1];
+      if(decode(aria)!==decode(expected)) failures.push(`${localized}: theme toggle aria-label renders ${JSON.stringify(decode(aria))}, expected ${JSON.stringify(expected)}`);
+      if(decode(title)!==decode(expected)) failures.push(`${localized}: theme toggle title renders ${JSON.stringify(decode(title))}, expected ${JSON.stringify(expected)}`);
     }
   }
 }

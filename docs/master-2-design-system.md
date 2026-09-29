@@ -85,7 +85,7 @@ The React migration foundation still uses its own vocabulary. Until Master 3 col
 
 Layouts are recomposed per class, not merely stacked.
 
-- **≥ 1280**: full compositions; the header shows the quiet availability signal.
+- **≥ 1280**: full compositions; the header keeps the complete navigation and labelled secondary controls. Availability remains in Home's first fold and Recruiter Mode rather than the shared header.
 - **1101–1279**: same compositions, denser header.
 - **≤ 1100**: primary navigation collapses behind the menu toggle (owned here; `js/core/shell.js` reads the toggle's computed display). The mobile menu is a left-aligned list with 52px rows.
 - **≤ 900**: mastheads, case heroes and two-column layouts become single column; the Home identity becomes portrait-beside-facts; secondary Selected Work cards go media-left.

@@ -892,8 +892,8 @@ html[data-theme="light"] :is(.hero-stack span, .project-tags span, .case-stack s
   color: var(--color-success-strong);
 }
 
-.project-role {
-  color: var(--color-text-muted) !important;
+p.project-role {
+  color: var(--color-text-muted);
   font-family: var(--font-mono);
   font-size: var(--type-caption);
   letter-spacing: 0;
@@ -1949,7 +1949,9 @@ html[data-theme="light"] .journey-grid article {
   background: var(--color-accent);
 }
 
+/* Accent-strong keeps timeline years readable on every surface tier. */
 .journey-grid span {
+  color: var(--color-accent-strong);
   font-family: var(--font-mono);
   font-size: var(--type-caption);
   font-weight: 600;
@@ -2479,6 +2481,7 @@ html[data-theme="light"] .case-meta-grid > div {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  container-type: inline-size;
 }
 
 .case-proof + .case-proof {
@@ -3080,6 +3083,7 @@ html[data-theme="light"] .project-detail-side .detail-panel {
 
 .process-steps p {
   margin-top: var(--space-1);
+  color: var(--color-text-secondary);
   font-size: 0.94rem;
 }
 
@@ -3377,11 +3381,18 @@ html[data-theme="light"] .certificate-card {
   line-height: 1.35;
 }
 
+/* Size the fact label column to its longest localized label and keep rows
+ * aligned through subgrid. */
 .certificate-card dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 14px;
   margin-top: var(--space-4);
 }
 
 .certificate-card dl > div {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   border-top-color: var(--color-border-subtle);
 }
 
@@ -3997,15 +4008,6 @@ html[data-theme="light"] :is(
  * their legacy counterparts exactly and win by load order. All of them are
  * enforced by scripts/qa-master2-design.mjs. */
 
-/* Project detail (all /projects/<slug>/ routes, every locale). */
-.project-detail-meta span {
-  color: var(--color-text-muted);
-}
-
-.process-steps p {
-  color: var(--color-text-secondary);
-}
-
 /* Filled markers (step numbers, active chips, live badges). Legacy sheets paint
  * a literal dark ink on a --brand gradient, which only worked with the bright V3
  * brand. Every filled marker uses the measured action pair, in both themes.
@@ -4082,32 +4084,10 @@ html[data-theme="light"] :is(
   color: var(--color-warning-strong);
 }
 
-/* About journey years: accent-strong keeps AA on every surface tier. */
-.journey-grid span {
-  color: var(--color-accent-strong);
-}
-
-/* Certificate facts: the label column sizes to the longest localized label
- * and stays aligned across rows through subgrid. */
-.certificate-card dl {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  column-gap: 14px;
-}
-
-.certificate-card dl > div {
-  grid-column: 1 / -1;
-  grid-template-columns: subgrid;
-}
-
 /* Proof values are display type inside a fixed-width cell. Some are words
  * ("READY / WARNING / BLOCKED"): the longest word is ~4.9em, so the value is
  * capped at 19% of its own cell and can never overflow it, at any width or
  * locale. Four-up strips drop to two columns on tablet widths. */
-.case-proof {
-  container-type: inline-size;
-}
-
 .case-proof strong {
   display: block;
   color: var(--color-text);
@@ -4120,10 +4100,6 @@ html[data-theme="light"] :is(
 .case-proof span,
 .case-meta-grid dt {
   color: var(--color-text-muted);
-}
-
-.build-log-status.is-building {
-  color: var(--color-warning-strong);
 }
 
 /* 17. Responsive ----------------------------------------------------------- */
