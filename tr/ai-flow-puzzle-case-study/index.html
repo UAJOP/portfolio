@@ -54,7 +54,7 @@ Copy: data/i18n/packs/tr/
 <link href="/case-study.css" rel="stylesheet"/><link href="/portfolio-v2.css" rel="stylesheet"/>
 <link href="/assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" rel="icon" type="image/x-icon"/>
 </head>
-<body class="case-study-page" data-page="caseStudy">
+<body class="case-study-page case-archive" data-page="caseStudy">
 <a class="skip-link" data-case-i18n="skip.content" href="#main-content">İçeriğe geç</a>
 <header class="site-header">
 <a aria-label="Kaan Balcı ana sayfası" class="brand" href="/tr/">
@@ -78,7 +78,7 @@ Copy: data/i18n/packs/tr/
 <button class="active" data-lang-switch="en" type="button">EN</button>
 <button data-lang-switch="tr" type="button">TR</button>
 </div>
-<button aria-label="Switch theme" class="theme-toggle" data-theme-toggle="" title="Switch theme" type="button"><i class="bx bx-moon"></i><span data-message-key="theme.dark" data-theme-label="">Koyu</span></button>
+<button aria-label="Açık temaya geç" class="theme-toggle" data-message-aria-label-key="theme.switchToLight" data-message-title-key="theme.switchToLight" data-theme-toggle="" title="Açık temaya geç" type="button"><i class="bx bx-moon"></i><span data-message-key="theme.dark" data-theme-label="">Koyu</span></button>
 <button aria-controls="site-navigation" aria-expanded="false" aria-label="Navigasyonu aç" class="nav-toggle" type="button"><span></span><span></span></button>
 </div>
 </header>
@@ -94,7 +94,7 @@ Copy: data/i18n/packs/tr/
 <div><dt data-case-i18n="hero.roleLabel">Rol</dt><dd data-case-i18n="hero.role">AI Flow Designer &amp; Frontend Developer</dd></div>
 <div><dt data-case-i18n="hero.typeLabel">Proje türü</dt><dd data-case-i18n="hero.type">Solo Proje</dd></div>
 </dl>
-<div role="group" aria-label="Proje teknolojileri" class="case-stack" data-case-i18n-aria-label="aria.technologies"><span>HTML5</span><span>CSS3</span><span>Vanilla JavaScript</span><span>DOM &amp; SVG APIs</span><span>Rule-Based Validation</span></div>
+<div role="group" aria-label="Proje teknolojileri" class="case-stack" data-case-i18n-aria-label="aria.technologies"><span>HTML5</span><span>CSS3</span><span>Vanilla JavaScript</span><span>DOM &amp; SVG APIs</span><span data-message-key="aiFlow.stack.ruleValidation">Kural Tabanlı Doğrulama</span></div>
 <div class="case-actions">
 <a class="btn primary" href="/tr/ai-flow-puzzle/"><i class="bx bx-play-circle"></i><span data-case-i18n="actions.play">Canlı Oyna</span></a>
 <a class="btn ghost" href="https://github.com/UAJOP/portfolio/blob/main/ai-flow-puzzle.js" rel="noopener noreferrer" target="_blank"><i class="bx bxl-github"></i><span data-case-i18n="actions.source">Kaynak Kodu Gör</span></a>
@@ -148,7 +148,7 @@ Copy: data/i18n/packs/tr/
 <section class="case-section section-shell">
 <div class="case-section-heading"><p class="eyebrow" data-case-i18n="validation.eyebrow">Doğrulama &amp; Puanlama</p><h2 data-case-i18n="validation.title">Açık sınırları olan kural tabanlı geri bildirim.</h2></div>
 <div class="case-split">
-<article class="case-panel case-copy"><p data-case-i18n="validation.body">Zorunlu node türlerini ve türler arası gerekli bağlantıları kontrol eden tarayıcı taraflı kural tabanlı doğrulama sistemi kullanılır. Eksik node ve bağlantılar raporlanırken duplicate ve self-link girişimleri engellenir.</p><p data-case-i18n="validation.score">Başarılı ve eksik akışlar Logic, Automation, UX, Safety ve Efficiency boyutlarında simüle edilmiş geri bildirim alır.</p><ul class="case-score-list"><li>Logic</li><li>Automation</li><li>UX</li><li>Safety</li><li>Efficiency</li></ul></article>
+<article class="case-panel case-copy"><p data-case-i18n="validation.body">Zorunlu node türlerini ve türler arası gerekli bağlantıları kontrol eden tarayıcı taraflı kural tabanlı doğrulama sistemi kullanılır. Eksik node ve bağlantılar raporlanırken duplicate ve self-link girişimleri engellenir.</p><p data-case-i18n="validation.score">Başarılı ve eksik akışlar Logic, Automation, UX, Safety ve Efficiency boyutlarında simüle edilmiş geri bildirim alır.</p><ul class="case-score-list"><li data-message-key="aiFlow.quality.logic">Mantık</li><li data-message-key="portfolio.skill.automation">Otomasyon</li><li>UX</li><li data-message-key="portfolio.label.safety">Güvenlik</li><li data-message-key="aiFlow.quality.efficiency">Verimlilik</li></ul></article>
 <aside class="case-panel"><h3 data-case-i18n="limitations.title">Mevcut sınırlamalar</h3><ul class="case-limitations"><li data-case-i18n="limitations.semantic">Bu sistem tam semantik graph doğrulaması değildir.</li><li data-case-i18n="limitations.extra">Bazı fazladan bağlantılar akışı geçersiz kılmayabilir.</li><li data-case-i18n="limitations.cycles">Cycle oluşturulabilir; execution sonsuz tekrarları önler.</li><li data-case-i18n="limitations.backend">Execution simüle edilir ve backend çalıştırmaz.</li><li data-case-i18n="limitations.fallback">Fallback davranışı gerçek confidence score ile tetiklenmez.</li></ul></aside>
 </div>
 </section>

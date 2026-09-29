@@ -54,7 +54,7 @@ Copy: data/i18n/packs/es/
 <link href="/case-study.css" rel="stylesheet"/><link href="/portfolio-v2.css" rel="stylesheet"/>
 <link href="/assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" rel="icon" type="image/x-icon"/>
 </head>
-<body class="case-study-page" data-page="caseStudy">
+<body class="case-study-page case-archive" data-page="caseStudy">
 <a class="skip-link" data-case-i18n="skip.content" href="#main-content">Saltar al contenido</a>
 <header class="site-header">
 <a aria-label="Página de inicio de Kaan Balcı" class="brand" href="/es/">
@@ -78,7 +78,7 @@ Copy: data/i18n/packs/es/
 <button class="active" data-lang-switch="en" type="button">EN</button>
 <button data-lang-switch="tr" type="button">TR</button>
 </div>
-<button aria-label="Switch theme" class="theme-toggle" data-theme-toggle="" title="Switch theme" type="button"><i class="bx bx-moon"></i><span data-message-key="theme.dark" data-theme-label="">Oscuro</span></button>
+<button aria-label="Cambiar al tema claro" class="theme-toggle" data-message-aria-label-key="theme.switchToLight" data-message-title-key="theme.switchToLight" data-theme-toggle="" title="Cambiar al tema claro" type="button"><i class="bx bx-moon"></i><span data-message-key="theme.dark" data-theme-label="">Oscuro</span></button>
 <button aria-controls="site-navigation" aria-expanded="false" aria-label="Abrir navegación" class="nav-toggle" type="button"><span></span><span></span></button>
 </div>
 </header>
@@ -94,7 +94,7 @@ Copy: data/i18n/packs/es/
 <div><dt data-case-i18n="hero.roleLabel">Rol</dt><dd data-case-i18n="hero.role">AI Flow Designer &amp; Frontend Developer</dd></div>
 <div><dt data-case-i18n="hero.typeLabel">Tipo de proyecto</dt><dd data-case-i18n="hero.type">Proyecto individual</dd></div>
 </dl>
-<div role="group" aria-label="Tecnologías del proyecto" class="case-stack" data-case-i18n-aria-label="aria.technologies"><span>HTML5</span><span>CSS3</span><span>Vanilla JavaScript</span><span>DOM &amp; SVG APIs</span><span>Rule-Based Validation</span></div>
+<div role="group" aria-label="Tecnologías del proyecto" class="case-stack" data-case-i18n-aria-label="aria.technologies"><span>HTML5</span><span>CSS3</span><span>Vanilla JavaScript</span><span>DOM &amp; SVG APIs</span><span data-message-key="aiFlow.stack.ruleValidation">Validación basada en reglas</span></div>
 <div class="case-actions">
 <a class="btn primary" href="/es/ai-flow-puzzle/"><i class="bx bx-play-circle"></i><span data-case-i18n="actions.play">Jugar en directo</span></a>
 <a class="btn ghost" href="https://github.com/UAJOP/portfolio/blob/main/ai-flow-puzzle.js" rel="noopener noreferrer" target="_blank"><i class="bx bxl-github"></i><span data-case-i18n="actions.source">Ver código fuente</span></a>
@@ -148,7 +148,7 @@ Copy: data/i18n/packs/es/
 <section class="case-section section-shell">
 <div class="case-section-heading"><p class="eyebrow" data-case-i18n="validation.eyebrow">Validación y puntuación</p><h2 data-case-i18n="validation.title">Retroalimentación basada en reglas con límites explícitos.</h2></div>
 <div class="case-split">
-<article class="case-panel case-copy"><p data-case-i18n="validation.body">Un sistema de validación basado en reglas en el navegador comprueba los tipos de nodo requeridos y las conexiones requeridas entre tipos. Se informa de los nodos y conexiones que faltan, y se impiden los enlaces duplicados y hacia uno mismo.</p><p data-case-i18n="validation.score">Los flujos correctos e incompletos reciben retroalimentación simulada en Lógica, Automatización, UX, Seguridad y Eficiencia.</p><ul class="case-score-list"><li>Logic</li><li>Automation</li><li>UX</li><li>Safety</li><li>Efficiency</li></ul></article>
+<article class="case-panel case-copy"><p data-case-i18n="validation.body">Un sistema de validación basado en reglas en el navegador comprueba los tipos de nodo requeridos y las conexiones requeridas entre tipos. Se informa de los nodos y conexiones que faltan, y se impiden los enlaces duplicados y hacia uno mismo.</p><p data-case-i18n="validation.score">Los flujos correctos e incompletos reciben retroalimentación simulada en Lógica, Automatización, UX, Seguridad y Eficiencia.</p><ul class="case-score-list"><li data-message-key="aiFlow.quality.logic">Lógica</li><li data-message-key="portfolio.skill.automation">Automatización</li><li>UX</li><li data-message-key="portfolio.label.safety">Seguridad</li><li data-message-key="aiFlow.quality.efficiency">Eficiencia</li></ul></article>
 <aside class="case-panel"><h3 data-case-i18n="limitations.title">Limitaciones actuales</h3><ul class="case-limitations"><li data-case-i18n="limitations.semantic">No se trata de una validación semántica completa del grafo.</li><li data-case-i18n="limitations.extra">Algunas conexiones adicionales pueden no invalidar un flujo.</li><li data-case-i18n="limitations.cycles">Se pueden crear ciclos, aunque la ejecución evita repeticiones infinitas.</li><li data-case-i18n="limitations.backend">La ejecución es simulada y no utiliza un backend.</li><li data-case-i18n="limitations.fallback">El comportamiento de fallback no depende de una puntuación de confianza real.</li></ul></aside>
 </div>
 </section>

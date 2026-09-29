@@ -124,7 +124,7 @@ for (const locale of productionLocaleIds) {
 }
 for (const file of authoredHtmlFiles()) {
   const source = read(file);
-  for (const match of source.matchAll(/\bdata-message-key="([^"]+)"/g)) {
+  for (const match of source.matchAll(/\bdata-message-(?:(?:aria-label|alt|title|placeholder)-)?key="([^"]+)"/g)) {
     assert(commonKeys.includes(match[1]), `${file} references unknown stable message key ${match[1]}`);
   }
 }

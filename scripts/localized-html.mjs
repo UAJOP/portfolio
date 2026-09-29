@@ -197,9 +197,10 @@ export function localizeDocument(html, options) {
         continue;
       }
       if (TRANSLATABLE_ATTRIBUTES.includes(name)) {
+        const stableKey = attributeByName.get(`data-message-${name}-key`);
         const caseKey = attributeByName.get(name === "alt" ? "data-case-i18n-alt" : "data-case-i18n-aria-label");
         const cased = name === "alt" || name === "aria-label" ? caseStudyValue(caseKey?.value) : null;
-        const translated = cased ?? translateAttribute(decodeHtml(attribute.value));
+        const translated = messageValue(stableKey?.value) ?? cased ?? translateAttribute(decodeHtml(attribute.value));
         if (translated) attribute.value = escapeHtml(translated);
       }
     }

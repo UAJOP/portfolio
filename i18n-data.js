@@ -246,7 +246,9 @@ window.KAAN_I18N = {
       "Google Cloud",
       "Forward Deployed Engineer",
       "AI Engineer",
-      "Solution Engineer"
+      "Solution Engineer",
+      "Kaan Labs",
+      "WhatsApp"
     ],
     "projectNames": [
       "AI Chatbot Flow Design",
@@ -305,7 +307,9 @@ window.KAAN_I18N = {
       "Software / Product Engineering",
       "Trigger → Intent → CRM → Email → Response → End",
       "Trigger → Intent → Condition → Sheets → Response → End",
-      "Trigger → Intent → Router → Knowledge Base → LLM Reasoning → Response → End"
+      "Trigger → Intent → Router → Knowledge Base → LLM Reasoning → Response → End",
+      "AI",
+      "Now / Build Log"
     ],
     "localePolicy": {
       "de": "Natürliches Fachdeutsch. Etablierte englische Fachbegriffe der Branche (AI, LLM, RAG, Workflow, Chatbot, Frontend, Deployment) bleiben englisch, statt in lange Substantivketten übersetzt zu werden. Kanonische Rollentitel wie Forward Deployed Engineer bleiben unverändert; eine erklärende Umschreibung darf im Fließtext danebenstehen. Produkt- und Projektnamen werden nie übersetzt.",

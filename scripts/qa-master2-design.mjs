@@ -197,6 +197,50 @@ for (const sheet of localSheets) {
   }
 }
 
+/* A literal dark ink with no fill of its own depends on the surface it
+ * inherits. Once that surface is a dark token (e.g. a select's options in dark
+ * mode) the text disappears, so such rules must be restated with tokens. */
+for (const sheet of localSheets) {
+  for (const rule of topLevelRules(read(sheet))) {
+    const ink = rule.declarations.get("color");
+    const ownFill = rule.declarations.get("background") || rule.declarations.get("background-color");
+    if (!ink || !/^#0[0-9a-f]{5}$/i.test(ink) || ownFill) continue;
+    for (const selector of rule.selectors) {
+      if (AJOOP_WIDGET.test(selector) || /\.chatbot-/.test(selector)) continue;
+      /* Game sheets own their art (posters, win cards drawn on light fills);
+       * only their form controls inherit site surfaces. */
+      if (sheet.startsWith("css/games/") && !/\b(?:option|select|input|textarea)\b/.test(selector)) continue;
+      assert(
+        /^var\(--color-/.test(declarationsFor(css, selector).get("color") || ""),
+        `${sheet}: "${selector}" sets a literal dark ink (${ink}) with no fill of its own; portfolio-v2.css must restate it with tokens`,
+      );
+    }
+  }
+}
+
+/* Focus and form-state colours: a legacy :focus rule that paints a bright V3
+ * literal into border, box-shadow or outline must be restated with tokens.
+ * Bare element selectors are covered when css/a11y.css (loaded later)
+ * re-declares the same selector with a token outline. */
+const V3_STATE_LITERAL = /rgba\(\s*(?:56, 189, 248|34, 211, 238|2, 132, 199|8, 145, 178)\s*,|#(?:38bdf8|22d3ee|0284c7|0891b2|7dd3fc)\b/i;
+const a11yCss = read("css/a11y.css");
+for (const sheet of localSheets) {
+  for (const rule of topLevelRules(read(sheet))) {
+    const leaking = [...rule.declarations].filter(([property, value]) => /border|box-shadow|outline/.test(property) && V3_STATE_LITERAL.test(value));
+    if (!leaking.length) continue;
+    for (const selector of rule.selectors) {
+      if (!/:focus/.test(selector)) continue;
+      const override = declarationsFor(css, selector);
+      const restated = leaking.every(([property]) => {
+        const value = override.get(property) || override.get(property.replace(/-color$/, "")) || "";
+        return /var\(--color-|^none$/.test(value);
+      });
+      const coveredByA11y = sheet !== "css/a11y.css" && /^[a-z]+:focus(-visible)?$/.test(selector) && /var\(--/.test(declarationsFor(a11yCss, selector).get("outline") || "");
+      assert(restated || coveredByA11y, `${sheet}: "${selector}" paints a V3 literal into its focus state; portfolio-v2.css must restate it with tokens`);
+    }
+  }
+}
+
 /* The V3 light body gradient must not survive under the Master 2 canvas. */
 assert(
   declarationsFor(css, `${LIGHT} body`).get("background") === "var(--color-canvas)",
@@ -244,6 +288,16 @@ for (const [themeName, themeTokens] of [["dark", darkTokens], ["light", lightTok
       assert(ratio >= 4.5, `${themeName}: ${text} on ${tint} over ${bg} is ${ratio.toFixed(2)}:1, below AA 4.5:1`);
     }
   }
+  /* Form-control boundaries identify the component: WCAG 1.4.11 needs 3:1
+   * against every surface a control can sit on. */
+  const control = parseHex(themeTokens.get("--color-border-control"));
+  assert(Boolean(control), `${themeName}: --color-border-control must be an opaque #rrggbb token`);
+  if (control) {
+    for (const bg of ALL_SURFACES) {
+      const ratio = contrast(control, parseHex(themeTokens.get(bg)));
+      assert(ratio >= 3, `${themeName}: --color-border-control on ${bg} is ${ratio.toFixed(2)}:1, below the 3:1 non-text minimum`);
+    }
+  }
   for (const fill of ["--color-action", "--color-action-hover"]) {
     const ratio = contrast(parseHex(themeTokens.get("--color-on-action")), parseHex(themeTokens.get(fill)));
     assert(ratio >= 4.5, `${themeName}: --color-on-action on ${fill} is ${ratio.toFixed(2)}:1, below AA 4.5:1`);
@@ -259,6 +313,39 @@ for (const [selector, token] of [
 ]) {
   assert(declarationsFor(css, selector).get("color") === token, `${selector} text must use ${token} (measured on its tint/surface)`);
 }
+
+/* ---- Master 2B composition invariants -----------------------------------
+ * Ceilings, not exact values: the scale may evolve, but no heading may grow
+ * back into a viewport-filling billboard. */
+const clampMax = (value) => {
+  const match = String(value || "").match(/clamp\([^,]+,[^,]+,\s*([\d.]+)rem\s*\)/);
+  return match ? Number(match[1]) : NaN;
+};
+for (const [token, ceiling] of [["--type-display", 3.75], ["--type-h1", 3], ["--type-h2", 2.25], ["--type-h3", 1.4]]) {
+  const max = clampMax(darkTokens.get(token));
+  assert(Number.isFinite(max), `${token} must be a clamp() ending in rem`);
+  assert(max <= ceiling, `${token} caps at ${max}rem; the type scale ceiling is ${ceiling}rem`);
+}
+
+/* Home's first fold must lead to real work: the identity facts sit in the
+ * hero copy and "Strongest evidence" links to the flagship case study. */
+const heroSection = read("index.html").match(/<section class="hero section-shell">([\s\S]*?)<\/section>/)?.[1] || "";
+const heroCopy = heroSection.match(/<div class="hero-copy[\s\S]*?(?=<div class="hero-visual)/)?.[0] || "";
+assert(heroCopy.includes('class="identity-proof"'), "Home identity facts must sit in the hero copy, inside the first fold");
+assert(/<a href="\/sinama-case-study\/"><strong data-message-key="home\.identity\.evidenceValue">/.test(heroCopy), "Home 'Strongest evidence' must link to the SINAMA case study");
+
+/* Works: the flagship leads the primary tier and archive entries are marked
+ * so they render as index rows, never as peers of flagship work. */
+const works = read("works/index.html");
+const primaryTier = works.match(/<section class="project-tier project-tier-selected"[\s\S]*?<\/section>/)?.[0] || "";
+assert(/<article class="project-card[^"]*"[^>]*data-project-link="\/sinama-case-study\/"/.test(primaryTier.match(/<article[^>]*>/)?.[0] || ""), "Works primary tier must open with SINAMA");
+for (const slug of ["hospital-appointment-system", "cars-dataset-analysis", "legacy-of-the-lost", "my-museum"]) {
+  assert(new RegExp(`<article class="project-card is-archive[^"]*"[^>]*data-project-link="${slug}"`).test(works), `Works archive entry ${slug} must carry is-archive`);
+}
+
+/* Request: the form precedes the explanatory copy in reading order. */
+const request = read("request/index.html");
+assert(request.indexOf("<form class=\"request-form") > -1 && request.indexOf("<form class=\"request-form") < request.indexOf("class=\"request-copy"), "Request form must come before the request copy in source order");
 
 /* ---- Project detail (25 routes × 5 locales share these rules) ----------- */
 const tokenOnly = (value) => typeof value === "string" && /^var\(--color-[a-z-]+\)$/.test(value);
@@ -307,6 +394,92 @@ assert(
   repeatedKeys.every((key) => reusableHomeKeys.has(key)),
   `Home must only reuse intentionally shared labels; found ${[...new Set(repeatedKeys)].join(", ")}`,
 );
+
+/* ---- A fixed lead slot holds one paragraph, or the stylesheet stacks extras --
+ * Mastheads and case-section headings give their lead paragraph an explicit
+ * grid row beside the title. Every lead paragraph in the container matches
+ * that rule, so a second one lands in the same cell and is painted over the
+ * first, which no overflow, clipping or contrast check notices. Extra lead
+ * paragraphs are allowed only where the stylesheet stacks them, or where a
+ * page or container context releases the slot back to grid-row: auto (legal,
+ * utility and error mastheads). */
+const VOID_ELEMENTS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+function leadParagraphCounts(html, classToken) {
+  const counts = [];
+  const opening = new RegExp(`<[a-zA-Z][\\w-]*\\b[^>]*\\bclass="((?:[^"]*\\s)?${classToken}(?:\\s[^"]*)?)"[^>]*>`, "g");
+  const tag = /<(\/?)([a-zA-Z][\w-]*)\b([^>]*)>/g;
+  for (const start of html.matchAll(opening)) {
+    let depth = 0;
+    let leads = 0;
+    tag.lastIndex = start.index;
+    for (let match = tag.exec(html); match; match = tag.exec(html)) {
+      const [, closing, name, attributes] = match;
+      if (VOID_ELEMENTS.has(name.toLowerCase()) || attributes.trimEnd().endsWith("/")) continue;
+      if (closing) {
+        depth -= 1;
+        if (depth === 0) break;
+        continue;
+      }
+      if (depth === 1 && name.toLowerCase() === "p" && !/\bclass="[^"]*\beyebrow\b/.test(attributes)) leads += 1;
+      depth += 1;
+    }
+    counts.push({ count: leads, classes: start[1].split(/\s+/) });
+  }
+  return counts;
+}
+/* Unconditional rules that hand a lead paragraph back to grid-row: auto, as
+ * { className, pages }: `body[data-page="legal"] .page-hero > p:not(.eyebrow)`
+ * releases .page-hero on legal pages; `.error-hero > p:not(.eyebrow)` releases
+ * any container that also carries .error-hero. */
+const slotReleases = [];
+for (const rule of v2Rules) {
+  if (rule.declarations.get("grid-row") !== "auto") continue;
+  for (const selector of rule.selectors) {
+    const match = selector.match(/^(?:(body(?:\[[^\]]*\]|:is\([^)]*\)))\s+)?\.([\w-]+) > p:not\(\.eyebrow\)$/);
+    if (match) slotReleases.push({ className: match[2], pages: match[1] ? new Set([...match[1].matchAll(/data-page="([^"]+)"/g)].map((page) => page[1])) : null });
+  }
+}
+for (const container of [".page-hero", ".case-section-heading"]) {
+  const lead = `${container} > p:not(.eyebrow)`;
+  const fixedSlot = /^\d/.test(declarationsFor(css, lead).get("grid-row") || "");
+  const stacks = declarationsFor(css, `${lead} ~ p:not(.eyebrow)`).get("grid-row") === "auto";
+  if (!fixedSlot || stacks) continue;
+  for (const file of authoredHtmlFiles()) {
+    const html = read(file);
+    const page = html.match(/<body\b[^>]*\bdata-page="([^"]+)"/)?.[1];
+    for (const { count, classes } of leadParagraphCounts(html, container.slice(1))) {
+      const released = slotReleases.some((release) => classes.includes(release.className) && (!release.pages || release.pages.has(page)));
+      assert(released || count <= 1, `${file}: a ${container} holds ${count} lead paragraphs, but ${lead} has one fixed grid cell; stack the extras (${lead} ~ p:not(.eyebrow) { grid-row: auto }) or merge the copy`);
+    }
+  }
+}
+
+/* ---- Every dialog stacks above the sticky header -------------------------
+ * Each full-screen overlay takes its z-index from the stylesheet that owns it.
+ * A header above that scale paints over the open dialog (its close button sat
+ * under the header) and takes the clicks meant for it. The open mobile menu
+ * may rise over the floating AJOOP shell and easter trigger, never over a
+ * dialog: a dialog can open while the menu is still open. */
+const zIndexOf = (sheet, selector) => Number(declarationsFor(css, selector).get("z-index") ?? declarationsFor(read(sheet), selector).get("z-index"));
+const headerZ = Number(declarationsFor(css, ".site-header").get("z-index"));
+const openMenuZ = Number(declarationsFor(css, ".site-header:has(.nav-links.is-open)").get("z-index") ?? headerZ);
+for (const [sheet, selector] of [
+  ["style.css", ".image-modal"],
+  ["style.css", ".command-palette"],
+  ["style.css", ".recruiter-drawer"],
+  ["case-study.css", ".case-modal"],
+  ["css/games/joyday-paint.css", ".joyday-finish-modal"],
+]) {
+  const dialogZ = zIndexOf(sheet, selector);
+  assert(Number.isFinite(dialogZ), `${selector} must declare its z-index in ${sheet}`);
+  assert(headerZ < dialogZ, `.site-header (z-index ${headerZ}) must stack below the ${selector} dialog (${dialogZ})`);
+  assert(openMenuZ < dialogZ, `the open mobile menu (z-index ${openMenuZ}) must stack below the ${selector} dialog (${dialogZ})`);
+}
+for (const [sheet, selector] of [["style.css", ".portfolio-chatbot"], ["style.css", ".easter-trigger"]]) {
+  const floatingZ = zIndexOf(sheet, selector);
+  assert(headerZ < floatingZ, `.site-header (z-index ${headerZ}) must stack below the ${selector} panel (${floatingZ})`);
+  assert(openMenuZ > floatingZ, `the open mobile menu (z-index ${openMenuZ}) must stack above ${selector} (${floatingZ})`);
+}
 
 if (failures.length) {
   console.error(`Master 2 design QA failed: ${failures.length} failure(s), ${assertions} assertions`);
