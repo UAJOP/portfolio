@@ -11,7 +11,7 @@ The workflow was originally report-first so a clean baseline could be establishe
 | Check | Command | Why it blocks |
 |---|---|---|
 | Portfolio data contract | `npm run qa:data` | The canonical JSON is the source of truth and `portfolio-data.js` is generated from it. A stale artifact must fail, not be regenerated: the committed file is what GitHub Pages serves. |
-| JavaScript syntax | `npm run qa:js` | The compatibility bootloader still loads classic scripts directly in the browser; the site build copies rather than transpiles them, so syntax must be validated before artifact creation. |
+| JavaScript syntax | `npm run qa:js` | The compatibility bootloader still loads classic scripts directly in the browser; the site build copies them rather than running a transpile step, so syntax must be validated before artifact creation. |
 | Portfolio consistency | `npm run qa:portfolio` | Guards the V2 architecture, boot order, canonical footer, portfolio truth and QA reproducibility. |
 | Asset performance policy | `npm run qa:assets` | Guards referenced asset existence, intrinsic image dimensions, critical image budgets and intentional loading priority. |
 | Internal links | `npm run qa:links` | Page targets, anchors, footer brand links, recruiter role deep links and project slugs are all decided by this repository, so it cannot flake. |
