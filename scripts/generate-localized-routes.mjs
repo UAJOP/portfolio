@@ -129,7 +129,10 @@ function stripHeadMetadata(head) {
  * lifting tags out of it would otherwise leave lines of trailing whitespace
  * that fail HTML validation.
  */
-const tidyWhitespace = (text) => text.replace(/^[ \t]+$\n?/gm, "").replace(/[ \t]+$/gm, "");
+/* Strip indentation from blank lines without consuming their newline. The
+ * prior optional `\n` collapsed LF-only blank lines on Linux but retained the
+ * CRLF line on Windows, making localized 404 output platform-dependent. */
+const tidyWhitespace = (text) => text.replace(/^[ \t]+$/gm, "").replace(/[ \t]+$/gm, "");
 
 function absoluteFor(routeKey, locale) {
   return absoluteRouteUrl(ROUTES, routeKey, locale, SITE_ORIGIN);
