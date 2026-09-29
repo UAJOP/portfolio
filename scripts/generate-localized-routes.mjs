@@ -58,6 +58,7 @@ import {
   isLegacyStub,
 } from "./site-routes.mjs";
 import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-ownership.mjs";
+import { SEMANTIC_PAGE_SOURCES, semanticSourceMessageMap } from "./i18n-messages.mjs";
 
 const checkOnly = process.argv.includes("--check");
 
@@ -275,11 +276,15 @@ function packTranslators(locale) {
   const pack = loadAuthoredPack(locale);
   const text = pack.pages?.text || {};
   const attribute = pack.pages?.attribute || {};
+  const messages = pack.ui || {};
+  const semanticBySource = semanticSourceMessageMap(locale);
   const caseStudies = pack["case-studies"] || {};
   return {
     pack,
-    translateText: (key) => text[key] || null,
-    translateAttribute: (key) => attribute[key] || null,
+    phraseText: (key) => text[key] || null,
+    phraseAttribute: (key) => attribute[key] || null,
+    semantic: (source) => semanticBySource.get(source) || null,
+    messageValue: (key) => messages[key] || null,
     caseStudyFor: (id) => caseStudies[id] || null,
     meta: pack.meta || {},
   };
@@ -323,6 +328,18 @@ function buildDocument({ route, locale, translators, indexable }) {
   const caseCopy = caseStudyId ? translators.caseStudyFor(caseStudyId) : null;
 
   const rewriteUrl = (value) => ROUTES.localizedInternalHref(value, locale);
+  /* Semantic source matching is transitional and deliberately source-scoped.
+   * It must never turn a shared template (notably project-detail.html) into a
+   * site-wide phrase matcher. Canonical project routes replace that template's
+   * main content from structured project data, so only the companion shell
+   * consumes its semantic static copy. */
+  const semanticEnabled =
+    SEMANTIC_PAGE_SOURCES.has(route.source) &&
+    !(route.source === "project-detail.html" && route.slug);
+  const translateText = (key) =>
+    (semanticEnabled ? translators.semantic(key) : null) || translators.phraseText(key);
+  const translateAttribute = (key) =>
+    (semanticEnabled ? translators.semantic(key) : null) || translators.phraseAttribute(key);
 
   let html = source;
 
@@ -343,14 +360,15 @@ function buildDocument({ route, locale, translators, indexable }) {
   html = html.replace(/<body([^>]*)>/i, (match, attributes) => `<body${stripDepthDeclarations(attributes)}>`);
 
   html = localizeDocument(html, {
-    translateText: translators.translateText,
-    translateAttribute: translators.translateAttribute,
+    translateText,
+    translateAttribute,
+    messageValue: translators.messageValue,
     caseStudyValue: (key) => (key && caseCopy ? caseCopy[key] ?? null : null),
     compatValue: (attributeByName) => {
       for (const prefix of ["data-pv2", "data-flagship", "data-sinama", "data-mr"]) {
         const english = attributeByName.get(`${prefix}-en`);
         if (!english) continue;
-        const translated = translators.translateText(normalizeText(decodeHtml(english.value)));
+        const translated = translateText(normalizeText(decodeHtml(english.value)));
         if (translated) return translated;
       }
       return null;

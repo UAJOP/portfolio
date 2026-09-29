@@ -37,7 +37,7 @@ Copy: data/i18n/packs/fr/
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://unpkg.com" rel="preconnect"/><link crossorigin="" href="https://unpkg.com" rel="preconnect"/><link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
-<link href="/style.css" rel="stylesheet"/><link href="/css/a11y.css" rel="stylesheet"/><link href="/css/games/ai-flow-puzzle.css" rel="stylesheet"/>
+<link href="/style.css" rel="stylesheet"/><link href="/css/a11y.css" rel="stylesheet"/><link href="/css/games/ai-flow-puzzle.css" rel="stylesheet"/><link href="/portfolio-v2.css" rel="stylesheet"/>
 <link href="/assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" rel="icon" type="image/x-icon"/>
 
 
@@ -71,7 +71,7 @@ Copy: data/i18n/packs/fr/
 </div>
 <button aria-label="Switch theme" class="theme-toggle" data-theme-toggle="" title="Switch theme" type="button">
 <i class="bx bx-moon"></i>
-<span data-theme-label="">Dark</span>
+<span data-theme-label="">Sombre</span>
 </button>
 <button aria-controls="site-navigation" aria-expanded="false" aria-label="Ouvrir la navigation" class="nav-toggle" type="button">
 <span></span>
@@ -84,7 +84,7 @@ Copy: data/i18n/packs/fr/
   <div class="ai-puzzle-hero-copy">
     <p class="eyebrow" data-ai-flow-text="heroEyebrow">n8n-inspired logic game</p>
     <h1 data-ai-flow-text="heroTitle">AI Flow Puzzle</h1>
-    <p data-ai-flow-text="heroLead">Build chatbot automations by placing nodes, connecting intent paths, adding fallback logic and validating the final workflow.</p>
+    <p data-ai-flow-text="heroLead">Construisez des automatisations de chatbot en plaçant des nœuds, en reliant les chemins d’intent, en ajoutant une logique de fallback et en validant le workflow final.</p>
     <div role="group" class="hero-stack ai-puzzle-stack" aria-label="Thèmes de jeux">
       <span>n8n Logic</span><span>Chatbot Flow</span><span>Automation</span><span>Fallback</span><span>Validation</span>
     </div>
@@ -99,26 +99,26 @@ Copy: data/i18n/packs/fr/
       <i></i><i></i><i></i>
     </div>
     <strong data-ai-flow-text="heroCardTitle">Connect clean flows</strong>
-    <p data-ai-flow-text="heroCardText">A lightweight browser game about workflow thinking, chatbot design and automation structure.</p>
+    <p data-ai-flow-text="heroCardText">Un jeu léger dans le navigateur autour de la pensée workflow, du design de chatbot et de la structure d’automatisation.</p>
   </div>
 </section>
 
 <section class="section-shell section-block ai-puzzle-layout" id="ai-flow-puzzle-game">
-  <aside aria-label="Workflow scenarios and templates" class="ai-puzzle-panel reveal">
+  <aside aria-label="Scénarios et templates de workflow" class="ai-puzzle-panel reveal">
     <div class="ai-puzzle-panel-head">
       <p class="eyebrow" data-ai-flow-text="scenariosEyebrow">Scenarios</p>
-      <h2 data-ai-flow-text="chooseChallenge">Choose a workflow challenge.</h2>
-      <p data-ai-flow-text="scenarioHelp">Each level behaves like a small n8n board: place the required nodes and connect them in the correct automation order.</p>
+      <h2 data-ai-flow-text="chooseChallenge">Choisissez un défi de workflow.</h2>
+      <p data-ai-flow-text="scenarioHelp">Chaque niveau fonctionne comme un petit board n8n : placez les nœuds requis et reliez-les dans le bon ordre d’automatisation.</p>
     </div>
     <div class="ai-scenario-list" data-ai-scenarios></div>
     <div class="ai-template-wrap">
       <div class="ai-puzzle-section-title"><span></span><strong data-ai-flow-text="templatesTitle">Templates</strong></div>
-      <p class="ai-palette-note" data-ai-flow-text="templatesHint">Start blank or load a ready workflow template, then improve it.</p>
+      <p class="ai-palette-note" data-ai-flow-text="templatesHint">Commencez à vide ou chargez un template de workflow prêt, puis améliorez-le.</p>
       <div class="ai-template-list" data-ai-templates></div>
     </div>
     <div class="ai-palette-wrap">
       <div class="ai-puzzle-section-title"><span></span><strong data-ai-flow-text="nodePalette">Node palette</strong></div>
-      <p class="ai-palette-note" data-ai-flow-text="nodePaletteHint">Click a node to add it to the board. Drag nodes to organize your flow.</p>
+      <p class="ai-palette-note" data-ai-flow-text="nodePaletteHint">Cliquez sur un nœud pour l’ajouter au board. Faites glisser les nœuds pour organiser votre flow.</p>
       <div class="ai-node-palette" data-ai-palette></div>
     </div>
   </aside>
@@ -128,7 +128,7 @@ Copy: data/i18n/packs/fr/
       <div>
         <span data-ai-flow-text="builderEyebrow">Workflow builder</span>
         <h2 data-ai-scenario-title>Joyday Reservation Bot</h2>
-        <p data-ai-scenario-goal>Connect a customer message to intent detection, package availability, booking record, confirmation and fallback.</p>
+        <p data-ai-scenario-goal>Reliez un message client à la détection d’intent, à la disponibilité des offres, à l’enregistrement de réservation, à la confirmation et au fallback.</p>
       </div>
       <div role="group" class="ai-puzzle-stats" aria-label="Puzzle stats">
         <article><span data-ai-flow-text="scoreLabel">Score</span><strong data-ai-score>0</strong></article>
@@ -140,7 +140,7 @@ Copy: data/i18n/packs/fr/
     <div class="ai-flow-workbench-bar">
       <div class="ai-flow-tip" data-ai-flow-status>
         <i class="bx bx-info-circle"></i>
-        <span data-ai-flow-text="connectTip">Click a source node, then click a target node to create a connection.</span>
+        <span data-ai-flow-text="connectTip">Cliquez sur un nœud source, puis sur un nœud cible pour créer une connexion.</span>
       </div>
       <label class="ai-test-message-select">
         <span data-ai-flow-text="testMessageLabel">Test message</span>
@@ -163,7 +163,7 @@ Copy: data/i18n/packs/fr/
     </div>
   </div>
 
-  <aside aria-label="Workflow objectives and inspector" class="ai-puzzle-panel ai-puzzle-side reveal delay-2">
+  <aside aria-label="Objectifs de workflow et inspector" class="ai-puzzle-panel ai-puzzle-side reveal delay-2">
     <section class="ai-side-card">
       <div class="ai-puzzle-section-title"><span></span><strong data-ai-flow-text="objectivesTitle">Objectives</strong></div>
       <div class="ai-objective-list" data-ai-objectives></div>
@@ -173,14 +173,14 @@ Copy: data/i18n/packs/fr/
       <div class="ai-puzzle-section-title"><span></span><strong data-ai-flow-text="inspectorTitle">Inspector &amp; config</strong></div>
       <div class="ai-inspector" data-ai-inspector>
         <strong data-ai-flow-text="inspectorEmptyTitle">Select a node</strong>
-        <p data-ai-flow-text="inspectorEmptyText">Click a node on the board to inspect it or start a connection.</p>
+        <p data-ai-flow-text="inspectorEmptyText">Cliquez sur un nœud du board pour l’inspecter ou commencer une connexion.</p>
       </div>
     </section>
 
     <section class="ai-side-card">
       <div class="ai-puzzle-section-title"><span></span><strong data-ai-flow-text="executionTitle">Execution log</strong></div>
       <div class="ai-run-log" data-ai-run-log>
-        <span data-ai-flow-text="runLogEmpty">Run the flow to see each node execute like an n8n workflow.</span>
+        <span data-ai-flow-text="runLogEmpty">Lancez le flow pour voir chaque nœud s’exécuter comme dans un workflow n8n.</span>
       </div>
     </section>
 
@@ -210,9 +210,9 @@ Copy: data/i18n/packs/fr/
 <section class="section-shell section-block ai-puzzle-learning">
   <div class="cta-panel reveal">
     <div>
-      <p class="eyebrow" data-ai-flow-text="whyEyebrow">Why this game exists</p>
-      <h2 data-ai-flow-text="whyTitle">A playable way to show AI Designer thinking.</h2>
-      <p data-ai-flow-text="whyText">The goal is not only entertainment. The game demonstrates how chatbot flows need triggers, intent logic, branching, response handling, fallback safety and clean automation outputs.</p>
+      <p class="eyebrow" data-ai-flow-text="whyEyebrow">Pourquoi ce jeu existe</p>
+      <h2 data-ai-flow-text="whyTitle">Une façon jouable de montrer la pensée d’un AI Designer.</h2>
+      <p data-ai-flow-text="whyText">Le but n’est pas seulement de divertir. Le jeu montre pourquoi les flows de chatbot ont besoin de triggers, de logique d’intent, de branching, de gestion des réponses, de sécurité de fallback et de sorties d’automatisation propres.</p>
     </div>
     <div class="cta-actions">
       <a class="btn primary" href="/fr/blog/" data-ai-flow-text="viewExperience">Voir l&#039;expérience</a>

@@ -102,11 +102,11 @@ for (const file of htmlFiles) {
   /* no duplicate references */
   check(`${file}: no duplicate stylesheet references`, sheets.length, new Set(sheets).size);
 
-  /* common stylesheets present. portfolio-v2.css is injected at runtime by
-   * script.js on pages that do not link it, so only style.css and the
-   * accessibility layer are required in markup. */
+  /* Common stylesheets are explicit in every authored document. This avoids a
+   * first-paint theme mismatch and makes the shared design layer testable. */
   ok(`${file}: loads style.css`, sheets.includes("style.css"));
   ok(`${file}: loads css/a11y.css`, sheets.includes("css/a11y.css"));
+  ok(`${file}: loads portfolio-v2.css`, sheets.includes("portfolio-v2.css"));
 
   /* accessibility layer must come after style.css so its focus and skip-link
    * rules win over the base ones */
@@ -114,6 +114,12 @@ for (const file of htmlFiles) {
     ok(
       `${file}: css/a11y.css is loaded after style.css`,
       sheets.indexOf("css/a11y.css") > sheets.indexOf("style.css"),
+    );
+  }
+  if (sheets.includes("css/a11y.css") && sheets.includes("portfolio-v2.css")) {
+    ok(
+      `${file}: portfolio-v2.css is loaded after css/a11y.css`,
+      sheets.indexOf("portfolio-v2.css") > sheets.indexOf("css/a11y.css"),
     );
   }
 

@@ -123,9 +123,13 @@ for (const [id, project] of Object.entries(projects)) {
 }
 
 /* Cards on the two recruiter-facing browse surfaces must show it. */
+const PRODUCTION_LOCALES = ["en", "tr", "de", "es", "fr"];
+const commonMessages = Object.fromEntries(
+  PRODUCTION_LOCALES.map((locale) => [locale, JSON.parse(read(`data/i18n/messages/${locale}/common.json`))]),
+);
 for (const page of ["index.html", "works/index.html"]) {
   const html = read(page);
-  const cards = (html.match(/<article class="(?:project-card|flagship-focus-card)[\s\S]*?<\/article>/g) || []);
+  const cards = (html.match(/<article class="(?:project-card|flagship-focus-card|evidence-card)[\s\S]*?<\/article>/g) || []);
   const withRole = cards.filter((c) => c.includes('class="project-role"'));
   if (page === "works/index.html") {
     check(`${page}: every project card shows a role`, withRole.length, cards.length);
@@ -133,9 +137,20 @@ for (const page of ["index.html", "works/index.html"]) {
     ok(`${page}: project cards show a role (${withRole.length})`, withRole.length > 0);
   }
 
-  /* Role labels must be bilingual, using the existing pv2 copy mechanism. */
+  /* Role labels must be localized: a stable semantic message present in every
+   * production locale (Master 2), or the historical pv2 EN/TR pair. */
   const roleLines = html.match(/<p class="project-role"[^>]*>/g) || [];
   for (const line of roleLines) {
+    const messageKey = line.match(/data-message-key="([^"]+)"/)?.[1];
+    if (messageKey) {
+      for (const locale of PRODUCTION_LOCALES) {
+        ok(
+          `${page}: role message ${messageKey} has ${locale} copy`,
+          typeof commonMessages[locale][messageKey] === "string" && commonMessages[locale][messageKey].trim(),
+        );
+      }
+      continue;
+    }
     ok(`${page}: role line has English copy`, /data-pv2-en="[^"]+"/.test(line));
     ok(`${page}: role line has Turkish copy`, /data-pv2-tr="[^"]+"/.test(line));
   }

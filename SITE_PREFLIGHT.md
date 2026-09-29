@@ -11,7 +11,7 @@ The workflow was originally report-first so a clean baseline could be establishe
 | Check | Command | Why it blocks |
 |---|---|---|
 | Portfolio data contract | `npm run qa:data` | The canonical JSON is the source of truth and `portfolio-data.js` is generated from it. A stale artifact must fail, not be regenerated: the committed file is what GitHub Pages serves. |
-| JavaScript syntax | `npm run qa:js` | The compatibility bootloader loads these files at runtime; there is no build step to catch a syntax error. |
+| JavaScript syntax | `npm run qa:js` | The compatibility bootloader still loads classic scripts directly in the browser; the site build copies them rather than running a transpile step, so syntax must be validated before artifact creation. |
 | Portfolio consistency | `npm run qa:portfolio` | Guards the V2 architecture, boot order, canonical footer, portfolio truth and QA reproducibility. |
 | Asset performance policy | `npm run qa:assets` | Guards referenced asset existence, intrinsic image dimensions, critical image budgets and intentional loading priority. |
 | Internal links | `npm run qa:links` | Page targets, anchors, footer brand links, recruiter role deep links and project slugs are all decided by this repository, so it cannot flake. |
@@ -85,7 +85,7 @@ All three block. None of them changes an existing gate, and no existing blocking
 
 ### Why the React build is the JSX gate
 
-`qa-js-syntax.js` parses every root-level `.js` file with `new vm.Script()`, because production loads those files directly with no build step. JSX is not valid script syntax, so forcing React sources through that check would be meaningless. `vite build` performs the real syntax and transform validation instead, and it blocks.
+`qa-js-syntax.js` parses every root-level `.js` file with `new vm.Script()`, because production still executes those classic files without transpilation. JSX is not valid script syntax, so forcing React sources through that check would be meaningless. `vite build` performs the real syntax and transform validation instead, and it blocks.
 
 For the same reason the React tooling deliberately avoids adding root-level `.js` files: `vite.config.mjs` uses the `.mjs` extension and the pre-render script lives in `scripts/`, so neither is picked up by the production glob. `qa-react-foundation.js` *is* a root `.js` file and is intentionally CommonJS, so it passes `qa:js` like every other guard.
 
@@ -103,7 +103,7 @@ It **verifies** the committed `portfolio-data.js` against the canonical JSON; it
 npm run data:generate
 ```
 
-and commit the result. Regenerating inside CI and passing would defeat the purpose — GitHub Pages serves the committed artifact directly, so that file is what has to be correct in the repository.
+and commit the result. Regenerating inside CI and passing would defeat the purpose — the bounded site artifact copies the committed compatibility registry, so that file has to be correct before the artifact is built.
 
 Alongside staleness it enforces the protected product truth: the Forward Deployed Engineer primary title, the background descriptor, the five canonical social URLs, the bilingual footer positioning, bilingual field structure, project id/key agreement, recruiter evidence referring only to projects that exist, unique lab ids, resolvable internal links, and that nothing resembling a local path or credential has entered the public data.
 

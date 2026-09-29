@@ -2,6 +2,37 @@ import { readJson, loadRegistry, compareKeys } from "./i18n-catalog.mjs";
 
 export const messageFile = (locale, domain) => `data/i18n/messages/${locale}/${domain}.json`;
 
+/* Only these shell messages are read after page render. Page-level semantic
+ * messages are baked into localized HTML and must not be duplicated into the
+ * global runtime payload or every locale's core pack. */
+export const SEMANTIC_PAGE_SOURCES = new Set([
+  "index.html",
+  "works/index.html",
+  "about/index.html",
+  "request/index.html",
+  "labs/index.html",
+  "blog/index.html",
+  "games/index.html",
+  "sinama-case-study/index.html",
+  "merge-rush-case-study/index.html",
+  "adventure/index.html",
+  "joyday-paint/index.html",
+  "ai-flow-puzzle/index.html",
+  "project-detail.html",
+]);
+
+export const RUNTIME_COMMON_KEYS = [
+  "language.selectorAria",
+  "language.selectorLabel",
+  "nav.close",
+  "nav.open",
+  "theme.dark",
+  "theme.light",
+  "theme.switchToDark",
+  "theme.switchToLight",
+  "training",
+];
+
 export function loadMessageDomain(locale, domain = "common") {
   return readJson(messageFile(locale, domain));
 }
@@ -15,6 +46,29 @@ export function commonMessageMatrix(registry = loadRegistry()) {
     }
   }
   return matrix;
+}
+
+export function runtimeMessageMatrix(registry = loadRegistry()) {
+  const matrix = commonMessageMatrix(registry);
+  return Object.fromEntries(RUNTIME_COMMON_KEYS.map((key) => [key, matrix[key]]));
+}
+
+export function runtimeMessages(messages) {
+  return Object.fromEntries(RUNTIME_COMMON_KEYS.map((key) => [key, messages[key]]));
+}
+
+export function semanticSourceMessageMap(locale, domain = "common") {
+  const english = loadMessageDomain("en", domain);
+  const localized = loadMessageDomain(locale, domain);
+  const seen = new Map();
+  const ambiguous = new Set();
+  for (const [key, source] of Object.entries(english)) {
+    if (typeof source !== "string" || !source.trim()) continue;
+    if (seen.has(source)) ambiguous.add(source);
+    else seen.set(source, localized[key]);
+  }
+  for (const source of ambiguous) seen.delete(source);
+  return seen;
 }
 
 export function placeholderNames(value) {

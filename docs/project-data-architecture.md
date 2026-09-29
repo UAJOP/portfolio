@@ -36,7 +36,7 @@ portfolio-data.js              ← GENERATED, committed, Object.freeze'd
 
 This was a deliberate decision, not an aesthetic one.
 
-The site is served from GitHub Pages with **no build step** — the repository is the deployment. Consumers read project data **synchronously during script initialization**: `portfolio-v2.js` touches `registry.projects` at module scope, and `legacy-script.js` binds `projectDetailData` at top level. Switching to `fetch()` would make every one of those an async race, on a site with no module system to sequence them.
+The site is published to GitHub Pages from the bounded `dist-site` artifact, not from the repository root. Legacy consumers still read project data **synchronously during script initialization**: `portfolio-v2.js` touches `registry.projects` at module scope, and `legacy-script.js` binds `projectDetailData` at top level. Switching to `fetch()` would make every one of those an async race, on a site with no module system to sequence them.
 
 `data:generate` keeps the editable source as reviewable JSON while shipping a classic script that defines `window.KAAN_PORTFOLIO` synchronously. `qa-portfolio-data.js` regenerates the model in memory and compares it byte-for-byte against the committed artifact, so a stale `portfolio-data.js` fails CI rather than shipping.
 
@@ -112,7 +112,7 @@ There is no separate Turkish catalog. `applyLanguage()` re-renders from the same
 | Consumer | Reads | Via |
 |---|---|---|
 | **Homepage** (`index.html`) | `registry.projects` | `portfolio-v2.js` |
-| **Works** (`works.html`) | `registry.projects` + static cards linking to detail slugs | `portfolio-v2.js` |
+| **Works** (`/works/`, authored by `works/index.html`) | `registry.projects` + static cards linking to detail slugs | `portfolio-v2.js` |
 | **Project Detail** (`project-detail.html`) | `registry.projectDetails` | `legacy-script.js` → `projectDetailData` |
 | **Recruiter Mode** | `registry.recruiterProfiles[role].evidence[]` → `registry.projects[id]` | `portfolio-v2.js` |
 | **Ajoop** | `registry.projects` for project answers | `portfolio-v2.js syncAjoop()` |
