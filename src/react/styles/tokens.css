@@ -14,14 +14,14 @@
   /* --- Canvas and surfaces (dark: the flagship identity) ----------------- */
   --canvas: #07111b;
   --canvas-raised: #0a1725;
-  --surface: #0e1b2b;
+  --surface: #0d1928;
   --surface-elevated: #122338;
   --surface-interactive: #172b42;
   --surface-inset: #08131f;
 
   /* --- Text -------------------------------------------------------------- */
-  --text-primary: #f4f7fb;
-  --text-secondary: #c0cbd8;
+  --text-primary: #f1f5fa;
+  --text-secondary: #bcc7d4;
   --text-muted: #8796a9;
   /* Ink for text sitting ON an accent fill. */
   --text-on-accent: #041018;
@@ -126,16 +126,16 @@
 html[data-theme="light"] {
   /* Light is a designed surface system: a faintly cool paper canvas with white
      cards lifted off it, not a bleached copy of the dark palette. */
-  --canvas: #f2f4f7;
-  --canvas-raised: #e8edf2;
+  --canvas: #f4f4f1;
+  --canvas-raised: #ebebe6;
   --surface: #ffffff;
   --surface-elevated: #ffffff;
   --surface-interactive: #f8fafc;
-  --surface-inset: #e9eef3;
+  --surface-inset: #eeeee9;
 
-  --text-primary: #0b1828;
-  --text-secondary: #425268;
-  --text-muted: #5c6b80;
+  --text-primary: #111820;
+  --text-secondary: #3d4752;
+  --text-muted: #57616c;
   --text-on-accent: #ffffff;
 
   /*
@@ -144,13 +144,13 @@ html[data-theme="light"] {
    * white on #0b7fc4 reaches only 4.33:1 as a button fill, and the accent and
    * warning chips landed at 4.43:1 and 4.38:1 — all just under AA.
    */
-  --accent: #34689f;
-  --accent-strong: #214f82;
-  --accent-text: #214f82;
-  --accent-soft: rgba(52, 104, 159, 0.1);
-  --accent-line: rgba(52, 104, 159, 0.3);
-  --action-fill: #34689f;
-  --action-fill-hover: #214f82;
+  --accent: #2d5f96;
+  --accent-strong: #1d4775;
+  --accent-text: #1d4775;
+  --accent-soft: rgba(45, 95, 150, 0.09);
+  --accent-line: rgba(45, 95, 150, 0.3);
+  --action-fill: #2d5f96;
+  --action-fill-hover: #1d4775;
   --action-text: #ffffff;
 
   --accent-alt: #4f46e5;
@@ -158,8 +158,8 @@ html[data-theme="light"] {
 
   --success: #257655;
   --success-soft: rgba(37, 118, 85, 0.1);
-  --warning: #8b6419;
-  --warning-soft: rgba(139, 100, 25, 0.1);
+  --warning: #855f16;
+  --warning-soft: rgba(133, 95, 22, 0.1);
   --danger: #a94656;
   --danger-soft: rgba(169, 70, 86, 0.1);
 
