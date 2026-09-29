@@ -375,7 +375,16 @@ check(/qa:assets/.test(manifest.scripts?.qa || ""), "the aggregate QA command mu
 const workflow = read(".github/workflows/site-preflight.yml");
 check(/npm ci --no-audit --no-fund/.test(workflow), "CI must install with npm ci so the lockfile is honoured");
 check(!/npm install --no-audit/.test(workflow), "CI must not fall back to npm install");
-check(/name: Check asset performance policy[\s\S]*npm run qa:assets/.test(workflow), "CI must run the blocking asset policy");
+// CI runs the aggregate contract itself, so every gate in package.json (the
+// asset policy included, asserted above) blocks without being restated here.
+check(/^\s*npm run qa(?:\s|$)/m.test(workflow), "CI must run the blocking npm run qa contract");
+// A pipe into tee hides the exit status unless pipefail is set; GitHub's
+// default bash for steps without an explicit shell does not set it.
+workflow.split(/\n\s*- name: /).slice(1).forEach((step) => {
+  if (!/\|\s*tee\b/.test(step)) return;
+  const name = step.split("\n")[0].trim();
+  check(/set -o pipefail/.test(step), `CI step "${name}" pipes into tee and must set -o pipefail`);
+});
 
 // Deterministic checks must stay real gates; only network-dependent steps may
 // be report-only.

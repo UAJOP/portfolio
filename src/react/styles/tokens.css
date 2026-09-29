@@ -135,7 +135,7 @@ html[data-theme="light"] {
 
   --text-primary: #0b1828;
   --text-secondary: #425268;
-  --text-muted: #65748a;
+  --text-muted: #5c6b80;
   --text-on-accent: #ffffff;
 
   /*
@@ -156,8 +156,8 @@ html[data-theme="light"] {
   --accent-alt: #4f46e5;
   --accent-alt-soft: rgba(79, 70, 229, 0.1);
 
-  --success: #267a58;
-  --success-soft: rgba(38, 122, 88, 0.1);
+  --success: #257655;
+  --success-soft: rgba(37, 118, 85, 0.1);
   --warning: #8b6419;
   --warning-soft: rgba(139, 100, 25, 0.1);
   --danger: #a94656;

@@ -8,16 +8,26 @@ The workflow was originally report-first so a clean baseline could be establishe
 
 ### Blocking
 
+There are two blocking layers, and CI runs each as a whole rather than restating its members.
+
+**Layer 1 — repository correctness gate: `npm run qa`.** One CI step runs the full aggregate chain from `package.json`, so a gate added there can never be silently skipped in CI (this is how `qa:design` and `qa:analytics` previously went unenforced). It covers portfolio data, i18n (catalogs, generated artifacts, rendered locale copy and stable-key bindings), clean routes and the HTTP smoke test against a GitHub Pages-shaped server, the site foundation boundary, project data and SEO, runtime modules, performance budgets, CSS architecture, the Master 2 design contract and production ↔ React token parity, static accessibility contracts, recruiter UX, analytics, portfolio automation, JavaScript syntax, portfolio/AJOOP consistency guards, asset policy, internal links, HTML validation and spelling. `qa-portfolio-consistency.js` asserts that CI runs `npm run qa` and that every CI step piping into `tee` sets `pipefail`.
+
+| Member (inside `npm run qa`) | Why it blocks |
+|---|---|
+| `qa:data` | The canonical JSON is the source of truth and `portfolio-data.js` is generated from it. A stale artifact must fail, not be regenerated: the committed file is what GitHub Pages serves. |
+| `qa:js` | The compatibility bootloader still loads classic scripts directly in the browser; the site build copies them rather than running a transpile step, so syntax must be validated before artifact creation. |
+| `qa:portfolio` | Guards the V2 architecture, boot order, canonical footer, portfolio truth, QA reproducibility and the CI contract itself. |
+| `qa:design` | Master 2 tokens, light-theme compatibility aliases (including their specificity against legacy stylesheets), measured token contrast in both themes, filled-marker and project-detail rules, and production ↔ React token parity. |
+| `qa:assets` | Guards referenced asset existence, intrinsic image dimensions, critical image budgets and intentional loading priority. |
+| `qa:links` | Page targets, anchors, footer brand links, recruiter role deep links and project slugs are all decided by this repository, so it cannot flake. |
+| `qa:html` | `html-validate` exits non-zero only on structural errors, so this gates real breakage while intentional warnings still print. |
+| `qa:spelling` | The baseline is genuinely clean, so any new issue is a real mistake. |
+
+**Layer 2 — browser/runtime acceptance.** These need a real browser and a served site, so they run as their own steps.
+
 | Check | Command | Why it blocks |
 |---|---|---|
-| Portfolio data contract | `npm run qa:data` | The canonical JSON is the source of truth and `portfolio-data.js` is generated from it. A stale artifact must fail, not be regenerated: the committed file is what GitHub Pages serves. |
-| JavaScript syntax | `npm run qa:js` | The compatibility bootloader still loads classic scripts directly in the browser; the site build copies them rather than running a transpile step, so syntax must be validated before artifact creation. |
-| Portfolio consistency | `npm run qa:portfolio` | Guards the V2 architecture, boot order, canonical footer, portfolio truth and QA reproducibility. |
-| Asset performance policy | `npm run qa:assets` | Guards referenced asset existence, intrinsic image dimensions, critical image budgets and intentional loading priority. |
-| Internal links | `npm run qa:links` | Page targets, anchors, footer brand links, recruiter role deep links and project slugs are all decided by this repository, so it cannot flake. |
-| HTML structural errors | `npm run qa:html` | `html-validate` exits non-zero only on structural errors, so this gates real breakage while intentional warnings still print. |
-| Spelling | `npm run qa:spelling` | The baseline is genuinely clean, so any new issue is a real mistake. |
-| Accessibility | `npm run qa:a11y` | A genuine WCAG 2 AA failure must not reach production. Still covers the same 11 production pages. |
+| Accessibility | `npm run qa:a11y` | A genuine WCAG 2 AA failure must not reach production. Covers the 11 original production pages in dark theme at 390 px, plus Privacy, a project detail route and a German route, and a light-theme matrix (Home, Works, project detail, Games, Request, Privacy, Turkish Blog, and German SINAMA at 1280 px). Light cases persist the theme through the real toggle and reload, so contrast is measured on a settled page; each URL runs in its own incognito context. |
 | React foundation build | `npm run build:react` | Also the JSX gate: `qa:js` parses root files as classic scripts and cannot represent JSX, so a broken React source has to fail here. |
 | React foundation guard | `npm run qa:react` | Proves the build really pre-renders and that no production file was touched. |
 | React preview accessibility | `npm run qa:a11y:react` | The new architecture must not start out less accessible than the one it will replace. |
@@ -37,11 +47,7 @@ HTML validation currently reports **3 warnings and 0 errors**. All three are `ar
 
 Download the `site-preflight-reports` artifact from a workflow run. It contains:
 
-- `portfolio-data.txt`
-- `html-validation.txt`
-- `spelling.txt`
-- `asset-policy.txt`
-- `internal-links.txt`
+- `qa.txt` (the complete `npm run qa` log)
 - `accessibility.json`
 - `accessibility-errors.txt`
 - `lighthouse.txt`

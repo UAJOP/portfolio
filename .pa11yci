@@ -3,8 +3,17 @@
     "standard": "WCAG2AA",
     "timeout": 30000,
     "wait": 750,
-    "viewport": { "width": 390, "height": 844 },
-    "chromeLaunchConfig": { "args": ["--no-sandbox", "--disable-setuid-sandbox"] }
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "useIncognitoBrowserContext": true,
+    "chromeLaunchConfig": {
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+      ]
+    }
   },
   "urls": [
     "http://127.0.0.1:4173/",
@@ -17,6 +26,85 @@
     "http://127.0.0.1:4173/blog/",
     "http://127.0.0.1:4173/certificates/",
     "http://127.0.0.1:4173/request/",
-    "http://127.0.0.1:4173/about/"
+    "http://127.0.0.1:4173/about/",
+    "http://127.0.0.1:4173/privacy/",
+    "http://127.0.0.1:4173/projects/ai-chatbot-flow-design/",
+    "http://127.0.0.1:4173/de/about/",
+    {
+      "url": "http://127.0.0.1:4173/?a11y=light",
+      "actions": [
+        "click element [data-theme-toggle]",
+        "wait for element html[data-theme=light] to be added",
+        "navigate to http://127.0.0.1:4173/?a11y=light",
+        "wait for element html[data-theme=light] to be added"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/works/?a11y=light",
+      "actions": [
+        "click element [data-theme-toggle]",
+        "wait for element html[data-theme=light] to be added",
+        "navigate to http://127.0.0.1:4173/works/?a11y=light",
+        "wait for element html[data-theme=light] to be added"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/projects/ai-chatbot-flow-design/?a11y=light",
+      "actions": [
+        "click element [data-theme-toggle]",
+        "wait for element html[data-theme=light] to be added",
+        "navigate to http://127.0.0.1:4173/projects/ai-chatbot-flow-design/?a11y=light",
+        "wait for element html[data-theme=light] to be added"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/games/?a11y=light",
+      "actions": [
+        "click element [data-theme-toggle]",
+        "wait for element html[data-theme=light] to be added",
+        "navigate to http://127.0.0.1:4173/games/?a11y=light",
+        "wait for element html[data-theme=light] to be added"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/request/?a11y=light",
+      "actions": [
+        "click element [data-theme-toggle]",
+        "wait for element html[data-theme=light] to be added",
+        "navigate to http://127.0.0.1:4173/request/?a11y=light",
+        "wait for element html[data-theme=light] to be added"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/privacy/?a11y=light",
+      "actions": [
+        "click element [data-theme-toggle]",
+        "wait for element html[data-theme=light] to be added",
+        "navigate to http://127.0.0.1:4173/privacy/?a11y=light",
+        "wait for element html[data-theme=light] to be added"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/tr/blog/?a11y=light",
+      "actions": [
+        "click element [data-theme-toggle]",
+        "wait for element html[data-theme=light] to be added",
+        "navigate to http://127.0.0.1:4173/tr/blog/?a11y=light",
+        "wait for element html[data-theme=light] to be added"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/de/sinama-case-study/?a11y=light-desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "actions": [
+        "click element [data-theme-toggle]",
+        "wait for element html[data-theme=light] to be added",
+        "navigate to http://127.0.0.1:4173/de/sinama-case-study/?a11y=light-desktop",
+        "wait for element html[data-theme=light] to be added"
+      ]
+    }
   ]
 }

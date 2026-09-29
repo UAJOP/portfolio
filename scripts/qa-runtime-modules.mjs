@@ -538,8 +538,20 @@ ok(
 );
 
 const shellSource = read("js/core/shell.js");
-ok("mobile navigation closes only above the shared 980px breakpoint", /innerWidth\s*>\s*980/.test(shellSource));
-ok("the retired 820px mobile-navigation close threshold is absent", !/innerWidth\s*>\s*820/.test(shellSource));
+/* The collapse breakpoint has exactly one owner: portfolio-v2.css. The shell
+ * closes the mobile menu when the toggle is no longer rendered, so JS can never
+ * drift from CSS (the old hard-coded 980/820 thresholds did). */
+ok("mobile navigation hard-codes no viewport width threshold", !/innerWidth\s*[<>]=?\s*\d+/.test(shellSource));
+ok(
+  "mobile navigation closes when the CSS-owned toggle is no longer displayed",
+  /getComputedStyle\(navToggle\)\.display\s*===\s*"none"[^\n]*closeMobileNavigation\(\)/.test(shellSource),
+);
+{
+  const v2 = read("portfolio-v2.css");
+  const collapse = v2.match(/@media \(max-width: (\d+)px\) \{[\s\S]*?\.nav-toggle \{\s*display: inline-flex;/);
+  ok("portfolio-v2.css owns the primary-navigation collapse breakpoint", Boolean(collapse));
+  ok("the navigation collapses at or above 1100px so every production locale fits", Number(collapse?.[1]) >= 1100);
+}
 
 /* ---------- 9. legacy-script.js is an inert stub ---------- */
 

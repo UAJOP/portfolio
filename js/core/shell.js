@@ -129,8 +129,10 @@ if (navToggle && navLinks) {
     }
   });
 
+  /* The collapse breakpoint is owned by CSS (portfolio-v2.css); when the
+   * toggle is no longer rendered the inline navigation is back, so close. */
   window.addEventListener("resize", () => {
-    if (window.innerWidth > 980) closeMobileNavigation();
+    if (window.getComputedStyle(navToggle).display === "none") closeMobileNavigation();
   });
 }
 

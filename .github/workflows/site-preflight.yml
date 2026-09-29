@@ -34,60 +34,19 @@ jobs:
       - name: Prepare reports directory
         run: mkdir -p qa-results
 
-      - name: Check portfolio data contract
+      # AUTHORITATIVE, BLOCKING: `npm run qa` is the repository correctness
+      # contract (data, i18n, clean routes incl. the HTTP smoke test against a
+      # GitHub Pages-shaped server, foundation, projects, SEO, runtime,
+      # performance, CSS, Master 2 design + token parity, static a11y,
+      # recruiter UX, analytics, automation, JS, portfolio/AJOOP guards, assets,
+      # links, HTML and spelling). CI runs the chain itself instead of restating
+      # its members, so a gate added to package.json can never be skipped here.
+      # Pa11y and Lighthouse below are the separate browser/runtime layer.
+      - name: Repository QA contract (npm run qa)
+        shell: bash
         run: |
           set -o pipefail
-          npm run qa:data 2>&1 | tee qa-results/portfolio-data.txt
-
-      - name: Check multilingual contracts
-        run: |
-          set -o pipefail
-          npm run qa:i18n 2>&1 | tee qa-results/i18n.txt
-
-      - name: Check site ownership and deployment boundary
-        run: |
-          set -o pipefail
-          npm run qa:foundation 2>&1 | tee qa-results/site-foundation.txt
-
-      # BLOCKING: clean public URLs — no .html in links, canonicals, hreflang
-      # or the sitemap; every route a real directory document; every legacy
-      # .html URL a stub that forwards to its clean route.
-      - name: Check clean public route contract
-        run: |
-          set -o pipefail
-          npm run qa:routes 2>&1 | tee qa-results/routes.txt
-
-      # BLOCKING: deterministic byte/resource budgets keep the historical
-      # translation dictionary and full locale packs out of the common browser
-      # path without relying on noisy Lighthouse timings.
-      - name: Check frontend performance budgets
-        run: |
-          set -o pipefail
-          npm run qa:performance 2>&1 | tee qa-results/performance-budget.txt
-
-      - name: Check JavaScript syntax
-        run: npm run qa:js
-
-      - name: Check portfolio architecture consistency
-        run: npm run qa:portfolio
-
-      - name: Check asset performance policy
-        run: |
-          set -o pipefail
-          npm run qa:assets 2>&1 | tee qa-results/asset-policy.txt
-
-      - name: Validate internal links
-        run: npm run qa:links 2>&1 | tee qa-results/internal-links.txt
-
-      - name: Validate HTML
-        run: |
-          set -o pipefail
-          npm run qa:html 2>&1 | tee qa-results/html-validation.txt
-
-      - name: Check English and Turkish spelling
-        run: |
-          set -o pipefail
-          npm run qa:spelling 2>&1 | tee qa-results/spelling.txt
+          npm run qa 2>&1 | tee qa-results/qa.txt
 
       - name: Build React migration foundation
         run: |
@@ -112,15 +71,6 @@ jobs:
           cat qa-results/local-server.log
           exit 1
 
-      # BLOCKING: the suite starts its own GitHub Pages-shaped server so
-      # extensionless `.html` lookup, clean directory loads, legacy stubs and
-      # the custom 404 are validated with the authoritative host semantics.
-      # The Python server above remains available for Pa11y and Lighthouse.
-      - name: Smoke-test clean routes over HTTP
-        run: |
-          set -o pipefail
-          npm run qa:routes:http 2>&1 | tee qa-results/routes-http.txt
-
       - name: Audit accessibility on mobile viewport
         run: npm run qa:a11y -- --json > qa-results/accessibility.json 2> qa-results/accessibility-errors.txt
 
@@ -144,7 +94,9 @@ jobs:
 
       - name: Run Lighthouse CI
         continue-on-error: true
-        run: npm run qa:lighthouse 2>&1 | tee qa-results/lighthouse.txt
+        run: |
+          set -o pipefail
+          npm run qa:lighthouse 2>&1 | tee qa-results/lighthouse.txt
 
       - name: Summarize Lighthouse scores
         if: always()

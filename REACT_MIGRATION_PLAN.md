@@ -49,7 +49,7 @@ This is the locked master roadmap for Portfolio Modernization V3, agreed with th
 | Phase | Title | Scope |
 |---|---|---|
 | #23 | React Migration Foundation V1 — **done** | React + Vite + Router + isolated pre-render foundation. |
-| **#24** | Shared Shell + JSON Data Foundation — **this phase** | Header/Footer/shared shell, central JSON data foundation, profile/socials/projects/experience/build-log/i18n migration strategy and parity with `portfolio-data.js`. |
+| #24 | Shared Shell + JSON Data Foundation — **done** | Header/Footer/shared shell, central JSON data foundation, profile/socials/projects/experience/build-log/i18n migration strategy and parity with `portfolio-data.js`. |
 | #25 | Home + About React Migration | First real public React pages with visual/content/behavior/SEO parity. |
 | #26 | Works + Games React Migration | ProjectCard, JSON-driven rendering, filters/search and data-driven project UI. |
 | #27 | Recruiter Mode + Build Log React Migration | Recruiter Mode V2, role/evidence deep links and Build Log. |
@@ -148,7 +148,7 @@ The guarantee is therefore three parts — one canonical source, a deterministic
 
 `experience` was **not** created. No structured experience dataset existed in the registry, and #24 did not invent one; it enters the data layer only when extracted from existing truthful content.
 
-The production translation system in `legacy-script.js` is untouched. Its two large lookup objects and the `data-pv2-en` / `data-pv2-tr` attribute pattern migrate with the pages that use them, not in one sweep. The JSON i18n file uses the same flat `key -> { en, tr }` shape so that migration is a move rather than a reshape.
+*Superseded for production i18n (current state).* When #24 landed, production translation lived in `legacy-script.js` lookup objects and `data-pv2-en` / `data-pv2-tr` attribute pairs, and the JSON i18n file mirrored that `key -> { en, tr }` shape. Production has since moved to five locales — EN, TR, DE, ES, FR — on a stable semantic message architecture: `data/i18n/messages/{locale}/*.json` owns the copy, static page copy is localized at generation time into path-prefixed routes (`/tr/`, `/de/`, …) with `data-message-key` bindings, and only a small allowlisted shell subset ships as runtime data (see `docs/architecture/i18n-v2.md`). The historical `data-pv2-*` pairs remain as a compatibility input to that generator. React migration must target this architecture, not the original EN/TR shape.
 
 ## 9. Legacy removal policy
 
@@ -227,11 +227,19 @@ What exists today, and what it does not do.
 
 **Does not exist, by design:**
 
-- Any change to a public production page. The live site is byte-identical to before this pass, apart from one build-log entry.
+- Any change to a public production page *as part of #23*. (Historical: the live site was byte-identical to before #23 apart from one build-log entry. It is not byte-identical today — Master 2 redesigned the live static UI and multilingual content — so this line describes #23 only, not current production.)
 - Any React code on a public route. `dist-react/` is development output and the Pages artifact allowlist does not publish it.
 - Any migrated content, data, or feature.
 
 The preview is an engineering artifact. It is `noindex`, is not linked from any public surface, and is absent from `sitemap.xml`, the navigation, Recruiter Mode and Ajoop.
+
+### Known Master 3 migration gaps (current state)
+
+These are facts about the preview, recorded so Master 3 starts from them. They do not change the locked #23–#33 order.
+
+- **Locale model.** The preview supports only EN/TR (`SUPPORTED_LANGUAGES` in `src/react/i18n/translate.js`) and chooses the language from a stored preference (`kaanbalci-site-language`). Production serves EN/TR/DE/ES/FR as path-prefixed routes generated from the semantic message catalogs. A migrated React route must adopt the production path-based, five-locale model.
+- **Route table.** The preview keeps its own route table in `src/react/routing/routes.jsx`. Production route identity comes from `data/site/routes.json` (§7); React must consume that contract instead of restating routes.
+- **Design tokens.** Production tokens are `--color-*` in `portfolio-v2.css`; the preview uses an older vocabulary (`--canvas`, `--action-fill`, …) in `src/react/styles/tokens.css`. Shared semantic values are pinned equal in both themes by `scripts/qa-design-token-parity.mjs` (part of `npm run qa:design`) until Master 3 collapses them into one vocabulary.
 
 ### Commands
 

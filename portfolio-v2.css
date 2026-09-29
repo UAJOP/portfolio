@@ -24,8 +24,12 @@
   --color-action-hover: #426da0;
   --color-on-action: #ffffff;
   --color-success: #55bd8c;
+  /* Status text that sits on its own -soft tint (chips). Equal to the base in
+   * dark, where the base already clears AA on the tint; darker in light. */
+  --color-success-strong: #55bd8c;
   --color-success-soft: rgba(85, 189, 140, 0.12);
   --color-warning: #d7a94b;
+  --color-warning-strong: #d7a94b;
   --color-warning-soft: rgba(215, 169, 75, 0.12);
   --color-danger: #df7b88;
   --color-danger-soft: rgba(223, 123, 136, 0.12);
@@ -77,8 +81,56 @@
   --duration-fast: 140ms;
   --duration-normal: 220ms;
   --ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+}
 
-  /* Compatibility aliases: legacy components inherit the Master 2 system. */
+html[data-theme="light"] {
+  color-scheme: light;
+  --color-canvas: #f2f4f7;
+  --color-canvas-raised: #e8edf2;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f8fafc;
+  --color-surface-inset: #e9eef3;
+  --color-text: #0b1828;
+  --color-text-secondary: #425268;
+  --color-text-muted: #5c6b80;
+  --color-accent: #34689f;
+  --color-accent-strong: #214f82;
+  --color-accent-soft: rgba(52, 104, 159, 0.1);
+  --color-action: #34689f;
+  --color-action-hover: #214f82;
+  --color-on-action: #ffffff;
+  --color-success: #257655;
+  --color-success-strong: #1f6547;
+  --color-success-soft: rgba(37, 118, 85, 0.1);
+  --color-warning: #8b6419;
+  --color-warning-strong: #74530f;
+  --color-warning-soft: rgba(139, 100, 25, 0.1);
+  --color-danger: #a94656;
+  --color-danger-soft: rgba(169, 70, 86, 0.1);
+  --color-success-border: rgba(37, 118, 85, 0.3);
+  --color-warning-border: rgba(139, 100, 25, 0.3);
+  --color-danger-border: rgba(169, 70, 86, 0.3);
+  --color-accent-border: rgba(52, 104, 159, 0.3);
+  --color-border-subtle: rgba(11, 24, 40, 0.07);
+  --color-border: rgba(11, 24, 40, 0.14);
+  --color-border-strong: rgba(11, 24, 40, 0.24);
+  --shadow-sm: 0 1px 2px rgba(11, 24, 40, 0.06);
+  --shadow-md: 0 14px 36px rgba(11, 24, 40, 0.08);
+  --shadow-lg: 0 28px 64px rgba(11, 24, 40, 0.11);
+  --light-card-surface: var(--color-surface);
+  --light-card-surface-soft: var(--color-surface-raised);
+  --light-card-border: var(--color-border);
+  --light-card-shadow: var(--shadow-md);
+}
+
+/* Compatibility aliases: legacy components inherit the Master 2 system in
+ * BOTH themes. The light selector is required, not decorative: style.css
+ * declares its V3 palette on html[data-theme="light"] (0,1,1), which outranks
+ * a plain :root (0,1,0). Matching that specificity here, later in the cascade,
+ * is what lets the aliases win. Values resolve from the --color-* tokens above;
+ * never give an alias its own literal. Guarded by scripts/qa-master2-design.mjs. */
+:root,
+html[data-theme="light"] {
   --bg: var(--color-canvas);
   --bg-2: var(--color-canvas-raised);
   --surface: var(--color-surface);
@@ -99,44 +151,6 @@
   --max-width: var(--content-width);
 }
 
-html[data-theme="light"] {
-  color-scheme: light;
-  --color-canvas: #f2f4f7;
-  --color-canvas-raised: #e8edf2;
-  --color-surface: #ffffff;
-  --color-surface-raised: #f8fafc;
-  --color-surface-inset: #e9eef3;
-  --color-text: #0b1828;
-  --color-text-secondary: #425268;
-  --color-text-muted: #65748a;
-  --color-accent: #34689f;
-  --color-accent-strong: #214f82;
-  --color-accent-soft: rgba(52, 104, 159, 0.1);
-  --color-action: #34689f;
-  --color-action-hover: #214f82;
-  --color-on-action: #ffffff;
-  --color-success: #267a58;
-  --color-success-soft: rgba(38, 122, 88, 0.1);
-  --color-warning: #8b6419;
-  --color-warning-soft: rgba(139, 100, 25, 0.1);
-  --color-danger: #a94656;
-  --color-danger-soft: rgba(169, 70, 86, 0.1);
-  --color-success-border: rgba(38, 122, 88, 0.3);
-  --color-warning-border: rgba(139, 100, 25, 0.3);
-  --color-danger-border: rgba(169, 70, 86, 0.3);
-  --color-accent-border: rgba(52, 104, 159, 0.3);
-  --color-border-subtle: rgba(11, 24, 40, 0.07);
-  --color-border: rgba(11, 24, 40, 0.14);
-  --color-border-strong: rgba(11, 24, 40, 0.24);
-  --shadow-sm: 0 1px 2px rgba(11, 24, 40, 0.06);
-  --shadow-md: 0 14px 36px rgba(11, 24, 40, 0.08);
-  --shadow-lg: 0 28px 64px rgba(11, 24, 40, 0.11);
-  --light-card-surface: var(--color-surface);
-  --light-card-surface-soft: var(--color-surface-raised);
-  --light-card-border: var(--color-border);
-  --light-card-shadow: var(--shadow-md);
-}
-
 html {
   scroll-padding-top: 88px;
   background: var(--color-canvas);
@@ -150,7 +164,10 @@ select {
   font-family: var(--font-sans);
 }
 
-body {
+/* The light selector overrides style.css's V3 radial-gradient body; the
+ * shorthand resets background-image as well as the colour. */
+body,
+html[data-theme="light"] body {
   min-width: 320px;
   background: var(--color-canvas);
   color: var(--color-text);
@@ -287,6 +304,12 @@ select {
 
 html[data-theme="light"] .site-header {
   background: rgba(242, 244, 247, 0.96);
+}
+
+/* The brand is identity, never the flex item that absorbs a shortage. */
+.brand {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .brand,
@@ -707,6 +730,100 @@ html[data-theme="light"] :is(
   background: var(--color-surface);
 }
 
+/* Project detail (all /projects/<slug>/ routes, every locale). style.css paints
+ * the meta cards and process steps with a literal dark ink that has no light
+ * counterpart; these token-driven rules replace it in both themes. */
+.project-detail-meta,
+html[data-theme="light"] .project-detail-meta {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.project-detail-meta article,
+.process-steps article {
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-inset);
+}
+
+.project-detail-meta span {
+  color: var(--color-text-muted);
+}
+
+.project-detail-meta strong,
+.process-steps h3 {
+  color: var(--color-text);
+}
+
+.process-steps p {
+  color: var(--color-text-secondary);
+}
+
+/* Filled markers (step numbers, active chips, live badges). Legacy sheets paint
+ * a literal dark ink on a --brand gradient, which only worked with the bright V3
+ * brand; on the Master 2 accent it falls below AA in light mode. Every filled
+ * marker uses the measured action pair instead, in both themes. Listed as plain
+ * selectors (not :is) so each matches its legacy rule's specificity exactly and
+ * wins by load order; scripts/qa-master2-design.mjs enforces the list. */
+.process-steps span,
+.process-card span,
+.flow-step strong,
+.request-steps article > span,
+.case-journey strong,
+.game-status.live,
+.lang-switch button:hover,
+.lang-switch button.active,
+.ai-demo-controls button:hover,
+.ai-demo-controls button.active,
+.ai-scenario-card.is-done em,
+.joyday-sound-toggle[aria-pressed="true"],
+.joyday-sound-toggle:hover,
+.joyday-export-switch button.is-active,
+.joyday-export-switch button:hover {
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
+/* Case-study chip lists hold unbreakable technical names ("SqlDataAdapter").
+ * case-study.css fixes 4-5 equal columns, which squeezes a track below its
+ * longest item at tablet widths; auto-fill tracks with a content-sized floor
+ * reflow instead, at every width, so no chip text overflows its border. */
+.case-tech-list {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+}
+
+.case-score-list {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 7.5rem), 1fr));
+}
+
+/* case-study.css hard-codes the V3 amber (#fbbf24) for this note, which is
+ * 1.6:1 on a light card. The warning chip pair is measured in both themes. */
+.case-scenario-note {
+  background: var(--color-warning-soft);
+  color: var(--color-warning-strong);
+}
+
+/* About journey years: style.css colours them var(--brand) on a translucent
+ * raised card, where the accent measures ~4.2:1 in dark. accent-strong keeps AA
+ * on every surface tier in both themes. */
+.journey-grid span {
+  color: var(--color-accent-strong);
+}
+
+/* Certificate facts: the label column sizes to the longest localized label
+ * ("Instructors", "Dozenten", …) instead of style.css's fixed 90px, and stays
+ * aligned across rows through subgrid. Without subgrid support the declaration
+ * is ignored and the legacy layout remains. */
+.certificate-card dl {
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 14px;
+}
+
+.certificate-card dl > div {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
 .project-card {
   overflow: hidden;
   padding: 0;
@@ -765,7 +882,7 @@ html[data-theme="light"] :is(
 .build-log-status.is-shipped {
   border-color: var(--color-success-border);
   background: var(--color-success-soft);
-  color: var(--color-success);
+  color: var(--color-success-strong);
 }
 
 .filter-bar {
@@ -863,8 +980,24 @@ html[data-theme="light"] :is(
   background: var(--color-surface);
 }
 
+/* Proof values are display type inside a fixed-width card. Some are words,
+ * not numbers ("READY / WARNING / BLOCKED"): the longest single word is ~4.9em,
+ * so the value is capped at 19% of its own card's inline size and can never
+ * overflow it, at any width or locale. Four-up strips drop to two columns on
+ * tablet widths so the cap does not have to shrink the type there. */
+.case-proof {
+  container-type: inline-size;
+}
+
 .case-proof strong {
   color: var(--color-text);
+  font-size: min(clamp(34px, 5vw, 52px), 19cqi);
+}
+
+@media (min-width: 641px) and (max-width: 1180px) {
+  .case-proof-strip.is-four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .case-proof span,
@@ -1067,7 +1200,10 @@ html[data-theme="light"] :is(.command-box, .recruiter-card, .chatbot-panel) {
   padding-top: var(--space-4);
 }
 
-.compact-evidence-grid,
+.compact-evidence-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .qa-proof-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -1248,7 +1384,7 @@ html[data-theme="light"] :is(.command-box, .recruiter-card, .chatbot-panel) {
 .build-log-status.is-building {
   border-color: var(--color-warning-border);
   background: var(--color-warning-soft);
-  color: var(--color-warning);
+  color: var(--color-warning-strong);
 }
 
 .build-log-status.is-integration {
@@ -1340,6 +1476,43 @@ select:hover {
   .recruiter-toggle span,
   .command-toggle span {
     display: none;
+  }
+
+  /* Collapse the primary navigation here rather than at style.css's 980px.
+   * Between ~980 and 1100px brand + seven links + actions measure wider than
+   * the header in every production locale (DE/ES longest), which clipped the
+   * brand and pushed the last link under the Recruiter control. js/core/shell.js
+   * reads this breakpoint from the toggle's display, so CSS stays the owner. */
+  .site-header {
+    flex-wrap: wrap;
+  }
+
+  .header-actions {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .nav-links {
+    order: 3;
+    display: none;
+    width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: 12px;
+  }
+
+  .nav-links.is-open {
+    display: flex;
+  }
+
+  .nav-links a {
+    width: 100%;
+    text-align: center;
   }
 
   body[data-page="home"] .hero {
