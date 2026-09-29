@@ -83,6 +83,29 @@ for(const locale of locales){
   }
 }
 
+/* Accessible names are short, so the prose threshold above never sees them.
+ * A localized document must not keep an English aria-label from its source.
+ * KNOWN_ARIA_DEBT lists pre-existing leaks tracked for Master 3: the theme
+ * toggle (relabelled by the runtime after load) and game-shell internals.
+ * Anything not listed here fails. */
+const KNOWN_ARIA_DEBT=new Set(["Switch theme","Game stats","Puzzle stats","AI workflow board","Kaan career merge mini game","Stroke thickness","Paint intensity","Export style","Joyday artwork preview"]);
+const ariaLabels=(html)=>new Set([...html.matchAll(/\saria-label="([^"]+)"/g)].map((m)=>decode(m[1])));
+for(const route of all){
+  const sourceFile=route.source;
+  if(!fs.existsSync(path.join(ROOT,sourceFile))) continue;
+  const english=[...ariaLabels(read(sourceFile))].filter((value)=>/^[A-Za-z][A-Za-z'’ -]*$/.test(value)&&value.trim().split(/\s+/).length>=2&&!languageNeutral(value));
+  for(const locale of locales){
+    const localized=routes.documentPathFor(route.page,locale);
+    if(!fs.existsSync(path.join(ROOT,localized))) continue;
+    const labels=ariaLabels(read(localized));
+    for(const value of english){
+      if(KNOWN_ARIA_DEBT.has(value)) continue;
+      assertions+=1;
+      if(labels.has(value)) failures.push(`${localized}: untranslated aria-label ${JSON.stringify(value)}`);
+    }
+  }
+}
+
 if(failures.length){
  console.error(`Rendered locale copy QA failed: ${failures.length} leak(s), ${assertions} assertions`);
  failures.slice(0,80).forEach((failure)=>console.error(`  x ${failure}`));
