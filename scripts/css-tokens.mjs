@@ -29,7 +29,7 @@ export function topLevelRules(css) {
       if (depth === 0) {
         if (!prelude.startsWith("@")) {
           rules.push({
-            selectors: prelude.split(",").map((selector) => selector.replace(/\s+/g, " ").trim()),
+            selectors: splitSelectorList(prelude),
             declarations: declarations(source.slice(start, index)),
           });
         }
@@ -38,6 +38,25 @@ export function topLevelRules(css) {
     }
   }
   return rules;
+}
+
+/** Split a selector list on top-level commas only (not inside :is(), :not() …). */
+export function splitSelectorList(prelude) {
+  const selectors = [];
+  let depth = 0;
+  let current = "";
+  for (const char of prelude) {
+    if (char === "(") depth += 1;
+    if (char === ")") depth -= 1;
+    if (char === "," && depth === 0) {
+      selectors.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  selectors.push(current);
+  return selectors.map((selector) => selector.replace(/\s+/g, " ").trim()).filter(Boolean);
 }
 
 export function declarations(body) {

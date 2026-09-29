@@ -197,6 +197,50 @@ for (const sheet of localSheets) {
   }
 }
 
+/* A literal dark ink with no fill of its own depends on the surface it
+ * inherits. Once that surface is a dark token (e.g. a select's options in dark
+ * mode) the text disappears, so such rules must be restated with tokens. */
+for (const sheet of localSheets) {
+  for (const rule of topLevelRules(read(sheet))) {
+    const ink = rule.declarations.get("color");
+    const ownFill = rule.declarations.get("background") || rule.declarations.get("background-color");
+    if (!ink || !/^#0[0-9a-f]{5}$/i.test(ink) || ownFill) continue;
+    for (const selector of rule.selectors) {
+      if (AJOOP_WIDGET.test(selector) || /\.chatbot-/.test(selector)) continue;
+      /* Game sheets own their art (posters, win cards drawn on light fills);
+       * only their form controls inherit site surfaces. */
+      if (sheet.startsWith("css/games/") && !/\b(?:option|select|input|textarea)\b/.test(selector)) continue;
+      assert(
+        /^var\(--color-/.test(declarationsFor(css, selector).get("color") || ""),
+        `${sheet}: "${selector}" sets a literal dark ink (${ink}) with no fill of its own; portfolio-v2.css must restate it with tokens`,
+      );
+    }
+  }
+}
+
+/* Focus and form-state colours: a legacy :focus rule that paints a bright V3
+ * literal into border, box-shadow or outline must be restated with tokens.
+ * Bare element selectors are covered when css/a11y.css (loaded later)
+ * re-declares the same selector with a token outline. */
+const V3_STATE_LITERAL = /rgba\(\s*(?:56, 189, 248|34, 211, 238|2, 132, 199|8, 145, 178)\s*,|#(?:38bdf8|22d3ee|0284c7|0891b2|7dd3fc)\b/i;
+const a11yCss = read("css/a11y.css");
+for (const sheet of localSheets) {
+  for (const rule of topLevelRules(read(sheet))) {
+    const leaking = [...rule.declarations].filter(([property, value]) => /border|box-shadow|outline/.test(property) && V3_STATE_LITERAL.test(value));
+    if (!leaking.length) continue;
+    for (const selector of rule.selectors) {
+      if (!/:focus/.test(selector)) continue;
+      const override = declarationsFor(css, selector);
+      const restated = leaking.every(([property]) => {
+        const value = override.get(property) || override.get(property.replace(/-color$/, "")) || "";
+        return /var\(--color-|^none$/.test(value);
+      });
+      const coveredByA11y = sheet !== "css/a11y.css" && /^[a-z]+:focus(-visible)?$/.test(selector) && /var\(--/.test(declarationsFor(a11yCss, selector).get("outline") || "");
+      assert(restated || coveredByA11y, `${sheet}: "${selector}" paints a V3 literal into its focus state; portfolio-v2.css must restate it with tokens`);
+    }
+  }
+}
+
 /* The V3 light body gradient must not survive under the Master 2 canvas. */
 assert(
   declarationsFor(css, `${LIGHT} body`).get("background") === "var(--color-canvas)",
@@ -244,6 +288,16 @@ for (const [themeName, themeTokens] of [["dark", darkTokens], ["light", lightTok
       assert(ratio >= 4.5, `${themeName}: ${text} on ${tint} over ${bg} is ${ratio.toFixed(2)}:1, below AA 4.5:1`);
     }
   }
+  /* Form-control boundaries identify the component: WCAG 1.4.11 needs 3:1
+   * against every surface a control can sit on. */
+  const control = parseHex(themeTokens.get("--color-border-control"));
+  assert(Boolean(control), `${themeName}: --color-border-control must be an opaque #rrggbb token`);
+  if (control) {
+    for (const bg of ALL_SURFACES) {
+      const ratio = contrast(control, parseHex(themeTokens.get(bg)));
+      assert(ratio >= 3, `${themeName}: --color-border-control on ${bg} is ${ratio.toFixed(2)}:1, below the 3:1 non-text minimum`);
+    }
+  }
   for (const fill of ["--color-action", "--color-action-hover"]) {
     const ratio = contrast(parseHex(themeTokens.get("--color-on-action")), parseHex(themeTokens.get(fill)));
     assert(ratio >= 4.5, `${themeName}: --color-on-action on ${fill} is ${ratio.toFixed(2)}:1, below AA 4.5:1`);
@@ -259,6 +313,39 @@ for (const [selector, token] of [
 ]) {
   assert(declarationsFor(css, selector).get("color") === token, `${selector} text must use ${token} (measured on its tint/surface)`);
 }
+
+/* ---- Master 2B composition invariants -----------------------------------
+ * Ceilings, not exact values: the scale may evolve, but no heading may grow
+ * back into a viewport-filling billboard. */
+const clampMax = (value) => {
+  const match = String(value || "").match(/clamp\([^,]+,[^,]+,\s*([\d.]+)rem\s*\)/);
+  return match ? Number(match[1]) : NaN;
+};
+for (const [token, ceiling] of [["--type-display", 3.75], ["--type-h1", 3], ["--type-h2", 2.25], ["--type-h3", 1.4]]) {
+  const max = clampMax(darkTokens.get(token));
+  assert(Number.isFinite(max), `${token} must be a clamp() ending in rem`);
+  assert(max <= ceiling, `${token} caps at ${max}rem; the type scale ceiling is ${ceiling}rem`);
+}
+
+/* Home's first fold must lead to real work: the identity facts sit in the
+ * hero copy and "Strongest evidence" links to the flagship case study. */
+const heroSection = read("index.html").match(/<section class="hero section-shell">([\s\S]*?)<\/section>/)?.[1] || "";
+const heroCopy = heroSection.match(/<div class="hero-copy[\s\S]*?(?=<div class="hero-visual)/)?.[0] || "";
+assert(heroCopy.includes('class="identity-proof"'), "Home identity facts must sit in the hero copy, inside the first fold");
+assert(/<a href="\/sinama-case-study\/"><strong data-message-key="home\.identity\.evidenceValue">/.test(heroCopy), "Home 'Strongest evidence' must link to the SINAMA case study");
+
+/* Works: the flagship leads the primary tier and archive entries are marked
+ * so they render as index rows, never as peers of flagship work. */
+const works = read("works/index.html");
+const primaryTier = works.match(/<section class="project-tier project-tier-selected"[\s\S]*?<\/section>/)?.[0] || "";
+assert(/<article class="project-card[^"]*"[^>]*data-project-link="\/sinama-case-study\/"/.test(primaryTier.match(/<article[^>]*>/)?.[0] || ""), "Works primary tier must open with SINAMA");
+for (const slug of ["hospital-appointment-system", "cars-dataset-analysis", "legacy-of-the-lost", "my-museum"]) {
+  assert(new RegExp(`<article class="project-card is-archive[^"]*"[^>]*data-project-link="${slug}"`).test(works), `Works archive entry ${slug} must carry is-archive`);
+}
+
+/* Request: the form precedes the explanatory copy in reading order. */
+const request = read("request/index.html");
+assert(request.indexOf("<form class=\"request-form") > -1 && request.indexOf("<form class=\"request-form") < request.indexOf("class=\"request-copy"), "Request form must come before the request copy in source order");
 
 /* ---- Project detail (25 routes × 5 locales share these rules) ----------- */
 const tokenOnly = (value) => typeof value === "string" && /^var\(--color-[a-z-]+\)$/.test(value);
