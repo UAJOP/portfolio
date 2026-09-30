@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "outputDirectory": "dist-site",
+  "reactBundleDirectory": "assets-react",
   "browserDirectories": [
     "assets",
     "css",

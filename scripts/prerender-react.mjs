@@ -20,7 +20,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { build } from "vite";
-import { REACT_OUT_DIR, REACT_BASE } from "../vite.config.mjs";
+import {
+  REACT_OUT_DIR,
+  REACT_BASE,
+  REACT_PRODUCTION_OUT_DIR,
+} from "./react-build-config.mjs";
+import { productionReactRoutes } from "./react-route-adapter.mjs";
+import { loadRegistry } from "./i18n-catalog.mjs";
+import { loadProductionLocalization } from "./production-localization.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, "..");
@@ -33,7 +40,32 @@ const MINIMUM_MARKUP_BYTES = 1000;
 const escapeHtml = (value) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-async function main() {
+export async function buildProductionReact() {
+  fs.rmSync(REACT_PRODUCTION_OUT_DIR, { recursive: true, force: true });
+  fs.mkdirSync(REACT_PRODUCTION_OUT_DIR, { recursive: true });
+
+  const registry = loadRegistry();
+  for (const definition of registry.activeLocales) {
+    const localization = loadProductionLocalization(definition.id);
+    localization.message("nav.open");
+    localization.message("theme.switchToLight");
+  }
+
+  const routes = productionReactRoutes();
+  if (!routes.length) {
+    console.log("[prerender:production] 0 React-owned routes · emitted 0 files · legacy production ownership unchanged");
+    return { routes, files: [] };
+  }
+
+  /* A route can only cross this boundary after #25-B supplies its production
+   * component/props contract. Failing here is safer than publishing preview
+   * markup or an SPA shell at a canonical URL. */
+  throw new Error(
+    `[prerender:production] ${routes.length} route(s) are React-owned but no production renderer implementation is registered`,
+  );
+}
+
+async function buildPreviewReact() {
   console.log("[prerender] building client bundle");
   await build({ configFile: path.join(repoRoot, "vite.config.mjs") });
 
@@ -106,7 +138,9 @@ async function main() {
   console.log(`[prerender] done · base ${REACT_BASE} · output ${path.relative(repoRoot, REACT_OUT_DIR)}/`);
 }
 
-main().catch((error) => {
+const productionMode = process.argv.includes("--production");
+const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invoked) (productionMode ? buildProductionReact() : buildPreviewReact()).catch((error) => {
   console.error("[prerender] failed");
   console.error(error);
   process.exit(1);

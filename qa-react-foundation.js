@@ -271,9 +271,14 @@ check(gitignoreLines.includes(".react-ssr-tmp"), "the temporary server bundle di
 
 // The Vite config must keep pointing away from the production root.
 const viteConfig = read("vite.config.mjs");
-check(viteConfig.includes('REACT_OUT_DIR = path.join(here, "dist-react")'), "Vite must build into dist-react/");
-check(viteConfig.includes('REACT_BASE = "/react-preview/"'), "the preview must stay mounted under /react-preview/");
-check(viteConfig.includes('REACT_ROOT = path.join(here, "src", "react")'), "the Vite root must stay src/react/");
+const reactBuildConfig = read("scripts/react-build-config.mjs");
+check(reactBuildConfig.includes('"dist-react"'), "Vite preview must build into dist-react/");
+check(reactBuildConfig.includes('REACT_BASE = "/react-preview/"'), "the preview must stay mounted under /react-preview/");
+check(reactBuildConfig.includes('"src", "react"'), "the Vite root must stay src/react/");
+check(reactBuildConfig.includes('"dist-react-production"'), "production React output must be isolated from the preview");
+check(reactBuildConfig.includes('REACT_PRODUCTION_BASE = "/"'), "production React assets must use the site root base");
+check(reactBuildConfig.includes('REACT_PRODUCTION_ASSETS = "assets-react"'), "production React bundles must be namespaced");
+check(viteConfig.includes('mode === "production-migration"'), "Vite must distinguish preview and production migration modes");
 check(!exists("react-preview.html"), "the preview entry must not live at the production root");
 check(!exists(`${OUT_DIR}/script.js`), "the React build must never emit a file named like the production bootloader");
 
@@ -299,11 +304,9 @@ const pinned = /^\d+\.\d+\.\d+$/;
     check(Boolean(manifest.scripts?.[script]), `existing QA script must be preserved: ${script}`);
   },
 );
-check(
-  manifest.scripts?.["build:react"] === "node scripts/prerender-react.mjs",
-  "build:react must run the pre-render pipeline",
-);
-check(manifest.scripts?.["qa:react"] === "node qa-react-foundation.js", "qa:react must run this guard");
+check(manifest.scripts?.["build:react"] === "node scripts/prerender-react.mjs", "build:react must run the preview pre-render pipeline");
+check(manifest.scripts?.["build:react:production"] === "node scripts/prerender-react.mjs --production", "production React build mode must be explicit");
+check(manifest.scripts?.["qa:react"]?.startsWith("node qa-react-foundation.js"), "qa:react must run this guard");
 check(!/react/.test(manifest.scripts?.qa || ""), "the React build must not be folded into the static-site qa command");
 
 // Pa11y and Lighthouse must keep auditing the production pages, not the preview.

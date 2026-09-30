@@ -33,6 +33,14 @@ export const ROUTES_FILE = "data/site/routes.json";
 /** A clean page route: "" (home) or lowercase kebab segments ending in "/". */
 const PAGE_ROUTE_SHAPE = /^(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*$/;
 const LEGACY_SHAPE = /^[a-z0-9]+(?:-[a-z0-9]+)*\.html$/;
+export const RENDERER_OWNERS = Object.freeze(["legacy", "react"]);
+
+function assertRenderer(value, label) {
+  if (!RENDERER_OWNERS.includes(value)) {
+    throw new Error(`${ROUTES_FILE}: ${label} renderer must be one of ${RENDERER_OWNERS.join(", ")}; received ${JSON.stringify(value)}`);
+  }
+  return value;
+}
 
 /* ---------- registry ---------- */
 
@@ -43,8 +51,7 @@ const LEGACY_SHAPE = /^[a-z0-9]+(?:-[a-z0-9]+)*\.html$/;
  * derives from these strings: a malformed route would otherwise surface as a
  * broken deploy rather than a failed build.
  */
-export function loadSiteRoutes() {
-  const data = readJson(ROUTES_FILE);
+export function validateSiteRoutes(data) {
   if (data.schemaVersion !== 1) throw new Error(`${ROUTES_FILE}: unsupported schemaVersion ${data.schemaVersion}`);
   if (!/^https:\/\/[a-z0-9.-]+$/.test(data.origin || "")) throw new Error(`${ROUTES_FILE}: origin must be an https origin without a path`);
 
@@ -58,6 +65,7 @@ export function loadSiteRoutes() {
     }
     if (routes.has(page.route)) throw new Error(`${ROUTES_FILE}: route ${page.route} is declared twice`);
     if (page.route.startsWith("projects/")) throw new Error(`${ROUTES_FILE}: projects/ is reserved for canonical project routes`);
+    assertRenderer(page.renderer, `page ${page.id}`);
     if (page.legacy !== undefined) {
       if (!LEGACY_SHAPE.test(page.legacy) || legacies.has(page.legacy)) {
         throw new Error(`${ROUTES_FILE}: ${page.id} legacy path ${page.legacy} is invalid or duplicated`);
@@ -73,14 +81,20 @@ export function loadSiteRoutes() {
   const companions = (data.companions || []).map((companion) => {
     if (!companion.id || ids.has(companion.id)) throw new Error(`${ROUTES_FILE}: duplicate or missing companion id ${companion.id}`);
     if (!/^[a-z0-9-]+\.html$/.test(companion.document || "")) throw new Error(`${ROUTES_FILE}: companion ${companion.id} needs a root .html document`);
+    assertRenderer(companion.renderer, `companion ${companion.id}`);
     ids.add(companion.id);
     return companion;
   });
 
   const projects = data.projects || {};
   if (projects.route !== "projects/{slug}/") throw new Error(`${ROUTES_FILE}: project routes must stay projects/{slug}/`);
+  assertRenderer(projects.renderer, "project route family");
 
   return { ...data, pages, companions, projects };
+}
+
+export function loadSiteRoutes() {
+  return validateSiteRoutes(readJson(ROUTES_FILE));
 }
 
 /**

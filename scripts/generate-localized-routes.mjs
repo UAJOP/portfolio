@@ -59,6 +59,8 @@ import {
 } from "./site-routes.mjs";
 import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-ownership.mjs";
 import { SEMANTIC_PAGE_SOURCES, semanticSourceMessageMap } from "./i18n-messages.mjs";
+import { createSiteHeadRenderer, localizeJsonLd } from "./site-head.mjs";
+import { createMessageResolver, resolveCanonicalLocalizedData } from "./shared-localization.mjs";
 
 const checkOnly = process.argv.includes("--check");
 
@@ -98,169 +100,17 @@ for (const file of CASE_STUDY_DATA_FILES) {
   caseStudyBySource.set(ROUTES.documentPathFor(`${id}/`), id);
 }
 
-/* ---------- head metadata ---------- */
-
-const HEAD_REPLACEMENTS = [
-  [/<title>[\s\S]*?<\/title>/i, null],
-  [/<meta[^>]*\bname="description"[^>]*>/i, null],
-  [/<meta[^>]*\bname="robots"[^>]*>/i, null],
-  [/<link[^>]*\brel="canonical"[^>]*>/i, null],
-  [/<meta[^>]*\bproperty="og:title"[^>]*>/i, null],
-  [/<meta[^>]*\bproperty="og:description"[^>]*>/i, null],
-  [/<meta[^>]*\bproperty="og:url"[^>]*>/i, null],
-  [/<meta[^>]*\bproperty="og:locale"[^>]*>/i, null],
-  [/<meta[^>]*\bname="twitter:title"[^>]*>/i, null],
-  [/<meta[^>]*\bname="twitter:description"[^>]*>/i, null],
-];
-const ALTERNATE_LINKS = /<link[^>]*\brel=["']alternate["'][^>]*>/gi;
-const CANONICAL_LINK = /<link[^>]*\brel=["']canonical["'][^>]*>/i;
-const OG_URL_META = /<meta[^>]*\bproperty=["']og:url["'][^>]*>/i;
-
-/** Removes the tags the generator re-emits with localized values. */
-function stripHeadMetadata(head) {
-  let out = head;
-  for (const [pattern] of HEAD_REPLACEMENTS) out = out.replace(pattern, "");
-  return out.replace(ALTERNATE_LINKS, "");
-}
-
-/**
- * Drops whitespace-only lines and trailing spaces left behind by tag removal.
- *
- * Most authored heads are minified onto one line, but 404.html is indented, so
- * lifting tags out of it would otherwise leave lines of trailing whitespace
- * that fail HTML validation.
- */
-/* Strip indentation from blank lines without consuming their newline. The
- * prior optional `\n` collapsed LF-only blank lines on Linux but retained the
- * CRLF line on Windows, making localized 404 output platform-dependent. */
-const tidyWhitespace = (text) => text.replace(/^[ \t]+$/gm, "").replace(/[ \t]+$/gm, "");
-
 function absoluteFor(routeKey, locale) {
   return absoluteRouteUrl(ROUTES, routeKey, locale, SITE_ORIGIN);
 }
 
-/**
- * Alternate-language links for one route.
- *
- * Emitted only when the locale set is genuinely complete, and only over
- * locales whose routes exist and are indexable. Every alternate therefore
- * addresses a real generated document — never a 404, a fallback or the wrong
- * slug — which is the whole point of gating this behind activation.
- */
-function alternateLinks(routeKey, indexable) {
-  if (!indexable || !indexableLocales.length) return "";
-  const locales = [registry.defaultLocale, ...indexableLocales];
-  const links = locales.map(
-    (id) =>
-      `<link rel="alternate" hreflang="${escapeHtml(registry.byId.get(id).htmlLang || id)}" href="${escapeHtml(absoluteFor(routeKey, id))}"/>`,
-  );
-  links.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(absoluteFor(routeKey, registry.defaultLocale))}"/>`);
-  return links.join("");
-}
-
-/**
- * Localized `<head>` metadata.
- *
- * A companion (the 404 page, the legacy project shell) is never a canonical
- * destination, so it gets `noindex` and no canonical or `og:url` claim at all —
- * a canonical pointing at `/tr/404.html` would advertise a `.html` URL the
- * site no longer publishes.
- */
-function buildHead(head, { routeKey, locale, meta, indexable, companion }) {
-  const definition = registry.byId.get(locale);
-  const canonical = absoluteFor(routeKey, locale);
-  const robots = indexable ? "index, follow" : "noindex, follow";
-  const injected = [
-    `<title>${escapeHtml(meta.title)}</title>`,
-    `<meta name="description" content="${escapeHtml(meta.description)}"/>`,
-    companion ? "" : `<link rel="canonical" href="${escapeHtml(canonical)}"/>`,
-    `<meta name="robots" content="${robots}"/>`,
-    `<meta property="og:locale" content="${escapeHtml(definition.ogLocale || definition.htmlLang || locale)}"/>`,
-    `<meta property="og:title" content="${escapeHtml(meta.ogTitle)}"/>`,
-    `<meta property="og:description" content="${escapeHtml(meta.ogDescription)}"/>`,
-    companion ? "" : `<meta property="og:url" content="${escapeHtml(canonical)}"/>`,
-    `<meta name="twitter:title" content="${escapeHtml(meta.ogTitle)}"/>`,
-    `<meta name="twitter:description" content="${escapeHtml(meta.ogDescription)}"/>`,
-    alternateLinks(routeKey, indexable),
-  ].join("");
-
-  /* `<meta charset>` must stay inside the first 1024 bytes, and the injected
-   * block is larger than that, so it is re-emitted ahead of everything else.
-   * The accented characters in every localized title depend on this. */
-  const charset = head.match(/<meta[^>]*charset=[^>]*>/i);
-  if (!charset) throw new Error("source document has no <meta charset> to preserve");
-  const rest = tidyWhitespace(stripHeadMetadata(head).replace(charset[0], ""));
-  return `${charset[0]}${injected}${rest}`;
-}
-
-/**
- * English keeps its authored metadata and unprefixed URL, but its canonical
- * identity is owned here: `rel=canonical` and `og:url` are rewritten to the
- * registry's clean URL, so an authored page can never advertise a `.html`
- * address. Activation also makes it a reciprocal member of the alternate-
- * language graph, and the generator owns those links on the English sources
- * too, so activation and deactivation stay deterministic.
- *
- * Companions carry neither a canonical nor an `og:url`: they are not
- * destinations.
- */
-function buildEnglishDocument(route, file, indexable) {
-  const source = read(file);
-  const headMatch = source.match(/<head>([\s\S]*?)<\/head>/i);
-  if (!headMatch) throw new Error(`${file} has no <head>`);
-
-  let head = headMatch[1].replace(ALTERNATE_LINKS, "");
-  const canonicalUrl = absoluteFor(route.page, registry.defaultLocale);
-  if (indexable) {
-    const canonical = head.match(CANONICAL_LINK);
-    if (!canonical) throw new Error(`${file} has no canonical link to own`);
-    /* Only the URL value is owned; the authored tag keeps its attribute order,
-     * so a page that already agrees is byte-stable. */
-    const setAttribute = (tag, name, value) => tag.replace(new RegExp(`\\b${name}=(["'])[^"']*\\1`, "i"), `${name}="${escapeHtml(value)}"`);
-    head = head.replace(canonical[0], `${setAttribute(canonical[0], "href", canonicalUrl)}${alternateLinks(route.page, true)}`);
-    head = head.replace(OG_URL_META, (tag) => setAttribute(tag, "content", canonicalUrl));
-  } else {
-    head = head.replace(CANONICAL_LINK, "").replace(OG_URL_META, "");
-  }
-  head = tidyWhitespace(head);
-  return source.replace(/<head>[\s\S]*?<\/head>/i, `<head>${head}</head>`);
-}
+const HEAD = createSiteHeadRenderer({ registry, indexableLocales, absoluteFor });
 
 /**
  * Rewrites JSON-LD so structured data agrees with the page it sits on.
  * Only language-scoped fields move: the page's own `url` and
  * `mainEntityOfPage`. Identity, other URLs and `sameAs` are facts.
  */
-function localizeJsonLd(head, { locale, canonical, meta }) {
-  const englishCanonical = canonical.replace(`/${locale}/`, "/");
-  return head.replace(
-    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi,
-    (match, body) => {
-      let data;
-      try {
-        data = JSON.parse(body);
-      } catch (error) {
-        return match;
-      }
-      const apply = (node) => {
-        if (Array.isArray(node)) return node.map(apply);
-        if (!node || typeof node !== "object") return node;
-        const out = { ...node };
-        if (typeof out.description === "string") out.description = meta.ogDescription;
-        if (out.inLanguage !== undefined) out.inLanguage = locale;
-        for (const key of ["url", "mainEntityOfPage"]) {
-          if (out[key] === englishCanonical) out[key] = canonical;
-        }
-        for (const key of Object.keys(out)) {
-          if (key !== "description" && key !== "inLanguage") out[key] = apply(out[key]);
-        }
-        return out;
-      };
-      return `<script type="application/ld+json">${JSON.stringify(apply(data))}</script>`;
-    },
-  );
-}
-
 /* ---------- document build ---------- */
 
 const GENERATED_NOTICE = (locale, route) => `<!--
@@ -280,11 +130,12 @@ function packTranslators(locale) {
   const semanticBySource = semanticSourceMessageMap(locale);
   const caseStudies = pack["case-studies"] || {};
   return {
+    locale,
     pack,
     phraseText: (key) => text[key] || null,
     phraseAttribute: (key) => attribute[key] || null,
     semantic: (source) => semanticBySource.get(source) || null,
-    messageValue: (key) => messages[key] || null,
+    messageValue: createMessageResolver(messages, { locale, context: "localized route generator" }),
     caseStudyFor: (id) => caseStudies[id] || null,
     meta: pack.meta || {},
   };
@@ -293,7 +144,12 @@ function packTranslators(locale) {
 function localizedProject(slug, translators) {
   const canonical = projects.projectDetails[slug];
   const overlay = translators.pack.projects?.[slug] || {};
-  const field = (name) => overlay[name] || canonical[name]?.en || "";
+  const field = (name) => resolveCanonicalLocalizedData({
+    canonical,
+    overlay,
+    path: name,
+    locale: translators.locale,
+  });
   return { canonical, overlay, field };
 }
 
@@ -346,7 +202,7 @@ function buildDocument({ route, locale, translators, indexable }) {
   /* head: metadata, canonical, alternates, structured data */
   const headMatch = html.match(/<head>([\s\S]*?)<\/head>/i);
   if (!headMatch) throw new Error(`${route.source} has no <head>`);
-  let head = buildHead(headMatch[1], { routeKey, locale, meta, indexable, companion });
+  let head = HEAD.buildLocalizedHead(headMatch[1], { routeKey, locale, meta, indexable, companion });
   head = localizeJsonLd(head, { locale, canonical: absoluteFor(routeKey, locale), meta });
   html = html.replace(/<head>[\s\S]*?<\/head>/i, `<head>${head}</head>`);
 
@@ -463,7 +319,7 @@ const englishPlanned = new Map(
     ...COMPANION_ROUTES.map((route) => ({ route, indexable: false })),
   ].map(({ route, indexable }) => {
     const file = ROUTES.documentPathFor(route.page);
-    return [file, buildEnglishDocument(route, file, indexable)];
+    return [file, HEAD.buildEnglishDocument({ route, file, indexable, source: read(file) })];
   }),
 );
 for (const [file, html] of legacyStubs(registry.defaultLocale, null)) englishPlanned.set(file, html);

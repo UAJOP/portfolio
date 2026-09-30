@@ -6,6 +6,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadRegistry, loadProjectRegistry, indexableRoutes } from "./i18n-catalog.mjs";
 import { loadSiteRoutes, loadRouteRuntime } from "./site-routes.mjs";
+import { productionReactRoutes } from "./react-route-adapter.mjs";
+import { REACT_PRODUCTION_OUT_DIR } from "./react-build-config.mjs";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const CONFIG_FILE = "data/site/public-artifact.json";
@@ -102,7 +104,7 @@ export function validateArtifactFiles(files, config = loadArtifactConfig()) {
   return true;
 }
 
-export function buildPagesArtifact(outputDirectory = path.join(ROOT, loadArtifactConfig().outputDirectory)) {
+function assertSafeOutput(outputDirectory) {
   const output = path.resolve(outputDirectory);
   const configuredOutput = path.resolve(ROOT, loadArtifactConfig().outputDirectory);
   const temporaryRoot = path.resolve(os.tmpdir());
@@ -110,6 +112,11 @@ export function buildPagesArtifact(outputDirectory = path.join(ROOT, loadArtifac
   if (output !== configuredOutput && !isTemporary) {
     throw new Error(`refusing unsafe Pages artifact output: ${output}`);
   }
+  return output;
+}
+
+export function buildLegacyPagesArtifact(outputDirectory = path.join(ROOT, loadArtifactConfig().outputDirectory)) {
+  const output = assertSafeOutput(outputDirectory);
   fs.rmSync(output, { recursive: true, force: true });
   fs.mkdirSync(output, { recursive: true });
 
@@ -129,6 +136,51 @@ export function buildPagesArtifact(outputDirectory = path.join(ROOT, loadArtifac
   const files = listFiles(output);
   validateArtifactFiles(files, config);
   return { output, files, copied: [...copied].sort() };
+}
+
+function copyBuiltFile(sourceRoot, relative, output) {
+  const source = path.resolve(sourceRoot, relative);
+  const destination = path.resolve(output, relative);
+  if (!source.startsWith(`${sourceRoot}${path.sep}`) || !destination.startsWith(`${output}${path.sep}`)) {
+    throw new Error(`React merge path escaped its root: ${relative}`);
+  }
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  fs.copyFileSync(source, destination);
+}
+
+/** Merge only explicitly React-owned documents and their namespaced bundles. */
+export function mergeProductionReactArtifact(output, reactOutput = REACT_PRODUCTION_OUT_DIR) {
+  const config = loadArtifactConfig();
+  const bundlePrefix = `${config.reactBundleDirectory}/`;
+  const allowedDocuments = new Set(productionReactRoutes().map((route) => route.output));
+  const files = fs.existsSync(reactOutput) ? listFiles(reactOutput) : [];
+  for (const relative of files) {
+    const isBundle = relative.startsWith(bundlePrefix);
+    const isOwnedDocument = allowedDocuments.has(relative);
+    if (isBundle && !allowedDocuments.size) {
+      throw new Error(`React emitted a production bundle with no React-owned routes: ${relative}`);
+    }
+    if (!isBundle && !isOwnedDocument) {
+      throw new Error(`React production output is not owned by a React route: ${relative}`);
+    }
+    if (isOwnedDocument) {
+      const route = productionReactRoutes().find((candidate) => candidate.output === relative);
+      if (!route || route.renderer !== "react") throw new Error(`React attempted to clobber legacy-owned route: ${relative}`);
+    }
+    copyBuiltFile(path.resolve(reactOutput), relative, output);
+  }
+  for (const required of allowedDocuments) {
+    if (!files.includes(required)) throw new Error(`React-owned production route was not emitted: ${required}`);
+  }
+  return files;
+}
+
+export function buildPagesArtifact(outputDirectory = path.join(ROOT, loadArtifactConfig().outputDirectory)) {
+  const result = buildLegacyPagesArtifact(outputDirectory);
+  const reactFiles = mergeProductionReactArtifact(result.output);
+  const files = listFiles(result.output);
+  validateArtifactFiles(files);
+  return { ...result, files, reactFiles };
 }
 
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
