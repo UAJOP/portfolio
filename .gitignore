@@ -7,6 +7,7 @@ node_modules
 # never publish the preview from the repository root. CI rebuilds it before
 # running `npm run qa:react`.
 dist-react
+dist-react-production
 .react-ssr-tmp
 
 # Dedicated GitHub Pages deployment artifact. This is rebuilt from an explicit

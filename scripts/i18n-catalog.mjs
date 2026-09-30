@@ -75,6 +75,7 @@ export const STATIC_ROUTES = SITE_ROUTES.pages.map((page) => ({
   source: page.source,
   id: page.id,
   legacy: page.legacy,
+  renderer: page.renderer,
 }));
 
 /**
@@ -91,6 +92,7 @@ export const COMPANION_ROUTES = SITE_ROUTES.companions.map((companion) => ({
   source: companion.document,
   id: companion.id,
   indexable: false,
+  renderer: companion.renderer,
 }));
 
 export const NON_INDEXABLE_SOURCES = COMPANION_ROUTES.map((route) => route.source);
@@ -126,6 +128,7 @@ export function indexableRoutes(registry = loadProjectRegistry()) {
       source: "project-detail.html",
       id: `project:${slug}`,
       slug,
+      renderer: SITE_ROUTES.projects.renderer,
     })),
   ];
 }

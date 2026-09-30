@@ -31,6 +31,7 @@ import {
   indexableRoutes,
 } from "./i18n-catalog.mjs";
 import { loadSiteRoutes, loadRouteRuntime, absoluteRouteUrl, renderSitemap } from "./site-routes.mjs";
+import { createSiteHeadRenderer, renderProjectHeadMetadata } from "./site-head.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const site = loadSiteRoutes();
@@ -115,17 +116,11 @@ const absoluteUrl = (repoRelative) =>
   `${SITE_ORIGIN}/${String(repoRelative || "").replace(/^\/+/, "")}`;
 
 const canonicalFor = (slug) => `${SITE_ORIGIN}${ROUTES.routeForProject(slug)}`;
-const localizedAbsolute = (page, locale) => absoluteRouteUrl(ROUTES, page, locale, SITE_ORIGIN);
-
-function alternateLinks(page) {
-  if (!indexableLocaleIds.length) return "";
-  const links = sitemapLocaleIds.map((id) => {
-    const definition = localeRegistry.byId.get(id);
-    return `<link rel="alternate" hreflang="${escapeHtml(definition.htmlLang || id)}" href="${escapeHtml(localizedAbsolute(page, id))}"/>`;
-  });
-  links.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(localizedAbsolute(page, localeRegistry.defaultLocale))}"/>`);
-  return links.join("");
-}
+const PROJECT_HEAD = createSiteHeadRenderer({
+  registry: localeRegistry,
+  indexableLocales: indexableLocaleIds,
+  absoluteFor: (page, locale) => absoluteRouteUrl(ROUTES, page, locale, SITE_ORIGIN),
+});
 
 /**
  * Chooses the narrowest schema.org type the canonical data actually supports.
@@ -223,24 +218,14 @@ function buildHeadMetadata(slug, project) {
     .filter((url) => typeof url === "string" && /^https:\/\//.test(url));
   if (sameAs.length) jsonLd.sameAs = sameAs.length === 1 ? sameAs[0] : sameAs;
 
-  return [
-    `<title>${escapeHtml(pageTitle)}</title>`,
-    `<meta name="description" content="${escapeHtml(description)}"/>`,
-    `<link rel="canonical" href="${escapeHtml(canonical)}"/>`,
-    alternateLinks(`projects/${slug}/`),
-    `<meta name="robots" content="index, follow"/>`,
-    `<meta property="og:site_name" content="Kaan Balcı Portfolio"/>`,
-    `<meta property="og:type" content="article"/>`,
-    `<meta property="og:title" content="${escapeHtml(pageTitle)}"/>`,
-    `<meta property="og:description" content="${escapeHtml(description)}"/>`,
-    `<meta property="og:url" content="${escapeHtml(canonical)}"/>`,
-    `<meta property="og:image" content="${escapeHtml(image)}"/>`,
-    `<meta name="twitter:card" content="summary_large_image"/>`,
-    `<meta name="twitter:title" content="${escapeHtml(pageTitle)}"/>`,
-    `<meta name="twitter:description" content="${escapeHtml(description)}"/>`,
-    `<meta name="twitter:image" content="${escapeHtml(image)}"/>`,
-    `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`,
-  ].join("");
+  return renderProjectHeadMetadata({
+    title: pageTitle,
+    description,
+    canonical,
+    alternateLinks: PROJECT_HEAD.alternateLinks(`projects/${slug}/`, true),
+    image,
+    jsonLd,
+  });
 }
 
 const GENERATED_NOTICE = `<!--

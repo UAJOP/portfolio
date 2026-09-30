@@ -1,0 +1,2499 @@
+{
+  "schemaVersion": 2,
+  "acceptedBaseCommit": "6ca0910ea330d25dcb3873f8b84047666de67fb6",
+  "algorithm": "sha256",
+  "textEolCanonicalization": "crlf-to-lf-bytewise",
+  "fileCount": 498,
+  "files": [
+    {
+      "path": ".nojekyll",
+      "normalization": "none",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "404.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7d30d5670148766634ca154e7b8f46e33402973b182bc98378c01e89a4c23791"
+    },
+    {
+      "path": "about/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e688bf9be2ecd8e9db02b6ee1cae704461d5d8287162d66e0f446c867f8d398f"
+    },
+    {
+      "path": "about.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "41453e713666b70d0f5d0c7608fb0e94542c27fc36a570e654d070f90b4e5c78"
+    },
+    {
+      "path": "adventure/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fba2429ce4ee6300c5da4c784b59daa85b392b3cbba878c949120591261ddbca"
+    },
+    {
+      "path": "adventure-game.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b2be9c5cedf640bc2fa48b1fa2b074240e11ad86b5760fa82889d2fef23a1fac"
+    },
+    {
+      "path": "adventure.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "139b9ed9f0b0bafba7cbc7bbd364bf6e438ab28f306ee8173abdd5c4a35e3b31"
+    },
+    {
+      "path": "ai-flow-puzzle/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fd5a807c6ca62950eaf7c56dd4c38d43e876ce40bafc007e49276c78fb6cf92c"
+    },
+    {
+      "path": "ai-flow-puzzle-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "efbc61b0e77848728cd0578cc60b2d3fc4f3a4b9cf3fc2a07f9c3c24880a14f8"
+    },
+    {
+      "path": "ai-flow-puzzle-case-study.data.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3e6a6461491b920a6724027730dc9d3bf6591350678c4e1f014da0d62096e8d7"
+    },
+    {
+      "path": "ai-flow-puzzle-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a1afbb320562a41d2d9668682c471c6367ce11cc98eec967b8701938e051c99a"
+    },
+    {
+      "path": "ai-flow-puzzle.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9973d101f0fb6acd9e5a845d63bf3e6e5e8030fe802d0fa8952356abe0746135"
+    },
+    {
+      "path": "ai-flow-puzzle.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2f44f8ff25af6599da12d335fdf8a088c0eb009fab8688563026f85e73abe101"
+    },
+    {
+      "path": "ajoop-ai-config.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "dc6b8021d5fa824b61b64e81e2255e71a5c4f3174b9dfeef4cfabc6575a507a8"
+    },
+    {
+      "path": "assets/0_PQUN7aF1N02N71W_.jpg",
+      "normalization": "none",
+      "sha256": "ba7146e54436c23d9178e01dd98a4e4f6af3d75a9b92197374c27423c2eb6734"
+    },
+    {
+      "path": "assets/1__6ooq0R60ba3UT5c-QVemA.png",
+      "normalization": "none",
+      "sha256": "fa00697a1a887dadeb849a49b29d218b4fd70dd4ddeedf186daa740c31ad5a78"
+    },
+    {
+      "path": "assets/111266f6-5226-4f00-aacc-efde413516ed.jpg",
+      "normalization": "none",
+      "sha256": "7223f42e7a0fc139a1f80203cb1c5999e58465240d438bbff126f182284192bd"
+    },
+    {
+      "path": "assets/1720450162617.jpeg",
+      "normalization": "none",
+      "sha256": "6fec4239bab3f01199e312ddd59b73fbb42d531349080b4f296b22f2c3357135"
+    },
+    {
+      "path": "assets/34801520230923033957949.jpeg",
+      "normalization": "none",
+      "sha256": "26eb4234ca6dd27fbdee76312a5accc76a78a214cc01383a273e7f009a2dc5ca"
+    },
+    {
+      "path": "assets/7477790.png",
+      "normalization": "none",
+      "sha256": "931b159fd561fcbaa9232f9e65318aa29f24e79c5a9e5b933a050389229fcee8"
+    },
+    {
+      "path": "assets/9a68c93b7acc0a59649afab6ce503d47.jpg",
+      "normalization": "none",
+      "sha256": "ed494ef13e423ec89d25d7b928f7786f446037526bf88002dd91e0e3723c66aa"
+    },
+    {
+      "path": "assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg",
+      "normalization": "none",
+      "sha256": "c720135669b1cd9b5201e26a75510b1840fc5d1443abf4dcd22bb439622656ad"
+    },
+    {
+      "path": "assets/agency_db_cover.webp",
+      "normalization": "none",
+      "sha256": "d847811bd3f492740e8ea6acba0dac9bb728bd24b868f799b3e59e0c437765b2"
+    },
+    {
+      "path": "assets/ai_flow_chatbot_design_cover.webp",
+      "normalization": "none",
+      "sha256": "0a05294877092817cdbcd019af5cd3e2793880e4ed6857bc36e32ad80093d4d8"
+    },
+    {
+      "path": "assets/ai_flow_puzzle_cover.webp",
+      "normalization": "none",
+      "sha256": "d4405d629bdd958a3f71274fdae8ce5ee473a8927089450a3a7727d1cf1f7f81"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-builder.webp",
+      "normalization": "none",
+      "sha256": "d8a766c478c4ec0db292c91ec91dbaf9456602defa22694096056027c9415897"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-fallback.webp",
+      "normalization": "none",
+      "sha256": "e1225d2efa4c612aa5072a6655934db0fba639796e22627b85c52886f221dfe6"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-mobile.webp",
+      "normalization": "none",
+      "sha256": "cbaaa6d200c9cfb0b2e3e9deb218bd267e801be96b83430b837bc9272983dc96"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-preview.webp",
+      "normalization": "none",
+      "sha256": "610bc5c58b6f8f7ec3292289c8c77229edf05f1566c83eaecd4887762d3156c6"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-social.webp",
+      "normalization": "none",
+      "sha256": "70f40ca4f0ab355b3118484dd7e3342c9216c081bf46a3b4503628b2dfee954f"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-validation.webp",
+      "normalization": "none",
+      "sha256": "3ca5648dd8afe4a41620daf85f22029cb7d84b46ad0acc562283f9b74fd1dc89"
+    },
+    {
+      "path": "assets/calculator-cartoon-illustration-png.webp",
+      "normalization": "none",
+      "sha256": "ae41530c45c346c8dbcb99bcaca2a309fa4bf34de0029f3c43dd7822dcae2ef5"
+    },
+    {
+      "path": "assets/control_panel_cover.webp",
+      "normalization": "none",
+      "sha256": "16ae9f5f19e787f1a54ad8879ffdc4cd46cc0f7ef13bc79ff27183910c104427"
+    },
+    {
+      "path": "assets/converted_image.png",
+      "normalization": "none",
+      "sha256": "a93d35ca9d498d477971efba26e073a57ae77140c592d3cf60ede049caa67523"
+    },
+    {
+      "path": "assets/CUDEMY.jpg",
+      "normalization": "none",
+      "sha256": "08aeaab5bc17b567f678daa4e3c465eef0a5ea0d4f5dc1fb12363177900a4dad"
+    },
+    {
+      "path": "assets/CV_foto_beyaz.png",
+      "normalization": "none",
+      "sha256": "5e0c8aeda469dd210645f3175b95fcdba55d5325eb5b9f26b53a34d71fd5576e"
+    },
+    {
+      "path": "assets/CV_foto_mavi.png",
+      "normalization": "none",
+      "sha256": "36dcf62497b2ba38a1ce986451dc008fcf4ba80f35665948c284ea3029ef42b9"
+    },
+    {
+      "path": "assets/database-cartoon-style_78370-3596.avif",
+      "normalization": "none",
+      "sha256": "37e5577265b5a2c48a66627b76c8ed08b74eae174b6e41645868a2e6f6fb6760"
+    },
+    {
+      "path": "assets/drivenfinity-cover.webp",
+      "normalization": "none",
+      "sha256": "4edaf089d6f5ebd828264c146b72029e37b49faacb528f9e1dfcbedd9da93339"
+    },
+    {
+      "path": "assets/DrivenfinityPng.png",
+      "normalization": "none",
+      "sha256": "436e65280bd964e5a54af593977b696b8a9a719ffc35c559cfc13dac86da9e33"
+    },
+    {
+      "path": "assets/Ekran görüntüsü 2025-02-25 202336.png",
+      "normalization": "none",
+      "sha256": "4e7e03d02a667efbbe6a3158c0114e0906481cb1694ac608e0aa2d92eb82866c"
+    },
+    {
+      "path": "assets/Energy_Dashboard_2x.jpg.png",
+      "normalization": "none",
+      "sha256": "2c4b0239eb7155453532c74834fe82b6b5eb2171b7f90d0de57b3423c4976a03"
+    },
+    {
+      "path": "assets/escape-island-cover.webp",
+      "normalization": "none",
+      "sha256": "5d1f2ca4583df1a7c45a2a1ca3e00f5774523e8b89058b7b561859719e0b18bf"
+    },
+    {
+      "path": "assets/escape.jpg",
+      "normalization": "none",
+      "sha256": "0a4afa477d56e230e68e6dfa0da4a44dcca51b09277d95f2318eff16c6c5d45c"
+    },
+    {
+      "path": "assets/f19c7e914f0adb59c0833d00d09f1ea7.png",
+      "normalization": "none",
+      "sha256": "29bcb697d1d01daeff535cc9087affa3dcdadbf50523101904d39492bb502e19"
+    },
+    {
+      "path": "assets/hastane.jpg",
+      "normalization": "none",
+      "sha256": "671347aa5e77e0368521ed29ff711c38f0e8fa8f7e269092cb7963a37a66d8e2"
+    },
+    {
+      "path": "assets/hospital_form_app_cover.webp",
+      "normalization": "none",
+      "sha256": "4c6fdbeb7c0024a488b522a864cfc9bd3d940464c51139abaf05f36e5c8fc063"
+    },
+    {
+      "path": "assets/hospital-building-for-healthcare-background-illustration-with-ambulance-car-doctor-patient-nurses-and-medical-clinic-exterior-free-vector.jpg",
+      "normalization": "none",
+      "sha256": "904f5a24cb3c9ef7fe906bfccd793325192e762335697ae0c3bd3e60ea10b483"
+    },
+    {
+      "path": "assets/hospital-form-app-preview.png",
+      "normalization": "none",
+      "sha256": "241a02baf9c99f32a705eb17ff7d318dc14dc1cc9772cf25df618b88d51d3e86"
+    },
+    {
+      "path": "assets/hospital-system-database.webp",
+      "normalization": "none",
+      "sha256": "8330908b30efc373bdec8bd8539c6e049934da24d3063929e5646d93cb045fe3"
+    },
+    {
+      "path": "assets/hospital-system-doctor-workflow.webp",
+      "normalization": "none",
+      "sha256": "73d04037ad8719fecfeb2fb96edb14e450189e8e3a77288c36b806b26696cde2"
+    },
+    {
+      "path": "assets/hospital-system-patient-workflow.webp",
+      "normalization": "none",
+      "sha256": "66aa1f5c11068712be54ca5605564b8a12cfdcda8839e24f636cad39b793dab9"
+    },
+    {
+      "path": "assets/hospital-system-registration.webp",
+      "normalization": "none",
+      "sha256": "1da9c883dbd6146d62877ad9eaf0aa895524d73c479422c4b94c18c2b8201996"
+    },
+    {
+      "path": "assets/hospital-system-secretary-workflow.webp",
+      "normalization": "none",
+      "sha256": "98496c268eadb90f45a2ac71cd93c4560de100589b939dfe024d31b8994ec417"
+    },
+    {
+      "path": "assets/hospital-system-social.webp",
+      "normalization": "none",
+      "sha256": "fdc8315139b756c145326b51d4fbdc8642628ef7e0d5ea84b31dd7b14b5c4f1b"
+    },
+    {
+      "path": "assets/hospital.avif",
+      "normalization": "none",
+      "sha256": "d795b6537da8d1129abfa44e10f0cb7b62d487376b01d9803d7e04863cf4f2ba"
+    },
+    {
+      "path": "assets/ic_supply_cover.webp",
+      "normalization": "none",
+      "sha256": "d0acdc0f1edcf5c9ba5348acf4f60a8b947404de2657f2413eb8839282aa5253"
+    },
+    {
+      "path": "assets/images (1).png",
+      "normalization": "none",
+      "sha256": "64b1f8a57dff658e828fcaa225ad1af3958289da1a26e205b91b10ceb374f0ce"
+    },
+    {
+      "path": "assets/images.jpeg",
+      "normalization": "none",
+      "sha256": "210baf29c177344a10bc5ffad06b814be51df06ad385f4ad6044322ae0b629b4"
+    },
+    {
+      "path": "assets/images.png",
+      "normalization": "none",
+      "sha256": "efc965d2f6baa2c6238c252258af0431623cd4ad84a1032048f748bffff3305c"
+    },
+    {
+      "path": "assets/indir.jpeg",
+      "normalization": "none",
+      "sha256": "72e1b9e7b900c48b2f178119b133a935f372d9bd882bc883bdc559655c7d99dc"
+    },
+    {
+      "path": "assets/insatagram.webp",
+      "normalization": "none",
+      "sha256": "e394f5b6326d0129da4da329e19d5be339ae5cf52b548aa02ad69d823dbb83fb"
+    },
+    {
+      "path": "assets/item-1.jpg",
+      "normalization": "none",
+      "sha256": "1b1c2e8b41f7b80da0ce670e02e68af46eaf65ddb4a9fd5dc5fe296992201dea"
+    },
+    {
+      "path": "assets/item-2.jpg",
+      "normalization": "none",
+      "sha256": "5ca0e8a19a4c62082884ef5b429dccef20cdb8bec77ed75bdc977363a4b7ae25"
+    },
+    {
+      "path": "assets/item-3.jpg",
+      "normalization": "none",
+      "sha256": "0608e43280fdacaf9238f322a00cb66a60cbbbda1bd5ee13903fef5d67907032"
+    },
+    {
+      "path": "assets/item-4.jpg",
+      "normalization": "none",
+      "sha256": "0f4c1619dbcc2d7b68d8a314132d7ca03d2764775ad7e15db483735160c466c1"
+    },
+    {
+      "path": "assets/item-5.jpg",
+      "normalization": "none",
+      "sha256": "4bc48a9cbfe2e462b81be148977365e32bea4e532c9ade09c93440da9ffe26dc"
+    },
+    {
+      "path": "assets/java-logo-black-and-white-1.png",
+      "normalization": "none",
+      "sha256": "d347f0dda800eecf1fd38358b5e268c60b6e62e15765a2516ae1c70e44b9940d"
+    },
+    {
+      "path": "assets/Java-Logo.png",
+      "normalization": "none",
+      "sha256": "431a80116c26d791a972d1e09a9728c76b79e29d8e8c1e0b99dbc0623677e5f4"
+    },
+    {
+      "path": "assets/java.png",
+      "normalization": "none",
+      "sha256": "6eb98437c6f8ec6477e60e177415a75709ebcb7f4fd1ac2dfb1763095b8dc19c"
+    },
+    {
+      "path": "assets/joyday-action-painting.webp",
+      "normalization": "none",
+      "sha256": "ec1abcc87354b3e7abc20303fe5d3d81c267583b6c3f5fb405ce58fdd3a00557"
+    },
+    {
+      "path": "assets/joyday-brand-logo.webp",
+      "normalization": "none",
+      "sha256": "09fd636dedc5a7884302f502a4b9bcd1eeda3012182d2b89ff624d87e356840b"
+    },
+    {
+      "path": "assets/joyday-case-study-social.webp",
+      "normalization": "none",
+      "sha256": "4456ca5744b305ac6702e4822bde4467cfddc5d1df0d7f25ae5e20e63f164a04"
+    },
+    {
+      "path": "assets/joyday-homepage-preview.webp",
+      "normalization": "none",
+      "sha256": "0b9538d16853e68675e04b4dbfad5c36840f3ce83b8cebe52edac6f9d7b5ede3"
+    },
+    {
+      "path": "assets/joyday-mobile.webp",
+      "normalization": "none",
+      "sha256": "3e1b09faed6e0e146f497945f89aefc35d1bb12a8c22882a447d1dfa7d3caef3"
+    },
+    {
+      "path": "assets/joyday-reservation-preview.webp",
+      "normalization": "none",
+      "sha256": "8318f42f970d62596698da7455d4d3e1408e31412615e6da1406377f5a9dac75"
+    },
+    {
+      "path": "assets/joyday-workshop.webp",
+      "normalization": "none",
+      "sha256": "a4b75612311741b1f50772973f361cc532dc695c6b27908954fc2f5f1a620b14"
+    },
+    {
+      "path": "assets/joyday.jfif",
+      "normalization": "none",
+      "sha256": "a32e0726d478b55eb886a7a9fae96b6acc8563a14acb6bc0589a10b5bfd7be90"
+    },
+    {
+      "path": "assets/KAAN BALCI- KÜÇÜK LOGO JPG.jpg",
+      "normalization": "none",
+      "sha256": "abdc70b973cb390b7e9e814076e01ef40cd090c7321c8cd0194d82388aef118d"
+    },
+    {
+      "path": "assets/KAAN BALCI-BÜYÜK LOGO JPG.jpg",
+      "normalization": "none",
+      "sha256": "b91070e15027a82457584d3289d01faa10eeaf7e5acfccf7ab22c23d8b788209"
+    },
+    {
+      "path": "assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
+      "normalization": "none",
+      "sha256": "6892632ad4b7fc7380bddc0661e8761847768972e7e88adac917cc9c6c05ba47"
+    },
+    {
+      "path": "assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico",
+      "normalization": "none",
+      "sha256": "a42ac2fb2ce05c9665df923faa36a50bcfaac6afe7002239c4518a915366e23a"
+    },
+    {
+      "path": "assets/KAAN BALCI-KÜÇÜK LOGO PNG.png",
+      "normalization": "none",
+      "sha256": "1a86c8920611dd2488c98d6094fcd12b5e0848b0e2fd26d89a3bc6e11ad03b3d"
+    },
+    {
+      "path": "assets/kaan-balci-logo-128.webp",
+      "normalization": "none",
+      "sha256": "6295ed1903f1cd1ed236a0a8c4cfa00db1abe8d5102a45b2cd20be3795689a2a"
+    },
+    {
+      "path": "assets/kaan-balci-portfolio.pdf",
+      "normalization": "none",
+      "sha256": "b215a961c9a8d5761646fffd82529afd7e81d807aec34777c37b07d39d7303e0"
+    },
+    {
+      "path": "assets/kaan-balci-profile.webp",
+      "normalization": "none",
+      "sha256": "d1cb0241a63e38f4dad23f53633fcfd36ebacd3b3049de6bb21953a7a4ec41b3"
+    },
+    {
+      "path": "assets/kaanfoto.png",
+      "normalization": "none",
+      "sha256": "ed22cc84cc943be0a9f35084a9c5c33b2f35edb5a0ed94535e081cf806829e79"
+    },
+    {
+      "path": "assets/kaanfoto2.jpg",
+      "normalization": "none",
+      "sha256": "53c8c2df058c970bd028f6416bb87b923644465e8693034b9e75d4d04fa69510"
+    },
+    {
+      "path": "assets/kaanin_kariyer_cover.webp",
+      "normalization": "none",
+      "sha256": "0429ff7ef3d43896be34106d8feee42e1970c07c7472a8fda105e411ef76f52d"
+    },
+    {
+      "path": "assets/legacy-of-the-lost-cover.webp",
+      "normalization": "none",
+      "sha256": "99e870ab5eb1be3c3720a56a2c4f668eb06282a64cc1ed49782bee676f1291f5"
+    },
+    {
+      "path": "assets/maxresdefault.jpg",
+      "normalization": "none",
+      "sha256": "fcc735a711eb703e6e03e9bb2d8de65e3b891b018503a100f2083cf2443ef3f2"
+    },
+    {
+      "path": "assets/merge-rush-case-cover.svg",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b9cde407b5b1154aa551c941705362df1098eb5e9aa060addc0b84473f015c42"
+    },
+    {
+      "path": "assets/NDG-LİNUX-CİSCO-KAAN-BALCI1.png",
+      "normalization": "none",
+      "sha256": "eaed3915dee29ebcd1d1995d97eda873e84544e9800f639672c96cc66fcdb28d"
+    },
+    {
+      "path": "assets/NETWORK-ESSANTİAL-KAAN-BALCI-CİSCO.png",
+      "normalization": "none",
+      "sha256": "46abca9b2a37796484d96ed9ff9f76864410b13c999b75aba1a5d8eb3a9fe8e5"
+    },
+    {
+      "path": "assets/Opera Anlık Görüntü_2024-05-08_141955_www.instagram.com.png",
+      "normalization": "none",
+      "sha256": "c1325546d331c82371177d2a5be1362882d5f0e9f36f66670348ae25e0c3cd9e"
+    },
+    {
+      "path": "assets/PACKET-TRACER-KAAN-BALCI.png",
+      "normalization": "none",
+      "sha256": "efb697ffdcaca433105c76664a8ee77822f5963d52d14e73fcf6ce7f4e455b7f"
+    },
+    {
+      "path": "assets/png-clipart-fruit-vegetable-cornucopia-greengrocer-organic-food-vegetable-natural-foods-food.png",
+      "normalization": "none",
+      "sha256": "5dbb93c897a766f44f40a87186f47c657b13abeb0c8c69a0a95525c3236e53d0"
+    },
+    {
+      "path": "assets/png-transparent-java-platform-enterprise-edition-computer-icons-java-api-for-restful-web-services-java-miscellaneous-text-logo-thumbnail.png",
+      "normalization": "none",
+      "sha256": "0d01a16ec95c623dbec6da6c90ca47ebbfaa5557985cefe3b1af19a69c81d054"
+    },
+    {
+      "path": "assets/pngtree-java-file-document-icon-png-image_897467.jpg",
+      "normalization": "none",
+      "sha256": "a0d41a0044724d826010d4ce2abbccb47a80d1e69bee60165636593a63e99b67"
+    },
+    {
+      "path": "assets/portfolio_website_cover.webp",
+      "normalization": "none",
+      "sha256": "082e837e41da644bee46f2fab1bb580c3bf419524171d801aca2139a6b549b2e"
+    },
+    {
+      "path": "assets/porto_25_cover.webp",
+      "normalization": "none",
+      "sha256": "de330cd4d5d679d60f9039eaa528213a4cc6abb55f258d780bf21b64477aba21"
+    },
+    {
+      "path": "assets/Python-Symbol.png",
+      "normalization": "none",
+      "sha256": "168d602212fc9fc0e10aadc80b42a1905c3fded886a04fa9d0fbcf901208a3a0"
+    },
+    {
+      "path": "assets/q4yDjz2J_400x400.jpg",
+      "normalization": "none",
+      "sha256": "5bf74d768c16367acc86a355a7706f449036b12f6dc04fd02088fe17bf9e9943"
+    },
+    {
+      "path": "assets/sinama-case-study-hero.webp",
+      "normalization": "none",
+      "sha256": "d24dfcdaad0e6d63410e5baac607692e9aa1cee6b6de0cd901e5c6dd83553426"
+    },
+    {
+      "path": "assets/sinama-home-featured-project.webp",
+      "normalization": "none",
+      "sha256": "f6c596154b88089c277fb5c0aa65764faa44ba1ee08432e4451f6596d0dabdfe"
+    },
+    {
+      "path": "assets/sinama-regression-evidence.webp",
+      "normalization": "none",
+      "sha256": "d9d6c63a2318eef98491206c4f5a181b865f523637309bd0c70acdf5a9a6b2de"
+    },
+    {
+      "path": "assets/sinama-runs-broken.webp",
+      "normalization": "none",
+      "sha256": "4d26fbcad5205c689dbc420d3ef47313c5ac2c71d0c2a4050ec9cdb780c48ca8"
+    },
+    {
+      "path": "assets/sinama-runs-flow.webp",
+      "normalization": "none",
+      "sha256": "b17861a9bb6e8c66802b070056d9cd7a04e83b2133debc8e43d5e206156bab38"
+    },
+    {
+      "path": "assets/sinama-social-cover.png",
+      "normalization": "none",
+      "sha256": "37ce70db2d6e70522da2014f584a73e2efa9704d987ef80e638defcfc8aa47ec"
+    },
+    {
+      "path": "assets/sinama-works-card.webp",
+      "normalization": "none",
+      "sha256": "a0801c23fba155caa0c3198dbe550c3c1c6a869745bd811eb46531d207a9ca91"
+    },
+    {
+      "path": "assets/single-post-1.png",
+      "normalization": "none",
+      "sha256": "6f6f445063118de1393930afb81c74c5c81a25aa938a1cfc416d1cc5e7ddbbea"
+    },
+    {
+      "path": "assets/single-post-2.png",
+      "normalization": "none",
+      "sha256": "75f38621ec3f6c2f905b50941d2fa81203b40c98053d8d023cf203ad5a772e1b"
+    },
+    {
+      "path": "assets/UC-093074b5-0431-4be5-a45c-6e92944ae955-WEB.jpg",
+      "normalization": "none",
+      "sha256": "cf699301de4b501ad74efc26cd5ac04038a52ca8a248e9851535c341ddaf3032"
+    },
+    {
+      "path": "assets/UC-12fdcfa8-6b16-4a83-b1ba-9a2947c5ddf2.jpg",
+      "normalization": "none",
+      "sha256": "939bf3d42eba63ebd8a7513c36280791314449f8d3c0b9721acf92507feafab8"
+    },
+    {
+      "path": "assets/UC-3bf05e3d-708b-421c-a585-14c9795bfeca-linux.jpg",
+      "normalization": "none",
+      "sha256": "571cfa8520f5a688f508655b165243051bd6ddc626d22288ff0484e5e4a5fc89"
+    },
+    {
+      "path": "assets/UC-59f11b29-d236-4fd1-8290-159740f4c33a-java.jpg",
+      "normalization": "none",
+      "sha256": "eaea0b13166a22fd7444a3220d203b047f628af8ef7f99c1184a4b2933d0ce23"
+    },
+    {
+      "path": "assets/UC-668a1dce-f5f6-4890-a67c-e6c4af45765f-sql.jpg",
+      "normalization": "none",
+      "sha256": "a3b46925279cdcbf54aad8d8f59f6e7ecedaefbc3247be3446464d919fcc2d18"
+    },
+    {
+      "path": "assets/unity-essentials-cover.webp",
+      "normalization": "none",
+      "sha256": "8587e40cc3a0d9aecde029040d40e951b994c7be07685058462acd9b2052b31a"
+    },
+    {
+      "path": "assets/warehouse-wreckage-cover.webp",
+      "normalization": "none",
+      "sha256": "035a9ca1e0e03731ca145cd901fe2c20d055452625a2e811c6dfbff103ba4314"
+    },
+    {
+      "path": "assets/WarehouseWreckage main pp.png",
+      "normalization": "none",
+      "sha256": "d1d3b9769ca689aa7d4995d7f6fdf5bc9b9ba364f8161f16622b59d4cf5d0df3"
+    },
+    {
+      "path": "assets/what-is-data-analyst.jpg",
+      "normalization": "none",
+      "sha256": "49d3a91bbe32d808f86bc71e9a06a08c639ccbd0b3ee9d60094c2281f1502020"
+    },
+    {
+      "path": "atolye-joyday-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1af707b5caf33e2a847a9eb8729d8849df2e6ad97413d431a18cde076b6102f5"
+    },
+    {
+      "path": "atolye-joyday-case-study.data.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1061da79270be28968f0399cb7121c573d58501f19ef0fbae97c525d45515f86"
+    },
+    {
+      "path": "atolye-joyday-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cc67ea3e9de9d8c082aaed97613e9aa339550d88d0bd427ceced702c5519845a"
+    },
+    {
+      "path": "blog/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cb9af6ca09d9153df0d19a7feb1b2f2b8797d25ee69b13acae930b54fc9a9616"
+    },
+    {
+      "path": "blog.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7d735e3ec2a8e3cf76ca595874a454076af4a92ef78cbb5af8e2bc72de61fd49"
+    },
+    {
+      "path": "case-study.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "04379a303eee13eaa97e72d3c32bc452fefb33003232de5a13f8281c5b1cb6d3"
+    },
+    {
+      "path": "case-study.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "899fad48d0a49d6041d7b3821b7bb1cf21427318950810ffc368c9f9720eec41"
+    },
+    {
+      "path": "certificates/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "91d122dbd7ff808b6cfb9ac050b5a072f74efe56d5bf735789d39bfd7cae18a5"
+    },
+    {
+      "path": "CNAME",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e939a05e2d413595c3214d3f6ab7c98118fcdf0efc325ea0b7040492de1ca73f"
+    },
+    {
+      "path": "css/a11y.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3f12d675d24cf7d0e7d41e00bcb1345ba5d8a73d902a9d29d2da57685278e14e"
+    },
+    {
+      "path": "css/games/adventure.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e800b826ff7d50d89ad26553b4db8a9e6a41999a52ebf627a56752344abbac6d"
+    },
+    {
+      "path": "css/games/ai-flow-puzzle.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "31e739795f6538b038b988d26bb803032b07524bffb75416efb145de8a978289"
+    },
+    {
+      "path": "css/games/joyday-paint.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b9208a99ba04f3f6127cc87092b82f157c67e713bad4bf9ff03bcb6b275fe740"
+    },
+    {
+      "path": "de/404.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b00d81324fe540b995689d7b7e2c73d4a9280618b7360a2857d6e92c146b1fee"
+    },
+    {
+      "path": "de/about/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "212ea9f7771146b1a56c81c6adb0478b3c33f9b1eacc0f3f548d318080934394"
+    },
+    {
+      "path": "de/about.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2ad9b9858ffb1c152c431a88cda644a4fadde1abfe2ab0b718439b3b419a44eb"
+    },
+    {
+      "path": "de/adventure/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "dab7daa8c61617d7e2043cd0b9e4aacbf5156dae721e5215d3c0aae7a721489b"
+    },
+    {
+      "path": "de/adventure.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6f19ff8a3cbe319a831e1a4e9e47090578f780564d3578a56b89c2e328f2420b"
+    },
+    {
+      "path": "de/ai-flow-puzzle/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5a5b7c883b188e1abe4bef8ea37d9269d7073a202b6f61f7f469d28f6cac4e15"
+    },
+    {
+      "path": "de/ai-flow-puzzle-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3dec87130607cae425b623e9b740b48badbf81548017a3d297ad9ad13cb257c6"
+    },
+    {
+      "path": "de/ai-flow-puzzle-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "588e1def3c06a7e175c88dc38ebf84a0f35c228f0d0a89e3c79d0f70c4536026"
+    },
+    {
+      "path": "de/ai-flow-puzzle.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "aac5598dde558f6e8b133cc520810fb9490c302b783cbe2b8fe048953b5547b6"
+    },
+    {
+      "path": "de/atolye-joyday-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9e860e2dd5a106338ce4d79effc5844c626841ff9353604df3d7769ada3091ab"
+    },
+    {
+      "path": "de/atolye-joyday-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a0d22e044fc0c0982f9b617017bbdc8a44e11927a166b84874c6ba45c5f4134a"
+    },
+    {
+      "path": "de/blog/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "31a338e93649ba95e70895ebd8f1bfba84330e1e4fa8c131fe8c85cada96c39a"
+    },
+    {
+      "path": "de/blog.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "538dadcf564cbcd849ca1ef299bca7dac755f0f8077fea190000aacba0ccf531"
+    },
+    {
+      "path": "de/certificates/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "07803ab6f873410e4bf48fa2735ce12c822de3240fd98a971a4bc410cd9e7a99"
+    },
+    {
+      "path": "de/games/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "79ab53d3105a6d9e89f4d5ca664586e9a2faf149396b70c5d658fad6c05effc5"
+    },
+    {
+      "path": "de/games.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "78a2a609ddcab2c9c0387bc6d2ebaa62e7a971a25ef1a8e7b79f9c67ad001f5d"
+    },
+    {
+      "path": "de/hospital-system-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "52cbaa6cee8cf559215dfc739a8ca4b537037643bb8645c9eacb0b05e0d5427d"
+    },
+    {
+      "path": "de/hospital-system-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5172eb7304d66605d2e1a0d03331770c067792eb52b98dd56a7d9a37bd79bc9d"
+    },
+    {
+      "path": "de/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "15af2ca56ec75120ce1676a4057221848dd56e8583558880217052034578a19b"
+    },
+    {
+      "path": "de/joyday-paint/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7ad8b8b935669f355e368b79874161c38fcfd6791b964a0c3afc5a9e811cd172"
+    },
+    {
+      "path": "de/joyday-paint.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "4829796fcf61e1d74b0ef14f94f13ec34b9d4d3124285444dbe80ce2ef0558e7"
+    },
+    {
+      "path": "de/labs/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "683baf0cd69043e9f5e286cf22beef24e8b69c5449e5336ccf76864f81597e32"
+    },
+    {
+      "path": "de/labs.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3d99aef6e1744e5745dba7d3f6e151bfbef3c905d0780887dbb911ff8711f896"
+    },
+    {
+      "path": "de/merge-rush-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3d40d01eaaf621e4d9360ad421130e0481df048621ecfda680ecefe32be64f00"
+    },
+    {
+      "path": "de/merge-rush-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "873536012eb0dd4e738c5a484735dabf2a08fbfd665411c47a5d4c292bdbb1d2"
+    },
+    {
+      "path": "de/now/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f09f336eff43685c695098335bae2db0ed74e6d9eecc36e186233eaed28bbac0"
+    },
+    {
+      "path": "de/now.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d7444f8ee91b3b34db91fc395dadeaea9f77aeb84cd759f92acc703b54d572e6"
+    },
+    {
+      "path": "de/privacy/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3a01fb014fd2847a9977f107501854c243597d7fe6643544fa769aa0ddc1f3d8"
+    },
+    {
+      "path": "de/privacy.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "944dc0acd2e4728de600bbcfe54bac1e97b44212591fbb51096fab22a9330b92"
+    },
+    {
+      "path": "de/project-detail.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c7ffbd634c8c0994f27bf4d75141473c30bb099556407ba3cbe817453a3276b5"
+    },
+    {
+      "path": "de/projects/agency-db/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "47378e177d1d75588f3f5086d99efc184783eda0cecabd9d0c4fa29a0dc381a3"
+    },
+    {
+      "path": "de/projects/ai-chatbot-flow-design/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "627137dd03da85f86e48f03cacc1c743a3a1efc0a165fb5d74670408130c7356"
+    },
+    {
+      "path": "de/projects/atolye-joyday-official-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7308cec213b9cda6bc0540ddfb446ae190062a46e3e7ca5021422208a2497d3c"
+    },
+    {
+      "path": "de/projects/calculator-android-studio/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6c0e0537255a55d2b5cc6752b7b0bc127b0fefa197f77d47652b299de78bbc4a"
+    },
+    {
+      "path": "de/projects/calculator-javascript/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2845788c317e2a9d95483d38c4e37266b645e40e1fdfda89d83cad3dae012124"
+    },
+    {
+      "path": "de/projects/cars-dataset-analysis/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "67bd68e7d079bb57c74efc34950aa5dd1e72ba3b5b69641743f448180527de90"
+    },
+    {
+      "path": "de/projects/control-panel/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e9f71a98caba8bc4f5f43fd19819b4c3766e5a19cfb5a05b847412d9d08c5bd6"
+    },
+    {
+      "path": "de/projects/drivenfinity/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7d4444db841020bb3a4f118a1eb8aa0fb64c35115db05b2a9f0f684fc419c1cf"
+    },
+    {
+      "path": "de/projects/dunker-madness/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8257cd396e661d1c34f484bc8a38b27edb63fd600c33ea3842e50d80bec9ee02"
+    },
+    {
+      "path": "de/projects/escape-island/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3fda190693e0823c82a2eef4c841224b311388a406a264b1ce2592f427d52bcb"
+    },
+    {
+      "path": "de/projects/extract-shoot-zero/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "52125527b11f15d27a8d34f0e1469b3bf58675e727f8e081c5dc64ead11eaf83"
+    },
+    {
+      "path": "de/projects/hospital-appointment-system/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a5b28bd0c03ec488a87ed556b6dfe606d5ce2deffaf0340699ca4fdbc5711fc0"
+    },
+    {
+      "path": "de/projects/hospital-form-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2e9f00fc95d2aa05f3a3574adf02b6547a8f80adaed57750f84fdea27ffbd075"
+    },
+    {
+      "path": "de/projects/ic-supply/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a297fb1ebe9fe8591cc991f25a494f845124204c217ca1d9f61536131bbb1618"
+    },
+    {
+      "path": "de/projects/legacy-of-the-lost/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "30a70202c4fee361482097d3138edf9d5751cc8954f1700b3aadf71dedd46999"
+    },
+    {
+      "path": "de/projects/mandelas-web-site-project/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f92cad0a1b4defa9aaa8362a6b50fe432bbc3d3d97f682a143541f2e23e6165c"
+    },
+    {
+      "path": "de/projects/my-java-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "585cbcddd3d678ce4ffa04a16d438695b17c9e99fa91873861f1ce23eba74489"
+    },
+    {
+      "path": "de/projects/my-museum/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "45ca1f41ef2c606d7a3bd97a09399a45ce5b5b855bf6a7ba5ad05ca7d400d992"
+    },
+    {
+      "path": "de/projects/portfolio-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "79c54e32a8c7bc485ce3374eec17e2d1ee9f92cc381e85786dd47b160d9e760c"
+    },
+    {
+      "path": "de/projects/porto-25/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c672a4bb1a67631633d7111680941ae09a1db520707c13f56c4411ce2a885637"
+    },
+    {
+      "path": "de/projects/pyhton-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ecbe1c2614934b691a76712e857760305daf21e17713ce098ac40c0e787610a5"
+    },
+    {
+      "path": "de/projects/tank-savage/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9c11e78a6e68b039dcb53dbe490be2fcfac9110f7ed710857113c7e72bece0fa"
+    },
+    {
+      "path": "de/projects/unity-essentials/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3b91637fcf3ec29e228e2a1b76cf40cb8e3e5eb24be7d7e29a49ad457ba1daf2"
+    },
+    {
+      "path": "de/projects/warehouse-war/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c3909fc5be2246d25c328e27c3854554712d31f155146853841d26154d26ee28"
+    },
+    {
+      "path": "de/projects/weather-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9aa5ad2421b0059792fb03ec22bb4cc7f4a375dc9b63305987a9bf1714497512"
+    },
+    {
+      "path": "de/request/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1270e7f33380365082c2cca064803980d37beb752f84c3aa78b3ee8b774f29ee"
+    },
+    {
+      "path": "de/request.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6a1cde6f5bd6de030d0b44a234c986469f1dbe333cbe2ef480d2445f2b619a99"
+    },
+    {
+      "path": "de/sinama-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "614639a083c55645425166b24531e8d405e46c746123031f8f7fcc195d4396fa"
+    },
+    {
+      "path": "de/sinama-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "189e0f53ddf9d07049d827eb2f6709a9de1ca89d9c573f5d276f89f380bc2aa6"
+    },
+    {
+      "path": "de/single-work.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9528a44250449a3353110c304e8ea8db3e366f54d623fa589e8455585198c4c1"
+    },
+    {
+      "path": "de/works/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "22729f50bd4492307752dcb42279bb6f29eaa336806ea38f2b2e153c74f0efff"
+    },
+    {
+      "path": "de/works.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c765495faf235275d8779de20752334a88275cd992b8440dcf7e62d856883a7e"
+    },
+    {
+      "path": "es/404.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ed92d99754c279f21bbbeeefe7a9304416640ce99d50ac8412bfe82c4a388e36"
+    },
+    {
+      "path": "es/about/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d9492c26540ab0a8fa703ebb56566377d98aa3c25da178884f9df6e15799a24a"
+    },
+    {
+      "path": "es/about.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f22b47c83983c96dd2ead0ea70fdd54de29604d859f7286053dff264e822527a"
+    },
+    {
+      "path": "es/adventure/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "59ec2d103393ec83187f31b57f00896e829e66eb5a8e7641af87b2a1f40bf865"
+    },
+    {
+      "path": "es/adventure.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8daa5217581cc52c9052d129cc165ed6bd85dc8928a2a8f78a45f7116d090550"
+    },
+    {
+      "path": "es/ai-flow-puzzle/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7e8943378c85973594cf1360d893002a129d5227ac017fba7743205563705b02"
+    },
+    {
+      "path": "es/ai-flow-puzzle-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d470aa342915cca72461112e4e39a2a6489c3bf1219e30241d6a9b8d8588734f"
+    },
+    {
+      "path": "es/ai-flow-puzzle-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d9a1b7df04088699a3b7c29247e4dc52e644c12fa032974518f3f93828b03ea5"
+    },
+    {
+      "path": "es/ai-flow-puzzle.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f734eeaddd8cb6f4c565e6724164171cc525fe07e8cf9a76a3bef22c2195f76b"
+    },
+    {
+      "path": "es/atolye-joyday-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2fea5b7449f173b5526f31aaca4bf43d3250f45373a5376d71bf68296d50faa1"
+    },
+    {
+      "path": "es/atolye-joyday-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "71d738697fed77d594991f18a1053c709d8ea1485e31f6d1ad66116233eebb3a"
+    },
+    {
+      "path": "es/blog/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c2eacdc4b96d87ee4ad2c43cda057fdd9ffb8764a7f7675c62eb11431f091dda"
+    },
+    {
+      "path": "es/blog.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "17cdd3cd54e1bd179453fd88bcc9251dbe29d47cfc817b862d20008a96f3d9b0"
+    },
+    {
+      "path": "es/certificates/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ae196f8afcff62e4530743b60f364df0a19ededa005233212ff5eb7f6566b320"
+    },
+    {
+      "path": "es/games/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6f23556d8425d79ca1555369eb2e172fe67625198cdd7cb9b5983f1b958e0403"
+    },
+    {
+      "path": "es/games.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e01a16c6f30fe561931b005dbf8404d77bfc7e53f691bb8df215e2a2c8d8d0d3"
+    },
+    {
+      "path": "es/hospital-system-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3c9919af2df8e85ddc149d3c8cb8e204127a2f080f9be667e928574c2e7291b7"
+    },
+    {
+      "path": "es/hospital-system-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0dde150bc5749cf5dd81b8c1249745f9f9450e8065042b98caa7707346c86515"
+    },
+    {
+      "path": "es/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "24ae321f2a9e058871effca752e66b6a8ef35d95e9aca6bb30cc18cf343dc6fb"
+    },
+    {
+      "path": "es/joyday-paint/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8315956a26091a5a81ded136aa9ff63cc06439bf37905cee840de13e6f489802"
+    },
+    {
+      "path": "es/joyday-paint.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b0f7fa09e2305764803795485f04bc91f4656ee65ee5c50cf9cf83f72d3dfbcc"
+    },
+    {
+      "path": "es/labs/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6622d8d6690d94d5323740d1080b9aab6f5851d84b2a9b2256849f5a3a89e987"
+    },
+    {
+      "path": "es/labs.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6d9db31f52721bec8e773828df01ab71f5a0235f0ac6ecee4b29fb8ed7e3f63e"
+    },
+    {
+      "path": "es/merge-rush-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "da0190daec091e9bdb12a23debae102ae2352f23c06ff8d8bd8c6b9bfd6f6c94"
+    },
+    {
+      "path": "es/merge-rush-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "49b09d0bb312933cd4810a92d9f25dcdc67762a7b074e240acec75adf3c5faa9"
+    },
+    {
+      "path": "es/now/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d3c3ebd90d46918106a323ea2011af7662b8655e2510a5086f045e78b584a856"
+    },
+    {
+      "path": "es/now.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2b650d41651d197eddeb145f685272cbfa5b0d9343283466f9cdfec57f3365b7"
+    },
+    {
+      "path": "es/privacy/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "78014b6801b90e07911ea4e865e65aea95e2640314d6263b0b1160ff18d8c390"
+    },
+    {
+      "path": "es/privacy.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3d3fed1b91126c8a816913926a02add2141d4685a58b5d6e08314ac5560d5069"
+    },
+    {
+      "path": "es/project-detail.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "39c9ac83af23835627e624e0dc1e1f306aac322d93cd403f3ee0214f7a3fec9e"
+    },
+    {
+      "path": "es/projects/agency-db/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c34a108ddf13f2571b0067be5cdf2dd56d9d59e0d33cfb27d914d7c9d1182c95"
+    },
+    {
+      "path": "es/projects/ai-chatbot-flow-design/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "328028d772e5dd42322cd947cbfb6700c46aaf2b7d03b310362ee521c3e326e2"
+    },
+    {
+      "path": "es/projects/atolye-joyday-official-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "901e2aaa60ee59cc46ddf89a7c8b0d36ac1911ba3e57bb5c819ddbd8053c4d04"
+    },
+    {
+      "path": "es/projects/calculator-android-studio/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e00dd4f26b80c788449b2e768e5b6057cca6c3c144faca2e6136345ded511db4"
+    },
+    {
+      "path": "es/projects/calculator-javascript/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "51702164863a86139d1ce180453897f487d00817f871f85eccc1c9515c8ef4ab"
+    },
+    {
+      "path": "es/projects/cars-dataset-analysis/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8e1f23aca21ce23677353cd2c2e17a3710a41e4cfb325744eae39f9e92145a6b"
+    },
+    {
+      "path": "es/projects/control-panel/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b25a5f3f021b379e5a840d6d38d8226eb0c33a83e04f60e4387b933f0272f525"
+    },
+    {
+      "path": "es/projects/drivenfinity/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "28a116f42968f9df22541116769889b958c42445ddaca09949fa9d71950f42bb"
+    },
+    {
+      "path": "es/projects/dunker-madness/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8942fc152b12fbd1e4c5788996d51463d9bcd1c2a158c646722a8f0c9cd19f19"
+    },
+    {
+      "path": "es/projects/escape-island/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0fcad1e1d742cd24f907d3ba26eefb9c4919b9d1dbf42cae31262683a0be614b"
+    },
+    {
+      "path": "es/projects/extract-shoot-zero/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "831ee302916481120af9bf9a8ed474a1e0a895180618121b580e0b5fdf3c206b"
+    },
+    {
+      "path": "es/projects/hospital-appointment-system/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "94d8104cebd09f0976c468aba32c8594e6a154b821e79cbda3c093eaf1319f9d"
+    },
+    {
+      "path": "es/projects/hospital-form-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "aa226a3dbd058a790a5a289ba1c5083e7c15ba2a3ea6029dae670ffc808b4472"
+    },
+    {
+      "path": "es/projects/ic-supply/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3b60a11906a07d5eb8cc2e99193ffe9f29ddd71fd2ed573f6e7fa8182518c0a6"
+    },
+    {
+      "path": "es/projects/legacy-of-the-lost/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6a5aa7171ec9df3f0874482b8bec043e66df588f37372a0d5254c964b8325f24"
+    },
+    {
+      "path": "es/projects/mandelas-web-site-project/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8c8d35d9d5365f83d252ab6552dddcf459b871fc01b11ea68a85e65363a0aadb"
+    },
+    {
+      "path": "es/projects/my-java-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "dccab5e4a9760f61a6918df3e86175a185b45e5c1198d4c9829090b12d5dcb8a"
+    },
+    {
+      "path": "es/projects/my-museum/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "012febe017257d4d564279a00968e15c0ecf475380ca13ad63d2d20c7f28274e"
+    },
+    {
+      "path": "es/projects/portfolio-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "823f1a1a351d3d4e8132203e03ea2cafeaaeecc2e07a2af1295bd06f07efdc5a"
+    },
+    {
+      "path": "es/projects/porto-25/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "620518a3f220959d4abf4595d75646fcd8be93d16255007403e7812f5156e30f"
+    },
+    {
+      "path": "es/projects/pyhton-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5eebeab6327cff366348c9b5eb293cdfd09691a6896d46b2133fd5ffc813f5ce"
+    },
+    {
+      "path": "es/projects/tank-savage/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "46443f6d99c6f20d31bf8b531067602c8ba64dd0ed389724e65eedefeafe049f"
+    },
+    {
+      "path": "es/projects/unity-essentials/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "34c802920d4ac177940382c57a056ae32d04bb834455fe74f9da7c26ec6743d3"
+    },
+    {
+      "path": "es/projects/warehouse-war/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "846256ebcb4e6424e8ddc1ab30ca4a09860c709cc511dcc7f3c38c141a85d55d"
+    },
+    {
+      "path": "es/projects/weather-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "086839acc83cdf4ecbfe0914ffe5e42bd25e6f4155690e4b8b3cf95fadd7d562"
+    },
+    {
+      "path": "es/request/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ba6e06975ef550ca35b10647c84d1a332f0034adc762f09f158d950be5920dd4"
+    },
+    {
+      "path": "es/request.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8f19b55b79459927278de7dfee3b0d98a45faeabd2b653955ea9c7213f52e85a"
+    },
+    {
+      "path": "es/sinama-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a0bf2d34c5cc06a912dd049d2d94be65df77cdd45a6893804474e978f2a656b9"
+    },
+    {
+      "path": "es/sinama-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "053dfe066817429560dae4219b4f3b5dbd61a1dd17ad49f208ac2dacb7030a64"
+    },
+    {
+      "path": "es/single-work.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "55e7b1215e03f82cb165a84bec4c30cf3a1ad16b4382875a4df135a026b36fbf"
+    },
+    {
+      "path": "es/works/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "296696bbb9cf5d9128d6140b0544654ced5f5a9f865c85be3505ba87cfff01e8"
+    },
+    {
+      "path": "es/works.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "93017973d66ef665371c7d3d671116165b9cabc5ae59d1fc87c1966a5434676b"
+    },
+    {
+      "path": "fr/404.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f7102c826c0200378836f9be5611fad60cdae8b16a79e6a0b3d1b08b04d010bb"
+    },
+    {
+      "path": "fr/about/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b2626a6dc8c5f90da3e7c391b3d6bd05b77e11cae8cbc35b6bf3acb94837008b"
+    },
+    {
+      "path": "fr/about.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2b84b85209efc55476fc933b9c67c1f50262e926a0c4a747e8d677fa84fb9b33"
+    },
+    {
+      "path": "fr/adventure/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9df4881c4bb1f4a38420fa9a6bcbfffc2d10ac476ea135470ea10c694705274f"
+    },
+    {
+      "path": "fr/adventure.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9082ed4a8fe6bbcc4fd7c979a9e66c5d826eba3393dcde9dd7ec6799ef7d6fcd"
+    },
+    {
+      "path": "fr/ai-flow-puzzle/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "75776442c1e226ecac8c49b7b4b389fb3eae9b499e279d13e5aa6be015472813"
+    },
+    {
+      "path": "fr/ai-flow-puzzle-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3494b34ec783474c4bbb200fb0d0c38e16bc19d9eb7fe16e78bf2c74e53fdb28"
+    },
+    {
+      "path": "fr/ai-flow-puzzle-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "29fd73391d2c7cf93067a9f0f628064181768efa13bd8d81b250562a5322feda"
+    },
+    {
+      "path": "fr/ai-flow-puzzle.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "923497c699341eec0f717d6d4facf7e966842266b8a5700de9fdfbb058db11e7"
+    },
+    {
+      "path": "fr/atolye-joyday-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d895e062b8bbe2aa62af3f94670f7105c084c14f19e7b73c27edd16bc569256b"
+    },
+    {
+      "path": "fr/atolye-joyday-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e909a68066d5ecf62fda55330704f4377bf91e8b12db54ba671ed51852d0d7ec"
+    },
+    {
+      "path": "fr/blog/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "17157855cd6783551a728874c15eb923d3ad65d185ccfa7ad1cffdb29c0dac37"
+    },
+    {
+      "path": "fr/blog.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f7858c4faf1daad7170afdbdfc2eaee7fd6336c37d1a4dca1111df583aa78df8"
+    },
+    {
+      "path": "fr/certificates/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b8adf949317f0058ece3b3cd4de6b593f8f66d39462b06df123cc20b19846715"
+    },
+    {
+      "path": "fr/games/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3af99326f180436b256fa12d7d850971b1bf49ca6c077150ee430de3fe1ad21c"
+    },
+    {
+      "path": "fr/games.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "4c5576842e3192466437dd7b16b84c89acebd52a08e0a560fe5365e2d093c775"
+    },
+    {
+      "path": "fr/hospital-system-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6e6a393c81264d0480d2526d2fdff9e05d6236fdc2355915b52aedd4e0eeb3f6"
+    },
+    {
+      "path": "fr/hospital-system-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1e94aed13fe51c31d3c94f48eff376296b6a1d3ab323864b97622bc4e3a00da8"
+    },
+    {
+      "path": "fr/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fcc3326f664088ad66b4f00bad51e21682585f870aa57eac7c8fa86de3efbbb3"
+    },
+    {
+      "path": "fr/joyday-paint/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "71c0473cf6f232c20cf7e01c0deca1da6779d5c9f26ac02d5a2471a898a21a10"
+    },
+    {
+      "path": "fr/joyday-paint.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b976bf22d5b134d9c7dbe0114d697ab841700c1cee844cae7c40e91c550adfbc"
+    },
+    {
+      "path": "fr/labs/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "97735420276a43e8832cae971508a8675653070e4b65e3a136d847fd6deeff67"
+    },
+    {
+      "path": "fr/labs.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "93f62251e44d724d105b8666d2b485a030dbe6718fbbda5a1e3a75218d158fd5"
+    },
+    {
+      "path": "fr/merge-rush-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ae8bcdfe3d695981bb4e67246c1034faa08d912c8cce39b9bf996631e175a2a7"
+    },
+    {
+      "path": "fr/merge-rush-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "855285d831ef623018b7657033fe6636e558b4a25432c48836223ed8ec702532"
+    },
+    {
+      "path": "fr/now/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cfd6655cc98e4c865c1785549f1ac5a6c596747f6512883ee83e412020a55613"
+    },
+    {
+      "path": "fr/now.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cd711676cef4013958cd3ddd286cb7e64433144c4341ec65294d42decdc5d0d5"
+    },
+    {
+      "path": "fr/privacy/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f33e5b8c932e62f15eb478436ff9c0bcee5bbae57bddf1b52a509b21876c0c2d"
+    },
+    {
+      "path": "fr/privacy.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8a1acb58ddde41ec4c2dc5bbc951ed1adb19e7ed6d2ea3bb617483bc98930722"
+    },
+    {
+      "path": "fr/project-detail.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "35d44b851eb7d9ee8f4398bd9fac6cbd5686b537bc244886bb81b6860ce51765"
+    },
+    {
+      "path": "fr/projects/agency-db/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0cbda6ef5542dd5185d7d19cd760f9e8d5741cb4e03924df66fb3eff22efeca7"
+    },
+    {
+      "path": "fr/projects/ai-chatbot-flow-design/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "07bf26cefac5a6d08cd02e9e7b84dc7a9ccf80b730211987adca291a5f97bdf4"
+    },
+    {
+      "path": "fr/projects/atolye-joyday-official-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c04e6dea13ae9859950f1e59fc0aa743f6f315ee02976ea284634b380d54bd49"
+    },
+    {
+      "path": "fr/projects/calculator-android-studio/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "89f6aa1535ce766f46703e4a025e2bed6ee386324095b8b09024a6d6ca1b181b"
+    },
+    {
+      "path": "fr/projects/calculator-javascript/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "95da8c0f5d5750b76a59fe3c267f7414eafcc6ac3d2f0bf11e51ef814fd81c46"
+    },
+    {
+      "path": "fr/projects/cars-dataset-analysis/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "da2ce1c4106327ce0ae885be901ebcdfc5d040a43c4f46da02346b756b530e52"
+    },
+    {
+      "path": "fr/projects/control-panel/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d46fea074e725f00e836731d2a3863260abe5586151d408c8bf16dd561125f1c"
+    },
+    {
+      "path": "fr/projects/drivenfinity/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2f6cc5fa58ed251213a4c809af60256289c90eb1db3eb89bc89254f76aaa94d4"
+    },
+    {
+      "path": "fr/projects/dunker-madness/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a6d665dd2d66928f800e85f68580c5f6d1975e04e9620b77caea6a633ebadb7c"
+    },
+    {
+      "path": "fr/projects/escape-island/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1b22ec7de5cd29c3b3362bed761ec361bd5de1922d70fa5099bdc89096e480f9"
+    },
+    {
+      "path": "fr/projects/extract-shoot-zero/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cf878e52c3adcd128f4e6480fd392221ebee5d0e1302a4b903de7e8a3f4b6a5b"
+    },
+    {
+      "path": "fr/projects/hospital-appointment-system/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d3e3edeec8a9b979bede447fa1c1b365430f1ce92fd62daae6b64a04705a3a05"
+    },
+    {
+      "path": "fr/projects/hospital-form-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "296f63011f9af644e4725cfd73b8d98ec0facdab02fa3df3eeeb361c3ea33b89"
+    },
+    {
+      "path": "fr/projects/ic-supply/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d683379779e87691051a243036ba401c0ca4993dbd3e8f1b08109c4417a3557a"
+    },
+    {
+      "path": "fr/projects/legacy-of-the-lost/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5fc62862c6ca6a9e96d2d67cef21a3a8cb9dbcd04ac43e7e56e4e67f76b6671e"
+    },
+    {
+      "path": "fr/projects/mandelas-web-site-project/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "673d212c0404fc86e74c33fbe6c8cee818ffe84e81ed6037a646fb9d14ba4bb7"
+    },
+    {
+      "path": "fr/projects/my-java-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b36fdf8f4a71b5c4b9ce549c89a2116b024a8a9b356ad016dd6f66c75ed7d318"
+    },
+    {
+      "path": "fr/projects/my-museum/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "00939389dd5aa4174917b73ce2807a5036eb928e801de8ad757a4130d37e7e29"
+    },
+    {
+      "path": "fr/projects/portfolio-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fc3ecfb433485b014a3fbc33d1dac7748a268b88d3ec1255a15a069d995d3ba5"
+    },
+    {
+      "path": "fr/projects/porto-25/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1924f0f49964daf66d1308b82dab7ba9e0a6c0ced301ee71c87d18c8e0a93a9d"
+    },
+    {
+      "path": "fr/projects/pyhton-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "47ce7e91ba247bee855aaa25822af19d5f279cc8d6386a5874a43c3c7e814713"
+    },
+    {
+      "path": "fr/projects/tank-savage/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "bf9059ea2fa14c963590d3e49e90c0d7c750c9ec9484b550833529ed1de1d20c"
+    },
+    {
+      "path": "fr/projects/unity-essentials/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "29bb02f91bf8687ac7ba5f8744ef6d19672710d2ad8f0050b395030f11f8ea15"
+    },
+    {
+      "path": "fr/projects/warehouse-war/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5755c1ec0226ee5d375cc3f6cc92b2c44a9f9413dfdf60e4079a53a8d0a12bbd"
+    },
+    {
+      "path": "fr/projects/weather-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2a071de6e36c955d87669611b99737ef72de6ca220372748629d6bf4d2e66745"
+    },
+    {
+      "path": "fr/request/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8967d6885ce3a3282c08b7edef5e8b9626b563cb06cf8d3c7bc55722c7536215"
+    },
+    {
+      "path": "fr/request.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "4e8afc0576850e29138c31c0c1fd4ca8075deaacc0c4ac2424a626659e5d52a7"
+    },
+    {
+      "path": "fr/sinama-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7c499fadd058f6e813ae247586e55f048604076d6cf31e04ee733d900428b3c9"
+    },
+    {
+      "path": "fr/sinama-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "31d2860b92bf2ef8de1e94f1ef164db846e06b16a0b059b8c2d7331732d5a0c3"
+    },
+    {
+      "path": "fr/single-work.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "bab47ea8a2e7e8046bdb8619dbe92bcc545f99c59afec199af9e09b7f634ec56"
+    },
+    {
+      "path": "fr/works/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "60851e13c1dd7ce7972e8a4f7202e28a2ecd1dcb61377f8901cb99cd72947672"
+    },
+    {
+      "path": "fr/works.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2ac4a9e65b7bf548b68974d36f375ba28a702963080d18d578e6a839ac2c0d43"
+    },
+    {
+      "path": "games/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "37583e3820e69b3c4d8d18fbae52de84934dbe8d4065cca575574744b4022bfd"
+    },
+    {
+      "path": "games.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2c6cd3042aebf0c5f1aaf587111a733f96edee2066bf5ba5794a9930272247a4"
+    },
+    {
+      "path": "hospital-system-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f12d20a8ef724ab85400cd9305aeed144f271ccdd0d5dd01349a138433d7086e"
+    },
+    {
+      "path": "hospital-system-case-study.data.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "96f3f34a396118ef25e3a3315199611a19d83273fa2de2245fedaf6a7b8fae5d"
+    },
+    {
+      "path": "hospital-system-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7cdb3a844517a1ede41ff8a4117c0948bf7576d6ec487614795531b8fa7bf2ca"
+    },
+    {
+      "path": "i18n/pack-de-case-studies.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9d59619bdef1398cb18b9ac68e8b665e11a8d75724eab6569354efbfaaa1bc61"
+    },
+    {
+      "path": "i18n/pack-de-core.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "55a6751ddcd4a74f3057dbe3c30f59f70cdfa9bb5d26b6cfe01076178e083b3c"
+    },
+    {
+      "path": "i18n/pack-de-games.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "918b77a990f963e7870f6aa64242c0ac5e9af4fd970fab80194f30fec847701a"
+    },
+    {
+      "path": "i18n/pack-de-projects.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e4348fab6eb7c53bf2f43a0c21b35de883ecbf7c246e90452a52f1dd0ac9a9dd"
+    },
+    {
+      "path": "i18n/pack-de-request.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "96ecdf1aef174e508d735b60f39c11611edd3858c3615280f5009a767d8a5de8"
+    },
+    {
+      "path": "i18n/pack-es-case-studies.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "91c8a06bfa102a8d2e166b3e9cf527f312ec98d76b58016997b0efc336a310f0"
+    },
+    {
+      "path": "i18n/pack-es-core.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6cdfa31a9d1b0693554c4b46748be3869c14a83fdd0b440469f1f4947eebc133"
+    },
+    {
+      "path": "i18n/pack-es-games.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "60e52d0f79551dc37db9303268469ec19e003fdac547b4061a02800259fdf392"
+    },
+    {
+      "path": "i18n/pack-es-projects.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "58612a132e0ca5302839d26d05271fc9207b3801006c09c9496edea83d26328c"
+    },
+    {
+      "path": "i18n/pack-es-request.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b396b680b124d4c2b7939f7d718ab0ae7eba9cdc612eb52406dbf3c266945a0c"
+    },
+    {
+      "path": "i18n/pack-fr-case-studies.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8e55e3332e2a11ce7d0f4a2a6e1b28def2cca1ce33f90060477dc726a0da1a8c"
+    },
+    {
+      "path": "i18n/pack-fr-core.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d36ba2329be087ba0e4e8c6f4efac4044d527273619ad2234052506df506757a"
+    },
+    {
+      "path": "i18n/pack-fr-games.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2d80cc10e4664ce1c89232cbbed547c14dc5bd071417d31c25586cd861de9491"
+    },
+    {
+      "path": "i18n/pack-fr-projects.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "52fdfc4241ec2e3124a2381a92e470efafa4104c8cfd23a525868258bd44aa34"
+    },
+    {
+      "path": "i18n/pack-fr-request.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a4e8764c98fef4d39b89f89f124af4391bd6c67ef47f65868ff6444799065f6b"
+    },
+    {
+      "path": "i18n/pack-tr-case-studies.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d6b109cb6f949d3ca2b950529cd82d3c37d54d0eec11741340dda22b64283add"
+    },
+    {
+      "path": "i18n/pack-tr-core.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f7777f61059ed79c207cc02e0eda489d7edd46452809c2d4f9f8f1758759561a"
+    },
+    {
+      "path": "i18n/pack-tr-games.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ad88410d9932252cb6dcf58ebbea195761bfccb048c0dc952c9a1785700e25b1"
+    },
+    {
+      "path": "i18n/pack-tr-projects.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e6843a97ae80fc7e4cb909d10c18af8367388e14d55a1901678cd077d31ff668"
+    },
+    {
+      "path": "i18n/pack-tr-request.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "34ea9f76304426c6e3ad75ba22fba51ca94408929fc67896214beaa661a4eb31"
+    },
+    {
+      "path": "i18n-data.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ccd60a6f0ed5febb570129528521668d1d9fa2d5a7c5f0fa5b59cda1795d8faf"
+    },
+    {
+      "path": "index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "685948d619168e7d6a8a9843f2a6fddbcfb250aee4aeac865dcbc4065fd62f55"
+    },
+    {
+      "path": "joyday-paint/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "17ae7402a2ae20fb5f8538651ff383c0c026355b4b9ca04a1e0e0f385b830b78"
+    },
+    {
+      "path": "joyday-paint.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c778a80d2b457a9e70a66bdc3fae6007a48f4b3f08006cf26f7c3c1982375442"
+    },
+    {
+      "path": "joyday-paint.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "83f3a15b31b93dd79e67e631a8d7d29ca5112fda63b60247f9f5211ca6bdf26a"
+    },
+    {
+      "path": "js/ajoop/ai-bridge.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7f5acf818535098033740e985f2484b9ffb711f8859e816d7ab6af281a6f1416"
+    },
+    {
+      "path": "js/ajoop/assistant.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0ece899fdc7bec83528bc7ccacfdd5da3e88620d4880144e1d92572a562048ad"
+    },
+    {
+      "path": "js/ajoop/context.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ebcc1b350fbdff7f9e4733486f338cb1bf93e6f39dbefc84b65d78d40e4296f0"
+    },
+    {
+      "path": "js/ajoop/conversation.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0b19eb7ce5bff8456e0f134961638685da94c5d190e809a85a95e69c087511e0"
+    },
+    {
+      "path": "js/ajoop/entities.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ad11eecc06bb084d837a2880528aff4f276ca1e9040cff54c8ab5da2f8b69732"
+    },
+    {
+      "path": "js/ajoop/evidence.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "28c1412db8ee3760022cb918a5393ea5f34fdc258b45fb93c92ffa49649fd6ef"
+    },
+    {
+      "path": "js/ajoop/knowledge.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cd59d7dab80f729ebfe08a0f7e9d876ca9f3d7ec58de72a9094525f0f028e717"
+    },
+    {
+      "path": "js/ajoop/language.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8c0cc6500856796b9cb7febd59fbb09c2acb726bb091f2ab24133899cebc867b"
+    },
+    {
+      "path": "js/ajoop/matcher.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d1af0c78d769dd35f020a1067021364b827546c408f8eecb46ef1915c2d084ac"
+    },
+    {
+      "path": "js/ajoop/ontology.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "28679ecbf2f3dda88df45eef0d45aa19e58ea1462277308affd0e100f58b888e"
+    },
+    {
+      "path": "js/ajoop/rag-client.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c288214d8c977860a06e0c565a8dfc65707c2e0e6703138ddd147c27506d5a6d"
+    },
+    {
+      "path": "js/ajoop/response.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5dd47abf4c346ece15a348aaf46705e2c663af50271398fb6ba3e2c9598d6fc8"
+    },
+    {
+      "path": "js/ajoop/router.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "80d74af8bf8e996838b718d80c57c549f51c5accdcf022d68bb0a84d8d9a16d3"
+    },
+    {
+      "path": "js/core/analytics-config.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "69569a2fcdf49c40c9d45e52087e8de8da8119116b12a7c1eb3b9e720ebca03f"
+    },
+    {
+      "path": "js/core/analytics.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "53a9f85ac8e62a34c37a93e4d3b4a00455837f449a71a4eacdee4aed00579e86"
+    },
+    {
+      "path": "js/core/i18n-format.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "55e96aecadb9e6e4004c8856d0ce58af692ed5cafbfe4cce20ca7e8a7d31af13"
+    },
+    {
+      "path": "js/core/i18n-runtime.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5933ea99768a6253c411323ddcc6b123db29cac660a866d781f8f7c679d9d90c"
+    },
+    {
+      "path": "js/core/locale-bootstrap.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9470c656de93ac3022e6021c915011217deb081e3ed592a072116274e9276a4e"
+    },
+    {
+      "path": "js/core/locale-routes.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f817e325eda6ea2d38dc0ccec4eb623627a1e4c4585ae8f9c00c069e0f3b0ae2"
+    },
+    {
+      "path": "js/core/locale.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "84d2f566231835e5bddc4ce3444559c017d09746ed80a6d992f044e280b50191"
+    },
+    {
+      "path": "js/core/media.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3a086bc1f93b243cccc5a726350e2c83e315b740742b0c2ba759d453ab579d26"
+    },
+    {
+      "path": "js/core/shell.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c5fcb446d9d6b967857d45ab8f30c3010f01a4b0b5703b61a552fd0b2eaef6da"
+    },
+    {
+      "path": "js/core/theme.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fec1774745aea57467faec97fcde060f609ce2e0c7ccd5ff83b2488785dba7c7"
+    },
+    {
+      "path": "js/features/ajoop-nav.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "88d8b1692d6ecdf7a87d518194cf4993fd665eab81fb8063786ac934ebd7456d"
+    },
+    {
+      "path": "js/features/certificates.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "016d90e5dedd20702be484b3ccc25caa2b4da7d92cea63c6bf6ff53b45edd791"
+    },
+    {
+      "path": "js/features/command-palette.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b7fe6e7dc8c22484f08f97cd8ced81fa278ec4048bf11491a104ab84bfaf0d28"
+    },
+    {
+      "path": "js/features/creative.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "235931847c36f27d7fcd0c107316fc54a1027f29496102d50c19286291340683"
+    },
+    {
+      "path": "js/features/recruiter.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6fdcafb75f3b0f64e5fb24ea472ff273e70506a03ab22a791e323de39b06341b"
+    },
+    {
+      "path": "js/features/ultimate.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "616146409de77ebf57738fa6d807b06d6940097469ef1c3bec037f60af2e467b"
+    },
+    {
+      "path": "js/pages/games.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fbeee25a15bf77aad4397a882f39eeadf503eac9c226a62be48478e336b3b1cb"
+    },
+    {
+      "path": "js/pages/labs.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3bceddc2608713d7516ed47b0c90e12f55132285d298fee5d9f9f9770d4a3f63"
+    },
+    {
+      "path": "js/portfolio/project-detail.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "69d1203932ee4a2e5872320390755314ba114ed7155068b4a5b3240f0501ee19"
+    },
+    {
+      "path": "js/portfolio/routing.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e84a56fd42349d9ee3b8c0385252a0c3cbced26ce38f9c94701da5025159551e"
+    },
+    {
+      "path": "js/portfolio/works.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "bcec08d690ca37b90c7a3dddf10a9367b4b58d6b740428cff10aabd0e3e277d0"
+    },
+    {
+      "path": "js/request/form.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6774c8fe382129bcec0db39765327ed11ceade2330f9e7b6c15c848f64b418a6"
+    },
+    {
+      "path": "js/request/submission.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "04c99658c5f3b5dce1a641268ddd6d9807862b5cc3827036c3d066dd9f558bf4"
+    },
+    {
+      "path": "labs/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a028ba9c3c38dcd3d5c2e6dd30d14d136a124d5fec6d2562c5b1814a091baffa"
+    },
+    {
+      "path": "labs.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e728ad6f77e760cef55504d75625fa99b066e85f674211777fa70bfa91fdb53b"
+    },
+    {
+      "path": "merge-rush-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "41f9fd3d3d7a1838df0f88836ad4ddbe0a6856deaa6a580b25e3f746eb1afe35"
+    },
+    {
+      "path": "merge-rush-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "04a0b5ed5bc061f1e41c917553348c772a3ec50d2561f8d878d1355c34a2af15"
+    },
+    {
+      "path": "now/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "62e5ce500f5aba51503aef070b5a12845c809a80efd183e6b49f0054fbe3ed2d"
+    },
+    {
+      "path": "now.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "22d1e5cf7904037dff737a0d67375e0ff26348e4dc5b68e2c95dfacb8189ef9b"
+    },
+    {
+      "path": "portfolio-data.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0ed048c6125e3562ca2cf4743bd80c0d1820a3dc0223064b574280928f931ca9"
+    },
+    {
+      "path": "portfolio-v2.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ba0cff1ed8e3408c5742397ee4f8bb79be04d1736ee84042c5133c5da589b491"
+    },
+    {
+      "path": "portfolio-v2.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f34404190a2be9dce613de76593f137d860bccf5215c4b12e906cd5cd5b7380b"
+    },
+    {
+      "path": "privacy/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "58562a6b1c6f04673ed21339b40cf9a2ed1aba545dc3578c39d5a5dd4931d1d9"
+    },
+    {
+      "path": "privacy.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "47e0249910f65830375f19292a15c2863eeab198914bc289650c93f2d2307dbc"
+    },
+    {
+      "path": "project-detail.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0b4a8d8f056a5dea801abbc5a56350b7623ce03f4c7742b848ef705b43b30649"
+    },
+    {
+      "path": "projects/agency-db/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b28e2d694c5aef08e94e8d3bb26fa4e3126c500c6aa747b9d7335f3c89a8b6f8"
+    },
+    {
+      "path": "projects/ai-chatbot-flow-design/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e8e84b8751db41ed395a2d1409446eee247d71a5f296ffdb390925afc7d0ef80"
+    },
+    {
+      "path": "projects/atolye-joyday-official-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e44fde15689ae77f64a2e5fd066513461b7ea6885a680d275eb2ec58850c9712"
+    },
+    {
+      "path": "projects/calculator-android-studio/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a3c90875bb67fe17000ea37938b5e555057c4c16f5dc688fecb702f7b7c6148f"
+    },
+    {
+      "path": "projects/calculator-javascript/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6afddd756698fa4bcffed25de7021bbd88dcef534f548fda65f02bcee90f865f"
+    },
+    {
+      "path": "projects/cars-dataset-analysis/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f2dde0900643d675d2bf09ea3ffd9ccd57926610a0e0002e0e5875e1bc97ad9d"
+    },
+    {
+      "path": "projects/control-panel/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "69be3d64f57974aead3d3e2f4520bd66a80c950fb7ada2d164ca8cc06a6ead8b"
+    },
+    {
+      "path": "projects/drivenfinity/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0aeabe03dbd03b11df7a717e8c89e74041fc1807c9ad0f444a53c077cabdd757"
+    },
+    {
+      "path": "projects/dunker-madness/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1d80d5e8cb4d53919ec63ad1525fce512473516658deb8761ede8d214fbd7ff3"
+    },
+    {
+      "path": "projects/escape-island/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "08c3a0ab5fec9996271118001b5b9236a1b627775f1b3943c654860cbf451e0d"
+    },
+    {
+      "path": "projects/extract-shoot-zero/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a4bc0761a5805dee74a68b27418cf5a8c912283eb20a60fb4031d2bce931933f"
+    },
+    {
+      "path": "projects/hospital-appointment-system/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9516f98bf75ae94c2fa5a9feb370b7591989bb35ddb366c59189b177d6b7d2b6"
+    },
+    {
+      "path": "projects/hospital-form-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "bba23793012c0ae7725bae5bca845c3a2ad0ca151106503ebd2bdbb1066e4ac8"
+    },
+    {
+      "path": "projects/ic-supply/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "520989070c41bf6e1abb5e9911f27d531f8c629e7d442464aab8370381c4e743"
+    },
+    {
+      "path": "projects/legacy-of-the-lost/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a11b8d1be9b5d9845295a95a00e26babed07a12d50c5ba57494ddedac221b1a6"
+    },
+    {
+      "path": "projects/mandelas-web-site-project/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f019826192e9583a83918031fa95e58c3f408d3a21537d3b72fa6f06634a1cbe"
+    },
+    {
+      "path": "projects/my-java-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "476dde71b0e0b68aaaf7ac00f7a4f72ae9c291525b39ca3d4ba803e109aa2fdf"
+    },
+    {
+      "path": "projects/my-museum/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f905ac53a43c11ffe986fc83f0a7a1a17e98b96253c826f31ec61cbc9dfb1a31"
+    },
+    {
+      "path": "projects/portfolio-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "59d687abb30a65e0e111c2869130e4515dc619f4f9e72b83ec156e730fece950"
+    },
+    {
+      "path": "projects/porto-25/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9a7b21474c30614609864b138dec30bfeabb2624d50e65e503faa23314968554"
+    },
+    {
+      "path": "projects/pyhton-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9c48b08919bc005f2073c2e6ae02d3fc0ab77a71d60c0d2abbcdf4e8d8b01c1e"
+    },
+    {
+      "path": "projects/tank-savage/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5d68fdbc807e27504183aa8385c06a95ef008f45b7b0ab7ee188adbfcc135dc0"
+    },
+    {
+      "path": "projects/unity-essentials/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cc42794d5ea3aff39e98fd840ad71049cb0d534f1e732a2e5a6e0206bdfbc31c"
+    },
+    {
+      "path": "projects/warehouse-war/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cc9057520dd29a4ddb162dff36c7c192222f3467f5e9b3805063975f9253697e"
+    },
+    {
+      "path": "projects/weather-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "4f2e357bf10ac3ca2c7b64334f3ef5fd4d9534b6a2747d6430886f3d06f697b2"
+    },
+    {
+      "path": "request/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b03efb54f7b04f8ba46e76bcae07d25e4d3a25716825778b0d7330351c36334b"
+    },
+    {
+      "path": "request-config.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "84ac7370ed8fc1e28caf56ac3c315030a12cb88a73dd05acf42055b091aa90ca"
+    },
+    {
+      "path": "request.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c9ab0a8023667b0047184531ab20178b1b6f2dc25eb4cc5c71fa5e0d7c3c2d16"
+    },
+    {
+      "path": "robots.txt",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "93ac92fbcc71027420404ace2ba69c97fb02ea4fd34c70965e46d2328c85e2bd"
+    },
+    {
+      "path": "script.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2350c21587dad50e9e0b6b445165ec33089defca7a1814c643cff65cc9cbc555"
+    },
+    {
+      "path": "sinama-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3ecf1be538834a0a8e21f26a937d7d8ad8e25e980942905b53cb914650a90577"
+    },
+    {
+      "path": "sinama-case-study.data.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cb15efe21707ae772b03ffb263e120e6ee06f63e82c1920ca9e82efa6f550e8e"
+    },
+    {
+      "path": "sinama-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "71bf43ee229643e8ce4491662770dece22dcadb83c1a14573c23d36260bbeec1"
+    },
+    {
+      "path": "single-work.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c8ef459df5b04a9f70950ef63b270064016ebcdf1c343cb41cda8b5081c7bf96"
+    },
+    {
+      "path": "sitemap.xml",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b5185cd8df5e9206eccdc9d9ca064b7d2a957660262e45e2dd599eb107fa003e"
+    },
+    {
+      "path": "style.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d5f4ebfa3752346cf43426cb8c56231b22d5cff0e12a0d6c9df947e42bd9817f"
+    },
+    {
+      "path": "tr/404.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "9c952378ca082881a7b1de304c0d9b09507a155495cb31f725f0347de3dddf08"
+    },
+    {
+      "path": "tr/about/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "4b35b5ed373b3820d98b398bde9df0ca2418ff51c6a685c38fe1d23b80508840"
+    },
+    {
+      "path": "tr/about.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "16cbb6c17b8af2d539cdf7dffa8eb9d50de665e8676b1fab2d9febaede809f42"
+    },
+    {
+      "path": "tr/adventure/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "39f740d45ff5f7f9b46127a3b378c2ed6bedb3676fe8bfc25acff5df104293a1"
+    },
+    {
+      "path": "tr/adventure.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c9089e69c2ce21b67fbb5c0691ee581a18c9bbb260ad59e08c4d53146d88ceb4"
+    },
+    {
+      "path": "tr/ai-flow-puzzle/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a6e4f88122c2cce0c312e541ca17b6190798de18d7aff7d0798113c47c1ada14"
+    },
+    {
+      "path": "tr/ai-flow-puzzle-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "172ffd673c6a088ce9c217e4d45893a17869f4427a457d5bccf4d981f222314b"
+    },
+    {
+      "path": "tr/ai-flow-puzzle-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "791122d08827adba24d00d66008e372f68e676aba413c447cf40f0d817f5481a"
+    },
+    {
+      "path": "tr/ai-flow-puzzle.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e9b1b7b2ddbb9059d465d24213a0fdbfcdb36b59f26504eccefc003b2385191f"
+    },
+    {
+      "path": "tr/atolye-joyday-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6ed3c039cecdae815686bbf050e93a7503130f459dbf81c4a301efed5c0228e5"
+    },
+    {
+      "path": "tr/atolye-joyday-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2ebf14cd180a137b41215a1a347b9f826d3880769a77fb60b242391a7cb99c08"
+    },
+    {
+      "path": "tr/blog/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3b298ba98bdf2730740edaf734db979d7e13a8657f56881d2cd58d7961c60d2e"
+    },
+    {
+      "path": "tr/blog.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1eecaca34cb100095ed51f5007c0932140beba41ddefb1ba205b14a9f0fad8bb"
+    },
+    {
+      "path": "tr/certificates/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c0c02c0547d65f347f0080c918dac45a521b6210f6ff9858704d337c7cb37388"
+    },
+    {
+      "path": "tr/games/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "23785b69a2951ab722425433744a33cce334281357105db8dcec2c8a741ee7d7"
+    },
+    {
+      "path": "tr/games.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "97474d5e943ed4c339204ca4a929200c4d0425b27223dcf917785384ec288406"
+    },
+    {
+      "path": "tr/hospital-system-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fedab61bef6f8972109261d93bd2b0f0cc36fdaa73972df9047c43fbba8a870a"
+    },
+    {
+      "path": "tr/hospital-system-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "4206884568cd34a1320ecd212e1b4a2f84b401f25e50bff818494e8d1e5ad106"
+    },
+    {
+      "path": "tr/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ec651795bcaa6a5ff7d1df8d82be4976acfe995d8fd9c74525129560f053e976"
+    },
+    {
+      "path": "tr/joyday-paint/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6ae2bce31a1053091caaea9b7ab40145fbe90a26ce49a8125401116bd981de15"
+    },
+    {
+      "path": "tr/joyday-paint.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f1c32e0da4ef81bbd69614ebd8ecfc88d495a241c5745f16157e4e23883815d1"
+    },
+    {
+      "path": "tr/labs/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d96b26e4c5741f192cd8e3d20b61c31dd34efcaf0e063be774e75bfbf3aafa20"
+    },
+    {
+      "path": "tr/labs.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6a833cebeedeb406425bdd4e28f7a7e6a9351406030724c4c3b9015f539e98a2"
+    },
+    {
+      "path": "tr/merge-rush-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5d00afd7a0f4aef6c4be88308844d4509d49dffdbf7baec375b460fc52a8a717"
+    },
+    {
+      "path": "tr/merge-rush-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "73036d973f14332668bb34ac973e83e64297f7a04163bed26eff6005e169e614"
+    },
+    {
+      "path": "tr/now/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "6b455b127a92011daf2461787c549f95c32320d9a69f66fd2a04804f4d059275"
+    },
+    {
+      "path": "tr/now.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f78a1937907e8f164c079cdc2a687b2ab91bd6880728b6729074005e4eb4e996"
+    },
+    {
+      "path": "tr/privacy/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "964c2e87259327ec966fbafd5aeece29c8f0d656cee95fa68f397096fdb40d12"
+    },
+    {
+      "path": "tr/privacy.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "2d6c55d0819811000ff8a681abc23d3ac72acab5676ab4cbaafce0a52585ac74"
+    },
+    {
+      "path": "tr/project-detail.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "8dd8dd8299953d39ad75372ff43ccda413c8ca8d4de694f80d486e2d825cec45"
+    },
+    {
+      "path": "tr/projects/agency-db/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "69df5ae172b62962f984a49881814b1e5e7649a1d4afbe29be9e18536f0b688a"
+    },
+    {
+      "path": "tr/projects/ai-chatbot-flow-design/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "97dedeb3e7920fe37d0af49b7529c66bc72080095c9b52e3c42a05134622725c"
+    },
+    {
+      "path": "tr/projects/atolye-joyday-official-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0a6f70a69dee4225e4b3b3850aa9764fc1007562d8ef2ded352ae1221ec94075"
+    },
+    {
+      "path": "tr/projects/calculator-android-studio/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e9e59dcc023a54c500949755a8d61e2bedc3ca8816ec7e0df039ee0be6f7e82b"
+    },
+    {
+      "path": "tr/projects/calculator-javascript/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d0b1aa46999fafc4237cd1b4fba5a77d61c6634118e76f4948dd2b491285b44b"
+    },
+    {
+      "path": "tr/projects/cars-dataset-analysis/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "4c73de7413bb8ec23650e8bc43316f9603ac2d92852e0817312b6476c5ccbda6"
+    },
+    {
+      "path": "tr/projects/control-panel/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7517423fddd9641f9cbd5e23e1585ca3a438af983c6df0fa88187cf0cd1f7576"
+    },
+    {
+      "path": "tr/projects/drivenfinity/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ba120c23dbc10b53839b6d2d0939e8e5ebdfedfd8c521f1c75abf4334b86a964"
+    },
+    {
+      "path": "tr/projects/dunker-madness/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ff3986ef676046b9d1315e786455417286f9fd5dbd49598ae6332df8da500e97"
+    },
+    {
+      "path": "tr/projects/escape-island/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1f36127b5641760420c5f1d7a1e77534f3ea14c103deb8b3549e6344eea11fb9"
+    },
+    {
+      "path": "tr/projects/extract-shoot-zero/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c06fbb5f1bbf2e7f76d6136bc5622ad80022969c75a23da93333ef814f66fcc4"
+    },
+    {
+      "path": "tr/projects/hospital-appointment-system/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f49a79d47f930c1f0ce593cb447e949b0a3aaa04ea15292908fd346de1688ee9"
+    },
+    {
+      "path": "tr/projects/hospital-form-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "05b89b8dddb20c8f9a8799c68242b21df12283f034494ad6a5b800fa9a94138b"
+    },
+    {
+      "path": "tr/projects/ic-supply/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d1f441b6eaf5c0bb2952b0566534545c795530dc874c462aa882466a63e35950"
+    },
+    {
+      "path": "tr/projects/legacy-of-the-lost/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5bc7c2aeb0403d809f4cf172c09215ec0852b497bd7aab66ab3ec8a5d5fa7a93"
+    },
+    {
+      "path": "tr/projects/mandelas-web-site-project/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "7bd870f2e460629674fe447084c0101221060d26ece22efd26779b2c26d3c15c"
+    },
+    {
+      "path": "tr/projects/my-java-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f31bab51eea0877911b7f9c701af7c7f2eec037b173208f0383bdb7441169c66"
+    },
+    {
+      "path": "tr/projects/my-museum/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "5b65108d10defbad3a9f9204e89fab6aff54d0029f0efd5292afce676e22fd79"
+    },
+    {
+      "path": "tr/projects/portfolio-website/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a65c107b0bf814c91dfdbb32b18fd83189a4ce9083c1753c8b315507bb22a6c5"
+    },
+    {
+      "path": "tr/projects/porto-25/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "59d18d317153497945113bf18514a07aec46a31ccc191f5da84f228facf8dcf5"
+    },
+    {
+      "path": "tr/projects/pyhton-projects/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "dbd50f290fb4bcb3700bdfd78da59fa61eb85df127620f8714b7a25c700618f7"
+    },
+    {
+      "path": "tr/projects/tank-savage/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "27d6db8902354c99fe4948f926a29be786e23a20345625cbf25202411927afe6"
+    },
+    {
+      "path": "tr/projects/unity-essentials/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "efcaf022e6bc3c752033ad98540cf4fcaa36134382e1358c8e0e17979122c796"
+    },
+    {
+      "path": "tr/projects/warehouse-war/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "bd7eccbed61004732aa60db57a69673f2772b8ae3a7c525cc83562ac762f0e19"
+    },
+    {
+      "path": "tr/projects/weather-app/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "482324e24fd84879bd855b989b00ffa72f6348d8f40ae4450c5b78d1729104a4"
+    },
+    {
+      "path": "tr/request/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e57bf64afabbc1ad4de670eb60c0a5226f26ed2f145daaca3b37254346f34a13"
+    },
+    {
+      "path": "tr/request.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "689caae72ac617058f2c18eca21cee238f233ce3d5f4a1a96d174c08f58ef865"
+    },
+    {
+      "path": "tr/sinama-case-study/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "40b34f1a6896dbde791acf1f757b65f91d7a3c0781a8434c1fdbc82b4f6e2677"
+    },
+    {
+      "path": "tr/sinama-case-study.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "361f7da4c7c1f3660494401f8436e7bd4d1fce2f616b5d1b9ed79c331b830b74"
+    },
+    {
+      "path": "tr/single-work.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "762d73ff637f30c991c82270d375ffafca25b86e4a9dfed0c50d76045b5eebe9"
+    },
+    {
+      "path": "tr/works/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1d2a0dcb7299be64c74e2c17fd4bbc1d3eb682391ec16b69c593dc669fc7bb19"
+    },
+    {
+      "path": "tr/works.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "1d7f2193527532baf8a9fc36b7fe8867feaef00fe0ab905012ea3d65f5ce188f"
+    },
+    {
+      "path": "works/index.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cda9490b344cb0e3652faae2e647f0ccf6ee8b7450c402a05a5ada3c5d484e59"
+    },
+    {
+      "path": "works.html",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "03a175f0e06d281f3b678d60dde5981b549646b277a538842306ef9ea9aa5e3f"
+    }
+  ]
+}

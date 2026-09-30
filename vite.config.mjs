@@ -1,8 +1,18 @@
-import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import {
+  REPO_ROOT,
+  REACT_ROOT,
+  REACT_OUT_DIR,
+  REACT_BASE,
+  REACT_PRODUCTION_OUT_DIR,
+  REACT_PRODUCTION_BASE,
+  DATA_ROOT,
+  ASSETS_ROOT,
+} from "./scripts/react-build-config.mjs";
+import { loadArtifactConfig } from "./scripts/public-artifact-config.mjs";
 
 /*
  * Vite is a PARALLEL build system for the React migration foundation. It never
@@ -20,11 +30,7 @@ import { defineConfig } from "vite";
  * classic script, and an ESM config would fail that check for no useful reason.
  */
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-
-export const REACT_ROOT = path.join(here, "src", "react");
-export const REACT_OUT_DIR = path.join(here, "dist-react");
-export const REACT_BASE = "/react-preview/";
+const here = REPO_ROOT;
 
 /**
  * Canonical portfolio JSON, which lives outside the Vite root because the legacy
@@ -32,8 +38,7 @@ export const REACT_BASE = "/react-preview/";
  * never by fetching at runtime — so the data is bundled and pre-rendering can
  * see it.
  */
-export const DATA_ROOT = path.join(here, "data");
-export const ASSETS_ROOT = path.join(here, "assets");
+export { REACT_ROOT, REACT_OUT_DIR, REACT_BASE, REACT_PRODUCTION_OUT_DIR, REACT_PRODUCTION_BASE, DATA_ROOT, ASSETS_ROOT };
 
 /**
  * Makes `vite preview` resolve URLs the way a plain static host does.
@@ -102,9 +107,12 @@ function staticHostingEmulation() {
   };
 }
 
-export default defineConfig(({ isPreview }) => ({
+export default defineConfig(({ isPreview, mode }) => {
+  const productionMigration = mode === "production-migration";
+  const artifactConfig = loadArtifactConfig();
+  return ({
   root: REACT_ROOT,
-  base: REACT_BASE,
+  base: productionMigration ? REACT_PRODUCTION_BASE : REACT_BASE,
   plugins: [react(), staticHostingEmulation()],
 
   /*
@@ -136,7 +144,8 @@ export default defineConfig(({ isPreview }) => ({
   },
 
   build: {
-    outDir: REACT_OUT_DIR,
+    outDir: productionMigration ? REACT_PRODUCTION_OUT_DIR : REACT_OUT_DIR,
+    assetsDir: productionMigration ? artifactConfig.reactBundleDirectory : "assets",
     emptyOutDir: true,
     // Keeps the bundle-size report in the build log honest and comparable.
     reportCompressedSize: true,
@@ -154,4 +163,5 @@ export default defineConfig(({ isPreview }) => ({
     port: 4174,
     strictPort: true,
   },
-}));
+  });
+});
