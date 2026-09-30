@@ -41,6 +41,33 @@ const MINIMUM_MARKUP_BYTES = 1000;
 const escapeHtml = (value) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+/** Build and execute the complete SSR import graph with browser globals absent.
+ * This is deliberately an execution boundary rather than a source-text scan:
+ * a browser-only read in any transitive import fails while the bundle loads or
+ * renders. The caller owns cleanup so QA can inspect failures when needed. */
+export async function executePreviewSsrBundle({ outputDirectory = ssrOutDir } = {}) {
+  const ssrResult = await build({
+    configFile: path.join(repoRoot, "vite.config.mjs"),
+    ssr: { noExternal: true },
+    build: {
+      ssr: path.join(repoRoot, "src", "react", "entry-server.jsx"),
+      outDir: outputDirectory,
+      emptyOutDir: true,
+      cssCodeSplit: false,
+      reportCompressedSize: false,
+    },
+  });
+  const ssrChunks = (Array.isArray(ssrResult) ? ssrResult : [ssrResult]).flatMap(
+    (bundle) => bundle.output || [],
+  );
+  const entryChunk = ssrChunks.find((chunk) => chunk.isEntry);
+  if (!entryChunk) throw new Error("[prerender] server build produced no entry chunk");
+  const serverEntry = path.join(outputDirectory, entryChunk.fileName);
+  const module = await import(`${pathToFileURL(serverEntry).href}?qa=${Date.now()}`);
+  for (const target of module.prerenderTargets) module.renderRoute(target.prerenderPath);
+  return module;
+}
+
 export async function buildProductionReact({ outputDirectory = REACT_PRODUCTION_OUT_DIR } = {}) {
   const output = path.resolve(outputDirectory);
   fs.rmSync(output, { recursive: true, force: true });
@@ -72,32 +99,7 @@ async function buildPreviewReact() {
   await build({ configFile: path.join(repoRoot, "vite.config.mjs") });
 
   console.log("[prerender] building server bundle");
-  const ssrResult = await build({
-    configFile: path.join(repoRoot, "vite.config.mjs"),
-    build: {
-      ssr: path.join(repoRoot, "src", "react", "entry-server.jsx"),
-      outDir: ssrOutDir,
-      emptyOutDir: true,
-      // The server bundle is a build tool, not a deliverable, so its size and
-      // its CSS output are irrelevant. CSS already ships from the client build.
-      cssCodeSplit: false,
-      reportCompressedSize: false,
-    },
-  });
-
-  // The emitted extension depends on the package type (.mjs in this CommonJS
-  // repository), so take the filename from the build result rather than guessing.
-  const ssrChunks = (Array.isArray(ssrResult) ? ssrResult : [ssrResult]).flatMap(
-    (bundle) => bundle.output || [],
-  );
-  const entryChunk = ssrChunks.find((chunk) => chunk.isEntry);
-  if (!entryChunk) throw new Error('[prerender] server build produced no entry chunk');
-
-  // routes.jsx is JSX, so Node cannot import it directly. The server bundle
-  // re-exports the route table, which also guarantees the rendered routes and the
-  // emitted files come from the same module instance.
-  const serverEntry = path.join(ssrOutDir, entryChunk.fileName);
-  const { renderRoute, prerenderTargets } = await import(pathToFileURL(serverEntry).href);
+  const { renderRoute, prerenderTargets } = await executePreviewSsrBundle();
 
   const template = fs.readFileSync(path.join(REACT_OUT_DIR, "index.html"), "utf8");
 

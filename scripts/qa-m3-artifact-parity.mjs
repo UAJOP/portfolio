@@ -56,6 +56,14 @@ function testCanonicalEolContract(temp) {
   assertions += 1;
   assert.throws(() => assertClean("whitespace fixture", compare()), /changed: fixture\.txt/, "non-EOL whitespace changes must fail parity");
 
+  fs.writeFileSync(textPath, Buffer.from("alpha\rbeta\n", "utf8"));
+  assertions += 1;
+  assert.throws(() => assertClean("lone CR fixture", compare()), /changed: fixture\.txt/, "lone CR bytes must remain exact");
+
+  fs.writeFileSync(textPath, Buffer.from([0x61, 0x6c, 0x70, 0x68, 0x61, 0x0a, 0x62, 0x65, 0x74, 0x61, 0x0a, 0xff]));
+  assertions += 1;
+  assert.throws(() => assertClean("non UTF-8 fixture", compare()), /changed: fixture\.txt/, "non-CRLF bytes in text files must remain exact");
+
   fs.writeFileSync(textPath, Buffer.from("alpha\nbeta\n", "utf8"));
   fs.writeFileSync(binaryPath, Buffer.from([0x00, 0x01, 0x03]));
   assertions += 1;

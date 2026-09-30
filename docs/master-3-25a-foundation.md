@@ -41,8 +41,8 @@ routes it deliberately emits zero files.
 
 `npm run build:site` performs:
 
-1. four non-mutating `--check` gates for project pages, derived locale packs,
-   the i18n runtime, and localized routes;
+1. five non-mutating freshness gates for `portfolio-data.js`, project pages,
+   derived locale packs, the i18n runtime, and localized routes;
 2. production React prerender for React-owned routes only into a unique
    invocation-scoped temporary directory;
 3. the bounded legacy Pages artifact build;

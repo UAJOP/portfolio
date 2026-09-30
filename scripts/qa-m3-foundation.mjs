@@ -11,6 +11,7 @@ import { attestReactBuild } from "./react-build-provenance.mjs";
 import { loadArtifactConfig, validateReactBundleNamespace } from "./public-artifact-config.mjs";
 import { verifyProductionGeneratedState } from "./verify-production-generated.mjs";
 import { buildProductionSite } from "./build-production-site.mjs";
+import { executePreviewSsrBundle } from "./prerender-react.mjs";
 import { createSiteHeadRenderer } from "./site-head.mjs";
 import os from "node:os";
 
@@ -30,6 +31,7 @@ assertions += 1;
 assert.throws(() => validateSiteRoutes(fixture), /renderer must be one of legacy, react/);
 
 const routes = canonicalReactRoutes({ site, locales, projects });
+const runtime = loadRouteRuntime(locales, site);
 const expectedLocales = ["en", "tr", "de", "es", "fr"];
 for (const locale of expectedLocales) {
   const home = routes.find((route) => route.id === "home" && route.locale === locale);
@@ -39,8 +41,13 @@ for (const locale of expectedLocales) {
   check(typoProject?.pathname === `/${prefix}projects/pyhton-projects/`, `${locale} must preserve pyhton-projects`);
 }
 check(productionReactRoutes({ site, locales, projects }).length === 0, "#25-A must emit zero React-owned production routes");
+for (const route of routes) {
+  const expected = route.kind === "companion"
+    ? `${route.locale === locales.defaultLocale ? "" : runtime.localeRoutePrefix(route.locale)}${route.route}`
+    : runtime.documentPathFor(route.kind === "project" ? `projects/${route.slug}/` : route.route, route.locale);
+  check(route.output === expected, `${route.locale}:${route.id} adapter output must agree with documentPathFor`);
+}
 
-const runtime = loadRouteRuntime(locales, site);
 const headRenderer = createSiteHeadRenderer({
   registry: locales,
   indexableLocales: (locales.localizedRoutes?.indexable || []).filter((id) => id !== locales.defaultLocale),
@@ -126,6 +133,37 @@ try {
   assertions += 1;
   assert.throws(missing.merge, /React-owned production route was not emitted/);
 
+  assertions += 1;
+  assert.throws(
+    () => mergeProductionReactArtifact(missing.output, null, { routeRecords: syntheticRoutes, config: artifactConfig }),
+    /require output proven by the current build invocation/,
+    "a React-owned route without a current proof must fail",
+  );
+
+  const mismatchedProof = runMergeFixture({
+    files: { "synthetic/index.html": "react canonical" },
+    routes: [{ id: "different-react", output: "different/index.html", renderer: "react" }, syntheticRoutes[1]],
+  });
+  assertions += 1;
+  assert.throws(
+    () => mergeProductionReactArtifact(mismatchedProof.output, mismatchedProof.proof, { routeRecords: syntheticRoutes, config: artifactConfig }),
+    /does not match the current React-owned route set/,
+    "a proof route set different from current ownership must fail",
+  );
+
+  const zeroOwnedBundle = runMergeFixture({
+    files: { [`${artifactConfig.reactBundleDirectory}/app.js`]: "bundle" },
+    routes: syntheticRoutes.map((route) => ({ ...route, renderer: "legacy" })),
+  });
+  assertions += 1;
+  assert.throws(zeroOwnedBundle.merge, /bundle with no React-owned routes/);
+
+  const compatibilityStub = runMergeFixture({
+    files: { "synthetic/index.html": "ok", "tr/works.html": "stub" },
+  });
+  assertions += 1;
+  assert.throws(compatibilityStub.merge, /not owned by a React route/);
+
   const bundle = runMergeFixture({ files: {
     "synthetic/index.html": "react canonical",
     [`${artifactConfig.reactBundleDirectory}/app.js`]: "bundle",
@@ -182,9 +220,12 @@ try {
   fs.rmSync(mixedRoot, { recursive: true, force: true });
 }
 
-const serverEntry = fs.readFileSync(path.join(ROOT, "src/react/entry-server.jsx"), "utf8");
-for (const browserOnly of ["window", "document", "localStorage", "matchMedia"]) {
-  check(!new RegExp(`\\b${browserOnly}\\b`).test(serverEntry), `SSR entry must not read ${browserOnly}`);
+const ssrExecutionRoot = fs.mkdtempSync(path.join(os.tmpdir(), "m3-ssr-boundary-"));
+try {
+  await executePreviewSsrBundle({ outputDirectory: ssrExecutionRoot });
+  check(true, "the complete SSR import graph must bundle, load, and render without browser globals");
+} finally {
+  fs.rmSync(ssrExecutionRoot, { recursive: true, force: true });
 }
 
 console.log(`Master 3 #25-A foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · 0 React-owned production routes.`);

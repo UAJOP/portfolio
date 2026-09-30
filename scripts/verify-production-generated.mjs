@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const GENERATED_SOURCE_CHECKS = Object.freeze([
+  "qa-portfolio-data.js",
   "scripts/generate-project-pages.mjs",
   "scripts/build-locale-packs.mjs",
   "scripts/generate-i18n.mjs",
