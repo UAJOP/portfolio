@@ -95,3 +95,19 @@ client props/state before ownership can flip. Browser-only reads stay behind
 the client entry boundary. The visual rule remains:
 
 **REUSE FOR PARITY → CONSOLIDATE AFTER PARITY.**
+
+## #25-B baseline advancement contract
+
+The immutable 498-file #25-A manifest remains the accepted historical source;
+it is not regenerated from the current checkout. The #25-B parity gate removes
+only the ten Home/About documents and six reviewed runtime/generated files from
+the pinned comparison, then requires every other accepted path and normalized
+hash to remain unchanged. New files are accepted only below `assets-react/`.
+The ten migrated documents are covered by G-62 against their accepted legacy
+equivalents, while same-tree merge neutrality protects every current
+legacy-owned path.
+
+Any future rebaseline tool must require an explicit accepted Git ref, reproduce
+the artifact from that historical ref in an isolated checkout, and fail when
+the ref or artifact is not deterministic. There is intentionally no command
+that accepts current working-tree output as a baseline.

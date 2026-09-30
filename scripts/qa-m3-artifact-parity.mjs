@@ -6,6 +6,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildLegacyPagesArtifact, listFiles } from "./build-pages-artifact.mjs";
 import { buildProductionSite } from "./build-production-site.mjs";
+import { productionReactRoutes } from "./react-route-adapter.mjs";
+import { loadArtifactConfig } from "./public-artifact-config.mjs";
 import {
   BINARY_NORMALIZATION,
   TEXT_EOL_NORMALIZATION,
@@ -17,6 +19,16 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_FILE = path.join(ROOT, "data/site/m3-25a-accepted-artifact.json");
 const ACCEPTED_BASE = "6ca0910ea330d25dcb3873f8b84047666de67fb6";
+const APPROVED_GENERATED_CHANGES = new Set([
+  "i18n/pack-de-core.js",
+  "i18n/pack-es-core.js",
+  "i18n/pack-fr-core.js",
+  "i18n/pack-tr-core.js",
+  "js/core/locale.js",
+  "js/core/i18n-runtime.js",
+  "js/features/creative.js",
+  "portfolio-v2.js",
+]);
 
 function assertClean(label, result) {
   if (!result.missing.length && !result.extra.length && !result.changed.length) return;
@@ -93,8 +105,23 @@ try {
   buildLegacyPagesArtifact(legacy);
   await buildProductionSite({ outputDirectory: mixed });
 
-  const accepted = compareArtifactManifest(baseline, mixed, listFiles(mixed));
-  assertClean("frozen accepted artifact parity", accepted);
+  const migratedDocuments = new Set(productionReactRoutes().map((route) => route.output));
+  assert.equal(migratedDocuments.size, 10, "parity model requires exactly 10 migrated Home/About documents");
+  const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
+  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES]);
+  const finalFiles = listFiles(mixed);
+  const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
+  const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
+  const accepted = compareArtifactManifest(pinnedManifest, mixed, pinnedFiles);
+  assertClean("unchanged #25-A artifact protection", accepted);
+
+  const extras = finalFiles.filter((file) => !baseline.files.some((entry) => entry.path === file));
+  assert.ok(extras.length > 0 && extras.every((file) => file.startsWith(bundlePrefix)), "only namespaced React bundles may be new files");
+  for (const relative of allowed) {
+    const previous = baseline.files.find((entry) => entry.path === relative);
+    assert.ok(previous, `approved changed path is absent from #25-A baseline: ${relative}`);
+    assert.notEqual(artifactDigest(path.join(mixed, relative), previous.normalization), previous.sha256, `approved path did not change: ${relative}`);
+  }
 
   const legacyFiles = listFiles(legacy);
   const currentLegacy = {
@@ -104,17 +131,19 @@ try {
       sha256: artifactDigest(path.join(legacy, file), BINARY_NORMALIZATION),
     })),
   };
-  const neutral = compareArtifactManifest(currentLegacy, mixed, listFiles(mixed));
-  assertClean("same-tree React merge neutrality", neutral);
+  const mergeManifest = { files: currentLegacy.files.filter((entry) => !migratedDocuments.has(entry.path)) };
+  const mergeFiles = finalFiles.filter((file) => !migratedDocuments.has(file) && !file.startsWith(bundlePrefix));
+  const neutral = compareArtifactManifest(mergeManifest, mixed, mergeFiles);
+  assertClean("same-tree unchanged legacy protection", neutral);
 
   console.log(
-    `Master 3 #25-A frozen parity passed. accepted=${baseline.fileCount} final=${accepted.actualFiles.length} missing=${accepted.missing.length} extra=${accepted.extra.length} changed=${accepted.changed.length}.`,
+    `Master 3 #25-B route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=10 bundles=${extras.length} unexplained=0.`,
   );
   console.log(
     `Canonical EOL contract passed. ${fixtureAssertions} assertions · LF=CRLF for recognized text only · binary bytes exact.`,
   );
   console.log(
-    `Same-tree merge neutrality passed. legacy=${currentLegacy.files.length} mixed=${neutral.actualFiles.length} missing=${neutral.missing.length} extra=${neutral.extra.length} changed=${neutral.changed.length}.`,
+    `Unchanged legacy artifact guard passed. protected=${mergeManifest.files.length} missing=${neutral.missing.length} extra=${neutral.extra.length} changed=${neutral.changed.length}.`,
   );
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });

@@ -42,6 +42,7 @@
       });
     });
     document.querySelectorAll("[data-pv2-aria-en][data-pv2-aria-tr]").forEach((node) => {
+      if (node.closest("[data-react-main]")) return;
       const enValue = node.getAttribute("data-pv2-aria-en") || "";
       const trValue = node.getAttribute("data-pv2-aria-tr") || enValue;
       node.setAttribute("aria-label", lt(enValue, trValue, language));

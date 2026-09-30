@@ -4,7 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { buildPagesArtifact, listFiles, loadArtifactConfig, validateArtifactFiles, ROOT } from "./build-pages-artifact.mjs";
+import { listFiles, loadArtifactConfig, validateArtifactFiles, ROOT } from "./build-pages-artifact.mjs";
+import { buildProductionSite } from "./build-production-site.mjs";
 
 let assertions = 0;
 const failures = [];
@@ -25,7 +26,7 @@ try {
   if (suppliedArtifact && (!fs.existsSync(temp) || !fs.statSync(temp).isDirectory())) {
     throw new Error(`Pages artifact does not exist: ${temp}`);
   }
-  const result = suppliedArtifact ? { files: listFiles(temp) } : buildPagesArtifact(temp);
+  const result = suppliedArtifact ? { files: listFiles(temp) } : await buildProductionSite({ outputDirectory: temp });
   const config = loadArtifactConfig();
   const files = result.files;
   assert(files.length > 300, `bounded artifact should contain the complete site, got ${files.length} files`);
