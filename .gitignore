@@ -14,6 +14,9 @@ dist-react-production
 # allowlist and must never become another committed source tree.
 dist-site
 
+# Local/CI QA reports are generated evidence and are uploaded by Site Preflight.
+qa-results/
+
 # Portfolio content automation. The example config, the committed fixtures and the
 # credential-free n8n template ARE tracked; only real credentials and local run
 # artifacts are ignored.

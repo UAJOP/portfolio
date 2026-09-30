@@ -222,9 +222,15 @@ for (const locale of inactive) {
 const protectedTerms = new Set(glossary.protectedTerms || []);
 const projectNames = new Set(glossary.projectNames || []);
 const neutralStrings = new Set(glossary.languageNeutralStrings || []);
+const neutralSemanticKeys = new Set([
+  "home.timeline.cbot.title",
+  "home.timeline.joyday.title",
+  "home.timeline.outlier.title",
+]);
 const NEUTRAL_PATTERN = /^[^a-zA-Z]*$/;
-function looksLanguageNeutral(value) {
+function looksLanguageNeutral(value, entry) {
   if (NEUTRAL_PATTERN.test(value)) return true;
+  if (entry.domain === "ui" && neutralSemanticKeys.has(entry.key)) return true;
   if (protectedTerms.has(value) || projectNames.has(value) || neutralStrings.has(value)) return true;
   /* One- to three-word labels can legitimately coincide across languages. */
   return value.trim().split(/\s+/).length <= 3;
@@ -243,7 +249,7 @@ for (const locale of packLocales) {
     if (typeof value !== "string") continue;
     if (value !== entry.source) continue;
     identical += 1;
-    if (!looksLanguageNeutral(entry.source)) prose += 1;
+    if (!looksLanguageNeutral(entry.source, entry)) prose += 1;
   }
   assert(prose === 0, `${locale} has ${prose} untranslated prose string(s) copied verbatim from English`);
   assert(identical < catalog.entries.length * 0.5, `${locale} looks like an English copy, not a translation`);

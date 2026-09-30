@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": ".",
+      "staticDistDir": "dist-site",
       "numberOfRuns": 1,
       "url": [
         "http://localhost/",

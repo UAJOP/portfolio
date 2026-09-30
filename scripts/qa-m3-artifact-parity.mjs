@@ -18,7 +18,9 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_FILE = path.join(ROOT, "data/site/m3-25a-accepted-artifact.json");
+const PUBLIC_DELTA_FILE = path.join(ROOT, "data/site/m3-25b-public-delta.json");
 const ACCEPTED_BASE = "6ca0910ea330d25dcb3873f8b84047666de67fb6";
+const ACCEPTED_DELTA = "4d0e37b496f70d851397d9976b2022350d11edd6";
 const APPROVED_GENERATED_CHANGES = new Set([
   "i18n/pack-de-core.js",
   "i18n/pack-es-core.js",
@@ -96,6 +98,10 @@ const baseline = validateArtifactManifest(
   JSON.parse(fs.readFileSync(BASELINE_FILE, "utf8")),
   ACCEPTED_BASE,
 );
+const publicDelta = validateArtifactManifest(
+  JSON.parse(fs.readFileSync(PUBLIC_DELTA_FILE, "utf8")),
+  ACCEPTED_DELTA,
+);
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-parity-"));
 const legacy = path.join(temp, "legacy");
 const mixed = path.join(temp, "mixed");
@@ -117,11 +123,14 @@ try {
 
   const extras = finalFiles.filter((file) => !baseline.files.some((entry) => entry.path === file));
   assert.ok(extras.length > 0 && extras.every((file) => file.startsWith(bundlePrefix)), "only namespaced React bundles may be new files");
-  for (const relative of allowed) {
+  for (const relative of migratedDocuments) {
     const previous = baseline.files.find((entry) => entry.path === relative);
-    assert.ok(previous, `approved changed path is absent from #25-A baseline: ${relative}`);
-    assert.notEqual(artifactDigest(path.join(mixed, relative), previous.normalization), previous.sha256, `approved path did not change: ${relative}`);
+    assert.ok(previous, `migrated document is absent from #25-A baseline: ${relative}`);
+    assert.notEqual(artifactDigest(path.join(mixed, relative), previous.normalization), previous.sha256, `migrated document did not change: ${relative}`);
   }
+  assert.deepEqual(publicDelta.files.map((entry) => entry.path).sort(), [...APPROVED_GENERATED_CHANGES].sort(), "public delta must cover the exact eight approved paths");
+  const delta = compareArtifactManifest(publicDelta, mixed, [...APPROVED_GENERATED_CHANGES]);
+  assertClean("accepted #25-B public delta", delta);
 
   const legacyFiles = listFiles(legacy);
   const currentLegacy = {
@@ -145,6 +154,7 @@ try {
   console.log(
     `Unchanged legacy artifact guard passed. protected=${mergeManifest.files.length} missing=${neutral.missing.length} extra=${neutral.extra.length} changed=${neutral.changed.length}.`,
   );
+  console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }

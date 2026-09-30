@@ -1,70 +1,76 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ROOT } from "./i18n-catalog.mjs";
-import { explicitSemanticPageMap } from "./i18n-messages.mjs";
-import { findMatchingClose, findTagEnd, parseTag } from "./localized-html.mjs";
+import { ROOT, loadRegistry } from "./i18n-catalog.mjs";
 import { loadProductionLocalization } from "./production-localization.mjs";
 import { localizedBuildLogEntry } from "./shared-localization.mjs";
+import { loadRouteRuntime, loadSiteRoutes } from "./site-routes.mjs";
+import { decodeHtml } from "./localized-html.mjs";
 
-const buildLog = JSON.parse(fs.readFileSync(path.join(ROOT, "data/portfolio/build-log.json"), "utf8"));
-const esc = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
+const structure = readJson("data/site/m3-25b-home-about-structure.json");
+const buildLog = readJson("data/portfolio/build-log.json");
+const profile = readJson("data/portfolio/profile.json");
+const projects = readJson("data/portfolio/projects.json");
+const registry = loadRegistry();
+const routeRuntime = loadRouteRuntime(registry, loadSiteRoutes());
 
-function buildLogMarkup(locale, localization, limit) {
-  const labels = { shipped: "Shipped", building: "Building", integration: "Integration" };
-  return buildLog.slice(0, limit).map((entry) => {
-    const copy = localizedBuildLogEntry({ entry, overlay: localization.packs.content, locale });
-    return `<article class="build-log-item"><time datetime="${esc(entry.date)}">${esc(entry.date)}</time><div><div class="build-log-meta"><span>${esc(entry.area)}</span><span class="build-log-status is-${esc(entry.status)}">${esc(labels[entry.status] || entry.status)}</span></div><h3>${esc(copy.title)}</h3><p>${esc(copy.detail)}</p></div></article>`;
-  }).join("");
+function collectRequirements(nodes, requirements = { messages: new Set(), compat: new Set(), internal: new Set() }) {
+  for (const node of nodes) {
+    if (node.type === "message") requirements.messages.add(node.key);
+    if (node.type !== "element") continue;
+    for (const attribute of node.attributes) {
+      const value = attribute.value;
+      if (value?.type === "message") requirements.messages.add(value.key);
+      if (value?.type === "compat") requirements.compat.add(value.key);
+      if (value?.type === "internal") requirements.internal.add(value.path);
+    }
+    collectRequirements(node.children, requirements);
+  }
+  return requirements;
 }
 
-function staticBuildLog(html, locale, localization) {
-  return html.replace(
-    /(<div\b[^>]*data-build-log\b[^>]*data-build-log-limit="(\d+)"[^>]*>)[\s\S]*?(<\/div>)/i,
-    (_, open, limit, close) => `${open}${buildLogMarkup(locale, localization, Number(limit))}${close}`,
-  );
-}
-
-function attributesFor(rawTag) {
-  return Object.fromEntries(parseTag(rawTag).attributes.map(({ name, value }) => [name.toLowerCase(), value ?? true]));
+function localizedCanonicalData(locale) {
+  const localizeLink = (value) => typeof value === "string" && value.startsWith("/")
+    ? routeRuntime.localizedInternalHref(value, locale)
+    : value;
+  return {
+    profile: { email: profile.email, resume: profile.resume },
+    projects: Object.fromEntries(["sinama", "chatbotFlow", "joyday", "mergeRush", "hospital"].map((id) => [id, {
+      ...(projects[id].name ? { name: projects[id].name } : {}),
+      links: Object.fromEntries(Object.entries(projects[id].links).map(([key, value]) => [key, localizeLink(value)])),
+    }])),
+  };
 }
 
 export function productionMainProps(route) {
-  if (!new Set(["home", "about"]).has(route.routeId)) throw new Error(`no Home/About production component for ${route.routeId}`);
-  const sourceFile = route.routeId === "home" ? "index.html" : "about/index.html";
+  const page = structure.pages[route.routeId];
+  if (!page) throw new Error(`no Home/About production component for ${route.routeId}`);
+  if (structure.acceptedRef !== "34fdfad01f63004ed10d616a7b061e3996c28150") {
+    throw new Error("Home/About React structure is not tied to the accepted pre-cutover ref");
+  }
   const localization = loadProductionLocalization(route.locale);
-  const html = staticBuildLog(fs.readFileSync(path.join(ROOT, route.output), "utf8"), route.locale, localization);
-  const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);
-  if (!main) throw new Error(`${route.output} has no production main`);
-
-  // Resolve every promoted binding explicitly. This makes missing locale copy a
-  // build failure instead of letting the already-localized template mask it.
-  for (const kind of ["text", "attribute"]) {
-    const values = explicitSemanticPageMap(sourceFile, route.locale, kind);
-    for (const value of values.values()) {
-      if (!html.includes(esc(value)) && !html.includes(value)) {
-        throw new Error(`${route.output}: promoted ${kind} copy is absent from accepted production markup: ${value}`);
-      }
-    }
-  }
-
-  const content = main[1];
-  const blocks = [];
-  let index = 0;
-  while (index < content.length) {
-    const start = content.indexOf("<", index);
-    if (start < 0) break;
-    if (content.slice(index, start).trim()) throw new Error(`${route.output}: unexpected main text outside a production section`);
-    const tagEnd = findTagEnd(content, start);
-    const rawTag = content.slice(start, tagEnd);
-    const parsed = parseTag(rawTag);
-    if (parsed.name.toLowerCase() !== "section") throw new Error(`${route.output}: main child ${parsed.name || rawTag} is not a production section`);
-    const close = findMatchingClose(content, tagEnd, parsed.name);
-    if (close < 0) throw new Error(`${route.output}: unclosed production section`);
-    blocks.push({ tag: parsed.name.toLowerCase(), attributes: attributesFor(rawTag), innerHtml: content.slice(tagEnd, close) });
-    index = findTagEnd(content, close);
-  }
-  if (content.slice(index).trim()) throw new Error(`${route.output}: unexpected trailing main markup`);
-  return { blocks };
+  const requirements = collectRequirements(page.children);
+  const copy = Object.fromEntries([...requirements.messages].sort().map((key) => [key, localization.message(key)]));
+  const compat = Object.fromEntries(["en", "tr"].map((locale) => {
+    const accepted = loadProductionLocalization(locale);
+    return [locale, Object.fromEntries([...requirements.compat].sort().map((key) => [key, decodeHtml(accepted.message(key))]))];
+  }));
+  const links = Object.fromEntries([...requirements.internal].sort().map((href) => [href, routeRuntime.localizedInternalHref(href, route.locale)]));
+  const localizedBuildLog = buildLog.map((entry) => localizedBuildLogEntry({
+    entry,
+    overlay: localization.packs.content,
+    locale: route.locale,
+    defaultLocale: registry.defaultLocale,
+  })).map((entry) => ({ ...entry, title: decodeHtml(entry.title), detail: decodeHtml(entry.detail) }));
+  return {
+    page: route.routeId,
+    locale: route.locale,
+    copy,
+    compat,
+    links,
+    data: localizedCanonicalData(route.locale),
+    buildLog: localizedBuildLog,
+  };
 }
 
 export function injectProductionMain({ document, markup, props, clientEntry }) {

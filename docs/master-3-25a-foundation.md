@@ -64,7 +64,7 @@ legacy-owned route, or publish the preview root.
 ## Parity and hydration gates
 
 `npm run qa:m3:foundation` checks ownership validation, five-locale path
-derivation, the project-family seam, zero current React production routes,
+derivation, the project-family seam, the bounded React ownership set,
 fail-closed message/data behavior, head byte parity, merge clobber rejection,
 the full synthetic mixed-ownership matrix, generated-source fail-closed
 behavior, invocation-bound React provenance, bundle namespace validation, and
@@ -100,7 +100,7 @@ the client entry boundary. The visual rule remains:
 
 The immutable 498-file #25-A manifest remains the accepted historical source;
 it is not regenerated from the current checkout. The #25-B parity gate removes
-only the ten Home/About documents and six reviewed runtime/generated files from
+only the ten Home/About documents and eight reviewed runtime/generated files from
 the pinned comparison, then requires every other accepted path and normalized
 hash to remain unchanged. New files are accepted only below `assets-react/`.
 The ten migrated documents are covered by G-62 against their accepted legacy
@@ -111,3 +111,9 @@ Any future rebaseline tool must require an explicit accepted Git ref, reproduce
 the artifact from that historical ref in an isolated checkout, and fail when
 the ref or artifact is not deterministic. There is intentionally no command
 that accepts current working-tree output as a baseline.
+
+For #25-B, those eight public paths are exact-pinned by a second historical
+manifest at `4d0e37b496f70d851397d9976b2022350d11edd6`; merely differing from #25-A
+is not sufficient. Site Preflight also builds `dist-site` before browser audits,
+so emitted-artifact checks, Pa11y, and Lighthouse observe the deployable mixed
+artifact rather than repository source pages.

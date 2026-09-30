@@ -21,11 +21,14 @@ import { ROOT, loadRegistry, loadProjectRegistry, indexableRoutes, STATIC_ROUTES
 import { loadRouteRuntime } from "./site-routes.mjs";
 
 const registry = loadRegistry();
+const rootAt = process.argv.indexOf("--root");
+const CHECK_ROOT = path.resolve(rootAt >= 0 ? process.argv[rootAt + 1] : ROOT);
+if (!fs.existsSync(CHECK_ROOT)) throw new Error(`qa:html root does not exist: ${CHECK_ROOT}`);
 const ROUTES = loadRouteRuntime(registry);
 const routes = [...indexableRoutes(loadProjectRegistry()), ...COMPANION_ROUTES];
 const locales = registry.locales
   .map((locale) => locale.id)
-  .filter((id) => id === registry.defaultLocale || fs.existsSync(path.join(ROOT, registry.byId.get(id).routePrefix)));
+  .filter((id) => id === registry.defaultLocale || fs.existsSync(path.join(CHECK_ROOT, registry.byId.get(id).routePrefix)));
 
 const files = new Set();
 for (const locale of locales) {
@@ -36,7 +39,7 @@ for (const locale of locales) {
   }
 }
 
-const missing = [...files].filter((file) => !fs.existsSync(path.join(ROOT, file)));
+const missing = [...files].filter((file) => !fs.existsSync(path.join(CHECK_ROOT, file)));
 if (missing.length) {
   console.error(`qa:html: ${missing.length} published document(s) are missing:\n${missing.map((file) => `  - ${file}`).join("\n")}`);
   process.exit(1);
@@ -44,6 +47,6 @@ if (missing.length) {
 
 const require = createRequire(import.meta.url);
 const cli = path.join(path.dirname(require.resolve("html-validate/package.json")), "bin", "html-validate.mjs");
-const result = spawnSync(process.execPath, [cli, ...[...files].sort()], { cwd: ROOT, stdio: "inherit" });
+const result = spawnSync(process.execPath, [cli, ...[...files].sort()], { cwd: CHECK_ROOT, stdio: "inherit" });
 if (result.status !== 0) process.exit(result.status ?? 1);
 console.log(`HTML validation passed. ${files.size} published documents across ${locales.length} locale(s).`);
