@@ -60,15 +60,31 @@ export function runtimeMessages(messages) {
 export function semanticSourceMessageMap(locale, domain = "common") {
   const english = loadMessageDomain("en", domain);
   const localized = loadMessageDomain(locale, domain);
+  const promoted = readJson("data/i18n/home-about-semantic-keys.json");
+  const explicitKeys = new Set(promoted.promotedKeys || []);
   const seen = new Map();
   const ambiguous = new Set();
   for (const [key, source] of Object.entries(english)) {
+    if (explicitKeys.has(key)) continue;
     if (typeof source !== "string" || !source.trim()) continue;
     if (seen.has(source)) ambiguous.add(source);
     else seen.set(source, localized[key]);
   }
   for (const source of ambiguous) seen.delete(source);
   return seen;
+}
+
+export function explicitSemanticPageMap(source, locale, kind = "text", domain = "common") {
+  const manifest = readJson("data/i18n/home-about-semantic-keys.json");
+  if (manifest.schemaVersion !== 1) throw new Error("unsupported Home/About semantic-key manifest");
+  const messages = loadMessageDomain(locale, domain);
+  const entries = manifest.sources?.[source]?.[kind] || {};
+  return new Map(Object.entries(entries).map(([copy, key]) => {
+    if (typeof messages[key] !== "string" || !messages[key]) {
+      throw new Error(`${source}: missing promoted semantic key ${key} for ${locale}`);
+    }
+    return [copy, messages[key]];
+  }));
 }
 
 export function placeholderNames(value) {

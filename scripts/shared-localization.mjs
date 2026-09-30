@@ -38,6 +38,16 @@ export function valueAtPath(source, dataPath) {
   return pathSegments(dataPath).reduce((value, segment) => value?.[segment], source);
 }
 
+export function localizedBuildLogEntry({ entry, overlay = {}, locale, defaultLocale = "en" }) {
+  if (!entry?.id) throw new Error("localized build log: entry has no stable id");
+  const field = (name) => resolveLocalizedData({
+    locale,
+    path: `buildLogById.${entry.id}.${name}`,
+    localizedValue: locale === defaultLocale ? entry[name]?.[defaultLocale] : overlay[`buildLogById.${entry.id}.${name}`] ?? entry[name]?.[locale],
+  });
+  return { ...entry, title: field("title"), detail: field("detail") };
+}
+
 /** Resolve a canonical data path plus its reviewed locale overlay. */
 export function resolveCanonicalLocalizedData({
   canonical,

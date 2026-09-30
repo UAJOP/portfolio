@@ -524,6 +524,17 @@ export const CONTENT_REGISTRY_KEYS = {
   "data/portfolio/sinama-evidence.json": "sinamaEvidence",
 };
 
+/** Build-log copy is addressed by its permanent id, never its array position. */
+export function contentRegistryPath(file, nodePath, data) {
+  const short = CONTENT_REGISTRY_KEYS[file];
+  if (file !== "data/portfolio/build-log.json") return `${short}.${nodePath}`;
+  const match = nodePath.match(/^\[(\d+)\]\.(.+)$/);
+  if (!match) throw new Error(`build-log localized path is not entry-scoped: ${nodePath}`);
+  const entry = data[Number(match[1])];
+  if (!entry?.id) throw new Error(`build-log entry ${match[1]} has no stable id`);
+  return `buildLogById.${entry.id}.${match[2]}`;
+}
+
 /** Facts that must never be duplicated or translated inside a locale pack. */
 export const LANGUAGE_NEUTRAL_KEYS = new Set([
   "id",
@@ -695,11 +706,10 @@ export function buildCatalog() {
   for (const file of LOCALIZED_DATA_FILES) {
     if (file === "data/portfolio/project-details.json") continue;
     const data = readJson(file);
-    const short = CONTENT_REGISTRY_KEYS[file];
     for (const { path: nodePath, node } of localizedNodes(data, registry)) {
       const en = node.en;
       if (typeof en === "string") {
-        push("content", `${short}.${nodePath}`, en);
+        push("content", contentRegistryPath(file, nodePath, data), en);
       } else if (Array.isArray(en)) {
         en.forEach((item, index) => {
           if (typeof item === "string") push("content", `${short}.${nodePath}[${index}]`, item);
