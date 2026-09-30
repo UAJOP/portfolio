@@ -277,7 +277,10 @@ check(reactBuildConfig.includes('REACT_BASE = "/react-preview/"'), "the preview 
 check(reactBuildConfig.includes('"src", "react"'), "the Vite root must stay src/react/");
 check(reactBuildConfig.includes('"dist-react-production"'), "production React output must be isolated from the preview");
 check(reactBuildConfig.includes('REACT_PRODUCTION_BASE = "/"'), "production React assets must use the site root base");
-check(reactBuildConfig.includes('REACT_PRODUCTION_ASSETS = "assets-react"'), "production React bundles must be namespaced");
+const artifactConfig = JSON.parse(read("data/site/public-artifact.json"));
+check(artifactConfig.reactBundleDirectory === "assets-react", "production React bundles must use the canonical artifact namespace");
+check(!reactBuildConfig.includes("REACT_PRODUCTION_ASSETS"), "React build config must not duplicate the bundle namespace authority");
+check(viteConfig.includes("artifactConfig.reactBundleDirectory"), "Vite production output must read the canonical artifact namespace");
 check(viteConfig.includes('mode === "production-migration"'), "Vite must distinguish preview and production migration modes");
 check(!exists("react-preview.html"), "the preview entry must not live at the production root");
 check(!exists(`${OUT_DIR}/script.js`), "the React build must never emit a file named like the production bootloader");

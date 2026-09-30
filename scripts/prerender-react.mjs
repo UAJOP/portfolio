@@ -26,6 +26,7 @@ import {
   REACT_PRODUCTION_OUT_DIR,
 } from "./react-build-config.mjs";
 import { productionReactRoutes } from "./react-route-adapter.mjs";
+import { attestReactBuild } from "./react-build-provenance.mjs";
 import { loadRegistry } from "./i18n-catalog.mjs";
 import { loadProductionLocalization } from "./production-localization.mjs";
 
@@ -40,9 +41,10 @@ const MINIMUM_MARKUP_BYTES = 1000;
 const escapeHtml = (value) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-export async function buildProductionReact() {
-  fs.rmSync(REACT_PRODUCTION_OUT_DIR, { recursive: true, force: true });
-  fs.mkdirSync(REACT_PRODUCTION_OUT_DIR, { recursive: true });
+export async function buildProductionReact({ outputDirectory = REACT_PRODUCTION_OUT_DIR } = {}) {
+  const output = path.resolve(outputDirectory);
+  fs.rmSync(output, { recursive: true, force: true });
+  fs.mkdirSync(output, { recursive: true });
 
   const registry = loadRegistry();
   for (const definition of registry.activeLocales) {
@@ -54,7 +56,7 @@ export async function buildProductionReact() {
   const routes = productionReactRoutes();
   if (!routes.length) {
     console.log("[prerender:production] 0 React-owned routes · emitted 0 files · legacy production ownership unchanged");
-    return { routes, files: [] };
+    return attestReactBuild({ output, routes });
   }
 
   /* A route can only cross this boundary after #25-B supplies its production

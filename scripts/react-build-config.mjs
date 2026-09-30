@@ -7,6 +7,5 @@ export const REACT_OUT_DIR = path.join(REPO_ROOT, "dist-react");
 export const REACT_BASE = "/react-preview/";
 export const REACT_PRODUCTION_OUT_DIR = path.join(REPO_ROOT, "dist-react-production");
 export const REACT_PRODUCTION_BASE = "/";
-export const REACT_PRODUCTION_ASSETS = "assets-react";
 export const DATA_ROOT = path.join(REPO_ROOT, "data");
 export const ASSETS_ROOT = path.join(REPO_ROOT, "assets");

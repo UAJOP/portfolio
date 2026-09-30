@@ -30,16 +30,32 @@ TR, DE, ES, and FR use their canonical prefixes. `pyhton-projects` is preserved.
 
 The preview remains isolated at `/react-preview/` in `dist-react/`.
 Production migration mode is explicit, uses base `/`, reserves the namespaced
-`assets-react/` bundle directory, and writes only to `dist-react-production/`.
+`assets-react/` bundle directory, and writes only to `dist-react-production/`
+when invoked on its own. `data/site/public-artifact.json` is the sole authority
+for that bundle namespace; Vite and the artifact merger both read it. Validation
+requires a single safe relative directory name and rejects collisions with
+legacy browser directories, route documents, compatibility stubs, and other
+artifact roots.
 It derives its targets from the canonical route adapter. With zero React-owned
 routes it deliberately emits zero files.
 
 `npm run build:site` performs:
 
-1. canonical legacy generation inputs already present in the checkout;
-2. production React prerender for React-owned routes only;
+1. four non-mutating `--check` gates for project pages, derived locale packs,
+   the i18n runtime, and localized routes;
+2. production React prerender for React-owned routes only into a unique
+   invocation-scoped temporary directory;
 3. the bounded legacy Pages artifact build;
-4. an ownership-aware merge into `dist-site/`.
+4. an ownership-aware merge into `dist-site/` using the exact in-process React
+   build proof;
+5. removal of the temporary React output.
+
+The build fails before artifact assembly when any committed generated output is
+stale. React build proofs bind the route set, exact path set, and SHA-256 of
+every emitted file to the current Node invocation. Direct artifact-builder use
+is therefore legacy-only while there are zero React-owned routes, and fails
+closed without a current proof once a route becomes React-owned. An arbitrary
+or modified `dist-react-production/` directory has no authority.
 
 The merge accepts only documents whose registry owner is `react` and bundles
 under `assets-react/`. It cannot delete unmatched legacy files, overwrite a
@@ -50,11 +66,17 @@ legacy-owned route, or publish the preview root.
 `npm run qa:m3:foundation` checks ownership validation, five-locale path
 derivation, the project-family seam, zero current React production routes,
 fail-closed message/data behavior, head byte parity, merge clobber rejection,
-and the SSR browser-global boundary.
+the full synthetic mixed-ownership matrix, generated-source fail-closed
+behavior, invocation-bound React provenance, bundle namespace validation, and
+the SSR browser-global boundary.
 
-`npm run qa:m3:parity` builds a legacy-only artifact and the mixed pipeline in
-separate temporary directories, then compares the complete file sets and the
-SHA-256 of every file. It performs no normalization and excludes nothing.
+`data/site/m3-25a-accepted-artifact.json` freezes the complete 498-file artifact
+built independently from accepted base commit
+`6ca0910ea330d25dcb3873f8b84047666de67fb6`, with a SHA-256 for every path.
+`npm run qa:m3:parity` builds the new final mixed artifact and compares its
+exact path set and hashes to that immutable manifest. It separately retains and
+accurately reports the current-tree legacy-versus-mixed comparison as merge
+neutrality. Neither comparison normalizes or excludes any file.
 
 Future route implementations must supply server markup and the exact matching
 client props/state before ownership can flip. Browser-only reads stay behind

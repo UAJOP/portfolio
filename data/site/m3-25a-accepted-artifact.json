@@ -1,0 +1,2000 @@
+{
+  "schemaVersion": 1,
+  "acceptedBaseCommit": "6ca0910ea330d25dcb3873f8b84047666de67fb6",
+  "algorithm": "sha256",
+  "fileCount": 498,
+  "files": [
+    {
+      "path": ".nojekyll",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "404.html",
+      "sha256": "9a5bcee7b4d3b361cc0994a49dee0944840adf910db0c43cd66f14aff3546d31"
+    },
+    {
+      "path": "about/index.html",
+      "sha256": "0d7d9dd9d611deab830f569d78e075cc5d885aa9ed3e4455324a92863aea942f"
+    },
+    {
+      "path": "about.html",
+      "sha256": "db694a46c24612a77e163319c284c9b9bed8a07eb8ffd72b32ad16af9dbfdb52"
+    },
+    {
+      "path": "adventure/index.html",
+      "sha256": "868ea0322a0ab6b5355cfd65019ca07252af514c96f8ef6e2998fded68264252"
+    },
+    {
+      "path": "adventure-game.js",
+      "sha256": "8966741917b7b3a3fca542b7c6f4875d8df76bda49f44df40704e085a4e3b95f"
+    },
+    {
+      "path": "adventure.html",
+      "sha256": "5b391fd1c83c9bcabff321b0f5d01f3e83495fee5565ad96cb5439ef4ea09752"
+    },
+    {
+      "path": "ai-flow-puzzle/index.html",
+      "sha256": "1aa9b75b048d5905157b1ab6b3d692363864780bac6648fda85b6e4d1a092b57"
+    },
+    {
+      "path": "ai-flow-puzzle-case-study/index.html",
+      "sha256": "958a4cf0797909a3e4d252683108b6179c1da191baeb6e1093d79ddc2e7e97f7"
+    },
+    {
+      "path": "ai-flow-puzzle-case-study.data.js",
+      "sha256": "9e9f01dd8f17f2b4d6a37da6d438edb450a72ab6558b2f2d3c6f30b658ca4545"
+    },
+    {
+      "path": "ai-flow-puzzle-case-study.html",
+      "sha256": "3fb7e7f2694de3e063b37f10ceaf2f97904ce35fa0aebe291eba3eb3731aefd6"
+    },
+    {
+      "path": "ai-flow-puzzle.html",
+      "sha256": "94e096e3170534a83ae85e32d5c54d9a997b8229fa9df8a35a37502b533d5327"
+    },
+    {
+      "path": "ai-flow-puzzle.js",
+      "sha256": "e994e9d61243b013a483ff7fb4e820bbdb6bb184027ae532da1343e0836a4daf"
+    },
+    {
+      "path": "ajoop-ai-config.js",
+      "sha256": "3a8f9ef378d60372c02ab7df794c6560493ead04547c2b453cc897c9a2add221"
+    },
+    {
+      "path": "assets/0_PQUN7aF1N02N71W_.jpg",
+      "sha256": "ba7146e54436c23d9178e01dd98a4e4f6af3d75a9b92197374c27423c2eb6734"
+    },
+    {
+      "path": "assets/1__6ooq0R60ba3UT5c-QVemA.png",
+      "sha256": "fa00697a1a887dadeb849a49b29d218b4fd70dd4ddeedf186daa740c31ad5a78"
+    },
+    {
+      "path": "assets/111266f6-5226-4f00-aacc-efde413516ed.jpg",
+      "sha256": "7223f42e7a0fc139a1f80203cb1c5999e58465240d438bbff126f182284192bd"
+    },
+    {
+      "path": "assets/1720450162617.jpeg",
+      "sha256": "6fec4239bab3f01199e312ddd59b73fbb42d531349080b4f296b22f2c3357135"
+    },
+    {
+      "path": "assets/34801520230923033957949.jpeg",
+      "sha256": "26eb4234ca6dd27fbdee76312a5accc76a78a214cc01383a273e7f009a2dc5ca"
+    },
+    {
+      "path": "assets/7477790.png",
+      "sha256": "931b159fd561fcbaa9232f9e65318aa29f24e79c5a9e5b933a050389229fcee8"
+    },
+    {
+      "path": "assets/9a68c93b7acc0a59649afab6ce503d47.jpg",
+      "sha256": "ed494ef13e423ec89d25d7b928f7786f446037526bf88002dd91e0e3723c66aa"
+    },
+    {
+      "path": "assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg",
+      "sha256": "c720135669b1cd9b5201e26a75510b1840fc5d1443abf4dcd22bb439622656ad"
+    },
+    {
+      "path": "assets/agency_db_cover.webp",
+      "sha256": "d847811bd3f492740e8ea6acba0dac9bb728bd24b868f799b3e59e0c437765b2"
+    },
+    {
+      "path": "assets/ai_flow_chatbot_design_cover.webp",
+      "sha256": "0a05294877092817cdbcd019af5cd3e2793880e4ed6857bc36e32ad80093d4d8"
+    },
+    {
+      "path": "assets/ai_flow_puzzle_cover.webp",
+      "sha256": "d4405d629bdd958a3f71274fdae8ce5ee473a8927089450a3a7727d1cf1f7f81"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-builder.webp",
+      "sha256": "d8a766c478c4ec0db292c91ec91dbaf9456602defa22694096056027c9415897"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-fallback.webp",
+      "sha256": "e1225d2efa4c612aa5072a6655934db0fba639796e22627b85c52886f221dfe6"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-mobile.webp",
+      "sha256": "cbaaa6d200c9cfb0b2e3e9deb218bd267e801be96b83430b837bc9272983dc96"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-preview.webp",
+      "sha256": "610bc5c58b6f8f7ec3292289c8c77229edf05f1566c83eaecd4887762d3156c6"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-social.webp",
+      "sha256": "70f40ca4f0ab355b3118484dd7e3342c9216c081bf46a3b4503628b2dfee954f"
+    },
+    {
+      "path": "assets/ai-flow-puzzle-validation.webp",
+      "sha256": "3ca5648dd8afe4a41620daf85f22029cb7d84b46ad0acc562283f9b74fd1dc89"
+    },
+    {
+      "path": "assets/calculator-cartoon-illustration-png.webp",
+      "sha256": "ae41530c45c346c8dbcb99bcaca2a309fa4bf34de0029f3c43dd7822dcae2ef5"
+    },
+    {
+      "path": "assets/control_panel_cover.webp",
+      "sha256": "16ae9f5f19e787f1a54ad8879ffdc4cd46cc0f7ef13bc79ff27183910c104427"
+    },
+    {
+      "path": "assets/converted_image.png",
+      "sha256": "a93d35ca9d498d477971efba26e073a57ae77140c592d3cf60ede049caa67523"
+    },
+    {
+      "path": "assets/CUDEMY.jpg",
+      "sha256": "08aeaab5bc17b567f678daa4e3c465eef0a5ea0d4f5dc1fb12363177900a4dad"
+    },
+    {
+      "path": "assets/CV_foto_beyaz.png",
+      "sha256": "5e0c8aeda469dd210645f3175b95fcdba55d5325eb5b9f26b53a34d71fd5576e"
+    },
+    {
+      "path": "assets/CV_foto_mavi.png",
+      "sha256": "36dcf62497b2ba38a1ce986451dc008fcf4ba80f35665948c284ea3029ef42b9"
+    },
+    {
+      "path": "assets/database-cartoon-style_78370-3596.avif",
+      "sha256": "37e5577265b5a2c48a66627b76c8ed08b74eae174b6e41645868a2e6f6fb6760"
+    },
+    {
+      "path": "assets/drivenfinity-cover.webp",
+      "sha256": "4edaf089d6f5ebd828264c146b72029e37b49faacb528f9e1dfcbedd9da93339"
+    },
+    {
+      "path": "assets/DrivenfinityPng.png",
+      "sha256": "436e65280bd964e5a54af593977b696b8a9a719ffc35c559cfc13dac86da9e33"
+    },
+    {
+      "path": "assets/Ekran görüntüsü 2025-02-25 202336.png",
+      "sha256": "4e7e03d02a667efbbe6a3158c0114e0906481cb1694ac608e0aa2d92eb82866c"
+    },
+    {
+      "path": "assets/Energy_Dashboard_2x.jpg.png",
+      "sha256": "2c4b0239eb7155453532c74834fe82b6b5eb2171b7f90d0de57b3423c4976a03"
+    },
+    {
+      "path": "assets/escape-island-cover.webp",
+      "sha256": "5d1f2ca4583df1a7c45a2a1ca3e00f5774523e8b89058b7b561859719e0b18bf"
+    },
+    {
+      "path": "assets/escape.jpg",
+      "sha256": "0a4afa477d56e230e68e6dfa0da4a44dcca51b09277d95f2318eff16c6c5d45c"
+    },
+    {
+      "path": "assets/f19c7e914f0adb59c0833d00d09f1ea7.png",
+      "sha256": "29bcb697d1d01daeff535cc9087affa3dcdadbf50523101904d39492bb502e19"
+    },
+    {
+      "path": "assets/hastane.jpg",
+      "sha256": "671347aa5e77e0368521ed29ff711c38f0e8fa8f7e269092cb7963a37a66d8e2"
+    },
+    {
+      "path": "assets/hospital_form_app_cover.webp",
+      "sha256": "4c6fdbeb7c0024a488b522a864cfc9bd3d940464c51139abaf05f36e5c8fc063"
+    },
+    {
+      "path": "assets/hospital-building-for-healthcare-background-illustration-with-ambulance-car-doctor-patient-nurses-and-medical-clinic-exterior-free-vector.jpg",
+      "sha256": "904f5a24cb3c9ef7fe906bfccd793325192e762335697ae0c3bd3e60ea10b483"
+    },
+    {
+      "path": "assets/hospital-form-app-preview.png",
+      "sha256": "241a02baf9c99f32a705eb17ff7d318dc14dc1cc9772cf25df618b88d51d3e86"
+    },
+    {
+      "path": "assets/hospital-system-database.webp",
+      "sha256": "8330908b30efc373bdec8bd8539c6e049934da24d3063929e5646d93cb045fe3"
+    },
+    {
+      "path": "assets/hospital-system-doctor-workflow.webp",
+      "sha256": "73d04037ad8719fecfeb2fb96edb14e450189e8e3a77288c36b806b26696cde2"
+    },
+    {
+      "path": "assets/hospital-system-patient-workflow.webp",
+      "sha256": "66aa1f5c11068712be54ca5605564b8a12cfdcda8839e24f636cad39b793dab9"
+    },
+    {
+      "path": "assets/hospital-system-registration.webp",
+      "sha256": "1da9c883dbd6146d62877ad9eaf0aa895524d73c479422c4b94c18c2b8201996"
+    },
+    {
+      "path": "assets/hospital-system-secretary-workflow.webp",
+      "sha256": "98496c268eadb90f45a2ac71cd93c4560de100589b939dfe024d31b8994ec417"
+    },
+    {
+      "path": "assets/hospital-system-social.webp",
+      "sha256": "fdc8315139b756c145326b51d4fbdc8642628ef7e0d5ea84b31dd7b14b5c4f1b"
+    },
+    {
+      "path": "assets/hospital.avif",
+      "sha256": "d795b6537da8d1129abfa44e10f0cb7b62d487376b01d9803d7e04863cf4f2ba"
+    },
+    {
+      "path": "assets/ic_supply_cover.webp",
+      "sha256": "d0acdc0f1edcf5c9ba5348acf4f60a8b947404de2657f2413eb8839282aa5253"
+    },
+    {
+      "path": "assets/images (1).png",
+      "sha256": "64b1f8a57dff658e828fcaa225ad1af3958289da1a26e205b91b10ceb374f0ce"
+    },
+    {
+      "path": "assets/images.jpeg",
+      "sha256": "210baf29c177344a10bc5ffad06b814be51df06ad385f4ad6044322ae0b629b4"
+    },
+    {
+      "path": "assets/images.png",
+      "sha256": "efc965d2f6baa2c6238c252258af0431623cd4ad84a1032048f748bffff3305c"
+    },
+    {
+      "path": "assets/indir.jpeg",
+      "sha256": "72e1b9e7b900c48b2f178119b133a935f372d9bd882bc883bdc559655c7d99dc"
+    },
+    {
+      "path": "assets/insatagram.webp",
+      "sha256": "e394f5b6326d0129da4da329e19d5be339ae5cf52b548aa02ad69d823dbb83fb"
+    },
+    {
+      "path": "assets/item-1.jpg",
+      "sha256": "1b1c2e8b41f7b80da0ce670e02e68af46eaf65ddb4a9fd5dc5fe296992201dea"
+    },
+    {
+      "path": "assets/item-2.jpg",
+      "sha256": "5ca0e8a19a4c62082884ef5b429dccef20cdb8bec77ed75bdc977363a4b7ae25"
+    },
+    {
+      "path": "assets/item-3.jpg",
+      "sha256": "0608e43280fdacaf9238f322a00cb66a60cbbbda1bd5ee13903fef5d67907032"
+    },
+    {
+      "path": "assets/item-4.jpg",
+      "sha256": "0f4c1619dbcc2d7b68d8a314132d7ca03d2764775ad7e15db483735160c466c1"
+    },
+    {
+      "path": "assets/item-5.jpg",
+      "sha256": "4bc48a9cbfe2e462b81be148977365e32bea4e532c9ade09c93440da9ffe26dc"
+    },
+    {
+      "path": "assets/java-logo-black-and-white-1.png",
+      "sha256": "d347f0dda800eecf1fd38358b5e268c60b6e62e15765a2516ae1c70e44b9940d"
+    },
+    {
+      "path": "assets/Java-Logo.png",
+      "sha256": "431a80116c26d791a972d1e09a9728c76b79e29d8e8c1e0b99dbc0623677e5f4"
+    },
+    {
+      "path": "assets/java.png",
+      "sha256": "6eb98437c6f8ec6477e60e177415a75709ebcb7f4fd1ac2dfb1763095b8dc19c"
+    },
+    {
+      "path": "assets/joyday-action-painting.webp",
+      "sha256": "ec1abcc87354b3e7abc20303fe5d3d81c267583b6c3f5fb405ce58fdd3a00557"
+    },
+    {
+      "path": "assets/joyday-brand-logo.webp",
+      "sha256": "09fd636dedc5a7884302f502a4b9bcd1eeda3012182d2b89ff624d87e356840b"
+    },
+    {
+      "path": "assets/joyday-case-study-social.webp",
+      "sha256": "4456ca5744b305ac6702e4822bde4467cfddc5d1df0d7f25ae5e20e63f164a04"
+    },
+    {
+      "path": "assets/joyday-homepage-preview.webp",
+      "sha256": "0b9538d16853e68675e04b4dbfad5c36840f3ce83b8cebe52edac6f9d7b5ede3"
+    },
+    {
+      "path": "assets/joyday-mobile.webp",
+      "sha256": "3e1b09faed6e0e146f497945f89aefc35d1bb12a8c22882a447d1dfa7d3caef3"
+    },
+    {
+      "path": "assets/joyday-reservation-preview.webp",
+      "sha256": "8318f42f970d62596698da7455d4d3e1408e31412615e6da1406377f5a9dac75"
+    },
+    {
+      "path": "assets/joyday-workshop.webp",
+      "sha256": "a4b75612311741b1f50772973f361cc532dc695c6b27908954fc2f5f1a620b14"
+    },
+    {
+      "path": "assets/joyday.jfif",
+      "sha256": "a32e0726d478b55eb886a7a9fae96b6acc8563a14acb6bc0589a10b5bfd7be90"
+    },
+    {
+      "path": "assets/KAAN BALCI- KÜÇÜK LOGO JPG.jpg",
+      "sha256": "abdc70b973cb390b7e9e814076e01ef40cd090c7321c8cd0194d82388aef118d"
+    },
+    {
+      "path": "assets/KAAN BALCI-BÜYÜK LOGO JPG.jpg",
+      "sha256": "b91070e15027a82457584d3289d01faa10eeaf7e5acfccf7ab22c23d8b788209"
+    },
+    {
+      "path": "assets/KAAN BALCI-BÜYÜK LOGO PNG.png",
+      "sha256": "6892632ad4b7fc7380bddc0661e8761847768972e7e88adac917cc9c6c05ba47"
+    },
+    {
+      "path": "assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico",
+      "sha256": "a42ac2fb2ce05c9665df923faa36a50bcfaac6afe7002239c4518a915366e23a"
+    },
+    {
+      "path": "assets/KAAN BALCI-KÜÇÜK LOGO PNG.png",
+      "sha256": "1a86c8920611dd2488c98d6094fcd12b5e0848b0e2fd26d89a3bc6e11ad03b3d"
+    },
+    {
+      "path": "assets/kaan-balci-logo-128.webp",
+      "sha256": "6295ed1903f1cd1ed236a0a8c4cfa00db1abe8d5102a45b2cd20be3795689a2a"
+    },
+    {
+      "path": "assets/kaan-balci-portfolio.pdf",
+      "sha256": "b215a961c9a8d5761646fffd82529afd7e81d807aec34777c37b07d39d7303e0"
+    },
+    {
+      "path": "assets/kaan-balci-profile.webp",
+      "sha256": "d1cb0241a63e38f4dad23f53633fcfd36ebacd3b3049de6bb21953a7a4ec41b3"
+    },
+    {
+      "path": "assets/kaanfoto.png",
+      "sha256": "ed22cc84cc943be0a9f35084a9c5c33b2f35edb5a0ed94535e081cf806829e79"
+    },
+    {
+      "path": "assets/kaanfoto2.jpg",
+      "sha256": "53c8c2df058c970bd028f6416bb87b923644465e8693034b9e75d4d04fa69510"
+    },
+    {
+      "path": "assets/kaanin_kariyer_cover.webp",
+      "sha256": "0429ff7ef3d43896be34106d8feee42e1970c07c7472a8fda105e411ef76f52d"
+    },
+    {
+      "path": "assets/legacy-of-the-lost-cover.webp",
+      "sha256": "99e870ab5eb1be3c3720a56a2c4f668eb06282a64cc1ed49782bee676f1291f5"
+    },
+    {
+      "path": "assets/maxresdefault.jpg",
+      "sha256": "fcc735a711eb703e6e03e9bb2d8de65e3b891b018503a100f2083cf2443ef3f2"
+    },
+    {
+      "path": "assets/merge-rush-case-cover.svg",
+      "sha256": "1f2e26cf869b3aba82ee138e00649f400a0b0e7be7f349974d38dce6cf8e83dc"
+    },
+    {
+      "path": "assets/NDG-LİNUX-CİSCO-KAAN-BALCI1.png",
+      "sha256": "eaed3915dee29ebcd1d1995d97eda873e84544e9800f639672c96cc66fcdb28d"
+    },
+    {
+      "path": "assets/NETWORK-ESSANTİAL-KAAN-BALCI-CİSCO.png",
+      "sha256": "46abca9b2a37796484d96ed9ff9f76864410b13c999b75aba1a5d8eb3a9fe8e5"
+    },
+    {
+      "path": "assets/Opera Anlık Görüntü_2024-05-08_141955_www.instagram.com.png",
+      "sha256": "c1325546d331c82371177d2a5be1362882d5f0e9f36f66670348ae25e0c3cd9e"
+    },
+    {
+      "path": "assets/PACKET-TRACER-KAAN-BALCI.png",
+      "sha256": "efb697ffdcaca433105c76664a8ee77822f5963d52d14e73fcf6ce7f4e455b7f"
+    },
+    {
+      "path": "assets/png-clipart-fruit-vegetable-cornucopia-greengrocer-organic-food-vegetable-natural-foods-food.png",
+      "sha256": "5dbb93c897a766f44f40a87186f47c657b13abeb0c8c69a0a95525c3236e53d0"
+    },
+    {
+      "path": "assets/png-transparent-java-platform-enterprise-edition-computer-icons-java-api-for-restful-web-services-java-miscellaneous-text-logo-thumbnail.png",
+      "sha256": "0d01a16ec95c623dbec6da6c90ca47ebbfaa5557985cefe3b1af19a69c81d054"
+    },
+    {
+      "path": "assets/pngtree-java-file-document-icon-png-image_897467.jpg",
+      "sha256": "a0d41a0044724d826010d4ce2abbccb47a80d1e69bee60165636593a63e99b67"
+    },
+    {
+      "path": "assets/portfolio_website_cover.webp",
+      "sha256": "082e837e41da644bee46f2fab1bb580c3bf419524171d801aca2139a6b549b2e"
+    },
+    {
+      "path": "assets/porto_25_cover.webp",
+      "sha256": "de330cd4d5d679d60f9039eaa528213a4cc6abb55f258d780bf21b64477aba21"
+    },
+    {
+      "path": "assets/Python-Symbol.png",
+      "sha256": "168d602212fc9fc0e10aadc80b42a1905c3fded886a04fa9d0fbcf901208a3a0"
+    },
+    {
+      "path": "assets/q4yDjz2J_400x400.jpg",
+      "sha256": "5bf74d768c16367acc86a355a7706f449036b12f6dc04fd02088fe17bf9e9943"
+    },
+    {
+      "path": "assets/sinama-case-study-hero.webp",
+      "sha256": "d24dfcdaad0e6d63410e5baac607692e9aa1cee6b6de0cd901e5c6dd83553426"
+    },
+    {
+      "path": "assets/sinama-home-featured-project.webp",
+      "sha256": "f6c596154b88089c277fb5c0aa65764faa44ba1ee08432e4451f6596d0dabdfe"
+    },
+    {
+      "path": "assets/sinama-regression-evidence.webp",
+      "sha256": "d9d6c63a2318eef98491206c4f5a181b865f523637309bd0c70acdf5a9a6b2de"
+    },
+    {
+      "path": "assets/sinama-runs-broken.webp",
+      "sha256": "4d26fbcad5205c689dbc420d3ef47313c5ac2c71d0c2a4050ec9cdb780c48ca8"
+    },
+    {
+      "path": "assets/sinama-runs-flow.webp",
+      "sha256": "b17861a9bb6e8c66802b070056d9cd7a04e83b2133debc8e43d5e206156bab38"
+    },
+    {
+      "path": "assets/sinama-social-cover.png",
+      "sha256": "37ce70db2d6e70522da2014f584a73e2efa9704d987ef80e638defcfc8aa47ec"
+    },
+    {
+      "path": "assets/sinama-works-card.webp",
+      "sha256": "a0801c23fba155caa0c3198dbe550c3c1c6a869745bd811eb46531d207a9ca91"
+    },
+    {
+      "path": "assets/single-post-1.png",
+      "sha256": "6f6f445063118de1393930afb81c74c5c81a25aa938a1cfc416d1cc5e7ddbbea"
+    },
+    {
+      "path": "assets/single-post-2.png",
+      "sha256": "75f38621ec3f6c2f905b50941d2fa81203b40c98053d8d023cf203ad5a772e1b"
+    },
+    {
+      "path": "assets/UC-093074b5-0431-4be5-a45c-6e92944ae955-WEB.jpg",
+      "sha256": "cf699301de4b501ad74efc26cd5ac04038a52ca8a248e9851535c341ddaf3032"
+    },
+    {
+      "path": "assets/UC-12fdcfa8-6b16-4a83-b1ba-9a2947c5ddf2.jpg",
+      "sha256": "939bf3d42eba63ebd8a7513c36280791314449f8d3c0b9721acf92507feafab8"
+    },
+    {
+      "path": "assets/UC-3bf05e3d-708b-421c-a585-14c9795bfeca-linux.jpg",
+      "sha256": "571cfa8520f5a688f508655b165243051bd6ddc626d22288ff0484e5e4a5fc89"
+    },
+    {
+      "path": "assets/UC-59f11b29-d236-4fd1-8290-159740f4c33a-java.jpg",
+      "sha256": "eaea0b13166a22fd7444a3220d203b047f628af8ef7f99c1184a4b2933d0ce23"
+    },
+    {
+      "path": "assets/UC-668a1dce-f5f6-4890-a67c-e6c4af45765f-sql.jpg",
+      "sha256": "a3b46925279cdcbf54aad8d8f59f6e7ecedaefbc3247be3446464d919fcc2d18"
+    },
+    {
+      "path": "assets/unity-essentials-cover.webp",
+      "sha256": "8587e40cc3a0d9aecde029040d40e951b994c7be07685058462acd9b2052b31a"
+    },
+    {
+      "path": "assets/warehouse-wreckage-cover.webp",
+      "sha256": "035a9ca1e0e03731ca145cd901fe2c20d055452625a2e811c6dfbff103ba4314"
+    },
+    {
+      "path": "assets/WarehouseWreckage main pp.png",
+      "sha256": "d1d3b9769ca689aa7d4995d7f6fdf5bc9b9ba364f8161f16622b59d4cf5d0df3"
+    },
+    {
+      "path": "assets/what-is-data-analyst.jpg",
+      "sha256": "49d3a91bbe32d808f86bc71e9a06a08c639ccbd0b3ee9d60094c2281f1502020"
+    },
+    {
+      "path": "atolye-joyday-case-study/index.html",
+      "sha256": "0090854bb35251f9c6368ee32d97830858656ae8ed5728fc3493b11b0f339780"
+    },
+    {
+      "path": "atolye-joyday-case-study.data.js",
+      "sha256": "afad66c8301486f6f59feb23a4ebfa56014d165f475e013df6ce6b7461d0376e"
+    },
+    {
+      "path": "atolye-joyday-case-study.html",
+      "sha256": "d2fcbca8c4c9b232ca11c0ebc18e5128d9f3b3895d8eee03802ea7ede3868648"
+    },
+    {
+      "path": "blog/index.html",
+      "sha256": "08c503f75cbead08b0cfa8361f2116157a44e05a89f7a5c2555af845fec72498"
+    },
+    {
+      "path": "blog.html",
+      "sha256": "3a5fffcaa863e17efcb19f5000d156f05fcd79ebf571a188d8e2703772c2bd78"
+    },
+    {
+      "path": "case-study.css",
+      "sha256": "bdb8087cb99b019bce180dcb6bbca43a16a7e47f4b14547cefdbeee0eb256f6d"
+    },
+    {
+      "path": "case-study.js",
+      "sha256": "d9009f093f12071df5e843eec7a119c970207f7ed116c156326e41aed4c90ddd"
+    },
+    {
+      "path": "certificates/index.html",
+      "sha256": "a08914bbd625a43780aceb0b54bd1525b883f7d29f49a62de30082058aa2ac41"
+    },
+    {
+      "path": "CNAME",
+      "sha256": "aa6bd4aa3f878779447d0e33d296ca6f672e55a999ec6abdcb15b1f7c2db631b"
+    },
+    {
+      "path": "css/a11y.css",
+      "sha256": "42b466489a07ea5a00700e4eff6b41a76d7d2bb58296d450c4c18390cd61ae2d"
+    },
+    {
+      "path": "css/games/adventure.css",
+      "sha256": "ef0278c9960389204b9a71a1c14509939c63a32404dfc81e14aa68a933eeef07"
+    },
+    {
+      "path": "css/games/ai-flow-puzzle.css",
+      "sha256": "2f375c26b84005c2ecd5bbdab3ead953fb4894b86b910ee906af25eb9acf6add"
+    },
+    {
+      "path": "css/games/joyday-paint.css",
+      "sha256": "49f1eee5e320574a8b869dbf49b7681cb2a60da56ded95533b5a657c213b78f2"
+    },
+    {
+      "path": "de/404.html",
+      "sha256": "57a8ecd46affaa1bb16b4eac5dcf36c4355c23e676359db17feceb2af0a62ede"
+    },
+    {
+      "path": "de/about/index.html",
+      "sha256": "db0fc89748603147a582eb2e82d11da2fb36050fb054d9ed93aa4c264ec36e7b"
+    },
+    {
+      "path": "de/about.html",
+      "sha256": "007da4a0ac51d6f94e96e1b2735eb811eecd7616569da9b462cf2d61b5a268b3"
+    },
+    {
+      "path": "de/adventure/index.html",
+      "sha256": "4a7ba17b8e3e82249feced1172cf76fd281bfcdec8ced22274f4cb2fef10a640"
+    },
+    {
+      "path": "de/adventure.html",
+      "sha256": "0d70ac5d76e75966066be479fe9d40e8e8229f81c80fc20f56c5f8ab506bf6ce"
+    },
+    {
+      "path": "de/ai-flow-puzzle/index.html",
+      "sha256": "90b33e246256fa49a2007f808cde206e038f38f9bf53bbe825150ab1afa7bde7"
+    },
+    {
+      "path": "de/ai-flow-puzzle-case-study/index.html",
+      "sha256": "dfc3227771f8d75fd4b3b3359f227d3f3cb152c79c71a983488a54847113ec11"
+    },
+    {
+      "path": "de/ai-flow-puzzle-case-study.html",
+      "sha256": "b371f6e38c43185456d252229a31c3e46aa0a332357dd93623b93cb07d0d949c"
+    },
+    {
+      "path": "de/ai-flow-puzzle.html",
+      "sha256": "7e2b94bd4253d1138183f7897d2cd3f66f524c71691942660591ba8a9222fd86"
+    },
+    {
+      "path": "de/atolye-joyday-case-study/index.html",
+      "sha256": "86034fc48f5deef269f4196e962f3a9269103e85799e6d583959da0c554af832"
+    },
+    {
+      "path": "de/atolye-joyday-case-study.html",
+      "sha256": "d62300c692a782e983046f95cdf111f6404de55ba5f0b63c3eb4c13830f7f491"
+    },
+    {
+      "path": "de/blog/index.html",
+      "sha256": "78da7cc00d5b8547ef602231557217e7c3bea0d6ff17ff9fe591a8beff560ae1"
+    },
+    {
+      "path": "de/blog.html",
+      "sha256": "d6ab6996288e62ca61c7c729c29e2174516aadac787e14dadd0a1d14819b7e23"
+    },
+    {
+      "path": "de/certificates/index.html",
+      "sha256": "c15624c38d39d6ec6297a893c54bb278aed6d942045f89904d5b487ba726fa6b"
+    },
+    {
+      "path": "de/games/index.html",
+      "sha256": "0d6656dc6a660db316c01110a3fad44c1c760a0a892f66be07ae713d17d07878"
+    },
+    {
+      "path": "de/games.html",
+      "sha256": "43bd20391d64edd993e6d50482c92037abc61a622ddd8dd62deed18c47a4d572"
+    },
+    {
+      "path": "de/hospital-system-case-study/index.html",
+      "sha256": "2c5079d3da0470a0da11ce62b8b5af0fb839ec7c957a391be3daf9a39a477630"
+    },
+    {
+      "path": "de/hospital-system-case-study.html",
+      "sha256": "0887ec45494da0ba8e755ef93fee82b5d95f4ecc39f0ea0bcb823f6a08b5bd30"
+    },
+    {
+      "path": "de/index.html",
+      "sha256": "68a4fa7a964d9032a4fade222cbe80b7f2874465058827f0ffe07f65565570be"
+    },
+    {
+      "path": "de/joyday-paint/index.html",
+      "sha256": "66b74a481a547b734eca0e2e13d6165d5bda4b93ff61ba04e412eefd6423130a"
+    },
+    {
+      "path": "de/joyday-paint.html",
+      "sha256": "fb152e57cc42e2f0763065f59a668da4a2e13d039c6136305cb4657f4adcdbe2"
+    },
+    {
+      "path": "de/labs/index.html",
+      "sha256": "9655eb5b72f618f1f52ef0da720118c24fc93cae4fc64b569fff7a4990669af4"
+    },
+    {
+      "path": "de/labs.html",
+      "sha256": "597fade235c45586e9de58af4aa893aa3b924418b057648670d7f2aec371177c"
+    },
+    {
+      "path": "de/merge-rush-case-study/index.html",
+      "sha256": "22e1a62671f37dca9d7cab161ffac1d6cf17d082d4d73043366f378077f86686"
+    },
+    {
+      "path": "de/merge-rush-case-study.html",
+      "sha256": "8dc3e03855c1561c758f3bb80c6c841c730c440c9e0d51ed765874b3fa8be0f3"
+    },
+    {
+      "path": "de/now/index.html",
+      "sha256": "e9099d08cb950b7a533a14f11b87100128c074e4ef06af5df149d1f29a229a5e"
+    },
+    {
+      "path": "de/now.html",
+      "sha256": "7ede67c35f474d3db607050250dbb48c4918073e22e11fe255c39dd059ae408e"
+    },
+    {
+      "path": "de/privacy/index.html",
+      "sha256": "bf97fbca1f9f97a5e5a43af63b34c6d15f735990d700a08b367c7151695a325d"
+    },
+    {
+      "path": "de/privacy.html",
+      "sha256": "0062c0cbf0c7ff42a3e351640b4faeb4cc62b3f2109af35cd5485d75f5271635"
+    },
+    {
+      "path": "de/project-detail.html",
+      "sha256": "fb6f7c8de5a0d060b7109be08aa1525bc4f0b31ad2d65c11623231a643e940a4"
+    },
+    {
+      "path": "de/projects/agency-db/index.html",
+      "sha256": "e49dc890199970645727a4f3571e5783e3aa92f68efa4cf5d30f779baa59fce7"
+    },
+    {
+      "path": "de/projects/ai-chatbot-flow-design/index.html",
+      "sha256": "47f3ff96599529c78ba0a3e3ad41e047f9f8f31164006f2d61445df7ce3e6aaf"
+    },
+    {
+      "path": "de/projects/atolye-joyday-official-website/index.html",
+      "sha256": "03e0a5339069f699cb916340223aae226a2393306f6de737035ab7cad64809aa"
+    },
+    {
+      "path": "de/projects/calculator-android-studio/index.html",
+      "sha256": "4c55ca26f368d3d8cd424dd9332077ea9be608b5d3132eed418129fc462be2c7"
+    },
+    {
+      "path": "de/projects/calculator-javascript/index.html",
+      "sha256": "ec91243c87d190d5f0aa965547df72b162efca659d9881a28ed5c5437ff36da4"
+    },
+    {
+      "path": "de/projects/cars-dataset-analysis/index.html",
+      "sha256": "42d0d2d8104ce0f9c7bb60035676fd0b4b3ba74a35530dd3466f5ba14cf1326b"
+    },
+    {
+      "path": "de/projects/control-panel/index.html",
+      "sha256": "670ea7a24d00977500510b5bd93a7b3466552568a5830998706e93c32e4fce9c"
+    },
+    {
+      "path": "de/projects/drivenfinity/index.html",
+      "sha256": "14efe3b5af4ee3811130770eac145a55e427ce6907d0daa9c32362795211bc24"
+    },
+    {
+      "path": "de/projects/dunker-madness/index.html",
+      "sha256": "f31967648c3fe53c78dbef2de680eee1cb1596ebc0d42cc1433b9abb70140011"
+    },
+    {
+      "path": "de/projects/escape-island/index.html",
+      "sha256": "564f502d8faf5a6a98fe61fdd4410e6e59e61c64ac651db2f665b80891810fb1"
+    },
+    {
+      "path": "de/projects/extract-shoot-zero/index.html",
+      "sha256": "3ef415ab9b30883d0d22811e5fe39f1a21eb306f7b8148edbab5d3313af27973"
+    },
+    {
+      "path": "de/projects/hospital-appointment-system/index.html",
+      "sha256": "840e7001e29f604706c2fadbd151f2a8f32f7482a2cc34866ec675bf0e35cd6a"
+    },
+    {
+      "path": "de/projects/hospital-form-app/index.html",
+      "sha256": "54989bed9e6b59f8f63cdc55095f2e17998f279e3d7fcb4b05679266badceae1"
+    },
+    {
+      "path": "de/projects/ic-supply/index.html",
+      "sha256": "d74237b9c1973e297796aaa3d323ced75b98c3c30f6205c829fa4e1ac6427626"
+    },
+    {
+      "path": "de/projects/legacy-of-the-lost/index.html",
+      "sha256": "b4d107bbef759f0494edc110d0ce3d240c589cdab3574bd52c8e422e1f448de9"
+    },
+    {
+      "path": "de/projects/mandelas-web-site-project/index.html",
+      "sha256": "bdba98852b309df222ce97da6b8efce6fac1f7875dab1ba1a93de13a91169de5"
+    },
+    {
+      "path": "de/projects/my-java-projects/index.html",
+      "sha256": "739081002ef1c682b8b9a6edad8193d2221a9c38d2288600cd09988b3c3202e8"
+    },
+    {
+      "path": "de/projects/my-museum/index.html",
+      "sha256": "3bbef32fae512de20d4c5f304a83828d2a85d751ca59e66b162fe4ae98047f55"
+    },
+    {
+      "path": "de/projects/portfolio-website/index.html",
+      "sha256": "67ec01daeec4d626be0450ff471f57ff9e953365cd0c07ec0705f18a44b76ad9"
+    },
+    {
+      "path": "de/projects/porto-25/index.html",
+      "sha256": "e9c2b311dc4eca4814d98f895273f8a00e33d9760e7154e3db4f19f8da61a6cd"
+    },
+    {
+      "path": "de/projects/pyhton-projects/index.html",
+      "sha256": "0babb204200996b03d7d66a1ce4da7d8b7ded15adb9c0103b44d7d45c7eaddcf"
+    },
+    {
+      "path": "de/projects/tank-savage/index.html",
+      "sha256": "9b70532163eb005f2f8d29d935d74561c50ae5a0359f1ddac7efa8a59182fb10"
+    },
+    {
+      "path": "de/projects/unity-essentials/index.html",
+      "sha256": "40f88b59a606a586d7fed53a8032525565b19ec00a97920965ad0a4a1d83f896"
+    },
+    {
+      "path": "de/projects/warehouse-war/index.html",
+      "sha256": "d217ca74886f0cc543ff2eeabfdeefa4c8cc2811d9149f39a53fba201fe01b2b"
+    },
+    {
+      "path": "de/projects/weather-app/index.html",
+      "sha256": "5e85ff24b4235d0f0dce4f87e0e35a4df839a5ab2138330c9817b24f097f5f08"
+    },
+    {
+      "path": "de/request/index.html",
+      "sha256": "6c260bd90ec6d56f61617c6bf30b9e47dd43cccbd7f8fd5c938e71b703634e52"
+    },
+    {
+      "path": "de/request.html",
+      "sha256": "9cc6000144ebbc861f5a9c4a194c78fab89e160007ce8acb3b6be2a82ea38deb"
+    },
+    {
+      "path": "de/sinama-case-study/index.html",
+      "sha256": "51addb00836825e8f12724948ad4e0a5410dc91f5983ce19ed863a481971c2d1"
+    },
+    {
+      "path": "de/sinama-case-study.html",
+      "sha256": "da13532b4ef099b7c17d42e03a03d988d8de26745d95778e1499ea8fbc623689"
+    },
+    {
+      "path": "de/single-work.html",
+      "sha256": "fee3a20915fba6b9ca2b415943f8087b739b176dd537550556bdabef44dc41a8"
+    },
+    {
+      "path": "de/works/index.html",
+      "sha256": "5d69f29721e1238cebdfa036967cbd09a2a2dabc5a24ada489b02b1684075889"
+    },
+    {
+      "path": "de/works.html",
+      "sha256": "495e53a7a15c3a4c4d1c62f0bb23553ecd57a5bffdfdeac804964f119508dd27"
+    },
+    {
+      "path": "es/404.html",
+      "sha256": "1e26bee75209cde3db398b3a49b61ec6f5651540ce86919be89399724488684e"
+    },
+    {
+      "path": "es/about/index.html",
+      "sha256": "8b13882b98f41e9bcf2dd4523a86eeb22f0f6d317ea068dfae0b808e9d79d88d"
+    },
+    {
+      "path": "es/about.html",
+      "sha256": "ca0006841343522c02a0b6009baf3fea29b3c5c608ff817eabe9c4122d664c6d"
+    },
+    {
+      "path": "es/adventure/index.html",
+      "sha256": "71ed6e32d1e412854c128e735517708d4182585ea415d46bec60b980f8436c06"
+    },
+    {
+      "path": "es/adventure.html",
+      "sha256": "28bdeb67347e0878df6afc70dd5791a4c09655d72259b09d4f3ea0864394039a"
+    },
+    {
+      "path": "es/ai-flow-puzzle/index.html",
+      "sha256": "2e9f6f99705c399cad7dff30d8333d0fda8e50622575e5e895f6a9c7b59c67d6"
+    },
+    {
+      "path": "es/ai-flow-puzzle-case-study/index.html",
+      "sha256": "b72c8687fa70653408b6d8dd7b43381e3eeae45eafd103504acaa73c27cf0f05"
+    },
+    {
+      "path": "es/ai-flow-puzzle-case-study.html",
+      "sha256": "0b4dd331e4d1ead45561cf54b612d7a4a6b214acf835c8c77ad5b6a7b57697ff"
+    },
+    {
+      "path": "es/ai-flow-puzzle.html",
+      "sha256": "5e62e542aff7e96481291c79b20ae1a26d3fefd604a945d993246139411c6ed8"
+    },
+    {
+      "path": "es/atolye-joyday-case-study/index.html",
+      "sha256": "9d64f6ba0d81dd31aa1d0526392d01a874b3652d73fdd6bd44f3fa230cb9a760"
+    },
+    {
+      "path": "es/atolye-joyday-case-study.html",
+      "sha256": "301c90abe5a2039cd608c8af884c30e46bb6972a789c2d1156c79834e3a1deed"
+    },
+    {
+      "path": "es/blog/index.html",
+      "sha256": "a4207013dcb374c10ff173f9566ff777f7db051b3722b467a2243a6754924294"
+    },
+    {
+      "path": "es/blog.html",
+      "sha256": "8b0721e863f18215bbe7032bd758f5943d4d9c218adbb4b997243412997e9ba7"
+    },
+    {
+      "path": "es/certificates/index.html",
+      "sha256": "915690076f5360e2c5b9ed99e33d4bd44bc2afc57947c74554c54944c89080f5"
+    },
+    {
+      "path": "es/games/index.html",
+      "sha256": "2c07951efaf8f4d34dd97c36e1fa7ca20e11a5e4aef84602062d6fa7949d4493"
+    },
+    {
+      "path": "es/games.html",
+      "sha256": "c6fb36c56dc1dfffdefcff433ea4b997f77738621427e310f6775e734504e345"
+    },
+    {
+      "path": "es/hospital-system-case-study/index.html",
+      "sha256": "70343949d496db05b6f6d24ee0fb96281ba45e5dba5c82772556a420bf035b38"
+    },
+    {
+      "path": "es/hospital-system-case-study.html",
+      "sha256": "bbc09dd4857e63921e6174e6b00bc623ac917bea6d7491cad8b214df173ec26d"
+    },
+    {
+      "path": "es/index.html",
+      "sha256": "ce7226ccccc256f07e2678392761a0b2abe5fcd3aba59a94cec398ae6ed8dd04"
+    },
+    {
+      "path": "es/joyday-paint/index.html",
+      "sha256": "36b265a3be8e2edcf7ac5e881367b026599c347d0968411888dfac11707022b6"
+    },
+    {
+      "path": "es/joyday-paint.html",
+      "sha256": "3cd2f4c70ebf5b1c432062a15cf6e4465613c14cdb74dea10820aba8092d0642"
+    },
+    {
+      "path": "es/labs/index.html",
+      "sha256": "0de94f4ea65fc7295a3a03105529a140eb206bae38a29a5c25ddd929472986e5"
+    },
+    {
+      "path": "es/labs.html",
+      "sha256": "58cd88d2c26c7e5fba3cd4aeea6e61edd03e064101b9f523f101ed5e8e367bd6"
+    },
+    {
+      "path": "es/merge-rush-case-study/index.html",
+      "sha256": "d62020ec2a17befc044b8a617f70d4c2709a3824581e808b302b35fe497a9470"
+    },
+    {
+      "path": "es/merge-rush-case-study.html",
+      "sha256": "1734ba09e0fc53539f8d227d809a0719682f9781bfdb1ff026b9ae3654f8d7b9"
+    },
+    {
+      "path": "es/now/index.html",
+      "sha256": "fc0b488d009f58daafeea3bc3bc69d6e0e3b76a9d992edf89753999427d0889e"
+    },
+    {
+      "path": "es/now.html",
+      "sha256": "022b93875e34e4c47030e316aab35d1facb42e90438a02ee3aaa5bfbc9e7588e"
+    },
+    {
+      "path": "es/privacy/index.html",
+      "sha256": "636b1637e2285b37cde3149fc90c71baa48c15c7635968310fef1f631ee5e2ae"
+    },
+    {
+      "path": "es/privacy.html",
+      "sha256": "6d376bb1e75c067ac49d78e3dbb6f944128e7489749263ac56cb4f86bd8aea63"
+    },
+    {
+      "path": "es/project-detail.html",
+      "sha256": "0948f9ac1e4a75dafad42bb3c53f30dd73e6f98c741777d7d480cf7800948508"
+    },
+    {
+      "path": "es/projects/agency-db/index.html",
+      "sha256": "07eba129a0681ff3172483f9e557ca1fd4f1ec1136a2a35dab24b1d1d77cd342"
+    },
+    {
+      "path": "es/projects/ai-chatbot-flow-design/index.html",
+      "sha256": "b2b62a5ef372e1f8524f60092cf7b799e5424ddf7dca1305864887318ba25a4d"
+    },
+    {
+      "path": "es/projects/atolye-joyday-official-website/index.html",
+      "sha256": "5d8dc91844f03ac66bb39c045c72b33f75de996549d819d8c5f5653b3b4ba47d"
+    },
+    {
+      "path": "es/projects/calculator-android-studio/index.html",
+      "sha256": "214ba564d8c15d7be18ee5774f9aaf6000cdf58f495f74e0acde06e93f6bbd23"
+    },
+    {
+      "path": "es/projects/calculator-javascript/index.html",
+      "sha256": "5685aa44eb9e6cf071846902e1b3f4a7c05634cee936853d22c3fdf5495dae68"
+    },
+    {
+      "path": "es/projects/cars-dataset-analysis/index.html",
+      "sha256": "0c56af073a5d0d2885fc4998bc54b431718c062e4af121baf502f10d7a043c7c"
+    },
+    {
+      "path": "es/projects/control-panel/index.html",
+      "sha256": "91d243e70bb37c4b950c3ef14dc6cb67e8bdd2b24bce4055059761d0da75b1a1"
+    },
+    {
+      "path": "es/projects/drivenfinity/index.html",
+      "sha256": "241e7c9a3398ec2761c85f08bcf0c235c8a9773bbca74d2f55142b963dd4a1d6"
+    },
+    {
+      "path": "es/projects/dunker-madness/index.html",
+      "sha256": "3c676ca87fedf339bc270927f14016eeed4d771dd8cf34141cc960128145303c"
+    },
+    {
+      "path": "es/projects/escape-island/index.html",
+      "sha256": "77fb0daca2b9cfee0588f11d7da091ad3075be0ab5c5a8eb2bc927888f0060b7"
+    },
+    {
+      "path": "es/projects/extract-shoot-zero/index.html",
+      "sha256": "3dcc73796423040b46a11a95d6b7a19017903eed5c3084f1c8cb48ef84170360"
+    },
+    {
+      "path": "es/projects/hospital-appointment-system/index.html",
+      "sha256": "34693f708bd74033037664303949d9f8c7dd39a87126b2b2134e0cf295112e88"
+    },
+    {
+      "path": "es/projects/hospital-form-app/index.html",
+      "sha256": "d2ebdb0899c7c90978578a89bda0b63ea19a53665e0a7135e06a284909f5901b"
+    },
+    {
+      "path": "es/projects/ic-supply/index.html",
+      "sha256": "3050ed1e5e5a455bafc06f3a7b4f829b255e7d422d7c30aa1e1bc12a650072a9"
+    },
+    {
+      "path": "es/projects/legacy-of-the-lost/index.html",
+      "sha256": "738840c46291fd34f9c83aa10e5d8bb85f8961c8d41593aaff6b1478f7f0381a"
+    },
+    {
+      "path": "es/projects/mandelas-web-site-project/index.html",
+      "sha256": "2cd8fd7a10f1806e3d1e507851e46f084c7979d0764a18b147a8c73769028051"
+    },
+    {
+      "path": "es/projects/my-java-projects/index.html",
+      "sha256": "f9e9bac3b65aff1278e91a2932e82b077e8df21b88bf089f5e1e04d7f4ceecf8"
+    },
+    {
+      "path": "es/projects/my-museum/index.html",
+      "sha256": "89c331ee5a6db228e1a700320c34cd6c24e097e850bc93739f9550f8c94b5d25"
+    },
+    {
+      "path": "es/projects/portfolio-website/index.html",
+      "sha256": "95525c2454896e60e0ef82eec4a2b32e833bf681820bdbad738f423eb01e6f7e"
+    },
+    {
+      "path": "es/projects/porto-25/index.html",
+      "sha256": "92a3726787185e540d218a8f00b7623d7542030f75c9700cfe4d671390ea5dd5"
+    },
+    {
+      "path": "es/projects/pyhton-projects/index.html",
+      "sha256": "cb03997f77712d0a6f0ce50edf46bd85e583e3d43f22bbc53ceeecbb70479fdb"
+    },
+    {
+      "path": "es/projects/tank-savage/index.html",
+      "sha256": "d725af32297d61f52a83d9f093326e5dfd93a78f8573a1f5c180caef0c96da52"
+    },
+    {
+      "path": "es/projects/unity-essentials/index.html",
+      "sha256": "76183d4cac9c5cdbda5faf5ad11c872cce72e11799afe30670ab3137dff9b699"
+    },
+    {
+      "path": "es/projects/warehouse-war/index.html",
+      "sha256": "f5def9595b6f90d3813523c4c0c61b3417d704e8a34227b661f0aede10c890f1"
+    },
+    {
+      "path": "es/projects/weather-app/index.html",
+      "sha256": "14ba7bf8a0d7964f4524bac938c2cc52b5bb9d7c9dc8ef9424add29fd5ab776b"
+    },
+    {
+      "path": "es/request/index.html",
+      "sha256": "832616233e21888aec7074f5fe9c5efd2c0c399fbe0f1e197b7950bb559337f6"
+    },
+    {
+      "path": "es/request.html",
+      "sha256": "e460e22b339e3e2f72a4f9449af86d10b283bd2ac70ce641fee6723665070709"
+    },
+    {
+      "path": "es/sinama-case-study/index.html",
+      "sha256": "8aca35ac2212f25a66697ef9cbaab25f664680fb60de1e55c154c62cb991b834"
+    },
+    {
+      "path": "es/sinama-case-study.html",
+      "sha256": "8107a376574ffaa079b4ee6c490a1731335d35b5e73c3de44c2f891317f147cb"
+    },
+    {
+      "path": "es/single-work.html",
+      "sha256": "66c1b272cf313329e5a48880a0a32ded042db5325adb339615bea8ad7cb3f0f5"
+    },
+    {
+      "path": "es/works/index.html",
+      "sha256": "9a7af46ce3c49c380be890cc501047e7334707edb819364f1a29c91e7dbddd70"
+    },
+    {
+      "path": "es/works.html",
+      "sha256": "cabc1d64926652b39f774105fa0cf6fea1402bc8318b3cfaf7d1c7df38aa7451"
+    },
+    {
+      "path": "fr/404.html",
+      "sha256": "677e43cf6f8de4c2e8cbca15ac966467f277e09bea72299a090ada9f9832a2ae"
+    },
+    {
+      "path": "fr/about/index.html",
+      "sha256": "d6bd4218156eb6e9ced25f96fde9ab47434fe4fa06241cb96dd2dd6b39e66fe5"
+    },
+    {
+      "path": "fr/about.html",
+      "sha256": "2855de8a93d45fb4503a120a2d6b6eb382e1e9096becc18b2b4c60adf5111e8a"
+    },
+    {
+      "path": "fr/adventure/index.html",
+      "sha256": "940868f30f5334c352b6e0a2a4712e571fd55c7a692a5dd22f7c592b0f588783"
+    },
+    {
+      "path": "fr/adventure.html",
+      "sha256": "98f813d4a1d8aacbd5c391d8b6e1273692888c49522f6ca63fb5fed7d324ce0b"
+    },
+    {
+      "path": "fr/ai-flow-puzzle/index.html",
+      "sha256": "8e085b7843f84588921ca0a645d3cd10420049bd8e485ae00e8d24cfc16068ab"
+    },
+    {
+      "path": "fr/ai-flow-puzzle-case-study/index.html",
+      "sha256": "93b83bb008e10fcaa5c77c6c0919de97c2301fa0dbb2f674e4b3d60fcdc2d875"
+    },
+    {
+      "path": "fr/ai-flow-puzzle-case-study.html",
+      "sha256": "f712a365c765294d8aded9cf969cc30b622086cb7fc13febefb5766d82514b41"
+    },
+    {
+      "path": "fr/ai-flow-puzzle.html",
+      "sha256": "4a607f93c9f3db1ebb3ac6f057783ebe6fcb3d39cc7387b850e7da52cb60803a"
+    },
+    {
+      "path": "fr/atolye-joyday-case-study/index.html",
+      "sha256": "aa94d73b335383eed1809e3338a28d146d804ccf75b884a2fb87d38d23f17a6d"
+    },
+    {
+      "path": "fr/atolye-joyday-case-study.html",
+      "sha256": "9b9cb86be0312cbcada53c4b14c588a11fb997952d4dea2fdd38be5153599ca7"
+    },
+    {
+      "path": "fr/blog/index.html",
+      "sha256": "48533d8f9a180ef20b331a5396a2c1306b23596582be233386e09829e29e3c6e"
+    },
+    {
+      "path": "fr/blog.html",
+      "sha256": "75863bd12e3d741d3693391977f5ce095733256464154edb932f5b9cb8c62fa7"
+    },
+    {
+      "path": "fr/certificates/index.html",
+      "sha256": "8f4f44756d2d0b14f4a520f05841e8d1ebefe7be927f76790044a32faca248e9"
+    },
+    {
+      "path": "fr/games/index.html",
+      "sha256": "900c98b7e6c474c6da76facb55c8cade2db03f4f2319e6a60462e144e8a99efd"
+    },
+    {
+      "path": "fr/games.html",
+      "sha256": "d97c38bc082311c2ca7d262e241c6446891653e8b4106629e09966c67fdf9648"
+    },
+    {
+      "path": "fr/hospital-system-case-study/index.html",
+      "sha256": "f6ef6ae0e6e3ed2391709c2c6dcfdc2782f6db9cdb6621b4ff448db3d380deb5"
+    },
+    {
+      "path": "fr/hospital-system-case-study.html",
+      "sha256": "a937c862206ed4680d0757e60bdb0cf3ac43677acf022b89094d29ebe6c6db38"
+    },
+    {
+      "path": "fr/index.html",
+      "sha256": "84c0af7615cf6995b4436dbf205279d94c34314cc2a503bae96facdef19c26ab"
+    },
+    {
+      "path": "fr/joyday-paint/index.html",
+      "sha256": "fcb9d4646de22b5df36b119a3facf5c985eab60f1604bb26c5cabc35718e88dc"
+    },
+    {
+      "path": "fr/joyday-paint.html",
+      "sha256": "4d46b43f3d28f158b0e9de87c53d89695ca639f1ca1d0e4e8b7e0fdb8e47d191"
+    },
+    {
+      "path": "fr/labs/index.html",
+      "sha256": "0889900d7d2728e232475d7d3d1f4ee981c4d72cb7545666f7b6c52cd1b4f047"
+    },
+    {
+      "path": "fr/labs.html",
+      "sha256": "7a8eeaafa43efae86cd143097c9256f61adb527e9b754ec34dd8c7a895d82ed4"
+    },
+    {
+      "path": "fr/merge-rush-case-study/index.html",
+      "sha256": "2995bf90ee2c8831aec9bba16e963899ac6af29726799b2182dcbeab03be1449"
+    },
+    {
+      "path": "fr/merge-rush-case-study.html",
+      "sha256": "05bd518387fc2c1ccf1ab1a2d9263b860a5ecfff9f3897add8a087ffd1d693b7"
+    },
+    {
+      "path": "fr/now/index.html",
+      "sha256": "15479dfd8ac6a408c8d57de4bf958556985ade6f6f6d9ef8d96feb2a0a0b4e56"
+    },
+    {
+      "path": "fr/now.html",
+      "sha256": "ae303f2fae5330d833b82bf5800b27679900dd0175922afa9085a61a882e0504"
+    },
+    {
+      "path": "fr/privacy/index.html",
+      "sha256": "68579ad9d059a8eb477eca6773485e89708bd9419a01c793fcb98dcede618187"
+    },
+    {
+      "path": "fr/privacy.html",
+      "sha256": "7cb960e79d0ba432321a69a0b13d4085f5e785e0cc1c7b4190b062601e4161f0"
+    },
+    {
+      "path": "fr/project-detail.html",
+      "sha256": "bf6a10a392393cc90b523689ce568c0b02c9e7858f586bb879b82a95f000c045"
+    },
+    {
+      "path": "fr/projects/agency-db/index.html",
+      "sha256": "98adc33be40c12c661982be1833dbbb29080db9f5ae8b3f3cec3522578ae3bbc"
+    },
+    {
+      "path": "fr/projects/ai-chatbot-flow-design/index.html",
+      "sha256": "52d3344f40ed8ae6feb6a18ece4487fdfea96baa6b29c50f00f86e3fdee09cae"
+    },
+    {
+      "path": "fr/projects/atolye-joyday-official-website/index.html",
+      "sha256": "dceb32da74504517428a4466ccbb1985dd76c444c58e23deb895b00484d7e39f"
+    },
+    {
+      "path": "fr/projects/calculator-android-studio/index.html",
+      "sha256": "a6266677bf9b0ec64f0ede7b014895d03500c329f0650b6973f49bebb18cab67"
+    },
+    {
+      "path": "fr/projects/calculator-javascript/index.html",
+      "sha256": "6f17ca3c1355cb2e68bf2d47668f36a554d700d49748b796425d685bcdb0b475"
+    },
+    {
+      "path": "fr/projects/cars-dataset-analysis/index.html",
+      "sha256": "fd2402cda86e8cafc108007e8a2c051b83de191c03375ae9c23df0cbcd6290d3"
+    },
+    {
+      "path": "fr/projects/control-panel/index.html",
+      "sha256": "c2a2879221e209927dc67559c8f35a9aeeebf67a7ad5810adeb2ebd8805cfa79"
+    },
+    {
+      "path": "fr/projects/drivenfinity/index.html",
+      "sha256": "6a2927d105ffa108913cbf4abead9b94c911adad0dea819a9298580e459af4e3"
+    },
+    {
+      "path": "fr/projects/dunker-madness/index.html",
+      "sha256": "610b0c108189ef724a51cb447ed56c529890477c84f10087458d5658be733dbf"
+    },
+    {
+      "path": "fr/projects/escape-island/index.html",
+      "sha256": "328654fc76f655d12c86ea8a02f77ededdecbe1eda8a0cc0d8522d184e0f4391"
+    },
+    {
+      "path": "fr/projects/extract-shoot-zero/index.html",
+      "sha256": "f48942da534d5e9a3d918602999e0b88f43bb2ac3145fc52cd4dfe8253aa3302"
+    },
+    {
+      "path": "fr/projects/hospital-appointment-system/index.html",
+      "sha256": "820cf2147e9658b6dcd6f585eb7224d978b71f7068d36f75b3555c1edae5a7aa"
+    },
+    {
+      "path": "fr/projects/hospital-form-app/index.html",
+      "sha256": "7ff0e38e2803f240e873289b772f1d56daf8eaaabd3092f267711f24bb5555a0"
+    },
+    {
+      "path": "fr/projects/ic-supply/index.html",
+      "sha256": "af3a888de6b6a0eb3465fcbb9098a2deca955ecfc64dcefe05f9013a1f57f162"
+    },
+    {
+      "path": "fr/projects/legacy-of-the-lost/index.html",
+      "sha256": "3fb1a49bfb72ef3f44234db9e5d7c9bfdcf1376c69e5684477307b4bcb6d99ef"
+    },
+    {
+      "path": "fr/projects/mandelas-web-site-project/index.html",
+      "sha256": "4f69f95dd2b03e6934e498ce906fa8b602a944b957c35e459bc1f47bfcad3b9b"
+    },
+    {
+      "path": "fr/projects/my-java-projects/index.html",
+      "sha256": "103a2bd6ae3696ea28802fcc02bccdfb0ae22f6abba5515c5af9189e1fa96f15"
+    },
+    {
+      "path": "fr/projects/my-museum/index.html",
+      "sha256": "4ed1704d4387577396886830a1359030a8ad16bc24833d64a7a9e2a7e1f49f38"
+    },
+    {
+      "path": "fr/projects/portfolio-website/index.html",
+      "sha256": "03b5f6f4f3b66c0bb899d848cb005ff82de815a15b56596ac1beade40717b654"
+    },
+    {
+      "path": "fr/projects/porto-25/index.html",
+      "sha256": "ae340594e514af0ccce77e351f1041a66353989f721e44ec2b4b6550d47cb62c"
+    },
+    {
+      "path": "fr/projects/pyhton-projects/index.html",
+      "sha256": "4daec2fc98cc3505729c696e754fe38992bf1dfb4725df5e23583f56d0e8af42"
+    },
+    {
+      "path": "fr/projects/tank-savage/index.html",
+      "sha256": "d0fa8776a5b8ea6c4e7589fde697c94ab2bc4501093b64eccdb290fbf93b396a"
+    },
+    {
+      "path": "fr/projects/unity-essentials/index.html",
+      "sha256": "bbaf3e82d248cc97db9e7b3b20bce8bee9c4641b0cc09a80c64863adcf476096"
+    },
+    {
+      "path": "fr/projects/warehouse-war/index.html",
+      "sha256": "514fc1f6d5fd8f21f59a167967defd1af83173b082492dbe33de260e23eaf7c4"
+    },
+    {
+      "path": "fr/projects/weather-app/index.html",
+      "sha256": "2e8e3d3b3fa24016e12fdc22fdb7210d837e178b884e52c6b02f80948bea0752"
+    },
+    {
+      "path": "fr/request/index.html",
+      "sha256": "98c33f482b0a30114fb169251698a3ba8fa47d792a53026604c00ee5acd59a4a"
+    },
+    {
+      "path": "fr/request.html",
+      "sha256": "c432551c7a3af382d77d033084f6ade01c7761b40f1acfb146d912c4f9f63623"
+    },
+    {
+      "path": "fr/sinama-case-study/index.html",
+      "sha256": "9865708024e04fc8853bc15772f92ea60b3875ca4f3236d281ca14641e854673"
+    },
+    {
+      "path": "fr/sinama-case-study.html",
+      "sha256": "208ccacec009ff6b245ddd75cc58eff50093208da9a5302be01fb0dda083caf4"
+    },
+    {
+      "path": "fr/single-work.html",
+      "sha256": "69fb6ca4ae7d06f6c47f5bbc799c19b70ed6b7fffc6731e3d1e88e58cb4002fa"
+    },
+    {
+      "path": "fr/works/index.html",
+      "sha256": "b068c2b1909e93a6f589711927356ab211ba20dbe848f481f7e9022c2e1266fa"
+    },
+    {
+      "path": "fr/works.html",
+      "sha256": "127a8e4b2599a39be7d6919cf1d362a93cba666db778245b9542d539119667d1"
+    },
+    {
+      "path": "games/index.html",
+      "sha256": "b13cb7db23a84337cd3c0a5aedf153eb0d795e7a7beb74f7196e3ee9727bbb21"
+    },
+    {
+      "path": "games.html",
+      "sha256": "73c62137601bd096a697357ff005f21687717d690d0cd5b1464e72268104a18f"
+    },
+    {
+      "path": "hospital-system-case-study/index.html",
+      "sha256": "455f3afc8aef1c5507dadc86cbed827eec9b5711718140542b083b469bd54718"
+    },
+    {
+      "path": "hospital-system-case-study.data.js",
+      "sha256": "5ff6b0f260e812403cc1119eca6fef2cc8a917b78e734bfe31ef1f84be9345af"
+    },
+    {
+      "path": "hospital-system-case-study.html",
+      "sha256": "8c3c6c1c6794daaa4196946eead33398029f8c8da5b2346daad1778b815f895a"
+    },
+    {
+      "path": "i18n/pack-de-case-studies.js",
+      "sha256": "960dfd1fdafe09409f9487b24ffedc85157a9fe912eee197777b4f1beb547601"
+    },
+    {
+      "path": "i18n/pack-de-core.js",
+      "sha256": "3700f91f669d754b40a4fe84dd8aaf7bfb36798eace33cc22b069727a19218f1"
+    },
+    {
+      "path": "i18n/pack-de-games.js",
+      "sha256": "795e3b7b936987c4190fb445ebed423c34a86075ef826ef485edb7145eb04226"
+    },
+    {
+      "path": "i18n/pack-de-projects.js",
+      "sha256": "7b50057c32bea445ba29a7bc72913463265fb366acb31ab3620fff07aff1fbe6"
+    },
+    {
+      "path": "i18n/pack-de-request.js",
+      "sha256": "081079261f2de5452c83313e30b5d131afe4c21496dd2b9038bc559643c3a564"
+    },
+    {
+      "path": "i18n/pack-es-case-studies.js",
+      "sha256": "e2ff29518e984671f96d7ed2ad7d5648fb737758e7c52ede16ac6c73ed5553f8"
+    },
+    {
+      "path": "i18n/pack-es-core.js",
+      "sha256": "623bc62ee1abc2a269ba572add732c5c3b12bcd3d5ba0e2a347fa389e67b64a1"
+    },
+    {
+      "path": "i18n/pack-es-games.js",
+      "sha256": "7efc577c847f527773c4bc9f51ac983e4176dc5d4b6b66d20d02c6353d2df4be"
+    },
+    {
+      "path": "i18n/pack-es-projects.js",
+      "sha256": "5183bca4126e20d256b23439c153fbb74b4e59edc98a5c1beb8fa0e3fb2e798f"
+    },
+    {
+      "path": "i18n/pack-es-request.js",
+      "sha256": "98201bde6316fc25263644a4f9f872cfad954a696bce00e33c157546536e061d"
+    },
+    {
+      "path": "i18n/pack-fr-case-studies.js",
+      "sha256": "1b80fd92e643818b8beb56c93677089f353066feb0866add5be35cf4e1b71f02"
+    },
+    {
+      "path": "i18n/pack-fr-core.js",
+      "sha256": "70b586f0b9dc9d1e3ba5d629c1081daa75efedf994958eb5acc0acf2bc2b4d39"
+    },
+    {
+      "path": "i18n/pack-fr-games.js",
+      "sha256": "fbb4ee8535b7eb42591f24714b5bc001893dff0b99fc6b41c9cffecc41f8a67e"
+    },
+    {
+      "path": "i18n/pack-fr-projects.js",
+      "sha256": "f5fb7f626747412265ba829b992d012be6b2894461a4912efb86f3c65305ee2c"
+    },
+    {
+      "path": "i18n/pack-fr-request.js",
+      "sha256": "c1fa6fb35099b7576f54ee218315ff1f628cf5ceabb47d1428014913ea339bbd"
+    },
+    {
+      "path": "i18n/pack-tr-case-studies.js",
+      "sha256": "4aa0a824abafe88dbb5bb1ce0b8607966495fdfe2ba67697657dbaa08a127b8b"
+    },
+    {
+      "path": "i18n/pack-tr-core.js",
+      "sha256": "f5688cc1db59d30aa9318edeb5ef50a3251891384504ee747210b1badf2ee09d"
+    },
+    {
+      "path": "i18n/pack-tr-games.js",
+      "sha256": "2484af9e8b3bc24ed3d1db2e55a8a53013aeee293e1a45dc51c007e3c35a7a34"
+    },
+    {
+      "path": "i18n/pack-tr-projects.js",
+      "sha256": "7d01991e0384110947cab37b4c0fc792f97afb0eeb57546a6ab7fb4aca986118"
+    },
+    {
+      "path": "i18n/pack-tr-request.js",
+      "sha256": "5b700195846a75cc27c9bdbfc2c833e4ca2b62917c87a0fe447aa7db1a652fec"
+    },
+    {
+      "path": "i18n-data.js",
+      "sha256": "0203991b54a8a7622a72c8a4e9811a2af52b4f9f1b7eabb5a538371059421921"
+    },
+    {
+      "path": "index.html",
+      "sha256": "5c12e8570c4fc83aacc0f5316d97bfd45d8bc15f497d44b43442a3d87821d064"
+    },
+    {
+      "path": "joyday-paint/index.html",
+      "sha256": "343350aef960f02caea9b963d7f909375015969c4c9c2b6e6dc2f5b806329ef1"
+    },
+    {
+      "path": "joyday-paint.html",
+      "sha256": "1a817ea338f4201023e17bcbdebe7d905e6066aaa0f83aa7d4fa30155fe77601"
+    },
+    {
+      "path": "joyday-paint.js",
+      "sha256": "94f6e62f8e9cf0a8a13480d8498970ba6436e0e6a91ccccf6404d9ccce7c135e"
+    },
+    {
+      "path": "js/ajoop/ai-bridge.js",
+      "sha256": "2a983fc64533ca658f3af254685a88d5e02c407ed164000e6b8a33dd4fab91e8"
+    },
+    {
+      "path": "js/ajoop/assistant.js",
+      "sha256": "2b8ee20a401499dc961c24ec0f0572751e11ef8d50479df7a57334be07d8ba00"
+    },
+    {
+      "path": "js/ajoop/context.js",
+      "sha256": "eb91d3ae9fa9a585683aaef6ef4ee597a91574ba2bba7fcefba40d74c6c3140d"
+    },
+    {
+      "path": "js/ajoop/conversation.js",
+      "sha256": "f71520f7d1dfc38ac4b9e3d2544353bc4e20b18423fb151bc74cd852ceeba914"
+    },
+    {
+      "path": "js/ajoop/entities.js",
+      "sha256": "cc17ca17a52c79fc0175d0daea4a9ed9ff5e048f877dfe607b29ec623a7ae988"
+    },
+    {
+      "path": "js/ajoop/evidence.js",
+      "sha256": "1e2af9b054df262772c1ae64aace02af116573fd043272fd4237f05b43c9c7cc"
+    },
+    {
+      "path": "js/ajoop/knowledge.js",
+      "sha256": "64e277544298894fdd392343a24d0b517bd3eb51c5e6d11f74dd7cd7e046e0a5"
+    },
+    {
+      "path": "js/ajoop/language.js",
+      "sha256": "e91984dd19ee6697ada03c7d9740c33e9969c5c77f52d25fcb245d1247a2c0ba"
+    },
+    {
+      "path": "js/ajoop/matcher.js",
+      "sha256": "2563a2d0e374d55e8f2ac5589b52850569768cf88347068661d7639c0258c145"
+    },
+    {
+      "path": "js/ajoop/ontology.js",
+      "sha256": "81e6f3df4ddb26bbc8a43ed1e666e49949684048dbc9f04aefd466d002edd628"
+    },
+    {
+      "path": "js/ajoop/rag-client.js",
+      "sha256": "adc0372e5265a4a12d938d2f4398b5b568ae29f4a9e34ebd5f83b56a1d2b4fe3"
+    },
+    {
+      "path": "js/ajoop/response.js",
+      "sha256": "1a5e8d943004d3ba6a4863a26be9c2fff3ab2619d8dae1d01163ab8c45830636"
+    },
+    {
+      "path": "js/ajoop/router.js",
+      "sha256": "ebd98541789c51f6a44f3d5053685f2006bcd7bbd2224919a97e99e3533693e7"
+    },
+    {
+      "path": "js/core/analytics-config.js",
+      "sha256": "97bf340832756e3f2cd300f29f2877ba3e8e950fb67dc68f73e6557af5ca57a8"
+    },
+    {
+      "path": "js/core/analytics.js",
+      "sha256": "4ab82375c69636b51f8f102c9bc0f7bee1ef3075ff7cdc3dae9d2a55a73807f7"
+    },
+    {
+      "path": "js/core/i18n-format.js",
+      "sha256": "961890f29c935a1cd0b6ecfc765fff32c43aa6bad057966a081e915eb0340aa4"
+    },
+    {
+      "path": "js/core/i18n-runtime.js",
+      "sha256": "487384cf91aaa1e31668be16fec2c44a926d5f82f02f439f3bb3512046f8799e"
+    },
+    {
+      "path": "js/core/locale-bootstrap.js",
+      "sha256": "70222729fa60f0ddd32f532a4df0591ecce7f55769d02184782914144fa4ed8a"
+    },
+    {
+      "path": "js/core/locale-routes.js",
+      "sha256": "539516bc619739ae11f45e799f2877c333cfbdfa5b0ddfcfddddaa89a9ee09e3"
+    },
+    {
+      "path": "js/core/locale.js",
+      "sha256": "e7377c58c2f59b3824151b729efade2a3ab1ca21aae608c202e1927667e8489b"
+    },
+    {
+      "path": "js/core/media.js",
+      "sha256": "aa12fb501dd03b219edd04d1068cae7f87d6b50ba7592873800e17c98cea83b6"
+    },
+    {
+      "path": "js/core/shell.js",
+      "sha256": "01b6f9649b13c4ca192ca5d68f180282cd36bbd55dbeb6aadd170964d96cf455"
+    },
+    {
+      "path": "js/core/theme.js",
+      "sha256": "da81bb9a30e140858bfaf99aa429ec15a45ecb7e258a6d4ce99448e2be2279fc"
+    },
+    {
+      "path": "js/features/ajoop-nav.js",
+      "sha256": "22f2aacccfbbef47e38f130ad953dc1016fa55b297839a6ef3c3af8fc4c98be5"
+    },
+    {
+      "path": "js/features/certificates.js",
+      "sha256": "5f5c8021b0c266d9ec3c21e5f8b0ae5b2fa633bef326cc8bf6357de2dc719c7e"
+    },
+    {
+      "path": "js/features/command-palette.js",
+      "sha256": "bf69e8af0eb4ebec17fccaac7f3128539329284f8785abbc254bc236343728df"
+    },
+    {
+      "path": "js/features/creative.js",
+      "sha256": "bc5beb65db043dddff47508bb48ec040da64a2a7d59b6f24397dcfcf84290c22"
+    },
+    {
+      "path": "js/features/recruiter.js",
+      "sha256": "faeb105cefc913cc85cd4047e900a7da2daba63495b17f4ad6936285ce4896b9"
+    },
+    {
+      "path": "js/features/ultimate.js",
+      "sha256": "14ef55e4ab0232e7f28794e5e7f3e1eb14757cb6979eab56614f25ad94ec8530"
+    },
+    {
+      "path": "js/pages/games.js",
+      "sha256": "bdb77a8ec9f6143feb369e0cd60dd43688e939be8d5c2fdfc9f2c86d970f15cc"
+    },
+    {
+      "path": "js/pages/labs.js",
+      "sha256": "ef810c7df133ff5e557e9d114f45e5208fc9667c165770d4da5e596c758908c2"
+    },
+    {
+      "path": "js/portfolio/project-detail.js",
+      "sha256": "b28b96f3ed8fd17070e6beff188867e48037d2ad5362b55f39ecee9e6878b869"
+    },
+    {
+      "path": "js/portfolio/routing.js",
+      "sha256": "68a7434353dfd1c45ff0e41b6fb83031aa537f5fe6a18b2dd00c35de6ab069be"
+    },
+    {
+      "path": "js/portfolio/works.js",
+      "sha256": "81d854068f167a5c6af035032902d864ac20cb92b8a8a3148ae616af1ea1c41b"
+    },
+    {
+      "path": "js/request/form.js",
+      "sha256": "614752553f37251f2028de1dd94bdc1ccc1a9925efbce90112801e11d3ce02f9"
+    },
+    {
+      "path": "js/request/submission.js",
+      "sha256": "202733c6f2b8cc29c037ca32a4512b55fef2d1d80e3dd0cced5f8c5591786f31"
+    },
+    {
+      "path": "labs/index.html",
+      "sha256": "2f740100c65d185df6f91b40119763f9dc0b7108757eff1392816da2c7ae8be4"
+    },
+    {
+      "path": "labs.html",
+      "sha256": "ea38430d55b02007ed27b6613d441a12c81306ceb7e2bc7c7d0f748a275f531b"
+    },
+    {
+      "path": "merge-rush-case-study/index.html",
+      "sha256": "0b635d62aa7d5b4618ff42b2b9d7b8a8d7c47c70e8d90a3304fd3de6fd250d52"
+    },
+    {
+      "path": "merge-rush-case-study.html",
+      "sha256": "c05e85be30cabc566578d4fd3fa827f91c9c4bcaf0540ccdee6d985676d503ed"
+    },
+    {
+      "path": "now/index.html",
+      "sha256": "ab9c4db4dd0c6da6c4814eb5bb3b2e41337eb44e5cbd3bf2582ced1fec6bbf7e"
+    },
+    {
+      "path": "now.html",
+      "sha256": "1dbab008add155197c582b80cb71250a337ae83117444504f67756dd26ad7ec3"
+    },
+    {
+      "path": "portfolio-data.js",
+      "sha256": "bf101942399b49fdeb035334248f7649afff012f10f917a46dbff148a55592da"
+    },
+    {
+      "path": "portfolio-v2.css",
+      "sha256": "9843a7c525201904337e4009e8bfa51b774facf3c6a8d369158387d1d1d90b19"
+    },
+    {
+      "path": "portfolio-v2.js",
+      "sha256": "627ed1258679c3cf89e0bd54a7018148189a19f7fa7fde24bac32d339448afe5"
+    },
+    {
+      "path": "privacy/index.html",
+      "sha256": "bbf6fdca9a703bd52e1adff94317304ade0e6589f736d190066cdd8673436e06"
+    },
+    {
+      "path": "privacy.html",
+      "sha256": "77a6cda6e9511e04bc959718fa09672aa37166c3b488f2c99ef256c87e1cea41"
+    },
+    {
+      "path": "project-detail.html",
+      "sha256": "93425967ee584d887e566e2627926245712ef38266f82df5c7f12841cec993db"
+    },
+    {
+      "path": "projects/agency-db/index.html",
+      "sha256": "cfb0dcb5181d3deef77eb8d843e0b27436c57f0693cf303495b09330ef606b2a"
+    },
+    {
+      "path": "projects/ai-chatbot-flow-design/index.html",
+      "sha256": "dc20c8f9b4ff65f0b829ba834cba2e9210d3cb90c559b0a424dee344bbf20a57"
+    },
+    {
+      "path": "projects/atolye-joyday-official-website/index.html",
+      "sha256": "82b2414f3c6d4938144f89fdab44a713e0d4b8c52f6ebcf26ea900fb4fe58399"
+    },
+    {
+      "path": "projects/calculator-android-studio/index.html",
+      "sha256": "08efa5f2647969ee6eb6b921d95407cd6155c1f02ceff3f9d799ed7c1c73fe4c"
+    },
+    {
+      "path": "projects/calculator-javascript/index.html",
+      "sha256": "61fdc1887aa9a1b510e5a45f56cc1adf7ec7591742defa1b0376efd081b77849"
+    },
+    {
+      "path": "projects/cars-dataset-analysis/index.html",
+      "sha256": "297bbf1f129006fef561a4aebc91052b51f8b353936e1f7cffdc52c24979a00a"
+    },
+    {
+      "path": "projects/control-panel/index.html",
+      "sha256": "1daf45fa25cd76bafc8f14d39cfd8f98b0f200911c8c22c28e3d4726d105aa66"
+    },
+    {
+      "path": "projects/drivenfinity/index.html",
+      "sha256": "5d08f9cff5862aa2c4643f967e24a7060e5bef00a56d33ad5e4a358fa72f47a7"
+    },
+    {
+      "path": "projects/dunker-madness/index.html",
+      "sha256": "4c16863ebab8dfbe9ec303235952fe9ccd2e07fdfa4895aa7e2dd386a9139cdb"
+    },
+    {
+      "path": "projects/escape-island/index.html",
+      "sha256": "cf31636258e43e1473d7680c649c7240ca8a99c34306f94684ee842eba0de81b"
+    },
+    {
+      "path": "projects/extract-shoot-zero/index.html",
+      "sha256": "cdde4a3e2b758f88391d5bf4ef4747c4f2dc56afbdc533bf7a6d59c2f48c6c7d"
+    },
+    {
+      "path": "projects/hospital-appointment-system/index.html",
+      "sha256": "bfbbb83b0a19ad9d93079fa8f9a0e243125734de8757471ac20eb25743b5de56"
+    },
+    {
+      "path": "projects/hospital-form-app/index.html",
+      "sha256": "6adc27e0a32549f0e99ade4e2342ae46e477ae03a920ba2fef8dc9fbe104a548"
+    },
+    {
+      "path": "projects/ic-supply/index.html",
+      "sha256": "7a83178ea15aa424110747ea56772483d561bb2e6a07807dc21f656755456818"
+    },
+    {
+      "path": "projects/legacy-of-the-lost/index.html",
+      "sha256": "8379d02f8b191114f0c5b8fad1538ba0058bd6a802d134950ced278649d38f5b"
+    },
+    {
+      "path": "projects/mandelas-web-site-project/index.html",
+      "sha256": "4053b36e4564696cb1f928e074e2541f8030fa15ac930c3f504dfc1d7aeab3a6"
+    },
+    {
+      "path": "projects/my-java-projects/index.html",
+      "sha256": "8988c91b9740f29df070dbc581db384de17d255aed3b04ea03a08a952716f224"
+    },
+    {
+      "path": "projects/my-museum/index.html",
+      "sha256": "dc1a9903521fb2a9f9df9d53784e82c5f9a86dd622021973cf881728638083d6"
+    },
+    {
+      "path": "projects/portfolio-website/index.html",
+      "sha256": "abc331d7f0f8309d3629ad374e98f063e84e4e85d56ec128a2c7e62e6570cebc"
+    },
+    {
+      "path": "projects/porto-25/index.html",
+      "sha256": "b0969b87dce1f4245132b169973b3588d3853ec46d48682b13a08988b3a3c562"
+    },
+    {
+      "path": "projects/pyhton-projects/index.html",
+      "sha256": "e6bf36f1f6c39d74e0c084e1963e949ac3e342979c885107aa44442310a49c9c"
+    },
+    {
+      "path": "projects/tank-savage/index.html",
+      "sha256": "0161ae2d903333693dda490d19b0c24e0eef9d2423cd11da64d10ba45b50afbf"
+    },
+    {
+      "path": "projects/unity-essentials/index.html",
+      "sha256": "b36cf52f571a62a7436b1274e9aa337d663c8052c1eeccdd2a2617799028bf98"
+    },
+    {
+      "path": "projects/warehouse-war/index.html",
+      "sha256": "66b785a55d79183a0635cfe96cd021240f3b52adff81ccdf5a80532aa1c8c860"
+    },
+    {
+      "path": "projects/weather-app/index.html",
+      "sha256": "15da52d9829e2b5909d785b08b016878c606628c1001cfd2426f6a15de57f33b"
+    },
+    {
+      "path": "request/index.html",
+      "sha256": "42835fbbe3940041f1003ced7e1249458ad92a3a1f119e7472205a80a6d660c6"
+    },
+    {
+      "path": "request-config.js",
+      "sha256": "089b3a9c62eea6645ba5762b69ed26c1b1dcfd21315a58c7913dfec585a8f077"
+    },
+    {
+      "path": "request.html",
+      "sha256": "64be9f629221488856b9bf7e596bfe54311e1711020e170a9f53d4a53d599eac"
+    },
+    {
+      "path": "robots.txt",
+      "sha256": "072a6ac49a4a278b21fa82b7c3fb26160afbbe0ecdf10cf2583d196224e548ad"
+    },
+    {
+      "path": "script.js",
+      "sha256": "7b1c427708f97b1f866a9e262dc8816d76f3252056a5e9f5319f19ecbad63f96"
+    },
+    {
+      "path": "sinama-case-study/index.html",
+      "sha256": "4e974da87a482bf84cdf5cf9b023e1c6b562ea7fd4f2452b85f09512a15d6c2a"
+    },
+    {
+      "path": "sinama-case-study.data.js",
+      "sha256": "66cee9de2fa18144a0ebeefb8ccd819e449353b421fc2f858f51658811cfe297"
+    },
+    {
+      "path": "sinama-case-study.html",
+      "sha256": "1dfcc44fd37f328b1658c29044fa3598e9ae9b1a09ed07c035ff41642ef09e5b"
+    },
+    {
+      "path": "single-work.html",
+      "sha256": "0d217cf416ba40cfc8ee810cb90ac2e2387ca4a9ea11598595255fb521357b0b"
+    },
+    {
+      "path": "sitemap.xml",
+      "sha256": "00976544b56b2c51c3ff2b4994d395a6507204f6aab3c0bb273ad1e137bea658"
+    },
+    {
+      "path": "style.css",
+      "sha256": "fd75edb41e429834e083f7e61ca590f1d4de3d14fff5dd2ec2a29df2205328ab"
+    },
+    {
+      "path": "tr/404.html",
+      "sha256": "55066b1efa4e9510a97092fd87eb97a624fd9e83ac0ac29eaabe8aee423db8fc"
+    },
+    {
+      "path": "tr/about/index.html",
+      "sha256": "e31c85c950449570541d77aacac8788cc16a0747b6cb5f91f3a7f7fb786543e5"
+    },
+    {
+      "path": "tr/about.html",
+      "sha256": "4d734eb9aa18a7ed0a7d53a3dd18a112df578f1a3871086d619eb87c20354c2d"
+    },
+    {
+      "path": "tr/adventure/index.html",
+      "sha256": "729a2baa8080f23913d0ea6a2bbad3fb380322183da65dad453e38c3ef7594b8"
+    },
+    {
+      "path": "tr/adventure.html",
+      "sha256": "a179ebe6ece371edceab4ee8378cb5df12fdf996cb39854e125dbeb832b55a01"
+    },
+    {
+      "path": "tr/ai-flow-puzzle/index.html",
+      "sha256": "760362982b9aebe0af4b564a91ced9647c1cb307f386e3c0f010f55426b5a21b"
+    },
+    {
+      "path": "tr/ai-flow-puzzle-case-study/index.html",
+      "sha256": "31ffc6345e2d4076590670b85431d2a6b00d72a409390bcd9a31339eb0b27edb"
+    },
+    {
+      "path": "tr/ai-flow-puzzle-case-study.html",
+      "sha256": "36faab5e7bbb139089bbb1b4af6230471c5c50995c49423d7719685e331fa307"
+    },
+    {
+      "path": "tr/ai-flow-puzzle.html",
+      "sha256": "87cb5c0cdb7170448e2cd5c56488b00e9775799a0dd78321b8a7b1946f9a2298"
+    },
+    {
+      "path": "tr/atolye-joyday-case-study/index.html",
+      "sha256": "eca54e53358a28f71525d6dd53f7d4c74d44b1f3e933f613e527a4390a220223"
+    },
+    {
+      "path": "tr/atolye-joyday-case-study.html",
+      "sha256": "940f3e5527b0d5d09b0a4cb52dd0f0f8ee258af807aebf6e36af32d027f5c7e7"
+    },
+    {
+      "path": "tr/blog/index.html",
+      "sha256": "9fdf70b5b9a1b02f34d2949626e925e907172685e9c15fe73b4eb57fbfc15559"
+    },
+    {
+      "path": "tr/blog.html",
+      "sha256": "c5a2937106b2cf844070e7ade084eec2d42da50362a4a60ae0e43ed599e3a652"
+    },
+    {
+      "path": "tr/certificates/index.html",
+      "sha256": "9b8299427c798f7a76eec38b8ce87f56c2283529680b52649437ce9f07084f2a"
+    },
+    {
+      "path": "tr/games/index.html",
+      "sha256": "c1686ef988d671f567173da2ce8aca6840d517471f6b6368d57cd2e02cd4bc9f"
+    },
+    {
+      "path": "tr/games.html",
+      "sha256": "1b86658e20fa274c956c48a1ba5dddd9de3eb418937be519664b619647b58eab"
+    },
+    {
+      "path": "tr/hospital-system-case-study/index.html",
+      "sha256": "3100b2fc06ced78b8509fca1802fee679347cb76b164d30e415dd34eab2e40fa"
+    },
+    {
+      "path": "tr/hospital-system-case-study.html",
+      "sha256": "9ea4378e66c18dba7d8ca323faf5346132ace575f6d67e783354c675fa89866c"
+    },
+    {
+      "path": "tr/index.html",
+      "sha256": "6a50fcb3776a3f3085839579d1287109298a3f565ee591dd0436b98a2035746b"
+    },
+    {
+      "path": "tr/joyday-paint/index.html",
+      "sha256": "1abaac101d9013d7bd1856befe11ec6258514cf86b872c1edbb748cb067516e0"
+    },
+    {
+      "path": "tr/joyday-paint.html",
+      "sha256": "466c46346d3e7a9515f9116cc7011ae7536061df3bf40c02051f1f4887b79dd8"
+    },
+    {
+      "path": "tr/labs/index.html",
+      "sha256": "c9cfdb2833e859028ae2a8e34d51f5de7aff7efa517de5c6b8f6db143560b0ec"
+    },
+    {
+      "path": "tr/labs.html",
+      "sha256": "dbeceffeb3fdb41d78762dd9e0c4496311db5f93bf348fd269a4d10a2169d7d7"
+    },
+    {
+      "path": "tr/merge-rush-case-study/index.html",
+      "sha256": "05e5b963e6644a0bbf4e2a0b8b0b68e86d6eda45d3f289eb8fcbf11d629006e8"
+    },
+    {
+      "path": "tr/merge-rush-case-study.html",
+      "sha256": "c845c6528115cd8af40b94539287be95725e0a03788d617aef01765750d69759"
+    },
+    {
+      "path": "tr/now/index.html",
+      "sha256": "e9fd833b15406caa6c77a715a04e2db6c8c8248254f42d91e2ce0eb6555e4c46"
+    },
+    {
+      "path": "tr/now.html",
+      "sha256": "2ec4b2141bc583155cfbb538c8b8f723c048de9429364d1cc75f52c8c751ea06"
+    },
+    {
+      "path": "tr/privacy/index.html",
+      "sha256": "759226071fd8f1fb1ef0c2281ad4c14d48ef2af709eb292a8092ad2b06f73bd9"
+    },
+    {
+      "path": "tr/privacy.html",
+      "sha256": "efcaa571069b0be4c3e553abe57c16a34d3c3f3704c21fc044c92574aa1b1f61"
+    },
+    {
+      "path": "tr/project-detail.html",
+      "sha256": "1c9a806c99e2bc02eb611b29a0b6368222eeac30f67516efed137d98a23589e3"
+    },
+    {
+      "path": "tr/projects/agency-db/index.html",
+      "sha256": "08c9d1257758784d89f6e10134ae1a4f40c715c3b4e3d857afa58477d49b6af6"
+    },
+    {
+      "path": "tr/projects/ai-chatbot-flow-design/index.html",
+      "sha256": "697abaf25e77d75955de9aba84838392de292bd1b1926c7f0ed62008ee66958c"
+    },
+    {
+      "path": "tr/projects/atolye-joyday-official-website/index.html",
+      "sha256": "24825e77064e411fe16341500e1625a919848b83bc5daecbbbf3c07ca7b251cc"
+    },
+    {
+      "path": "tr/projects/calculator-android-studio/index.html",
+      "sha256": "e9c6f450d44da14cac18965279c755abe2a32a162b4a7cc0fcfa27c4df9d5c4f"
+    },
+    {
+      "path": "tr/projects/calculator-javascript/index.html",
+      "sha256": "08ebfee103e3facec3702a36b723df71f366b87570f24299d156106e495d9f4a"
+    },
+    {
+      "path": "tr/projects/cars-dataset-analysis/index.html",
+      "sha256": "9aed56ac7384e15784d09ff8929259d542c88ab8f6dd4f031275c5be82f1c393"
+    },
+    {
+      "path": "tr/projects/control-panel/index.html",
+      "sha256": "6aceb58a8ef636c20ec06e26a73440e3d1edf4d17225022c4a499217c425c42e"
+    },
+    {
+      "path": "tr/projects/drivenfinity/index.html",
+      "sha256": "30dcc889ab914f49f8f1659cb091083cdb1c09b7d27ebcc577a9ee5c55563d9b"
+    },
+    {
+      "path": "tr/projects/dunker-madness/index.html",
+      "sha256": "8885ee97172787bc29cc04ff601af8e2ecbdec31af4ede76077f74268e47d469"
+    },
+    {
+      "path": "tr/projects/escape-island/index.html",
+      "sha256": "9628e606440e7f3985752c32371d314b8e1a495fb61aa3e4fa647ef87ee87901"
+    },
+    {
+      "path": "tr/projects/extract-shoot-zero/index.html",
+      "sha256": "f2c4d1109f1b766d9583df4eeb04464b7e9c4f0f06f3a5c0c4c54b4e7ef2fc6f"
+    },
+    {
+      "path": "tr/projects/hospital-appointment-system/index.html",
+      "sha256": "8bc763a0caa2e579bd40f2905f4c4eba9885c5764e4a63ef61d7294ff09aa942"
+    },
+    {
+      "path": "tr/projects/hospital-form-app/index.html",
+      "sha256": "4f6da12a7d335f2e7995bf2038f47fd6f67857ae6aa8da851e9d59492242e536"
+    },
+    {
+      "path": "tr/projects/ic-supply/index.html",
+      "sha256": "70455654bc1044f5939a395ad91ad5cc330ee568d07be1ca2552a02357ee9820"
+    },
+    {
+      "path": "tr/projects/legacy-of-the-lost/index.html",
+      "sha256": "c7da7fd32c376684a235f6ecf77df98661dafd2423709553cc1d3e5756865815"
+    },
+    {
+      "path": "tr/projects/mandelas-web-site-project/index.html",
+      "sha256": "28984b902e0e59eaa893e67e408e1492e7d3c756f33304b6b97baa5078d691bb"
+    },
+    {
+      "path": "tr/projects/my-java-projects/index.html",
+      "sha256": "cae2377b10d0e45bb203c5c4390173ee4461437aa9efe860d99d74ee82eb1988"
+    },
+    {
+      "path": "tr/projects/my-museum/index.html",
+      "sha256": "35a996698b93c2839e26a742ef210ff264d832ae587509130a59379e6543016f"
+    },
+    {
+      "path": "tr/projects/portfolio-website/index.html",
+      "sha256": "45a968a5a92792b748724e55da88fd70e82513c92a667c5a1d899c0329aa6516"
+    },
+    {
+      "path": "tr/projects/porto-25/index.html",
+      "sha256": "b02271d4334778d4e037c1ba63f10f06e919c24383ca9151f6a28ca5cbea6d8b"
+    },
+    {
+      "path": "tr/projects/pyhton-projects/index.html",
+      "sha256": "a10e732b2a12420f50e611d707b7e5f6df0ec7d0419a27afbf286420eebb361f"
+    },
+    {
+      "path": "tr/projects/tank-savage/index.html",
+      "sha256": "874a4a8f3bcd2b3a415b3e0276a11cfb0ecf73408db1a0c111bdc7b0c0c71472"
+    },
+    {
+      "path": "tr/projects/unity-essentials/index.html",
+      "sha256": "a5695396b0115765858d23bf4d65db27ab09fe93c26fbed446f21076c7f96483"
+    },
+    {
+      "path": "tr/projects/warehouse-war/index.html",
+      "sha256": "9f3fec3347004cafe211bc813108aa6e4c6fbd56e1099f4716e1ec20ecd67b56"
+    },
+    {
+      "path": "tr/projects/weather-app/index.html",
+      "sha256": "6b7fc6ea391f9359ec33c641db834c39cb0db7d8b03881ed85029e3b477e869a"
+    },
+    {
+      "path": "tr/request/index.html",
+      "sha256": "507124d9f4881fe91ffd098bda85e8de595e75ccdb4f0919b4b25007ab880b1b"
+    },
+    {
+      "path": "tr/request.html",
+      "sha256": "4024449be12e6e31c37531a00223aac9948be237c27ff149bd73ce9682edd844"
+    },
+    {
+      "path": "tr/sinama-case-study/index.html",
+      "sha256": "cc6c546b85f95a104e9719d146b6de5154fb5abdb907e6480382977571deeb58"
+    },
+    {
+      "path": "tr/sinama-case-study.html",
+      "sha256": "92c2c30046f678401da44e1bba6cfafd7cf6bff32189e60386316ab9795b001c"
+    },
+    {
+      "path": "tr/single-work.html",
+      "sha256": "5c914617c76d7647cf49978922202db3405ebbbb5969626c2d391c17aa08099a"
+    },
+    {
+      "path": "tr/works/index.html",
+      "sha256": "856bf4283c52e6f31385f4a8e4471c7bd7cdc40f694ea5f7cc7cfab434f0a21d"
+    },
+    {
+      "path": "tr/works.html",
+      "sha256": "4854594b769d3cf9896515cad1396de78366b53439d0e17478717c089568228c"
+    },
+    {
+      "path": "works/index.html",
+      "sha256": "4759e627e325d94d0b4608444eb4e4546f815640967e60a8705a9394cd0cb680"
+    },
+    {
+      "path": "works.html",
+      "sha256": "63d876b4375892470a7c107a3ac82dd95aaf6428d46d20b06280cb40c1f3907c"
+    }
+  ]
+}

@@ -6,18 +6,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadRegistry, loadProjectRegistry, indexableRoutes } from "./i18n-catalog.mjs";
 import { loadSiteRoutes, loadRouteRuntime } from "./site-routes.mjs";
-import { productionReactRoutes } from "./react-route-adapter.mjs";
-import { REACT_PRODUCTION_OUT_DIR } from "./react-build-config.mjs";
+import { canonicalReactRoutes } from "./react-route-adapter.mjs";
+import { loadArtifactConfig, validateReactBundleNamespace } from "./public-artifact-config.mjs";
+import { verifyReactBuildProof } from "./react-build-provenance.mjs";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-export const CONFIG_FILE = "data/site/public-artifact.json";
-
 const posix = (value) => value.replaceAll(path.sep, "/");
-const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
-
-export function loadArtifactConfig() {
-  return readJson(CONFIG_FILE);
-}
+export { loadArtifactConfig } from "./public-artifact-config.mjs";
 
 export function listFiles(directory) {
   const files = [];
@@ -59,15 +54,13 @@ function copyDirectory(relative, output, copied, excluded) {
 }
 
 /** Returns every committed/generated document required by the route contract. */
-export function routeDocuments() {
-  const site = loadSiteRoutes();
-  const registry = loadRegistry();
+export function routeDocuments({ site = loadSiteRoutes(), registry = loadRegistry(), projects = loadProjectRegistry() } = {}) {
   const runtime = loadRouteRuntime(registry, site);
   const locales = [
     registry.defaultLocale,
     ...(registry.localizedRoutes?.generate || []).filter((id) => id !== registry.defaultLocale),
   ];
-  const routes = indexableRoutes(loadProjectRegistry());
+  const routes = indexableRoutes(projects);
   const documents = new Set();
 
   for (const locale of locales) {
@@ -120,12 +113,13 @@ export function buildLegacyPagesArtifact(outputDirectory = path.join(ROOT, loadA
   fs.rmSync(output, { recursive: true, force: true });
   fs.mkdirSync(output, { recursive: true });
 
-  const config = loadArtifactConfig();
+  const documents = routeDocuments();
+  const config = loadArtifactConfig({ reservedFiles: documents });
   const copied = new Set();
   const excluded = new Set(config.excludedBrowserFiles || []);
   for (const directory of config.browserDirectories || []) copyDirectory(directory, output, copied, excluded);
   for (const file of config.rootRuntimeFiles || []) copyFile(file, output, copied);
-  for (const file of routeDocuments()) copyFile(file, output, copied);
+  for (const file of documents) copyFile(file, output, copied);
   for (const file of config.generatedDeploymentFiles || []) {
     const destination = path.join(output, file);
     fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -149,11 +143,28 @@ function copyBuiltFile(sourceRoot, relative, output) {
 }
 
 /** Merge only explicitly React-owned documents and their namespaced bundles. */
-export function mergeProductionReactArtifact(output, reactOutput = REACT_PRODUCTION_OUT_DIR) {
-  const config = loadArtifactConfig();
+export function mergeProductionReactArtifact(output, reactBuild, {
+  routeRecords = canonicalReactRoutes(),
+  config = loadArtifactConfig(),
+} = {}) {
+  const allDocuments = routeRecords.map((route) => route.output);
+  validateReactBundleNamespace(config, { reservedFiles: [...routeDocuments(), ...allDocuments] });
   const bundlePrefix = `${config.reactBundleDirectory}/`;
-  const allowedDocuments = new Set(productionReactRoutes().map((route) => route.output));
-  const files = fs.existsSync(reactOutput) ? listFiles(reactOutput) : [];
+  const reactRoutes = routeRecords.filter((route) => route.renderer === "react");
+  const allowedDocuments = new Set(reactRoutes.map((route) => route.output));
+  if (!reactBuild) {
+    if (allowedDocuments.size) {
+      throw new Error("React-owned routes require output proven by the current build invocation");
+    }
+    return [];
+  }
+  const proof = verifyReactBuildProof(reactBuild);
+  const reactOutput = proof.output;
+  const files = proof.files;
+  const provenDocuments = new Set(proof.routes.map((route) => route.output));
+  if (provenDocuments.size !== allowedDocuments.size || [...allowedDocuments].some((file) => !provenDocuments.has(file))) {
+    throw new Error("React build proof does not match the current React-owned route set");
+  }
   for (const relative of files) {
     const isBundle = relative.startsWith(bundlePrefix);
     const isOwnedDocument = allowedDocuments.has(relative);
@@ -164,8 +175,12 @@ export function mergeProductionReactArtifact(output, reactOutput = REACT_PRODUCT
       throw new Error(`React production output is not owned by a React route: ${relative}`);
     }
     if (isOwnedDocument) {
-      const route = productionReactRoutes().find((candidate) => candidate.output === relative);
+      const route = reactRoutes.find((candidate) => candidate.output === relative);
       if (!route || route.renderer !== "react") throw new Error(`React attempted to clobber legacy-owned route: ${relative}`);
+    }
+    const destination = path.join(output, relative);
+    if (isBundle && fs.existsSync(destination)) {
+      throw new Error(`React bundle would overwrite an existing legacy artifact: ${relative}`);
     }
     copyBuiltFile(path.resolve(reactOutput), relative, output);
   }
@@ -175,9 +190,9 @@ export function mergeProductionReactArtifact(output, reactOutput = REACT_PRODUCT
   return files;
 }
 
-export function buildPagesArtifact(outputDirectory = path.join(ROOT, loadArtifactConfig().outputDirectory)) {
+export function buildPagesArtifact(outputDirectory = path.join(ROOT, loadArtifactConfig().outputDirectory), { reactBuild } = {}) {
   const result = buildLegacyPagesArtifact(outputDirectory);
-  const reactFiles = mergeProductionReactArtifact(result.output);
+  const reactFiles = mergeProductionReactArtifact(result.output, reactBuild);
   const files = listFiles(result.output);
   validateArtifactFiles(files);
   return { ...result, files, reactFiles };

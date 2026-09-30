@@ -9,10 +9,10 @@ import {
   REACT_BASE,
   REACT_PRODUCTION_OUT_DIR,
   REACT_PRODUCTION_BASE,
-  REACT_PRODUCTION_ASSETS,
   DATA_ROOT,
   ASSETS_ROOT,
 } from "./scripts/react-build-config.mjs";
+import { loadArtifactConfig } from "./scripts/public-artifact-config.mjs";
 
 /*
  * Vite is a PARALLEL build system for the React migration foundation. It never
@@ -38,7 +38,7 @@ const here = REPO_ROOT;
  * never by fetching at runtime — so the data is bundled and pre-rendering can
  * see it.
  */
-export { REACT_ROOT, REACT_OUT_DIR, REACT_BASE, REACT_PRODUCTION_OUT_DIR, REACT_PRODUCTION_BASE, REACT_PRODUCTION_ASSETS, DATA_ROOT, ASSETS_ROOT };
+export { REACT_ROOT, REACT_OUT_DIR, REACT_BASE, REACT_PRODUCTION_OUT_DIR, REACT_PRODUCTION_BASE, DATA_ROOT, ASSETS_ROOT };
 
 /**
  * Makes `vite preview` resolve URLs the way a plain static host does.
@@ -109,6 +109,7 @@ function staticHostingEmulation() {
 
 export default defineConfig(({ isPreview, mode }) => {
   const productionMigration = mode === "production-migration";
+  const artifactConfig = loadArtifactConfig();
   return ({
   root: REACT_ROOT,
   base: productionMigration ? REACT_PRODUCTION_BASE : REACT_BASE,
@@ -144,7 +145,7 @@ export default defineConfig(({ isPreview, mode }) => {
 
   build: {
     outDir: productionMigration ? REACT_PRODUCTION_OUT_DIR : REACT_OUT_DIR,
-    assetsDir: productionMigration ? REACT_PRODUCTION_ASSETS : "assets",
+    assetsDir: productionMigration ? artifactConfig.reactBundleDirectory : "assets",
     emptyOutDir: true,
     // Keeps the bundle-size report in the build log honest and comparable.
     reportCompressedSize: true,

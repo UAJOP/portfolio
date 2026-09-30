@@ -7,6 +7,10 @@ import { loadSiteRoutes, validateSiteRoutes, loadRouteRuntime, absoluteRouteUrl 
 import { canonicalReactRoutes, productionReactRoutes } from "./react-route-adapter.mjs";
 import { requireSemanticMessage, resolveLocalizedData, resolveCanonicalLocalizedData } from "./shared-localization.mjs";
 import { mergeProductionReactArtifact } from "./build-pages-artifact.mjs";
+import { attestReactBuild } from "./react-build-provenance.mjs";
+import { loadArtifactConfig, validateReactBundleNamespace } from "./public-artifact-config.mjs";
+import { verifyProductionGeneratedState } from "./verify-production-generated.mjs";
+import { buildProductionSite } from "./build-production-site.mjs";
 import { createSiteHeadRenderer } from "./site-head.mjs";
 import os from "node:os";
 
@@ -74,15 +78,108 @@ assert.throws(
   /missing required localized value/,
 );
 
-const clobberFixture = fs.mkdtempSync(path.join(os.tmpdir(), "m3-clobber-"));
-const clobberOutput = fs.mkdtempSync(path.join(os.tmpdir(), "m3-output-"));
+const mixedRoot = fs.mkdtempSync(path.join(os.tmpdir(), "m3-mixed-fixtures-"));
+const artifactConfig = loadArtifactConfig();
+const syntheticRoutes = [
+  { id: "synthetic-react", output: "synthetic/index.html", renderer: "react" },
+  { id: "synthetic-legacy", output: "legacy/index.html", renderer: "legacy" },
+];
+let fixtureId = 0;
+const runMergeFixture = ({ files, routes = syntheticRoutes, seedOutput = {} }) => {
+  fixtureId += 1;
+  const reactOutput = path.join(mixedRoot, `react-${fixtureId}`);
+  const output = path.join(mixedRoot, `artifact-${fixtureId}`);
+  fs.mkdirSync(reactOutput, { recursive: true });
+  fs.mkdirSync(output, { recursive: true });
+  for (const [relative, content] of Object.entries(files)) {
+    fs.mkdirSync(path.dirname(path.join(reactOutput, relative)), { recursive: true });
+    fs.writeFileSync(path.join(reactOutput, relative), content, "utf8");
+  }
+  for (const [relative, content] of Object.entries(seedOutput)) {
+    fs.mkdirSync(path.dirname(path.join(output, relative)), { recursive: true });
+    fs.writeFileSync(path.join(output, relative), content, "utf8");
+  }
+  const proof = attestReactBuild({ output: reactOutput, routes: routes.filter((route) => route.renderer === "react") });
+  return { output, proof, merge: () => mergeProductionReactArtifact(output, proof, { routeRecords: routes, config: artifactConfig }) };
+};
+
 try {
-  fs.writeFileSync(path.join(clobberFixture, "index.html"), "not allowed", "utf8");
+  const overwrite = runMergeFixture({
+    files: { "synthetic/index.html": "react canonical" },
+    seedOutput: { "synthetic/index.html": "legacy canonical" },
+  });
+  overwrite.merge();
+  check(fs.readFileSync(path.join(overwrite.output, "synthetic/index.html"), "utf8") === "react canonical", "React may overwrite its canonical document");
+
+  for (const [relative, expected] of [
+    ["legacy/index.html", /not owned by a React route/],
+    ["legacy.html", /not owned by a React route/],
+    ["unexpected.txt", /not owned by a React route/],
+    ["assets/legacy.js", /not owned by a React route/],
+  ]) {
+    const rejected = runMergeFixture({ files: { "synthetic/index.html": "ok", [relative]: "not allowed" } });
+    assertions += 1;
+    assert.throws(rejected.merge, expected, `${relative} must be rejected`);
+  }
+
+  const missing = runMergeFixture({ files: {} });
   assertions += 1;
-  assert.throws(() => mergeProductionReactArtifact(clobberOutput, clobberFixture), /not owned by a React route/);
+  assert.throws(missing.merge, /React-owned production route was not emitted/);
+
+  const bundle = runMergeFixture({ files: {
+    "synthetic/index.html": "react canonical",
+    [`${artifactConfig.reactBundleDirectory}/app.js`]: "bundle",
+  } });
+  bundle.merge();
+  check(fs.existsSync(path.join(bundle.output, artifactConfig.reactBundleDirectory, "app.js")), "namespaced React bundle is accepted");
+
+  const collision = runMergeFixture({
+    files: { "synthetic/index.html": "ok", [`${artifactConfig.reactBundleDirectory}/app.js`]: "react" },
+    seedOutput: { [`${artifactConfig.reactBundleDirectory}/app.js`]: "legacy" },
+  });
+  assertions += 1;
+  assert.throws(collision.merge, /overwrite an existing legacy artifact/);
+
+  assertions += 1;
+  assert.throws(
+    () => mergeProductionReactArtifact(collision.output, { output: path.join(mixedRoot, "stale"), files: [], routes: [], hashes: {} }, { routeRecords: syntheticRoutes, config: artifactConfig }),
+    /stale or unproven/,
+  );
+
+  const modified = runMergeFixture({ files: { "synthetic/index.html": "attested" } });
+  fs.writeFileSync(path.join(modified.proof.output, "synthetic/index.html"), "changed after build", "utf8");
+  assertions += 1;
+  assert.throws(modified.merge, /changed after it was built/);
+
+  assertions += 1;
+  assert.throws(
+    () => verifyProductionGeneratedState({ runner: () => ({ status: 1, stdout: "", stderr: "" }) }),
+    /failed closed/,
+  );
+
+  let laterBuildStageReached = false;
+  assertions += 1;
+  await assert.rejects(
+    () => buildProductionSite({
+      verifyGenerated: () => { throw new Error("synthetic stale generated state"); },
+      buildReact: async () => { laterBuildStageReached = true; },
+      buildArtifact: () => { laterBuildStageReached = true; },
+    }),
+    /stale generated state/,
+  );
+  check(!laterBuildStageReached, "build:site must stop before React or artifact build when generated state is stale");
+
+  assertions += 1;
+  assert.throws(() => validateReactBundleNamespace({ ...artifactConfig, reactBundleDirectory: "../escape" }), /safe relative directory/);
+  assertions += 1;
+  assert.throws(() => validateReactBundleNamespace({ ...artifactConfig, reactBundleDirectory: "assets" }), /legacy browser directory/);
+  assertions += 1;
+  assert.throws(
+    () => validateReactBundleNamespace({ ...artifactConfig, reactBundleDirectory: "synthetic" }, { reservedFiles: ["synthetic/index.html"] }),
+    /legacy artifact path/,
+  );
 } finally {
-  fs.rmSync(clobberFixture, { recursive: true, force: true });
-  fs.rmSync(clobberOutput, { recursive: true, force: true });
+  fs.rmSync(mixedRoot, { recursive: true, force: true });
 }
 
 const serverEntry = fs.readFileSync(path.join(ROOT, "src/react/entry-server.jsx"), "utf8");
