@@ -310,6 +310,7 @@ const pinned = /^\d+\.\d+\.\d+$/;
 check(manifest.scripts?.["build:react"] === "node scripts/prerender-react.mjs", "build:react must run the preview pre-render pipeline");
 check(manifest.scripts?.["build:react:production"] === "node scripts/prerender-react.mjs --production", "production React build mode must be explicit");
 check(manifest.scripts?.["qa:react"]?.startsWith("node qa-react-foundation.js"), "qa:react must run this guard");
+check(manifest.scripts?.["qa:react"]?.includes("npm run qa:m3:parity"), "qa:react must keep accepted-artifact parity blocking in CI");
 check(!/react/.test(manifest.scripts?.qa || ""), "the React build must not be folded into the static-site qa command");
 
 // Pa11y and Lighthouse must keep auditing the production pages, not the preview.

@@ -72,11 +72,23 @@ the SSR browser-global boundary.
 
 `data/site/m3-25a-accepted-artifact.json` freezes the complete 498-file artifact
 built independently from accepted base commit
-`6ca0910ea330d25dcb3873f8b84047666de67fb6`, with a SHA-256 for every path.
-`npm run qa:m3:parity` builds the new final mixed artifact and compares its
-exact path set and hashes to that immutable manifest. It separately retains and
-accurately reports the current-tree legacy-versus-mixed comparison as merge
-neutrality. Neither comparison normalizes or excludes any file.
+`6ca0910ea330d25dcb3873f8b84047666de67fb6`, with a SHA-256 and an explicit
+normalization mode for every path. HTML, CSS, JavaScript, SVG, TXT, XML, and
+`CNAME` are the complete recognized text set. Their hashes convert only the
+byte pair CRLF (`0D 0A`) to LF (`0A`); files are never decoded, trimmed, or
+otherwise normalized. Lone CR, non-EOL whitespace, encoding bytes, and all 107
+binary entries remain byte-exact.
+
+`npm run qa:m3:parity` invokes the real `buildProductionSite()` orchestrator,
+then compares its exact path set and canonical hashes to the immutable
+manifest. It separately retains the stricter byte-exact current-tree
+legacy-versus-mixed comparison as merge neutrality. Fixture tests prove LF and
+CRLF equivalence for recognized text while rejecting content, non-EOL
+whitespace, binary-byte, missing-file, and extra-file changes.
+
+`npm run qa:react` includes `npm run qa:m3:parity`. Site Preflight already runs
+`qa:react` as a blocking step, so pull requests and main-branch pushes cannot
+pass that job without accepted-artifact parity.
 
 Future route implementations must supply server markup and the exact matching
 client props/state before ownership can flip. Browser-only reads stay behind

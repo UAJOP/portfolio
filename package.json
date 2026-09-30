@@ -83,7 +83,7 @@
     "build:react:production": "node scripts/prerender-react.mjs --production",
     "qa:production:sources": "node scripts/verify-production-generated.mjs",
     "preview:react": "vite preview",
-    "qa:react": "node qa-react-foundation.js && node scripts/qa-m3-foundation.mjs",
+    "qa:react": "node qa-react-foundation.js && node scripts/qa-m3-foundation.mjs && npm run qa:m3:parity",
     "qa:m3:foundation": "node scripts/qa-m3-foundation.mjs",
     "qa:m3:parity": "node scripts/qa-m3-artifact-parity.mjs",
     "qa:a11y:react": "pa11y-ci --config .pa11yci-react",
