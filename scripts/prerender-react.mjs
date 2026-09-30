@@ -29,6 +29,8 @@ import { productionReactRoutes } from "./react-route-adapter.mjs";
 import { attestReactBuild } from "./react-build-provenance.mjs";
 import { loadRegistry } from "./i18n-catalog.mjs";
 import { loadProductionLocalization } from "./production-localization.mjs";
+import { injectProductionMain, productionMainProps } from "./home-about-react.mjs";
+import { loadArtifactConfig } from "./public-artifact-config.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, "..");
@@ -68,7 +70,7 @@ export async function executePreviewSsrBundle({ outputDirectory = ssrOutDir } = 
   return module;
 }
 
-export async function buildProductionReact({ outputDirectory = REACT_PRODUCTION_OUT_DIR } = {}) {
+export async function buildProductionReact({ outputDirectory = REACT_PRODUCTION_OUT_DIR, routes = productionReactRoutes() } = {}) {
   const output = path.resolve(outputDirectory);
   fs.rmSync(output, { recursive: true, force: true });
   fs.mkdirSync(output, { recursive: true });
@@ -80,18 +82,56 @@ export async function buildProductionReact({ outputDirectory = REACT_PRODUCTION_
     localization.message("theme.switchToLight");
   }
 
-  const routes = productionReactRoutes();
   if (!routes.length) {
     console.log("[prerender:production] 0 React-owned routes · emitted 0 files · legacy production ownership unchanged");
     return attestReactBuild({ output, routes });
   }
 
-  /* A route can only cross this boundary after #25-B supplies its production
-   * component/props contract. Failing here is safer than publishing preview
-   * markup or an SPA shell at a canonical URL. */
-  throw new Error(
-    `[prerender:production] ${routes.length} route(s) are React-owned but no production renderer implementation is registered`,
-  );
+  const clientResult = await build({
+    configFile: path.join(repoRoot, "vite.config.mjs"),
+    mode: "production-migration",
+    build: {
+      outDir: output,
+      emptyOutDir: true,
+      rollupOptions: { input: path.join(repoRoot, "src/react/production-main.jsx") },
+    },
+  });
+  const clientChunks = (Array.isArray(clientResult) ? clientResult : [clientResult]).flatMap((bundle) => bundle.output || []);
+  const clientEntry = clientChunks.find((chunk) => chunk.type === "chunk" && chunk.isEntry)?.fileName;
+  const bundleDirectory = `${loadArtifactConfig().reactBundleDirectory}/`;
+  if (!clientEntry?.startsWith(bundleDirectory)) throw new Error("production client entry escaped the approved React namespace");
+
+  const serverOutput = path.join(path.dirname(output), `ssr-${path.basename(output)}`);
+  try {
+    const serverResult = await build({
+      configFile: path.join(repoRoot, "vite.config.mjs"),
+      mode: "production-migration",
+      ssr: { noExternal: true },
+      build: {
+        ssr: path.join(repoRoot, "src/react/production-entry-server.jsx"),
+        outDir: serverOutput,
+        emptyOutDir: true,
+        reportCompressedSize: false,
+      },
+    });
+    const serverChunks = (Array.isArray(serverResult) ? serverResult : [serverResult]).flatMap((bundle) => bundle.output || []);
+    const serverEntry = serverChunks.find((chunk) => chunk.type === "chunk" && chunk.isEntry)?.fileName;
+    if (!serverEntry) throw new Error("production SSR build emitted no entry");
+    const server = await import(`${pathToFileURL(path.join(serverOutput, serverEntry)).href}?build=${Date.now()}`);
+    for (const route of routes) {
+      const props = productionMainProps(route);
+      const markup = server.renderProductionMain(props);
+      const legacy = fs.readFileSync(path.join(repoRoot, route.output), "utf8");
+      const html = injectProductionMain({ document: legacy, markup, props, clientEntry });
+      const destination = path.join(output, route.output);
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.writeFileSync(destination, html, "utf8");
+    }
+  } finally {
+    fs.rmSync(serverOutput, { recursive: true, force: true });
+  }
+  console.log(`[prerender:production] ${routes.length} React-owned Home/About documents · client ${clientEntry}`);
+  return attestReactBuild({ output, routes });
 }
 
 async function buildPreviewReact() {

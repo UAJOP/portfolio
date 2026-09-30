@@ -35,6 +35,7 @@
     ];
     pairs.forEach(([, enAttr, trAttr]) => {
       document.querySelectorAll(`[${enAttr}][${trAttr}]`).forEach((node) => {
+        if (node.closest("[data-react-main]")) return;
         const enValue = node.getAttribute(enAttr) || "";
         const trValue = node.getAttribute(trAttr) || enValue;
         node.textContent = lt(enValue, trValue, language);
@@ -277,6 +278,7 @@
 
   function renderBuildLogs() {
     document.querySelectorAll("[data-build-log]").forEach((container) => {
+      if (container.closest("[data-react-main]")) return;
       const limit = Number(container.dataset.buildLogLimit || registry.buildLog.length);
       container.innerHTML = registry.buildLog.slice(0, limit).map((entry) => buildLogMarkup(entry, lang())).join("");
     });
