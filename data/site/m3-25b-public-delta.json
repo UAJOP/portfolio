@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "acceptedBaseCommit": "4d0e37b496f70d851397d9976b2022350d11edd6",
+  "algorithm": "sha256",
+  "textEolCanonicalization": "crlf-to-lf-bytewise",
+  "fileCount": 8,
+  "files": [
+    {
+      "path": "i18n/pack-de-core.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b4499ade637f28d729072b84de92ff998f495e5d4de152d6c2b16cb5b46e9acd"
+    },
+    {
+      "path": "i18n/pack-es-core.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3a6c7e4194114e52aea44b7b4d0a775defab673e39b5e6181866254ccfea210d"
+    },
+    {
+      "path": "i18n/pack-fr-core.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "28ac7e8868b1adf8960982a2689ed260d6b0acdf964fa97f281900f8945ce716"
+    },
+    {
+      "path": "i18n/pack-tr-core.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "3e4c4965441b57f8c5e484b8b39b62e1f8ef8ca6f789c6e57e27551e50fdaa6f"
+    },
+    {
+      "path": "js/core/locale.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "d63295d2ba77115b9df75094ece01c252abdd61116d97836b920b3d0b5e6ada3"
+    },
+    {
+      "path": "js/core/i18n-runtime.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "17e7802553deb0634cdd5013e6aebfd2ffdc72311ca0f3c1f12ad52187e0fd4e"
+    },
+    {
+      "path": "js/features/creative.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "ff5bf1a83c0f941ad256dcf228884a02c8a6052c133366b599d3c4b226aa9dab"
+    },
+    {
+      "path": "portfolio-v2.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "c9c414c9a7b4c953d33fbb7e77c1fcece656f06c209e7e9c43e2ffe71947466d"
+    }
+  ]
+}

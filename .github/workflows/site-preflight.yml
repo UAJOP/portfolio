@@ -58,9 +58,19 @@ jobs:
           set -o pipefail
           npm run qa:react 2>&1 | tee qa-results/react-foundation.txt
 
+      - name: Build mixed production artifact
+        run: |
+          set -o pipefail
+          npm run build:site 2>&1 | tee qa-results/site-build.txt
+
+      - name: Audit emitted production artifact
+        run: |
+          set -o pipefail
+          npm run qa:m3:artifact 2>&1 | tee qa-results/emitted-artifact.txt
+
       - name: Start local site
         run: |
-          python3 -m http.server 4173 > qa-results/local-server.log 2>&1 &
+          python3 -m http.server 4173 --directory dist-site > qa-results/local-server.log 2>&1 &
           echo $! > qa-results/local-server.pid
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
@@ -213,6 +223,9 @@ jobs:
 
       - name: Build bounded Pages artifact
         run: npm run build:site
+
+      - name: Audit exact deploy artifact with the complete Master 3 gate
+        run: npm run qa:m3:artifact
 
       - name: Verify bounded Pages artifact
         run: npm run qa:site:artifact

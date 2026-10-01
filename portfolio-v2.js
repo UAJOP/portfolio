@@ -35,12 +35,14 @@
     ];
     pairs.forEach(([, enAttr, trAttr]) => {
       document.querySelectorAll(`[${enAttr}][${trAttr}]`).forEach((node) => {
+        if (node.closest("[data-react-main]")) return;
         const enValue = node.getAttribute(enAttr) || "";
         const trValue = node.getAttribute(trAttr) || enValue;
         node.textContent = lt(enValue, trValue, language);
       });
     });
     document.querySelectorAll("[data-pv2-aria-en][data-pv2-aria-tr]").forEach((node) => {
+      if (node.closest("[data-react-main]")) return;
       const enValue = node.getAttribute("data-pv2-aria-en") || "";
       const trValue = node.getAttribute("data-pv2-aria-tr") || enValue;
       node.setAttribute("aria-label", lt(enValue, trValue, language));
@@ -277,6 +279,7 @@
 
   function renderBuildLogs() {
     document.querySelectorAll("[data-build-log]").forEach((container) => {
+      if (container.closest("[data-react-main]")) return;
       const limit = Number(container.dataset.buildLogLimit || registry.buildLog.length);
       container.innerHTML = registry.buildLog.slice(0, limit).map((entry) => buildLogMarkup(entry, lang())).join("");
     });

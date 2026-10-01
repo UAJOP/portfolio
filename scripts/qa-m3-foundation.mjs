@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { ROOT, loadRegistry, loadProjectRegistry } from "./i18n-catalog.mjs";
+import { ROOT, buildCatalog, contentRegistryPath, loadRegistry, loadProjectRegistry } from "./i18n-catalog.mjs";
 import { loadSiteRoutes, validateSiteRoutes, loadRouteRuntime, absoluteRouteUrl } from "./site-routes.mjs";
 import { canonicalReactRoutes, productionReactRoutes } from "./react-route-adapter.mjs";
 import { requireSemanticMessage, resolveLocalizedData, resolveCanonicalLocalizedData } from "./shared-localization.mjs";
@@ -11,6 +11,7 @@ import { attestReactBuild } from "./react-build-provenance.mjs";
 import { loadArtifactConfig, validateReactBundleNamespace } from "./public-artifact-config.mjs";
 import { verifyProductionGeneratedState } from "./verify-production-generated.mjs";
 import { buildProductionSite } from "./build-production-site.mjs";
+import { executePreviewSsrBundle } from "./prerender-react.mjs";
 import { createSiteHeadRenderer } from "./site-head.mjs";
 import os from "node:os";
 
@@ -20,7 +21,20 @@ const projects = loadProjectRegistry();
 let assertions = 0;
 const check = (condition, message) => { assertions += 1; assert.ok(condition, message); };
 
-for (const page of site.pages) check(page.renderer === "legacy", `${page.id} must remain legacy-owned in #25-A`);
+const catalog = buildCatalog();
+check(catalog.entries.some((entry) => entry.domain === "content" && entry.key === "profile.availability"), "ordinary localized scalar fields use the canonical registry path");
+check(catalog.entries.some((entry) => entry.domain === "content" && entry.key === "projects.mergeRush.proof[0]"), "array-valued English fields use the canonical registry path");
+const buildLog = JSON.parse(fs.readFileSync(path.join(ROOT, "data/portfolio/build-log.json"), "utf8"));
+const stableBuildLogPath = contentRegistryPath("data/portfolio/build-log.json", "[0].title", buildLog);
+check(stableBuildLogPath === `buildLogById.${buildLog[0].id}.title`, "build-log paths use stable ids");
+const reorderedBuildLog = [...buildLog].reverse();
+const reorderedIndex = reorderedBuildLog.findIndex((entry) => entry.id === buildLog[0].id);
+check(contentRegistryPath("data/portfolio/build-log.json", `[${reorderedIndex}].title`, reorderedBuildLog) === stableBuildLogPath, "build-log reordering preserves translation authority");
+
+for (const page of site.pages) {
+  const expected = new Set(["home", "about"]).has(page.id) ? "react" : "legacy";
+  check(page.renderer === expected, `${page.id} must remain ${expected}-owned in #25-B`);
+}
 check(site.projects.renderer === "legacy", "project route family must remain legacy-owned in #25-A");
 for (const companion of site.companions) check(companion.renderer === "legacy", `${companion.id} must remain legacy-owned in #25-A`);
 
@@ -30,6 +44,7 @@ assertions += 1;
 assert.throws(() => validateSiteRoutes(fixture), /renderer must be one of legacy, react/);
 
 const routes = canonicalReactRoutes({ site, locales, projects });
+const runtime = loadRouteRuntime(locales, site);
 const expectedLocales = ["en", "tr", "de", "es", "fr"];
 for (const locale of expectedLocales) {
   const home = routes.find((route) => route.id === "home" && route.locale === locale);
@@ -38,9 +53,14 @@ for (const locale of expectedLocales) {
   const typoProject = routes.find((route) => route.slug === "pyhton-projects" && route.locale === locale);
   check(typoProject?.pathname === `/${prefix}projects/pyhton-projects/`, `${locale} must preserve pyhton-projects`);
 }
-check(productionReactRoutes({ site, locales, projects }).length === 0, "#25-A must emit zero React-owned production routes");
+check(productionReactRoutes({ site, locales, projects }).length === 10, "#25-B must expose exactly 10 React-owned Home/About documents");
+for (const route of routes) {
+  const expected = route.kind === "companion"
+    ? `${route.locale === locales.defaultLocale ? "" : runtime.localeRoutePrefix(route.locale)}${route.route}`
+    : runtime.documentPathFor(route.kind === "project" ? `projects/${route.slug}/` : route.route, route.locale);
+  check(route.output === expected, `${route.locale}:${route.id} adapter output must agree with documentPathFor`);
+}
 
-const runtime = loadRouteRuntime(locales, site);
 const headRenderer = createSiteHeadRenderer({
   registry: locales,
   indexableLocales: (locales.localizedRoutes?.indexable || []).filter((id) => id !== locales.defaultLocale),
@@ -126,6 +146,37 @@ try {
   assertions += 1;
   assert.throws(missing.merge, /React-owned production route was not emitted/);
 
+  assertions += 1;
+  assert.throws(
+    () => mergeProductionReactArtifact(missing.output, null, { routeRecords: syntheticRoutes, config: artifactConfig }),
+    /require output proven by the current build invocation/,
+    "a React-owned route without a current proof must fail",
+  );
+
+  const mismatchedProof = runMergeFixture({
+    files: { "synthetic/index.html": "react canonical" },
+    routes: [{ id: "different-react", output: "different/index.html", renderer: "react" }, syntheticRoutes[1]],
+  });
+  assertions += 1;
+  assert.throws(
+    () => mergeProductionReactArtifact(mismatchedProof.output, mismatchedProof.proof, { routeRecords: syntheticRoutes, config: artifactConfig }),
+    /does not match the current React-owned route set/,
+    "a proof route set different from current ownership must fail",
+  );
+
+  const zeroOwnedBundle = runMergeFixture({
+    files: { [`${artifactConfig.reactBundleDirectory}/app.js`]: "bundle" },
+    routes: syntheticRoutes.map((route) => ({ ...route, renderer: "legacy" })),
+  });
+  assertions += 1;
+  assert.throws(zeroOwnedBundle.merge, /bundle with no React-owned routes/);
+
+  const compatibilityStub = runMergeFixture({
+    files: { "synthetic/index.html": "ok", "tr/works.html": "stub" },
+  });
+  assertions += 1;
+  assert.throws(compatibilityStub.merge, /not owned by a React route/);
+
   const bundle = runMergeFixture({ files: {
     "synthetic/index.html": "react canonical",
     [`${artifactConfig.reactBundleDirectory}/app.js`]: "bundle",
@@ -182,9 +233,12 @@ try {
   fs.rmSync(mixedRoot, { recursive: true, force: true });
 }
 
-const serverEntry = fs.readFileSync(path.join(ROOT, "src/react/entry-server.jsx"), "utf8");
-for (const browserOnly of ["window", "document", "localStorage", "matchMedia"]) {
-  check(!new RegExp(`\\b${browserOnly}\\b`).test(serverEntry), `SSR entry must not read ${browserOnly}`);
+const ssrExecutionRoot = fs.mkdtempSync(path.join(os.tmpdir(), "m3-ssr-boundary-"));
+try {
+  await executePreviewSsrBundle({ outputDirectory: ssrExecutionRoot });
+  check(true, "the complete SSR import graph must bundle, load, and render without browser globals");
+} finally {
+  fs.rmSync(ssrExecutionRoot, { recursive: true, force: true });
 }
 
-console.log(`Master 3 #25-A foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · 0 React-owned production routes.`);
+console.log(`Master 3 #25-B foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · 10 React-owned production routes.`);

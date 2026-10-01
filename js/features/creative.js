@@ -7,6 +7,9 @@
  */
 (function setupPortfolioOptimizationPass() {
   document.querySelectorAll("img").forEach((img) => {
+    // Production React routes own every attribute below their hydrated main.
+    // Their prerender already carries the accepted image-loading contract.
+    if (img.closest("[data-react-main]")) return;
     if (!img.hasAttribute("decoding")) img.setAttribute("decoding", "async");
     if (
       !img.hasAttribute("loading") &&

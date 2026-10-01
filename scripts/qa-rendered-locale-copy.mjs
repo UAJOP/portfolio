@@ -9,15 +9,19 @@ import { loadSiteRoutes, loadRouteRuntime } from "./site-routes.mjs";
 import { loadMessageDomain } from "./i18n-messages.mjs";
 
 const registry=loadRegistry();
+const rootAt=process.argv.indexOf("--root");
+const CHECK_ROOT=path.resolve(rootAt>=0?process.argv[rootAt+1]:ROOT);
+if(!fs.existsSync(CHECK_ROOT)) throw new Error(`qa:rendered-locale-copy root does not exist: ${CHECK_ROOT}`);
+const readArtifact=(file)=>fs.readFileSync(path.join(CHECK_ROOT,file),"utf8");
 const routes=loadRouteRuntime(registry,loadSiteRoutes());
 const all=[...indexableRoutes(loadProjectRegistry()),...COMPANION_ROUTES];
 const locales=(registry.localizedRoutes?.generate||[]).filter((id)=>id!==registry.defaultLocale);
 const failures=[];
 let assertions=0;
 
-const decode=(value)=>String(value).replaceAll("&quot;",'"').replaceAll("&#039;","'").replaceAll("&#39;","'").replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&amp;","&").replace(/\s+/g," ").trim();
+const decode=(value)=>String(value).replaceAll("&quot;",'"').replaceAll("&#039;","'").replaceAll("&#39;","'").replaceAll("&#x27;","'").replaceAll("&#x22;",'"').replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&amp;","&").replace(/\s+/g," ").trim();
 function visibleStrings(file){
-  let html=read(file).replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<noscript[\s\S]*?<\/noscript>/gi," ").replace(/<title[\s\S]*?<\/title>/gi," ");
+  let html=readArtifact(file).replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<noscript[\s\S]*?<\/noscript>/gi," ").replace(/<title[\s\S]*?<\/title>/gi," ");
   const values=new Set();
   for(const match of html.matchAll(/>([^<>]+)</g)){const value=decode(match[1]);if(value)values.add(value);}
   for(const match of html.matchAll(/\b(?:aria-label|alt|title|placeholder)="([^"]*)"/g)){const value=decode(match[1]);if(value)values.add(value);}
@@ -42,12 +46,12 @@ function material(value){
 }
 for(const route of all){
   const sourceFile=route.source;
-  if(!fs.existsSync(path.join(ROOT,sourceFile))) continue;
+  if(!fs.existsSync(path.join(CHECK_ROOT,sourceFile))) continue;
   const english=[...visibleStrings(sourceFile)].filter(material);
   for(const locale of locales){
     const localized=routes.documentPathFor(route.page,locale);
     assertions+=1;
-    if(!fs.existsSync(path.join(ROOT,localized))){failures.push(`${localized}: missing generated locale document`);continue;}
+    if(!fs.existsSync(path.join(CHECK_ROOT,localized))){failures.push(`${localized}: missing generated locale document`);continue;}
     const visible=visibleStrings(localized);
     for(const source of english){
       assertions+=1;
@@ -62,7 +66,7 @@ for(const route of all){
 const messages=Object.fromEntries(["en",...locales].map((id)=>[id,loadMessageDomain(id,"common")]));
 const keyedText=/<([a-z][a-z0-9]*)\b([^>]*\bdata-message-key="([^"]+)"[^>]*)>([^<]*)<\/\1>/g;
 for(const file of authoredHtmlFiles()){
-  const html=read(file);
+  const html=readArtifact(file);
   for(const match of html.matchAll(/<button\b[^>]*\bdata-theme-toggle\b[^>]*>/g)){
     assertions+=2;
     if(!/\bdata-message-aria-label-key="theme\.switchToLight"/.test(match[0])) failures.push(`${file}: theme toggle aria-label must bind data-message-aria-label-key="theme.switchToLight"`);
@@ -77,8 +81,8 @@ const localizedDocuments=[...all.map((route)=>route.page)];
 for(const locale of locales){
   for(const page of localizedDocuments){
     const localized=routes.documentPathFor(page,locale);
-    if(!fs.existsSync(path.join(ROOT,localized))) continue;
-    const html=read(localized).replace(/<script[\s\S]*?<\/script>/gi," ");
+    if(!fs.existsSync(path.join(CHECK_ROOT,localized))) continue;
+    const html=readArtifact(localized).replace(/<script[\s\S]*?<\/script>/gi," ");
     for(const [, , , key, text] of html.matchAll(keyedText)){
       const expected=messages[locale][key];
       if(typeof expected!=="string"||expected===messages.en[key]) continue;
@@ -96,12 +100,12 @@ const KNOWN_ARIA_DEBT=new Set(["Game stats","Puzzle stats","AI workflow board","
 const ariaLabels=(html)=>new Set([...html.matchAll(/\saria-label="([^"]+)"/g)].map((m)=>decode(m[1])));
 for(const route of all){
   const sourceFile=route.source;
-  if(!fs.existsSync(path.join(ROOT,sourceFile))) continue;
-  const english=[...ariaLabels(read(sourceFile))].filter((value)=>/^[A-Za-z][A-Za-z'’ -]*$/.test(value)&&value.trim().split(/\s+/).length>=2&&!languageNeutral(value));
+  if(!fs.existsSync(path.join(CHECK_ROOT,sourceFile))) continue;
+  const english=[...ariaLabels(readArtifact(sourceFile))].filter((value)=>/^[A-Za-z][A-Za-z'’ -]*$/.test(value)&&value.trim().split(/\s+/).length>=2&&!languageNeutral(value));
   for(const locale of locales){
     const localized=routes.documentPathFor(route.page,locale);
-    if(!fs.existsSync(path.join(ROOT,localized))) continue;
-    const labels=ariaLabels(read(localized));
+    if(!fs.existsSync(path.join(CHECK_ROOT,localized))) continue;
+    const labels=ariaLabels(readArtifact(localized));
     for(const value of english){
       if(KNOWN_ARIA_DEBT.has(value)) continue;
       assertions+=1;
@@ -117,8 +121,8 @@ for(const locale of locales){
   const expected=messages[locale]["theme.switchToLight"];
   for(const page of localizedDocuments){
     const localized=routes.documentPathFor(page,locale);
-    if(!fs.existsSync(path.join(ROOT,localized))) continue;
-    for(const match of read(localized).matchAll(/<button\b[^>]*\bdata-theme-toggle\b[^>]*>/g)){
+    if(!fs.existsSync(path.join(CHECK_ROOT,localized))) continue;
+    for(const match of readArtifact(localized).matchAll(/<button\b[^>]*\bdata-theme-toggle\b[^>]*>/g)){
       assertions+=2;
       const aria=match[0].match(/\baria-label="([^"]*)"/)?.[1];
       const title=match[0].match(/\btitle="([^"]*)"/)?.[1];
@@ -160,13 +164,13 @@ const glossaryNames=new Set([...(glossary.protectedTerms||[]),...(glossary.proje
 const pagePacks=Object.fromEntries(locales.map((id)=>[id,JSON.parse(read(`data/i18n/packs/${id}/pages.json`))]));
 const reviewedIdentity=(locale,value)=>glossaryNames.has(value)||pagePacks[locale].text?.[value]===value||pagePacks[locale].attribute?.[value]===value||Object.entries(messages.en).some(([key,english])=>english===value&&messages[locale][key]===value);
 for(const route of all){
-  if(!fs.existsSync(path.join(ROOT,route.source))) continue;
+  if(!fs.existsSync(path.join(CHECK_ROOT,route.source))) continue;
   const shellOnly=GAME_SOURCES.has(route.source);
-  const english=slotStrings(read(route.source),shellOnly);
+  const english=slotStrings(readArtifact(route.source),shellOnly);
   for(const locale of locales){
     const localized=routes.documentPathFor(route.page,locale);
-    if(!fs.existsSync(path.join(ROOT,localized))) continue;
-    const visible=slotStrings(read(localized),shellOnly);
+    if(!fs.existsSync(path.join(CHECK_ROOT,localized))) continue;
+    const visible=slotStrings(readArtifact(localized),shellOnly);
     for(const value of english){
       assertions+=1;
       if(visible.has(value)&&!reviewedIdentity(locale,value)) failures.push(`${localized}: untranslated UI label ${JSON.stringify(value)} (give it a stable data-message-key in data/i18n/messages, or declare it in data/i18n/glossary.json if it is a name)`);

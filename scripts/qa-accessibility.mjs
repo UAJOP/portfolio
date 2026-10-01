@@ -22,7 +22,10 @@ import { fileURLToPath } from "node:url";
 import { authoredHtmlFiles } from "./i18n-catalog.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
+const rootAt = process.argv.indexOf("--root");
+const CHECK_ROOT = path.resolve(rootAt >= 0 ? process.argv[rootAt + 1] : ROOT);
+if (!fs.existsSync(CHECK_ROOT)) throw new Error(`qa:accessibility root does not exist: ${CHECK_ROOT}`);
+const read = (p) => fs.readFileSync(path.join(CHECK_ROOT, p), "utf8");
 
 let passed = 0;
 const failures = [];
@@ -41,8 +44,8 @@ const tagsOf = (html, name) => html.match(new RegExp(`<${name}\\b[^>]*>`, "gi"))
 /* Authored documents. Legacy `.html` compatibility stubs are one-line
  * redirects, checked for language, title and a real link by qa:routes. */
 const rootPages = authoredHtmlFiles();
-const generated = fs.existsSync(path.join(ROOT, "projects"))
-  ? fs.readdirSync(path.join(ROOT, "projects"), { withFileTypes: true })
+const generated = fs.existsSync(path.join(CHECK_ROOT, "projects"))
+  ? fs.readdirSync(path.join(CHECK_ROOT, "projects"), { withFileTypes: true })
       .filter((e) => e.isDirectory())
       .map((e) => `projects/${e.name}/index.html`)
   : [];

@@ -50,7 +50,7 @@ import {
   PROJECT_LIST_FIELDS,
   PROJECT_STEP_FIELDS,
   META_FIELDS,
-  CONTENT_REGISTRY_KEYS,
+  contentRegistryPath,
   isNeutralDynamicKey,
   loadDynamicSurface,
   DYNAMIC_SURFACES,
@@ -115,10 +115,10 @@ function deriveTurkishContent() {
   const out = {};
   for (const file of LOCALIZED_DATA_FILES) {
     if (file === "data/portfolio/project-details.json") continue;
-    const short = CONTENT_REGISTRY_KEYS[file];
-    for (const { path: nodePath, node } of localizedNodes(readJson(file), registry)) {
+    const data = readJson(file);
+    for (const { path: nodePath, node } of localizedNodes(data, registry)) {
       if (node.tr === undefined) continue;
-      out[`${short}.${nodePath}`] = node.tr;
+      out[contentRegistryPath(file, nodePath, data)] = node.tr;
     }
   }
   return Object.fromEntries(Object.entries(out).sort((a, b) => compareKeys(a[0], b[0])));

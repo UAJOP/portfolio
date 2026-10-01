@@ -39,6 +39,7 @@ function collectTranslatableTextNodes() {
         if (!parent || ["SCRIPT", "STYLE", "NOSCRIPT"].includes(parent.tagName)) {
           return NodeFilter.FILTER_REJECT;
         }
+        if (parent.closest("[data-react-main]")) return NodeFilter.FILTER_REJECT;
 
         const key = normalizeI18nText(node.nodeValue);
         if (key && hasLegacyTextTranslation(key)) {
@@ -59,6 +60,7 @@ const translatableAttributes = [];
 
 ["aria-label", "alt", "title", "placeholder"].forEach((attributeName) => {
   document.querySelectorAll(`[${attributeName}]`).forEach((element) => {
+    if (element.closest("[data-react-main]")) return;
     const key = element.getAttribute(attributeName);
     if (key && hasLegacyAttributeTranslation(key)) {
       translatableAttributes.push({ element, attributeName, key });
@@ -89,6 +91,7 @@ function applyProtectedTermCasing() {
   if (!terms.length || !document.body) return;
   document.querySelectorAll("[data-preserve-case]").forEach((element) => element.removeAttribute("data-preserve-case"));
   document.querySelectorAll("body *").forEach((element) => {
+    if (element.closest("[data-react-main]")) return;
     if (element.children.length) return;
     const text = String(element.textContent || "");
     if (!terms.some((term) => text.includes(term))) return;
@@ -117,6 +120,7 @@ function applyLanguagePresentation(locale = getCurrentLocale()) {
   });
 
   document.querySelectorAll("[data-training-type]").forEach((element) => {
+    if (element.closest("[data-react-main]")) return;
     element.textContent = getUiText("training", activeLocale);
   });
 

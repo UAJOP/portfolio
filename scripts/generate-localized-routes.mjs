@@ -58,7 +58,7 @@ import {
   isLegacyStub,
 } from "./site-routes.mjs";
 import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-ownership.mjs";
-import { SEMANTIC_PAGE_SOURCES, semanticSourceMessageMap } from "./i18n-messages.mjs";
+import { SEMANTIC_PAGE_SOURCES, explicitSemanticPageMap, semanticSourceMessageMap } from "./i18n-messages.mjs";
 import { createSiteHeadRenderer, localizeJsonLd } from "./site-head.mjs";
 import { createMessageResolver, resolveCanonicalLocalizedData } from "./shared-localization.mjs";
 
@@ -192,10 +192,13 @@ function buildDocument({ route, locale, translators, indexable }) {
   const semanticEnabled =
     SEMANTIC_PAGE_SOURCES.has(route.source) &&
     !(route.source === "project-detail.html" && route.slug);
+  const explicitText = explicitSemanticPageMap(route.source, locale, "text");
+  const explicitAttribute = explicitSemanticPageMap(route.source, locale, "attribute");
+  const promotedPage = route.source === "index.html" || route.source === "about/index.html";
   const translateText = (key) =>
-    (semanticEnabled ? translators.semantic(key) : null) || translators.phraseText(key);
+    explicitText.get(key) || (!promotedPage && semanticEnabled ? translators.semantic(key) : null) || translators.phraseText(key);
   const translateAttribute = (key) =>
-    (semanticEnabled ? translators.semantic(key) : null) || translators.phraseAttribute(key);
+    explicitAttribute.get(key) || (!promotedPage && semanticEnabled ? translators.semantic(key) : null) || translators.phraseAttribute(key);
 
   let html = source;
 

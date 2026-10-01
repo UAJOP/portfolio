@@ -1,0 +1,4308 @@
+{
+  "schemaVersion": 1,
+  "acceptedRef": "34fdfad01f63004ed10d616a7b061e3996c28150",
+  "pages": {
+    "home": {
+      "source": "index.html",
+      "children": [
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "hero section-shell"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "hero-copy reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "home.hero.eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.hero.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h1",
+                  "attributes": [
+                    {
+                      "name": "data-message-key",
+                      "value": "home.hero.title"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.hero.title"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "hero-text"
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "home.hero.lead"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.hero.lead"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "hero-actions"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn primary"
+                        },
+                        {
+                          "name": "data-message-key",
+                          "value": "home.hero.viewWork"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "internal",
+                            "path": "/works/"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.hero.viewWork"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "button",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn ghost"
+                        },
+                        {
+                          "name": "data-analytics-source",
+                          "value": "hero"
+                        },
+                        {
+                          "name": "data-recruiter-toggle",
+                          "value": true
+                        },
+                        {
+                          "name": "type",
+                          "value": "button"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "i",
+                          "attributes": [
+                            {
+                              "name": "aria-hidden",
+                              "value": "true"
+                            },
+                            {
+                              "name": "class",
+                              "value": "bx bx-briefcase-alt-2"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "span",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.hero.recruiterView"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.hero.recruiterView"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn ghost"
+                        },
+                        {
+                          "name": "data-analytics-source",
+                          "value": "hero"
+                        },
+                        {
+                          "name": "data-message-key",
+                          "value": "home.hero.contact"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "data",
+                            "path": "profile.email"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.hero.contact"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "role",
+                      "value": "group"
+                    },
+                    {
+                      "name": "aria-label",
+                      "value": {
+                        "type": "message",
+                        "key": "home.hero.visualAria"
+                      }
+                    },
+                    {
+                      "name": "class",
+                      "value": "identity-proof"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "span",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.identity.directionLabel"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.identity.directionLabel"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.identity.directionValue"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.identity.directionValue"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "span",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.identity.evidenceLabel"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.identity.evidenceLabel"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "a",
+                          "attributes": [
+                            {
+                              "name": "href",
+                              "value": {
+                                "type": "data",
+                                "path": "projects.sinama.links.caseStudy"
+                              }
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "strong",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.identity.evidenceValue"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.identity.evidenceValue"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "span",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.identity.backgroundLabel"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.identity.backgroundLabel"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.identity.backgroundValue"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.identity.backgroundValue"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "hero-visual reveal delay-1"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "profile-card"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "img",
+                      "attributes": [
+                        {
+                          "name": "alt",
+                          "value": {
+                            "type": "message",
+                            "key": "shared.profilePhotoAlt"
+                          }
+                        },
+                        {
+                          "name": "src",
+                          "value": "/assets/kaan-balci-profile.webp"
+                        },
+                        {
+                          "name": "decoding",
+                          "value": "async"
+                        },
+                        {
+                          "name": "fetchpriority",
+                          "value": "high"
+                        },
+                        {
+                          "name": "width",
+                          "value": "700"
+                        },
+                        {
+                          "name": "height",
+                          "value": "1000"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "profile-meta"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.identity.availabilityValue"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.identity.availabilityValue"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "span",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.identity.locationValue"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.identity.locationValue"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "role",
+                      "value": "group"
+                    },
+                    {
+                      "name": "aria-label",
+                      "value": {
+                        "type": "message",
+                        "key": "home.hero.capabilityAria"
+                      }
+                    },
+                    {
+                      "name": "class",
+                      "value": "hero-stack"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "home.hero.capability.discovery"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.hero.capability.discovery"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "home.hero.capability.scoping"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.hero.capability.scoping"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "home.hero.capability.delivery"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.hero.capability.delivery"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "home.hero.capability.reliability"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.hero.capability.reliability"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-heading reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "home.selectedWork.eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.selectedWork.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-message-key",
+                      "value": "home.selectedWork.title"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.selectedWork.title"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "data-message-key",
+                      "value": "home.selectedWork.lead"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.selectedWork.lead"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "selected-work-grid"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "evidence-card reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "evidence-card-media"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "home.selectedWork.sinama.alt"
+                              }
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/sinama-home-featured-project.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1800"
+                            },
+                            {
+                              "name": "height",
+                              "value": "1200"
+                            }
+                          ],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "evidence-card-content"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-meta"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.sinama.category"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.sinama.category"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-status is-live"
+                                },
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.sinama.status"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.sinama.status"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "data",
+                              "path": "projects.sinama.name"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-role"
+                            },
+                            {
+                              "name": "data-message-key",
+                              "value": "home.selectedWork.sinama.role"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.selectedWork.sinama.role"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.selectedWork.sinama.summary"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.selectedWork.sinama.summary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-actions"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "data-analytics-event",
+                                  "value": "selected_work_open"
+                                },
+                                {
+                                  "name": "data-analytics-project",
+                                  "value": "sinama"
+                                },
+                                {
+                                  "name": "data-analytics-source",
+                                  "value": "selected_work"
+                                },
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.caseStudy"
+                                },
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "data",
+                                    "path": "projects.sinama.links.caseStudy"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.caseStudy"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.liveProduct"
+                                },
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "data",
+                                    "path": "projects.sinama.links.live"
+                                  }
+                                },
+                                {
+                                  "name": "rel",
+                                  "value": "noopener noreferrer"
+                                },
+                                {
+                                  "name": "target",
+                                  "value": "_blank"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.liveProduct"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "evidence-card reveal delay-1"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "evidence-card-media"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "home.selectedWork.chatbot.alt"
+                              }
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/ai_flow_chatbot_design_cover.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1672"
+                            },
+                            {
+                              "name": "height",
+                              "value": "941"
+                            }
+                          ],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "evidence-card-content"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-meta"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.chatbot.category"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.chatbot.category"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-status"
+                                },
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.chatbot.status"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.chatbot.status"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.selectedWork.chatbot.title"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-role"
+                            },
+                            {
+                              "name": "data-message-key",
+                              "value": "home.selectedWork.chatbot.role"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.selectedWork.chatbot.role"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.selectedWork.chatbot.summary"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.selectedWork.chatbot.summary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-actions"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "data-analytics-event",
+                                  "value": "selected_work_open"
+                                },
+                                {
+                                  "name": "data-analytics-project",
+                                  "value": "ai-chatbot-flow-design"
+                                },
+                                {
+                                  "name": "data-analytics-source",
+                                  "value": "selected_work"
+                                },
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.viewEvidence"
+                                },
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "data",
+                                    "path": "projects.chatbotFlow.links.caseStudy"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.viewEvidence"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.experience"
+                                },
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/blog/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.experience"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "evidence-card reveal delay-2"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "evidence-card-media"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "home.selectedWork.joyday.alt"
+                              }
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/joyday-homepage-preview.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1860"
+                            },
+                            {
+                              "name": "height",
+                              "value": "935"
+                            }
+                          ],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "evidence-card-content"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-meta"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.joyday.category"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.joyday.category"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-status is-live"
+                                },
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.joyday.status"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.joyday.status"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.selectedWork.joyday.title"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-role"
+                            },
+                            {
+                              "name": "data-message-key",
+                              "value": "home.selectedWork.joyday.role"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.selectedWork.joyday.role"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "home.selectedWork.joyday.summary"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "home.selectedWork.joyday.summary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-actions"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "data-analytics-event",
+                                  "value": "selected_work_open"
+                                },
+                                {
+                                  "name": "data-analytics-project",
+                                  "value": "atolye-joyday-official-website"
+                                },
+                                {
+                                  "name": "data-analytics-source",
+                                  "value": "selected_work"
+                                },
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.caseStudy"
+                                },
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "data",
+                                    "path": "projects.joyday.links.caseStudy"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.caseStudy"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "home.selectedWork.liveWebsite"
+                                },
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "data",
+                                    "path": "projects.joyday.links.live"
+                                  }
+                                },
+                                {
+                                  "name": "rel",
+                                  "value": "noopener noreferrer"
+                                },
+                                {
+                                  "name": "target",
+                                  "value": "_blank"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "home.selectedWork.liveWebsite"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-heading reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.services.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "home.services.title"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "home.services.title"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.services.title"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "service-grid"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "service-card reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "i",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "bx bx-search-alt"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "home.services.discover.title"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.services.discover.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.services.discover.body"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.services.discover.body"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.services.discover.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "service-card reveal delay-1"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "i",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "bx bx-network-chart"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "home.services.prototype.title"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.services.prototype.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.services.prototype.body"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.services.prototype.body"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.services.prototype.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "service-card reveal delay-2"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "i",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "bx bx-shield-quarter"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "home.services.evaluate.title"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.services.evaluate.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.services.evaluate.body"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.services.evaluate.body"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.services.evaluate.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "service-card reveal delay-3"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "i",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "bx bx-rocket"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "home.services.ship.title"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.services.ship.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.services.ship.body"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.services.ship.body"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.services.ship.body"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block split-section"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-heading compact reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.selectedWork.experience"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "home.timeline.title"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "home.timeline.title"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.timeline.title"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "home.timeline.lead"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "home.timeline.lead"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.timeline.lead"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn primary"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/blog/"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.timeline.cta"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "timeline-preview"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "timeline-card reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.timeline.currentPeriod"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.timeline.joyday.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.timeline.joyday.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "timeline-card reveal delay-1"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "2025"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.timeline.cbot.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.timeline.cbot.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "timeline-card reveal delay-2"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "2025"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.timeline.outlier.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.timeline.outlier.body"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-kicker-row"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "section-heading reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "eyebrow"
+                        },
+                        {
+                          "name": "data-message-key",
+                          "value": "portfolio.label.supportingEvidence"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "portfolio.label.supportingEvidence"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h2",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.supporting.title"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.supporting.title"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.supporting.title"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/works/"
+                      }
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "home.supporting.viewAll"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.supporting.viewAll"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "compact-evidence-grid"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "data",
+                          "path": "projects.mergeRush.name"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-role"
+                        },
+                        {
+                          "name": "data-role-for",
+                          "value": "mergeRush"
+                        },
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.supporting.mergeRush.role"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.supporting.mergeRush.role"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.supporting.mergeRush.role"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.supporting.mergeRush.body"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.supporting.mergeRush.body"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.supporting.mergeRush.body"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "data-analytics-event",
+                          "value": "selected_work_open"
+                        },
+                        {
+                          "name": "data-analytics-project",
+                          "value": "merge-rush"
+                        },
+                        {
+                          "name": "data-analytics-source",
+                          "value": "selected_work"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "data",
+                            "path": "projects.mergeRush.links.caseStudy"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.supporting.caseStudy"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "reveal delay-1"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.supporting.hospital.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-role"
+                        },
+                        {
+                          "name": "data-role-for",
+                          "value": "hospital"
+                        },
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.supporting.hospital.role"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.supporting.hospital.role"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.supporting.hospital.role"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.supporting.hospital.body"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.supporting.hospital.body"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.supporting.hospital.body"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "data-analytics-event",
+                          "value": "selected_work_open"
+                        },
+                        {
+                          "name": "data-analytics-project",
+                          "value": "hospital-form-app"
+                        },
+                        {
+                          "name": "data-analytics-source",
+                          "value": "selected_work"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "data",
+                            "path": "projects.hospital.links.caseStudy"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.supporting.caseStudy"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-kicker-row"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "section-heading reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "eyebrow"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.latestBuild.eyebrow"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h2",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "compat",
+                            "locale": "en",
+                            "key": "home.latestBuild.title"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "compat",
+                            "locale": "tr",
+                            "key": "home.latestBuild.title"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "home.latestBuild.title"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/now/"
+                      }
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "home.latestBuild.open"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.latestBuild.open"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "build-log-list reveal"
+                },
+                {
+                  "name": "data-build-log",
+                  "value": true
+                },
+                {
+                  "name": "data-build-log-limit",
+                  "value": "3"
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell contact-hub reveal"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.hero.contact"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "home.contact.title"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "home.contact.title"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.contact.title"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "home.contact.lead"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "home.contact.lead"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.contact.lead"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "contact-actions"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn primary"
+                    },
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "shared.evidenceByCapability"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "shared.evidenceByCapability"
+                      }
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/?role=applied-ai"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "shared.evidenceByCapability"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/request/"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "home.contact.requestProject"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "data",
+                        "path": "profile.email"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "shared.email"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/labs/"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "shared.kaanLabs"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "about": {
+      "source": "about/index.html",
+      "children": [
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "page-hero section-shell reveal"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "eyebrow"
+                },
+                {
+                  "name": "data-message-key",
+                  "value": "about.hero.eyebrow"
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "about.hero.eyebrow"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "h1",
+              "attributes": [
+                {
+                  "name": "data-message-key",
+                  "value": "about.hero.title"
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "about.hero.title"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "p",
+              "attributes": [
+                {
+                  "name": "data-message-key",
+                  "value": "about.hero.lead"
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "about.hero.lead"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell about-hero section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "about-photo reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "img",
+                  "attributes": [
+                    {
+                      "name": "alt",
+                      "value": {
+                        "type": "message",
+                        "key": "shared.profilePhotoAlt"
+                      }
+                    },
+                    {
+                      "name": "src",
+                      "value": "/assets/kaan-balci-profile.webp"
+                    },
+                    {
+                      "name": "width",
+                      "value": "700"
+                    },
+                    {
+                      "name": "height",
+                      "value": "1000"
+                    },
+                    {
+                      "name": "loading",
+                      "value": "lazy"
+                    },
+                    {
+                      "name": "decoding",
+                      "value": "async"
+                    }
+                  ],
+                  "children": []
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "about-badge"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.profile.role"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.profile.location"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "about-copy reveal delay-1"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "about.profile.eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.profile.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-message-key",
+                      "value": "about.profile.title"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.profile.title"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "data-message-key",
+                      "value": "about.profile.approach"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.profile.approach"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "data-message-key",
+                      "value": "about.profile.experience"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.profile.experience"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "data-message-key",
+                      "value": "about.profile.evidence"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.profile.evidence"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "hero-actions left"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "button",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn primary"
+                        },
+                        {
+                          "name": "data-react-action",
+                          "value": "openResume"
+                        },
+                        {
+                          "name": "type",
+                          "value": "button"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.profile.resume"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn ghost"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "internal",
+                            "path": "/?role=solution-engineering"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "shared.evidenceByCapability"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn ghost"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "data",
+                            "path": "profile.email"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "shared.email"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-heading reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.capability.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "about.capability.title"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "about.capability.title"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.capability.title"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "capability-grid"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "capability-card reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.capability.discovery.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "ul",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.discovery.request"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.discovery.boundaries"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.discovery.mapping"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.discovery.criteria"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.discovery.flow"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "capability-card reveal delay-1"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.capability.reliability.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "ul",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.reliability.scenarios"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.reliability.contracts"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.reliability.regression"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.reliability.multimodal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.reliability.failure"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "capability-card reveal delay-2"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.capability.fullstack.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "ul",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "about.capability.fullstack.backend"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.fullstack.backend"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.fullstack.interfaces"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.fullstack.data"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.fullstack.automation"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.capability.fullstack.testing"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block journey-section reveal"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-heading"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.journey.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.journey.title"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "journey-grid"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "2020"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "about.journey.operations.title"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.operations.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.operations.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "2023"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.software.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.software.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "2024"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.backend.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.backend.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "2025"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "about.journey.enterprise.title"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.enterprise.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.enterprise.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "2026"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "about.journey.aiDeployment.title"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.aiDeployment.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.journey.ai.body"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-heading reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.process.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.process.title"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "process-list"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "process-card reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "01"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "about.process.discover.title"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.process.discover.title"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.process.discover.body"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "process-card reveal delay-1"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "02"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [
+                            {
+                              "name": "data-message-key",
+                              "value": "about.process.build.title"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.process.build.title"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.process.build.body"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "process-card reveal delay-2"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "03"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.process.evaluate.title"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "about.process.evaluate.body"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-heading reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.toolbox.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-message-key",
+                      "value": "about.toolbox.title"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.toolbox.title"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "toolbox-grid reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.toolbox.languages.label"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "Python, JavaScript, TypeScript, C#, PHP, Java, Kotlin, C++"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "about.toolbox.backendData.label"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.toolbox.backendData.label"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "FastAPI, REST APIs, PostgreSQL, MySQL, MSSQL, SQLite, Firebase"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.toolbox.aiAutomation.label"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "about.toolbox.aiAutomation.value"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.toolbox.aiAutomation.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "h3",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "about.toolbox.qualityDelivery.label"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.toolbox.qualityDelivery.label"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "about.toolbox.qualityDelivery.value"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "about.toolbox.qualityDelivery.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell contact-hub reveal"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    },
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "about.contact.eyebrow"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "about.contact.eyebrow"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.contact.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "about.contact.title"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "about.contact.title"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.contact.title"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "contact-actions"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn primary"
+                    },
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "about.contact.discovery"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "about.contact.discovery"
+                      }
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/?role=solution-engineering"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.contact.discovery"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "about.contact.aiDeployment"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "about.contact.aiDeployment"
+                      }
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/?role=applied-ai"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.contact.aiDeployment"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "about.contact.fullStack"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "about.contact.fullStack"
+                      }
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/?role=software"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.contact.fullStack"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "compat",
+                        "locale": "en",
+                        "key": "about.contact.productSystems"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "compat",
+                        "locale": "tr",
+                        "key": "about.contact.productSystems"
+                      }
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/?role=game"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "about.contact.productSystems"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

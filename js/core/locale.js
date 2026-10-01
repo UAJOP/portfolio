@@ -302,7 +302,11 @@ function composeLocalePackIntoRegistry(locale = currentSiteLanguage) {
 
   /* content: flat registry paths such as `profile.availability`. */
   for (const [key, value] of Object.entries(pack.content || {})) {
-    branch(resolveRegistryPath(registry, key), value);
+    const buildLogMatch = key.match(/^buildLogById\.([^.]+)\.(.+)$/);
+    const target = buildLogMatch
+      ? resolveRegistryPath(registry.buildLog?.find((entry) => entry.id === buildLogMatch[1]), buildLogMatch[2])
+      : resolveRegistryPath(registry, key);
+    branch(target, value);
   }
 
   /* projects: per-slug overlays keyed by canonical project identity. */

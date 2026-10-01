@@ -19,15 +19,19 @@ const OG_URL_META = /<meta[^>]*\bproperty=["']og:url["'][^>]*>/i;
 const tidyWhitespace = (text) => text.replace(/^[ \t]+$/gm, "").replace(/[ \t]+$/gm, "");
 
 export function createSiteHeadRenderer({ registry, indexableLocales, absoluteFor }) {
-  const alternateLinks = (routeKey, indexable) => {
-    if (!indexable || !indexableLocales.length) return "";
+  const alternateLinkRecords = (routeKey, indexable) => {
+    if (!indexable || !indexableLocales.length) return [];
     const locales = [registry.defaultLocale, ...indexableLocales];
-    const links = locales.map((id) =>
-      `<link rel="alternate" hreflang="${escapeHtml(registry.byId.get(id).htmlLang || id)}" href="${escapeHtml(absoluteFor(routeKey, id))}"/>`,
-    );
-    links.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(absoluteFor(routeKey, registry.defaultLocale))}"/>`);
-    return links.join("");
+    const links = locales.map((id) => ({
+      hrefLang: registry.byId.get(id).htmlLang || id,
+      href: absoluteFor(routeKey, id),
+    }));
+    links.push({ hrefLang: "x-default", href: absoluteFor(routeKey, registry.defaultLocale) });
+    return links;
   };
+  const alternateLinks = (routeKey, indexable) => alternateLinkRecords(routeKey, indexable)
+    .map(({ hrefLang, href }) => `<link rel="alternate" hreflang="${escapeHtml(hrefLang)}" href="${escapeHtml(href)}"/>`)
+    .join("");
 
   const stripHeadMetadata = (head) => {
     let out = head;
@@ -80,7 +84,88 @@ export function createSiteHeadRenderer({ registry, indexableLocales, absoluteFor
     return source.replace(/<head>[\s\S]*?<\/head>/i, `<head>${head}</head>`);
   };
 
-  return { alternateLinks, buildLocalizedHead, buildEnglishDocument };
+  return { alternateLinkRecords, alternateLinks, buildLocalizedHead, buildEnglishDocument };
+}
+
+export const HOME_ABOUT_THEME_BOOTSTRAP = Object.freeze({
+  home: '(function(){try{var savedTheme=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",savedTheme==="light"?"light":"dark");}catch(error){document.documentElement.setAttribute("data-theme","dark");}})();',
+  about: '(function(){try{var t=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();',
+});
+
+const PERSON_KNOWS_ABOUT = Object.freeze([
+  "Forward Deployed Engineering",
+  "Applied AI",
+  "AI Deployment",
+  "Customer Workflow Discovery",
+  "Technical Scoping",
+  "Solution Engineering",
+  "AI Reliability",
+  "LLM Evaluation",
+  "Conversational AI",
+  "FastAPI",
+  "TypeScript",
+]);
+
+/** Canonical structured head model for the React-owned Home/About documents.
+ * The shared alternate-link renderer remains the URL authority; route-specific
+ * tag presence preserves the accepted pre-cutover metadata contract. */
+export function createHomeAboutHeadModel({
+  route,
+  registry,
+  routeRuntime,
+  site,
+  localization,
+  sourceMeta,
+  profile,
+  socials,
+}) {
+  if (!HOME_ABOUT_THEME_BOOTSTRAP[route.routeId]) throw new Error(`unsupported Home/About head route ${route.routeId}`);
+  const meta = route.locale === registry.defaultLocale
+    ? sourceMeta[route.routeId]
+    : localization.packs.meta?.[route.routeId];
+  if (!meta) throw new Error(`${route.locale}/${route.routeId}: missing canonical meta`);
+  const headRenderer = createSiteHeadRenderer({
+    registry,
+    indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
+    absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
+  });
+  const canonical = `${site.origin}${route.pathname}`;
+  const localized = route.locale !== registry.defaultLocale;
+  const home = route.routeId === "home";
+  return {
+    title: meta.title,
+    description: meta.description,
+    keywords: home ? "Kaan Balcı, Forward Deployed Engineer, Applied AI, AI deployment, customer workflows, technical scoping, solution engineering, AI reliability, LLM evaluation, FastAPI, TypeScript" : null,
+    canonical,
+    alternates: headRenderer.alternateLinkRecords(route.route, true),
+    og: {
+      siteName: home ? "Kaan Balcı Portfolio" : null,
+      locale: home || localized ? localization.definition.ogLocale || localization.definition.htmlLang : null,
+      title: meta.ogTitle,
+      description: meta.ogDescription,
+      type: home ? "website" : null,
+      url: home || localized ? canonical : null,
+      image: `${site.origin}/assets/portfolio_website_cover.webp`,
+    },
+    twitter: {
+      card: home ? "summary_large_image" : null,
+      title: localized ? meta.ogTitle : null,
+      description: localized ? meta.ogDescription : null,
+      image: home ? `${site.origin}/assets/portfolio_website_cover.webp` : null,
+    },
+    themeBootstrap: HOME_ABOUT_THEME_BOOTSTRAP[route.routeId],
+    jsonLd: home ? {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: profile.name,
+      url: site.origin,
+      image: `${site.origin}/assets/kaan-balci-profile.webp`,
+      jobTitle: profile.primaryTitle[registry.defaultLocale],
+      description: localization.message("shell.head.personDescription"),
+      sameAs: [socials.github, socials.linkedin],
+      knowsAbout: PERSON_KNOWS_ABOUT,
+    } : null,
+  };
 }
 export function localizeJsonLd(head, { locale, canonical, meta }) {
   const englishCanonical = canonical.replace(`/${locale}/`, "/");
