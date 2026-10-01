@@ -224,6 +224,9 @@ jobs:
       - name: Build bounded Pages artifact
         run: npm run build:site
 
+      - name: Audit exact deploy artifact with the complete Master 3 gate
+        run: npm run qa:m3:artifact
+
       - name: Verify bounded Pages artifact
         run: npm run qa:site:artifact
 

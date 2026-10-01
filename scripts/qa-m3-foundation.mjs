@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { ROOT, loadRegistry, loadProjectRegistry } from "./i18n-catalog.mjs";
+import { ROOT, buildCatalog, contentRegistryPath, loadRegistry, loadProjectRegistry } from "./i18n-catalog.mjs";
 import { loadSiteRoutes, validateSiteRoutes, loadRouteRuntime, absoluteRouteUrl } from "./site-routes.mjs";
 import { canonicalReactRoutes, productionReactRoutes } from "./react-route-adapter.mjs";
 import { requireSemanticMessage, resolveLocalizedData, resolveCanonicalLocalizedData } from "./shared-localization.mjs";
@@ -20,6 +20,16 @@ const locales = loadRegistry();
 const projects = loadProjectRegistry();
 let assertions = 0;
 const check = (condition, message) => { assertions += 1; assert.ok(condition, message); };
+
+const catalog = buildCatalog();
+check(catalog.entries.some((entry) => entry.domain === "content" && entry.key === "profile.availability"), "ordinary localized scalar fields use the canonical registry path");
+check(catalog.entries.some((entry) => entry.domain === "content" && entry.key === "projects.mergeRush.proof[0]"), "array-valued English fields use the canonical registry path");
+const buildLog = JSON.parse(fs.readFileSync(path.join(ROOT, "data/portfolio/build-log.json"), "utf8"));
+const stableBuildLogPath = contentRegistryPath("data/portfolio/build-log.json", "[0].title", buildLog);
+check(stableBuildLogPath === `buildLogById.${buildLog[0].id}.title`, "build-log paths use stable ids");
+const reorderedBuildLog = [...buildLog].reverse();
+const reorderedIndex = reorderedBuildLog.findIndex((entry) => entry.id === buildLog[0].id);
+check(contentRegistryPath("data/portfolio/build-log.json", `[${reorderedIndex}].title`, reorderedBuildLog) === stableBuildLogPath, "build-log reordering preserves translation authority");
 
 for (const page of site.pages) {
   const expected = new Set(["home", "about"]).has(page.id) ? "react" : "legacy";

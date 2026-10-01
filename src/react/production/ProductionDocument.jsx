@@ -56,10 +56,10 @@ function ProductionHeader({ page, shell }) {
           <strong>{shell.availability}</strong>
         </a>
         <nav className="nav-links" data-nav="" id="site-navigation">
-          {shell.nav.map((item) => <a key={item.id} className={item.id === page ? "selected" : undefined} href={item.href}>{item.label}</a>)}
+          {shell.nav.map((item) => <a key={item.id} className={item.id === page ? "selected" : undefined} aria-current={item.id === page ? "page" : undefined} href={item.href}>{item.label}</a>)}
         </nav>
         <div className="header-actions">
-          <button className="recruiter-toggle" data-recruiter-toggle="" type="button" title={text.recruiterLabel} aria-label={text.recruiterOpenAria}>
+          <button className="recruiter-toggle" data-recruiter-toggle="" type="button" title={text.recruiterTitle} aria-label={text.recruiterOpenAria}>
             <i className="bx bx-briefcase-alt-2" />
             <span data-recruiter-label="">{text.recruiterLabel}</span>
           </button>

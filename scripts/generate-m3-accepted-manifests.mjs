@@ -47,10 +47,13 @@ function withHistoricalBuildLog(document, file) {
 }
 
 const cutover = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   acceptedRef: requestedCutover,
   algorithm: "sha256",
-  documents: Object.fromEntries(routePaths.map((file) => [file, documentContract(withHistoricalBuildLog(git(["show", `${requestedCutover}:${file}`]), file))])),
+  documents: Object.fromEntries(routePaths.map((file) => [file, documentContract(
+    withHistoricalBuildLog(git(["show", `${requestedCutover}:${file}`]), file),
+    { route: file, source: "accepted" },
+  )])),
 };
 const publicDelta = {
   schemaVersion: 2,

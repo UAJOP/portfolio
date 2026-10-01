@@ -712,10 +712,11 @@ export function buildCatalog() {
         push("content", contentRegistryPath(file, nodePath, data), en);
       } else if (Array.isArray(en)) {
         en.forEach((item, index) => {
-          if (typeof item === "string") push("content", `${short}.${nodePath}[${index}]`, item);
+          const itemPath = contentRegistryPath(file, `${nodePath}[${index}]`, data);
+          if (typeof item === "string") push("content", itemPath, item);
           else if (item && typeof item === "object") {
             for (const field of Object.keys(item).sort()) {
-              if (typeof item[field] === "string") push("content", `${short}.${nodePath}[${index}].${field}`, item[field]);
+              if (typeof item[field] === "string") push("content", `${itemPath}.${field}`, item[field]);
             }
           }
         });

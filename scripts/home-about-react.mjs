@@ -172,6 +172,7 @@ export function productionDocumentProps(route, clientEntry) {
         brandLogoAlt: copy["shell.brand.logoAlt"],
         availabilityAria: copy["shell.availabilityAria"],
         recruiterLabel: copy["shell.recruiter.label"],
+        recruiterTitle: route.locale === "tr" ? "Recruiter Mode" : copy["shell.recruiter.label"],
         recruiterOpenAria: copy["shell.recruiter.openAria"],
         commandLabel: copy["shell.command.label"],
         languageSelectorAria: copy["language.selectorAria"],

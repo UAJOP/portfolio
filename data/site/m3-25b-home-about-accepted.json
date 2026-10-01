@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "acceptedRef": "34fdfad01f63004ed10d616a7b061e3996c28150",
   "algorithm": "sha256",
   "documents": {
@@ -42,9 +42,10 @@
           }
         ]
       },
-      "header": "67712e972895b60508f79aa25ba46a08c0accd79659eaceb1dac9c78b84d0747",
-      "main": "48b012200969a0a5392454608c4699041d0d2e620c3cca6e96f5351c874d2cc9",
-      "footer": "5894543976b5da477e8345d627c7ce9809d03ae073d126f0868be64dc6fcc8da"
+      "document": "2f016fa92184d37bec70f1aca021572f4691ae6d85ddc92c994e21b2a6bff9c8",
+      "header": "8d676638744999e8afada2e4e8e673f209c361693b3eb4425e58446f751ddb11",
+      "main": "b78a1acfd0f0ac0eda26c779014836227eeda0c3f26bb95d02d8fb9acec107a6",
+      "footer": "440728c596abd2bd7c4817b7ff2f79b01637dc38480808320b16c380a2f2200b"
     },
     "about/index.html": {
       "head": {
@@ -58,9 +59,10 @@
           }
         ]
       },
-      "header": "7d07f1143929f7a90d08f9aef496323645360980133ae33abfebcec0db3e9922",
-      "main": "5800fe917048f80f5752ccd2b5633bbf62914dc02fc669c2dda6972442158953",
-      "footer": "5894543976b5da477e8345d627c7ce9809d03ae073d126f0868be64dc6fcc8da"
+      "document": "152db0e2f56b921bbe1ded687e161b1c3212b18b0eb4f664c39d3407dcccd464",
+      "header": "85ed8817d95af71f1225e672143fd2d5fb5f86964e69c1e676175b09bda0a2dd",
+      "main": "13d7e58e36292678b7f8305dc4a58a1eaabba95e08e35f1708bb4f29afe86797",
+      "footer": "440728c596abd2bd7c4817b7ff2f79b01637dc38480808320b16c380a2f2200b"
     },
     "tr/index.html": {
       "head": {
@@ -101,9 +103,10 @@
           }
         ]
       },
-      "header": "2120611aac446745b1c0a74070f600553c2e95a7e44cddef2758f571357cff80",
-      "main": "86d8b2d6f1821a570fa80e7b1505a340b1abfcbecf1ae43640353f53a9c2923b",
-      "footer": "98cf80882cbb0b35be0259869d75b3bdac930d575b5377803f00fd4ed7f099a6"
+      "document": "8ce9a7154570a88b8410ddda34fc7f9b5ac57e905b0f45274d864f1b05ce810e",
+      "header": "406609b8256fd9b9101250661431c023c620c5e74200c95dc831731ad514d914",
+      "main": "c9cc549adac25f3170e4c18aea1c9cc788db204d2f4876d1a3323fd2bf510109",
+      "footer": "1a5f23938863c0bc0b04dcad23fec045b89c2b7cec5c9a66367e3bcb165793ae"
     },
     "tr/about/index.html": {
       "head": {
@@ -117,9 +120,10 @@
           }
         ]
       },
-      "header": "4ba21999785b20a2df74bc21bf2b35bd3b3c6323dbaec07e704c3d474261d182",
-      "main": "a6cb3d0b40f2debf6584fd6648eaad52fae12dd22852ba80779d7cb6447c3138",
-      "footer": "98cf80882cbb0b35be0259869d75b3bdac930d575b5377803f00fd4ed7f099a6"
+      "document": "bc9a4877ada0bcd9a02a00fee4b2aa8a026bb93cb9d7aa9146d4430ca94bd593",
+      "header": "5b93a8e767597a6e63339ff8ec072bd6cea898b2fa33db349e57f4d8128ce0a3",
+      "main": "21178a00e34175317dc682c1ad74cb4a69d0b9122bf4b39528368a0b053df161",
+      "footer": "1a5f23938863c0bc0b04dcad23fec045b89c2b7cec5c9a66367e3bcb165793ae"
     },
     "de/index.html": {
       "head": {
@@ -160,9 +164,10 @@
           }
         ]
       },
-      "header": "a04abfc39abf66290e463132df270713ac689004678519ab69458438d225a2b4",
-      "main": "4bf0b1d3017fb559498cce21c2bd88c6721ed8e2e21a364a0bdcd851e50a56ac",
-      "footer": "d2b390072e1d0804b56d2e6388ca1a1d861ef910a5c37b781e246fa681e522ab"
+      "document": "4cdd76c776ec968b6d76af8662a142feb337b7a28d3d5abdaed5566d0a7a0845",
+      "header": "013dc2928bf416d7f35b62fe1eac3374661a05ec4d492fddf0a57a28a852f17d",
+      "main": "843a9aea1599989395d26d74f7d23df7584558d9a17eb16ac6ccd49592bd04eb",
+      "footer": "6df4aca5c5201659b58bfc2c47282313216ffb944fe4d95b1d39a0b0cccd790a"
     },
     "de/about/index.html": {
       "head": {
@@ -176,9 +181,10 @@
           }
         ]
       },
-      "header": "0dc3de8b16eb5672cd100babbf96fd1c3c9de13335d8934ad7f4ee5dbf6f850a",
-      "main": "1417b87faab031ef79c8d223a509125bb598a547e7f5450056bf9e59b1705aab",
-      "footer": "d2b390072e1d0804b56d2e6388ca1a1d861ef910a5c37b781e246fa681e522ab"
+      "document": "94e639f2c8987d7f1318bcb78a588881074ad99c49c39ae95bad94351498743f",
+      "header": "8b84b1d565ec3d33f556b77432d16ebaddad9378a816f2ce8622014d3b1f2ba1",
+      "main": "725a8a7c7df64caa88b667781c4319a829d39ae03b8d77929df49348cbef2440",
+      "footer": "6df4aca5c5201659b58bfc2c47282313216ffb944fe4d95b1d39a0b0cccd790a"
     },
     "es/index.html": {
       "head": {
@@ -219,9 +225,10 @@
           }
         ]
       },
-      "header": "12e5a5dbb6c11d2ed7ddda1a3aa640496318c0dbae4d1c165ae98998fa9922f2",
-      "main": "e165ee84b261742cdfc676d45b1598b1df1d12cd7b19401b841e3ba48d195eb0",
-      "footer": "e7375c5cfaf9754ead958ba42c3f03798ed91b4722bd4fe9736a4c700996f09c"
+      "document": "393a47958c4d0a6c1dff75aa763ba325a166a0c236c556e7ba60c00b61a2c6f5",
+      "header": "b418396a6f7855b7ffddcb9415bfab07462bf70cfd0fad5fabc326b62a5f9691",
+      "main": "a23358b0d7d41c35816a704448cad9b5694557276b0d7c81891980c933bce05f",
+      "footer": "dae5f9557600c5018456ce0b3b4708f47b885ad82bfadd1963f923b015e30650"
     },
     "es/about/index.html": {
       "head": {
@@ -235,9 +242,10 @@
           }
         ]
       },
-      "header": "6125583cbf195538b27b7e6a924d4e3086a52f273c060e510a6c6c8420927a87",
-      "main": "c117402f19f6d7a8316a0024fca8e9d7ba874e35817ddc37d28e42c891be0af0",
-      "footer": "e7375c5cfaf9754ead958ba42c3f03798ed91b4722bd4fe9736a4c700996f09c"
+      "document": "04958f531e6d8d3a2f2fa79fa907cb5a65de27047d02c11c5e03bf94a4baf3ce",
+      "header": "18ae7a5cdc3399c13be05a85b349d1367aaeb1f5372a154afce18ecd524386b1",
+      "main": "91a0eae9cc46ad7f9b8d7beb2443b9611e303f966878b213bda1fa2571ba8f26",
+      "footer": "dae5f9557600c5018456ce0b3b4708f47b885ad82bfadd1963f923b015e30650"
     },
     "fr/index.html": {
       "head": {
@@ -278,9 +286,10 @@
           }
         ]
       },
-      "header": "0b2442d90587a008c5de7cb81acc433d4fd1a82090a284b9304ac28577712158",
-      "main": "0d82da0b2d84c3392c65f813c1e95c65561db7d28b974bdd0da74ef1e98e8dee",
-      "footer": "4d5e5c0864fc0368d6dd865a579c9df1fce86e560e3f6e505f469f11f5b7573e"
+      "document": "3d8a0ab9bc58db98e3252f620fd5a6f14aa268fa4279006213173b263cd00124",
+      "header": "650b60e7767f81d63f8b582b36889cb2649c9b407ebd45ffe0c3d6bca694cbd0",
+      "main": "75ddaccdb7d9ac421fc669e6c0601ce743524cfe64d220a1973ec130d83575ad",
+      "footer": "fb77a9acb11301a42f0a8052e18f549e0db559e35799b64f54ffa70c95f6d601"
     },
     "fr/about/index.html": {
       "head": {
@@ -294,9 +303,10 @@
           }
         ]
       },
-      "header": "62116345daafdb20573199cfbe5371d92c68813a4b85548c73de3072f6c71ad8",
-      "main": "15fede00af38a6c7fc0312cf687834ed684c7d0ffefb2a26c78a7826306354ea",
-      "footer": "4d5e5c0864fc0368d6dd865a579c9df1fce86e560e3f6e505f469f11f5b7573e"
+      "document": "2224fc3b659eb274ca847b1b534ab8d8acaf8e6d64453b5b8af0a33bf8315ca2",
+      "header": "d4910cf444c3241cd3ea23b68053fd255be65485fe373983ff38a65d38567301",
+      "main": "444606f5d9aebbcec65811609ff08d44e966f7effab18448a64cf3c4b9cd1132",
+      "footer": "fb77a9acb11301a42f0a8052e18f549e0db559e35799b64f54ffa70c95f6d601"
     }
   }
 }
