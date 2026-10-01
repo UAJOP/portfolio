@@ -19,8 +19,10 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_FILE = path.join(ROOT, "data/site/m3-25a-accepted-artifact.json");
 const PUBLIC_DELTA_FILE = path.join(ROOT, "data/site/m3-25b-public-delta.json");
+const WORKS_GAMES_DELTA_FILE = path.join(ROOT, "data/site/m3-26-public-delta.json");
 const ACCEPTED_BASE = "6ca0910ea330d25dcb3873f8b84047666de67fb6";
 const ACCEPTED_DELTA = "4d0e37b496f70d851397d9976b2022350d11edd6";
+const WORKS_GAMES_ACCEPTED_BASE = "24be2f8159a0925dc00f29375ea8740738214df3";
 const APPROVED_GENERATED_CHANGES = new Set([
   "i18n/pack-de-core.js",
   "i18n/pack-es-core.js",
@@ -31,6 +33,7 @@ const APPROVED_GENERATED_CHANGES = new Set([
   "js/features/creative.js",
   "portfolio-v2.js",
 ]);
+const APPROVED_WORKS_GAMES_CHANGES = new Set(["js/pages/games.js", "js/portfolio/works.js", "style.css"]);
 
 function assertClean(label, result) {
   if (!result.missing.length && !result.extra.length && !result.changed.length) return;
@@ -102,6 +105,10 @@ const publicDelta = validateArtifactManifest(
   JSON.parse(fs.readFileSync(PUBLIC_DELTA_FILE, "utf8")),
   ACCEPTED_DELTA,
 );
+const worksGamesDelta = validateArtifactManifest(
+  JSON.parse(fs.readFileSync(WORKS_GAMES_DELTA_FILE, "utf8")),
+  WORKS_GAMES_ACCEPTED_BASE,
+);
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-parity-"));
 const legacy = path.join(temp, "legacy");
 const mixed = path.join(temp, "mixed");
@@ -112,9 +119,9 @@ try {
   await buildProductionSite({ outputDirectory: mixed });
 
   const migratedDocuments = new Set(productionReactRoutes().map((route) => route.output));
-  assert.equal(migratedDocuments.size, 10, "parity model requires exactly 10 migrated Home/About documents");
+  assert.equal(migratedDocuments.size, 20, "parity model requires exactly 20 migrated Home/About/Works/Games documents");
   const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
-  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES]);
+  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES]);
   const finalFiles = listFiles(mixed);
   const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
   const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
@@ -131,6 +138,9 @@ try {
   assert.deepEqual(publicDelta.files.map((entry) => entry.path).sort(), [...APPROVED_GENERATED_CHANGES].sort(), "public delta must cover the exact eight approved paths");
   const delta = compareArtifactManifest(publicDelta, mixed, [...APPROVED_GENERATED_CHANGES]);
   assertClean("accepted #25-B public delta", delta);
+  assert.deepEqual(worksGamesDelta.files.map((entry) => entry.path).sort(), [...APPROVED_WORKS_GAMES_CHANGES].sort(), "#26 public delta must cover the exact three scoped runtime/style paths");
+  const worksGamesPublicDelta = compareArtifactManifest(worksGamesDelta, mixed, [...APPROVED_WORKS_GAMES_CHANGES]);
+  assertClean("accepted #26 public delta", worksGamesPublicDelta);
 
   const legacyFiles = listFiles(legacy);
   const currentLegacy = {
@@ -146,7 +156,7 @@ try {
   assertClean("same-tree unchanged legacy protection", neutral);
 
   console.log(
-    `Master 3 #25-B route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=10 bundles=${extras.length} unexplained=0.`,
+    `Master 3 #26 route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=20 bundles=${extras.length} unexplained=0.`,
   );
   console.log(
     `Canonical EOL contract passed. ${fixtureAssertions} assertions · LF=CRLF for recognized text only · binary bytes exact.`,
@@ -155,6 +165,7 @@ try {
     `Unchanged legacy artifact guard passed. protected=${mergeManifest.files.length} missing=${neutral.missing.length} extra=${neutral.extra.length} changed=${neutral.changed.length}.`,
   );
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
+  console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} accept-current=disabled.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }

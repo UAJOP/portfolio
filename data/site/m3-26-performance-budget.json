@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "acceptedRef": "24be2f8159a0925dc00f29375ea8740738214df3",
+  "budgets": {
+    "clientBundleRawBytes": 260000,
+    "clientBundleGzipBytes": 72000,
+    "documentMaxBytes": 75000,
+    "hydrationPayloadMaxBytes": 52000
+  }
+}

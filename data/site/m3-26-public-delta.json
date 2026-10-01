@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "acceptedBaseCommit": "24be2f8159a0925dc00f29375ea8740738214df3",
+  "algorithm": "sha256",
+  "textEolCanonicalization": "crlf-to-lf-bytewise",
+  "fileCount": 3,
+  "files": [
+    {
+      "path": "js/pages/games.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e953a74024f541200bbc4a48e5798aa7457f687836af6d095dc50fbf91e15f19"
+    },
+    {
+      "path": "js/portfolio/works.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cff859879e46c12554ee0cdb417eac7b3dfa2906cc0f8bcda7f99d15770a9f9e"
+    },
+    {
+      "path": "style.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fe45407557b91348d0d6cca783e2ca78d1e77440cdd56fc4f03d1b60c919fb32"
+    }
+  ]
+}
