@@ -60,8 +60,13 @@ export function runtimeMessages(messages) {
 export function semanticSourceMessageMap(locale, domain = "common") {
   const english = loadMessageDomain("en", domain);
   const localized = loadMessageDomain(locale, domain);
-  const promoted = readJson("data/i18n/home-about-semantic-keys.json");
-  const explicitKeys = new Set(promoted.promotedKeys || []);
+  /* Explicitly promoted page keys are bound by their manifests; they must not
+   * join (or make ambiguous) the implicit English reverse map used by legacy
+   * localized documents. */
+  const explicitKeys = new Set([
+    ...(readJson("data/i18n/home-about-semantic-keys.json").promotedKeys || []),
+    ...(readJson("data/i18n/works-games-semantic-keys.json").promotedKeys || []),
+  ]);
   const seen = new Map();
   const ambiguous = new Set();
   for (const [key, source] of Object.entries(english)) {

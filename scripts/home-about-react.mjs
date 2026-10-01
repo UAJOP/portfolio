@@ -77,7 +77,9 @@ function localizedCanonicalData(locale) {
   };
 }
 
-export function productionMainProps(route) {
+/* `loadLocalization` exists so the source-authority gate can prove that
+ * rendered copy comes only from the canonical message resolver. */
+export function productionMainProps(route, { loadLocalization = loadProductionLocalization } = {}) {
   const catalogPage = worksGamesStructure.pages[route.routeId];
   const structure = catalogPage ? worksGamesStructure : homeAboutStructure;
   const page = structure.pages[route.routeId];
@@ -88,16 +90,14 @@ export function productionMainProps(route) {
   if (worksGamesStructure.acceptedRef !== "24be2f8159a0925dc00f29375ea8740738214df3") {
     throw new Error("Works/Games React structure is not tied to the accepted main ref");
   }
-  const localization = loadProductionLocalization(route.locale);
+  const localization = loadLocalization(route.locale);
   const requirements = collectRequirements(page.children);
-  const copy = Object.fromEntries([...requirements.messages].sort().map((key) => [
-    key,
-    catalogPage ? worksGamesStructure.messages[key]?.[route.locale] : localization.message(key),
-  ]));
-  for (const [key, value] of Object.entries(copy)) if (value === undefined) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
-  const catalogMessage = (key) => {
-    const value = worksGamesStructure.messages[key]?.[route.locale];
-    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+  const copy = Object.fromEntries([...requirements.messages].sort().map((key) => [key, localization.message(key)]));
+  for (const [key, value] of Object.entries(copy)) if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+  const catalogMessage = (field) => {
+    const key = worksGamesStructure.catalogSearch?.[route.routeId]?.[field];
+    const value = key ? localization.message(key) : null;
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing catalog search ${field}`);
     return value;
   };
   const compat = Object.fromEntries(["en", "tr"].map((locale) => {
@@ -121,8 +121,8 @@ export function productionMainProps(route) {
     data: localizedCanonicalData(route.locale),
     buildLog: localizedBuildLog,
     catalog: catalogPage ? {
-      searchLabel: catalogMessage(`${route.routeId}.search.label`),
-      searchPlaceholder: catalogMessage(`${route.routeId}.search.placeholder`),
+      searchLabel: catalogMessage("label"),
+      searchPlaceholder: catalogMessage("placeholder"),
     } : null,
   };
 }

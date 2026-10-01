@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "acceptedRef": "24be2f8159a0925dc00f29375ea8740738214df3",
   "locales": [
     "en",
@@ -8,1147 +8,14 @@
     "es",
     "fr"
   ],
-  "messages": {
-    "works.search.label": {
-      "en": "Search projects",
-      "tr": "Projelerde ara",
-      "de": "Projekte durchsuchen",
-      "es": "Buscar proyectos",
-      "fr": "Rechercher des projets"
-    },
-    "works.search.placeholder": {
-      "en": "Search by project, technology or keyword...",
-      "tr": "Proje, teknoloji veya anahtar kelime ara...",
-      "de": "Nach Projekt, Technologie oder Stichwort suchen...",
-      "es": "Buscar por proyecto, tecnología o palabra clave...",
-      "fr": "Rechercher par projet, technologie ou mot-clé..."
-    },
-    "games.search.label": {
-      "en": "Search games",
-      "tr": "Oyunlarda ara",
-      "de": "Spiele durchsuchen",
-      "es": "Buscar juegos",
-      "fr": "Rechercher des jeux"
-    },
-    "games.search.placeholder": {
-      "en": "Search by game, category or feature...",
-      "tr": "Oyun, kategori veya özellik ara...",
-      "de": "Nach Spiel, Kategorie oder Funktion suchen...",
-      "es": "Buscar por juego, categoría o función...",
-      "fr": "Rechercher par jeu, catégorie ou fonctionnalité..."
-    },
-    "works.copy.selected.work": {
-      "en": "Selected work",
-      "tr": "Seçili çalışmalar",
-      "de": "Ausgewählte Arbeiten",
-      "es": "Trabajos seleccionados",
-      "fr": "Réalisations sélectionnées"
-    },
-    "works.copy.engineering.evidence.for.forward.deployed.work": {
-      "en": "Engineering evidence for forward-deployed work.",
-      "tr": "Forward-deployed işler için mühendislik kanıtları.",
-      "de": "Technische Belege für forward-deployed Arbeit.",
-      "es": "Evidencia de ingeniería para trabajo forward-deployed.",
-      "fr": "Des preuves d'ingénierie pour le travail forward-deployed."
-    },
-    "works.copy.primary.evidence.first.supporting.breadth.second.and.experiments.or.arch": {
-      "en": "Primary evidence first, supporting breadth second, and experiments or archive work last.",
-      "tr": "Önce ana kanıt, sonra destekleyici genişlik; deneyler ve arşiv çalışmaları en sonda.",
-      "de": "Zuerst die wichtigsten Belege, dann die fachliche Breite; Experimente und Archivarbeiten zuletzt.",
-      "es": "Primero la evidencia principal, después la amplitud complementaria y, al final, los experimentos y trabajos de archivo.",
-      "fr": "D'abord les preuves principales, puis l'étendue complémentaire, et enfin les expérimentations et travaux d'archive."
-    },
-    "works.copy.ai.delivery.view": {
-      "en": "AI delivery view",
-      "tr": "AI teslimatı görünümü",
-      "de": "Ansicht: KI-Auslieferung",
-      "es": "Vista de entrega de IA",
-      "fr": "Vue livraison IA"
-    },
-    "works.copy.discovery.and.scoping.view": {
-      "en": "Discovery and scoping view",
-      "tr": "Keşif ve kapsamlandırma görünümü",
-      "de": "Ansicht: Analyse und Scoping",
-      "es": "Vista de descubrimiento y alcance",
-      "fr": "Vue découverte et cadrage"
-    },
-    "works.copy.labs": {
-      "en": "Labs",
-      "tr": "Laboratuvarlar",
-      "de": "Labs",
-      "es": "Labs",
-      "fr": "Labs"
-    },
-    "works.copy.all": {
-      "en": "All",
-      "tr": "Tümü",
-      "de": "Alle",
-      "es": "Todos",
-      "fr": "Tous"
-    },
-    "works.copy.ai.automation": {
-      "en": "AI & Automation",
-      "tr": "AI & Otomasyon",
-      "de": "AI & Automatisierung",
-      "es": "AI y automatización",
-      "fr": "AI et automatisation"
-    },
-    "works.copy.software": {
-      "en": "Software",
-      "tr": "Yazılım",
-      "de": "Software",
-      "es": "Software",
-      "fr": "Logiciel"
-    },
-    "works.copy.web.product": {
-      "en": "Web & Product",
-      "tr": "Web & Ürün",
-      "de": "Web & Produkt",
-      "es": "Web y producto",
-      "fr": "Web et produit"
-    },
-    "works.copy.data": {
-      "en": "Data",
-      "tr": "Veri",
-      "de": "Daten",
-      "es": "Datos",
-      "fr": "Données"
-    },
-    "works.copy.mobile": {
-      "en": "Mobile",
-      "tr": "Mobil",
-      "de": "Mobil",
-      "es": "Móvil",
-      "fr": "Mobile"
-    },
-    "works.copy.games.interactive": {
-      "en": "Games & Interactive",
-      "tr": "Oyunlar & İnteraktif",
-      "de": "Spiele & Interaktiv",
-      "es": "Juegos e interactivo",
-      "fr": "Jeux et interactif"
-    },
-    "works.copy.primary.evidence": {
-      "en": "Primary evidence",
-      "tr": "Ana kanıt",
-      "de": "Hauptbelege",
-      "es": "Evidencia principal",
-      "fr": "Preuves principales"
-    },
-    "works.copy.the.clearest.evidence.of.customer.facing.technical.delivery": {
-      "en": "The clearest evidence of customer-facing technical delivery.",
-      "tr": "Müşteriye dönük teknik teslimatın en açık kanıtları.",
-      "de": "Die klarsten Belege für kundenorientierte technische Auslieferung.",
-      "es": "La evidencia más clara de entrega técnica orientada al cliente.",
-      "fr": "Les preuves les plus claires d'une livraison technique orientée client."
-    },
-    "works.copy.applied.ai.reliability": {
-      "en": "Applied AI / Reliability",
-      "tr": "Uygulamalı AI / Güvenilirlik",
-      "de": "Applied AI / Zuverlässigkeit",
-      "es": "IA aplicada / Fiabilidad",
-      "fr": "IA appliquée / Fiabilité"
-    },
-    "works.copy.live.mvp": {
-      "en": "Live MVP",
-      "tr": "Canlı MVP",
-      "de": "Live-MVP",
-      "es": "MVP activo",
-      "fr": "MVP en ligne"
-    },
-    "works.copy.fastapi": {
-      "en": "FastAPI",
-      "tr": "FastAPI",
-      "de": "FastAPI",
-      "es": "FastAPI",
-      "fr": "FastAPI"
-    },
-    "works.copy.postgresql": {
-      "en": "PostgreSQL",
-      "tr": "PostgreSQL",
-      "de": "PostgreSQL",
-      "es": "PostgreSQL",
-      "fr": "PostgreSQL"
-    },
-    "works.copy.next.js": {
-      "en": "Next.js",
-      "tr": "Next.js",
-      "de": "Next.js",
-      "es": "Next.js",
-      "fr": "Next.js"
-    },
-    "works.copy.regression": {
-      "en": "Regression",
-      "tr": "Regresyon",
-      "de": "Regression",
-      "es": "Regresión",
-      "fr": "Régression"
-    },
-    "works.copy.my.role.product.designer.full.stack.developer": {
-      "en": "My role: Product Designer & Full-Stack Developer",
-      "tr": "Rolüm: Product Designer & Full-Stack Developer",
-      "de": "Meine Rolle: Product Designer & Full-Stack Developer",
-      "es": "Mi rol: Product Designer & Full-Stack Developer",
-      "fr": "Mon rôle : Product Designer & Full-Stack Developer"
-    },
-    "works.copy.multi.turn.agent.testing.deterministic.workflow.evidence.version.aware.r": {
-      "en": "Multi-turn agent testing, deterministic workflow evidence, version-aware regression, and release-readiness decisions.",
-      "tr": "Çok turlu agent testleri, deterministik iş akışı kanıtı, sürüm duyarlı regresyon ve sürüm hazırlığı kararları.",
-      "de": "Multi-Turn-Agententests, deterministische Workflow-Belege, versionsbezogene Regressionen und Entscheidungen zur Release-Bereitschaft.",
-      "es": "Pruebas multivuelta de agentes, evidencia determinista de flujos, regresión por versiones y decisiones de preparación para el lanzamiento.",
-      "fr": "Tests multi-tours d'agents, preuves déterministes des workflows, régressions par version et décisions de préparation à la mise en production."
-    },
-    "works.copy.view.case.study": {
-      "en": "View Case Study",
-      "tr": "Vaka Çalışmasını Gör",
-      "de": "Case Study ansehen",
-      "es": "Ver caso de estudio",
-      "fr": "Voir l'étude de cas"
-    },
-    "works.copy.live.product": {
-      "en": "Live Product",
-      "tr": "Canlı Ürün",
-      "de": "Live-Produkt",
-      "es": "Producto en producción",
-      "fr": "Produit en ligne"
-    },
-    "works.copy.github": {
-      "en": "GitHub",
-      "tr": "GitHub",
-      "de": "GitHub",
-      "es": "GitHub",
-      "fr": "GitHub"
-    },
-    "works.copy.enterprise.ai.delivery": {
-      "en": "Enterprise AI Delivery",
-      "tr": "Kurumsal AI teslimatı",
-      "de": "KI-Auslieferung für Unternehmen",
-      "es": "Entrega empresarial de IA",
-      "fr": "Livraison IA en entreprise"
-    },
-    "works.copy.customer.workflows": {
-      "en": "Customer Workflows",
-      "tr": "Müşteri İş Akışları",
-      "de": "Kunden-Workflows",
-      "es": "Workflows de clientes",
-      "fr": "Workflows clients"
-    },
-    "works.copy.chatbot.qa": {
-      "en": "Chatbot QA",
-      "tr": "Chatbot QA",
-      "de": "Chatbot QA",
-      "es": "Chatbot QA",
-      "fr": "Chatbot QA"
-    },
-    "works.copy.multi.channel": {
-      "en": "Multi-channel",
-      "tr": "Çok kanallı",
-      "de": "Multichannel",
-      "es": "Multicanal",
-      "fr": "Multicanal"
-    },
-    "works.copy.ai.chatbot.flow.design": {
-      "en": "AI Chatbot Flow Design",
-      "tr": "AI Chatbot Akış Tasarımı",
-      "de": "AI Chatbot Flow Design",
-      "es": "AI Chatbot Flow Design",
-      "fr": "AI Chatbot Flow Design"
-    },
-    "works.copy.my.role.ai.designer": {
-      "en": "My role: AI Designer",
-      "tr": "Rolüm: AI Designer",
-      "de": "Meine Rolle: AI Designer",
-      "es": "Mi rol: AI Designer",
-      "fr": "Mon rôle : AI Designer"
-    },
-    "works.copy.enterprise.workflow.translation.through.chatbot.qa.stabilization.flow.re": {
-      "en": "Enterprise workflow translation through chatbot QA, stabilization, flow restructuring, channel configuration, and an insurance-claims intake POC.",
-      "tr": "Chatbot QA, stabilizasyon, akış yeniden yapılandırması, kanal konfigürasyonu ve sigorta hasar kaydı POC'u üzerinden kurumsal iş akışı dönüşümü.",
-      "de": "Übersetzung von Unternehmensabläufen durch Chatbot-QA, Stabilisierung, Neustrukturierung von Abläufen, Kanalkonfiguration und einen POC zur Schadenaufnahme.",
-      "es": "Traducción de flujos empresariales mediante QA y estabilización de chatbots, reestructuración de flujos, configuración de canales y un POC para la recepción de siniestros.",
-      "fr": "Transformation de workflows d'entreprise par la QA et la stabilisation de chatbots, la restructuration des parcours, la configuration des canaux et un POC de déclaration de sinistre."
-    },
-    "works.copy.view.details": {
-      "en": "View Details",
-      "tr": "Detayları Gör",
-      "de": "Details ansehen",
-      "es": "Ver detalles",
-      "fr": "Voir les détails"
-    },
-    "works.copy.customer.facing.delivery": {
-      "en": "Customer-Facing Delivery",
-      "tr": "Müşteriye dönük teslimat",
-      "de": "Kundenorientierte Auslieferung",
-      "es": "Entrega orientada al cliente",
-      "fr": "Livraison orientée client"
-    },
-    "works.copy.live": {
-      "en": "Live",
-      "tr": "Canlı",
-      "de": "Live",
-      "es": "En producción",
-      "fr": "En ligne"
-    },
-    "works.copy.javascript": {
-      "en": "JavaScript",
-      "tr": "JavaScript",
-      "de": "JavaScript",
-      "es": "JavaScript",
-      "fr": "JavaScript"
-    },
-    "works.copy.apps.script": {
-      "en": "Apps Script",
-      "tr": "Apps Script",
-      "de": "Apps Script",
-      "es": "Apps Script",
-      "fr": "Apps Script"
-    },
-    "works.copy.reservation.flow": {
-      "en": "Reservation Flow",
-      "tr": "Rezervasyon Akışı",
-      "de": "Reservierungsablauf",
-      "es": "Flujo de reserva",
-      "fr": "Parcours de réservation"
-    },
-    "works.copy.atolye.joyday.official.website": {
-      "en": "Atölye Joyday Official Website",
-      "tr": "Atölye Joyday Resmi Web Sitesi",
-      "de": "Atölye Joyday Official Website",
-      "es": "Atölye Joyday Official Website",
-      "fr": "Atölye Joyday Official Website"
-    },
-    "works.copy.my.role.co.founder.digital.product.developer": {
-      "en": "My role: Co-Founder & Digital Product Developer",
-      "tr": "Rolüm: Kurucu Ortak & Dijital Ürün Geliştirici",
-      "de": "Meine Rolle: Mitgründer & Digital Product Developer",
-      "es": "Mi rol: cofundador y Digital Product Developer",
-      "fr": "Mon rôle : cofondateur et Digital Product Developer"
-    },
-    "works.copy.service.discovery.a.reservation.journey.notification.workflows.and.opera": {
-      "en": "Service discovery, a reservation journey, notification workflows, and operational automation for a live business website.",
-      "tr": "Canlı bir işletme web sitesi için hizmet keşfi, rezervasyon yolculuğu, bildirim akışları ve operasyon otomasyonu.",
-      "de": "Serviceauswahl, Reservierungsablauf, Benachrichtigungsprozesse und Betriebsautomatisierung für die Website eines laufenden Unternehmens.",
-      "es": "Descubrimiento de servicios, recorrido de reserva, flujos de notificación y automatización operativa para la web de un negocio activo.",
-      "fr": "Découverte des services, parcours de réservation, notifications et automatisation opérationnelle pour le site d'une entreprise active."
-    },
-    "works.copy.live.website": {
-      "en": "Live Website",
-      "tr": "Canlı Web Sitesi",
-      "de": "Live-Website",
-      "es": "Sitio web en producción",
-      "fr": "Site en ligne"
-    },
-    "works.copy.supporting.evidence": {
-      "en": "Supporting evidence",
-      "tr": "Destekleyici kanıtlar",
-      "de": "Ergänzende Belege",
-      "es": "Evidencia complementaria",
-      "fr": "Preuves complémentaires"
-    },
-    "works.copy.projects.that.explain.the.breadth.behind.the.primary.evidence": {
-      "en": "Projects that explain the breadth behind the primary evidence.",
-      "tr": "Ana kanıtın arkasındaki genişliği açıklayan projeler.",
-      "de": "Projekte, die die Breite hinter den Hauptbelegen erklären.",
-      "es": "Proyectos que explican la amplitud detrás de la evidencia principal.",
-      "fr": "Des projets qui expliquent l'étendue derrière les preuves principales."
-    },
-    "works.copy.product.systems.engineering": {
-      "en": "Product Systems Engineering",
-      "tr": "Ürün Sistemleri Mühendisliği",
-      "de": "Produktsystem-Engineering",
-      "es": "Ingeniería de sistemas de producto",
-      "fr": "Ingénierie des systèmes produit"
-    },
-    "works.copy.active.development": {
-      "en": "Active Development",
-      "tr": "Aktif Geliştirme",
-      "de": "Aktive Entwicklung",
-      "es": "Desarrollo activo",
-      "fr": "Développement actif"
-    },
-    "works.copy.phaser.3": {
-      "en": "Phaser 3",
-      "tr": "Phaser 3",
-      "de": "Phaser 3",
-      "es": "Phaser 3",
-      "fr": "Phaser 3"
-    },
-    "works.copy.typescript": {
-      "en": "TypeScript",
-      "tr": "TypeScript",
-      "de": "TypeScript",
-      "es": "TypeScript",
-      "fr": "TypeScript"
-    },
-    "works.copy.vitest": {
-      "en": "Vitest",
-      "tr": "Vitest",
-      "de": "Vitest",
-      "es": "Vitest",
-      "fr": "Vitest"
-    },
-    "works.copy.platform.adapter": {
-      "en": "Platform Adapter",
-      "tr": "Platform Adapter",
-      "de": "Platform Adapter",
-      "es": "Platform Adapter",
-      "fr": "Platform Adapter"
-    },
-    "works.copy.my.role.game.developer.product.designer": {
-      "en": "My role: Game Developer & Product Designer",
-      "tr": "Rolüm: Game Developer & Ürün Tasarımcısı",
-      "de": "Meine Rolle: Game Developer & Produktdesigner",
-      "es": "Mi rol: Game Developer y diseñador de producto",
-      "fr": "Mon rôle : Game Developer et designer produit"
-    },
-    "works.copy.stateful.product.engineering.through.timed.workflows.multi.cell.board.lo": {
-      "en": "Stateful product engineering through timed workflows, multi-cell board logic, responsive layouts, automated tests, and platform-aware architecture.",
-      "tr": "Zamanlı iş akışları, çok hücreli tahta mantığı, uyarlanabilir düzenler, otomatik testler ve platforma duyarlı mimari üzerinden durumlu ürün mühendisliği.",
-      "de": "Zustandsbehaftetes Product Engineering mit zeitgebundenen Workflows, mehrzelliger Spielfeldlogik, responsiven Layouts, automatisierten Tests und plattformbewusster Architektur.",
-      "es": "Ingeniería de producto con estado mediante flujos temporizados, lógica de tablero multicelda, diseños adaptables, pruebas automatizadas y arquitectura consciente de la plataforma.",
-      "fr": "Ingénierie produit à état au moyen de workflows minutés, d'une logique de plateau multi-cellules, de mises en page adaptatives, de tests automatisés et d'une architecture adaptée à la plateforme."
-    },
-    "works.copy.workflow.software.foundation": {
-      "en": "Workflow Software Foundation",
-      "tr": "İş Akışı Yazılım Temeli",
-      "de": "Workflow-Software-Grundlage",
-      "es": "Base de software de workflows",
-      "fr": "Fondation logicielle de workflows"
-    },
-    "works.copy.source.archive": {
-      "en": "Source Archive",
-      "tr": "Kaynak Arşivi",
-      "de": "Quellarchiv",
-      "es": "Archivo de código fuente",
-      "fr": "Archive de code source"
-    },
-    "works.copy.c.net": {
-      "en": "C#/.NET",
-      "tr": "C#/.NET",
-      "de": "C#/.NET",
-      "es": "C#/.NET",
-      "fr": "C#/.NET"
-    },
-    "works.copy.windows.forms": {
-      "en": "Windows Forms",
-      "tr": "Windows Forms",
-      "de": "Windows Forms",
-      "es": "Windows Forms",
-      "fr": "Windows Forms"
-    },
-    "works.copy.sql.server": {
-      "en": "SQL Server",
-      "tr": "SQL Server",
-      "de": "SQL Server",
-      "es": "SQL Server",
-      "fr": "SQL Server"
-    },
-    "works.copy.hospital.form.app": {
-      "en": "Hospital Form App",
-      "tr": "Hospital Form App",
-      "de": "Hospital Form App",
-      "es": "Hospital Form App",
-      "fr": "Hospital Form App"
-    },
-    "works.copy.my.role.software.developer": {
-      "en": "My role: Software Developer",
-      "tr": "Rolüm: Yazılım Geliştirici",
-      "de": "Meine Rolle: Softwareentwickler",
-      "es": "Mi rol: desarrollador de software",
-      "fr": "Mon rôle : développeur logiciel"
-    },
-    "works.copy.multi.role.workflow.logic.and.appointment.coordination.over.a.database.b": {
-      "en": "Multi-role workflow logic and appointment coordination over a database-backed desktop system.",
-      "tr": "Veritabanı destekli bir masaüstü sisteminde çok rollü iş akışı mantığı ve randevu koordinasyonu.",
-      "de": "Mehrrollen-Workflowlogik und Terminkoordination in einem datenbankgestützten Desktop-System.",
-      "es": "Lógica de flujos con varios roles y coordinación de citas en un sistema de escritorio respaldado por una base de datos.",
-      "fr": "Logique de workflow multi-rôles et coordination des rendez-vous dans une application de bureau adossée à une base de données."
-    },
-    "works.copy.ai.interactive.lab": {
-      "en": "AI / Interactive Lab",
-      "tr": "AI / İnteraktif Lab",
-      "de": "AI / Interaktives Lab",
-      "es": "AI / Laboratorio interactivo",
-      "fr": "AI / Lab interactif"
-    },
-    "works.copy.node.logic": {
-      "en": "Node Logic",
-      "tr": "Node Logic",
-      "de": "Node Logic",
-      "es": "Node Logic",
-      "fr": "Node Logic"
-    },
-    "works.copy.validation": {
-      "en": "Validation",
-      "tr": "Doğrulama",
-      "de": "Validierung",
-      "es": "Validación",
-      "fr": "Validation"
-    },
-    "works.copy.ai.flow.puzzle": {
-      "en": "AI Flow Puzzle",
-      "tr": "AI Flow Puzzle",
-      "de": "AI Flow Puzzle",
-      "es": "AI Flow Puzzle",
-      "fr": "AI Flow Puzzle"
-    },
-    "works.copy.my.role.ai.flow.designer.frontend.developer": {
-      "en": "My role: AI Flow Designer & Frontend Developer",
-      "tr": "Rolüm: AI Flow Designer & Frontend Developer",
-      "de": "Meine Rolle: AI Flow Designer & Frontend Developer",
-      "es": "Mi rol: AI Flow Designer & Frontend Developer",
-      "fr": "Mon rôle : AI Flow Designer & Frontend Developer"
-    },
-    "works.copy.n8n.inspired.browser.experience.for.intent.response.fallback.and.validat": {
-      "en": "n8n-inspired browser experience for intent, response, fallback and validation thinking.",
-      "tr": "Intent, response, fallback ve validation düşüncesi için n8n esintili browser deneyimi.",
-      "de": "n8n-inspirierte Browser-Erfahrung für Intent-, Response-, Fallback- und Validierungslogik.",
-      "es": "Experiencia de navegador inspirada en n8n para pensar en intent, response, fallback y validación.",
-      "fr": "Expérience navigateur inspirée de n8n pour raisonner sur intent, response, fallback et validation."
-    },
-    "works.copy.case.study": {
-      "en": "Case Study",
-      "tr": "Vaka Çalışması",
-      "de": "Case Study",
-      "es": "Caso de estudio",
-      "fr": "Étude de cas"
-    },
-    "works.copy.play": {
-      "en": "Play",
-      "tr": "Oyna",
-      "de": "Spielen",
-      "es": "Jugar",
-      "fr": "Jouer"
-    },
-    "works.copy.python.software": {
-      "en": "Python Software",
-      "tr": "Python Yazılımı",
-      "de": "Python-Software",
-      "es": "Software en Python",
-      "fr": "Logiciel Python"
-    },
-    "works.copy.python": {
-      "en": "Python",
-      "tr": "Python",
-      "de": "Python",
-      "es": "Python",
-      "fr": "Python"
-    },
-    "works.copy.tkinter": {
-      "en": "Tkinter",
-      "tr": "Tkinter",
-      "de": "Tkinter",
-      "es": "Tkinter",
-      "fr": "Tkinter"
-    },
-    "works.copy.mysql": {
-      "en": "MySQL",
-      "tr": "MySQL",
-      "de": "MySQL",
-      "es": "MySQL",
-      "fr": "MySQL"
-    },
-    "works.copy.hospital.appointment.system": {
-      "en": "Hospital Appointment System",
-      "tr": "Hospital Appointment System",
-      "de": "Hospital Appointment System",
-      "es": "Hospital Appointment System",
-      "fr": "Hospital Appointment System"
-    },
-    "works.copy.my.role.python.database.developer": {
-      "en": "My role: Python / Database Developer",
-      "tr": "Rolüm: Python / Veritabanı Developer",
-      "de": "Meine Rolle: Python- / Datenbankentwickler",
-      "es": "Mi rol: desarrollador Python y de bases de datos",
-      "fr": "Mon rôle : développeur Python et base de données"
-    },
-    "works.copy.patient.doctor.and.staff.appointment.workflows.with.mysql.backed.operati": {
-      "en": "Patient, doctor and staff appointment workflows with MySQL-backed operations.",
-      "tr": "MySQL destekli operasyonlarla hasta, doktor ve personel randevu workflow'ları.",
-      "de": "Termin-Workflows für Patienten, Ärzte und Personal mit MySQL-gestützten Abläufen.",
-      "es": "Workflows de citas para pacientes, médicos y personal con operaciones respaldadas por MySQL.",
-      "fr": "Workflows de rendez-vous pour patients, médecins et personnel avec opérations adossées à MySQL."
-    },
-    "works.copy.pandas": {
-      "en": "Pandas",
-      "tr": "Pandas",
-      "de": "Pandas",
-      "es": "Pandas",
-      "fr": "Pandas"
-    },
-    "works.copy.linear.regression": {
-      "en": "Linear Regression",
-      "tr": "Linear Regression",
-      "de": "Linear Regression",
-      "es": "Linear Regression",
-      "fr": "Linear Regression"
-    },
-    "works.copy.cars.dataset.analysis": {
-      "en": "Cars Dataset Analysis",
-      "tr": "Cars Veri Seti Analizi",
-      "de": "Cars Dataset Analysis",
-      "es": "Cars Dataset Analysis",
-      "fr": "Cars Dataset Analysis"
-    },
-    "works.copy.my.role.python.developer": {
-      "en": "My role: Python Developer",
-      "tr": "Rolüm: Python Developer",
-      "de": "Meine Rolle: Python-Entwickler",
-      "es": "Mi rol: desarrollador Python",
-      "fr": "Mon rôle : développeur Python"
-    },
-    "works.copy.exploratory.data.analysis.visualization.and.a.small.price.estimation.exp": {
-      "en": "Exploratory data analysis, visualization and a small price-estimation experiment.",
-      "tr": "Keşifsel veri analizi, görselleştirme ve küçük bir fiyat tahmin deneyi.",
-      "de": "Explorative Datenanalyse, Visualisierung und ein kleines Preisprognose-Experiment.",
-      "es": "Análisis exploratorio de datos, visualización y un pequeño experimento de estimación de precios.",
-      "fr": "Analyse exploratoire de données, visualisation et petite expérimentation d’estimation de prix."
-    },
-    "works.copy.game.prototype": {
-      "en": "Game Prototype",
-      "tr": "Oyun Prototipi",
-      "de": "Spielprototyp",
-      "es": "Prototipo de juego",
-      "fr": "Prototype de jeu"
-    },
-    "works.copy.unreal.engine.5": {
-      "en": "Unreal Engine 5",
-      "tr": "Unreal Engine 5",
-      "de": "Unreal Engine 5",
-      "es": "Unreal Engine 5",
-      "fr": "Unreal Engine 5"
-    },
-    "works.copy.puzzle.design": {
-      "en": "Puzzle Design",
-      "tr": "Puzzle Design",
-      "de": "Puzzle Design",
-      "es": "Puzzle Design",
-      "fr": "Puzzle Design"
-    },
-    "works.copy.interaction": {
-      "en": "Interaction",
-      "tr": "Interaction",
-      "de": "Interaction",
-      "es": "Interaction",
-      "fr": "Interaction"
-    },
-    "works.copy.legacy.of.the.lost": {
-      "en": "Legacy of the Lost",
-      "tr": "Legacy of the Lost",
-      "de": "Legacy of the Lost",
-      "es": "Legacy of the Lost",
-      "fr": "Legacy of the Lost"
-    },
-    "works.copy.my.role.game.developer": {
-      "en": "My role: Game Developer",
-      "tr": "Rolüm: Game Developer",
-      "de": "Meine Rolle: Spieleentwickler",
-      "es": "Mi rol: desarrollador de videojuegos",
-      "fr": "Mon rôle : développeur de jeux"
-    },
-    "works.copy.first.person.environmental.puzzle.prototype.with.object.manipulation.and": {
-      "en": "First-person environmental puzzle prototype with object manipulation and physics interactions.",
-      "tr": "Nesne manipülasyonu ve fizik etkileşimleri içeren first-person çevresel bulmaca prototipi.",
-      "de": "First-Person-Umgebungsrätsel-Prototyp mit Objektmanipulation und Physikinteraktionen.",
-      "es": "Prototipo de puzle ambiental en primera persona con manipulación de objetos e interacciones físicas.",
-      "fr": "Prototype de puzzle environnemental à la première personne avec manipulation d’objets et interactions physiques."
-    },
-    "works.copy.kotlin": {
-      "en": "Kotlin",
-      "tr": "Kotlin",
-      "de": "Kotlin",
-      "es": "Kotlin",
-      "fr": "Kotlin"
-    },
-    "works.copy.firebase": {
-      "en": "Firebase",
-      "tr": "Firebase",
-      "de": "Firebase",
-      "es": "Firebase",
-      "fr": "Firebase"
-    },
-    "works.copy.android": {
-      "en": "Android",
-      "tr": "Android",
-      "de": "Android",
-      "es": "Android",
-      "fr": "Android"
-    },
-    "works.copy.mymuseum.mobile.content.app": {
-      "en": "MyMuseum Mobile Content App",
-      "tr": "MyMuseum Mobile Content App",
-      "de": "MyMuseum Mobile Content App",
-      "es": "MyMuseum Mobile Content App",
-      "fr": "MyMuseum Mobile Content App"
-    },
-    "works.copy.my.role.android.developer": {
-      "en": "My role: Android Developer",
-      "tr": "Rolüm: Android Developer",
-      "de": "Meine Rolle: Android-Entwickler",
-      "es": "Mi rol: desarrollador Android",
-      "fr": "Mon rôle : développeur Android"
-    },
-    "works.copy.android.content.sharing.project.using.kotlin.and.firebase": {
-      "en": "Android content-sharing project using Kotlin and Firebase.",
-      "tr": "Kotlin ve Firebase kullanan Android içerik paylaşım projesi.",
-      "de": "Android-Projekt zum Teilen von Inhalten mit Kotlin und Firebase.",
-      "es": "Proyecto Android para compartir contenido usando Kotlin y Firebase.",
-      "fr": "Projet Android de partage de contenu utilisant Kotlin et Firebase."
-    },
-    "works.copy.archive.policy": {
-      "en": "Archive policy",
-      "tr": "Arşiv politikası",
-      "de": "Archivrichtlinie",
-      "es": "Política de archivo",
-      "fr": "Politique d’archivage"
-    },
-    "works.copy.tutorial.scale.and.older.learning.repositories.stay.available.without.co": {
-      "en": "Tutorial-scale and older learning repositories stay available without competing with flagship evidence.",
-      "tr": "Tutorial-scale ve eski learning repository'leri erişilebilir kalıyor ama flagship kanıtlarla yarışmıyor.",
-      "de": "Tutorial-große und ältere Lernrepositories bleiben verfügbar, ohne den Flaggschiff-Belegen Konkurrenz zu machen.",
-      "es": "Los repositorios de aprendizaje antiguos y de escala tutorial siguen disponibles sin competir con la evidencia principal.",
-      "fr": "Les dépôts d'apprentissage anciens et de niveau tutoriel restent disponibles sans concurrencer les preuves phares."
-    },
-    "works.copy.the.github.profile.remains.the.full.archive.labs.contains.smaller.intera": {
-      "en": "The GitHub profile remains the full archive. Labs contains smaller interactive experiments; this page stays focused on portfolio-grade evidence.",
-      "tr": "GitHub profili tam arşiv olarak kalıyor. Labs küçük interaktif deneyleri içeriyor; bu sayfa portfolio-grade kanıta odaklanıyor.",
-      "de": "Das GitHub-Profil bleibt das vollständige Archiv. Labs enthält kleinere interaktive Experimente; diese Seite konzentriert sich auf portfoliotaugliche Belege.",
-      "es": "El perfil de GitHub sigue siendo el archivo completo. Labs contiene experimentos interactivos más pequeños; esta página se mantiene centrada en evidencia de nivel portafolio.",
-      "fr": "Le profil GitHub reste l'archive complète. Labs regroupe de plus petites expérimentations interactives ; cette page reste centrée sur des preuves de niveau portfolio."
-    },
-    "works.copy.github.archive": {
-      "en": "GitHub Archive",
-      "tr": "GitHub Arşivi",
-      "de": "GitHub-Archiv",
-      "es": "Archivo de GitHub",
-      "fr": "Archives GitHub"
-    },
-    "works.copy.kaan.labs": {
-      "en": "Kaan Labs",
-      "tr": "Kaan Labs",
-      "de": "Kaan Labs",
-      "es": "Kaan Labs",
-      "fr": "Kaan Labs"
-    },
-    "works.aria.project.filters": {
-      "en": "Project filters",
-      "tr": "Proje filtreleri",
-      "de": "Projektfilter",
-      "es": "Filtros de proyectos",
-      "fr": "Filtres de projets"
-    },
-    "works.alt.sinama.wordmark.on.a.dark.cover.card": {
-      "en": "SINAMA wordmark on a dark cover card",
-      "tr": "Koyu kapak kartı üzerinde SINAMA logotype'ı",
-      "de": "SINAMA Wortmarke auf einer dunklen Titelkarte",
-      "es": "Logotipo de SINAMA sobre una tarjeta de portada oscura",
-      "fr": "Logotype SINAMA sur une carte de couverture sombre"
-    },
-    "works.alt.ai.chatbot.flow.design.cover": {
-      "en": "AI Chatbot Flow Design cover",
-      "tr": "AI Chatbot Flow Design kapak görseli",
-      "de": "Cover von AI Chatbot Flow Design",
-      "es": "Portada de AI Chatbot Flow Design",
-      "fr": "Couverture d’AI Chatbot Flow Design"
-    },
-    "works.alt.atolye.joyday.website.preview": {
-      "en": "Atölye Joyday website preview",
-      "tr": "Atölye Joyday web sitesi önizlemesi",
-      "de": "Website-Vorschau von Atölye Joyday",
-      "es": "Vista previa del sitio web de Atölye Joyday",
-      "fr": "Aperçu du site web Atölye Joyday"
-    },
-    "works.alt.merge.rush.tiny.factory.portfolio.cover": {
-      "en": "Merge Rush Tiny Factory portfolio cover",
-      "tr": "Merge Rush Tiny Factory portfolio kapağı",
-      "de": "Portfolio-Cover von Merge Rush Tiny Factory",
-      "es": "Portada de portfolio de Merge Rush Tiny Factory",
-      "fr": "Visuel de couverture portfolio de Merge Rush Tiny Factory"
-    },
-    "works.alt.hospital.form.app.cover": {
-      "en": "Hospital Form App cover",
-      "tr": "Hospital Form App kapak görseli",
-      "de": "Cover von Hospital Form App",
-      "es": "Portada de Hospital Form App",
-      "fr": "Couverture de Hospital Form App"
-    },
-    "works.alt.ai.flow.puzzle.cover": {
-      "en": "AI Flow Puzzle cover",
-      "tr": "AI Flow Puzzle kapak görseli",
-      "de": "Cover von AI Flow Puzzle",
-      "es": "Portada de AI Flow Puzzle",
-      "fr": "Couverture d’AI Flow Puzzle"
-    },
-    "works.alt.python.hospital.appointment.system.preview": {
-      "en": "Python Hospital Appointment System preview",
-      "tr": "Python Hospital Appointment System önizlemesi",
-      "de": "Vorschau des Python Hospital Appointment System",
-      "es": "Vista previa del Python Hospital Appointment System",
-      "fr": "Aperçu du Python Hospital Appointment System"
-    },
-    "works.alt.cars.dataset.analysis.preview": {
-      "en": "Cars dataset analysis preview",
-      "tr": "Cars veri seti analizi önizlemesi",
-      "de": "Vorschau der Cars-Datensatzanalyse",
-      "es": "Vista previa del análisis del conjunto de datos Cars",
-      "fr": "Aperçu de l'analyse du jeu de données Cars"
-    },
-    "works.alt.legacy.of.the.lost.preview": {
-      "en": "Legacy of the Lost preview",
-      "tr": "Legacy of the Lost önizlemesi",
-      "de": "Vorschau von Legacy of the Lost",
-      "es": "Vista previa de Legacy of the Lost",
-      "fr": "Aperçu de Legacy of the Lost"
-    },
-    "works.alt.my.museum.app.preview": {
-      "en": "My Museum app preview",
-      "tr": "My Museum uygulama önizlemesi",
-      "de": "App-Vorschau von My Museum",
-      "es": "Vista previa de la aplicación My Museum",
-      "fr": "Aperçu de l'application My Museum"
-    },
-    "games.copy.games.interactive": {
-      "en": "Games & Interactive",
-      "tr": "Oyunlar & İnteraktif",
-      "de": "Spiele & Interaktiv",
-      "es": "Juegos e interactivo",
-      "fr": "Jeux et interactif"
-    },
-    "games.copy.one.active.game.product.three.playable.portfolio.experiments": {
-      "en": "One active game product, three playable portfolio experiments.",
-      "tr": "Bir aktif oyun ürünü, üç oynanabilir portfolyo deneyi.",
-      "de": "Ein aktives Spieleprodukt, drei spielbare Portfolio-Experimente.",
-      "es": "Un producto de juego activo y tres experimentos jugables de portafolio.",
-      "fr": "Un produit de jeu actif, trois expérimentations de portfolio jouables."
-    },
-    "games.copy.merge.rush.is.the.current.game.development.priority.smaller.browser.expe": {
-      "en": "Merge Rush is the current game-development priority. Smaller browser experiments remain playable, while technical experiments that are not really games now live under Kaan Labs.",
-      "tr": "Merge Rush güncel game-development önceliği. Küçük browser deneyleri oynanabilir kalıyor; oyun olmayan teknik deneyler ise artık Kaan Labs altında yaşıyor.",
-      "de": "Merge Rush hat aktuell Priorität in der Spieleentwicklung. Kleinere Browser-Experimente bleiben spielbar; technische Experimente, die keine echten Spiele sind, liegen jetzt unter Kaan Labs.",
-      "es": "Merge Rush es la prioridad actual en desarrollo de videojuegos. Los experimentos de navegador más pequeños siguen siendo jugables, mientras que los experimentos técnicos que no son realmente juegos viven ahora en Kaan Labs.",
-      "fr": "Merge Rush est la priorité actuelle en développement de jeux. Les petites expérimentations navigateur restent jouables, tandis que les expérimentations techniques qui ne sont pas vraiment des jeux vivent désormais dans Kaan Labs."
-    },
-    "games.copy.view.merge.rush": {
-      "en": "View Merge Rush",
-      "tr": "Merge Rush’ı Gör",
-      "de": "Merge Rush ansehen",
-      "es": "Ver Merge Rush",
-      "fr": "Voir Merge Rush"
-    },
-    "games.copy.game.recruiter.view": {
-      "en": "Game Recruiter View",
-      "tr": "Oyun İK Görünümü",
-      "de": "Game-Recruiter-Ansicht",
-      "es": "Vista para selección de personal: juegos",
-      "fr": "Vue recruteur : jeux"
-    },
-    "games.copy.kaan.labs": {
-      "en": "Kaan Labs",
-      "tr": "Kaan Labs",
-      "de": "Kaan Labs",
-      "es": "Kaan Labs",
-      "fr": "Kaan Labs"
-    },
-    "games.copy.game.catalog": {
-      "en": "Game catalog",
-      "tr": "Oyun kataloğu",
-      "de": "Spielekatalog",
-      "es": "Catálogo de juegos",
-      "fr": "Catalogue de jeux"
-    },
-    "games.copy.depth.first.experiments.second": {
-      "en": "Depth first, experiments second.",
-      "tr": "Önce derinlik, sonra deneyler.",
-      "de": "Erst Tiefe, dann Experimente.",
-      "es": "Primero la profundidad, después los experimentos.",
-      "fr": "La profondeur d'abord, les expérimentations ensuite."
-    },
-    "games.copy.all": {
-      "en": "All",
-      "tr": "Tümü",
-      "de": "Alle",
-      "es": "Todos",
-      "fr": "Tous"
-    },
-    "games.copy.product": {
-      "en": "Product",
-      "tr": "Ürün",
-      "de": "Produkt",
-      "es": "Producto",
-      "fr": "Produit"
-    },
-    "games.copy.ai": {
-      "en": "AI",
-      "tr": "AI",
-      "de": "AI",
-      "es": "AI",
-      "fr": "AI"
-    },
-    "games.copy.creative": {
-      "en": "Creative",
-      "tr": "Yaratıcı",
-      "de": "Kreativ",
-      "es": "Creativo",
-      "fr": "Créatif"
-    },
-    "games.copy.career": {
-      "en": "Career",
-      "tr": "Kariyer",
-      "de": "Karriere",
-      "es": "Carrera",
-      "fr": "Carrière"
-    },
-    "games.copy.active.development": {
-      "en": "Active Development",
-      "tr": "Aktif Geliştirme",
-      "de": "Aktive Entwicklung",
-      "es": "Desarrollo activo",
-      "fr": "Développement actif"
-    },
-    "games.copy.phaser.3.typescript": {
-      "en": "Phaser 3 • TypeScript",
-      "tr": "Phaser 3 • TypeScript",
-      "de": "Phaser 3 • TypeScript",
-      "es": "Phaser 3 • TypeScript",
-      "fr": "Phaser 3 • TypeScript"
-    },
-    "games.copy.merge.game": {
-      "en": "Merge Game",
-      "tr": "Birleştirme Oyunu",
-      "de": "Merge-Spiel",
-      "es": "Juego de fusión",
-      "fr": "Jeu de fusion"
-    },
-    "games.copy.factory.run": {
-      "en": "Factory Run",
-      "tr": "Factory Run",
-      "de": "Factory Run",
-      "es": "Factory Run",
-      "fr": "Factory Run"
-    },
-    "games.copy.progression": {
-      "en": "Progression",
-      "tr": "İlerleme",
-      "de": "Fortschritt",
-      "es": "Progresión",
-      "fr": "Progression"
-    },
-    "games.copy.youtube.playables": {
-      "en": "YouTube Playables",
-      "tr": "YouTube Playables",
-      "de": "YouTube Playables",
-      "es": "YouTube Playables",
-      "fr": "YouTube Playables"
-    },
-    "games.copy.timed.orders.factory.restoration.multi.cell.board.logic.responsive.layou": {
-      "en": "Timed orders, factory restoration, multi-cell board logic, responsive layouts and platform-aware architecture.",
-      "tr": "Timed order'lar, fabrika onarımı, multi-cell board logic, responsive layout'lar ve platform-aware architecture.",
-      "de": "Zeitgebundene Aufträge, Fabrik-Restaurierung, mehrzellige Board-Logik, responsive Layouts und plattformbewusste Architektur.",
-      "es": "Pedidos con tiempo, restauración de la fábrica, lógica de tablero con piezas de varias casillas, maquetación responsive y arquitectura consciente de la plataforma.",
-      "fr": "Commandes chronométrées, restauration de l'usine, logique de plateau multi-cases, mises en page responsive et architecture consciente de la plateforme."
-    },
-    "games.copy.view.case.study": {
-      "en": "View Case Study",
-      "tr": "Vaka Çalışmasını Gör",
-      "de": "Case Study ansehen",
-      "es": "Ver caso de estudio",
-      "fr": "Voir l'étude de cas"
-    },
-    "games.copy.live": {
-      "en": "Live",
-      "tr": "Canlı",
-      "de": "Live",
-      "es": "En producción",
-      "fr": "En ligne"
-    },
-    "games.copy.javascript.node.logic": {
-      "en": "JavaScript • Node Logic",
-      "tr": "JavaScript • Node Logic",
-      "de": "JavaScript • Node Logic",
-      "es": "JavaScript • Node Logic",
-      "fr": "JavaScript • Node Logic"
-    },
-    "games.copy.ai.flow": {
-      "en": "AI Flow",
-      "tr": "AI Flow",
-      "de": "AI Flow",
-      "es": "AI Flow",
-      "fr": "AI Flow"
-    },
-    "games.copy.logic.puzzle": {
-      "en": "Logic Puzzle",
-      "tr": "Mantık Bulmacası",
-      "de": "Logikrätsel",
-      "es": "Puzle de lógica",
-      "fr": "Puzzle logique"
-    },
-    "games.copy.chatbot": {
-      "en": "Chatbot",
-      "tr": "Chatbot",
-      "de": "Chatbot",
-      "es": "Chatbot",
-      "fr": "Chatbot"
-    },
-    "games.copy.ai.flow.puzzle": {
-      "en": "AI Flow Puzzle",
-      "tr": "AI Flow Puzzle",
-      "de": "AI Flow Puzzle",
-      "es": "AI Flow Puzzle",
-      "fr": "AI Flow Puzzle"
-    },
-    "games.copy.build.n8n.inspired.chatbot.workflows.by.placing.trigger.intent.response.": {
-      "en": "Build n8n-inspired chatbot workflows by placing trigger, intent, response, fallback and automation nodes.",
-      "tr": "Trigger, intent, response, fallback ve automation node'larını yerleştirerek n8n esintili chatbot workflow'ları oluştur.",
-      "de": "Erstelle n8n-inspirierte Chatbot-Workflows mit Trigger-, Intent-, Response-, Fallback- und Automation-Nodes.",
-      "es": "Construye workflows de chatbot inspirados en n8n colocando nodos de trigger, intent, response, fallback y automation.",
-      "fr": "Construisez des workflows de chatbot inspirés de n8n avec des nœuds trigger, intent, response, fallback et automation."
-    },
-    "games.copy.play": {
-      "en": "Play",
-      "tr": "Oyna",
-      "de": "Spielen",
-      "es": "Jugar",
-      "fr": "Jouer"
-    },
-    "games.copy.case.study": {
-      "en": "Case Study",
-      "tr": "Vaka Çalışması",
-      "de": "Case Study",
-      "es": "Caso de estudio",
-      "fr": "Étude de cas"
-    },
-    "games.copy.canvas.javascript": {
-      "en": "Canvas • JavaScript",
-      "tr": "Canvas • JavaScript",
-      "de": "Canvas • JavaScript",
-      "es": "Canvas • JavaScript",
-      "fr": "Canvas • JavaScript"
-    },
-    "games.copy.action.painting": {
-      "en": "Action Painting",
-      "tr": "Action Painting",
-      "de": "Action Painting",
-      "es": "Action Painting",
-      "fr": "Action Painting"
-    },
-    "games.copy.png.export": {
-      "en": "PNG Export",
-      "tr": "PNG Çıktı",
-      "de": "PNG-Export",
-      "es": "Exportación a PNG",
-      "fr": "Export PNG"
-    },
-    "games.copy.joyday.action.painting": {
-      "en": "Joyday Action Painting",
-      "tr": "Joyday Action Painting",
-      "de": "Joyday Action Painting",
-      "es": "Joyday Action Painting",
-      "fr": "Joyday Action Painting"
-    },
-    "games.copy.create.downloadable.action.painting.artwork.with.multiple.canvas.shapes.": {
-      "en": "Create downloadable action-painting artwork with multiple canvas shapes and virtual tools.",
-      "tr": "Farklı tuval şekilleri ve sanal araçlarla indirilebilir action-painting çalışmaları oluştur.",
-      "de": "Erstelle herunterladbare Action-Painting-Arbeiten mit mehreren Leinwandformen und virtuellen Werkzeugen.",
-      "es": "Crea obras de action painting descargables con varias formas de lienzo y herramientas virtuales.",
-      "fr": "Créez des œuvres d’action painting téléchargeables avec plusieurs formes de toile et des outils virtuels."
-    },
-    "games.copy.mini.game": {
-      "en": "Mini Game",
-      "tr": "Mini Oyun",
-      "de": "Minispiel",
-      "es": "Minijuego",
-      "fr": "Mini-jeu"
-    },
-    "games.copy.merge": {
-      "en": "Merge",
-      "tr": "Birleştirme",
-      "de": "Merge",
-      "es": "Fusión",
-      "fr": "Fusion"
-    },
-    "games.copy.kaan.s.career.adventure": {
-      "en": "Kaan's Career Adventure",
-      "tr": "Kaan'ın Kariyer Macerası",
-      "de": "Kaans Karriere-Abenteuer",
-      "es": "La aventura profesional de Kaan",
-      "fr": "L'aventure professionnelle de Kaan"
-    },
-    "games.copy.combine.learning.tools.ai.workflow.experience.and.portfolio.proof.until.": {
-      "en": "Combine learning, tools, AI workflow experience and portfolio proof until the Job Offer object appears.",
-      "tr": "Job Offer nesnesi görünene kadar öğrenmeyi, araçları, AI workflow deneyimini ve portfolio kanıtını birleştir.",
-      "de": "Kombiniere Lernen, Tools, AI-Workflow-Erfahrung und Portfolio-Belege, bis das Job-Offer-Objekt erscheint.",
-      "es": "Combina aprendizaje, herramientas, experiencia en workflows de AI y evidencia del portafolio hasta que aparezca el objeto Job Offer.",
-      "fr": "Combinez apprentissage, outils, expérience des workflows d’AI et preuves du portfolio jusqu’à l’apparition de l’objet Job Offer."
-    },
-    "games.copy.current.direction": {
-      "en": "Current direction",
-      "tr": "Güncel yön",
-      "de": "Aktuelle Ausrichtung",
-      "es": "Dirección actual",
-      "fr": "Orientation actuelle"
-    },
-    "games.copy.merge.rush.gets.the.production.attention.experiments.get.a.dedicated.lab": {
-      "en": "Merge Rush gets the production attention; experiments get a dedicated lab.",
-      "tr": "Production odağı Merge Rush'ta; deneylerin ise kendi lab alanı var.",
-      "de": "Merge Rush bekommt die Produktionsaufmerksamkeit; Experimente bekommen ein eigenes Labor.",
-      "es": "Merge Rush recibe la atención de producción; los experimentos tienen su propio laboratorio.",
-      "fr": "Merge Rush reçoit l'attention de production ; les expérimentations disposent d'un labo dédié."
-    },
-    "games.copy.the.old.interview.run.concept.is.no.longer.presented.as.active.portfolio": {
-      "en": "The old Interview Run concept is no longer presented as active portfolio work. Future small experiments belong in Labs until they earn a place in the game catalog.",
-      "tr": "Eski Interview Run konsepti artık aktif portfolyo işi olarak gösterilmiyor. Gelecek küçük deneyler game catalog'da yer kazanana kadar Labs altında kalacak.",
-      "de": "Das alte Interview-Run-Konzept wird nicht mehr als aktive Portfolio-Arbeit geführt. Künftige kleine Experimente gehören in Labs, bis sie sich einen Platz im Spielekatalog verdienen.",
-      "es": "El antiguo concepto de Interview Run ya no se presenta como trabajo activo del portafolio. Los próximos experimentos pequeños pertenecen a Labs hasta que se ganen un lugar en el catálogo de juegos.",
-      "fr": "L'ancien concept Interview Run n'est plus présenté comme un travail actif du portfolio. Les petites expérimentations à venir ont leur place dans Labs jusqu'à ce qu'elles méritent une place dans le catalogue de jeux."
-    },
-    "games.copy.merge.rush": {
-      "en": "Merge Rush",
-      "tr": "Merge Rush",
-      "de": "Merge Rush",
-      "es": "Merge Rush",
-      "fr": "Merge Rush"
-    },
-    "games.copy.build.log": {
-      "en": "Build Log",
-      "tr": "Build Log",
-      "de": "Build Log",
-      "es": "Build Log",
-      "fr": "Build Log"
-    },
-    "games.aria.game.filters": {
-      "en": "Game filters",
-      "tr": "Oyun filtreleri",
-      "de": "Spielfilter",
-      "es": "Filtros de juegos",
-      "fr": "Filtres de jeux"
-    },
-    "games.alt.merge.rush.tiny.factory.cover": {
-      "en": "Merge Rush Tiny Factory cover",
-      "tr": "Merge Rush Tiny Factory kapak görseli",
-      "de": "Cover von Merge Rush Tiny Factory",
-      "es": "Portada de Merge Rush Tiny Factory",
-      "fr": "Couverture de Merge Rush Tiny Factory"
-    },
-    "games.alt.ai.flow.puzzle.cover": {
-      "en": "AI Flow Puzzle cover",
-      "tr": "AI Flow Puzzle kapak görseli",
-      "de": "Cover von AI Flow Puzzle",
-      "es": "Portada de AI Flow Puzzle",
-      "fr": "Couverture d’AI Flow Puzzle"
-    },
-    "games.alt.joyday.action.painting.preview": {
-      "en": "Joyday Action Painting preview",
-      "tr": "Joyday Action Painting önizlemesi",
-      "de": "Vorschau von Joyday Action Painting",
-      "es": "Vista previa de Joyday Action Painting",
-      "fr": "Aperçu de Joyday Action Painting"
-    },
-    "games.alt.career.adventure.cover": {
-      "en": "Career Adventure cover",
-      "tr": "Career Adventure kapak görseli",
-      "de": "Cover von Career Adventure",
-      "es": "Portada de Career Adventure",
-      "fr": "Couverture de Career Adventure"
+  "catalogSearch": {
+    "works": {
+      "label": "works.search.label",
+      "placeholder": "works.search.placeholder"
+    },
+    "games": {
+      "label": "games.search.label",
+      "placeholder": "games.search.placeholder"
     }
   },
   "pages": {
@@ -1181,7 +48,7 @@
               "children": [
                 {
                   "type": "message",
-                  "key": "works.copy.selected.work"
+                  "key": "works.hero.eyebrow"
                 }
               ]
             },
@@ -1197,7 +64,7 @@
               "children": [
                 {
                   "type": "message",
-                  "key": "works.copy.engineering.evidence.for.forward.deployed.work"
+                  "key": "works.hero.title"
                 }
               ]
             },
@@ -1213,7 +80,7 @@
               "children": [
                 {
                   "type": "message",
-                  "key": "works.copy.primary.evidence.first.supporting.breadth.second.and.experiments.or.arch"
+                  "key": "works.hero.lead"
                 }
               ]
             },
@@ -1250,7 +117,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.ai.delivery.view"
+                      "key": "works.hero.aiView"
                     }
                   ]
                 },
@@ -1277,7 +144,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.discovery.and.scoping.view"
+                      "key": "works.hero.discoveryView"
                     }
                   ]
                 },
@@ -1304,7 +171,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.labs"
+                      "key": "works.hero.labs"
                     }
                   ]
                 }
@@ -1337,7 +204,7 @@
                   "name": "aria-label",
                   "value": {
                     "type": "message",
-                    "key": "works.aria.project.filters"
+                    "key": "works.filter.aria"
                   }
                 },
                 {
@@ -1366,7 +233,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.all"
+                      "key": "works.filter.all"
                     }
                   ]
                 },
@@ -1390,7 +257,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.ai.automation"
+                      "key": "works.filter.ai"
                     }
                   ]
                 },
@@ -1414,7 +281,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.software"
+                      "key": "works.filter.software"
                     }
                   ]
                 },
@@ -1438,7 +305,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.web.product"
+                      "key": "works.filter.web"
                     }
                   ]
                 },
@@ -1462,7 +329,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.data"
+                      "key": "works.filter.data"
                     }
                   ]
                 },
@@ -1486,7 +353,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.mobile"
+                      "key": "works.filter.mobile"
                     }
                   ]
                 },
@@ -1510,7 +377,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.copy.games.interactive"
+                      "key": "works.filter.game"
                     }
                   ]
                 }
@@ -1559,7 +426,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "works.copy.primary.evidence"
+                          "key": "works.primary.eyebrow"
                         }
                       ]
                     },
@@ -1575,7 +442,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "works.copy.the.clearest.evidence.of.customer.facing.technical.delivery"
+                          "key": "works.primary.title"
                         }
                       ]
                     }
@@ -1620,7 +487,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.sinama.wordmark.on.a.dark.cover.card"
+                                "key": "works.card.sinama.alt"
                               }
                             },
                             {
@@ -1677,7 +544,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.applied.ai.reliability"
+                                      "key": "works.card.sinama.category"
                                     }
                                   ]
                                 },
@@ -1693,7 +560,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.live.mvp"
+                                      "key": "works.card.sinama.status"
                                     }
                                   ]
                                 }
@@ -1716,7 +583,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.fastapi"
+                                      "key": "works.tag.fastapi"
                                     }
                                   ]
                                 },
@@ -1727,7 +594,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.postgresql"
+                                      "key": "works.tag.postgresql"
                                     }
                                   ]
                                 },
@@ -1738,7 +605,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.next.js"
+                                      "key": "works.tag.nextjs"
                                     }
                                   ]
                                 },
@@ -1754,7 +621,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.regression"
+                                      "key": "works.tag.regression"
                                     }
                                   ]
                                 }
@@ -1810,7 +677,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.product.designer.full.stack.developer"
+                                  "key": "works.card.sinama.role"
                                 }
                               ]
                             },
@@ -1826,7 +693,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.multi.turn.agent.testing.deterministic.workflow.evidence.version.aware.r"
+                                  "key": "works.primary.sinama.summary"
                                 }
                               ]
                             },
@@ -1855,7 +722,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.view.case.study"
+                                      "key": "works.action.viewCaseStudy"
                                     }
                                   ]
                                 },
@@ -1882,7 +749,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.live.product"
+                                      "key": "works.action.liveProduct"
                                     }
                                   ]
                                 },
@@ -1909,7 +776,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.github"
+                                      "key": "works.action.github"
                                     }
                                   ]
                                 }
@@ -1948,7 +815,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.ai.chatbot.flow.design.cover"
+                                "key": "works.alt.aiChatbotFlow"
                               }
                             },
                             {
@@ -2005,7 +872,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.enterprise.ai.delivery"
+                                      "key": "works.card.chatbot.category"
                                     }
                                   ]
                                 }
@@ -2033,7 +900,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.customer.workflows"
+                                      "key": "works.tag.customerWorkflows"
                                     }
                                   ]
                                 },
@@ -2044,7 +911,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.chatbot.qa"
+                                      "key": "works.tag.chatbotQa"
                                     }
                                   ]
                                 },
@@ -2060,7 +927,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.multi.channel"
+                                      "key": "works.tag.multiChannel"
                                     }
                                   ]
                                 }
@@ -2086,7 +953,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.ai.chatbot.flow.design"
+                                      "key": "works.card.chatbot.title"
                                     }
                                   ]
                                 }
@@ -2116,7 +983,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.ai.designer"
+                                  "key": "works.card.chatbot.role"
                                 }
                               ]
                             },
@@ -2132,7 +999,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.enterprise.workflow.translation.through.chatbot.qa.stabilization.flow.re"
+                                  "key": "works.primary.chatbot.summary"
                                 }
                               ]
                             },
@@ -2151,7 +1018,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.view.details"
+                                  "key": "works.action.viewDetails"
                                 }
                               ]
                             }
@@ -2188,7 +1055,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.atolye.joyday.website.preview"
+                                "key": "works.card.joyday.alt"
                               }
                             },
                             {
@@ -2241,7 +1108,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.customer.facing.delivery"
+                                      "key": "works.card.joyday.category"
                                     }
                                   ]
                                 },
@@ -2257,7 +1124,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.live"
+                                      "key": "works.status.live"
                                     }
                                   ]
                                 }
@@ -2280,7 +1147,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.javascript"
+                                      "key": "works.tag.javascript"
                                     }
                                   ]
                                 },
@@ -2291,7 +1158,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.apps.script"
+                                      "key": "works.tag.appsScript"
                                     }
                                   ]
                                 },
@@ -2302,7 +1169,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.reservation.flow"
+                                      "key": "works.tag.reservationFlow"
                                     }
                                   ]
                                 }
@@ -2328,7 +1195,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.atolye.joyday.official.website"
+                                      "key": "works.card.joyday.title"
                                     }
                                   ]
                                 }
@@ -2358,7 +1225,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.co.founder.digital.product.developer"
+                                  "key": "works.card.joyday.role"
                                 }
                               ]
                             },
@@ -2374,7 +1241,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.service.discovery.a.reservation.journey.notification.workflows.and.opera"
+                                  "key": "works.primary.joyday.summary"
                                 }
                               ]
                             },
@@ -2403,7 +1270,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.view.case.study"
+                                      "key": "works.action.viewCaseStudy"
                                     }
                                   ]
                                 },
@@ -2434,7 +1301,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.live.website"
+                                      "key": "portfolio.cta.liveWebsite"
                                     }
                                   ]
                                 }
@@ -2494,7 +1361,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "works.copy.supporting.evidence"
+                          "key": "portfolio.label.supportingEvidence"
                         }
                       ]
                     },
@@ -2514,7 +1381,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "works.copy.projects.that.explain.the.breadth.behind.the.primary.evidence"
+                          "key": "works.supporting.title"
                         }
                       ]
                     }
@@ -2559,7 +1426,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.merge.rush.tiny.factory.portfolio.cover"
+                                "key": "mergeRush.cover.alt"
                               }
                             },
                             {
@@ -2621,7 +1488,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.product.systems.engineering"
+                                      "key": "works.category.productSystems"
                                     }
                                   ]
                                 },
@@ -2641,7 +1508,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.active.development"
+                                      "key": "portfolio.status.activeDevelopment"
                                     }
                                   ]
                                 }
@@ -2664,7 +1531,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.phaser.3"
+                                      "key": "works.tag.phaser3"
                                     }
                                   ]
                                 },
@@ -2675,7 +1542,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.typescript"
+                                      "key": "works.tag.typescript"
                                     }
                                   ]
                                 },
@@ -2686,7 +1553,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.vitest"
+                                      "key": "works.tag.vitest"
                                     }
                                   ]
                                 },
@@ -2697,7 +1564,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.platform.adapter"
+                                      "key": "works.tag.platformAdapter"
                                     }
                                   ]
                                 }
@@ -2753,7 +1620,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.game.developer.product.designer"
+                                  "key": "works.card.mergeRush.role"
                                 }
                               ]
                             },
@@ -2769,7 +1636,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.stateful.product.engineering.through.timed.workflows.multi.cell.board.lo"
+                                  "key": "works.supporting.mergeRush.summary"
                                 }
                               ]
                             },
@@ -2788,7 +1655,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.view.case.study"
+                                  "key": "works.action.viewCaseStudy"
                                 }
                               ]
                             }
@@ -2825,7 +1692,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.hospital.form.app.cover"
+                                "key": "works.alt.hospitalFormApp"
                               }
                             },
                             {
@@ -2887,7 +1754,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.workflow.software.foundation"
+                                      "key": "works.category.workflowFoundation"
                                     }
                                   ]
                                 },
@@ -2903,7 +1770,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.source.archive"
+                                      "key": "works.status.sourceArchive"
                                     }
                                   ]
                                 }
@@ -2926,7 +1793,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.c.net"
+                                      "key": "works.tag.csharpDotnet"
                                     }
                                   ]
                                 },
@@ -2937,7 +1804,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.windows.forms"
+                                      "key": "works.tag.windowsForms"
                                     }
                                   ]
                                 },
@@ -2948,7 +1815,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.sql.server"
+                                      "key": "works.tag.sqlServer"
                                     }
                                   ]
                                 }
@@ -2974,7 +1841,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.hospital.form.app"
+                                      "key": "works.card.hospital.title"
                                     }
                                   ]
                                 }
@@ -3004,7 +1871,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.software.developer"
+                                  "key": "works.card.hospital.role"
                                 }
                               ]
                             },
@@ -3020,7 +1887,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.multi.role.workflow.logic.and.appointment.coordination.over.a.database.b"
+                                  "key": "works.supporting.hospital.summary"
                                 }
                               ]
                             },
@@ -3049,7 +1916,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.view.case.study"
+                                      "key": "works.action.viewCaseStudy"
                                     }
                                   ]
                                 },
@@ -3076,7 +1943,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.source.archive"
+                                      "key": "works.status.sourceArchive"
                                     }
                                   ]
                                 }
@@ -3115,7 +1982,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.ai.flow.puzzle.cover"
+                                "key": "portfolio.alt.aiFlowPuzzle"
                               }
                             },
                             {
@@ -3177,7 +2044,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.ai.interactive.lab"
+                                      "key": "works.category.interactiveLab"
                                     }
                                   ]
                                 },
@@ -3193,7 +2060,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.live"
+                                      "key": "works.status.live"
                                     }
                                   ]
                                 }
@@ -3216,7 +2083,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.javascript"
+                                      "key": "works.tag.javascript"
                                     }
                                   ]
                                 },
@@ -3227,7 +2094,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.node.logic"
+                                      "key": "works.tag.nodeLogic"
                                     }
                                   ]
                                 },
@@ -3243,7 +2110,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.validation"
+                                      "key": "works.tag.validation"
                                     }
                                   ]
                                 }
@@ -3269,7 +2136,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.ai.flow.puzzle"
+                                      "key": "works.card.aiFlow.title"
                                     }
                                   ]
                                 }
@@ -3299,7 +2166,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.ai.flow.designer.frontend.developer"
+                                  "key": "works.card.aiFlow.role"
                                 }
                               ]
                             },
@@ -3310,7 +2177,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.n8n.inspired.browser.experience.for.intent.response.fallback.and.validat"
+                                  "key": "works.archive.aiFlow"
                                 }
                               ]
                             },
@@ -3339,7 +2206,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.case.study"
+                                      "key": "works.action.caseStudy"
                                     }
                                   ]
                                 },
@@ -3362,7 +2229,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.play"
+                                      "key": "portfolio.cta.play"
                                     }
                                   ]
                                 }
@@ -3401,7 +2268,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.python.hospital.appointment.system.preview"
+                                "key": "works.card.hospitalAppointment.alt"
                               }
                             },
                             {
@@ -3463,7 +2330,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.python.software"
+                                      "key": "works.category.pythonSoftware"
                                     }
                                   ]
                                 }
@@ -3486,7 +2353,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.python"
+                                      "key": "works.tag.python"
                                     }
                                   ]
                                 },
@@ -3497,7 +2364,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.tkinter"
+                                      "key": "works.tag.tkinter"
                                     }
                                   ]
                                 },
@@ -3508,7 +2375,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.mysql"
+                                      "key": "works.tag.mysql"
                                     }
                                   ]
                                 }
@@ -3534,7 +2401,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.hospital.appointment.system"
+                                      "key": "works.card.hospitalAppointment.title"
                                     }
                                   ]
                                 }
@@ -3564,7 +2431,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.python.database.developer"
+                                  "key": "works.card.hospitalAppointment.role"
                                 }
                               ]
                             },
@@ -3575,7 +2442,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.patient.doctor.and.staff.appointment.workflows.with.mysql.backed.operati"
+                                  "key": "works.archive.hospital"
                                 }
                               ]
                             },
@@ -3594,7 +2461,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.view.details"
+                                  "key": "works.action.viewDetails"
                                 }
                               ]
                             }
@@ -3631,7 +2498,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.cars.dataset.analysis.preview"
+                                "key": "works.card.cars.alt"
                               }
                             },
                             {
@@ -3684,7 +2551,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.data"
+                                      "key": "works.filter.data"
                                     }
                                   ]
                                 }
@@ -3707,7 +2574,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.python"
+                                      "key": "works.tag.python"
                                     }
                                   ]
                                 },
@@ -3718,7 +2585,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.pandas"
+                                      "key": "works.tag.pandas"
                                     }
                                   ]
                                 },
@@ -3729,7 +2596,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.linear.regression"
+                                      "key": "works.tag.linearRegression"
                                     }
                                   ]
                                 }
@@ -3755,7 +2622,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.cars.dataset.analysis"
+                                      "key": "works.card.cars.title"
                                     }
                                   ]
                                 }
@@ -3785,7 +2652,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.python.developer"
+                                  "key": "works.card.cars.role"
                                 }
                               ]
                             },
@@ -3796,7 +2663,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.exploratory.data.analysis.visualization.and.a.small.price.estimation.exp"
+                                  "key": "works.archive.cars"
                                 }
                               ]
                             },
@@ -3815,7 +2682,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.view.details"
+                                  "key": "works.action.viewDetails"
                                 }
                               ]
                             }
@@ -3852,7 +2719,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.legacy.of.the.lost.preview"
+                                "key": "works.archive.legacy.alt"
                               }
                             },
                             {
@@ -3910,7 +2777,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.game.prototype"
+                                      "key": "works.category.gamePrototype"
                                     }
                                   ]
                                 }
@@ -3933,7 +2800,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.unreal.engine.5"
+                                      "key": "works.tag.unrealEngine5"
                                     }
                                   ]
                                 },
@@ -3944,7 +2811,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.puzzle.design"
+                                      "key": "works.tag.puzzleDesign"
                                     }
                                   ]
                                 },
@@ -3955,7 +2822,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.interaction"
+                                      "key": "works.tag.interaction"
                                     }
                                   ]
                                 }
@@ -3981,7 +2848,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.legacy.of.the.lost"
+                                      "key": "works.card.legacy.title"
                                     }
                                   ]
                                 }
@@ -4011,7 +2878,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.game.developer"
+                                  "key": "works.card.legacy.role"
                                 }
                               ]
                             },
@@ -4022,7 +2889,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.first.person.environmental.puzzle.prototype.with.object.manipulation.and"
+                                  "key": "works.archive.legacy.body"
                                 }
                               ]
                             },
@@ -4041,7 +2908,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.view.details"
+                                  "key": "works.action.viewDetails"
                                 }
                               ]
                             }
@@ -4078,7 +2945,7 @@
                               "name": "alt",
                               "value": {
                                 "type": "message",
-                                "key": "works.alt.my.museum.app.preview"
+                                "key": "works.card.museum.alt"
                               }
                             },
                             {
@@ -4131,7 +2998,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.mobile"
+                                      "key": "works.filter.mobile"
                                     }
                                   ]
                                 }
@@ -4154,7 +3021,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.kotlin"
+                                      "key": "works.tag.kotlin"
                                     }
                                   ]
                                 },
@@ -4165,7 +3032,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.firebase"
+                                      "key": "works.tag.firebase"
                                     }
                                   ]
                                 },
@@ -4176,7 +3043,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.android"
+                                      "key": "works.tag.android"
                                     }
                                   ]
                                 }
@@ -4202,7 +3069,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.copy.mymuseum.mobile.content.app"
+                                      "key": "works.card.museum.title"
                                     }
                                   ]
                                 }
@@ -4232,7 +3099,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.my.role.android.developer"
+                                  "key": "works.card.museum.role"
                                 }
                               ]
                             },
@@ -4243,7 +3110,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.android.content.sharing.project.using.kotlin.and.firebase"
+                                  "key": "works.archive.museum.body"
                                 }
                               ]
                             },
@@ -4262,7 +3129,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "works.copy.view.details"
+                                  "key": "works.action.viewDetails"
                                 }
                               ]
                             }
@@ -4321,7 +3188,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "works.copy.archive.policy"
+                              "key": "works.archive.eyebrow"
                             }
                           ]
                         },
@@ -4341,7 +3208,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "works.copy.tutorial.scale.and.older.learning.repositories.stay.available.without.co"
+                              "key": "works.archiveCta.title"
                             }
                           ]
                         },
@@ -4361,7 +3228,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "works.copy.the.github.profile.remains.the.full.archive.labs.contains.smaller.intera"
+                              "key": "works.archiveCta.body"
                             }
                           ]
                         }
@@ -4405,7 +3272,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "works.copy.github.archive"
+                              "key": "works.archive.github"
                             }
                           ]
                         },
@@ -4428,7 +3295,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "works.copy.kaan.labs"
+                              "key": "shared.kaanLabs"
                             }
                           ]
                         }
@@ -4470,7 +3337,7 @@
               "children": [
                 {
                   "type": "message",
-                  "key": "games.copy.games.interactive"
+                  "key": "games.hero.eyebrow"
                 }
               ]
             },
@@ -4490,7 +3357,7 @@
               "children": [
                 {
                   "type": "message",
-                  "key": "games.copy.one.active.game.product.three.playable.portfolio.experiments"
+                  "key": "games.hero.title"
                 }
               ]
             },
@@ -4510,7 +3377,7 @@
               "children": [
                 {
                   "type": "message",
-                  "key": "games.copy.merge.rush.is.the.current.game.development.priority.smaller.browser.expe"
+                  "key": "games.hero.lead"
                 }
               ]
             },
@@ -4547,7 +3414,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.view.merge.rush"
+                      "key": "games.hero.viewMergeRush"
                     }
                   ]
                 },
@@ -4574,7 +3441,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.game.recruiter.view"
+                      "key": "portfolio.cta.gameRecruiterView"
                     }
                   ]
                 },
@@ -4597,7 +3464,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.kaan.labs"
+                      "key": "shared.kaanLabs"
                     }
                   ]
                 }
@@ -4640,7 +3507,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.game.catalog"
+                      "key": "games.catalog.eyebrow"
                     }
                   ]
                 },
@@ -4660,7 +3527,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.depth.first.experiments.second"
+                      "key": "games.catalog.title"
                     }
                   ]
                 }
@@ -4678,7 +3545,7 @@
                   "name": "aria-label",
                   "value": {
                     "type": "message",
-                    "key": "games.aria.game.filters"
+                    "key": "games.filter.aria"
                   }
                 },
                 {
@@ -4707,7 +3574,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.all"
+                      "key": "games.filter.all"
                     }
                   ]
                 },
@@ -4735,7 +3602,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.product"
+                      "key": "games.filter.product"
                     }
                   ]
                 },
@@ -4759,7 +3626,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.ai"
+                      "key": "games.filter.ai"
                     }
                   ]
                 },
@@ -4783,7 +3650,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.creative"
+                      "key": "games.filter.creative"
                     }
                   ]
                 },
@@ -4807,7 +3674,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.copy.career"
+                      "key": "games.filter.career"
                     }
                   ]
                 }
@@ -4852,7 +3719,7 @@
                           "name": "alt",
                           "value": {
                             "type": "message",
-                            "key": "games.alt.merge.rush.tiny.factory.cover"
+                            "key": "games.alt.mergeRush"
                           }
                         },
                         {
@@ -4922,7 +3789,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.active.development"
+                                  "key": "portfolio.status.activeDevelopment"
                                 }
                               ]
                             },
@@ -4933,7 +3800,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.phaser.3.typescript"
+                                  "key": "games.mergeRush.stack"
                                 }
                               ]
                             }
@@ -4961,7 +3828,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.merge.game"
+                                  "key": "games.tag.mergeGame"
                                 }
                               ]
                             },
@@ -4972,7 +3839,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.factory.run"
+                                  "key": "games.tag.factoryRun"
                                 }
                               ]
                             },
@@ -4988,7 +3855,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.progression"
+                                  "key": "portfolio.label.progression"
                                 }
                               ]
                             },
@@ -4999,7 +3866,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.youtube.playables"
+                                  "key": "games.tag.youtubePlayables"
                                 }
                               ]
                             }
@@ -5047,7 +3914,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "games.copy.timed.orders.factory.restoration.multi.cell.board.logic.responsive.layou"
+                              "key": "games.mergeRush.body"
                             }
                           ]
                         },
@@ -5066,7 +3933,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "games.copy.view.case.study"
+                              "key": "games.action.viewCaseStudy"
                             }
                           ]
                         }
@@ -5103,7 +3970,7 @@
                           "name": "alt",
                           "value": {
                             "type": "message",
-                            "key": "games.alt.ai.flow.puzzle.cover"
+                            "key": "portfolio.alt.aiFlowPuzzle"
                           }
                         },
                         {
@@ -5165,7 +4032,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.live"
+                                  "key": "games.status.live"
                                 }
                               ]
                             },
@@ -5176,7 +4043,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.javascript.node.logic"
+                                  "key": "games.aiFlow.stack"
                                 }
                               ]
                             }
@@ -5199,7 +4066,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.ai.flow"
+                                  "key": "games.tag.aiFlow"
                                 }
                               ]
                             },
@@ -5215,7 +4082,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.logic.puzzle"
+                                  "key": "games.tag.logicPuzzle"
                                 }
                               ]
                             },
@@ -5226,7 +4093,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.chatbot"
+                                  "key": "games.tag.chatbot"
                                 }
                               ]
                             }
@@ -5252,7 +4119,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.ai.flow.puzzle"
+                                  "key": "games.aiFlow.title"
                                 }
                               ]
                             }
@@ -5265,7 +4132,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "games.copy.build.n8n.inspired.chatbot.workflows.by.placing.trigger.intent.response."
+                              "key": "games.aiFlow.body"
                             }
                           ]
                         },
@@ -5298,7 +4165,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.play"
+                                  "key": "portfolio.cta.play"
                                 }
                               ]
                             },
@@ -5317,7 +4184,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.case.study"
+                                  "key": "games.action.caseStudy"
                                 }
                               ]
                             }
@@ -5356,7 +4223,7 @@
                           "name": "alt",
                           "value": {
                             "type": "message",
-                            "key": "games.alt.joyday.action.painting.preview"
+                            "key": "games.alt.joydayPaint"
                           }
                         },
                         {
@@ -5418,7 +4285,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.live"
+                                  "key": "games.status.live"
                                 }
                               ]
                             },
@@ -5429,7 +4296,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.canvas.javascript"
+                                  "key": "games.stack.canvasJavascript"
                                 }
                               ]
                             }
@@ -5452,7 +4319,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.action.painting"
+                                  "key": "games.tag.actionPainting"
                                 }
                               ]
                             },
@@ -5463,7 +4330,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.png.export"
+                                  "key": "games.tag.pngExport"
                                 }
                               ]
                             }
@@ -5489,7 +4356,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.joyday.action.painting"
+                                  "key": "games.joydayPaint.title"
                                 }
                               ]
                             }
@@ -5502,7 +4369,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "games.copy.create.downloadable.action.painting.artwork.with.multiple.canvas.shapes."
+                              "key": "games.joydayPaint.body"
                             }
                           ]
                         },
@@ -5525,7 +4392,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "games.copy.play"
+                              "key": "portfolio.cta.play"
                             }
                           ]
                         }
@@ -5562,7 +4429,7 @@
                           "name": "alt",
                           "value": {
                             "type": "message",
-                            "key": "games.alt.career.adventure.cover"
+                            "key": "games.alt.careerAdventure"
                           }
                         },
                         {
@@ -5624,7 +4491,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.live"
+                                  "key": "games.status.live"
                                 }
                               ]
                             },
@@ -5635,7 +4502,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.canvas.javascript"
+                                  "key": "games.stack.canvasJavascript"
                                 }
                               ]
                             }
@@ -5658,7 +4525,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.career"
+                                  "key": "games.filter.career"
                                 }
                               ]
                             },
@@ -5669,7 +4536,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.mini.game"
+                                  "key": "games.tag.miniGame"
                                 }
                               ]
                             },
@@ -5680,7 +4547,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.merge"
+                                  "key": "games.tag.merge"
                                 }
                               ]
                             }
@@ -5706,7 +4573,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.copy.kaan.s.career.adventure"
+                                  "key": "games.adventure.title"
                                 }
                               ]
                             }
@@ -5719,7 +4586,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "games.copy.combine.learning.tools.ai.workflow.experience.and.portfolio.proof.until."
+                              "key": "games.adventure.body"
                             }
                           ]
                         },
@@ -5742,7 +4609,7 @@
                           "children": [
                             {
                               "type": "message",
-                              "key": "games.copy.play"
+                              "key": "portfolio.cta.play"
                             }
                           ]
                         }
@@ -5797,7 +4664,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "games.copy.current.direction"
+                          "key": "games.direction.eyebrow"
                         }
                       ]
                     },
@@ -5817,7 +4684,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "games.copy.merge.rush.gets.the.production.attention.experiments.get.a.dedicated.lab"
+                          "key": "games.direction.title"
                         }
                       ]
                     },
@@ -5837,7 +4704,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "games.copy.the.old.interview.run.concept.is.no.longer.presented.as.active.portfolio"
+                          "key": "games.direction.body"
                         }
                       ]
                     }
@@ -5872,7 +4739,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "games.copy.merge.rush"
+                          "key": "games.direction.mergeRush"
                         }
                       ]
                     },
@@ -5895,7 +4762,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "games.copy.kaan.labs"
+                          "key": "shared.kaanLabs"
                         }
                       ]
                     },
@@ -5918,7 +4785,7 @@
                       "children": [
                         {
                           "type": "message",
-                          "key": "games.copy.build.log"
+                          "key": "games.direction.buildLog"
                         }
                       ]
                     }
