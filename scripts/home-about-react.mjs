@@ -95,6 +95,11 @@ export function productionMainProps(route) {
     catalogPage ? worksGamesStructure.messages[key]?.[route.locale] : localization.message(key),
   ]));
   for (const [key, value] of Object.entries(copy)) if (value === undefined) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+  const catalogMessage = (key) => {
+    const value = worksGamesStructure.messages[key]?.[route.locale];
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+    return value;
+  };
   const compat = Object.fromEntries(["en", "tr"].map((locale) => {
     const accepted = loadProductionLocalization(locale);
     return [locale, Object.fromEntries([...requirements.compat].sort().map((key) => [key, decodeHtml(accepted.message(key))]))];
@@ -116,8 +121,8 @@ export function productionMainProps(route) {
     data: localizedCanonicalData(route.locale),
     buildLog: localizedBuildLog,
     catalog: catalogPage ? {
-      searchLabel: worksGamesStructure.messages[`${route.routeId}.search.label`][route.locale],
-      searchPlaceholder: worksGamesStructure.messages[`${route.routeId}.search.placeholder`][route.locale],
+      searchLabel: catalogMessage(`${route.routeId}.search.label`),
+      searchPlaceholder: catalogMessage(`${route.routeId}.search.placeholder`),
     } : null,
   };
 }

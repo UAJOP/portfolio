@@ -35,11 +35,9 @@ function BuildLog({ entries, limit }) {
   ));
 }
 
-const escapeHtml = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const normalizeSearch = (value) => {
-  if (typeof globalThis.normalizeI18nText === "function") return globalThis.normalizeI18nText(value).toLowerCase();
-  return String(value).normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-};
+/* Same semantics as the accepted catalog search: whitespace-collapsed,
+ * trimmed, lower-cased text with no diacritic folding. */
+const normalizeSearch = (value) => String(value).replace(/\s+/g, " ").trim().toLowerCase();
 
 function resolvedAttributes(node, props) {
   return Object.fromEntries(node.attributes.map(({ name, value }) => [
@@ -52,7 +50,8 @@ function nodeText(node, props) {
   if (node.type === "message") return props.copy[node.key] || "";
   if (node.type === "data") return atPath(props.data, node.path) || "";
   if (node.type === "text") return node.value;
-  return node.children.map((child) => nodeText(child, props)).join(" ");
+  if (node.type === "space") return " ";
+  return node.children.map((child) => nodeText(child, props)).join("");
 }
 
 function descendantCards(node) {
@@ -82,8 +81,10 @@ function cardVisible(node, props, state) {
   const query = normalizeSearch(state.query);
   if (!query) return categoryMatch;
   const text = normalizeSearch(nodeText(node, props));
-  const destination = normalizeSearch(attributes["data-project-link"] || attributes["data-game-link"] || "");
-  return categoryMatch && (text.includes(query) || destination.includes(query));
+  const keywordMatch = text.includes(query)
+    || String(attributes["data-project-link"] || "").includes(query)
+    || String(attributes["data-game-link"] || "").includes(query);
+  return categoryMatch && keywordMatch;
 }
 
 function shouldIgnoreCardActivation(event) {
@@ -94,17 +95,19 @@ function shouldIgnoreCardActivation(event) {
 }
 
 const CatalogSearch = memo(function CatalogSearch({ catalog, setQuery }) {
-  const markup = `<label for="catalog-search" data-project-search-label>${escapeHtml(catalog.searchLabel)}</label><div><i class="bx bx-search"></i><input id="catalog-search" type="search" data-project-search placeholder="${escapeHtml(catalog.searchPlaceholder)}" /></div>`;
   return (
-    <div
-      className="project-search-wrap reveal"
-      onInput={(event) => { if (event.target.matches("[data-project-search]")) setQuery(event.target.value); }}
-      dangerouslySetInnerHTML={{ __html: markup }}
-    />
+    <div className="project-search-wrap reveal">
+      <label htmlFor="catalog-search" data-project-search-label="">{catalog.searchLabel}</label>
+      <div>
+        <i className="bx bx-search" />
+        <input id="catalog-search" type="search" data-project-search="" placeholder={catalog.searchPlaceholder} onInput={(event) => setQuery(event.currentTarget.value)} />
+      </div>
+    </div>
   );
 });
 
 function renderNode(node, props, key, catalogState) {
+  if (node.type === "space") return null;
   if (node.type === "message") return props.copy[node.key];
   if (node.type === "data") return atPath(props.data, node.path);
   if (node.type === "text") return node.value;
@@ -141,8 +144,8 @@ function renderNode(node, props, key, catalogState) {
   if (classes.size) attributes.className = [...classes].join(" ");
   const children = buildLogLimit
     ? <BuildLog entries={props.buildLog} limit={Number(buildLogLimit)} />
-    : node.children.length
-      ? node.children.map((child, index) => renderNode(child, props, `${key}.${index}`, catalogState))
+    : node.children.some((child) => child.type !== "space")
+      ? node.children.flatMap((child, index) => child.type === "space" ? [] : [renderNode(child, props, `${key}.${index}`, catalogState)])
       : undefined;
   const element = createElement(node.tag, { ...attributes, key }, children);
   if (!isFilterBar) return element;

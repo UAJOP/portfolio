@@ -1313,6 +1313,9 @@
           ]
         },
         {
+          "type": "space"
+        },
+        {
           "type": "element",
           "tag": "section",
           "attributes": [
@@ -1514,6 +1517,9 @@
               ]
             },
             {
+              "type": "space"
+            },
+            {
               "type": "element",
               "tag": "section",
               "attributes": [
@@ -1585,6 +1591,9 @@
                     }
                   ],
                   "children": [
+                    {
+                      "type": "space"
+                    },
                     {
                       "type": "element",
                       "tag": "article",
@@ -1911,6 +1920,9 @@
                       ]
                     },
                     {
+                      "type": "space"
+                    },
+                    {
                       "type": "element",
                       "tag": "article",
                       "attributes": [
@@ -2148,6 +2160,9 @@
                       ]
                     },
                     {
+                      "type": "space"
+                    },
+                    {
                       "type": "element",
                       "tag": "article",
                       "attributes": [
@@ -2191,6 +2206,10 @@
                             {
                               "name": "height",
                               "value": "935"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
                             }
                           ],
                           "children": []
@@ -2424,10 +2443,16 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "type": "space"
                     }
                   ]
                 }
               ]
+            },
+            {
+              "type": "space"
             },
             {
               "type": "element",
@@ -2505,6 +2530,9 @@
                     }
                   ],
                   "children": [
+                    {
+                      "type": "space"
+                    },
                     {
                       "type": "element",
                       "tag": "article",
@@ -2767,6 +2795,9 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "type": "space"
                     },
                     {
                       "type": "element",
@@ -3056,6 +3087,9 @@
                       ]
                     },
                     {
+                      "type": "space"
+                    },
+                    {
                       "type": "element",
                       "tag": "article",
                       "attributes": [
@@ -3339,6 +3373,9 @@
                       ]
                     },
                     {
+                      "type": "space"
+                    },
+                    {
                       "type": "element",
                       "tag": "article",
                       "attributes": [
@@ -3382,6 +3419,10 @@
                             {
                               "name": "height",
                               "value": "612"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
                             }
                           ],
                           "children": []
@@ -3413,6 +3454,10 @@
                                     {
                                       "name": "data-message-key",
                                       "value": "works.category.pythonSoftware"
+                                    },
+                                    {
+                                      "name": "data-preserve-case",
+                                      "value": true
                                     }
                                   ],
                                   "children": [
@@ -3558,6 +3603,9 @@
                       ]
                     },
                     {
+                      "type": "space"
+                    },
+                    {
                       "type": "element",
                       "tag": "article",
                       "attributes": [
@@ -3601,6 +3649,10 @@
                             {
                               "name": "height",
                               "value": "729"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
                             }
                           ],
                           "children": []
@@ -3772,6 +3824,9 @@
                       ]
                     },
                     {
+                      "type": "space"
+                    },
+                    {
                       "type": "element",
                       "tag": "article",
                       "attributes": [
@@ -3815,6 +3870,10 @@
                             {
                               "name": "height",
                               "value": "720"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
                             }
                           ],
                           "children": []
@@ -3991,6 +4050,9 @@
                       ]
                     },
                     {
+                      "type": "space"
+                    },
+                    {
                       "type": "element",
                       "tag": "article",
                       "attributes": [
@@ -4034,6 +4096,10 @@
                             {
                               "name": "height",
                               "value": "540"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
                             }
                           ],
                           "children": []
@@ -4203,10 +4269,16 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "type": "space"
                     }
                   ]
                 }
               ]
+            },
+            {
+              "type": "space"
             },
             {
               "type": "element",
@@ -4365,6 +4437,9 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "space"
             }
           ]
         }
@@ -4529,6 +4604,9 @@
               ]
             }
           ]
+        },
+        {
+          "type": "space"
         },
         {
           "type": "element",
@@ -4745,6 +4823,9 @@
                 }
               ],
               "children": [
+                {
+                  "type": "space"
+                },
                 {
                   "type": "element",
                   "tag": "article",
@@ -4992,6 +5073,9 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "space"
                 },
                 {
                   "type": "element",
@@ -5244,6 +5328,9 @@
                   ]
                 },
                 {
+                  "type": "space"
+                },
+                {
                   "type": "element",
                   "tag": "article",
                   "attributes": [
@@ -5291,6 +5378,10 @@
                         {
                           "name": "height",
                           "value": "703"
+                        },
+                        {
+                          "name": "decoding",
+                          "value": "async"
                         }
                       ],
                       "children": []
@@ -5441,6 +5532,9 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "space"
                 },
                 {
                   "type": "element",
@@ -5655,10 +5749,16 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "space"
                 }
               ]
             }
           ]
+        },
+        {
+          "type": "space"
         },
         {
           "type": "element",

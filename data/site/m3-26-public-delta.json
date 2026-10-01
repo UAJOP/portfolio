@@ -3,8 +3,13 @@
   "acceptedBaseCommit": "24be2f8159a0925dc00f29375ea8740738214df3",
   "algorithm": "sha256",
   "textEolCanonicalization": "crlf-to-lf-bytewise",
-  "fileCount": 3,
+  "fileCount": 4,
   "files": [
+    {
+      "path": "js/core/i18n-runtime.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fff52eeeed05b8439cf55bf964518aa9dc2862c28ce91e5a2ec320e07c00f191"
+    },
     {
       "path": "js/pages/games.js",
       "normalization": "crlf-to-lf-bytewise",
@@ -18,7 +23,7 @@
     {
       "path": "style.css",
       "normalization": "crlf-to-lf-bytewise",
-      "sha256": "fe45407557b91348d0d6cca783e2ca78d1e77440cdd56fc4f03d1b60c919fb32"
+      "sha256": "e0673aa14ac6ce98fbc40ef4c9609d52a9bb9552589ef531d3f7cdd4f0846453"
     }
   ]
 }

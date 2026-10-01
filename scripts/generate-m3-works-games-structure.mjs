@@ -17,6 +17,13 @@ const CATALOG_SEARCH_MESSAGES = {
   "games.search.label": { en: "Search games", tr: "Oyunlarda ara", de: "Spiele durchsuchen", es: "Buscar juegos", fr: "Rechercher des jeux" },
   "games.search.placeholder": { en: "Search by game, category or feature...", tr: "Oyun, kategori veya özellik ara...", de: "Nach Spiel, Kategorie oder Funktion suchen...", es: "Buscar por juego, categoría o función...", fr: "Rechercher par jeu, catégorie ou fonctionnalité..." },
 };
+/* COMMON runtime stands down inside React-owned main, so the accepted
+ * runtime presentation contract is carried by the structure itself.
+ * Image loading mirrors js/features/creative.js structurally. Protected-term
+ * casing depends on computed style, so the single element the accepted
+ * runtime marked (identical in all five locales) is pinned by its stable
+ * message key and verified against the live accepted artifact by G-65. */
+const PRESERVE_CASE_MESSAGE_KEYS = new Set(["works.category.pythonSoftware"]);
 const DATA_TEXT = new Map([
   ["SINAMA — AI Agent Reliability Lab", "projects.sinama.name"],
   ["Merge Rush: Tiny Factory", "projects.mergeRush.name"],
@@ -164,16 +171,36 @@ function descriptorForAttribute(attribute, catalog) {
   return { name, value };
 }
 
-function parseNodes(html, catalog) {
+function applyRuntimePresentation(node, inHero) {
+  const has = (name) => node.attributes.some((attribute) => attribute.name === name);
+  const value = (name) => node.attributes.find((attribute) => attribute.name === name)?.value;
+  if (node.tag === "img") {
+    if (!has("decoding")) node.attributes.push({ name: "decoding", value: "async" });
+    if (!has("loading") && !inHero && value("fetchpriority") !== "high") node.attributes.push({ name: "loading", value: "lazy" });
+    if (!has("fetchpriority") && inHero) node.attributes.push({ name: "fetchpriority", value: "high" });
+  }
+  if (PRESERVE_CASE_MESSAGE_KEYS.has(value("data-message-key"))) node.attributes.push({ name: "data-preserve-case", value: true });
+}
+
+/* `space` nodes record where the accepted source had whitespace. They render
+ * nothing, but keep catalog search text equivalent to legacy textContent. */
+function pushSpace(nodes) {
+  if (nodes[nodes.length - 1]?.type !== "space") nodes.push({ type: "space" });
+}
+
+function parseNodes(html, catalog, inHero = false) {
   const nodes = [];
   let index = 0;
   while (index < html.length) {
     const nextTag = html.indexOf("<", index);
     const stop = nextTag < 0 ? html.length : nextTag;
-    const text = normalizeText(decodeHtml(html.slice(index, stop)));
+    const raw = decodeHtml(html.slice(index, stop));
+    const text = normalizeText(raw);
+    if (/^\s/.test(raw)) pushSpace(nodes);
     if (text) {
       if (DATA_TEXT.has(text)) nodes.push({ type: "data", path: DATA_TEXT.get(text) });
       else nodes.push({ type: "message", key: catalog.textKeys.get(text) });
+      if (/\s$/.test(raw)) pushSpace(nodes);
     }
     if (nextTag < 0) break;
     if (html.startsWith("<!--", nextTag)) {
@@ -192,11 +219,14 @@ function parseNodes(html, catalog) {
       attributes: tag.attributes.map((attribute) => descriptorForAttribute(attribute, catalog)),
       children: [],
     };
+    const classes = String(node.attributes.find((attribute) => attribute.name === "class")?.value || "").split(/\s+/);
+    const childInHero = inHero || classes.includes("hero");
+    applyRuntimePresentation(node, childInHero);
     if (tag.selfClosing || VOID.has(name)) index = tagEnd;
     else {
       const close = findMatchingClose(html, tagEnd, name);
       if (close < 0) throw new Error(`unclosed ${name}`);
-      node.children = parseNodes(html.slice(tagEnd, close), catalog);
+      node.children = parseNodes(html.slice(tagEnd, close), catalog, childInHero);
       index = findTagEnd(html, close);
     }
     nodes.push(node);

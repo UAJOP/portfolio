@@ -3229,7 +3229,8 @@ html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenanc
   display: grid;
   gap: 10px;
 }
-.project-search-wrap label {
+.project-search-wrap label,
+.project-search-wrap > div {
   display: grid;
   gap: 10px;
   color: var(--muted);
