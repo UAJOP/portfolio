@@ -1,64 +1,299 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "acceptedRef": "34fdfad01f63004ed10d616a7b061e3996c28150",
   "algorithm": "sha256",
   "documents": {
     "index.html": {
-      "head": "2ad0b981386ae050da53d3324bfafb947e529774b9d6c31bf160ed7cba2defe5",
+      "head": {
+        "metadata": "e859afbba88fbe42b955d15b52ea1d0e1ade6e48cdd7ef651842c8a991c64428",
+        "resources": "7993da5a521d307223b5e81129f7906e9f0d1db8662bc0c1c7ca1f0f2f145f2f",
+        "jsonLd": [
+          {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "Kaan Balcı",
+            "url": "https://kaanbalci.com",
+            "image": "https://kaanbalci.com/assets/kaan-balci-profile.webp",
+            "jobTitle": "Forward Deployed Engineer",
+            "description": "AI Designer & Software Developer background, working where ambiguous customer workflows become deployable AI and software systems.",
+            "sameAs": [
+              "https://github.com/UAJOP",
+              "https://www.linkedin.com/in/balcikaan/"
+            ],
+            "knowsAbout": [
+              "Forward Deployed Engineering",
+              "Applied AI",
+              "AI Deployment",
+              "Customer Workflow Discovery",
+              "Technical Scoping",
+              "Solution Engineering",
+              "AI Reliability",
+              "LLM Evaluation",
+              "Conversational AI",
+              "FastAPI",
+              "TypeScript"
+            ]
+          }
+        ],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "1d299543399b4ee5b2ae4154dabf0682957ae1af959c2ffb6380386347288ad6"
+          }
+        ]
+      },
       "header": "67712e972895b60508f79aa25ba46a08c0accd79659eaceb1dac9c78b84d0747",
       "main": "48b012200969a0a5392454608c4699041d0d2e620c3cca6e96f5351c874d2cc9",
       "footer": "5894543976b5da477e8345d627c7ce9809d03ae073d126f0868be64dc6fcc8da"
     },
     "about/index.html": {
-      "head": "46a0a6b436964104cf4eb40cfda2b9bcabd49f47f538aba6868ffbb25a4fd8bf",
+      "head": {
+        "metadata": "4b20db1dac009beb8d8d70466a98ea914c831bd4bfafc28faee07a5e24864e9d",
+        "resources": "c077c01e9e9d2b56b535111bd1f5866b589092d4d0d5b6db33fe06cf04a602bd",
+        "jsonLd": [],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "f89d5344e0877d7fdce0d712e35c8bc87e4751827a81c871df9df911a0242191"
+          }
+        ]
+      },
       "header": "7d07f1143929f7a90d08f9aef496323645360980133ae33abfebcec0db3e9922",
       "main": "5800fe917048f80f5752ccd2b5633bbf62914dc02fc669c2dda6972442158953",
       "footer": "5894543976b5da477e8345d627c7ce9809d03ae073d126f0868be64dc6fcc8da"
     },
     "tr/index.html": {
-      "head": "89dde974e71fee83bedb9ce38692805a182a7c84a333ec0296611fb1bae019b1",
+      "head": {
+        "metadata": "ce9b9e37bd8133fc96039e1e04fda6b2b7dbf2821d610ef082f370b8282c413b",
+        "resources": "f07d7b7b71722abe147cb355766d0209007a0f3a9b9a4aadbaba419958e06488",
+        "jsonLd": [
+          {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "Kaan Balcı",
+            "url": "https://kaanbalci.com",
+            "image": "https://kaanbalci.com/assets/kaan-balci-profile.webp",
+            "jobTitle": "Forward Deployed Engineer",
+            "description": "AI güvenilirliği, solution engineering ve ürün odaklı yazılım alanlarında kanıt sunan Forward Deployed Engineer portfolyosu.",
+            "sameAs": [
+              "https://github.com/UAJOP",
+              "https://www.linkedin.com/in/balcikaan/"
+            ],
+            "knowsAbout": [
+              "Forward Deployed Engineering",
+              "Applied AI",
+              "AI Deployment",
+              "Customer Workflow Discovery",
+              "Technical Scoping",
+              "Solution Engineering",
+              "AI Reliability",
+              "LLM Evaluation",
+              "Conversational AI",
+              "FastAPI",
+              "TypeScript"
+            ]
+          }
+        ],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "1d299543399b4ee5b2ae4154dabf0682957ae1af959c2ffb6380386347288ad6"
+          }
+        ]
+      },
       "header": "2120611aac446745b1c0a74070f600553c2e95a7e44cddef2758f571357cff80",
       "main": "86d8b2d6f1821a570fa80e7b1505a340b1abfcbecf1ae43640353f53a9c2923b",
       "footer": "98cf80882cbb0b35be0259869d75b3bdac930d575b5377803f00fd4ed7f099a6"
     },
     "tr/about/index.html": {
-      "head": "d17592e4a0125d9c78030211c17a93f1a7b982bf60dea6c627e8a252031faaa8",
+      "head": {
+        "metadata": "29cf0128927d9bf7d85c4c3e4cf147a1be0d9f6d5c29477a2e786451facf8005",
+        "resources": "c077c01e9e9d2b56b535111bd1f5866b589092d4d0d5b6db33fe06cf04a602bd",
+        "jsonLd": [],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "f89d5344e0877d7fdce0d712e35c8bc87e4751827a81c871df9df911a0242191"
+          }
+        ]
+      },
       "header": "4ba21999785b20a2df74bc21bf2b35bd3b3c6323dbaec07e704c3d474261d182",
       "main": "a6cb3d0b40f2debf6584fd6648eaad52fae12dd22852ba80779d7cb6447c3138",
       "footer": "98cf80882cbb0b35be0259869d75b3bdac930d575b5377803f00fd4ed7f099a6"
     },
     "de/index.html": {
-      "head": "eea0743a5db1471ed5c1b42ac38b635495f359f293b120af529e8b0a0765d037",
+      "head": {
+        "metadata": "b5b31105f319d8c663dadc2ebac9378227dba83e48ca67904e078ebe84d20255",
+        "resources": "40672555b25ed04db0ffbaec7b47f66c2577968093f6d44bacdc9f94db7e229f",
+        "jsonLd": [
+          {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "Kaan Balcı",
+            "url": "https://kaanbalci.com",
+            "image": "https://kaanbalci.com/assets/kaan-balci-profile.webp",
+            "jobTitle": "Forward Deployed Engineer",
+            "description": "Belege eines Forward Deployed Engineer: Customer Discovery, technisches Scoping, AI-Prototyping, Integration, Evaluation und produktionsreife Auslieferung.",
+            "sameAs": [
+              "https://github.com/UAJOP",
+              "https://www.linkedin.com/in/balcikaan/"
+            ],
+            "knowsAbout": [
+              "Forward Deployed Engineering",
+              "Applied AI",
+              "AI Deployment",
+              "Customer Workflow Discovery",
+              "Technical Scoping",
+              "Solution Engineering",
+              "AI Reliability",
+              "LLM Evaluation",
+              "Conversational AI",
+              "FastAPI",
+              "TypeScript"
+            ]
+          }
+        ],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "1d299543399b4ee5b2ae4154dabf0682957ae1af959c2ffb6380386347288ad6"
+          }
+        ]
+      },
       "header": "a04abfc39abf66290e463132df270713ac689004678519ab69458438d225a2b4",
       "main": "4bf0b1d3017fb559498cce21c2bd88c6721ed8e2e21a364a0bdcd851e50a56ac",
       "footer": "d2b390072e1d0804b56d2e6388ca1a1d861ef910a5c37b781e246fa681e522ab"
     },
     "de/about/index.html": {
-      "head": "c18badb7d22492f23cf3829a0f77a9aace1b7c71116ef2b8cf9b3fb35888e68f",
+      "head": {
+        "metadata": "d23d35bf7a70e217baa1065c538072886a886ad7975571188bbe07814ab187e4",
+        "resources": "c077c01e9e9d2b56b535111bd1f5866b589092d4d0d5b6db33fe06cf04a602bd",
+        "jsonLd": [],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "f89d5344e0877d7fdce0d712e35c8bc87e4751827a81c871df9df911a0242191"
+          }
+        ]
+      },
       "header": "0dc3de8b16eb5672cd100babbf96fd1c3c9de13335d8934ad7f4ee5dbf6f850a",
       "main": "1417b87faab031ef79c8d223a509125bb598a547e7f5450056bf9e59b1705aab",
       "footer": "d2b390072e1d0804b56d2e6388ca1a1d861ef910a5c37b781e246fa681e522ab"
     },
     "es/index.html": {
-      "head": "7a69f94697960a71ea895ac63aa5ee71cd9d55263145f0554703a1c5452c1e59",
+      "head": {
+        "metadata": "27c52c677ff9cf32803c71c4fc826ecd9b4f2046b8848a208556268fda797f98",
+        "resources": "ec4e917891a986f6fae4ae110f61d0b83ad1b5bbd3c2837e81d475f2747676cd",
+        "jsonLd": [
+          {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "Kaan Balcı",
+            "url": "https://kaanbalci.com",
+            "image": "https://kaanbalci.com/assets/kaan-balci-profile.webp",
+            "jobTitle": "Forward Deployed Engineer",
+            "description": "Evidencia de un Forward Deployed Engineer: discovery de cliente, definición técnica del alcance, prototipado de AI, integración, evaluación y entrega lista para producción.",
+            "sameAs": [
+              "https://github.com/UAJOP",
+              "https://www.linkedin.com/in/balcikaan/"
+            ],
+            "knowsAbout": [
+              "Forward Deployed Engineering",
+              "Applied AI",
+              "AI Deployment",
+              "Customer Workflow Discovery",
+              "Technical Scoping",
+              "Solution Engineering",
+              "AI Reliability",
+              "LLM Evaluation",
+              "Conversational AI",
+              "FastAPI",
+              "TypeScript"
+            ]
+          }
+        ],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "1d299543399b4ee5b2ae4154dabf0682957ae1af959c2ffb6380386347288ad6"
+          }
+        ]
+      },
       "header": "12e5a5dbb6c11d2ed7ddda1a3aa640496318c0dbae4d1c165ae98998fa9922f2",
       "main": "e165ee84b261742cdfc676d45b1598b1df1d12cd7b19401b841e3ba48d195eb0",
       "footer": "e7375c5cfaf9754ead958ba42c3f03798ed91b4722bd4fe9736a4c700996f09c"
     },
     "es/about/index.html": {
-      "head": "2d46dbb45cbe9e385940063b275d296e74766e9275908dcdb9e3e73eb2450851",
+      "head": {
+        "metadata": "b4e001b1dde2f3105ae7000090bc192ca4b5d322524e0bd1c63a1639a4193d42",
+        "resources": "c077c01e9e9d2b56b535111bd1f5866b589092d4d0d5b6db33fe06cf04a602bd",
+        "jsonLd": [],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "f89d5344e0877d7fdce0d712e35c8bc87e4751827a81c871df9df911a0242191"
+          }
+        ]
+      },
       "header": "6125583cbf195538b27b7e6a924d4e3086a52f273c060e510a6c6c8420927a87",
       "main": "c117402f19f6d7a8316a0024fca8e9d7ba874e35817ddc37d28e42c891be0af0",
       "footer": "e7375c5cfaf9754ead958ba42c3f03798ed91b4722bd4fe9736a4c700996f09c"
     },
     "fr/index.html": {
-      "head": "4d8516ed502240b93c4a564603d2c12f0fc94aa5010ea4de9daf2961f7c0b77e",
+      "head": {
+        "metadata": "1051b4522661aa835ab886f10f7eac86cc5d3fe54894e6e52db9986bb4a048ee",
+        "resources": "e2176f4a8a6059b4597465181f64efa83dac2b1d5a2b76b9bf2e938bb35b9524",
+        "jsonLd": [
+          {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "Kaan Balcı",
+            "url": "https://kaanbalci.com",
+            "image": "https://kaanbalci.com/assets/kaan-balci-profile.webp",
+            "jobTitle": "Forward Deployed Engineer",
+            "description": "Preuves d'un Forward Deployed Engineer : discovery client, cadrage technique, prototypage d'AI, intégration, évaluation et livraison prête pour la production.",
+            "sameAs": [
+              "https://github.com/UAJOP",
+              "https://www.linkedin.com/in/balcikaan/"
+            ],
+            "knowsAbout": [
+              "Forward Deployed Engineering",
+              "Applied AI",
+              "AI Deployment",
+              "Customer Workflow Discovery",
+              "Technical Scoping",
+              "Solution Engineering",
+              "AI Reliability",
+              "LLM Evaluation",
+              "Conversational AI",
+              "FastAPI",
+              "TypeScript"
+            ]
+          }
+        ],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "1d299543399b4ee5b2ae4154dabf0682957ae1af959c2ffb6380386347288ad6"
+          }
+        ]
+      },
       "header": "0b2442d90587a008c5de7cb81acc433d4fd1a82090a284b9304ac28577712158",
       "main": "0d82da0b2d84c3392c65f813c1e95c65561db7d28b974bdd0da74ef1e98e8dee",
       "footer": "4d5e5c0864fc0368d6dd865a579c9df1fce86e560e3f6e505f469f11f5b7573e"
     },
     "fr/about/index.html": {
-      "head": "3a2fcbdb00c64a14e0afcb442cd2cfdc54bd83008157078d7bdd42a0bd6bff35",
+      "head": {
+        "metadata": "6410ffa6f2e3a76f655f5a2f7d9e4e466d5061d50088b0fce381c784f6ad6bd7",
+        "resources": "c077c01e9e9d2b56b535111bd1f5866b589092d4d0d5b6db33fe06cf04a602bd",
+        "jsonLd": [],
+        "inlineExecutable": [
+          {
+            "attributes": {},
+            "sha256": "f89d5344e0877d7fdce0d712e35c8bc87e4751827a81c871df9df911a0242191"
+          }
+        ]
+      },
       "header": "62116345daafdb20573199cfbe5371d92c68813a4b85548c73de3072f6c71ad8",
       "main": "15fede00af38a6c7fc0312cf687834ed684c7d0ffefb2a26c78a7826306354ea",
       "footer": "4d5e5c0864fc0368d6dd865a579c9df1fce86e560e3f6e505f469f11f5b7573e"

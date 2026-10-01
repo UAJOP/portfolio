@@ -23,15 +23,16 @@ attested output into the legacy artifact. The production Vite base is `/`, the
 client bundle is emitted only below `assets-react/`, source maps are disabled,
 and no repository-level production build directory is reused.
 
-The accepted localized legacy document supplies the head, header, footer,
-common scripts, and stylesheet order. React renders the complete `<main>`
-element tree from the committed semantic structure contract; it does not read
-localized route output, inject opaque HTML, or use `dangerouslySetInnerHTML`.
-Canonical portfolio JSON and stable common-message keys resolve visible values
-before SSR. The renderer adds an invocation-specific client module and
-serialized main props, and hydrates that main in place. The
-preview template and preview `noindex` contract remain isolated to
-`/react-preview/`.
+Home/About production composition does not read the accepted English source or
+localized route output. `scripts/site-head.mjs` builds a structured head model
+from canonical route, locale, meta, profile, and social authorities. Reusable
+React server components render the static header and footer from canonical
+common messages and route URLs, while React renders the complete `<main>`
+element tree from the committed semantic structure contract. The accepted
+legacy documents remain validation inputs only. The renderer adds an
+invocation-specific client module and serialized main props, and hydrates only
+that main in place. The preview template and preview `noindex` contract remain
+isolated to `/react-preview/`.
 
 ## Data and i18n authority
 
@@ -102,7 +103,11 @@ implicit rebaseline shortcut.
   language, Recruiter Mode, Command Palette, and AJOOP shell seams.
 - G-62 compares head, visible text, tag sequence, important attributes,
   localization, header, main, and footer for all ten accepted legacy/React
-  pairs. Its unexplained contract difference must be empty.
+  pairs. The head contract separately retains complete parsed JSON-LD objects,
+  executable inline-script hashes, script order, metadata, canonical and
+  alternate links, and stylesheet order. Missing, duplicate, malformed or
+  changed JSON-LD and a changed theme bootstrap are negative controls. Its
+  unexplained contract difference must be empty.
 - Route-aware artifact parity pins every untouched file and permits only the
   documented migration set plus the attested namespaced client bundle.
 - G-63 records raw/gzip client bytes, emitted document bytes, hydration payload

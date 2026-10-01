@@ -5,14 +5,48 @@ import { loadProductionLocalization } from "./production-localization.mjs";
 import { localizedBuildLogEntry } from "./shared-localization.mjs";
 import { loadRouteRuntime, loadSiteRoutes } from "./site-routes.mjs";
 import { decodeHtml } from "./localized-html.mjs";
+import { createHomeAboutHeadModel } from "./site-head.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
 const structure = readJson("data/site/m3-25b-home-about-structure.json");
 const buildLog = readJson("data/portfolio/build-log.json");
 const profile = readJson("data/portfolio/profile.json");
 const projects = readJson("data/portfolio/projects.json");
+const socials = readJson("data/portfolio/socials.json");
+const sourceMeta = readJson("data/i18n/source/meta.json");
 const registry = loadRegistry();
-const routeRuntime = loadRouteRuntime(registry, loadSiteRoutes());
+const site = loadSiteRoutes();
+const routeRuntime = loadRouteRuntime(registry, site);
+
+const SHELL_MESSAGE_KEYS = [
+  "language.selectorAria",
+  "nav.open",
+  "shell.availabilityAria",
+  "shell.brand.homeAria",
+  "shell.brand.logoAlt",
+  "shell.command.label",
+  "shell.footer.privacy",
+  "shell.footer.rights",
+  "shell.footer.socialAria",
+  "shell.footer.tagline",
+  "shell.nav.about",
+  "shell.nav.blog",
+  "shell.nav.certificates",
+  "shell.nav.games",
+  "shell.nav.home",
+  "shell.nav.request",
+  "shell.nav.works",
+  "shell.recruiter.label",
+  "shell.recruiter.openAria",
+  "shell.skipToContent",
+  "shell.social.githubAria",
+  "shell.social.instagramAria",
+  "shell.social.linkedinAria",
+  "shell.social.xAria",
+  "shell.social.youtubeAria",
+  "theme.dark",
+  "theme.switchToLight",
+];
 
 function collectRequirements(nodes, requirements = { messages: new Set(), compat: new Set(), internal: new Set() }) {
   for (const node of nodes) {
@@ -73,12 +107,93 @@ export function productionMainProps(route) {
   };
 }
 
-export function injectProductionMain({ document, markup, props, clientEntry }) {
-  const main = document.match(/<main\b([^>]*)>[\s\S]*?<\/main>/i);
-  if (!main) throw new Error("production document has no main to replace");
-  const attributes = main[1].replace(/\sdata-react-main(?:="[^"]*")?/i, "").replace(/\sdata-prerendered(?:="[^"]*")?/i, "");
-  const payload = JSON.stringify(props).replaceAll("<", "\\u003c");
-  return document
-    .replace(/<main\b[^>]*>[\s\S]*?<\/main>/i, `<main${attributes} data-react-main data-prerendered="true">${markup}</main>`)
-    .replace("</body>", `<script id="react-main-props" type="application/json">${payload}</script><script type="module" src="/${clientEntry}"></script></body>`);
+export function productionDocumentProps(route, clientEntry) {
+  const localization = loadProductionLocalization(route.locale);
+  const copy = Object.fromEntries(SHELL_MESSAGE_KEYS.map((key) => [key, localization.message(key)]));
+  const href = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+  const nav = [
+    ["home", "/", "shell.nav.home"],
+    ["works", "/works/", "shell.nav.works"],
+    ["games", "/games/", "shell.nav.games"],
+    ["blog", "/blog/", "shell.nav.blog"],
+    ["certificates", "/certificates/", "shell.nav.certificates"],
+    ["request", "/request/", "shell.nav.request"],
+    ["about", "/about/", "shell.nav.about"],
+  ].map(([id, path, key]) => ({ id, href: href(path), label: copy[key] }));
+  const socialIcons = {
+    github: "bx bxl-github",
+    linkedin: "bx bxl-linkedin-square",
+    instagram: "bx bxl-instagram",
+    youtube: "bx bxl-youtube",
+    x: "bx bxl-twitter",
+  };
+  const socialLabels = {
+    github: "shell.social.githubAria",
+    linkedin: "shell.social.linkedinAria",
+    instagram: "shell.social.instagramAria",
+    youtube: "shell.social.youtubeAria",
+    x: "shell.social.xAria",
+  };
+  const socialTitles = { github: "GitHub", linkedin: "LinkedIn", instagram: "Instagram", youtube: "YouTube", x: "X" };
+  const socialLinks = Object.keys(socialIcons).map((id) => ({
+    id,
+    href: socials[id],
+    label: copy[socialLabels[id]],
+    title: socialTitles[id],
+    icon: socialIcons[id],
+  }));
+  return {
+    main: productionMainProps(route),
+    document: {
+      locale: route.locale,
+      htmlLang: localization.definition.htmlLang || route.locale,
+      dir: localization.definition.dir || "ltr",
+      page: route.routeId,
+      clientEntry,
+    },
+    head: createHomeAboutHeadModel({
+      route,
+      registry,
+      routeRuntime,
+      site,
+      localization,
+      sourceMeta,
+      profile,
+      socials,
+    }),
+    shell: {
+      bindings: {
+        themeDark: "theme.dark",
+        themeSwitchToLight: "theme.switchToLight",
+      },
+      text: {
+        skipToContent: copy["shell.skipToContent"],
+        brandHomeAria: copy["shell.brand.homeAria"],
+        brandLogoAlt: copy["shell.brand.logoAlt"],
+        availabilityAria: copy["shell.availabilityAria"],
+        recruiterLabel: copy["shell.recruiter.label"],
+        recruiterOpenAria: copy["shell.recruiter.openAria"],
+        commandLabel: copy["shell.command.label"],
+        languageSelectorAria: copy["language.selectorAria"],
+        themeSwitchToLight: copy["theme.switchToLight"],
+        themeDark: copy["theme.dark"],
+        navOpen: copy["nav.open"],
+        footerTagline: copy["shell.footer.tagline"],
+        footerSocialAria: copy["shell.footer.socialAria"],
+        footerRights: copy["shell.footer.rights"],
+        footerPrivacy: copy["shell.footer.privacy"],
+      },
+      name: profile.name,
+      email: profile.email,
+      availability: profile.availability[registry.defaultLocale],
+      homeHref: href("/"),
+      privacyHref: href("/privacy/"),
+      nav,
+      socialLinks,
+      footerCompat: {
+        en: profile.footerTagline.en,
+        tr: profile.footerTagline.tr,
+      },
+    },
+  };
 }

@@ -29,7 +29,7 @@ import { productionReactRoutes } from "./react-route-adapter.mjs";
 import { attestReactBuild } from "./react-build-provenance.mjs";
 import { loadRegistry } from "./i18n-catalog.mjs";
 import { loadProductionLocalization } from "./production-localization.mjs";
-import { injectProductionMain, productionMainProps } from "./home-about-react.mjs";
+import { productionDocumentProps } from "./home-about-react.mjs";
 import { loadArtifactConfig } from "./public-artifact-config.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -119,10 +119,8 @@ export async function buildProductionReact({ outputDirectory = REACT_PRODUCTION_
     if (!serverEntry) throw new Error("production SSR build emitted no entry");
     const server = await import(`${pathToFileURL(path.join(serverOutput, serverEntry)).href}?build=${Date.now()}`);
     for (const route of routes) {
-      const props = productionMainProps(route);
-      const markup = server.renderProductionMain(props);
-      const legacy = fs.readFileSync(path.join(repoRoot, route.output), "utf8");
-      const html = injectProductionMain({ document: legacy, markup, props, clientEntry });
+      const props = productionDocumentProps(route, clientEntry);
+      const html = server.renderProductionDocument(props);
       const destination = path.join(output, route.output);
       fs.mkdirSync(path.dirname(destination), { recursive: true });
       fs.writeFileSync(destination, html, "utf8");

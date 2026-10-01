@@ -47,7 +47,7 @@ function withHistoricalBuildLog(document, file) {
 }
 
 const cutover = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   acceptedRef: requestedCutover,
   algorithm: "sha256",
   documents: Object.fromEntries(routePaths.map((file) => [file, documentContract(withHistoricalBuildLog(git(["show", `${requestedCutover}:${file}`]), file))])),
