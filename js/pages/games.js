@@ -91,6 +91,7 @@ enhanceAdventureNavigation();
 
 /* Games catalog and Joyday Action Painting navigation helpers */
 function setupGameCards() {
+  if (document.querySelector("main[data-react-main]")) return;
   document.querySelectorAll("[data-game-link]").forEach((card) => {
     if (card.dataset.gameCardReady === "true") return;
     card.dataset.gameCardReady = "true";

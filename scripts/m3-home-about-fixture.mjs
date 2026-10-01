@@ -8,7 +8,7 @@ import { canonicalReactRoutes } from "./react-route-adapter.mjs";
 export const HOME_ABOUT_IDS = new Set(["home", "about"]);
 export const homeAboutRouteRecords = () => canonicalReactRoutes().map((route) => ({
   ...route,
-  renderer: HOME_ABOUT_IDS.has(route.routeId) ? "react" : route.renderer,
+  renderer: HOME_ABOUT_IDS.has(route.routeId) ? "react" : "legacy",
 }));
 
 export async function buildHomeAboutFixture() {

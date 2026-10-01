@@ -8,7 +8,8 @@ import { decodeHtml } from "./localized-html.mjs";
 import { createHomeAboutHeadModel } from "./site-head.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
-const structure = readJson("data/site/m3-25b-home-about-structure.json");
+const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
+const worksGamesStructure = readJson("data/site/m3-26-works-games-structure.json");
 const buildLog = readJson("data/portfolio/build-log.json");
 const profile = readJson("data/portfolio/profile.json");
 const projects = readJson("data/portfolio/projects.json");
@@ -77,14 +78,23 @@ function localizedCanonicalData(locale) {
 }
 
 export function productionMainProps(route) {
+  const catalogPage = worksGamesStructure.pages[route.routeId];
+  const structure = catalogPage ? worksGamesStructure : homeAboutStructure;
   const page = structure.pages[route.routeId];
-  if (!page) throw new Error(`no Home/About production component for ${route.routeId}`);
-  if (structure.acceptedRef !== "34fdfad01f63004ed10d616a7b061e3996c28150") {
-    throw new Error("Home/About React structure is not tied to the accepted pre-cutover ref");
+  if (!page) throw new Error(`no production React component for ${route.routeId}`);
+  if (homeAboutStructure.acceptedRef !== "34fdfad01f63004ed10d616a7b061e3996c28150") {
+    throw new Error("Home/About React structure is not tied to its accepted pre-cutover ref");
+  }
+  if (worksGamesStructure.acceptedRef !== "24be2f8159a0925dc00f29375ea8740738214df3") {
+    throw new Error("Works/Games React structure is not tied to the accepted main ref");
   }
   const localization = loadProductionLocalization(route.locale);
   const requirements = collectRequirements(page.children);
-  const copy = Object.fromEntries([...requirements.messages].sort().map((key) => [key, localization.message(key)]));
+  const copy = Object.fromEntries([...requirements.messages].sort().map((key) => [
+    key,
+    catalogPage ? worksGamesStructure.messages[key]?.[route.locale] : localization.message(key),
+  ]));
+  for (const [key, value] of Object.entries(copy)) if (value === undefined) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
   const compat = Object.fromEntries(["en", "tr"].map((locale) => {
     const accepted = loadProductionLocalization(locale);
     return [locale, Object.fromEntries([...requirements.compat].sort().map((key) => [key, decodeHtml(accepted.message(key))]))];
@@ -98,12 +108,17 @@ export function productionMainProps(route) {
   })).map((entry) => ({ ...entry, title: decodeHtml(entry.title), detail: decodeHtml(entry.detail) }));
   return {
     page: route.routeId,
+    structure: catalogPage ? page.children : null,
     locale: route.locale,
     copy,
     compat,
     links,
     data: localizedCanonicalData(route.locale),
     buildLog: localizedBuildLog,
+    catalog: catalogPage ? {
+      searchLabel: worksGamesStructure.messages[`${route.routeId}.search.label`][route.locale],
+      searchPlaceholder: worksGamesStructure.messages[`${route.routeId}.search.placeholder`][route.locale],
+    } : null,
   };
 }
 

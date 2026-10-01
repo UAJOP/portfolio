@@ -3226,6 +3226,8 @@ html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenanc
 .recruiter-toggle i { font-size: 18px; }
 .project-search-wrap {
   margin: -10px 0 28px;
+  display: grid;
+  gap: 10px;
 }
 .project-search-wrap label {
   display: grid;
@@ -3236,7 +3238,8 @@ html[data-theme="light"] .chatbot-message .ajoop-provenance[data-ajoop-provenanc
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.project-search-wrap label > div {
+.project-search-wrap label > div,
+.project-search-wrap > div {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -3411,6 +3414,7 @@ html[data-theme="light"] .recruiter-card {
   background: rgba(248, 252, 255, 0.96);
 }
 html[data-theme="light"] .project-search-wrap label > div,
+html[data-theme="light"] .project-search-wrap > div,
 html[data-theme="light"] .availability-badge,
 html[data-theme="light"] .command-toggle,
 html[data-theme="light"] .recruiter-toggle,
@@ -3433,7 +3437,8 @@ html[data-theme="light"] .recruiter-links a {
 }
 @media screen and (max-width: 560px) {
   .recruiter-card { padding: 24px; }
-  .project-search-wrap label > div { border-radius: 20px; }
+  .project-search-wrap label > div,
+  .project-search-wrap > div { border-radius: 20px; }
 }
 /* Creative final layer: performance, easter egg and algorithmic 3D lab */
 .section-block,
