@@ -7,6 +7,9 @@ import path from "node:path";
 import puppeteer from "puppeteer";
 import { buildHomeAboutFixture, HOME_ABOUT_IDS } from "./m3-home-about-fixture.mjs";
 
+const browserLaunchOptions = process.env.GITHUB_ACTIONS === "true"
+  ? { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] }
+  : { headless: true };
 const outputDirectory = process.env.M3_VISUAL_OUTPUT
   ? path.resolve(process.env.M3_VISUAL_OUTPUT)
   : path.resolve("artifacts/m3-home-about-visual");
@@ -120,7 +123,7 @@ const reactServer = serve(fixture.mixed);
 await Promise.all([listen(legacyServer), listen(reactServer)]);
 const legacyOrigin = `http://127.0.0.1:${legacyServer.address().port}`;
 const reactOrigin = `http://127.0.0.1:${reactServer.address().port}`;
-const browser = await puppeteer.launch({ headless: true });
+const browser = await puppeteer.launch(browserLaunchOptions);
 const comparisonPage = await browser.newPage();
 fs.mkdirSync(outputDirectory, { recursive: true });
 let comparisons = 0;

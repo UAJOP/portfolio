@@ -9,6 +9,9 @@ import { buildHomeAboutFixture, homeAboutRouteRecords, HOME_ABOUT_IDS } from "./
 const COMPLETE_EVENT = "portfolio:react-main-hydrated";
 const ERROR_EVENT = "portfolio:react-main-hydration-error";
 const START_EVENT = "portfolio:react-main-hydration-start";
+const browserLaunchOptions = process.env.GITHUB_ACTIONS === "true"
+  ? { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] }
+  : { headless: true };
 const types = { ".css": "text/css", ".html": "text/html", ".js": "text/javascript", ".svg": "image/svg+xml", ".webp": "image/webp", ".png": "image/png" };
 const hydrationProbe = `<script>
 (() => {
@@ -125,7 +128,7 @@ const fixture = requestedRoot ? { mixed: requestedRoot, routes: homeAboutRouteRe
 const server = serverFor(fixture.mixed);
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const { port } = server.address();
-const browser = await puppeteer.launch({ headless: true });
+const browser = await puppeteer.launch(browserLaunchOptions);
 let assertions = 0;
 try {
   for (const route of fixture.routes.filter((item) => HOME_ABOUT_IDS.has(item.routeId))) {
