@@ -1,5 +1,7 @@
 import ProductionMain from "./ProductionMain.jsx";
 import RecruiterMode from "./RecruiterMode.jsx";
+import AjoopShell from "./AjoopShell.jsx";
+import CommandPalette from "./CommandPalette.jsx";
 
 function ProductionHead({ head }) {
   return (
@@ -111,9 +113,11 @@ function ProductionFooter({ shell }) {
   );
 }
 
-export default function ProductionDocument({ document, head, main, recruiter, shell }) {
+export default function ProductionDocument({ document, head, main, recruiter, ajoop, commandPalette, shell }) {
   const payload = JSON.stringify(main).replaceAll("<", "\\u003c");
   const recruiterPayload = JSON.stringify(recruiter).replaceAll("<", "\\u003c");
+  const ajoopPayload = JSON.stringify(ajoop).replaceAll("<", "\\u003c");
+  const commandPayload = JSON.stringify(commandPalette).replaceAll("<", "\\u003c");
   return (
     <html lang={document.htmlLang} dir={document.dir} data-route-locale={document.locale}>
       <ProductionHead head={head} />
@@ -122,11 +126,15 @@ export default function ProductionDocument({ document, head, main, recruiter, sh
         <main id="main-content" tabIndex="-1" data-react-main="" data-prerendered="true"><ProductionMain {...main} /></main>
         <div id="react-recruiter-root" data-react-recruiter-owner="react" data-prerendered="true"><RecruiterMode model={recruiter} /></div>
         <ProductionFooter shell={shell} />
+        <div id="react-ajoop-root" data-react-ajoop-shell="react" data-prerendered="true"><AjoopShell model={ajoop} /></div>
+        <div id="react-command-root" data-react-command-owner="react" data-prerendered="true"><CommandPalette model={commandPalette} /></div>
         <script src="/portfolio-data.js" />
         <script src="/script.js" />
         <script src="/portfolio-v2.js" />
         <script id="react-main-props" type="application/json">{payload}</script>
         <script id="react-recruiter-props" type="application/json">{recruiterPayload}</script>
+        <script id="react-ajoop-props" type="application/json">{ajoopPayload}</script>
+        <script id="react-command-props" type="application/json">{commandPayload}</script>
         <script type="module" src={`/${document.clientEntry}`} />
       </body>
     </html>

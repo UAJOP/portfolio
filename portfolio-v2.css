@@ -3864,6 +3864,14 @@ kbd {
   box-shadow: var(--shadow-md);
 }
 
+/* #28 progressive readiness: the server-rendered launcher is shown only once a
+ * handler owns it (the classic entry, then React). Until then it is neither
+ * visible, hit-testable nor focusable, as before #28 when it did not exist yet;
+ * its box is kept, so revealing it shifts nothing. */
+[data-react-ajoop-shell]:not([data-ajoop-interactive]) .chatbot-launcher {
+  visibility: hidden;
+}
+
 .chatbot-panel {
   overflow: hidden;
 }

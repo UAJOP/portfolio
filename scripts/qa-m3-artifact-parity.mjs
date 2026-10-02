@@ -18,6 +18,7 @@ import {
 } from "./artifact-parity.mjs";
 import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
 import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } from "./m3-27-public-edits.mjs";
+import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-public-edits.mjs";
 import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
 import { assertHomeAboutPayload } from "./m3-25b-home-about-payload.mjs";
 
@@ -26,10 +27,12 @@ const BASELINE_FILE = path.join(ROOT, "data/site/m3-25a-accepted-artifact.json")
 const PUBLIC_DELTA_FILE = path.join(ROOT, "data/site/m3-25b-public-delta.json");
 const WORKS_GAMES_DELTA_FILE = path.join(ROOT, "data/site/m3-26-public-delta.json");
 const RECRUITER_BUILD_LOG_DELTA_FILE = path.join(ROOT, "data/site/m3-27-public-delta.json");
+const AJOOP_COMMAND_DELTA_FILE = path.join(ROOT, "data/site/m3-28-public-delta.json");
 const ACCEPTED_BASE = "6ca0910ea330d25dcb3873f8b84047666de67fb6";
 const ACCEPTED_DELTA = "4d0e37b496f70d851397d9976b2022350d11edd6";
 const WORKS_GAMES_ACCEPTED_BASE = "24be2f8159a0925dc00f29375ea8740738214df3";
 const RECRUITER_BUILD_LOG_ACCEPTED_BASE = "df39ea32f34eacf1ee68ee6d0c8b6d464eb7d6d8";
+const AJOOP_COMMAND_ACCEPTED_BASE = "0543fce4537d5f3d6c90c46cca1eb3d442c7fb8c";
 const APPROVED_GENERATED_CHANGES = new Set([
   "i18n/pack-de-core.js",
   "i18n/pack-es-core.js",
@@ -42,11 +45,16 @@ const APPROVED_GENERATED_CHANGES = new Set([
 ]);
 const APPROVED_WORKS_GAMES_CHANGES = new Set(Object.keys(WORKS_GAMES_REVIEWED_EDITS));
 const APPROVED_RECRUITER_BUILD_LOG_CHANGES = new Set(Object.keys(RECRUITER_BUILD_LOG_REVIEWED_EDITS));
+const APPROVED_AJOOP_COMMAND_CHANGES = new Set(Object.keys(AJOOP_COMMAND_REVIEWED_EDITS));
+
+/* A file a later phase edited again is checked against an earlier phase by
+ * first reversing the later phase's reviewed edits (#28 is the latest). */
+const beforeAjoopCommand = (file, content) => (AJOOP_COMMAND_REVIEWED_EDITS[file] ? ajoopCommandAcceptedBase(file, content) : content);
 
 function assertReviewedWorksGamesDelta(directory, edits = WORKS_GAMES_REVIEWED_EDITS) {
   const accepted = acceptedArtifactManifest();
   for (const file of Object.keys(edits)) {
-    const current = fs.readFileSync(path.join(directory, file), "utf8");
+    const current = beforeAjoopCommand(file, fs.readFileSync(path.join(directory, file), "utf8"));
     const beforeRecruiterBuildLog = RECRUITER_BUILD_LOG_REVIEWED_EDITS[file]
       ? recruiterBuildLogAcceptedBase(file, current)
       : current;
@@ -58,12 +66,40 @@ function assertReviewedWorksGamesDelta(directory, edits = WORKS_GAMES_REVIEWED_E
 function assertReviewedRecruiterBuildLogDelta(directory, edits = RECRUITER_BUILD_LOG_REVIEWED_EDITS) {
   const accepted = acceptedArtifactManifest();
   for (const file of Object.keys(edits)) {
-    const base = recruiterBuildLogAcceptedBase(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    const base = recruiterBuildLogAcceptedBase(file, beforeAjoopCommand(file, fs.readFileSync(path.join(directory, file), "utf8")), edits[file]);
     const layered = worksGamesDelta?.files.find((entry) => entry.path === file)
       || publicDelta?.files.find((entry) => entry.path === file)
       || accepted.get(file);
     assert.equal(digest(base), layered?.sha256, `${file}: #27 delta is not exactly the accepted base plus reviewed edits`);
   }
+}
+
+function assertReviewedAjoopCommandDelta(directory, edits = AJOOP_COMMAND_REVIEWED_EDITS) {
+  const accepted = acceptedArtifactManifest();
+  for (const file of Object.keys(edits)) {
+    const base = ajoopCommandAcceptedBase(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    const layered = recruiterBuildLogDelta?.files.find((entry) => entry.path === file)
+      || worksGamesDelta?.files.find((entry) => entry.path === file)
+      || publicDelta?.files.find((entry) => entry.path === file)
+      || accepted.get(file);
+    assert.equal(digest(base), layered?.sha256, `${file}: #28 delta is not exactly the accepted base plus reviewed edits`);
+  }
+}
+
+/* #28 adds the Ajoop shell and Command Palette roots after the footer and
+ * their payloads; prior-phase document parity is checked without them. */
+function withoutOverlayOwnership(html) {
+  const rootStart = html.indexOf('<div id="react-ajoop-root"');
+  const scriptsStart = html.indexOf('<script src="/portfolio-data.js"', rootStart);
+  assert.ok(rootStart >= 0 && scriptsStart > rootStart, "#28 overlay SSR boundary is missing");
+  assert.ok(html.slice(rootStart, scriptsStart).includes('<div id="react-command-root"'), "#28 Command Palette root is missing");
+  let stripped = `${html.slice(0, rootStart)}${html.slice(scriptsStart)}`;
+  for (const id of ["react-ajoop-props", "react-command-props"]) {
+    const payload = new RegExp(`<script id="${id}" type="application/json">[\\s\\S]*?</script>`);
+    assert.match(stripped, payload, `#28 ${id} payload is missing`);
+    stripped = stripped.replace(payload, "");
+  }
+  return stripped;
 }
 
 function withoutRecruiterOwnership(html) {
@@ -154,6 +190,10 @@ const recruiterBuildLogDelta = validateArtifactManifest(
   JSON.parse(fs.readFileSync(RECRUITER_BUILD_LOG_DELTA_FILE, "utf8")),
   RECRUITER_BUILD_LOG_ACCEPTED_BASE,
 );
+const ajoopCommandDelta = validateArtifactManifest(
+  JSON.parse(fs.readFileSync(AJOOP_COMMAND_DELTA_FILE, "utf8")),
+  AJOOP_COMMAND_ACCEPTED_BASE,
+);
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-parity-"));
 const legacy = path.join(temp, "legacy");
 const mixed = path.join(temp, "mixed");
@@ -166,7 +206,7 @@ try {
   const migratedDocuments = new Set(productionReactRoutes().map((route) => route.output));
   assert.equal(migratedDocuments.size, 20, "parity model requires exactly 20 migrated Home/About/Works/Games documents");
   const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
-  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES]);
+  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES]);
   const finalFiles = listFiles(mixed);
   const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
   const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
@@ -188,6 +228,8 @@ try {
   assert.deepEqual(supersededByWorksGames, ["js/core/i18n-runtime.js"], "#26 may layer onto exactly one #25-B public path");
   const supersededByRecruiterBuildLog = [...APPROVED_GENERATED_CHANGES].filter((file) => APPROVED_RECRUITER_BUILD_LOG_CHANGES.has(file));
   assert.deepEqual(supersededByRecruiterBuildLog, ["js/core/i18n-runtime.js", "portfolio-v2.js"], "#27 may layer onto exactly two #25-B public paths");
+  const supersededByAjoopCommand = [...APPROVED_GENERATED_CHANGES].filter((file) => APPROVED_AJOOP_COMMAND_CHANGES.has(file));
+  assert.deepEqual(supersededByAjoopCommand, ["js/core/i18n-runtime.js"], "#28 may layer onto exactly one #25-B public path");
   const delta = compareArtifactManifest(
     { files: publicDelta.files.filter((entry) => !supersededByWorksGames.includes(entry.path) && !supersededByRecruiterBuildLog.includes(entry.path)) },
     mixed,
@@ -205,10 +247,13 @@ try {
   assert.deepEqual(worksGamesDelta.files.map((entry) => entry.path).sort(), [...APPROVED_WORKS_GAMES_CHANGES].sort(), "#26 public delta must cover the exact five scoped runtime/style paths");
   const worksGamesSupersededByRecruiterBuildLog = [...APPROVED_WORKS_GAMES_CHANGES].filter((file) => APPROVED_RECRUITER_BUILD_LOG_CHANGES.has(file));
   assert.deepEqual(worksGamesSupersededByRecruiterBuildLog, ["js/core/i18n-runtime.js"], "#27 may layer onto exactly one #26 public path");
+  const worksGamesSupersededByAjoopCommand = [...APPROVED_WORKS_GAMES_CHANGES].filter((file) => APPROVED_AJOOP_COMMAND_CHANGES.has(file));
+  assert.deepEqual(worksGamesSupersededByAjoopCommand, ["js/features/ultimate.js", "js/core/i18n-runtime.js"], "#28 may layer onto exactly two #26 public paths");
+  const worksGamesSuperseded = new Set([...worksGamesSupersededByRecruiterBuildLog, ...worksGamesSupersededByAjoopCommand]);
   const worksGamesPublicDelta = compareArtifactManifest(
-    { files: worksGamesDelta.files.filter((entry) => !worksGamesSupersededByRecruiterBuildLog.includes(entry.path)) },
+    { files: worksGamesDelta.files.filter((entry) => !worksGamesSuperseded.has(entry.path)) },
     mixed,
-    [...APPROVED_WORKS_GAMES_CHANGES].filter((file) => !worksGamesSupersededByRecruiterBuildLog.includes(file)),
+    [...APPROVED_WORKS_GAMES_CHANGES].filter((file) => !worksGamesSuperseded.has(file)),
   );
   assertClean("accepted #26 public delta", worksGamesPublicDelta);
   assertReviewedWorksGamesDelta(mixed);
@@ -220,7 +265,13 @@ try {
     assert.throws(() => assertReviewedWorksGamesDelta(mixed, edits), undefined, `#26 reviewed delta ${name} control did not fail`);
   }
   assert.deepEqual(recruiterBuildLogDelta.files.map((entry) => entry.path).sort(), [...APPROVED_RECRUITER_BUILD_LOG_CHANGES].sort(), "#27 public delta must cover the exact three legacy ownership paths");
-  assertClean("accepted #27 public delta", compareArtifactManifest(recruiterBuildLogDelta, mixed, [...APPROVED_RECRUITER_BUILD_LOG_CHANGES]));
+  const recruiterSupersededByAjoopCommand = [...APPROVED_RECRUITER_BUILD_LOG_CHANGES].filter((file) => APPROVED_AJOOP_COMMAND_CHANGES.has(file));
+  assert.deepEqual(recruiterSupersededByAjoopCommand, ["js/core/i18n-runtime.js"], "#28 may layer onto exactly one #27 public path");
+  assertClean("accepted #27 public delta", compareArtifactManifest(
+    { files: recruiterBuildLogDelta.files.filter((entry) => !recruiterSupersededByAjoopCommand.includes(entry.path)) },
+    mixed,
+    [...APPROVED_RECRUITER_BUILD_LOG_CHANGES].filter((file) => !recruiterSupersededByAjoopCommand.includes(file)),
+  ));
   assertReviewedRecruiterBuildLogDelta(mixed);
   for (const [name, edits] of [
     ["missing recruiter stand-down", { ...RECRUITER_BUILD_LOG_REVIEWED_EDITS, "js/features/recruiter.js": RECRUITER_BUILD_LOG_REVIEWED_EDITS["js/features/recruiter.js"].slice(1) }],
@@ -229,12 +280,24 @@ try {
   ]) {
     assert.throws(() => assertReviewedRecruiterBuildLogDelta(mixed, edits), undefined, `#27 reviewed delta ${name} control did not fail`);
   }
+  assert.deepEqual(ajoopCommandDelta.files.map((entry) => entry.path).sort(), [...APPROVED_AJOOP_COMMAND_CHANGES].sort(), "#28 public delta must cover the exact five Ajoop/Command Palette ownership paths");
+  assertClean("accepted #28 public delta", compareArtifactManifest(ajoopCommandDelta, mixed, [...APPROVED_AJOOP_COMMAND_CHANGES]));
+  assertReviewedAjoopCommandDelta(mixed);
+  for (const [name, edits] of [
+    ["missing Ajoop presentation port", { ...AJOOP_COMMAND_REVIEWED_EDITS, "js/ajoop/assistant.js": AJOOP_COMMAND_REVIEWED_EDITS["js/ajoop/assistant.js"].slice(1) }],
+    ["missing Command Palette stand-down", { ...AJOOP_COMMAND_REVIEWED_EDITS, "js/features/command-palette.js": AJOOP_COMMAND_REVIEWED_EDITS["js/features/command-palette.js"].slice(1) }],
+    ["missing palette copy stand-down", { ...AJOOP_COMMAND_REVIEWED_EDITS, "js/features/ultimate.js": [] }],
+    ["missing i18n stand-down", { ...AJOOP_COMMAND_REVIEWED_EDITS, "js/core/i18n-runtime.js": AJOOP_COMMAND_REVIEWED_EDITS["js/core/i18n-runtime.js"].slice(1) }],
+    ["missing launcher readiness rule", { ...AJOOP_COMMAND_REVIEWED_EDITS, "portfolio-v2.css": [] }],
+  ]) {
+    assert.throws(() => assertReviewedAjoopCommandDelta(mixed, edits), undefined, `#28 reviewed delta ${name} control did not fail`);
+  }
 
   /* Home/About: byte-identical to the accepted 24be2f8 documents except for
    * the content-addressed React bundle name. The snapshot hashes are
    * self-recorded, so the hydration payload is also held to the independently
    * derived #25-B payload contract. */
-  const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(withoutRecruiterOwnership(fs.readFileSync(path.join(directory, file), "utf8"))));
+  const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(withoutRecruiterOwnership(withoutOverlayOwnership(fs.readFileSync(path.join(directory, file), "utf8")))));
   for (const file of HOME_ABOUT_DOCUMENTS) {
     assert.equal(digest(homeAboutBytes(mixed, file)), acceptedHomeAboutHash(file), `${file}: Home/About drifted from the accepted #25-B document`);
     assertHomeAboutPayload(fs.readFileSync(path.join(mixed, file), "utf8"), file);
@@ -266,6 +329,7 @@ try {
   );
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
   console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=3-controls home-about=${HOME_ABOUT_DOCUMENTS.length}-exact git-history=none accept-current=disabled.`);
+  console.log(`Accepted #28 public delta guard passed. authority=${AJOOP_COMMAND_ACCEPTED_BASE} exact=${ajoopCommandDelta.files.length} reviewed-edits=${Object.values(AJOOP_COMMAND_REVIEWED_EDITS).flat().length} base-anchored=5-controls overlay roots stripped before prior parity checks accept-current=disabled.`);
   console.log(`Accepted #27 public delta guard passed. authority=${RECRUITER_BUILD_LOG_ACCEPTED_BASE} exact=${recruiterBuildLogDelta.files.length} reviewed-edits=${Object.values(RECRUITER_BUILD_LOG_REVIEWED_EDITS).flat().length} base-anchored=3-controls React-doc additions stripped before prior parity checks accept-current=disabled.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });

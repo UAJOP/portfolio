@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "acceptedBaseCommit": "0543fce4537d5f3d6c90c46cca1eb3d442c7fb8c",
+  "algorithm": "sha256",
+  "textEolCanonicalization": "crlf-to-lf-bytewise",
+  "fileCount": 5,
+  "files": [
+    {
+      "path": "js/ajoop/assistant.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "a6288d1191cbf0097a02e0dec447081d2aad5c3bcebcd67f44c3f5bb1c3535a4"
+    },
+    {
+      "path": "js/core/i18n-runtime.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "79ba715396017c6010c1fdcaf832e4e354d2b70a832f82baceca1e11d8f59a86"
+    },
+    {
+      "path": "js/features/command-palette.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "84a2c0d665c7e904abbe6ab9cb76851124615ee90e6cc19852b2c47771557979"
+    },
+    {
+      "path": "js/features/ultimate.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "24671e510844266e165a9e988a7d252f657fb5be3e3a91e37d72e6c1f9f576cf"
+    },
+    {
+      "path": "portfolio-v2.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "32ff37adc8ef11aa62c4448cf232f4b4dd012cfb3a5427b87e696e4997d8c2e0"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "acceptedBaseCommit": "0543fce4537d5f3d6c90c46cca1eb3d442c7fb8c",
+  "budgets": {
+    "documentIncrementMaxBytes": 4500,
+    "ajoopSsrMaxBytes": 3000,
+    "commandSsrMaxBytes": 800,
+    "ajoopPayloadMaxBytes": 500,
+    "commandPayloadMaxBytes": 400
+  }
+}

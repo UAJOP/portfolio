@@ -453,6 +453,8 @@ function updateUltimateStaticLabels(language = getCurrentLocale()) {
       node.textContent = content.availability;
     });
   document.querySelectorAll("[data-command-input]").forEach((node) => {
+    /* The React-owned palette renders its own localized input copy. */
+    if (node.closest('[data-react-command-owner="react"]')) return;
     node.placeholder = content.commandPlaceholder;
     node.setAttribute("aria-label", content.commandDialogLabel);
   });

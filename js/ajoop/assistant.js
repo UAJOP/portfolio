@@ -929,6 +929,156 @@ function getPortfolioChatbotContent(language = getCurrentLocale()) {
   return getLocalizedCollection(portfolioChatbotContent, language, "ajoop");
 }
 
+/* ajoop-presentation-port:start
+ * Master 3 #28 boundary between the Ajoop engine and the panel shell.
+ *
+ * The engine owns conversation state: routing, context, evidence, turns,
+ * actions and the AI bridge. It renders the transcript itself, into the one
+ * container marked [data-chatbot-messages] (the transcript island, see
+ * docs/master-3-28-ajoop-command-palette.md). Everything else the panel shows
+ * goes through this port as state: the mascot, the service line, the action
+ * row and its busy state, and the chrome copy.
+ *
+ * Legacy-owned documents keep `ajoopDomShell`, which writes the panel DOM
+ * exactly as before. React production documents SSR the shell and hydrate it.
+ * On those the engine never writes shell DOM: it records the latest state
+ * here, and React reads it once through connectAjoopPresentation() and then
+ * receives every later change. */
+const ajoopPresentation = {
+  mascot: null,
+  service: { state: null, label: "" },
+  busy: false,
+  actions: null,
+  copy: null,
+};
+let ajoopShellOwner = "dom";
+let ajoopPresentationPort = null;
+
+const ajoopDomShell = {
+  mascot({ state, label }) {
+    const mascot = document.querySelector("[data-ajoop-mascot]");
+    if (!mascot) return;
+    mascot.setAttribute("data-ajoop-mascot", state);
+    mascot.setAttribute("aria-label", label);
+    mascot.setAttribute("title", label);
+    const text = document.querySelector("[data-ajoop-mascot-label]");
+    if (text) text.textContent = label;
+  },
+  service({ state, label }) {
+    const target = document.querySelector("[data-chatbot-bridge]");
+    if (!target) return;
+    const text = target.querySelector("[data-chatbot-bridge-text]");
+    if (state) {
+      target.setAttribute("data-ajoop-service", state);
+      if (text && text.textContent !== label) text.textContent = label;
+    } else {
+      target.removeAttribute("data-ajoop-service");
+      if (text) text.textContent = "";
+    }
+    target.hidden = !state;
+  },
+  busy(state) {
+    const container = document.querySelector("[data-chatbot-quicks]");
+    if (!container) return;
+    container.classList.toggle("is-busy", state);
+    container.setAttribute("aria-busy", String(state));
+    container.querySelectorAll("button").forEach((button) => {
+      button.disabled = state;
+    });
+  },
+  actions({ mode, heading, actions, secondary }) {
+    const container = document.querySelector("[data-chatbot-quicks]");
+    if (!container) return;
+    container.classList.toggle("is-followups", mode === "followups");
+    /* Rebuilding the row is the end of the turn that suspended it. */
+    container.classList.remove("is-busy");
+    container.setAttribute("aria-busy", "false");
+    container.textContent = "";
+
+    const label = document.createElement("p");
+    label.className = "chatbot-actions-label";
+    label.textContent = heading;
+    container.appendChild(label);
+
+    const list = document.createElement("div");
+    list.className = "chatbot-actions-list";
+    list.setAttribute("role", "group");
+    list.setAttribute("aria-label", heading);
+    actions.forEach((action) => list.appendChild(createAjoopActionButton(action)));
+    container.appendChild(list);
+
+    if (secondary.length) {
+      const row = document.createElement("div");
+      row.className = "chatbot-actions-secondary";
+      secondary.forEach((action) => row.appendChild(createAjoopActionButton(action)));
+      container.appendChild(row);
+    }
+  },
+  copy(copy) {
+    const launcherText = document.querySelector("[data-chatbot-launcher-text]");
+    const title = document.querySelector("[data-chatbot-title]");
+    const subtitle = document.querySelector("[data-chatbot-subtitle]");
+    const input = document.querySelector("[data-chatbot-input]");
+    const send = document.querySelector("[data-chatbot-send]");
+    const toggle = document.querySelector("[data-chatbot-toggle]");
+    const close = document.querySelector("[data-chatbot-close]");
+
+    if (launcherText) launcherText.textContent = copy.launcher;
+    if (title) title.textContent = copy.title;
+    if (subtitle) subtitle.textContent = copy.subtitle;
+    if (input) {
+      input.placeholder = copy.inputPlaceholder;
+      input.setAttribute("aria-label", copy.inputPlaceholder);
+    }
+    if (send) send.setAttribute("aria-label", copy.sendLabel);
+    if (toggle) toggle.setAttribute("aria-label", copy.openLabel);
+    if (close) close.setAttribute("aria-label", copy.closeLabel);
+  },
+};
+
+/** Records one presentation value and hands it to the current shell owner. */
+function presentAjoop(kind, value) {
+  ajoopPresentation[kind] = value;
+  if (kind === "actions") ajoopPresentation.busy = false;
+  if (ajoopShellOwner === "react") {
+    if (ajoopPresentationPort && typeof ajoopPresentationPort[kind] === "function") {
+      ajoopPresentationPort[kind](value);
+    }
+    return;
+  }
+  ajoopDomShell[kind](value);
+}
+
+/** The mascot state the panel currently shows, whoever renders it. */
+function currentAjoopMascotState() {
+  if (ajoopShellOwner === "react") return ajoopPresentation.mascot ? ajoopPresentation.mascot.state : null;
+  const mascot = document.querySelector("[data-ajoop-mascot]");
+  return mascot && mascot.getAttribute("data-ajoop-mascot");
+}
+
+/**
+ * Connects the React panel shell. Returns the recorded presentation state and
+ * a disconnect function; from connection on, every change reaches `port`.
+ * The engine never reads React state and React never renders the transcript.
+ */
+function connectAjoopPresentation(port) {
+  ajoopShellOwner = "react";
+  ajoopPresentationPort = port || null;
+  return {
+    snapshot: {
+      mascot: ajoopPresentation.mascot,
+      service: ajoopPresentation.service,
+      busy: ajoopPresentation.busy,
+      actions: ajoopPresentation.actions,
+      copy: ajoopPresentation.copy,
+    },
+    disconnect() {
+      if (ajoopPresentationPort === port) ajoopPresentationPort = null;
+    },
+  };
+}
+/* ajoop-presentation-port:end */
+
 /* ---------- Ajoop 4.4 unified message rendering ---------- */
 
 /**
@@ -1985,14 +2135,7 @@ function renderAjoopTurnActivity(node, status, language) {
  * not compete with the state the panel is actually in.
  */
 function setAjoopTurnBusy(busy) {
-  const container = document.querySelector("[data-chatbot-quicks]");
-  if (!container) return;
-  const state = Boolean(busy);
-  container.classList.toggle("is-busy", state);
-  container.setAttribute("aria-busy", String(state));
-  container.querySelectorAll("button").forEach((button) => {
-    button.disabled = state;
-  });
+  presentAjoop("busy", Boolean(busy));
 }
 
 /** True when a bridge Ajoop was told to expect did not answer. */
@@ -2328,19 +2471,13 @@ function ajoopMascotLabel(state) {
  * kept a request open for half a minute after the answer was already visible.
  */
 function setAjoopMascotState(state) {
-  const mascot = document.querySelector("[data-ajoop-mascot]");
-  if (!mascot) return;
+  if (ajoopShellOwner === "dom" && !document.querySelector("[data-ajoop-mascot]")) return;
   if (ajoopMascotTimer) {
     clearTimeout(ajoopMascotTimer);
     ajoopMascotTimer = null;
   }
   const resolved = state || ajoopRestingMascotState();
-  mascot.setAttribute("data-ajoop-mascot", resolved);
-  const label = ajoopMascotLabel(resolved);
-  mascot.setAttribute("aria-label", label);
-  mascot.setAttribute("title", label);
-  const text = document.querySelector("[data-ajoop-mascot-label]");
-  if (text) text.textContent = label;
+  presentAjoop("mascot", { state: resolved, label: ajoopMascotLabel(resolved) });
 
   /* Transient states, all of them punctuation on a turn rather than modes.
    * Nothing can leave the mascot stuck: every non-resting state expires. */
@@ -2625,27 +2762,19 @@ function renderAjoopComparison(comparison, language = ajoopReplyLanguage()) {
  * each answer came from is still said per answer, on the answer.
  */
 function renderAjoopBridgeStatus() {
-  const target = document.querySelector("[data-chatbot-bridge]");
-  if (target) {
+  if (ajoopShellOwner === "react" || document.querySelector("[data-chatbot-bridge]")) {
     const service = ajoopServiceState(
       typeof getAjoopAiState === "function" ? getAjoopAiState().state : null,
     );
-    const text = target.querySelector("[data-chatbot-bridge-text]");
-    if (service) {
-      const label = ajoopServiceLabel(service, portfolioChatbotState.language);
-      target.setAttribute("data-ajoop-service", service);
-      if (text && text.textContent !== label) text.textContent = label;
-    } else {
-      target.removeAttribute("data-ajoop-service");
-      if (text) text.textContent = "";
-    }
-    target.hidden = !service;
+    presentAjoop("service", {
+      state: service || null,
+      label: service ? ajoopServiceLabel(service, portfolioChatbotState.language) : "",
+    });
   }
   /* The resting face may have changed with the verdict — but only while the
    * mascot is actually at rest. A bridge probe that lands mid-turn must not
    * pull the character out of thinking or answering. */
-  const mascot = document.querySelector("[data-ajoop-mascot]");
-  const current = mascot && mascot.getAttribute("data-ajoop-mascot");
+  const current = currentAjoopMascotState();
   if (current === "idle" || current === "offline") {
     setAjoopMascotState(ajoopRestingMascotState());
   }
@@ -2785,41 +2914,18 @@ function createAjoopActionButton(action) {
  * actually proposing; it now sits apart and quieter, present but not offered.
  */
 function renderAjoopActions(actions, mode, secondary) {
-  const container = document.querySelector("[data-chatbot-quicks]");
-  if (!container) return;
+  if (ajoopShellOwner === "dom" && !document.querySelector("[data-chatbot-quicks]")) return;
   const language = ajoopReplyLanguage();
   const heading =
     mode === "followups"
       ? ajoopLabel("Continue", "Devam", language)
       : ajoopLabel("Suggestions", "Öneriler", language);
-  container.classList.toggle("is-followups", mode === "followups");
-  /* Rebuilding the row is the end of the turn that suspended it. */
-  container.classList.remove("is-busy");
-  container.setAttribute("aria-busy", "false");
-  container.textContent = "";
-
-  const label = document.createElement("p");
-  label.className = "chatbot-actions-label";
-  label.textContent = heading;
-  container.appendChild(label);
-
-  const list = document.createElement("div");
-  list.className = "chatbot-actions-list";
-  list.setAttribute("role", "group");
-  list.setAttribute("aria-label", heading);
-  (actions || []).forEach((action) => {
-    if (action) list.appendChild(createAjoopActionButton(action));
+  presentAjoop("actions", {
+    mode,
+    heading,
+    actions: (actions || []).filter(Boolean),
+    secondary: (secondary || []).filter(Boolean),
   });
-  container.appendChild(list);
-
-  if (secondary && secondary.length) {
-    const row = document.createElement("div");
-    row.className = "chatbot-actions-secondary";
-    secondary.forEach((action) => {
-      if (action) row.appendChild(createAjoopActionButton(action));
-    });
-    container.appendChild(row);
-  }
 }
 
 /** Dispatches one follow-up action. */
@@ -3178,24 +3284,15 @@ function updatePortfolioChatbotLanguage(
   portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
   endAjoopConversationTurn();
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
-  const launcherText = document.querySelector("[data-chatbot-launcher-text]");
-  const title = document.querySelector("[data-chatbot-title]");
-  const subtitle = document.querySelector("[data-chatbot-subtitle]");
-  const input = document.querySelector("[data-chatbot-input]");
-  const send = document.querySelector("[data-chatbot-send]");
-  const toggle = document.querySelector("[data-chatbot-toggle]");
-  const close = document.querySelector("[data-chatbot-close]");
-
-  if (launcherText) launcherText.textContent = content.launcher;
-  if (title) title.textContent = content.title;
-  if (subtitle) subtitle.textContent = ajoopHeaderSubtitle(portfolioChatbotState.language);
-  if (input) {
-    input.placeholder = content.inputPlaceholder;
-    input.setAttribute("aria-label", content.inputPlaceholder);
-  }
-  if (send) send.setAttribute("aria-label", content.sendLabel);
-  if (toggle) toggle.setAttribute("aria-label", content.openLabel);
-  if (close) close.setAttribute("aria-label", content.closeLabel);
+  presentAjoop("copy", {
+    launcher: content.launcher,
+    title: content.title,
+    subtitle: ajoopHeaderSubtitle(portfolioChatbotState.language),
+    inputPlaceholder: content.inputPlaceholder,
+    sendLabel: content.sendLabel,
+    openLabel: content.openLabel,
+    closeLabel: content.closeLabel,
+  });
   renderChatbotQuickActions();
   resetChatbotMessages();
   renderAjoopBridgeStatus();
@@ -3235,6 +3332,22 @@ function setChatbotOpen(
   const panel = document.querySelector("[data-chatbot-panel]");
   const toggle = document.querySelector("[data-chatbot-toggle]");
   if (!widget || !panel || !toggle) return;
+  /* #28: on React production documents the panel shell belongs to React. Once
+   * it has hydrated, every request goes to that one owner. Before that, the
+   * SSR shell is already complete HTML: it is opened or closed here at the
+   * attribute level, and React adopts this exact state when it hydrates. */
+  const reactOwner = widget.closest('[data-react-ajoop-shell="react"]');
+  if (reactOwner) {
+    const request = { isOpen: Boolean(isOpen), restoreFocus, trigger };
+    reactOwner.__portfolioReactAjoopRequest = request;
+    if (reactOwner.__portfolioReactAjoopReady) {
+      reactOwner.dispatchEvent(new CustomEvent("portfolio:react-ajoop-request", { detail: request }));
+      return;
+    }
+    request.preHydrationApplied = true;
+    /* The SSR panel is hidden while closed; React keeps that in sync later. */
+    panel.hidden = !isOpen;
+  }
   const wasOpen = portfolioChatbotState.open;
 
   if (isOpen) {
@@ -3263,7 +3376,100 @@ function setChatbotOpen(
   }
 }
 
+/**
+ * Sends what the visitor typed: the echo, then the turn. Shared by every
+ * composer owner so a typed question always takes the same path.
+ */
+function submitAjoopComposer(input) {
+  const value = input?.value.trim() || "";
+  if (!value) return;
+  addChatbotMessage("user", value);
+  input.value = "";
+  handleAjoopMessage(value);
+}
+
+/**
+ * Ajoop 4.5 input/state wiring.
+ *
+ * The mascot follows the composer: focusing or typing puts it in `listening`,
+ * leaving the field returns it to rest. It deliberately does NOT interrupt a
+ * turn in flight — a visitor who clicks the input while an answer is being
+ * prepared has not cancelled anything, and yanking the mascot out of
+ * `thinking` would say they had.
+ */
+function noteAjoopComposerActivity(kind) {
+  const current = currentAjoopMascotState();
+  if (kind === "blur") {
+    if (current === "listening") setAjoopMascotState(ajoopRestingMascotState());
+    return;
+  }
+  if (current === "thinking") return;
+  setAjoopMascotState("listening");
+}
+
+/**
+ * #28 entry for React production documents.
+ *
+ * React SSRs the shell and owns it after hydration; this function never builds
+ * or writes shell DOM. It starts the engine (greeting into the transcript
+ * island, recorded shell state) and installs the temporary listeners that keep
+ * the SSR shell usable until React hydrates. React removes them through
+ * `__portfolioReactAjoopEntryCleanup` when it takes over.
+ */
+function setupReactOwnedAjoopEntry(owner) {
+  portfolioChatbotState.initialized = true;
+  ajoopShellOwner = "react";
+  const click = (event) => {
+    if (event.target.closest?.("[data-chatbot-toggle]")) {
+      setChatbotOpen(!portfolioChatbotState.open, { trigger: event.target.closest("[data-chatbot-toggle]") });
+      return;
+    }
+    if (event.target.closest?.("[data-chatbot-close]")) setChatbotOpen(false);
+  };
+  const submit = (event) => {
+    if (!event.target.closest?.("[data-chatbot-form]")) return;
+    event.preventDefault();
+    submitAjoopComposer(owner.querySelector("[data-chatbot-input]"));
+  };
+  const composerEvent = (kind) => (event) => {
+    if (event.target.matches?.("[data-chatbot-input]")) noteAjoopComposerActivity(kind);
+  };
+  const focusin = composerEvent("focus");
+  const input = composerEvent("input");
+  const focusout = composerEvent("blur");
+  owner.addEventListener("click", click);
+  owner.addEventListener("submit", submit);
+  owner.addEventListener("focusin", focusin);
+  owner.addEventListener("input", input);
+  owner.addEventListener("focusout", focusout);
+  document.addEventListener("keydown", handleAjoopPanelKeydown);
+  owner.__portfolioReactAjoopEntryCleanup = () => {
+    owner.removeEventListener("click", click);
+    owner.removeEventListener("submit", submit);
+    owner.removeEventListener("focusin", focusin);
+    owner.removeEventListener("input", input);
+    owner.removeEventListener("focusout", focusout);
+    document.removeEventListener("keydown", handleAjoopPanelKeydown);
+    delete owner.__portfolioReactAjoopEntryCleanup;
+  };
+  updatePortfolioChatbotLanguage(getCurrentLocale());
+  /* Progressive readiness: the SSR launcher becomes visible only now that a
+   * handler owns it. The marker lives on the owner container, not on a
+   * React-owned descendant, and React keeps it when it takes over. */
+  owner.setAttribute("data-ajoop-interactive", "");
+}
+
+/** React's report of the panel state it owns; the engine reads, never writes. */
+function setAjoopPanelOpenState(isOpen) {
+  portfolioChatbotState.open = Boolean(isOpen);
+}
+
 function setupPortfolioChatbot() {
+  const reactOwner = document.querySelector('[data-react-ajoop-shell="react"]');
+  if (reactOwner && !portfolioChatbotState.initialized) {
+    setupReactOwnedAjoopEntry(reactOwner);
+    return;
+  }
   if (
     portfolioChatbotState.initialized ||
     document.querySelector("[data-portfolio-chatbot]")
@@ -3314,36 +3520,14 @@ function setupPortfolioChatbot() {
     .querySelector("[data-chatbot-form]")
     ?.addEventListener("submit", (event) => {
       event.preventDefault();
-      const input = document.querySelector("[data-chatbot-input]");
-      const value = input?.value.trim() || "";
-      if (!value) return;
-      addChatbotMessage("user", value);
-      input.value = "";
-      handleAjoopMessage(value);
+      submitAjoopComposer(document.querySelector("[data-chatbot-input]"));
     });
 
-  /* Ajoop 4.5 input/state wiring.
-   *
-   * The mascot follows the composer: focusing or typing puts it in
-   * `listening`, leaving the field returns it to rest. It deliberately does
-   * NOT interrupt a turn in flight — a visitor who clicks the input while an
-   * answer is being prepared has not cancelled anything, and yanking the
-   * mascot out of `thinking` would say they had. */
   const composer = document.querySelector("[data-chatbot-input]");
   if (composer) {
-    const listen = () => {
-      const mascot = document.querySelector("[data-ajoop-mascot]");
-      const current = mascot && mascot.getAttribute("data-ajoop-mascot");
-      if (current === "thinking") return;
-      setAjoopMascotState("listening");
-    };
-    composer.addEventListener("focus", listen);
-    composer.addEventListener("input", listen);
-    composer.addEventListener("blur", () => {
-      const mascot = document.querySelector("[data-ajoop-mascot]");
-      const current = mascot && mascot.getAttribute("data-ajoop-mascot");
-      if (current === "listening") setAjoopMascotState(ajoopRestingMascotState());
-    });
+    composer.addEventListener("focus", () => noteAjoopComposerActivity("focus"));
+    composer.addEventListener("input", () => noteAjoopComposerActivity("input"));
+    composer.addEventListener("blur", () => noteAjoopComposerActivity("blur"));
   }
 
   document.addEventListener("keydown", handleAjoopPanelKeydown);
