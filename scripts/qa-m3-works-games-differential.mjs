@@ -155,12 +155,26 @@ async function open(browser, port, route, { viewport, theme, accepted = false, i
     addEventListener("portfolio:react-main-hydrated", () => { window.__m3Hydrated = true; }, { once: true });
   }, theme);
   if (intercept) {
-    page.navigations = null;
+    /* Navigations are observed in the page, synchronously, through the
+     * Navigation API: the navigate event fires inside the click that starts
+     * the navigation, so recording it cannot race the read. Once armed, each
+     * one is recorded and cancelled; both runtimes get the identical recorder. */
+    await page.evaluateOnNewDocument(() => {
+      window.__m3Navigations = [];
+      window.__m3NavigationsArmed = false;
+      navigation.addEventListener("navigate", (event) => {
+        if (!window.__m3NavigationsArmed) return;
+        window.__m3Navigations.push({ url: event.destination.url, cancelable: event.cancelable });
+        event.preventDefault();
+      });
+    });
+    /* Guard only: an armed navigation that still reaches the network escaped
+     * the recorder and fails the gate. */
+    page.escapedNavigations = null;
     await page.setRequestInterception(true);
     page.on("request", (request) => {
-      if (page.navigations && request.isNavigationRequest() && request.frame() === page.mainFrame()) {
-        const url = new URL(request.url());
-        page.navigations.push(url.origin.startsWith("http://127.0.0.1") ? `${url.pathname}${url.search}` : url.href);
+      if (page.escapedNavigations && request.isNavigationRequest() && request.frame() === page.mainFrame()) {
+        page.escapedNavigations.push(request.url());
         request.respond({ status: 204, body: "" });
         return;
       }
@@ -172,7 +186,7 @@ async function open(browser, port, route, { viewport, theme, accepted = false, i
   assert.equal(response.status(), 200, `${route}: HTTP`);
   await settle(page);
   if (accepted) page.reviewedDeltas = await applyReviewedDeltas(page, route);
-  if (intercept) page.navigations = [];
+  if (intercept) page.escapedNavigations = [];
   page.diagnostics = diagnostics;
   return page;
 }
@@ -212,22 +226,37 @@ function searchCorpus(texts, links) {
 
 /* Whole-card activation, observed through real events on both runtimes:
  * inert-surface click, modifier click, nested-link click and click with an
- * active text selection, recording navigations and analytics calls. */
+ * active text selection, recording navigations and analytics calls.
+ * Navigations come from the in-page recorder installed by open(); a
+ * navigation that lands after a click's record was read fails instead of
+ * spilling into the next record. */
 async function cardActivation(page) {
   await page.bringToFront();
   const count = await page.evaluate(() => {
     window.__m3Analytics = [];
     window.trackAnalyticsNavigation = (...values) => { window.__m3Analytics.push(values.join("|")); };
+    window.__m3Navigations.length = 0;
+    window.__m3NavigationsArmed = true;
     return document.querySelectorAll(".project-card[data-category]").length;
   });
   const results = [];
   const settleClick = () => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0))));
+  /* Reads and clears the in-page records atomically, in one task. */
+  const drain = () => page.evaluate(() => ({
+    navigations: window.__m3Navigations.splice(0).map(({ url, cancelable }) => {
+      const parsed = new URL(url);
+      return { destination: parsed.origin.startsWith("http://127.0.0.1") ? `${parsed.pathname}${parsed.search}` : parsed.href, cancelable };
+    }),
+    analytics: window.__m3Analytics.splice(0),
+  }));
+  const assertNothingPending = async (where) => {
+    assert.deepEqual(await drain(), { navigations: [], analytics: [] }, `${page.url()}: navigation or analytics landed after ${where} was recorded`);
+  };
   for (let index = 0; index < count; index += 1) {
     const record = {};
     for (const mode of ["surface", "modifier", "link", "selection"]) {
-      page.navigations.length = 0;
+      await assertNothingPending(`the click before card ${index} ${mode}`);
       await page.evaluate((cardIndex, kind) => {
-        window.__m3Analytics.length = 0;
         getSelection().removeAllRanges();
         const card = document.querySelectorAll(".project-card[data-category]")[cardIndex];
         const surface = [...card.querySelectorAll("p, img, h3, span")].find((node) => !node.closest("a, button"));
@@ -242,10 +271,16 @@ async function cardActivation(page) {
         surface.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ctrlKey: kind === "modifier" }));
       }, index, mode);
       await settleClick();
-      record[mode] = { navigations: [...page.navigations], analytics: await page.evaluate(() => [...window.__m3Analytics]) };
+      const observed = await drain();
+      assert.ok(observed.navigations.every((item) => item.cancelable), `${page.url()}: card ${index} ${mode} started a navigation the recorder cannot hold`);
+      record[mode] = { navigations: observed.navigations.map((item) => item.destination), analytics: observed.analytics };
     }
     results.push(record);
   }
+  await settleClick();
+  await assertNothingPending("the last click");
+  await page.evaluate(() => { window.__m3NavigationsArmed = false; });
+  assert.deepEqual(page.escapedNavigations, [], `${page.url()}: a navigation escaped the in-page recorder`);
   return results;
 }
 
@@ -401,14 +436,32 @@ try {
     ["Games card analytics added", "/games/", () => {
       document.querySelector(".project-card[data-game-link]").addEventListener("click", () => window.trackAnalyticsNavigation("/merge-rush-case-study/", "games"));
     }],
+    ["whole-card navigation missing", "/de/games/", () => {
+      /* Stops the click before React's root listener; nested links still work. */
+      document.querySelector(".project-card[data-game-link]").addEventListener("click", (event) => event.stopPropagation());
+    }],
+    ["whole-card destination changed", "/de/games/", () => {
+      document.querySelector(".project-card[data-game-link]").addEventListener("click", (event) => {
+        if (event.target.closest("a") || event.ctrlKey || String(getSelection()).trim()) return;
+        event.stopPropagation();
+        location.href = "/de/adventure/";
+      });
+    }],
+    ["nested link destination changed", "/de/works/", () => {
+      document.querySelector(".project-card[data-project-link] a[href]").setAttribute("href", "/de/games/");
+    }],
+    ["Works analytics on a modifier click", "/works/", () => {
+      document.querySelector(".project-card[data-project-link]").addEventListener("click", (event) => {
+        if (event.ctrlKey) window.trackAnalyticsNavigation("/sinama-case-study/", "works");
+      });
+    }],
   ]) {
     const acceptedPage = await open(browser, ports.accepted, route, { ...controlOptions, accepted: true, intercept: true });
     const currentPage = await open(browser, ports.current, route, { ...controlOptions, intercept: true });
     const expected = await cardActivation(acceptedPage);
     assert.deepEqual(await cardActivation(currentPage), expected, `${name}: control baseline must match before sabotage`);
     await currentPage.evaluate(sabotage);
-    const actual = await cardActivation(currentPage);
-    assert.throws(() => assert.deepEqual(actual, expected), undefined, `${name} negative control did not fail`);
+    await assert.rejects(async () => assert.deepEqual(await cardActivation(currentPage), expected), undefined, `${name} negative control did not fail`);
     controls += 1;
     await acceptedPage.close();
     await currentPage.close();
