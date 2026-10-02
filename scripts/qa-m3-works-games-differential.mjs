@@ -11,6 +11,7 @@ import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import puppeteer from "puppeteer";
 import { ROOT } from "./i18n-catalog.mjs";
 import { artifactDigest } from "./artifact-parity.mjs";
@@ -224,6 +225,14 @@ function searchCorpus(texts, links) {
   return [...queries];
 }
 
+/* "card N mode field" for every activation fact that differs. */
+function activationDrift(actual, expected) {
+  assert.equal(actual.length, expected.length, "activation records must cover the same cards");
+  return expected.flatMap((record, index) => Object.keys(record).flatMap((mode) => ["navigations", "analytics"]
+    .filter((field) => !isDeepStrictEqual(actual[index][mode]?.[field], record[mode][field]))
+    .map((field) => `card ${index} ${mode} ${field}`)));
+}
+
 /* Whole-card activation, observed through real events on both runtimes:
  * inert-surface click, modifier click, nested-link click and click with an
  * active text selection, recording navigations and analytics calls.
@@ -428,40 +437,49 @@ try {
     controls += 1;
     await Promise.all(pages.map((page) => page.close()));
   }
-  for (const [name, route, sabotage] of [
+  for (const [name, route, sabotage, intended] of [
     ["inert card made navigable", "/works/", () => {
       const inert = [...document.querySelectorAll(".project-card[data-category]")].find((card) => !card.dataset.projectLink);
       inert.addEventListener("click", () => { location.href = "/ai-flow-puzzle-case-study/"; });
-    }],
+    }, "card 5 surface navigations"],
     ["Games card analytics added", "/games/", () => {
       document.querySelector(".project-card[data-game-link]").addEventListener("click", () => window.trackAnalyticsNavigation("/merge-rush-case-study/", "games"));
-    }],
+    }, "card 0 surface analytics"],
     ["whole-card navigation missing", "/de/games/", () => {
       /* Stops the click before React's root listener; nested links still work. */
       document.querySelector(".project-card[data-game-link]").addEventListener("click", (event) => event.stopPropagation());
-    }],
+    }, "card 0 surface navigations"],
     ["whole-card destination changed", "/de/games/", () => {
       document.querySelector(".project-card[data-game-link]").addEventListener("click", (event) => {
         if (event.target.closest("a") || event.ctrlKey || String(getSelection()).trim()) return;
         event.stopPropagation();
         location.href = "/de/adventure/";
       });
-    }],
+    }, "card 0 surface navigations"],
     ["nested link destination changed", "/de/works/", () => {
       document.querySelector(".project-card[data-project-link] a[href]").setAttribute("href", "/de/games/");
-    }],
+    }, "card 0 link navigations"],
     ["Works analytics on a modifier click", "/works/", () => {
       document.querySelector(".project-card[data-project-link]").addEventListener("click", (event) => {
         if (event.ctrlKey) window.trackAnalyticsNavigation("/sinama-case-study/", "works");
       });
-    }],
+    }, "card 0 modifier analytics"],
   ]) {
     const acceptedPage = await open(browser, ports.accepted, route, { ...controlOptions, accepted: true, intercept: true });
     const currentPage = await open(browser, ports.current, route, { ...controlOptions, intercept: true });
     const expected = await cardActivation(acceptedPage);
     assert.deepEqual(await cardActivation(currentPage), expected, `${name}: control baseline must match before sabotage`);
     await currentPage.evaluate(sabotage);
-    await assert.rejects(async () => assert.deepEqual(await cardActivation(currentPage), expected), undefined, `${name} negative control did not fail`);
+    /* The browser step must complete on its own: a Puppeteer, protocol or page
+     * failure fails the gate instead of satisfying the control. Only the
+     * comparison may fail, with an assertion, at the sabotaged card. */
+    const actual = await cardActivation(currentPage);
+    assert.deepEqual(currentPage.diagnostics, [], `${name}: browser diagnostics during the control`);
+    assert.throws(() => assert.deepEqual(actual, expected), assert.AssertionError, `${name} negative control did not fail`);
+    const drift = activationDrift(actual, expected);
+    const card = intended.split(" ").slice(0, 2).join(" ");
+    assert.ok(drift.includes(intended), `${name}: expected drift at ${intended}, found ${drift.join("; ") || "none"}`);
+    assert.ok(drift.every((item) => item.startsWith(`${card} `)), `${name}: drift outside ${card}: ${drift.join("; ")}`);
     controls += 1;
     await acceptedPage.close();
     await currentPage.close();
