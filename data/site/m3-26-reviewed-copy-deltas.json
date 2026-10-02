@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "acceptedRef": "24be2f8159a0925dc00f29375ea8740738214df3",
+  "decision": "Project role facts render from canonical project data (owner decision 2026-10-02): ES/FR use the project-data wording as-is, without a sentence-case rule. Each entry is the only permitted difference for that document.",
+  "deltas": [
+    {
+      "document": "es/works/index.html",
+      "project": "joyday",
+      "accepted": "Mi rol: cofundador y Digital Product Developer",
+      "current": "Mi rol: Cofundador y Digital Product Developer",
+      "authority": "data/portfolio/project-details.json#atolye-joyday-official-website.role + data/i18n/packs/es/projects.json"
+    },
+    {
+      "document": "fr/works/index.html",
+      "project": "joyday",
+      "accepted": "Mon rôle : cofondateur et Digital Product Developer",
+      "current": "Mon rôle : Cofondateur et Digital Product Developer",
+      "authority": "data/portfolio/project-details.json#atolye-joyday-official-website.role + data/i18n/packs/fr/projects.json"
+    },
+    {
+      "document": "es/works/index.html",
+      "project": "hospital",
+      "accepted": "Mi rol: desarrollador de software",
+      "current": "Mi rol: Desarrollador de software",
+      "authority": "data/portfolio/project-details.json#hospital-form-app.role + data/i18n/packs/es/projects.json"
+    },
+    {
+      "document": "fr/works/index.html",
+      "project": "hospital",
+      "accepted": "Mon rôle : développeur logiciel",
+      "current": "Mon rôle : Développeur logiciel",
+      "authority": "data/portfolio/project-details.json#hospital-form-app.role + data/i18n/packs/fr/projects.json"
+    },
+    {
+      "document": "es/works/index.html",
+      "project": "hospital-appointment-system",
+      "accepted": "Mi rol: desarrollador Python y de bases de datos",
+      "current": "Mi rol: Desarrollador Python / bases de datos",
+      "authority": "data/portfolio/project-details.json#hospital-appointment-system.role + data/i18n/packs/es/projects.json"
+    },
+    {
+      "document": "fr/works/index.html",
+      "project": "hospital-appointment-system",
+      "accepted": "Mon rôle : développeur Python et base de données",
+      "current": "Mon rôle : Développeur Python / base de données",
+      "authority": "data/portfolio/project-details.json#hospital-appointment-system.role + data/i18n/packs/fr/projects.json"
+    },
+    {
+      "document": "es/works/index.html",
+      "project": "cars-dataset-analysis",
+      "accepted": "Mi rol: desarrollador Python",
+      "current": "Mi rol: Desarrollador Python",
+      "authority": "data/portfolio/project-details.json#cars-dataset-analysis.role + data/i18n/packs/es/projects.json"
+    },
+    {
+      "document": "fr/works/index.html",
+      "project": "cars-dataset-analysis",
+      "accepted": "Mon rôle : développeur Python",
+      "current": "Mon rôle : Développeur Python",
+      "authority": "data/portfolio/project-details.json#cars-dataset-analysis.role + data/i18n/packs/fr/projects.json"
+    },
+    {
+      "document": "es/works/index.html",
+      "project": "legacy-of-the-lost",
+      "accepted": "Mi rol: desarrollador de videojuegos",
+      "current": "Mi rol: Desarrollador de videojuegos",
+      "authority": "data/portfolio/project-details.json#legacy-of-the-lost.role + data/i18n/packs/es/projects.json"
+    },
+    {
+      "document": "fr/works/index.html",
+      "project": "legacy-of-the-lost",
+      "accepted": "Mon rôle : développeur de jeux",
+      "current": "Mon rôle : Développeur de jeux",
+      "authority": "data/portfolio/project-details.json#legacy-of-the-lost.role + data/i18n/packs/fr/projects.json"
+    },
+    {
+      "document": "es/works/index.html",
+      "project": "my-museum",
+      "accepted": "Mi rol: desarrollador Android",
+      "current": "Mi rol: Desarrollador Android",
+      "authority": "data/portfolio/project-details.json#my-museum.role + data/i18n/packs/es/projects.json"
+    },
+    {
+      "document": "fr/works/index.html",
+      "project": "my-museum",
+      "accepted": "Mon rôle : développeur Android",
+      "current": "Mon rôle : Développeur Android",
+      "authority": "data/portfolio/project-details.json#my-museum.role + data/i18n/packs/fr/projects.json"
+    }
+  ]
+}

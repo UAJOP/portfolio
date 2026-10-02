@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "acceptedRef": "24be2f8159a0925dc00f29375ea8740738214df3",
   "promotedKeys": [
     "games.action.caseStudy",
@@ -14,10 +14,10 @@
     "games.direction.eyebrow",
     "games.direction.mergeRush",
     "games.direction.title",
+    "games.domain.career",
     "games.filter.ai",
     "games.filter.all",
     "games.filter.aria",
-    "games.filter.career",
     "games.filter.creative",
     "games.hero.eyebrow",
     "games.hero.lead",
@@ -25,8 +25,6 @@
     "games.joydayPaint.title",
     "games.mergeRush.body",
     "games.mergeRush.stack",
-    "games.search.label",
-    "games.search.placeholder",
     "games.stack.canvasJavascript",
     "games.status.live",
     "games.tag.actionPainting",
@@ -47,40 +45,30 @@
     "works.card.aiFlow.role",
     "works.card.aiFlow.title",
     "works.card.cars.alt",
-    "works.card.cars.role",
     "works.card.cars.title",
     "works.card.chatbot.category",
-    "works.card.chatbot.role",
     "works.card.chatbot.title",
-    "works.card.hospital.role",
     "works.card.hospital.title",
     "works.card.hospitalAppointment.alt",
-    "works.card.hospitalAppointment.role",
     "works.card.hospitalAppointment.title",
     "works.card.joyday.alt",
     "works.card.joyday.category",
-    "works.card.joyday.role",
     "works.card.joyday.title",
-    "works.card.legacy.role",
     "works.card.legacy.title",
-    "works.card.mergeRush.role",
     "works.card.museum.alt",
-    "works.card.museum.role",
     "works.card.museum.title",
+    "works.card.roleLabel",
     "works.card.sinama.alt",
     "works.card.sinama.category",
-    "works.card.sinama.role",
     "works.card.sinama.status",
+    "works.domain.data",
+    "works.domain.mobile",
     "works.filter.ai",
     "works.filter.all",
     "works.filter.aria",
-    "works.filter.data",
     "works.filter.game",
-    "works.filter.mobile",
     "works.filter.software",
     "works.filter.web",
-    "works.search.label",
-    "works.search.placeholder",
     "works.status.live",
     "works.status.sourceArchive",
     "works.supporting.title",
@@ -111,15 +99,16 @@
     "works.tag.vitest",
     "works.tag.windowsForms"
   ],
-  "catalogSearch": {
-    "works": {
-      "label": "works.search.label",
-      "placeholder": "works.search.placeholder"
-    },
-    "games": {
-      "label": "games.search.label",
-      "placeholder": "games.search.placeholder"
-    }
+  "roleLabel": "works.card.roleLabel",
+  "sharedKeys": {
+    "works.domain.data": "Work domain: Works filter button and card category label.",
+    "works.domain.mobile": "Work domain: Works filter button and card category label.",
+    "games.domain.career": "Game domain: Games filter button and card tag.",
+    "works.status.sourceArchive": "Source-archive status label and the link to that archive; identical wording in every accepted locale.",
+    "works.action.viewCaseStudy": "Case-study call to action in flagship and supporting card layouts.",
+    "portfolio.status.activeDevelopment": "Project status label on Works and Games cards.",
+    "portfolio.cta.play": "Play call to action on Works and Games cards.",
+    "shared.kaanLabs": "Kaan Labs destination link wherever it is offered."
   },
   "sources": {
     "works/index.html": {
@@ -143,7 +132,7 @@
         "Chatbot QA": "works.tag.chatbotQa",
         "Customer Workflows": "works.tag.customerWorkflows",
         "Customer-Facing Delivery": "works.card.joyday.category",
-        "Data": "works.filter.data",
+        "Data": "works.domain.data",
         "Discovery and scoping view": "works.hero.discoveryView",
         "Engineering evidence for forward-deployed work.": "works.hero.title",
         "Enterprise AI Delivery": "works.card.chatbot.category",
@@ -169,20 +158,11 @@
         "Live MVP": "works.card.sinama.status",
         "Live Product": "works.action.liveProduct",
         "Live Website": "portfolio.cta.liveWebsite",
-        "Mobile": "works.filter.mobile",
+        "Mobile": "works.domain.mobile",
         "Multi-channel": "works.tag.multiChannel",
         "Multi-role workflow logic and appointment coordination over a database-backed desktop system.": "works.supporting.hospital.summary",
         "Multi-turn agent testing, deterministic workflow evidence, version-aware regression, and release-readiness decisions.": "works.primary.sinama.summary",
-        "My role: AI Designer": "works.card.chatbot.role",
         "My role: AI Flow Designer & Frontend Developer": "works.card.aiFlow.role",
-        "My role: Android Developer": "works.card.museum.role",
-        "My role: Co-Founder & Digital Product Developer": "works.card.joyday.role",
-        "My role: Game Developer": "works.card.legacy.role",
-        "My role: Game Developer & Product Designer": "works.card.mergeRush.role",
-        "My role: Product Designer & Full-Stack Developer": "works.card.sinama.role",
-        "My role: Python / Database Developer": "works.card.hospitalAppointment.role",
-        "My role: Python Developer": "works.card.cars.role",
-        "My role: Software Developer": "works.card.hospital.role",
         "MyMuseum Mobile Content App": "works.card.museum.title",
         "MySQL": "works.tag.mysql",
         "Next.js": "works.tag.nextjs",
@@ -236,6 +216,17 @@
         "Project filters": "works.filter.aria",
         "Python Hospital Appointment System preview": "works.card.hospitalAppointment.alt",
         "SINAMA wordmark on a dark cover card": "works.card.sinama.alt"
+      },
+      "roles": {
+        "My role: AI Designer": "ai-chatbot-flow-design",
+        "My role: Android Developer": "my-museum",
+        "My role: Co-Founder & Digital Product Developer": "joyday",
+        "My role: Game Developer": "legacy-of-the-lost",
+        "My role: Game Developer & Product Designer": "mergeRush",
+        "My role: Product Designer & Full-Stack Developer": "sinama",
+        "My role: Python / Database Developer": "hospital-appointment-system",
+        "My role: Python Developer": "cars-dataset-analysis",
+        "My role: Software Developer": "hospital"
       }
     },
     "games/index.html": {
@@ -249,7 +240,7 @@
         "Build Log": "games.direction.buildLog",
         "Build n8n-inspired chatbot workflows by placing trigger, intent, response, fallback and automation nodes.": "games.aiFlow.body",
         "Canvas • JavaScript": "games.stack.canvasJavascript",
-        "Career": "games.filter.career",
+        "Career": "games.domain.career",
         "Case Study": "games.action.caseStudy",
         "Chatbot": "games.tag.chatbot",
         "Combine learning, tools, AI workflow experience and portfolio proof until the Job Offer object appears.": "games.adventure.body",
@@ -291,7 +282,8 @@
         "Game filters": "games.filter.aria",
         "Joyday Action Painting preview": "games.alt.joydayPaint",
         "Merge Rush Tiny Factory cover": "games.alt.mergeRush"
-      }
+      },
+      "roles": {}
     }
   }
 }

@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ROOT, compareKeys } from "./i18n-catalog.mjs";
+import { projectRole, projectRoleSource } from "./m3-works-games-catalog-copy.mjs";
 import { decodeHtml, findMatchingClose, findTagEnd, normalizeText, parseTag } from "./localized-html.mjs";
 import {
   LOCALIZED_ATTRIBUTES,
@@ -62,32 +63,23 @@ const PROMOTED = {
       "AI & Automation": "works.filter.ai",
       "Software": "works.filter.software",
       "Web & Product": "works.filter.web",
-      "Data": "works.filter.data",
-      "Mobile": "works.filter.mobile",
+      "Data": "works.domain.data",
+      "Mobile": "works.domain.mobile",
       "Games & Interactive": "works.filter.game",
       "Applied AI / Reliability": "works.card.sinama.category",
       "Live MVP": "works.card.sinama.status",
-      "My role: Product Designer & Full-Stack Developer": "works.card.sinama.role",
       "Enterprise AI Delivery": "works.card.chatbot.category",
       "AI Chatbot Flow Design": "works.card.chatbot.title",
-      "My role: AI Designer": "works.card.chatbot.role",
       "Customer-Facing Delivery": "works.card.joyday.category",
       "Atölye Joyday Official Website": "works.card.joyday.title",
-      "My role: Co-Founder & Digital Product Developer": "works.card.joyday.role",
       "Projects that explain the breadth behind the primary evidence.": "works.supporting.title",
-      "My role: Game Developer & Product Designer": "works.card.mergeRush.role",
       "Hospital Form App": "works.card.hospital.title",
-      "My role: Software Developer": "works.card.hospital.role",
       "AI Flow Puzzle": "works.card.aiFlow.title",
       "My role: AI Flow Designer & Frontend Developer": "works.card.aiFlow.role",
       "Hospital Appointment System": "works.card.hospitalAppointment.title",
-      "My role: Python / Database Developer": "works.card.hospitalAppointment.role",
       "Cars Dataset Analysis": "works.card.cars.title",
-      "My role: Python Developer": "works.card.cars.role",
       "Legacy of the Lost": "works.card.legacy.title",
-      "My role: Game Developer": "works.card.legacy.role",
       "MyMuseum Mobile Content App": "works.card.museum.title",
-      "My role: Android Developer": "works.card.museum.role",
       "Live": "works.status.live",
       "Source Archive": "works.status.sourceArchive",
       "View Case Study": "works.action.viewCaseStudy",
@@ -143,7 +135,7 @@ const PROMOTED = {
       "All": "games.filter.all",
       "AI": "games.filter.ai",
       "Creative": "games.filter.creative",
-      "Career": "games.filter.career",
+      "Career": "games.domain.career",
       "Live": "games.status.live",
       "View Case Study": "games.action.viewCaseStudy",
       "Case Study": "games.action.caseStudy",
@@ -174,15 +166,41 @@ const PROMOTED = {
   },
 };
 
-/* Copy the accepted runtime injected after the filter bar. English and
- * Turkish match the accepted runtime; German, Spanish and French close its
- * English fallback with reviewed translations. */
-const CATALOG_SEARCH = {
-  "works.search.label": { en: "Search projects", tr: "Projelerde ara", de: "Projekte durchsuchen", es: "Buscar proyectos", fr: "Rechercher des projets" },
-  "works.search.placeholder": { en: "Search by project, technology or keyword...", tr: "Proje, teknoloji veya anahtar kelime ara...", de: "Nach Projekt, Technologie oder Stichwort suchen...", es: "Buscar por proyecto, tecnología o palabra clave...", fr: "Rechercher par projet, technologie ou mot-clé..." },
-  "games.search.label": { en: "Search games", tr: "Oyunlarda ara", de: "Spiele durchsuchen", es: "Buscar juegos", fr: "Rechercher des jeux" },
-  "games.search.placeholder": { en: "Search by game, category or feature...", tr: "Oyun, kategori veya özellik ara...", de: "Nach Spiel, Kategorie oder Funktion suchen...", es: "Buscar por juego, categoría o función...", fr: "Rechercher par jeu, catégorie ou fonctionnalité..." },
+/* Role lines render "<label> <canonical project role>". The role is a
+ * project fact owned by canonical project data (see projectRole); only the
+ * localized label is copy. AI Flow Puzzle has no project record, so its role
+ * line stays an index-only promoted key above. */
+const ROLES = {
+  "works/index.html": {
+    "My role: Product Designer & Full-Stack Developer": "sinama",
+    "My role: AI Designer": "ai-chatbot-flow-design",
+    "My role: Co-Founder & Digital Product Developer": "joyday",
+    "My role: Game Developer & Product Designer": "mergeRush",
+    "My role: Software Developer": "hospital",
+    "My role: Python / Database Developer": "hospital-appointment-system",
+    "My role: Python Developer": "cars-dataset-analysis",
+    "My role: Game Developer": "legacy-of-the-lost",
+    "My role: Android Developer": "my-museum",
+  },
+  "games/index.html": {},
 };
+const ROLE_LABEL_KEY = "works.card.roleLabel";
+/* Keys deliberately shared by more than one UI position. Each is one meaning
+ * with one accepted wording per locale; split a key only when a translation
+ * must differ by position. */
+const SHARED_KEYS = {
+  "works.domain.data": "Work domain: Works filter button and card category label.",
+  "works.domain.mobile": "Work domain: Works filter button and card category label.",
+  "games.domain.career": "Game domain: Games filter button and card tag.",
+  "works.status.sourceArchive": "Source-archive status label and the link to that archive; identical wording in every accepted locale.",
+  "works.action.viewCaseStudy": "Case-study call to action in flagship and supporting card layouts.",
+  "portfolio.status.activeDevelopment": "Project status label on Works and Games cards.",
+  "portfolio.cta.play": "Play call to action on Works and Games cards.",
+  "shared.kaanLabs": "Kaan Labs destination link wherever it is offered.",
+};
+const ROLE_LABEL = { en: "My role:", tr: "Rolüm:", de: "Meine Rolle:", es: "Mi rol:", fr: "Mon rôle :" };
+const reviewedDeltas = readJson("data/site/m3-26-reviewed-copy-deltas.json").deltas;
+const usedDeltas = new Set();
 
 /** Keys the accepted markup itself declares for its own text and alt copy. */
 function declaredBindings(html, bindings = { text: new Map(), attribute: new Map() }, owner = {}) {
@@ -215,7 +233,7 @@ function declaredBindings(html, bindings = { text: new Map(), attribute: new Map
 const common = Object.fromEntries(WORKS_GAMES_LOCALES.map((locale) => [locale, readJson(`data/i18n/messages/${locale}/common.json`)]));
 const previous = fs.existsSync(path.join(ROOT, MANIFEST)) ? readJson(MANIFEST) : { promotedKeys: [] };
 const alreadyPromoted = new Set(previous.promotedKeys);
-const manifest = { schemaVersion: 1, acceptedRef: WORKS_GAMES_ACCEPTED_REF, promotedKeys: [], catalogSearch: {}, sources: {} };
+const manifest = { schemaVersion: 2, acceptedRef: WORKS_GAMES_ACCEPTED_REF, promotedKeys: [], roleLabel: ROLE_LABEL_KEY, sharedKeys: SHARED_KEYS, sources: {} };
 const promotedValues = {};
 
 const assign = (key, values, origin) => {
@@ -236,7 +254,7 @@ const assign = (key, values, origin) => {
 for (const source of Object.values(WORKS_GAMES_PAGES)) {
   const accepted = acceptedPageCopy(WORKS_GAMES_ACCEPTED_REF, source);
   const declared = declaredBindings(mainSource(WORKS_GAMES_ACCEPTED_REF, source));
-  manifest.sources[source] = { text: {}, attribute: {} };
+  manifest.sources[source] = { text: {}, attribute: {}, roles: {} };
   for (const kind of ["text", "attribute"]) {
     const used = new Set();
     for (const [english, values] of accepted[kind]) {
@@ -244,34 +262,56 @@ for (const source of Object.values(WORKS_GAMES_PAGES)) {
       if (declaredKeys.length > 1) throw new Error(`${source}: ${JSON.stringify(english)} declares several canonical keys`);
       const reused = REUSED[source][kind][english];
       const promoted = PROMOTED[source][kind][english];
-      const candidates = [declaredKeys[0] && "declared", reused && "reused", promoted && "promoted"].filter(Boolean);
+      const role = kind === "text" ? ROLES[source][english] : undefined;
+      const candidates = [declaredKeys[0] && "declared", reused && "reused", promoted && "promoted", role && "role"].filter(Boolean);
       if (candidates.length !== 1) throw new Error(`${source}: ${JSON.stringify(english)} needs exactly one binding, found ${candidates.join(", ") || "none"}`);
+      if (role) {
+        if (!projectRoleSource(role)) throw new Error(`${source}: ${role} has no canonical project role`);
+        for (const locale of WORKS_GAMES_LOCALES) {
+          const current = `${ROLE_LABEL[locale]} ${projectRole(role, locale)}`;
+          if (current === values[locale]) continue;
+          const document = `${locale === "en" ? "" : `${locale}/`}${source}`;
+          const delta = reviewedDeltas.findIndex((item) => item.document === document && item.project === role && item.accepted === values[locale] && item.current === current);
+          if (delta < 0) throw new Error(`${document}: role ${role} renders ${JSON.stringify(current)} instead of accepted ${JSON.stringify(values[locale])} without a reviewed delta`);
+          usedDeltas.add(delta);
+        }
+        manifest.sources[source].roles[english] = role;
+        used.add(english);
+        continue;
+      }
       const key = declaredKeys[0] || reused || promoted;
       assign(key, values, candidates[0]);
       if (candidates[0] === "promoted") manifest.promotedKeys.push(key);
       manifest.sources[source][kind][english] = key;
       used.add(english);
     }
-    for (const table of [REUSED[source][kind], PROMOTED[source][kind]]) {
+    for (const table of [REUSED[source][kind], PROMOTED[source][kind], kind === "text" ? ROLES[source] : {}]) {
       for (const english of Object.keys(table)) if (!used.has(english)) throw new Error(`${source}: unused ${kind} binding ${JSON.stringify(english)}`);
     }
   }
 }
-for (const [key, values] of Object.entries(CATALOG_SEARCH)) {
-  assign(key, values, "promoted");
-  manifest.promotedKeys.push(key);
-  const [page, , field] = key.split(".");
-  (manifest.catalogSearch[page] ??= {})[field] = key;
+for (const locale of WORKS_GAMES_LOCALES) {
+  for (const english of Object.keys(ROLES["works/index.html"])) {
+    if (!english.startsWith("My role: ")) throw new Error(`role binding ${JSON.stringify(english)} lacks the accepted label`);
+  }
 }
+assign(ROLE_LABEL_KEY, ROLE_LABEL, "promoted");
+manifest.promotedKeys.push(ROLE_LABEL_KEY);
+if (usedDeltas.size !== reviewedDeltas.length) throw new Error("every reviewed copy delta must be consumed exactly once");
 if (new Set(manifest.promotedKeys).size !== manifest.promotedKeys.length) throw new Error("a promoted key is bound to two different accepted strings");
 manifest.promotedKeys.sort(compareKeys);
 for (const source of Object.keys(manifest.sources)) {
   for (const kind of ["text", "attribute"]) {
     manifest.sources[source][kind] = Object.fromEntries(Object.entries(manifest.sources[source][kind]).sort(([a], [b]) => compareKeys(a, b)));
   }
+  manifest.sources[source].roles = Object.fromEntries(Object.entries(manifest.sources[source].roles).sort(([a], [b]) => compareKeys(a, b)));
 }
 
+/* Keys this script promoted earlier but no longer binds are removed, so the
+ * common domain never keeps an orphaned second copy of Works/Games copy. */
+const retired = [...alreadyPromoted].filter((key) => !manifest.promotedKeys.includes(key));
 for (const locale of WORKS_GAMES_LOCALES) {
+  for (const key of retired) delete common[locale][key];
   /* Insert new keys in sorted position without reordering existing entries. */
   const entries = Object.entries(common[locale]);
   for (const [key, value] of Object.entries(promotedValues[locale] || {}).sort(([a], [b]) => compareKeys(a, b))) {
@@ -285,4 +325,5 @@ for (const locale of WORKS_GAMES_LOCALES) {
 writeJson(MANIFEST, manifest);
 
 const bindings = Object.values(manifest.sources).reduce((sum, item) => sum + Object.keys(item.text).length + Object.keys(item.attribute).length, 0);
-console.log(`Works/Games semantic keys: ${bindings} accepted bindings · ${manifest.promotedKeys.length} promoted canonical keys · authority=${WORKS_GAMES_ACCEPTED_REF}.`);
+const roleBindings = Object.values(manifest.sources).reduce((sum, item) => sum + Object.keys(item.roles).length, 0);
+console.log(`Works/Games semantic keys: ${bindings} message bindings · ${roleBindings} canonical project-role bindings · ${manifest.promotedKeys.length} promoted canonical keys · ${retired.length} retired · ${reviewedDeltas.length} reviewed deltas · authority=${WORKS_GAMES_ACCEPTED_REF}.`);

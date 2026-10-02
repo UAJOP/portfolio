@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "acceptedRef": "24be2f8159a0925dc00f29375ea8740738214df3",
   "locales": [
     "en",
@@ -10,14 +10,18 @@
   ],
   "catalogSearch": {
     "works": {
-      "label": "works.search.label",
-      "placeholder": "works.search.placeholder"
+      "authority": "structured-runtime",
+      "namespace": "ultimate",
+      "label": "projectSearchLabel",
+      "placeholder": "projectSearchPlaceholder"
     },
     "games": {
-      "label": "games.search.label",
-      "placeholder": "games.search.placeholder"
+      "authority": "page-phrase",
+      "label": "Search games",
+      "placeholder": "Search by game, category or feature..."
     }
   },
+  "roleLabel": "works.card.roleLabel",
   "pages": {
     "works": {
       "source": "works/index.html",
@@ -329,7 +333,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.filter.data"
+                      "key": "works.domain.data"
                     }
                   ]
                 },
@@ -353,7 +357,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "works.filter.mobile"
+                      "key": "works.domain.mobile"
                     }
                   ]
                 },
@@ -667,17 +671,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: Product Designer & Full-Stack Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "sinama",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: Product Designer & Full-Stack Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "sinama",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.sinama.role"
+                                  "type": "role",
+                                  "ref": "sinama"
                                 }
                               ]
                             },
@@ -973,17 +985,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: AI Designer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "ai-chatbot-flow-design",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: AI Designer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "ai-chatbot-flow-design",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.chatbot.role"
+                                  "type": "role",
+                                  "ref": "ai-chatbot-flow-design"
                                 }
                               ]
                             },
@@ -1215,17 +1235,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: Co-Founder & Digital Product Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "joyday",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: Kurucu Ortak & Dijital Ürün Geliştirici"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "joyday",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.joyday.role"
+                                  "type": "role",
+                                  "ref": "joyday"
                                 }
                               ]
                             },
@@ -1371,11 +1399,19 @@
                       "attributes": [
                         {
                           "name": "data-pv2-en",
-                          "value": "Projects that explain the breadth behind the primary evidence."
+                          "value": {
+                            "type": "message",
+                            "key": "works.supporting.title",
+                            "locale": "en"
+                          }
                         },
                         {
                           "name": "data-pv2-tr",
-                          "value": "Ana kanıtın arkasındaki genişliği açıklayan projeler."
+                          "value": {
+                            "type": "message",
+                            "key": "works.supporting.title",
+                            "locale": "tr"
+                          }
                         }
                       ],
                       "children": [
@@ -1610,17 +1646,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: Game Developer & Product Designer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "mergeRush",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: Game Developer & Ürün Tasarımcısı"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "mergeRush",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.mergeRush.role"
+                                  "type": "role",
+                                  "ref": "mergeRush"
                                 }
                               ]
                             },
@@ -1861,17 +1905,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: Software Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "hospital",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: Yazılım Geliştirici"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "hospital",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.hospital.role"
+                                  "type": "role",
+                                  "ref": "hospital"
                                 }
                               ]
                             },
@@ -2156,11 +2208,19 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: AI Flow Designer & Frontend Developer"
+                                  "value": {
+                                    "type": "message",
+                                    "key": "works.card.aiFlow.role",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: AI Flow Designer & Frontend Developer"
+                                  "value": {
+                                    "type": "message",
+                                    "key": "works.card.aiFlow.role",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
@@ -2421,17 +2481,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: Python / Database Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "hospital-appointment-system",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: Python / Veritabanı Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "hospital-appointment-system",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.hospitalAppointment.role"
+                                  "type": "role",
+                                  "ref": "hospital-appointment-system"
                                 }
                               ]
                             },
@@ -2551,7 +2619,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.filter.data"
+                                      "key": "works.domain.data"
                                     }
                                   ]
                                 }
@@ -2642,17 +2710,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: Python Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "cars-dataset-analysis",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: Python Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "cars-dataset-analysis",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.cars.role"
+                                  "type": "role",
+                                  "ref": "cars-dataset-analysis"
                                 }
                               ]
                             },
@@ -2868,17 +2944,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: Game Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "legacy-of-the-lost",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: Game Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "legacy-of-the-lost",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.legacy.role"
+                                  "type": "role",
+                                  "ref": "legacy-of-the-lost"
                                 }
                               ]
                             },
@@ -2998,7 +3082,7 @@
                                   "children": [
                                     {
                                       "type": "message",
-                                      "key": "works.filter.mobile"
+                                      "key": "works.domain.mobile"
                                     }
                                   ]
                                 }
@@ -3089,17 +3173,25 @@
                                 },
                                 {
                                   "name": "data-pv2-en",
-                                  "value": "My role: Android Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "my-museum",
+                                    "locale": "en"
+                                  }
                                 },
                                 {
                                   "name": "data-pv2-tr",
-                                  "value": "Rolüm: Android Developer"
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "my-museum",
+                                    "locale": "tr"
+                                  }
                                 }
                               ],
                               "children": [
                                 {
-                                  "type": "message",
-                                  "key": "works.card.museum.role"
+                                  "type": "role",
+                                  "ref": "my-museum"
                                 }
                               ]
                             },
@@ -3198,11 +3290,19 @@
                           "attributes": [
                             {
                               "name": "data-pv2-en",
-                              "value": "Tutorial-scale and older learning repositories stay available without competing with flagship evidence."
+                              "value": {
+                                "type": "message",
+                                "key": "works.archiveCta.title",
+                                "locale": "en"
+                              }
                             },
                             {
                               "name": "data-pv2-tr",
-                              "value": "Tutorial-scale ve eski learning repository'leri erişilebilir kalıyor ama flagship kanıtlarla yarışmıyor."
+                              "value": {
+                                "type": "message",
+                                "key": "works.archiveCta.title",
+                                "locale": "tr"
+                              }
                             }
                           ],
                           "children": [
@@ -3218,11 +3318,19 @@
                           "attributes": [
                             {
                               "name": "data-pv2-en",
-                              "value": "The GitHub profile remains the full archive. Labs contains smaller interactive experiments; this page stays focused on portfolio-grade evidence."
+                              "value": {
+                                "type": "message",
+                                "key": "works.archiveCta.body",
+                                "locale": "en"
+                              }
                             },
                             {
                               "name": "data-pv2-tr",
-                              "value": "GitHub profili tam arşiv olarak kalıyor. Labs küçük interaktif deneyleri içeriyor; bu sayfa portfolio-grade kanıta odaklanıyor."
+                              "value": {
+                                "type": "message",
+                                "key": "works.archiveCta.body",
+                                "locale": "tr"
+                              }
                             }
                           ],
                           "children": [
@@ -3347,11 +3455,19 @@
               "attributes": [
                 {
                   "name": "data-pv2-en",
-                  "value": "One active game product, three playable portfolio experiments."
+                  "value": {
+                    "type": "message",
+                    "key": "games.hero.title",
+                    "locale": "en"
+                  }
                 },
                 {
                   "name": "data-pv2-tr",
-                  "value": "Bir aktif oyun ürünü, üç oynanabilir portfolyo deneyi."
+                  "value": {
+                    "type": "message",
+                    "key": "games.hero.title",
+                    "locale": "tr"
+                  }
                 }
               ],
               "children": [
@@ -3367,11 +3483,19 @@
               "attributes": [
                 {
                   "name": "data-pv2-en",
-                  "value": "Merge Rush is the current game-development priority. Smaller browser experiments remain playable, while technical experiments that are not really games now live under Kaan Labs."
+                  "value": {
+                    "type": "message",
+                    "key": "games.hero.lead",
+                    "locale": "en"
+                  }
                 },
                 {
                   "name": "data-pv2-tr",
-                  "value": "Merge Rush güncel game-development önceliği. Küçük browser deneyleri oynanabilir kalıyor; oyun olmayan teknik deneyler ise artık Kaan Labs altında yaşıyor."
+                  "value": {
+                    "type": "message",
+                    "key": "games.hero.lead",
+                    "locale": "tr"
+                  }
                 }
               ],
               "children": [
@@ -3517,11 +3641,19 @@
                   "attributes": [
                     {
                       "name": "data-pv2-en",
-                      "value": "Depth first, experiments second."
+                      "value": {
+                        "type": "message",
+                        "key": "games.catalog.title",
+                        "locale": "en"
+                      }
                     },
                     {
                       "name": "data-pv2-tr",
-                      "value": "Önce derinlik, sonra deneyler."
+                      "value": {
+                        "type": "message",
+                        "key": "games.catalog.title",
+                        "locale": "tr"
+                      }
                     }
                   ],
                   "children": [
@@ -3674,7 +3806,7 @@
                   "children": [
                     {
                       "type": "message",
-                      "key": "games.filter.career"
+                      "key": "games.domain.career"
                     }
                   ]
                 }
@@ -3904,11 +4036,19 @@
                           "attributes": [
                             {
                               "name": "data-pv2-en",
-                              "value": "Timed orders, factory restoration, multi-cell board logic, responsive layouts and platform-aware architecture."
+                              "value": {
+                                "type": "message",
+                                "key": "games.mergeRush.body",
+                                "locale": "en"
+                              }
                             },
                             {
                               "name": "data-pv2-tr",
-                              "value": "Timed order'lar, fabrika onarımı, multi-cell board logic, responsive layout'lar ve platform-aware architecture."
+                              "value": {
+                                "type": "message",
+                                "key": "games.mergeRush.body",
+                                "locale": "tr"
+                              }
                             }
                           ],
                           "children": [
@@ -4525,7 +4665,7 @@
                               "children": [
                                 {
                                   "type": "message",
-                                  "key": "games.filter.career"
+                                  "key": "games.domain.career"
                                 }
                               ]
                             },
@@ -4674,11 +4814,19 @@
                       "attributes": [
                         {
                           "name": "data-pv2-en",
-                          "value": "Merge Rush gets the production attention; experiments get a dedicated lab."
+                          "value": {
+                            "type": "message",
+                            "key": "games.direction.title",
+                            "locale": "en"
+                          }
                         },
                         {
                           "name": "data-pv2-tr",
-                          "value": "Production odağı Merge Rush'ta; deneylerin ise kendi lab alanı var."
+                          "value": {
+                            "type": "message",
+                            "key": "games.direction.title",
+                            "locale": "tr"
+                          }
                         }
                       ],
                       "children": [
@@ -4694,11 +4842,19 @@
                       "attributes": [
                         {
                           "name": "data-pv2-en",
-                          "value": "The old Interview Run concept is no longer presented as active portfolio work. Future small experiments belong in Labs until they earn a place in the game catalog."
+                          "value": {
+                            "type": "message",
+                            "key": "games.direction.body",
+                            "locale": "en"
+                          }
                         },
                         {
                           "name": "data-pv2-tr",
-                          "value": "Eski Interview Run konsepti artık aktif portfolyo işi olarak gösterilmiyor. Gelecek küçük deneyler game catalog'da yer kazanana kadar Labs altında kalacak."
+                          "value": {
+                            "type": "message",
+                            "key": "games.direction.body",
+                            "locale": "tr"
+                          }
                         }
                       ],
                       "children": [

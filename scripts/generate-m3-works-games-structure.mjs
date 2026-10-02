@@ -18,6 +18,7 @@ import {
   mainSource,
   resolveAcceptedRef,
 } from "./m3-works-games-accepted-copy.mjs";
+import { CATALOG_SEARCH_AUTHORITY } from "./m3-works-games-catalog-copy.mjs";
 
 export { WORKS_GAMES_ACCEPTED_REF };
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(ROOT, "data/i18n/works-games-semantic-keys.json"), "utf8"));
@@ -48,7 +49,7 @@ function parseArguments() {
 }
 
 function bindings(source) {
-  if (MANIFEST.schemaVersion !== 1 || MANIFEST.acceptedRef !== WORKS_GAMES_ACCEPTED_REF) throw new Error("unsupported Works/Games semantic-key manifest");
+  if (MANIFEST.schemaVersion !== 2 || MANIFEST.acceptedRef !== WORKS_GAMES_ACCEPTED_REF) throw new Error("unsupported Works/Games semantic-key manifest");
   const entries = MANIFEST.sources?.[source];
   if (!entries) throw new Error(`${source}: no semantic-key bindings`);
   const lookup = (kind) => (english) => {
@@ -56,7 +57,11 @@ function bindings(source) {
     if (!key) throw new Error(`${source}: accepted ${kind} has no semantic key: ${JSON.stringify(english)}`);
     return key;
   };
-  return { text: lookup("text"), attribute: lookup("attribute") };
+  const text = lookup("text");
+  return {
+    text: (english) => (entries.roles?.[english] ? { type: "role", ref: entries.roles[english] } : { type: "message", key: text(english) }),
+    attribute: lookup("attribute"),
+  };
 }
 
 function descriptorForAttribute(attribute, catalog) {
@@ -79,6 +84,22 @@ function applyRuntimePresentation(node, inHero) {
   if (PRESERVE_CASE_MESSAGE_KEYS.has(value("data-message-key"))) node.attributes.push({ name: "data-preserve-case", value: true });
 }
 
+/* data-pv2-en / data-pv2-tr repeat the element's own copy in English and
+ * Turkish. They are bound to the element's single text binding with a fixed
+ * locale, so they cannot hold an independent copy. */
+const FIXED_LOCALE_ATTRIBUTES = { "data-pv2-en": "en", "data-pv2-tr": "tr" };
+function bindFixedLocaleCopy(node) {
+  const fixed = node.attributes.filter((attribute) => FIXED_LOCALE_ATTRIBUTES[attribute.name]);
+  if (!fixed.length) return;
+  const bound = node.children.filter((child) => child.type !== "space");
+  if (bound.length !== 1 || !["message", "role"].includes(bound[0].type)) throw new Error(`${node.tag}: data-pv2 copy needs exactly one bound text child`);
+  for (const attribute of fixed) {
+    attribute.value = bound[0].type === "role"
+      ? { type: "role", ref: bound[0].ref, locale: FIXED_LOCALE_ATTRIBUTES[attribute.name] }
+      : { type: "message", key: bound[0].key, locale: FIXED_LOCALE_ATTRIBUTES[attribute.name] };
+  }
+}
+
 /* `space` nodes record where the accepted source had whitespace. They render
  * nothing, but keep catalog search text equivalent to legacy textContent. */
 function pushSpace(nodes) {
@@ -96,7 +117,7 @@ function parseNodes(html, catalog, inHero = false) {
     if (/^\s/.test(raw)) pushSpace(nodes);
     if (text) {
       if (DATA_TEXT.has(text)) nodes.push({ type: "data", path: DATA_TEXT.get(text) });
-      else nodes.push({ type: "message", key: catalog.text(text) });
+      else nodes.push(catalog.text(text));
       if (/\s$/.test(raw)) pushSpace(nodes);
     }
     if (nextTag < 0) break;
@@ -126,13 +147,14 @@ function parseNodes(html, catalog, inHero = false) {
       node.children = parseNodes(html.slice(tagEnd, close), catalog, childInHero);
       index = findTagEnd(html, close);
     }
+    bindFixedLocaleCopy(node);
     nodes.push(node);
   }
   return nodes;
 }
 
 const { ref, output } = parseArguments();
-const structure = { schemaVersion: 2, acceptedRef: ref, locales: [...WORKS_GAMES_LOCALES], catalogSearch: MANIFEST.catalogSearch, pages: {} };
+const structure = { schemaVersion: 3, acceptedRef: ref, locales: [...WORKS_GAMES_LOCALES], catalogSearch: CATALOG_SEARCH_AUTHORITY, roleLabel: MANIFEST.roleLabel, pages: {} };
 for (const [page, source] of Object.entries(WORKS_GAMES_PAGES)) {
   structure.pages[page] = { source, children: parseNodes(mainSource(ref, source), bindings(source)) };
 }

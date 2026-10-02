@@ -11,7 +11,8 @@ const atPath = (source, dataPath) => String(dataPath).split(".").reduce((value, 
 
 function resolveValue(value, props) {
   if (!value || typeof value !== "object") return value;
-  if (value.type === "message") return props.copy[value.key];
+  if (value.type === "message") return value.locale ? props.fixedCopy[`${value.locale}:${value.key}`] : props.copy[value.key];
+  if (value.type === "role") return props.fixedRoles[`${value.locale}:${value.ref}`];
   if (value.type === "compat") return props.compat[value.locale][value.key];
   if (value.type === "internal") return props.links[value.path];
   if (value.type === "data") return atPath(props.data, value.path);
@@ -48,6 +49,7 @@ function resolvedAttributes(node, props) {
 
 function nodeText(node, props) {
   if (node.type === "message") return props.copy[node.key] || "";
+  if (node.type === "role") return props.roles[node.ref] || "";
   if (node.type === "data") return atPath(props.data, node.path) || "";
   if (node.type === "text") return node.value;
   if (node.type === "space") return " ";
@@ -61,17 +63,6 @@ function descendantCards(node) {
     ? [node]
     : [];
   return own.concat(node.children.flatMap(descendantCards));
-}
-
-function firstHref(node, props) {
-  if (node.type !== "element") return null;
-  const href = node.attributes.find((attribute) => attribute.name === "href");
-  if (href) return resolveValue(href.value, props);
-  for (const child of node.children) {
-    const found = firstHref(child, props);
-    if (found) return found;
-  }
-  return null;
 }
 
 function cardVisible(node, props, state) {
@@ -109,6 +100,7 @@ const CatalogSearch = memo(function CatalogSearch({ catalog, setQuery }) {
 function renderNode(node, props, key, catalogState) {
   if (node.type === "space") return null;
   if (node.type === "message") return props.copy[node.key];
+  if (node.type === "role") return props.roles[node.ref];
   if (node.type === "data") return atPath(props.data, node.path);
   if (node.type === "text") return node.value;
   const attributes = resolvedAttributes(node, props);
@@ -130,11 +122,18 @@ function renderNode(node, props, key, catalogState) {
   }
   if (catalogState && isCard) {
     if (!cardVisible(node, props, catalogState)) classes.add("is-hidden");
+  }
+  /* Whole-card navigation exactly as accepted: on Works only data-project-link
+   * authorizes it (with Works analytics); on Games only data-game-link does
+   * (without analytics). Any other card, including a Works card that carries
+   * data-game-link, stays inert. */
+  const cardLink = props.page === "games" ? attributes["data-game-link"] : attributes["data-project-link"];
+  if (catalogState && cardLink !== undefined) {
+    const destination = props.cardDestinations[cardLink];
+    const tracked = props.page !== "games";
     attributes.onClick = (event) => {
       if (shouldIgnoreCardActivation(event)) return;
-      const destination = firstHref(node, props);
-      if (!destination) return;
-      globalThis.trackAnalyticsNavigation?.(destination, props.page === "games" ? "games" : "works");
+      if (tracked) globalThis.trackAnalyticsNavigation?.(destination, "works");
       window.location.href = destination;
     };
   }
