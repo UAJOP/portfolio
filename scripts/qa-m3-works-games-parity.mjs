@@ -14,8 +14,33 @@ import { M3_26_ACCEPTED_REF as ACCEPTED_REF, acceptedDocument } from "./m3-26-ac
 const requestedRoot = process.argv.includes("--root") ? path.resolve(ROOT, process.argv[process.argv.indexOf("--root") + 1]) : null;
 const reproduced = path.join(os.tmpdir(), `m3-26-structure-${process.pid}.json`);
 execFileSync(process.execPath, [path.join(ROOT, "scripts/generate-m3-works-games-structure.mjs"), "--accepted-ref", ACCEPTED_REF, "--output", reproduced], { cwd: ROOT, stdio: "pipe" });
-assert.equal(fs.readFileSync(reproduced, "utf8"), fs.readFileSync(path.join(ROOT, "data/site/m3-26-works-games-structure.json"), "utf8"), "#26 accepted structure is not reproducible");
+/* Line endings only: with `* text=auto`, a core.autocrlf=true (Windows)
+ * checkout materializes the committed LF structure as CRLF. The generator
+ * always writes LF, and only CRLF pairs in the checked-out copy are folded;
+ * any other byte difference, including a lone CR, still fails. */
+const checkoutLf = (text) => text.replace(/\r\n/g, "\n");
+const assertStructureReproduced = (generated, checkedOut) => {
+  assert.equal(generated.includes("\r"), false, "#26 structure generator must emit LF");
+  assert.equal(generated, checkoutLf(checkedOut), "#26 accepted structure is not reproducible");
+};
+const generatedStructure = fs.readFileSync(reproduced, "utf8");
 fs.rmSync(reproduced, { force: true });
+const committedStructure = fs.readFileSync(path.join(ROOT, "data/site/m3-26-works-games-structure.json"), "utf8");
+assertStructureReproduced(generatedStructure, committedStructure);
+const asLf = checkoutLf(committedStructure);
+const asCrlf = asLf.replace(/\n/g, "\r\n");
+for (const checkout of [asLf, asCrlf]) assertStructureReproduced(generatedStructure, checkout);
+const changedKey = (text) => text.replace('"key": "works.domain.data"', '"key": "works.domain.changed"');
+const structureControls = [
+  ["LF structure change", changedKey(asLf)],
+  ["CRLF structure change", changedKey(asCrlf)],
+  ["lone CR", asLf.replace("\n", "\r")],
+  ["extra trailing line", `${asCrlf}\r\n`],
+];
+for (const [name, checkout] of structureControls) {
+  assert.notEqual(checkout, asLf, `${name}: control must mutate the structure`);
+  assert.throws(() => assertStructureReproduced(generatedStructure, checkout), undefined, `${name} structure control did not fail`);
+}
 const reviewedDeltas = JSON.parse(fs.readFileSync(path.join(ROOT, "data/site/m3-26-reviewed-copy-deltas.json"), "utf8")).deltas;
 
 /* The search copy the accepted 24be2f8 runtime displayed (re-measured live
@@ -178,7 +203,7 @@ try {
     assertions += 1;
   }
   negativeControls.push(...searchControls);
-  console.log(`G-64 Works/Games accepted parity passed. ${assertions} assertions · 10 documents · authority=${ACCEPTED_REF} · ${reviewedDeltas.length} reviewed copy deltas · ${negativeControls.length} failing negative controls · git-history=none.`);
+  console.log(`G-64 Works/Games accepted parity passed. ${assertions} assertions · 10 documents · authority=${ACCEPTED_REF} · ${reviewedDeltas.length} reviewed copy deltas · ${negativeControls.length} failing negative controls · structure LF+CRLF reproducible, ${structureControls.length} structure controls · git-history=none.`);
 } finally {
   fixture?.cleanup();
 }
