@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "acceptedBaseCommit": "df39ea32f34eacf1ee68ee6d0c8b6d464eb7d6d8",
+  "algorithm": "sha256",
+  "textEolCanonicalization": "crlf-to-lf-bytewise",
+  "fileCount": 3,
+  "files": [
+    {
+      "path": "js/core/i18n-runtime.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "29884a4d4eb05f03d0c63bfb8d2e4ebb1b313520f6d0b94fb12802bd8fbafe67"
+    },
+    {
+      "path": "js/features/recruiter.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "b7d408d9211c1e3949da87eeacf8d9d0fcbc0ca1890516ffb34c265073dc99ab"
+    },
+    {
+      "path": "portfolio-v2.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "0834f88d9bc8a853058b55c3403c284b632bfdf9c6c83852f8a30e55229eb880"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { Fragment, createElement, memo, useState } from "react";
 import homeAboutStructure from "../../../data/site/m3-25b-home-about-structure.json";
+import BuildLog from "./BuildLog.jsx";
 
 const PROP_NAMES = {
   class: "className",
@@ -17,23 +18,6 @@ function resolveValue(value, props) {
   if (value.type === "internal") return props.links[value.path];
   if (value.type === "data") return atPath(props.data, value.path);
   throw new Error(`unsupported production React value type ${value.type}`);
-}
-
-function BuildLog({ entries, limit }) {
-  const labels = { shipped: "Shipped", building: "Building", integration: "Integration" };
-  return entries.slice(0, limit).map((entry) => (
-    <article className="build-log-item" key={entry.id}>
-      <time dateTime={entry.date}>{entry.date}</time>
-      <div>
-        <div className="build-log-meta">
-          <span>{entry.area}</span>
-          <span className={`build-log-status is-${entry.status}`}>{labels[entry.status] || entry.status}</span>
-        </div>
-        <h3>{entry.title}</h3>
-        <p>{entry.detail}</p>
-      </div>
-    </article>
-  ));
 }
 
 /* Same semantics as the accepted catalog search: whitespace-collapsed,

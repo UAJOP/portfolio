@@ -162,7 +162,10 @@ function slotStrings(html,shellOnly){
 const glossary=JSON.parse(read("data/i18n/glossary.json"));
 const glossaryNames=new Set([...(glossary.protectedTerms||[]),...(glossary.projectNames||[]),...(glossary.languageNeutralStrings||[])]);
 const pagePacks=Object.fromEntries(locales.map((id)=>[id,JSON.parse(read(`data/i18n/packs/${id}/pages.json`))]));
-const reviewedIdentity=(locale,value)=>glossaryNames.has(value)||pagePacks[locale].text?.[value]===value||pagePacks[locale].attribute?.[value]===value||Object.entries(messages.en).some(([key,english])=>english===value&&messages[locale][key]===value);
+const sourceDynamic=JSON.parse(read("data/i18n/source/dynamic.json"));
+const dynamicPacks=Object.fromEntries(locales.map((id)=>[id,JSON.parse(read(`data/i18n/packs/${id}/dynamic.json`))]));
+const reviewedDynamicIdentity=(locale,value)=>Object.entries(sourceDynamic.recruiterV2).some(([key,english])=>english===value&&dynamicPacks[locale].recruiterV2[key]===value);
+const reviewedIdentity=(locale,value)=>glossaryNames.has(value)||reviewedDynamicIdentity(locale,value)||pagePacks[locale].text?.[value]===value||pagePacks[locale].attribute?.[value]===value||Object.entries(messages.en).some(([key,english])=>english===value&&messages[locale][key]===value);
 for(const route of all){
   if(!fs.existsSync(path.join(CHECK_ROOT,route.source))) continue;
   const shellOnly=GAME_SOURCES.has(route.source);

@@ -17,6 +17,7 @@ import {
   validateArtifactManifest,
 } from "./artifact-parity.mjs";
 import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
+import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } from "./m3-27-public-edits.mjs";
 import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
 import { assertHomeAboutPayload } from "./m3-25b-home-about-payload.mjs";
 
@@ -24,9 +25,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_FILE = path.join(ROOT, "data/site/m3-25a-accepted-artifact.json");
 const PUBLIC_DELTA_FILE = path.join(ROOT, "data/site/m3-25b-public-delta.json");
 const WORKS_GAMES_DELTA_FILE = path.join(ROOT, "data/site/m3-26-public-delta.json");
+const RECRUITER_BUILD_LOG_DELTA_FILE = path.join(ROOT, "data/site/m3-27-public-delta.json");
 const ACCEPTED_BASE = "6ca0910ea330d25dcb3873f8b84047666de67fb6";
 const ACCEPTED_DELTA = "4d0e37b496f70d851397d9976b2022350d11edd6";
 const WORKS_GAMES_ACCEPTED_BASE = "24be2f8159a0925dc00f29375ea8740738214df3";
+const RECRUITER_BUILD_LOG_ACCEPTED_BASE = "df39ea32f34eacf1ee68ee6d0c8b6d464eb7d6d8";
 const APPROVED_GENERATED_CHANGES = new Set([
   "i18n/pack-de-core.js",
   "i18n/pack-es-core.js",
@@ -38,13 +41,39 @@ const APPROVED_GENERATED_CHANGES = new Set([
   "portfolio-v2.js",
 ]);
 const APPROVED_WORKS_GAMES_CHANGES = new Set(Object.keys(WORKS_GAMES_REVIEWED_EDITS));
+const APPROVED_RECRUITER_BUILD_LOG_CHANGES = new Set(Object.keys(RECRUITER_BUILD_LOG_REVIEWED_EDITS));
 
 function assertReviewedWorksGamesDelta(directory, edits = WORKS_GAMES_REVIEWED_EDITS) {
   const accepted = acceptedArtifactManifest();
   for (const file of Object.keys(edits)) {
-    const base = acceptedBaseOf(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    const current = fs.readFileSync(path.join(directory, file), "utf8");
+    const beforeRecruiterBuildLog = RECRUITER_BUILD_LOG_REVIEWED_EDITS[file]
+      ? recruiterBuildLogAcceptedBase(file, current)
+      : current;
+    const base = acceptedBaseOf(file, beforeRecruiterBuildLog, edits[file]);
     assert.equal(digest(base), accepted.get(file)?.sha256, `${file}: #26 delta is not exactly the accepted base plus reviewed edits`);
   }
+}
+
+function assertReviewedRecruiterBuildLogDelta(directory, edits = RECRUITER_BUILD_LOG_REVIEWED_EDITS) {
+  const accepted = acceptedArtifactManifest();
+  for (const file of Object.keys(edits)) {
+    const base = recruiterBuildLogAcceptedBase(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    const layered = worksGamesDelta?.files.find((entry) => entry.path === file)
+      || publicDelta?.files.find((entry) => entry.path === file)
+      || accepted.get(file);
+    assert.equal(digest(base), layered?.sha256, `${file}: #27 delta is not exactly the accepted base plus reviewed edits`);
+  }
+}
+
+function withoutRecruiterOwnership(html) {
+  const rootStart = html.indexOf('<div id="react-recruiter-root"');
+  const footerStart = html.indexOf('<footer class="site-footer">', rootStart);
+  assert.ok(rootStart >= 0 && footerStart > rootStart, "#27 recruiter SSR boundary is missing");
+  const withoutRoot = `${html.slice(0, rootStart)}${html.slice(footerStart)}`;
+  const payload = /<script id="react-recruiter-props" type="application\/json">[\s\S]*?<\/script>/;
+  assert.match(withoutRoot, payload, "#27 recruiter payload is missing");
+  return withoutRoot.replace(payload, "");
 }
 
 function assertClean(label, result) {
@@ -121,6 +150,10 @@ const worksGamesDelta = validateArtifactManifest(
   JSON.parse(fs.readFileSync(WORKS_GAMES_DELTA_FILE, "utf8")),
   WORKS_GAMES_ACCEPTED_BASE,
 );
+const recruiterBuildLogDelta = validateArtifactManifest(
+  JSON.parse(fs.readFileSync(RECRUITER_BUILD_LOG_DELTA_FILE, "utf8")),
+  RECRUITER_BUILD_LOG_ACCEPTED_BASE,
+);
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-parity-"));
 const legacy = path.join(temp, "legacy");
 const mixed = path.join(temp, "mixed");
@@ -133,7 +166,7 @@ try {
   const migratedDocuments = new Set(productionReactRoutes().map((route) => route.output));
   assert.equal(migratedDocuments.size, 20, "parity model requires exactly 20 migrated Home/About/Works/Games documents");
   const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
-  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES]);
+  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES]);
   const finalFiles = listFiles(mixed);
   const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
   const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
@@ -153,10 +186,12 @@ try {
    * reviewed-edit check below derives the current bytes from exactly those. */
   const supersededByWorksGames = [...APPROVED_GENERATED_CHANGES].filter((file) => APPROVED_WORKS_GAMES_CHANGES.has(file));
   assert.deepEqual(supersededByWorksGames, ["js/core/i18n-runtime.js"], "#26 may layer onto exactly one #25-B public path");
+  const supersededByRecruiterBuildLog = [...APPROVED_GENERATED_CHANGES].filter((file) => APPROVED_RECRUITER_BUILD_LOG_CHANGES.has(file));
+  assert.deepEqual(supersededByRecruiterBuildLog, ["js/core/i18n-runtime.js", "portfolio-v2.js"], "#27 may layer onto exactly two #25-B public paths");
   const delta = compareArtifactManifest(
-    { files: publicDelta.files.filter((entry) => !supersededByWorksGames.includes(entry.path)) },
+    { files: publicDelta.files.filter((entry) => !supersededByWorksGames.includes(entry.path) && !supersededByRecruiterBuildLog.includes(entry.path)) },
     mixed,
-    [...APPROVED_GENERATED_CHANGES].filter((file) => !supersededByWorksGames.includes(file)),
+    [...APPROVED_GENERATED_CHANGES].filter((file) => !supersededByWorksGames.includes(file) && !supersededByRecruiterBuildLog.includes(file)),
   );
   assertClean("accepted #25-B public delta", delta);
   /* The superseded path is covered by assertReviewedWorksGamesDelta below:
@@ -164,8 +199,17 @@ try {
   for (const file of supersededByWorksGames) {
     assert.equal(acceptedArtifactManifest().get(file)?.sha256, publicDelta.files.find((entry) => entry.path === file).sha256, `${file}: #26 base must be the #25-B pin`);
   }
+  for (const file of supersededByRecruiterBuildLog) {
+    assert.equal(acceptedArtifactManifest().get(file)?.sha256, publicDelta.files.find((entry) => entry.path === file).sha256, `${file}: #27 base must be the #25-B pin`);
+  }
   assert.deepEqual(worksGamesDelta.files.map((entry) => entry.path).sort(), [...APPROVED_WORKS_GAMES_CHANGES].sort(), "#26 public delta must cover the exact five scoped runtime/style paths");
-  const worksGamesPublicDelta = compareArtifactManifest(worksGamesDelta, mixed, [...APPROVED_WORKS_GAMES_CHANGES]);
+  const worksGamesSupersededByRecruiterBuildLog = [...APPROVED_WORKS_GAMES_CHANGES].filter((file) => APPROVED_RECRUITER_BUILD_LOG_CHANGES.has(file));
+  assert.deepEqual(worksGamesSupersededByRecruiterBuildLog, ["js/core/i18n-runtime.js"], "#27 may layer onto exactly one #26 public path");
+  const worksGamesPublicDelta = compareArtifactManifest(
+    { files: worksGamesDelta.files.filter((entry) => !worksGamesSupersededByRecruiterBuildLog.includes(entry.path)) },
+    mixed,
+    [...APPROVED_WORKS_GAMES_CHANGES].filter((file) => !worksGamesSupersededByRecruiterBuildLog.includes(file)),
+  );
   assertClean("accepted #26 public delta", worksGamesPublicDelta);
   assertReviewedWorksGamesDelta(mixed);
   for (const [name, edits] of [
@@ -175,12 +219,22 @@ try {
   ]) {
     assert.throws(() => assertReviewedWorksGamesDelta(mixed, edits), undefined, `#26 reviewed delta ${name} control did not fail`);
   }
+  assert.deepEqual(recruiterBuildLogDelta.files.map((entry) => entry.path).sort(), [...APPROVED_RECRUITER_BUILD_LOG_CHANGES].sort(), "#27 public delta must cover the exact three legacy ownership paths");
+  assertClean("accepted #27 public delta", compareArtifactManifest(recruiterBuildLogDelta, mixed, [...APPROVED_RECRUITER_BUILD_LOG_CHANGES]));
+  assertReviewedRecruiterBuildLogDelta(mixed);
+  for (const [name, edits] of [
+    ["missing recruiter stand-down", { ...RECRUITER_BUILD_LOG_REVIEWED_EDITS, "js/features/recruiter.js": RECRUITER_BUILD_LOG_REVIEWED_EDITS["js/features/recruiter.js"].slice(1) }],
+    ["missing i18n stand-down", { ...RECRUITER_BUILD_LOG_REVIEWED_EDITS, "js/core/i18n-runtime.js": RECRUITER_BUILD_LOG_REVIEWED_EDITS["js/core/i18n-runtime.js"].slice(1) }],
+    ["missing V2 stand-down", { ...RECRUITER_BUILD_LOG_REVIEWED_EDITS, "portfolio-v2.js": [] }],
+  ]) {
+    assert.throws(() => assertReviewedRecruiterBuildLogDelta(mixed, edits), undefined, `#27 reviewed delta ${name} control did not fail`);
+  }
 
   /* Home/About: byte-identical to the accepted 24be2f8 documents except for
    * the content-addressed React bundle name. The snapshot hashes are
    * self-recorded, so the hydration payload is also held to the independently
    * derived #25-B payload contract. */
-  const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(fs.readFileSync(path.join(directory, file), "utf8")));
+  const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(withoutRecruiterOwnership(fs.readFileSync(path.join(directory, file), "utf8"))));
   for (const file of HOME_ABOUT_DOCUMENTS) {
     assert.equal(digest(homeAboutBytes(mixed, file)), acceptedHomeAboutHash(file), `${file}: Home/About drifted from the accepted #25-B document`);
     assertHomeAboutPayload(fs.readFileSync(path.join(mixed, file), "utf8"), file);
@@ -212,6 +266,7 @@ try {
   );
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
   console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=3-controls home-about=${HOME_ABOUT_DOCUMENTS.length}-exact git-history=none accept-current=disabled.`);
+  console.log(`Accepted #27 public delta guard passed. authority=${RECRUITER_BUILD_LOG_ACCEPTED_BASE} exact=${recruiterBuildLogDelta.files.length} reviewed-edits=${Object.values(RECRUITER_BUILD_LOG_REVIEWED_EDITS).flat().length} base-anchored=3-controls React-doc additions stripped before prior parity checks accept-current=disabled.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }

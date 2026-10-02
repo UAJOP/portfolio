@@ -12,8 +12,11 @@ const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "ut
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
 const worksGamesStructure = readJson("data/site/m3-26-works-games-structure.json");
 const buildLog = readJson("data/portfolio/build-log.json");
+const meta = readJson("data/portfolio/meta.json");
 const profile = readJson("data/portfolio/profile.json");
 const projects = readJson("data/portfolio/projects.json");
+const projectDetails = readJson("data/portfolio/project-details.json");
+const recruiterProfiles = readJson("data/portfolio/recruiter-profiles.json");
 const socials = readJson("data/portfolio/socials.json");
 const sourceMeta = readJson("data/i18n/source/meta.json");
 const registry = loadRegistry();
@@ -77,6 +80,55 @@ function localizedCanonicalData(locale) {
     projects: Object.fromEntries(["sinama", "chatbotFlow", "joyday", "mergeRush", "hospital"].map((id) => [id, {
       ...(projects[id].name ? { name: projects[id].name } : {}),
       links: Object.fromEntries(Object.entries(projects[id].links).map(([key, value]) => [key, localizeLink(value)])),
+    }])),
+  };
+}
+
+function recruiterModel(locale, localization) {
+  const portfolio = { profile, projects, recruiterProfiles };
+  const canonical = (sourcePath, { languageNeutral = false } = {}) => localization.canonicalData({
+    canonical: portfolio,
+    overlay: localization.packs.content,
+    path: sourcePath,
+    languageNeutral,
+  });
+  const acceptedProjectName = (project) => {
+    if (project.name) return project.name;
+    const slug = project.detailSlug;
+    if (!slug || !projectDetails[slug]) throw new Error(`${locale}: recruiter evidence ${project.id} has no canonical title source`);
+    return projectDetails[slug].title.en;
+  };
+  const evidenceFor = (id) => {
+    const project = projects[id];
+    if (!project) throw new Error(`${locale}: recruiter evidence ${id} is missing from canonical projects`);
+    const destination = project.links?.caseStudy || project.links?.live;
+    if (!destination) throw new Error(`${locale}: recruiter evidence ${id} has no canonical destination`);
+    return {
+      id,
+      title: acceptedProjectName(project),
+      summary: canonical(`projects.${id}.summary`),
+      href: destination.startsWith("/") ? routeRuntime.localizedInternalHref(destination, locale) : destination,
+    };
+  };
+  return {
+    availability: canonical("profile.availability"),
+    primaryTitle: canonical("profile.primaryTitle"),
+    updatedAt: meta.updatedAt,
+    resume: profile.resume,
+    email: profile.email,
+    linkedin: socials.linkedin,
+    copy: localization.packs.dynamic.recruiterV2,
+    profiles: Object.fromEntries(Object.entries(recruiterProfiles).map(([id, item]) => [id, {
+      id,
+      label: canonical(`recruiterProfiles.${id}.label`),
+      focusTitle: canonical(`recruiterProfiles.${id}.focusTitle`),
+      capabilities: item.capabilities.map((value) => localization.localizedData({
+        path: `recruiterProfiles.${id}.capabilities`,
+        neutralValue: value,
+        languageNeutral: true,
+      })),
+      skills: item.skills.map((_, index) => canonical(`recruiterProfiles.${id}.skills[${index}]`)),
+      evidence: item.evidence.map(evidenceFor),
     }])),
   };
 }
@@ -204,6 +256,7 @@ export function productionDocumentProps(route, clientEntry) {
   }));
   return {
     main: productionMainProps(route),
+    recruiter: recruiterModel(route.locale, localization),
     document: {
       locale: route.locale,
       htmlLang: localization.definition.htmlLang || route.locale,

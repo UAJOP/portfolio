@@ -1,4 +1,5 @@
 import ProductionMain from "./ProductionMain.jsx";
+import RecruiterMode from "./RecruiterMode.jsx";
 
 function ProductionHead({ head }) {
   return (
@@ -110,19 +111,22 @@ function ProductionFooter({ shell }) {
   );
 }
 
-export default function ProductionDocument({ document, head, main, shell }) {
+export default function ProductionDocument({ document, head, main, recruiter, shell }) {
   const payload = JSON.stringify(main).replaceAll("<", "\\u003c");
+  const recruiterPayload = JSON.stringify(recruiter).replaceAll("<", "\\u003c");
   return (
     <html lang={document.htmlLang} dir={document.dir} data-route-locale={document.locale}>
       <ProductionHead head={head} />
       <body data-page={document.page}>
         <ProductionHeader page={document.page} shell={shell} />
         <main id="main-content" tabIndex="-1" data-react-main="" data-prerendered="true"><ProductionMain {...main} /></main>
+        <div id="react-recruiter-root" data-react-recruiter-owner="react" data-prerendered="true"><RecruiterMode model={recruiter} /></div>
         <ProductionFooter shell={shell} />
         <script src="/portfolio-data.js" />
         <script src="/script.js" />
         <script src="/portfolio-v2.js" />
         <script id="react-main-props" type="application/json">{payload}</script>
+        <script id="react-recruiter-props" type="application/json">{recruiterPayload}</script>
         <script type="module" src={`/${document.clientEntry}`} />
       </body>
     </html>

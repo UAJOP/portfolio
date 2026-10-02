@@ -145,6 +145,7 @@ const recruiterItems = {
 function renderRecruiterDrawer(language = getCurrentLocale()) {
   const drawer = document.querySelector("[data-recruiter-drawer]");
   if (!drawer) return;
+  if (drawer.closest("[data-react-recruiter-owner='react']")) return;
   const hadFocus = drawer.contains(document.activeElement);
   const content = getUltimateContent(language);
   const data = getLocalizedCollection(recruiterItems, language, "recruiter");
@@ -222,6 +223,19 @@ function setRecruiterMode(
 ) {
   const drawer = document.querySelector("[data-recruiter-drawer]");
   if (!drawer) return;
+  const reactOwner = drawer.closest("[data-react-recruiter-owner='react']");
+  if (reactOwner) {
+    const request = { isOpen: Boolean(isOpen), restoreFocus, trigger };
+    reactOwner.__portfolioReactRecruiterRequest = request;
+    if (reactOwner.__portfolioReactRecruiterReady) {
+      reactOwner.dispatchEvent(new CustomEvent("portfolio:react-recruiter-request", { detail: request }));
+      return;
+    }
+    /* The SSR dialog is already complete HTML. Keep it responsive while the
+     * React bundle loads, then let React adopt this exact state without
+     * replaying focus or analytics. */
+    request.preHydrationApplied = true;
+  }
   const wasOpen = document.body.classList.contains("recruiter-mode-active");
 
   if (isOpen) {
@@ -277,6 +291,49 @@ function applyRecruiterIntentMarker(isActive) {
 }
 
 function setupRecruiterMode() {
+  /* #27 ownership boundary: React production documents SSR and hydrate their
+   * own recruiter root. Legacy routes continue through this unchanged owner. */
+  const reactOwner = document.querySelector("[data-react-recruiter-owner='react']");
+  if (reactOwner) {
+    const drawer = reactOwner.querySelector("[data-recruiter-drawer]");
+    if (!drawer) return;
+    document.querySelectorAll("[data-recruiter-toggle]").forEach((button) => {
+      button.setAttribute("aria-controls", drawer.id);
+      button.setAttribute("aria-expanded", "false");
+    });
+    const click = (event) => {
+      const trigger = event.target.closest?.("[data-recruiter-toggle]");
+      if (trigger) {
+        event.preventDefault();
+        setRecruiterMode(
+          !document.body.classList.contains("recruiter-mode-active"),
+          { trigger },
+        );
+        return;
+      }
+      if (event.target.closest?.("[data-recruiter-close]") || event.target === drawer) {
+        setRecruiterMode(false);
+      }
+    };
+    const keydown = (event) => {
+      if (!document.body.classList.contains("recruiter-mode-active")) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setRecruiterMode(false);
+        return;
+      }
+      trapFocus(event, drawer);
+    };
+    document.addEventListener("click", click);
+    document.addEventListener("keydown", keydown);
+    reactOwner.__portfolioReactRecruiterEntryCleanup = () => {
+      document.removeEventListener("click", click);
+      document.removeEventListener("keydown", keydown);
+      delete reactOwner.__portfolioReactRecruiterEntryCleanup;
+    };
+    applyRecruiterIntentMarker(readRecruiterIntent());
+    return;
+  }
   if (document.querySelector("[data-recruiter-drawer]")) return;
   const drawer = document.createElement("div");
   drawer.className = "recruiter-drawer";
