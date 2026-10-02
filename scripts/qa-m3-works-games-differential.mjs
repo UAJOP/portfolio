@@ -1,36 +1,57 @@
 #!/usr/bin/env node
 /* G-65 differential: the React-owned Works/Games documents against the live
- * accepted artifact built from the fixed acceptance SHA. Both sides run their
- * real runtimes in Chromium; nothing here re-implements the matching rules. */
+ * accepted 24be2f8 artifact. Both sides run their real runtimes in Chromium;
+ * nothing here re-implements the accepted matching or navigation rules.
+ *
+ * Hermetic: the accepted artifact is composed from the current artifact, the
+ * committed acceptance snapshot and the reversed reviewed public edits, then
+ * proven byte-equal to the independently accepted #25-A/#25-B manifests. */
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
 import puppeteer from "puppeteer";
 import { ROOT } from "./i18n-catalog.mjs";
+import { artifactDigest } from "./artifact-parity.mjs";
+import { listFiles } from "./build-pages-artifact.mjs";
 import { buildWorksGamesFixture } from "./m3-works-games-fixture.mjs";
+import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
+import {
+  HOME_ABOUT_DOCUMENTS,
+  M3_26_ACCEPTED_REF,
+  WORKS_GAMES_DOCUMENTS,
+  acceptedArtifactManifest,
+  acceptedDocument,
+} from "./m3-26-accepted-snapshot.mjs";
 
-const ACCEPTED_REF = "24be2f8159a0925dc00f29375ea8740738214df3";
-const ROUTES = ["en", "tr", "de", "es", "fr"].flatMap((locale) => ["works", "games"].map((page) => `/${locale === "en" ? "" : `${locale}/`}${page}/`));
+const ROUTES = WORKS_GAMES_DOCUMENTS.map((file) => `/${file.replace(/index\.html$/, "")}`);
+const reviewedDeltas = JSON.parse(fs.readFileSync(path.join(ROOT, "data/site/m3-26-reviewed-copy-deltas.json"), "utf8")).deltas;
 const browserLaunchOptions = process.env.GITHUB_ACTIONS === "true"
   ? { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] }
   : { headless: true };
 const types = { ".css": "text/css", ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".ico": "image/x-icon", ".woff2": "font/woff2" };
 const argument = (name) => (process.argv.includes(name) ? path.resolve(process.argv[process.argv.indexOf(name) + 1]) : null);
 
-function buildAcceptedArtifact() {
+function composeAcceptedArtifact(currentRoot) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-26-accepted-"));
-  const source = path.join(temp, "src");
-  fs.mkdirSync(source);
-  /* A private index keeps the repository's own index and worktree untouched. */
-  const env = { ...process.env, GIT_INDEX_FILE: path.join(temp, "accepted.index") };
-  execFileSync("git", ["read-tree", `${ACCEPTED_REF}^{tree}`], { cwd: ROOT, env });
-  execFileSync("git", ["checkout-index", "--all", `--prefix=${source}${path.sep}`], { cwd: ROOT, env });
-  fs.symlinkSync(path.join(ROOT, "node_modules"), path.join(source, "node_modules"), "junction");
-  execFileSync(process.execPath, ["scripts/build-production-site.mjs"], { cwd: source, stdio: "pipe" });
-  return { root: path.join(source, "dist-site"), cleanup: () => fs.rmSync(temp, { recursive: true, force: true }) };
+  const root = path.join(temp, "dist-site");
+  for (const file of listFiles(currentRoot)) {
+    if (HOME_ABOUT_DOCUMENTS.includes(file) || file.startsWith("assets-react/")) continue;
+    let bytes = fs.readFileSync(path.join(currentRoot, file));
+    if (WORKS_GAMES_DOCUMENTS.includes(file)) bytes = Buffer.from(acceptedDocument(file));
+    else if (WORKS_GAMES_REVIEWED_EDITS[file]) bytes = Buffer.from(acceptedBaseOf(file, bytes.toString("utf8")));
+    fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    fs.writeFileSync(path.join(root, file), bytes);
+  }
+  const expected = acceptedArtifactManifest();
+  const files = listFiles(root);
+  assert.deepEqual([...files].sort(), [...expected.keys()].sort(), "composed accepted artifact must hold exactly the accepted files");
+  for (const file of files) {
+    const entry = expected.get(file);
+    assert.equal(artifactDigest(path.join(root, file), entry.normalization), entry.sha256, `${file}: composed accepted artifact differs from ${M3_26_ACCEPTED_REF}`);
+  }
+  return { root, files: files.length, cleanup: () => fs.rmSync(temp, { recursive: true, force: true }) };
 }
 
 function serverFor(root) {
@@ -90,22 +111,41 @@ function layout() {
 
 function catalogState() {
   return {
-    cards: [...document.querySelectorAll(".project-card[data-category]")].filter((node) => !node.classList.contains("is-hidden")).map((node) => node.dataset.projectLink || node.dataset.gameLink),
+    cards: [...document.querySelectorAll(".project-card[data-category]")].filter((node) => !node.classList.contains("is-hidden")).map((node) => node.dataset.projectLink || node.dataset.gameLink || node.querySelector("h3")?.textContent.trim()),
     sections: [...document.querySelectorAll("[data-project-section]")].map((node) => node.classList.contains("is-hidden")),
     active: [...document.querySelectorAll("[data-filter-btn].active")].map((node) => node.dataset.filterBtn),
   };
 }
 
+/* Readiness is condition-based: document loaded, React hydrated (React
+ * documents only), fonts ready, then an idle period and two frames. */
 async function settle(page) {
-  await page.evaluate(() => document.fonts.ready);
-  await page.waitForFunction(() => {
-    const main = document.querySelector("main");
-    return main && (!main.hasAttribute("data-react-main") || window.__m3Hydrated === true) && document.querySelector("[data-project-search]");
-  }, { timeout: 8000 });
-  await new Promise((resolve) => setTimeout(resolve, 250));
+  /* Frames and idle callbacks only run in the foreground tab. */
+  await page.bringToFront();
+  await page.waitForFunction(() => document.readyState === "complete"
+    && document.querySelector("[data-project-search]")
+    && (!document.querySelector("main[data-react-main]") || window.__m3Hydrated === true), { timeout: 15000 });
+  await page.evaluate(() => document.fonts.ready.then(() => new Promise((resolve) => {
+    requestIdleCallback(() => requestAnimationFrame(() => requestAnimationFrame(resolve)), { timeout: 3000 });
+  })));
 }
 
-async function open(browser, port, route, { viewport, theme }) {
+/* Owner-approved copy deltas are applied to the accepted page so they are the
+ * only permitted difference; each accepted string must exist exactly once. */
+async function applyReviewedDeltas(page, route) {
+  const document = `${route.slice(1)}index.html`;
+  const deltas = reviewedDeltas.filter((item) => item.document === document);
+  await page.evaluate((items) => {
+    for (const item of items) {
+      const targets = [...document.querySelectorAll("main *")].filter((node) => node.children.length === 0 && node.textContent === item.accepted);
+      if (targets.length !== 1) throw new Error(`reviewed delta target ${item.accepted} found ${targets.length} times`);
+      targets[0].textContent = item.current;
+    }
+  }, deltas);
+  return deltas.length;
+}
+
+async function open(browser, port, route, { viewport, theme, accepted = false, intercept = false }) {
   const page = await browser.newPage();
   const diagnostics = [];
   page.on("pageerror", (error) => diagnostics.push(`pageerror: ${error.message}`));
@@ -114,10 +154,25 @@ async function open(browser, port, route, { viewport, theme }) {
     try { localStorage.setItem("kaanbalci-site-theme", value); } catch {}
     addEventListener("portfolio:react-main-hydrated", () => { window.__m3Hydrated = true; }, { once: true });
   }, theme);
+  if (intercept) {
+    page.navigations = null;
+    await page.setRequestInterception(true);
+    page.on("request", (request) => {
+      if (page.navigations && request.isNavigationRequest() && request.frame() === page.mainFrame()) {
+        const url = new URL(request.url());
+        page.navigations.push(url.origin.startsWith("http://127.0.0.1") ? `${url.pathname}${url.search}` : url.href);
+        request.respond({ status: 204, body: "" });
+        return;
+      }
+      request.continue();
+    });
+  }
   await page.setViewport(viewport);
   const response = await page.goto(`http://127.0.0.1:${port}${route}`, { waitUntil: "networkidle0" });
   assert.equal(response.status(), 200, `${route}: HTTP`);
   await settle(page);
+  if (accepted) page.reviewedDeltas = await applyReviewedDeltas(page, route);
+  if (intercept) page.navigations = [];
   page.diagnostics = diagnostics;
   return page;
 }
@@ -155,10 +210,49 @@ function searchCorpus(texts, links) {
   return [...queries];
 }
 
+/* Whole-card activation, observed through real events on both runtimes:
+ * inert-surface click, modifier click, nested-link click and click with an
+ * active text selection, recording navigations and analytics calls. */
+async function cardActivation(page) {
+  await page.bringToFront();
+  const count = await page.evaluate(() => {
+    window.__m3Analytics = [];
+    window.trackAnalyticsNavigation = (...values) => { window.__m3Analytics.push(values.join("|")); };
+    return document.querySelectorAll(".project-card[data-category]").length;
+  });
+  const results = [];
+  const settleClick = () => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0))));
+  for (let index = 0; index < count; index += 1) {
+    const record = {};
+    for (const mode of ["surface", "modifier", "link", "selection"]) {
+      page.navigations.length = 0;
+      await page.evaluate((cardIndex, kind) => {
+        window.__m3Analytics.length = 0;
+        getSelection().removeAllRanges();
+        const card = document.querySelectorAll(".project-card[data-category]")[cardIndex];
+        const surface = [...card.querySelectorAll("p, img, h3, span")].find((node) => !node.closest("a, button"));
+        const link = card.querySelector("a[href]");
+        if (kind === "link" && link) { link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 })); return; }
+        if (kind === "selection") {
+          const text = card.querySelector("p");
+          const range = document.createRange();
+          range.selectNodeContents(text);
+          getSelection().addRange(range);
+        }
+        surface.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ctrlKey: kind === "modifier" }));
+      }, index, mode);
+      await settleClick();
+      record[mode] = { navigations: [...page.navigations], analytics: await page.evaluate(() => [...window.__m3Analytics]) };
+    }
+    results.push(record);
+  }
+  return results;
+}
+
 const acceptedArgument = argument("--accepted-root");
 const currentArgument = argument("--root");
-const accepted = acceptedArgument ? { root: acceptedArgument, cleanup() {} } : buildAcceptedArtifact();
 const fixture = currentArgument ? { mixed: currentArgument, cleanup() {} } : await buildWorksGamesFixture();
+const accepted = acceptedArgument ? { root: acceptedArgument, files: null, cleanup() {} } : composeAcceptedArtifact(fixture.mixed);
 const acceptedServer = serverFor(accepted.root);
 const currentServer = serverFor(fixture.mixed);
 await new Promise((resolve) => acceptedServer.listen(0, "127.0.0.1", resolve));
@@ -168,16 +262,19 @@ const browser = await puppeteer.launch(browserLaunchOptions);
 let assertions = 0;
 let searchChecks = 0;
 let layoutChecks = 0;
+let activationChecks = 0;
+let appliedDeltas = 0;
+let controls = 0;
 try {
-  assert.equal(fs.existsSync(path.join(accepted.root, "works/index.html")), true, "accepted artifact missing");
   assert.equal(/data-react-main/.test(fs.readFileSync(path.join(accepted.root, "works/index.html"), "utf8")), false, "accepted Works must be the legacy-owned document");
   assert.equal(/data-react-main/.test(fs.readFileSync(path.join(fixture.mixed, "works/index.html"), "utf8")), true, "current Works must be React-owned");
-  assertions += 3;
+  assertions += 2;
+  const desktop = { viewport: { width: 1440, height: 900 }, theme: "dark" };
 
   for (const route of ROUTES) {
-    const options = { viewport: { width: 1440, height: 900 }, theme: "dark" };
-    const acceptedPage = await open(browser, ports.accepted, route, options);
-    const currentPage = await open(browser, ports.current, route, options);
+    const acceptedPage = await open(browser, ports.accepted, route, { ...desktop, accepted: true });
+    const currentPage = await open(browser, ports.current, route, desktop);
+    appliedDeltas += acceptedPage.reviewedDeltas;
 
     const acceptedMain = await acceptedPage.evaluate(liveMain);
     const currentMain = await currentPage.evaluate(liveMain);
@@ -185,6 +282,14 @@ try {
     assert.deepEqual(currentMain.search, acceptedMain.search, `${route}: live search control semantics drift`);
     assert.equal(currentMain.search.type, "search", `${route}: native search input`);
     assert.equal(currentMain.legacyCardMarkers, 0, `${route}: legacy card initializer ran on React-owned main`);
+    /* Search copy: server-rendered = live current = live accepted runtime. */
+    const html = fs.readFileSync(path.join(fixture.mixed, `${route.slice(1)}index.html`), "utf8");
+    const ssr = {
+      name: html.match(/data-project-search-label="">([^<]*)</)?.[1],
+      placeholder: html.match(/data-project-search="" placeholder="([^"]*)"/)?.[1],
+    };
+    const decode = (value) => value.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+    assert.deepEqual({ name: decode(ssr.name), placeholder: decode(ssr.placeholder) }, { name: acceptedMain.search.name, placeholder: acceptedMain.search.placeholder }, `${route}: SSR search copy is not the accepted runtime copy`);
     const accessibleSearch = async (page) => {
       const node = await page.accessibility.snapshot({ root: await page.$("[data-project-search]") });
       /* The accepted label also wrapped the boxicons search icon, so its
@@ -195,14 +300,14 @@ try {
     assert.deepEqual(await accessibleSearch(currentPage), await accessibleSearch(acceptedPage), `${route}: accessible search role/name drift`);
     const rawName = (await currentPage.accessibility.snapshot({ root: await currentPage.$("[data-project-search]") })).name;
     assert.equal(/[-]/.test(rawName), false, `${route}: icon glyph leaked into the accessible name`);
-    assertions += 6;
+    assertions += 7;
 
     const categories = await acceptedPage.evaluate(() => [...document.querySelectorAll("[data-filter-btn]")].map((node) => node.dataset.filterBtn));
     assert.deepEqual(await currentPage.evaluate(() => [...document.querySelectorAll("[data-filter-btn]")].map((node) => node.dataset.filterBtn)), categories);
     assert.equal(categories.length, route.endsWith("works/") ? 7 : 5, `${route}: filter count`);
     assertions += 2;
-    const cards = await acceptedPage.evaluate(() => [...document.querySelectorAll(".project-card[data-category]")].map((node) => ({ text: node.textContent, link: node.dataset.projectLink || node.dataset.gameLink })));
-    const corpus = searchCorpus(cards.map((card) => card.text), cards.map((card) => card.link));
+    const cards = await acceptedPage.evaluate(() => [...document.querySelectorAll(".project-card[data-category]")].map((node) => ({ text: node.textContent, link: node.dataset.projectLink || node.dataset.gameLink || "" })));
+    const corpus = searchCorpus(cards.map((card) => card.text), cards.map((card) => card.link).filter(Boolean));
     for (const category of categories) {
       const queries = category === "all" ? corpus : corpus.filter((_, index) => index % 6 === 0);
       for (const query of queries) {
@@ -217,13 +322,26 @@ try {
     await acceptedPage.close();
     await currentPage.close();
 
+    /* Card activation contract, compared card by card with the accepted runtime. */
+    const acceptedActivation = await open(browser, ports.accepted, route, { ...desktop, accepted: true, intercept: true });
+    const currentActivation = await open(browser, ports.current, route, { ...desktop, intercept: true });
+    const expectedActivation = await cardActivation(acceptedActivation);
+    const actualActivation = await cardActivation(currentActivation);
+    assert.deepEqual(actualActivation, expectedActivation, `${route}: card activation drift against the accepted runtime`);
+    assert.ok(expectedActivation.some((card) => card.surface.navigations.length === 1), `${route}: at least one card must be navigable`);
+    if (route.endsWith("works/")) assert.ok(expectedActivation.some((card) => card.surface.navigations.length === 0), `${route}: the inert card must stay inert`);
+    activationChecks += expectedActivation.length * 4;
+    assertions += 3;
+    await acceptedActivation.close();
+    await currentActivation.close();
+
     for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
       for (const theme of ["dark", "light"]) {
         const label = `${route} ${viewport.width}px ${theme}`;
         /* Background tabs do not render, so each side is measured alone in front. */
         const pages = [];
-        for (const port of [ports.accepted, ports.current]) {
-          const page = await open(browser, port, route, { viewport, theme });
+        for (const [port, isAccepted] of [[ports.accepted, true], [ports.current, false]]) {
+          const page = await open(browser, port, route, { viewport, theme, accepted: isAccepted });
           await page.bringToFront();
           page.layout = await page.evaluate(layout);
           pages.push(page);
@@ -238,42 +356,65 @@ try {
       }
     }
   }
+  assert.equal(appliedDeltas, reviewedDeltas.length, "every reviewed copy delta must be applied exactly once on its document");
+  assertions += 1;
 
   /* Negative controls: each sabotages the live current page and must be
    * detected by the same comparison against the live accepted page. */
   const controlOptions = { viewport: { width: 1440, height: 900 }, theme: "dark" };
-  const controls = [
-    ["protected-term casing drift", liveMain, () => document.querySelector('[data-message-key="works.category.pythonSoftware"]').removeAttribute("data-preserve-case")],
-    ["wrong locale copy", liveMain, () => { document.querySelector(".project-card h3 a").textContent = "Wrong locale copy"; }],
-    ["unexpected attribute drift", liveMain, () => document.querySelector(".project-card").setAttribute("data-category", "ai")],
-    ["layout drift", layout, () => { document.querySelector(".project-card h3").style.fontSize = "40px"; }],
+  const comparisons = [
+    ["protected-term casing drift", "/works/", liveMain, () => document.querySelector('[data-message-key="works.category.pythonSoftware"]').removeAttribute("data-preserve-case")],
+    ["wrong locale copy", "/works/", liveMain, () => { document.querySelector(".project-card h3 a").textContent = "Wrong locale copy"; }],
+    ["unexpected attribute drift", "/works/", liveMain, () => document.querySelector(".project-card").setAttribute("data-category", "ai")],
+    ["search copy rewritten after hydration", "/de/works/", liveMain, () => { document.querySelector("[data-project-search]").placeholder = "Nach Projekt, Technologie oder Stichwort suchen..."; }],
+    ["layout drift", "/works/", layout, () => { document.querySelector(".project-card h3").style.fontSize = "40px"; }],
   ];
-  for (const [name, probe, sabotage] of controls) {
-    const acceptedPage = await open(browser, ports.accepted, "/works/", controlOptions);
+  for (const [name, route, probe, sabotage] of comparisons) {
+    const acceptedPage = await open(browser, ports.accepted, route, { ...controlOptions, accepted: true });
     await acceptedPage.bringToFront();
     const expected = await acceptedPage.evaluate(probe);
-    const currentPage = await open(browser, ports.current, "/works/", controlOptions);
+    const currentPage = await open(browser, ports.current, route, controlOptions);
     await currentPage.bringToFront();
     assert.deepEqual(await currentPage.evaluate(probe), expected, `${name}: control baseline must match before sabotage`);
     await currentPage.evaluate(sabotage);
     const actual = await currentPage.evaluate(probe);
     assert.throws(() => assert.deepEqual(actual, expected), undefined, `${name} negative control did not fail`);
-    assertions += 2;
+    controls += 1;
     await acceptedPage.close();
     await currentPage.close();
   }
   {
-    const pages = await Promise.all([open(browser, ports.accepted, "/works/", controlOptions), open(browser, ports.current, "/works/", controlOptions)]);
+    const pages = [await open(browser, ports.accepted, "/works/", { ...controlOptions, accepted: true }), await open(browser, ports.current, "/works/", controlOptions)];
     const expected = await apply(pages[0], "game", "");
     await apply(pages[1], "game", "");
     await pages[1].evaluate(() => document.querySelector(".project-card.is-hidden").classList.remove("is-hidden"));
     const actual = await pages[1].evaluate(catalogState);
     assert.throws(() => assert.deepEqual(actual, expected), undefined, "incorrect category visibility negative control did not fail");
-    assertions += 1;
+    controls += 1;
     await Promise.all(pages.map((page) => page.close()));
   }
+  for (const [name, route, sabotage] of [
+    ["inert card made navigable", "/works/", () => {
+      const inert = [...document.querySelectorAll(".project-card[data-category]")].find((card) => !card.dataset.projectLink);
+      inert.addEventListener("click", () => { location.href = "/ai-flow-puzzle-case-study/"; });
+    }],
+    ["Games card analytics added", "/games/", () => {
+      document.querySelector(".project-card[data-game-link]").addEventListener("click", () => window.trackAnalyticsNavigation("/merge-rush-case-study/", "games"));
+    }],
+  ]) {
+    const acceptedPage = await open(browser, ports.accepted, route, { ...controlOptions, accepted: true, intercept: true });
+    const currentPage = await open(browser, ports.current, route, { ...controlOptions, intercept: true });
+    const expected = await cardActivation(acceptedPage);
+    assert.deepEqual(await cardActivation(currentPage), expected, `${name}: control baseline must match before sabotage`);
+    await currentPage.evaluate(sabotage);
+    const actual = await cardActivation(currentPage);
+    assert.throws(() => assert.deepEqual(actual, expected), undefined, `${name} negative control did not fail`);
+    controls += 1;
+    await acceptedPage.close();
+    await currentPage.close();
+  }
 
-  console.log(`G-65 Works/Games accepted differential passed. ${assertions} assertions · 10 documents · ${searchChecks} search/filter states · ${layoutChecks} element geometry/style checks (desktop/mobile × dark/light) · authority=${ACCEPTED_REF}.`);
+  console.log(`G-65 Works/Games accepted differential passed. ${assertions} assertions · 10 documents · composed accepted artifact ${accepted.files ?? "(external)"} files hash-exact · ${searchChecks} search/filter states · ${activationChecks} card activations · ${layoutChecks} element geometry/style checks (desktop/mobile × dark/light) · ${appliedDeltas} reviewed copy deltas · ${controls} live negative controls · authority=${M3_26_ACCEPTED_REF}.`);
 } finally {
   await browser.close();
   await new Promise((resolve) => acceptedServer.close(resolve));
