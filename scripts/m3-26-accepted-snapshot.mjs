@@ -45,6 +45,8 @@ export function loadAcceptedSnapshot() {
     /* Independent anchor: the same bytes were already accepted by #25-A. */
     if (accepted.get(file)?.sha256 !== sha) throw new Error(`${file}: snapshot is not the independently accepted #25-A document`);
   }
+  /* Home/About hashes are self-recorded: no accepted manifest pins those
+   * documents, so the payload is also gated by m3-25b-home-about-payload.mjs. */
   if (JSON.stringify(Object.keys(snapshot.homeAbout || {}).sort()) !== JSON.stringify([...HOME_ABOUT_DOCUMENTS].sort())) throw new Error("#26 snapshot must pin all ten Home/About documents");
   cached = snapshot;
   return snapshot;

@@ -96,6 +96,7 @@ if (process.argv.includes("--run")) {
       "scripts/qa-m3-works-games-parity.mjs",
       "scripts/qa-m3-works-games-i18n-authority.mjs",
       "scripts/qa-m3-artifact-parity.mjs",
+      "scripts/qa-m3-home-about-payload.mjs",
       ...(process.argv.includes("--full") ? ["scripts/qa-m3-works-games-differential.mjs"] : []),
     ];
     for (const gate of gates) {

@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "acceptedRef": "24be2f8159a0925dc00f29375ea8740738214df3",
+  "algorithm": "sha256",
+  "scope": "react-main-props payload text, verbatim",
+  "documents": {
+    "index.html": {
+      "sha256": "44e957ea57141a4df4a1186349b30324ceb0ba398a3a472fb633826e12da3ea2",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "about/index.html": {
+      "sha256": "ea03ceed3b42dcc03adc6dbe408b14d3d65c65fb0dc2f5c3306f509ec012975d",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "tr/index.html": {
+      "sha256": "b608f65f603161e0c7e4e20d163328838f4861994bd992007cc0b7bbe44c8ccf",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "tr/about/index.html": {
+      "sha256": "871e725876e1c5b4faaf5cbcb8a90977c0274396fd2a294b0197173657669326",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "de/index.html": {
+      "sha256": "2219209beadfdc15ba90927640b24ce0c6413dbd397fa47450d99261cac8ef64",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "de/about/index.html": {
+      "sha256": "0a9149bded3f5a3d0464799920f1ddc1f8061bfc4ce84eb644081766dbe0a2d7",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "es/index.html": {
+      "sha256": "0c14a850956cc620ee89513b799b7b077dd730d2dbffb89291939124db3cf3b9",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "es/about/index.html": {
+      "sha256": "168a88c508a67d99098f2abb29e9caa3dc3f48adf68aaf5ee2cb9921a8a7004b",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "fr/index.html": {
+      "sha256": "994a0357e6502fd1b2b27cb46829db9cc9c1ca590154ca5010d2ec47c31baab5",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    },
+    "fr/about/index.html": {
+      "sha256": "48df36d6cae8f9b4184e747251d38f03f65c1263a445512821280e97a1cfbc0a",
+      "keys": [
+        "page",
+        "locale",
+        "copy",
+        "compat",
+        "links",
+        "data",
+        "buildLog"
+      ]
+    }
+  }
+}

@@ -18,6 +18,7 @@ import {
 } from "./artifact-parity.mjs";
 import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
 import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
+import { assertHomeAboutPayload } from "./m3-25b-home-about-payload.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_FILE = path.join(ROOT, "data/site/m3-25a-accepted-artifact.json");
@@ -176,10 +177,13 @@ try {
   }
 
   /* Home/About: byte-identical to the accepted 24be2f8 documents except for
-   * the content-addressed React bundle name. */
+   * the content-addressed React bundle name. The snapshot hashes are
+   * self-recorded, so the hydration payload is also held to the independently
+   * derived #25-B payload contract. */
   const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(fs.readFileSync(path.join(directory, file), "utf8")));
   for (const file of HOME_ABOUT_DOCUMENTS) {
     assert.equal(digest(homeAboutBytes(mixed, file)), acceptedHomeAboutHash(file), `${file}: Home/About drifted from the accepted #25-B document`);
+    assertHomeAboutPayload(fs.readFileSync(path.join(mixed, file), "utf8"), file);
   }
   const drifted = fs.readFileSync(path.join(mixed, "index.html"), "utf8").replace('"page":"home",', '"page":"home","structure":null,');
   assert.notEqual(digest(Buffer.from(bundleNormalized(drifted))), acceptedHomeAboutHash("index.html"), "Home payload drift control did not fail");
