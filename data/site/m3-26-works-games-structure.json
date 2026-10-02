@@ -1,0 +1,4957 @@
+{
+  "schemaVersion": 3,
+  "acceptedRef": "24be2f8159a0925dc00f29375ea8740738214df3",
+  "locales": [
+    "en",
+    "tr",
+    "de",
+    "es",
+    "fr"
+  ],
+  "catalogSearch": {
+    "works": {
+      "authority": "structured-runtime",
+      "namespace": "ultimate",
+      "label": "projectSearchLabel",
+      "placeholder": "projectSearchPlaceholder"
+    },
+    "games": {
+      "authority": "page-phrase",
+      "label": "Search games",
+      "placeholder": "Search by game, category or feature..."
+    }
+  },
+  "roleLabel": "works.card.roleLabel",
+  "pages": {
+    "works": {
+      "source": "works/index.html",
+      "children": [
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "page-hero section-shell reveal"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "eyebrow"
+                },
+                {
+                  "name": "data-message-key",
+                  "value": "works.hero.eyebrow"
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "works.hero.eyebrow"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "h1",
+              "attributes": [
+                {
+                  "name": "data-message-key",
+                  "value": "works.hero.title"
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "works.hero.title"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "p",
+              "attributes": [
+                {
+                  "name": "data-message-key",
+                  "value": "works.hero.lead"
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "works.hero.lead"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "hero-actions left"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn primary"
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "works.hero.aiView"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/?role=applied-ai"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.hero.aiView"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "works.hero.discoveryView"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/?role=solution-engineering"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.hero.discoveryView"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "works.hero.labs"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/labs/"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.hero.labs"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "space"
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "role",
+                  "value": "group"
+                },
+                {
+                  "name": "aria-label",
+                  "value": {
+                    "type": "message",
+                    "key": "works.filter.aria"
+                  }
+                },
+                {
+                  "name": "class",
+                  "value": "filter-bar reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn active"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "all"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.filter.all"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "ai"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.filter.ai"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "software"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.filter.software"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "web"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.filter.web"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "data"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.domain.data"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "mobile"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.domain.mobile"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "game"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "works.filter.game"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "space"
+            },
+            {
+              "type": "element",
+              "tag": "section",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "project-tier project-tier-selected"
+                },
+                {
+                  "name": "data-project-section",
+                  "value": true
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "project-tier-heading"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "eyebrow"
+                        },
+                        {
+                          "name": "data-message-key",
+                          "value": "works.primary.eyebrow"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "works.primary.eyebrow"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h2",
+                      "attributes": [
+                        {
+                          "name": "data-message-key",
+                          "value": "works.primary.title"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "works.primary.title"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "project-grid catalog-grid"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card reveal"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "ai software"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "/sinama-case-study/"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "works.card.sinama.alt"
+                              }
+                            },
+                            {
+                              "name": "class",
+                              "value": "project-cover-contain"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/sinama-works-card.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1600"
+                            },
+                            {
+                              "name": "height",
+                              "value": "1200"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.sinama.category"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "class",
+                                      "value": "project-status is-live"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.sinama.status"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.fastapi"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.postgresql"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.nextjs"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.tag.regression"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.regression"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.sinama.links.caseStudy"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "data",
+                                      "path": "projects.sinama.name"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "sinama"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "sinama",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "sinama",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "sinama"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "works.primary.sinama.summary"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.primary.sinama.summary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-actions"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.sinama.links.caseStudy"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.action.viewCaseStudy"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.sinama.links.live"
+                                      }
+                                    },
+                                    {
+                                      "name": "rel",
+                                      "value": "noopener noreferrer"
+                                    },
+                                    {
+                                      "name": "target",
+                                      "value": "_blank"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.action.liveProduct"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.sinama.links.github"
+                                      }
+                                    },
+                                    {
+                                      "name": "rel",
+                                      "value": "noopener"
+                                    },
+                                    {
+                                      "name": "target",
+                                      "value": "_blank"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.action.github"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card reveal delay-1"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "ai"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "ai-chatbot-flow-design"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "works.alt.aiChatbotFlow"
+                              }
+                            },
+                            {
+                              "name": "data-message-alt-key",
+                              "value": "works.alt.aiChatbotFlow"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/ai_flow_chatbot_design_cover.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1672"
+                            },
+                            {
+                              "name": "height",
+                              "value": "941"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.chatbot.category"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.tag.customerWorkflows"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.customerWorkflows"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.chatbotQa"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.tag.multiChannel"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.multiChannel"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.chatbotFlow.links.caseStudy"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.chatbot.title"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "ai-chatbot-flow-design"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "ai-chatbot-flow-design",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "ai-chatbot-flow-design",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "ai-chatbot-flow-design"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "works.primary.chatbot.summary"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.primary.chatbot.summary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "data",
+                                    "path": "projects.chatbotFlow.links.caseStudy"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.action.viewDetails"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card reveal delay-2"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "web"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "/atolye-joyday-case-study/"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "works.card.joyday.alt"
+                              }
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/joyday-homepage-preview.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1860"
+                            },
+                            {
+                              "name": "height",
+                              "value": "935"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.joyday.category"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "class",
+                                      "value": "project-status is-live"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.status.live"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.javascript"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.appsScript"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.reservationFlow"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.joyday.links.caseStudy"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.joyday.title"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "joyday"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "joyday",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "joyday",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "joyday"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "works.primary.joyday.summary"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.primary.joyday.summary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-actions"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.joyday.links.caseStudy"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.action.viewCaseStudy"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.joyday.links.live"
+                                      }
+                                    },
+                                    {
+                                      "name": "rel",
+                                      "value": "noopener noreferrer"
+                                    },
+                                    {
+                                      "name": "target",
+                                      "value": "_blank"
+                                    },
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "portfolio.cta.liveWebsite"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "portfolio.cta.liveWebsite"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "space"
+            },
+            {
+              "type": "element",
+              "tag": "section",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "project-tier"
+                },
+                {
+                  "name": "data-project-section",
+                  "value": true
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "project-tier-heading"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "eyebrow"
+                        },
+                        {
+                          "name": "data-message-key",
+                          "value": "portfolio.label.supportingEvidence"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "portfolio.label.supportingEvidence"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h2",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "message",
+                            "key": "works.supporting.title",
+                            "locale": "en"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "message",
+                            "key": "works.supporting.title",
+                            "locale": "tr"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "works.supporting.title"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "project-grid catalog-grid"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card reveal"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "game software"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "/merge-rush-case-study/"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "mergeRush.cover.alt"
+                              }
+                            },
+                            {
+                              "name": "class",
+                              "value": "project-cover-contain"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/merge-rush-case-cover.svg"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1200"
+                            },
+                            {
+                              "name": "height",
+                              "value": "720"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.category.productSystems"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.category.productSystems"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "class",
+                                      "value": "project-status"
+                                    },
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "portfolio.status.activeDevelopment"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "portfolio.status.activeDevelopment"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.phaser3"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.typescript"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.vitest"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.platformAdapter"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.mergeRush.links.caseStudy"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "data",
+                                      "path": "projects.mergeRush.name"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "mergeRush"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "mergeRush",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "mergeRush",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "mergeRush"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "works.supporting.mergeRush.summary"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.supporting.mergeRush.summary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "data",
+                                    "path": "projects.mergeRush.links.caseStudy"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.action.viewCaseStudy"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card reveal delay-1"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "software"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "/hospital-system-case-study/"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "works.alt.hospitalFormApp"
+                              }
+                            },
+                            {
+                              "name": "data-message-alt-key",
+                              "value": "works.alt.hospitalFormApp"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/hospital_form_app_cover.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1920"
+                            },
+                            {
+                              "name": "height",
+                              "value": "1072"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.category.workflowFoundation"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.category.workflowFoundation"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "class",
+                                      "value": "project-status"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.status.sourceArchive"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.csharpDotnet"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.windowsForms"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.sqlServer"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.hospital.links.caseStudy"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.hospital.title"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "hospital"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "hospital",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "hospital",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "hospital"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "works.supporting.hospital.summary"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.supporting.hospital.summary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-actions"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.hospital.links.caseStudy"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.action.viewCaseStudy"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "data",
+                                        "path": "projects.hospital.links.github"
+                                      }
+                                    },
+                                    {
+                                      "name": "rel",
+                                      "value": "noopener noreferrer"
+                                    },
+                                    {
+                                      "name": "target",
+                                      "value": "_blank"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.status.sourceArchive"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card reveal"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "ai game"
+                        },
+                        {
+                          "name": "data-game-link",
+                          "value": "/ai-flow-puzzle-case-study/"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "portfolio.alt.aiFlowPuzzle"
+                              }
+                            },
+                            {
+                              "name": "data-message-alt-key",
+                              "value": "portfolio.alt.aiFlowPuzzle"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/ai_flow_puzzle_cover.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1672"
+                            },
+                            {
+                              "name": "height",
+                              "value": "941"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.category.interactiveLab"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.category.interactiveLab"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "class",
+                                      "value": "project-status is-live"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.status.live"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.javascript"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.nodeLogic"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.tag.validation"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.validation"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "internal",
+                                        "path": "/ai-flow-puzzle-case-study/"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.aiFlow.title"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "ai-flow-puzzle"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "message",
+                                    "key": "works.card.aiFlow.role",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "message",
+                                    "key": "works.card.aiFlow.role",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.card.aiFlow.role"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.archive.aiFlow"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-actions"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "internal",
+                                        "path": "/ai-flow-puzzle-case-study/"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.action.caseStudy"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "internal",
+                                        "path": "/ai-flow-puzzle/"
+                                      }
+                                    },
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "portfolio.cta.play"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "portfolio.cta.play"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card is-archive reveal delay-1"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "software"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "hospital-appointment-system"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "works.card.hospitalAppointment.alt"
+                              }
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/hastane.jpg"
+                            },
+                            {
+                              "name": "width",
+                              "value": "612"
+                            },
+                            {
+                              "name": "height",
+                              "value": "612"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.category.pythonSoftware"
+                                    },
+                                    {
+                                      "name": "data-preserve-case",
+                                      "value": true
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.category.pythonSoftware"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.python"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.tkinter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.mysql"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "internal",
+                                        "path": "/projects/hospital-appointment-system/"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.hospitalAppointment.title"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "hospital-appointment-system"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "hospital-appointment-system",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "hospital-appointment-system",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "hospital-appointment-system"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.archive.hospital"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/projects/hospital-appointment-system/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.action.viewDetails"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card is-archive reveal delay-2"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "data"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "cars-dataset-analysis"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "works.card.cars.alt"
+                              }
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/what-is-data-analyst.jpg"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1439"
+                            },
+                            {
+                              "name": "height",
+                              "value": "729"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.domain.data"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.python"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.pandas"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.linearRegression"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "internal",
+                                        "path": "/projects/cars-dataset-analysis/"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.cars.title"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "cars-dataset-analysis"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "cars-dataset-analysis",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "cars-dataset-analysis",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "cars-dataset-analysis"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.archive.cars"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/projects/cars-dataset-analysis/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.action.viewDetails"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card is-archive reveal"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "game"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "legacy-of-the-lost"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "works.archive.legacy.alt"
+                              }
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/legacy-of-the-lost-cover.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "1280"
+                            },
+                            {
+                              "name": "height",
+                              "value": "720"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [
+                                    {
+                                      "name": "data-message-key",
+                                      "value": "works.category.gamePrototype"
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.category.gamePrototype"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.unrealEngine5"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.puzzleDesign"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.interaction"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "internal",
+                                        "path": "/projects/legacy-of-the-lost/"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.legacy.title"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "legacy-of-the-lost"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "legacy-of-the-lost",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "legacy-of-the-lost",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "legacy-of-the-lost"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.archive.legacy.body"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/projects/legacy-of-the-lost/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.action.viewDetails"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "article",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-card is-archive reveal delay-1"
+                        },
+                        {
+                          "name": "data-category",
+                          "value": "mobile"
+                        },
+                        {
+                          "name": "data-project-link",
+                          "value": "my-museum"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "img",
+                          "attributes": [
+                            {
+                              "name": "alt",
+                              "value": {
+                                "type": "message",
+                                "key": "works.card.museum.alt"
+                              }
+                            },
+                            {
+                              "name": "loading",
+                              "value": "lazy"
+                            },
+                            {
+                              "name": "src",
+                              "value": "/assets/insatagram.webp"
+                            },
+                            {
+                              "name": "width",
+                              "value": "960"
+                            },
+                            {
+                              "name": "height",
+                              "value": "540"
+                            },
+                            {
+                              "name": "decoding",
+                              "value": "async"
+                            }
+                          ],
+                          "children": []
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-content"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-meta"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.domain.mobile"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "div",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-tags"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.kotlin"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.firebase"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "span",
+                                  "attributes": [],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.tag.android"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "h3",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "a",
+                                  "attributes": [
+                                    {
+                                      "name": "href",
+                                      "value": {
+                                        "type": "internal",
+                                        "path": "/projects/my-museum/"
+                                      }
+                                    }
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "message",
+                                      "key": "works.card.museum.title"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "project-role"
+                                },
+                                {
+                                  "name": "data-role-for",
+                                  "value": "my-museum"
+                                },
+                                {
+                                  "name": "data-pv2-en",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "my-museum",
+                                    "locale": "en"
+                                  }
+                                },
+                                {
+                                  "name": "data-pv2-tr",
+                                  "value": {
+                                    "type": "role",
+                                    "ref": "my-museum",
+                                    "locale": "tr"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "role",
+                                  "ref": "my-museum"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "p",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.archive.museum.body"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/projects/my-museum/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "works.action.viewDetails"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "space"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "space"
+            },
+            {
+              "type": "element",
+              "tag": "section",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-shell section-block"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "cta-panel reveal"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "eyebrow"
+                            },
+                            {
+                              "name": "data-message-key",
+                              "value": "works.archive.eyebrow"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "works.archive.eyebrow"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "h2",
+                          "attributes": [
+                            {
+                              "name": "data-pv2-en",
+                              "value": {
+                                "type": "message",
+                                "key": "works.archiveCta.title",
+                                "locale": "en"
+                              }
+                            },
+                            {
+                              "name": "data-pv2-tr",
+                              "value": {
+                                "type": "message",
+                                "key": "works.archiveCta.title",
+                                "locale": "tr"
+                              }
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "works.archiveCta.title"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "data-pv2-en",
+                              "value": {
+                                "type": "message",
+                                "key": "works.archiveCta.body",
+                                "locale": "en"
+                              }
+                            },
+                            {
+                              "name": "data-pv2-tr",
+                              "value": {
+                                "type": "message",
+                                "key": "works.archiveCta.body",
+                                "locale": "tr"
+                              }
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "works.archiveCta.body"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "cta-actions"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "a",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "btn primary"
+                            },
+                            {
+                              "name": "href",
+                              "value": "https://github.com/UAJOP"
+                            },
+                            {
+                              "name": "rel",
+                              "value": "noopener"
+                            },
+                            {
+                              "name": "target",
+                              "value": "_blank"
+                            },
+                            {
+                              "name": "data-message-key",
+                              "value": "works.archive.github"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "works.archive.github"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "a",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "btn ghost"
+                            },
+                            {
+                              "name": "href",
+                              "value": {
+                                "type": "internal",
+                                "path": "/labs/"
+                              }
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "shared.kaanLabs"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "space"
+            }
+          ]
+        }
+      ]
+    },
+    "games": {
+      "source": "games/index.html",
+      "children": [
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "page-hero section-shell reveal games-hero"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "eyebrow"
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "games.hero.eyebrow"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "h1",
+              "attributes": [
+                {
+                  "name": "data-pv2-en",
+                  "value": {
+                    "type": "message",
+                    "key": "games.hero.title",
+                    "locale": "en"
+                  }
+                },
+                {
+                  "name": "data-pv2-tr",
+                  "value": {
+                    "type": "message",
+                    "key": "games.hero.title",
+                    "locale": "tr"
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "games.hero.title"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "p",
+              "attributes": [
+                {
+                  "name": "data-pv2-en",
+                  "value": {
+                    "type": "message",
+                    "key": "games.hero.lead",
+                    "locale": "en"
+                  }
+                },
+                {
+                  "name": "data-pv2-tr",
+                  "value": {
+                    "type": "message",
+                    "key": "games.hero.lead",
+                    "locale": "tr"
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "type": "message",
+                  "key": "games.hero.lead"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "hero-actions left"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn primary"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "data",
+                        "path": "projects.mergeRush.links.caseStudy"
+                      }
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "games.hero.viewMergeRush"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "games.hero.viewMergeRush"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/?role=game"
+                      }
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "portfolio.cta.gameRecruiterView"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "portfolio.cta.gameRecruiterView"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "btn ghost"
+                    },
+                    {
+                      "name": "href",
+                      "value": {
+                        "type": "internal",
+                        "path": "/labs/"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "shared.kaanLabs"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "space"
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block games-featured"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "section-heading reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "eyebrow"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "games.catalog.eyebrow"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "attributes": [
+                    {
+                      "name": "data-pv2-en",
+                      "value": {
+                        "type": "message",
+                        "key": "games.catalog.title",
+                        "locale": "en"
+                      }
+                    },
+                    {
+                      "name": "data-pv2-tr",
+                      "value": {
+                        "type": "message",
+                        "key": "games.catalog.title",
+                        "locale": "tr"
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "games.catalog.title"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "role",
+                  "value": "group"
+                },
+                {
+                  "name": "aria-label",
+                  "value": {
+                    "type": "message",
+                    "key": "games.filter.aria"
+                  }
+                },
+                {
+                  "name": "class",
+                  "value": "filter-bar reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn active"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "all"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "games.filter.all"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "product"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    },
+                    {
+                      "name": "data-message-key",
+                      "value": "games.filter.product"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "games.filter.product"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "ai"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "games.filter.ai"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "creative"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "games.filter.creative"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "button",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "filter-btn"
+                    },
+                    {
+                      "name": "data-filter-btn",
+                      "value": "career"
+                    },
+                    {
+                      "name": "type",
+                      "value": "button"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "message",
+                      "key": "games.domain.career"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "project-grid catalog-grid games-grid"
+                }
+              ],
+              "children": [
+                {
+                  "type": "space"
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "project-card game-card reveal"
+                    },
+                    {
+                      "name": "data-category",
+                      "value": "product"
+                    },
+                    {
+                      "name": "data-game-link",
+                      "value": "/merge-rush-case-study/"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "img",
+                      "attributes": [
+                        {
+                          "name": "alt",
+                          "value": {
+                            "type": "message",
+                            "key": "games.alt.mergeRush"
+                          }
+                        },
+                        {
+                          "name": "data-message-alt-key",
+                          "value": "games.alt.mergeRush"
+                        },
+                        {
+                          "name": "class",
+                          "value": "project-cover-contain"
+                        },
+                        {
+                          "name": "decoding",
+                          "value": "async"
+                        },
+                        {
+                          "name": "loading",
+                          "value": "lazy"
+                        },
+                        {
+                          "name": "src",
+                          "value": "/assets/merge-rush-case-cover.svg"
+                        },
+                        {
+                          "name": "width",
+                          "value": "1200"
+                        },
+                        {
+                          "name": "height",
+                          "value": "720"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-content"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "game-status-row"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "game-status planned"
+                                },
+                                {
+                                  "name": "data-message-key",
+                                  "value": "portfolio.status.activeDevelopment"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "portfolio.status.activeDevelopment"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.mergeRush.stack"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-tags"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "games.tag.mergeGame"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.mergeGame"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.factoryRun"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "portfolio.label.progression"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "portfolio.label.progression"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.youtubePlayables"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "data",
+                                    "path": "projects.mergeRush.links.caseStudy"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "data",
+                                  "path": "projects.mergeRush.name"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [
+                            {
+                              "name": "data-pv2-en",
+                              "value": {
+                                "type": "message",
+                                "key": "games.mergeRush.body",
+                                "locale": "en"
+                              }
+                            },
+                            {
+                              "name": "data-pv2-tr",
+                              "value": {
+                                "type": "message",
+                                "key": "games.mergeRush.body",
+                                "locale": "tr"
+                              }
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "games.mergeRush.body"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "a",
+                          "attributes": [
+                            {
+                              "name": "href",
+                              "value": {
+                                "type": "data",
+                                "path": "projects.mergeRush.links.caseStudy"
+                              }
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "games.action.viewCaseStudy"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "space"
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "project-card game-card reveal delay-1"
+                    },
+                    {
+                      "name": "data-category",
+                      "value": "ai"
+                    },
+                    {
+                      "name": "data-game-link",
+                      "value": "/ai-flow-puzzle/"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "img",
+                      "attributes": [
+                        {
+                          "name": "alt",
+                          "value": {
+                            "type": "message",
+                            "key": "portfolio.alt.aiFlowPuzzle"
+                          }
+                        },
+                        {
+                          "name": "data-message-alt-key",
+                          "value": "portfolio.alt.aiFlowPuzzle"
+                        },
+                        {
+                          "name": "decoding",
+                          "value": "async"
+                        },
+                        {
+                          "name": "loading",
+                          "value": "lazy"
+                        },
+                        {
+                          "name": "src",
+                          "value": "/assets/ai_flow_puzzle_cover.webp"
+                        },
+                        {
+                          "name": "width",
+                          "value": "1672"
+                        },
+                        {
+                          "name": "height",
+                          "value": "941"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-content"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "game-status-row"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "game-status live"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.status.live"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.aiFlow.stack"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-tags"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.aiFlow"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "data-message-key",
+                                  "value": "games.tag.logicPuzzle"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.logicPuzzle"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.chatbot"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/ai-flow-puzzle/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.aiFlow.title"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "games.aiFlow.body"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-actions"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/ai-flow-puzzle/"
+                                  }
+                                },
+                                {
+                                  "name": "data-message-key",
+                                  "value": "portfolio.cta.play"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "portfolio.cta.play"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/ai-flow-puzzle-case-study/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.action.caseStudy"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "space"
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "project-card game-card reveal delay-2"
+                    },
+                    {
+                      "name": "data-category",
+                      "value": "creative"
+                    },
+                    {
+                      "name": "data-game-link",
+                      "value": "/joyday-paint/"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "img",
+                      "attributes": [
+                        {
+                          "name": "alt",
+                          "value": {
+                            "type": "message",
+                            "key": "games.alt.joydayPaint"
+                          }
+                        },
+                        {
+                          "name": "data-message-alt-key",
+                          "value": "games.alt.joydayPaint"
+                        },
+                        {
+                          "name": "loading",
+                          "value": "lazy"
+                        },
+                        {
+                          "name": "src",
+                          "value": "/assets/joyday-brand-logo.webp"
+                        },
+                        {
+                          "name": "width",
+                          "value": "1600"
+                        },
+                        {
+                          "name": "height",
+                          "value": "703"
+                        },
+                        {
+                          "name": "decoding",
+                          "value": "async"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-content"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "game-status-row"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "game-status live"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.status.live"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.stack.canvasJavascript"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-tags"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.actionPainting"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.pngExport"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/joyday-paint/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.joydayPaint.title"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "games.joydayPaint.body"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "a",
+                          "attributes": [
+                            {
+                              "name": "href",
+                              "value": {
+                                "type": "internal",
+                                "path": "/joyday-paint/"
+                              }
+                            },
+                            {
+                              "name": "data-message-key",
+                              "value": "portfolio.cta.play"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "portfolio.cta.play"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "space"
+                },
+                {
+                  "type": "element",
+                  "tag": "article",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "project-card game-card reveal"
+                    },
+                    {
+                      "name": "data-category",
+                      "value": "career"
+                    },
+                    {
+                      "name": "data-game-link",
+                      "value": "/adventure/"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "img",
+                      "attributes": [
+                        {
+                          "name": "alt",
+                          "value": {
+                            "type": "message",
+                            "key": "games.alt.careerAdventure"
+                          }
+                        },
+                        {
+                          "name": "data-message-alt-key",
+                          "value": "games.alt.careerAdventure"
+                        },
+                        {
+                          "name": "decoding",
+                          "value": "async"
+                        },
+                        {
+                          "name": "loading",
+                          "value": "lazy"
+                        },
+                        {
+                          "name": "src",
+                          "value": "/assets/kaanin_kariyer_cover.webp"
+                        },
+                        {
+                          "name": "width",
+                          "value": "1920"
+                        },
+                        {
+                          "name": "height",
+                          "value": "1072"
+                        }
+                      ],
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "div",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "project-content"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "game-status-row"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [
+                                {
+                                  "name": "class",
+                                  "value": "game-status live"
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.status.live"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.stack.canvasJavascript"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "div",
+                          "attributes": [
+                            {
+                              "name": "class",
+                              "value": "project-tags"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.domain.career"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.miniGame"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "span",
+                              "attributes": [],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.tag.merge"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "h3",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": [
+                                {
+                                  "name": "href",
+                                  "value": {
+                                    "type": "internal",
+                                    "path": "/adventure/"
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "type": "message",
+                                  "key": "games.adventure.title"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "attributes": [],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "games.adventure.body"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "a",
+                          "attributes": [
+                            {
+                              "name": "href",
+                              "value": {
+                                "type": "internal",
+                                "path": "/adventure/"
+                              }
+                            },
+                            {
+                              "name": "data-message-key",
+                              "value": "portfolio.cta.play"
+                            }
+                          ],
+                          "children": [
+                            {
+                              "type": "message",
+                              "key": "portfolio.cta.play"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "space"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "space"
+        },
+        {
+          "type": "element",
+          "tag": "section",
+          "attributes": [
+            {
+              "name": "class",
+              "value": "section-shell section-block games-roadmap"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": [
+                {
+                  "name": "class",
+                  "value": "cta-panel reveal"
+                }
+              ],
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "eyebrow"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "games.direction.eyebrow"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "h2",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "message",
+                            "key": "games.direction.title",
+                            "locale": "en"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "message",
+                            "key": "games.direction.title",
+                            "locale": "tr"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "games.direction.title"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": [
+                        {
+                          "name": "data-pv2-en",
+                          "value": {
+                            "type": "message",
+                            "key": "games.direction.body",
+                            "locale": "en"
+                          }
+                        },
+                        {
+                          "name": "data-pv2-tr",
+                          "value": {
+                            "type": "message",
+                            "key": "games.direction.body",
+                            "locale": "tr"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "games.direction.body"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": [
+                    {
+                      "name": "class",
+                      "value": "cta-actions"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn primary"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "data",
+                            "path": "projects.mergeRush.links.caseStudy"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "games.direction.mergeRush"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn ghost"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "internal",
+                            "path": "/labs/"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "shared.kaanLabs"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": [
+                        {
+                          "name": "class",
+                          "value": "btn ghost"
+                        },
+                        {
+                          "name": "href",
+                          "value": {
+                            "type": "internal",
+                            "path": "/now/"
+                          }
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "message",
+                          "key": "games.direction.buildLog"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

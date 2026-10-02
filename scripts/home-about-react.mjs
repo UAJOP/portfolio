@@ -6,9 +6,11 @@ import { localizedBuildLogEntry } from "./shared-localization.mjs";
 import { loadRouteRuntime, loadSiteRoutes } from "./site-routes.mjs";
 import { decodeHtml } from "./localized-html.mjs";
 import { createHomeAboutHeadModel } from "./site-head.mjs";
+import { catalogSearchCopy, defaultCatalogSources, defaultRoleSources, projectRole } from "./m3-works-games-catalog-copy.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
-const structure = readJson("data/site/m3-25b-home-about-structure.json");
+const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
+const worksGamesStructure = readJson("data/site/m3-26-works-games-structure.json");
 const buildLog = readJson("data/portfolio/build-log.json");
 const profile = readJson("data/portfolio/profile.json");
 const projects = readJson("data/portfolio/projects.json");
@@ -48,13 +50,16 @@ const SHELL_MESSAGE_KEYS = [
   "theme.switchToLight",
 ];
 
-function collectRequirements(nodes, requirements = { messages: new Set(), compat: new Set(), internal: new Set() }) {
+function collectRequirements(nodes, requirements = { messages: new Set(), compat: new Set(), internal: new Set(), roles: new Set(), fixedMessages: new Set(), fixedRoles: new Set() }) {
   for (const node of nodes) {
     if (node.type === "message") requirements.messages.add(node.key);
+    if (node.type === "role") requirements.roles.add(node.ref);
     if (node.type !== "element") continue;
     for (const attribute of node.attributes) {
       const value = attribute.value;
-      if (value?.type === "message") requirements.messages.add(value.key);
+      if (value?.type === "message" && value.locale) requirements.fixedMessages.add(`${value.locale}\u0000${value.key}`);
+      else if (value?.type === "message") requirements.messages.add(value.key);
+      if (value?.type === "role") requirements.fixedRoles.add(`${value.locale}\u0000${value.ref}`);
       if (value?.type === "compat") requirements.compat.add(value.key);
       if (value?.type === "internal") requirements.internal.add(value.path);
     }
@@ -76,15 +81,50 @@ function localizedCanonicalData(locale) {
   };
 }
 
-export function productionMainProps(route) {
-  const page = structure.pages[route.routeId];
-  if (!page) throw new Error(`no Home/About production component for ${route.routeId}`);
-  if (structure.acceptedRef !== "34fdfad01f63004ed10d616a7b061e3996c28150") {
-    throw new Error("Home/About React structure is not tied to the accepted pre-cutover ref");
+/* Catalog-card whole-surface navigation, exactly as the accepted runtime
+ * authorized it: on Works, js/portfolio/works.js handles data-project-link (a
+ * path is a page route, a bare slug is a canonical project page); on Games,
+ * js/pages/games.js handles data-game-link. Other cards stay inert. */
+function catalogCardDestinations(nodes, locale, page, destinations = {}) {
+  for (const node of nodes) {
+    if (node.type !== "element") continue;
+    for (const attribute of node.attributes) {
+      if (typeof attribute.value !== "string") continue;
+      if (page === "works" && attribute.name === "data-project-link") {
+        const slug = attribute.value;
+        destinations[slug] = routeRuntime.localizedInternalHref(slug.includes("/") || slug.includes(".") ? slug : `/projects/${encodeURIComponent(slug)}/`, locale);
+      }
+      if (page === "games" && attribute.name === "data-game-link") destinations[attribute.value] = routeRuntime.localizedInternalHref(attribute.value, locale);
+    }
+    catalogCardDestinations(node.children, locale, page, destinations);
   }
-  const localization = loadProductionLocalization(route.locale);
+  return destinations;
+}
+
+/* The injectable sources exist so the source-authority gate can prove that
+ * rendered copy comes only from the canonical authorities and fails closed. */
+export function productionMainProps(route, {
+  loadLocalization = loadProductionLocalization,
+  catalogSources = defaultCatalogSources(),
+  roleSources = defaultRoleSources(),
+} = {}) {
+  const catalogPage = worksGamesStructure.pages[route.routeId];
+  const structure = catalogPage ? worksGamesStructure : homeAboutStructure;
+  const page = structure.pages[route.routeId];
+  if (!page) throw new Error(`no production React component for ${route.routeId}`);
+  if (homeAboutStructure.acceptedRef !== "34fdfad01f63004ed10d616a7b061e3996c28150") {
+    throw new Error("Home/About React structure is not tied to its accepted pre-cutover ref");
+  }
+  if (worksGamesStructure.acceptedRef !== "24be2f8159a0925dc00f29375ea8740738214df3") {
+    throw new Error("Works/Games React structure is not tied to the accepted main ref");
+  }
+  const localization = loadLocalization(route.locale);
   const requirements = collectRequirements(page.children);
-  const copy = Object.fromEntries([...requirements.messages].sort().map((key) => [key, localization.message(key)]));
+  const required = (value, what) => {
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${what}`);
+    return value;
+  };
+  const copy = Object.fromEntries([...requirements.messages].sort().map((key) => [key, required(localization.message(key), key)]));
   const compat = Object.fromEntries(["en", "tr"].map((locale) => {
     const accepted = loadProductionLocalization(locale);
     return [locale, Object.fromEntries([...requirements.compat].sort().map((key) => [key, decodeHtml(accepted.message(key))]))];
@@ -96,7 +136,7 @@ export function productionMainProps(route) {
     locale: route.locale,
     defaultLocale: registry.defaultLocale,
   })).map((entry) => ({ ...entry, title: decodeHtml(entry.title), detail: decodeHtml(entry.detail) }));
-  return {
+  const props = {
     page: route.routeId,
     locale: route.locale,
     copy,
@@ -104,6 +144,26 @@ export function productionMainProps(route) {
     links,
     data: localizedCanonicalData(route.locale),
     buildLog: localizedBuildLog,
+  };
+  if (!catalogPage) return props;
+  /* Catalog-only props; Home/About keep exactly their accepted payload. */
+  const fixedLocalization = Object.fromEntries(["en", "tr"].map((locale) => [locale, loadLocalization(locale)]));
+  const roleLine = (ref, locale, labelSource) => `${required(labelSource.message(worksGamesStructure.roleLabel), worksGamesStructure.roleLabel)} ${required(projectRole(ref, locale, roleSources), `${ref} role`)}`;
+  const search = catalogSearchCopy(route.routeId, route.locale, catalogSources);
+  return {
+    ...props,
+    structure: page.children,
+    catalog: { searchLabel: search.label, searchPlaceholder: search.placeholder },
+    roles: Object.fromEntries([...requirements.roles].sort().map((ref) => [ref, roleLine(ref, route.locale, localization)])),
+    fixedCopy: Object.fromEntries([...requirements.fixedMessages].sort().map((entry) => {
+      const [locale, key] = entry.split("\u0000");
+      return [`${locale}:${key}`, required(fixedLocalization[locale].message(key), `${locale} ${key}`)];
+    })),
+    fixedRoles: Object.fromEntries([...requirements.fixedRoles].sort().map((entry) => {
+      const [locale, ref] = entry.split("\u0000");
+      return [`${locale}:${ref}`, roleLine(ref, locale, fixedLocalization[locale])];
+    })),
+    cardDestinations: catalogCardDestinations(page.children, route.locale, route.routeId),
   };
 }
 

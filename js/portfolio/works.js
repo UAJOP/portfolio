@@ -7,6 +7,7 @@
  */
 const filterButtons = document.querySelectorAll("[data-filter-btn]");
 const projectCards = document.querySelectorAll(".project-card[data-category]");
+const reactOwnsCatalog = Boolean(document.querySelector("main[data-react-main]"));
 
 function updateProjectSectionVisibility() {
   document.querySelectorAll("[data-project-section]").forEach((section) => {
@@ -17,7 +18,7 @@ function updateProjectSectionVisibility() {
   });
 }
 
-if (filterButtons.length && projectCards.length) {
+if (!reactOwnsCatalog && filterButtons.length && projectCards.length) {
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const selectedCategory = button.dataset.filterBtn;
@@ -46,6 +47,7 @@ function shouldIgnoreCardActivation(event) {
 }
 
 function setupProjectCardNavigation() {
+  if (reactOwnsCatalog) return;
   document.querySelectorAll("[data-project-link]").forEach((card) => {
     const slug = card.getAttribute("data-project-link");
     if (!slug) return;
@@ -66,6 +68,7 @@ function setupProjectCardNavigation() {
 setupProjectCardNavigation();
 
 function setupProjectSearch() {
+  if (reactOwnsCatalog) return;
   const grid = document.querySelector(".catalog-grid");
   const filterBar = document.querySelector(".filter-bar");
   if (!grid || !filterBar || document.querySelector("[data-project-search]"))

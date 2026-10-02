@@ -226,6 +226,11 @@ const neutralSemanticKeys = new Set([
   "home.timeline.cbot.title",
   "home.timeline.joyday.title",
   "home.timeline.outlier.title",
+  /* Technology stacks and a project name the accepted #26 documents keep in
+   * English in every locale. */
+  "games.aiFlow.stack",
+  "games.mergeRush.stack",
+  "works.card.museum.title",
 ]);
 const NEUTRAL_PATTERN = /^[^a-zA-Z]*$/;
 function looksLanguageNeutral(value, entry) {

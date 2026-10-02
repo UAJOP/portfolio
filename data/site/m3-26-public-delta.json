@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "acceptedBaseCommit": "24be2f8159a0925dc00f29375ea8740738214df3",
+  "algorithm": "sha256",
+  "textEolCanonicalization": "crlf-to-lf-bytewise",
+  "fileCount": 5,
+  "files": [
+    {
+      "path": "js/core/i18n-runtime.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "fff52eeeed05b8439cf55bf964518aa9dc2862c28ce91e5a2ec320e07c00f191"
+    },
+    {
+      "path": "js/features/ultimate.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "f83236e392ab9340553428b2ed7e35d1103c150378029979e29c8cd4ff6e0bf5"
+    },
+    {
+      "path": "js/pages/games.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e953a74024f541200bbc4a48e5798aa7457f687836af6d095dc50fbf91e15f19"
+    },
+    {
+      "path": "js/portfolio/works.js",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "cff859879e46c12554ee0cdb417eac7b3dfa2906cc0f8bcda7f99d15770a9f9e"
+    },
+    {
+      "path": "style.css",
+      "normalization": "crlf-to-lf-bytewise",
+      "sha256": "e0673aa14ac6ce98fbc40ef4c9609d52a9bb9552589ef531d3f7cdd4f0846453"
+    }
+  ]
+}

@@ -89,7 +89,9 @@ function translateDocumentTitle(locale) {
 function applyProtectedTermCasing() {
   const terms = window.KAAN_I18N?.glossary?.protectedTerms || [];
   if (!terms.length || !document.body) return;
-  document.querySelectorAll("[data-preserve-case]").forEach((element) => element.removeAttribute("data-preserve-case"));
+  document.querySelectorAll("[data-preserve-case]").forEach((element) => {
+    if (!element.closest("[data-react-main]")) element.removeAttribute("data-preserve-case");
+  });
   document.querySelectorAll("body *").forEach((element) => {
     if (element.closest("[data-react-main]")) return;
     if (element.children.length) return;

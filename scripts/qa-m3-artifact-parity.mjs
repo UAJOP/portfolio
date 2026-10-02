@@ -12,15 +12,21 @@ import {
   BINARY_NORMALIZATION,
   TEXT_EOL_NORMALIZATION,
   artifactDigest,
+  canonicalArtifactBytes,
   compareArtifactManifest,
   validateArtifactManifest,
 } from "./artifact-parity.mjs";
+import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
+import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
+import { assertHomeAboutPayload } from "./m3-25b-home-about-payload.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_FILE = path.join(ROOT, "data/site/m3-25a-accepted-artifact.json");
 const PUBLIC_DELTA_FILE = path.join(ROOT, "data/site/m3-25b-public-delta.json");
+const WORKS_GAMES_DELTA_FILE = path.join(ROOT, "data/site/m3-26-public-delta.json");
 const ACCEPTED_BASE = "6ca0910ea330d25dcb3873f8b84047666de67fb6";
 const ACCEPTED_DELTA = "4d0e37b496f70d851397d9976b2022350d11edd6";
+const WORKS_GAMES_ACCEPTED_BASE = "24be2f8159a0925dc00f29375ea8740738214df3";
 const APPROVED_GENERATED_CHANGES = new Set([
   "i18n/pack-de-core.js",
   "i18n/pack-es-core.js",
@@ -31,6 +37,15 @@ const APPROVED_GENERATED_CHANGES = new Set([
   "js/features/creative.js",
   "portfolio-v2.js",
 ]);
+const APPROVED_WORKS_GAMES_CHANGES = new Set(Object.keys(WORKS_GAMES_REVIEWED_EDITS));
+
+function assertReviewedWorksGamesDelta(directory, edits = WORKS_GAMES_REVIEWED_EDITS) {
+  const accepted = acceptedArtifactManifest();
+  for (const file of Object.keys(edits)) {
+    const base = acceptedBaseOf(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    assert.equal(digest(base), accepted.get(file)?.sha256, `${file}: #26 delta is not exactly the accepted base plus reviewed edits`);
+  }
+}
 
 function assertClean(label, result) {
   if (!result.missing.length && !result.extra.length && !result.changed.length) return;
@@ -102,6 +117,10 @@ const publicDelta = validateArtifactManifest(
   JSON.parse(fs.readFileSync(PUBLIC_DELTA_FILE, "utf8")),
   ACCEPTED_DELTA,
 );
+const worksGamesDelta = validateArtifactManifest(
+  JSON.parse(fs.readFileSync(WORKS_GAMES_DELTA_FILE, "utf8")),
+  WORKS_GAMES_ACCEPTED_BASE,
+);
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-parity-"));
 const legacy = path.join(temp, "legacy");
 const mixed = path.join(temp, "mixed");
@@ -112,9 +131,9 @@ try {
   await buildProductionSite({ outputDirectory: mixed });
 
   const migratedDocuments = new Set(productionReactRoutes().map((route) => route.output));
-  assert.equal(migratedDocuments.size, 10, "parity model requires exactly 10 migrated Home/About documents");
+  assert.equal(migratedDocuments.size, 20, "parity model requires exactly 20 migrated Home/About/Works/Games documents");
   const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
-  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES]);
+  const allowed = new Set([...migratedDocuments, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES]);
   const finalFiles = listFiles(mixed);
   const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
   const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
@@ -129,8 +148,45 @@ try {
     assert.notEqual(artifactDigest(path.join(mixed, relative), previous.normalization), previous.sha256, `migrated document did not change: ${relative}`);
   }
   assert.deepEqual(publicDelta.files.map((entry) => entry.path).sort(), [...APPROVED_GENERATED_CHANGES].sort(), "public delta must cover the exact eight approved paths");
-  const delta = compareArtifactManifest(publicDelta, mixed, [...APPROVED_GENERATED_CHANGES]);
+  /* A #25-B path that #26 edits again is layered, not re-pinned: its #25-B
+   * hash must still describe the bytes at the #26 acceptance commit, and the
+   * reviewed-edit check below derives the current bytes from exactly those. */
+  const supersededByWorksGames = [...APPROVED_GENERATED_CHANGES].filter((file) => APPROVED_WORKS_GAMES_CHANGES.has(file));
+  assert.deepEqual(supersededByWorksGames, ["js/core/i18n-runtime.js"], "#26 may layer onto exactly one #25-B public path");
+  const delta = compareArtifactManifest(
+    { files: publicDelta.files.filter((entry) => !supersededByWorksGames.includes(entry.path)) },
+    mixed,
+    [...APPROVED_GENERATED_CHANGES].filter((file) => !supersededByWorksGames.includes(file)),
+  );
   assertClean("accepted #25-B public delta", delta);
+  /* The superseded path is covered by assertReviewedWorksGamesDelta below:
+   * its reversed bytes must equal the #25-B pin exactly. */
+  for (const file of supersededByWorksGames) {
+    assert.equal(acceptedArtifactManifest().get(file)?.sha256, publicDelta.files.find((entry) => entry.path === file).sha256, `${file}: #26 base must be the #25-B pin`);
+  }
+  assert.deepEqual(worksGamesDelta.files.map((entry) => entry.path).sort(), [...APPROVED_WORKS_GAMES_CHANGES].sort(), "#26 public delta must cover the exact five scoped runtime/style paths");
+  const worksGamesPublicDelta = compareArtifactManifest(worksGamesDelta, mixed, [...APPROVED_WORKS_GAMES_CHANGES]);
+  assertClean("accepted #26 public delta", worksGamesPublicDelta);
+  assertReviewedWorksGamesDelta(mixed);
+  for (const [name, edits] of [
+    ["unreviewed extra edit", { ...WORKS_GAMES_REVIEWED_EDITS, "style.css": WORKS_GAMES_REVIEWED_EDITS["style.css"].slice(1) }],
+    ["missing stand-down", { ...WORKS_GAMES_REVIEWED_EDITS, "js/pages/games.js": [] }],
+    ["missing search-copy stand-down", { ...WORKS_GAMES_REVIEWED_EDITS, "js/features/ultimate.js": [] }],
+  ]) {
+    assert.throws(() => assertReviewedWorksGamesDelta(mixed, edits), undefined, `#26 reviewed delta ${name} control did not fail`);
+  }
+
+  /* Home/About: byte-identical to the accepted 24be2f8 documents except for
+   * the content-addressed React bundle name. The snapshot hashes are
+   * self-recorded, so the hydration payload is also held to the independently
+   * derived #25-B payload contract. */
+  const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(fs.readFileSync(path.join(directory, file), "utf8")));
+  for (const file of HOME_ABOUT_DOCUMENTS) {
+    assert.equal(digest(homeAboutBytes(mixed, file)), acceptedHomeAboutHash(file), `${file}: Home/About drifted from the accepted #25-B document`);
+    assertHomeAboutPayload(fs.readFileSync(path.join(mixed, file), "utf8"), file);
+  }
+  const drifted = fs.readFileSync(path.join(mixed, "index.html"), "utf8").replace('"page":"home",', '"page":"home","structure":null,');
+  assert.notEqual(digest(Buffer.from(bundleNormalized(drifted))), acceptedHomeAboutHash("index.html"), "Home payload drift control did not fail");
 
   const legacyFiles = listFiles(legacy);
   const currentLegacy = {
@@ -146,7 +202,7 @@ try {
   assertClean("same-tree unchanged legacy protection", neutral);
 
   console.log(
-    `Master 3 #25-B route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=10 bundles=${extras.length} unexplained=0.`,
+    `Master 3 #26 route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=20 bundles=${extras.length} unexplained=0.`,
   );
   console.log(
     `Canonical EOL contract passed. ${fixtureAssertions} assertions · LF=CRLF for recognized text only · binary bytes exact.`,
@@ -155,6 +211,7 @@ try {
     `Unchanged legacy artifact guard passed. protected=${mergeManifest.files.length} missing=${neutral.missing.length} extra=${neutral.extra.length} changed=${neutral.changed.length}.`,
   );
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
+  console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=3-controls home-about=${HOME_ABOUT_DOCUMENTS.length}-exact git-history=none accept-current=disabled.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }

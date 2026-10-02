@@ -32,8 +32,8 @@ const reorderedIndex = reorderedBuildLog.findIndex((entry) => entry.id === build
 check(contentRegistryPath("data/portfolio/build-log.json", `[${reorderedIndex}].title`, reorderedBuildLog) === stableBuildLogPath, "build-log reordering preserves translation authority");
 
 for (const page of site.pages) {
-  const expected = new Set(["home", "about"]).has(page.id) ? "react" : "legacy";
-  check(page.renderer === expected, `${page.id} must remain ${expected}-owned in #25-B`);
+  const expected = new Set(["home", "about", "works", "games"]).has(page.id) ? "react" : "legacy";
+  check(page.renderer === expected, `${page.id} must remain ${expected}-owned through #26`);
 }
 check(site.projects.renderer === "legacy", "project route family must remain legacy-owned in #25-A");
 for (const companion of site.companions) check(companion.renderer === "legacy", `${companion.id} must remain legacy-owned in #25-A`);
@@ -53,7 +53,7 @@ for (const locale of expectedLocales) {
   const typoProject = routes.find((route) => route.slug === "pyhton-projects" && route.locale === locale);
   check(typoProject?.pathname === `/${prefix}projects/pyhton-projects/`, `${locale} must preserve pyhton-projects`);
 }
-check(productionReactRoutes({ site, locales, projects }).length === 10, "#25-B must expose exactly 10 React-owned Home/About documents");
+check(productionReactRoutes({ site, locales, projects }).length === 20, "#26 must expose exactly 20 React-owned Home/About/Works/Games documents");
 for (const route of routes) {
   const expected = route.kind === "companion"
     ? `${route.locale === locales.defaultLocale ? "" : runtime.localeRoutePrefix(route.locale)}${route.route}`
@@ -241,4 +241,4 @@ try {
   fs.rmSync(ssrExecutionRoot, { recursive: true, force: true });
 }
 
-console.log(`Master 3 #25-B foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · 10 React-owned production routes.`);
+console.log(`Master 3 #26 foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · 20 React-owned production routes.`);

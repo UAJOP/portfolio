@@ -5,21 +5,21 @@ import { buildLegacyPagesArtifact, mergeProductionReactArtifact } from "./build-
 import { buildProductionReact } from "./prerender-react.mjs";
 import { canonicalReactRoutes } from "./react-route-adapter.mjs";
 
-export const HOME_ABOUT_IDS = new Set(["home", "about"]);
-export const homeAboutRouteRecords = () => canonicalReactRoutes().map((route) => ({
+export const WORKS_GAMES_IDS = new Set(["works", "games"]);
+export const worksGamesRouteRecords = () => canonicalReactRoutes().map((route) => ({
   ...route,
-  renderer: HOME_ABOUT_IDS.has(route.routeId) ? "react" : "legacy",
+  renderer: WORKS_GAMES_IDS.has(route.routeId) ? "react" : "legacy",
 }));
 
-export async function buildHomeAboutFixture() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-25b-"));
+export async function buildWorksGamesFixture() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-26-"));
   const legacy = path.join(root, "legacy");
   const mixed = path.join(root, "mixed");
   const react = path.join(root, "react");
-  const routes = homeAboutRouteRecords();
+  const routes = worksGamesRouteRecords();
   buildLegacyPagesArtifact(legacy);
   buildLegacyPagesArtifact(mixed);
   const proof = await buildProductionReact({ outputDirectory: react, routes: routes.filter((route) => route.renderer === "react") });
   mergeProductionReactArtifact(mixed, proof, { routeRecords: routes });
-  return { root, legacy, mixed, routes, cleanup: () => fs.rmSync(root, { recursive: true, force: true }) };
+  return { root, legacy, mixed, routes, proof, cleanup: () => fs.rmSync(root, { recursive: true, force: true }) };
 }

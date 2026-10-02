@@ -90,6 +90,8 @@ export function createSiteHeadRenderer({ registry, indexableLocales, absoluteFor
 export const HOME_ABOUT_THEME_BOOTSTRAP = Object.freeze({
   home: '(function(){try{var savedTheme=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",savedTheme==="light"?"light":"dark");}catch(error){document.documentElement.setAttribute("data-theme","dark");}})();',
   about: '(function(){try{var t=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();',
+  works: '(function(){try{var t=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();',
+  games: '(function(){try{var t=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();',
 });
 
 const PERSON_KNOWS_ABOUT = Object.freeze([
@@ -119,7 +121,7 @@ export function createHomeAboutHeadModel({
   profile,
   socials,
 }) {
-  if (!HOME_ABOUT_THEME_BOOTSTRAP[route.routeId]) throw new Error(`unsupported Home/About head route ${route.routeId}`);
+  if (!HOME_ABOUT_THEME_BOOTSTRAP[route.routeId]) throw new Error(`unsupported production React head route ${route.routeId}`);
   const meta = route.locale === registry.defaultLocale
     ? sourceMeta[route.routeId]
     : localization.packs.meta?.[route.routeId];

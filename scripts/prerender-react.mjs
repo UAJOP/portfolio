@@ -128,7 +128,7 @@ export async function buildProductionReact({ outputDirectory = REACT_PRODUCTION_
   } finally {
     fs.rmSync(serverOutput, { recursive: true, force: true });
   }
-  console.log(`[prerender:production] ${routes.length} React-owned Home/About documents · client ${clientEntry}`);
+  console.log(`[prerender:production] ${routes.length} React-owned production documents · client ${clientEntry}`);
   return attestReactBuild({ output, routes });
 }
 
