@@ -44,6 +44,8 @@ function executeCommand(command) {
 function renderCommandPalette(language = currentSiteLanguage || "en") {
   const palette = document.querySelector("[data-command-palette]");
   if (!palette) return;
+  /* React renders its own palette, including after a locale change. */
+  if (palette.closest('[data-react-command-owner="react"]')) return;
   const content = getUltimateContent(language);
   const query =
     palette.querySelector("[data-command-input]")?.value?.toLowerCase() || "";
@@ -84,6 +86,20 @@ function setCommandPaletteOpen(
 ) {
   const palette = document.querySelector("[data-command-palette]");
   if (!palette) return;
+  /* #28: on React production documents the palette belongs to React. Once it
+   * has hydrated, every request goes to that one owner. Before that, the SSR
+   * dialog is opened or closed here at the attribute level, and React adopts
+   * this exact state when it hydrates. */
+  const reactOwner = palette.closest('[data-react-command-owner="react"]');
+  if (reactOwner) {
+    const request = { isOpen: Boolean(isOpen), restoreFocus, trigger };
+    reactOwner.__portfolioReactCommandRequest = request;
+    if (reactOwner.__portfolioReactCommandReady) {
+      reactOwner.dispatchEvent(new CustomEvent("portfolio:react-command-request", { detail: request }));
+      return;
+    }
+    request.preHydrationApplied = true;
+  }
   const wasOpen = palette.classList.contains("is-open");
 
   if (isOpen) {
@@ -118,7 +134,57 @@ function setCommandPaletteOpen(
   updateUltimateStaticLabels(currentSiteLanguage || "en");
 }
 
+/**
+ * #28 entry for React production documents.
+ *
+ * React SSRs the palette and owns it after hydration; nothing here builds or
+ * renders it. These listeners keep the SSR dialog reachable until React
+ * hydrates, and React removes them through `__portfolioReactCommandEntryCleanup`
+ * when it takes over.
+ */
+function setupReactOwnedCommandEntry(owner) {
+  const palette = owner.querySelector("[data-command-palette]");
+  if (!palette) return;
+  document.querySelectorAll("[data-command-toggle]").forEach((button) => {
+    button.setAttribute("aria-controls", palette.id);
+    button.setAttribute("aria-expanded", "false");
+  });
+  const click = (event) => {
+    const toggle = event.target.closest?.("[data-command-toggle]");
+    if (toggle) {
+      setCommandPaletteOpen(true, { trigger: toggle });
+      return;
+    }
+    if (event.target === palette) setCommandPaletteOpen(false);
+  };
+  const keydown = (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      setCommandPaletteOpen(true, { trigger: document.activeElement });
+    }
+    if (event.key === "Escape" && palette.classList.contains("is-open")) {
+      event.preventDefault();
+      setCommandPaletteOpen(false);
+      return;
+    }
+    const activePalette = palette.classList.contains("is-open") ? palette.querySelector("[role='dialog']") : null;
+    if (activePalette) trapFocus(event, activePalette);
+  };
+  document.addEventListener("click", click);
+  document.addEventListener("keydown", keydown);
+  owner.__portfolioReactCommandEntryCleanup = () => {
+    document.removeEventListener("click", click);
+    document.removeEventListener("keydown", keydown);
+    delete owner.__portfolioReactCommandEntryCleanup;
+  };
+}
+
 function setupCommandPalette() {
+  const reactOwner = document.querySelector('[data-react-command-owner="react"]');
+  if (reactOwner) {
+    setupReactOwnedCommandEntry(reactOwner);
+    return;
+  }
   if (document.querySelector("[data-command-palette]")) return;
   const content = getUltimateContent();
   const palette = document.createElement("div");

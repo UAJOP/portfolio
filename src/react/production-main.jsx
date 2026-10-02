@@ -2,6 +2,8 @@ import { StrictMode, useEffect } from "react";
 import { hydrateRoot } from "react-dom/client";
 import ProductionMain from "./production/ProductionMain.jsx";
 import RecruiterMode from "./production/RecruiterMode.jsx";
+import AjoopShell from "./production/AjoopShell.jsx";
+import CommandPalette from "./production/CommandPalette.jsx";
 
 const container = document.querySelector("main[data-react-main]");
 const payload = document.getElementById("react-main-props");
@@ -49,3 +51,24 @@ hydrateRoot(recruiterContainer, <StrictMode><RecruiterMode model={recruiterProps
     }));
   },
 });
+
+/* #28 overlay owners: the Ajoop panel shell and the Command Palette. */
+for (const [selector, payloadId, root, render] of [
+  ['[data-react-ajoop-shell="react"]', "react-ajoop-props", "ajoop", (model) => <AjoopShell model={model} />],
+  ['[data-react-command-owner="react"]', "react-command-props", "command", (model) => <CommandPalette model={model} />],
+]) {
+  const overlayContainer = document.querySelector(selector);
+  const overlayPayload = document.getElementById(payloadId);
+  if (!overlayContainer || !overlayPayload) throw new Error(`production React ${root} hydration contract is missing`);
+  hydrateRoot(overlayContainer, <StrictMode>{render(JSON.parse(overlayPayload.textContent))}</StrictMode>, {
+    onRecoverableError(error, errorInfo) {
+      window.dispatchEvent(new CustomEvent(ERROR_EVENT, {
+        detail: {
+          message: error instanceof Error ? error.message : String(error),
+          componentStack: errorInfo?.componentStack || "",
+          root,
+        },
+      }));
+    },
+  });
+}

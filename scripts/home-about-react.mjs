@@ -7,6 +7,7 @@ import { loadRouteRuntime, loadSiteRoutes } from "./site-routes.mjs";
 import { decodeHtml } from "./localized-html.mjs";
 import { createHomeAboutHeadModel } from "./site-head.mjs";
 import { catalogSearchCopy, defaultCatalogSources, defaultRoleSources, projectRole } from "./m3-works-games-catalog-copy.mjs";
+import { ajoopShellModel, commandPaletteModel } from "./m3-28-overlay-copy.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
@@ -257,6 +258,8 @@ export function productionDocumentProps(route, clientEntry) {
   return {
     main: productionMainProps(route),
     recruiter: recruiterModel(route.locale, localization),
+    ajoop: ajoopShellModel(route.locale),
+    commandPalette: commandPaletteModel(route.locale),
     document: {
       locale: route.locale,
       htmlLang: localization.definition.htmlLang || route.locale,

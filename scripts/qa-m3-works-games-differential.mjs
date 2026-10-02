@@ -19,6 +19,7 @@ import { listFiles } from "./build-pages-artifact.mjs";
 import { buildWorksGamesFixture } from "./m3-works-games-fixture.mjs";
 import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
 import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } from "./m3-27-public-edits.mjs";
+import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-public-edits.mjs";
 import {
   HOME_ABOUT_DOCUMENTS,
   M3_26_ACCEPTED_REF,
@@ -42,8 +43,9 @@ function composeAcceptedArtifact(currentRoot) {
     if (HOME_ABOUT_DOCUMENTS.includes(file) || file.startsWith("assets-react/")) continue;
     let bytes = fs.readFileSync(path.join(currentRoot, file));
     if (WORKS_GAMES_DOCUMENTS.includes(file)) bytes = Buffer.from(acceptedDocument(file));
-    else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file]) {
+    else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file] || AJOOP_COMMAND_REVIEWED_EDITS[file]) {
       let content = bytes.toString("utf8");
+      if (AJOOP_COMMAND_REVIEWED_EDITS[file]) content = ajoopCommandAcceptedBase(file, content);
       if (RECRUITER_BUILD_LOG_REVIEWED_EDITS[file]) content = recruiterBuildLogAcceptedBase(file, content);
       if (WORKS_GAMES_REVIEWED_EDITS[file]) content = acceptedBaseOf(file, content);
       bytes = Buffer.from(content);
