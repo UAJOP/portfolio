@@ -1,11 +1,10 @@
-/* Reads the immutable #26 acceptance documents. Shared by the structure
- * generator (English shape) and the one-time semantic-key promotion
- * (accepted values in all five locales). */
-import { execFileSync } from "node:child_process";
-import { ROOT } from "./i18n-catalog.mjs";
+/* Reads the immutable #26 acceptance documents from the committed, hermetic
+ * snapshot (never from git history). Shared by the structure generator
+ * (English shape) and the semantic-key promotion (five-locale values). */
+import { M3_26_ACCEPTED_REF, acceptedMain } from "./m3-26-accepted-snapshot.mjs";
 import { decodeHtml, findMatchingClose, findTagEnd, normalizeText, parseTag } from "./localized-html.mjs";
 
-export const WORKS_GAMES_ACCEPTED_REF = "24be2f8159a0925dc00f29375ea8740738214df3";
+export const WORKS_GAMES_ACCEPTED_REF = M3_26_ACCEPTED_REF;
 export const WORKS_GAMES_LOCALES = Object.freeze(["en", "tr", "de", "es", "fr"]);
 export const WORKS_GAMES_PAGES = Object.freeze({ works: "works/index.html", games: "games/index.html" });
 export const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
@@ -16,23 +15,14 @@ export const DATA_TEXT = new Map([
   ["Merge Rush: Tiny Factory", "projects.mergeRush.name"],
 ]);
 
-export function git(...args) {
-  return execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 30 * 1024 * 1024 });
-}
-
 export function resolveAcceptedRef(ref) {
-  const resolved = git("rev-parse", `${ref}^{commit}`).trim();
-  if (resolved !== WORKS_GAMES_ACCEPTED_REF) {
-    throw new Error(`Works/Games copy must use accepted ref ${WORKS_GAMES_ACCEPTED_REF}; received ${resolved}`);
-  }
-  return resolved;
+  if (ref !== WORKS_GAMES_ACCEPTED_REF) throw new Error(`Works/Games copy must use accepted ref ${WORKS_GAMES_ACCEPTED_REF}; received ${ref}`);
+  return ref;
 }
 
 export function mainSource(ref, source) {
-  const document = git("show", `${ref}:${source}`);
-  const main = document.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);
-  if (!main) throw new Error(`${ref}:${source} has no main`);
-  return main[1];
+  resolveAcceptedRef(ref);
+  return acceptedMain(source);
 }
 
 export function walkValues(html, values = { text: [], attributes: [] }) {
