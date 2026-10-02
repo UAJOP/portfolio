@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "acceptedBaseCommit": "df39ea32f34eacf1ee68ee6d0c8b6d464eb7d6d8",
+  "budgets": {
+    "documentIncrementMaxBytes": 8500,
+    "recruiterPayloadMaxBytes": 8000,
+    "recruiterSsrMaxBytes": 5000
+  }
+}

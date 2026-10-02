@@ -11,9 +11,10 @@ export function loadProductionLocalization(locale) {
   if (!registry.byId.has(locale)) throw new Error(`unknown production locale ${locale}`);
   const messages = readJson(`data/i18n/messages/${locale}/common.json`);
   const packs = locale === registry.defaultLocale
-    ? {}
+    ? { dynamic: readJson("data/i18n/source/dynamic.json") }
     : {
         content: readJson(`data/i18n/packs/${locale}/content.json`),
+        dynamic: readJson(`data/i18n/packs/${locale}/dynamic.json`),
         projects: readJson(`data/i18n/packs/${locale}/projects.json`),
         meta: readJson(`data/i18n/packs/${locale}/meta.json`),
       };

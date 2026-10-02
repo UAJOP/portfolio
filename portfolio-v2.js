@@ -132,6 +132,7 @@
   }
 
   function installRecruiterV2() {
+    if (document.querySelector("[data-react-recruiter-owner='react']")) return;
     if (typeof renderRecruiterDrawer !== "function" || typeof setRecruiterMode !== "function") return;
     try {
       renderRecruiterDrawer = renderRecruiterV2;
