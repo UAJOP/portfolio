@@ -462,10 +462,13 @@ function updateUltimateStaticLabels(language = getCurrentLocale()) {
       getI18nText("Available for roles", "Rollere açık", language),
     );
   });
+  /* React-owned catalogs render their own localized search copy. */
   document.querySelectorAll("[data-project-search]").forEach((node) => {
+    if (node.closest("[data-react-main]")) return;
     node.placeholder = catalogSearchLabels.placeholder;
   });
   document.querySelectorAll("[data-project-search-label]").forEach((node) => {
+    if (node.closest("[data-react-main]")) return;
     node.textContent = catalogSearchLabels.label;
   });
   renderRecruiterDrawer(language);

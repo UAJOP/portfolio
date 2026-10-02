@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
-import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { buildLegacyPagesArtifact, listFiles } from "./build-pages-artifact.mjs";
 import { buildProductionSite } from "./build-production-site.mjs";
@@ -18,6 +16,8 @@ import {
   compareArtifactManifest,
   validateArtifactManifest,
 } from "./artifact-parity.mjs";
+import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
+import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE_FILE = path.join(ROOT, "data/site/m3-25a-accepted-artifact.json");
@@ -36,51 +36,13 @@ const APPROVED_GENERATED_CHANGES = new Set([
   "js/features/creative.js",
   "portfolio-v2.js",
 ]);
-/* Each #26 public file is the accepted base plus exactly these reviewed edits
- * (LF form; every `from` must occur exactly once). The hash manifest pins the
- * bytes; this ties the same bytes back to the immutable acceptance commit. */
-const WORKS_GAMES_REVIEWED_EDITS = Object.freeze({
-  "js/core/i18n-runtime.js": [[
-    '  document.querySelectorAll("[data-preserve-case]").forEach((element) => element.removeAttribute("data-preserve-case"));\n',
-    '  document.querySelectorAll("[data-preserve-case]").forEach((element) => {\n    if (!element.closest("[data-react-main]")) element.removeAttribute("data-preserve-case");\n  });\n',
-  ]],
-  "js/pages/games.js": [[
-    "function setupGameCards() {\n",
-    'function setupGameCards() {\n  if (document.querySelector("main[data-react-main]")) return;\n',
-  ]],
-  "js/portfolio/works.js": [
-    [
-      'const projectCards = document.querySelectorAll(".project-card[data-category]");\n',
-      'const projectCards = document.querySelectorAll(".project-card[data-category]");\nconst reactOwnsCatalog = Boolean(document.querySelector("main[data-react-main]"));\n',
-    ],
-    ["if (filterButtons.length && projectCards.length) {\n", "if (!reactOwnsCatalog && filterButtons.length && projectCards.length) {\n"],
-    ["function setupProjectCardNavigation() {\n", "function setupProjectCardNavigation() {\n  if (reactOwnsCatalog) return;\n"],
-    ["function setupProjectSearch() {\n", "function setupProjectSearch() {\n  if (reactOwnsCatalog) return;\n"],
-  ],
-  "style.css": [
-    [".project-search-wrap {\n  margin: -10px 0 28px;\n}\n", ".project-search-wrap {\n  margin: -10px 0 28px;\n  display: grid;\n  gap: 10px;\n}\n"],
-    [".project-search-wrap label {\n  display: grid;\n", ".project-search-wrap label,\n.project-search-wrap > div {\n  display: grid;\n"],
-    [".project-search-wrap label > div {\n  display: flex;\n",".project-search-wrap label > div,\n.project-search-wrap > div {\n  display: flex;\n"],
-    ['html[data-theme="light"] .project-search-wrap label > div,\n', 'html[data-theme="light"] .project-search-wrap label > div,\nhtml[data-theme="light"] .project-search-wrap > div,\n'],
-    ["  .project-search-wrap label > div { border-radius: 20px; }\n", "  .project-search-wrap label > div,\n  .project-search-wrap > div { border-radius: 20px; }\n"],
-  ],
-});
 const APPROVED_WORKS_GAMES_CHANGES = new Set(Object.keys(WORKS_GAMES_REVIEWED_EDITS));
-const lf = (value) => value.replace(/\r\n/g, "\n");
-
-function reviewedWorksGamesFile(file, edits = WORKS_GAMES_REVIEWED_EDITS[file]) {
-  let content = lf(execFileSync("git", ["show", `${WORKS_GAMES_ACCEPTED_BASE}:${file}`], { cwd: ROOT, encoding: "utf8", maxBuffer: 30 * 1024 * 1024 }));
-  for (const [from, to] of edits) {
-    assert.equal(content.split(from).length, 2, `${file}: reviewed edit anchor must occur exactly once`);
-    content = content.replace(from, () => to);
-  }
-  return content;
-}
 
 function assertReviewedWorksGamesDelta(directory, edits = WORKS_GAMES_REVIEWED_EDITS) {
+  const accepted = acceptedArtifactManifest();
   for (const file of Object.keys(edits)) {
-    const actual = lf(fs.readFileSync(path.join(directory, file), "utf8"));
-    assert.equal(actual, reviewedWorksGamesFile(file, edits[file]), `${file}: #26 delta is not exactly the accepted base plus reviewed edits`);
+    const base = acceptedBaseOf(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    assert.equal(digest(base), accepted.get(file)?.sha256, `${file}: #26 delta is not exactly the accepted base plus reviewed edits`);
   }
 }
 
@@ -196,22 +158,31 @@ try {
     [...APPROVED_GENERATED_CHANGES].filter((file) => !supersededByWorksGames.includes(file)),
   );
   assertClean("accepted #25-B public delta", delta);
+  /* The superseded path is covered by assertReviewedWorksGamesDelta below:
+   * its reversed bytes must equal the #25-B pin exactly. */
   for (const file of supersededByWorksGames) {
-    const pinned = publicDelta.files.find((entry) => entry.path === file);
-    const baseBytes = execFileSync("git", ["show", `${WORKS_GAMES_ACCEPTED_BASE}:${file}`], { cwd: ROOT, maxBuffer: 30 * 1024 * 1024 });
-    const baseDigest = crypto.createHash("sha256").update(canonicalArtifactBytes(baseBytes, pinned.normalization)).digest("hex");
-    assert.equal(baseDigest, pinned.sha256, `${file}: #25-B pin must describe the #26 acceptance base`);
+    assert.equal(acceptedArtifactManifest().get(file)?.sha256, publicDelta.files.find((entry) => entry.path === file).sha256, `${file}: #26 base must be the #25-B pin`);
   }
-  assert.deepEqual(worksGamesDelta.files.map((entry) => entry.path).sort(), [...APPROVED_WORKS_GAMES_CHANGES].sort(), "#26 public delta must cover the exact four scoped runtime/style paths");
+  assert.deepEqual(worksGamesDelta.files.map((entry) => entry.path).sort(), [...APPROVED_WORKS_GAMES_CHANGES].sort(), "#26 public delta must cover the exact five scoped runtime/style paths");
   const worksGamesPublicDelta = compareArtifactManifest(worksGamesDelta, mixed, [...APPROVED_WORKS_GAMES_CHANGES]);
   assertClean("accepted #26 public delta", worksGamesPublicDelta);
   assertReviewedWorksGamesDelta(mixed);
   for (const [name, edits] of [
     ["unreviewed extra edit", { ...WORKS_GAMES_REVIEWED_EDITS, "style.css": WORKS_GAMES_REVIEWED_EDITS["style.css"].slice(1) }],
     ["missing stand-down", { ...WORKS_GAMES_REVIEWED_EDITS, "js/pages/games.js": [] }],
+    ["missing search-copy stand-down", { ...WORKS_GAMES_REVIEWED_EDITS, "js/features/ultimate.js": [] }],
   ]) {
     assert.throws(() => assertReviewedWorksGamesDelta(mixed, edits), undefined, `#26 reviewed delta ${name} control did not fail`);
   }
+
+  /* Home/About: byte-identical to the accepted 24be2f8 documents except for
+   * the content-addressed React bundle name. */
+  const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(fs.readFileSync(path.join(directory, file), "utf8")));
+  for (const file of HOME_ABOUT_DOCUMENTS) {
+    assert.equal(digest(homeAboutBytes(mixed, file)), acceptedHomeAboutHash(file), `${file}: Home/About drifted from the accepted #25-B document`);
+  }
+  const drifted = fs.readFileSync(path.join(mixed, "index.html"), "utf8").replace('"page":"home",', '"page":"home","structure":null,');
+  assert.notEqual(digest(Buffer.from(bundleNormalized(drifted))), acceptedHomeAboutHash("index.html"), "Home payload drift control did not fail");
 
   const legacyFiles = listFiles(legacy);
   const currentLegacy = {
@@ -236,7 +207,7 @@ try {
     `Unchanged legacy artifact guard passed. protected=${mergeManifest.files.length} missing=${neutral.missing.length} extra=${neutral.extra.length} changed=${neutral.changed.length}.`,
   );
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
-  console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=2-controls accept-current=disabled.`);
+  console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=3-controls home-about=${HOME_ABOUT_DOCUMENTS.length}-exact git-history=none accept-current=disabled.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
