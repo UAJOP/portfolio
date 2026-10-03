@@ -17,14 +17,17 @@
 
     if (active) {
       document.querySelectorAll("[data-case-i18n]").forEach((element) => {
+        if (element.closest("[data-react-main]")) return;
         const value = active[element.dataset.caseI18n];
         if (value) element.textContent = value;
       });
       document.querySelectorAll("[data-case-i18n-alt]").forEach((element) => {
+        if (element.closest("[data-react-main]")) return;
         const value = active[element.dataset.caseI18nAlt];
         if (value) element.alt = value;
       });
       document.querySelectorAll("[data-case-i18n-aria-label]").forEach((element) => {
+        if (element.closest("[data-react-main]")) return;
         const value = active[element.dataset.caseI18nAriaLabel];
         if (value) element.setAttribute("aria-label", value);
       });
@@ -63,7 +66,7 @@
   }
 
   document.querySelectorAll("[data-case-gallery]").forEach((button) => {
-    button.setAttribute("aria-expanded", "false");
+    if (!button.hasAttribute("aria-expanded")) button.setAttribute("aria-expanded", "false");
     button.addEventListener("click", () => {
       if (!modal || !modalImage) return;
       modalTrigger = button;

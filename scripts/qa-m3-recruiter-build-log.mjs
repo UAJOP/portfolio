@@ -78,7 +78,14 @@ try {
   ]));
   const canonicalProjects = JSON.parse(fs.readFileSync(path.join(ROOT, "data/portfolio/projects.json"), "utf8"));
   const canonicalProjectDetails = JSON.parse(fs.readFileSync(path.join(ROOT, "data/portfolio/project-details.json"), "utf8"));
-  assert.equal(routes.length, 20); assertions += 1;
+  /* The expected count is derived from the canonical registries, not from the
+   * route adapter under test. */
+  const siteRoutes = JSON.parse(fs.readFileSync(path.join(ROOT, "data/site/routes.json"), "utf8"));
+  const activeLocales = JSON.parse(fs.readFileSync(path.join(ROOT, "data/i18n/locales.json"), "utf8")).locales.filter((locale) => locale.active);
+  const expectedReactDocuments = (siteRoutes.pages.filter((page) => page.renderer === "react").length
+    + (siteRoutes.projects.renderer === "react" ? Object.keys(canonicalProjectDetails).length : 0)) * activeLocales.length;
+  assert.equal(routes.length, expectedReactDocuments, "React document count must equal the route, locale and project registries"); assertions += 1;
+  assert.equal(new Set(routes.map((route) => route.output)).size, routes.length, "registered React documents must be unique"); assertions += 1;
   for (const route of routes) {
     const html = fs.readFileSync(path.join(artifact, route.output), "utf8");
     assert.equal(count(html, /data-react-recruiter-owner="react"/g), 1, `${route.output}: one React recruiter owner`);
@@ -350,7 +357,7 @@ try {
   assert.equal(await legacyPage.evaluate(() => document.activeElement?.matches("[data-recruiter-toggle]")), true, "legacy /now/ keeps its focus-restoring owner"); assertions += 1;
   await legacyPage.close();
 
-  console.log(`Master 3 #27 Recruiter/Build Log passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · 20 React documents · 4 canonical roles · 5 locales · deep links/focus/session/legacy boundary/static Build Log verified.`);
+  console.log(`Master 3 #27 Recruiter/Build Log passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · ${productionReactRoutes().length} React documents · 4 canonical roles · 5 locales · deep links/focus/session/legacy boundary/static Build Log verified.`);
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));

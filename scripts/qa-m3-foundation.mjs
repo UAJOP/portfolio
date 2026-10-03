@@ -32,10 +32,10 @@ const reorderedIndex = reorderedBuildLog.findIndex((entry) => entry.id === build
 check(contentRegistryPath("data/portfolio/build-log.json", `[${reorderedIndex}].title`, reorderedBuildLog) === stableBuildLogPath, "build-log reordering preserves translation authority");
 
 for (const page of site.pages) {
-  const expected = new Set(["home", "about", "works", "games"]).has(page.id) ? "react" : "legacy";
-  check(page.renderer === expected, `${page.id} must remain ${expected}-owned through #26`);
+  const expected = new Set(["home", "about", "works", "games", "sinamaCaseStudy", "mergeRushCaseStudy", "joydayCaseStudy", "hospitalCaseStudy", "aiFlowPuzzleCaseStudy"]).has(page.id) ? "react" : "legacy";
+  check(page.renderer === expected, `${page.id} must have the approved #29 renderer`);
 }
-check(site.projects.renderer === "legacy", "project route family must remain legacy-owned in #25-A");
+check(site.projects.renderer === "react", "project route family must be React-owned in #29");
 for (const companion of site.companions) check(companion.renderer === "legacy", `${companion.id} must remain legacy-owned in #25-A`);
 
 const fixture = JSON.parse(fs.readFileSync(path.join(ROOT, "data/site/routes.json"), "utf8"));
@@ -44,6 +44,9 @@ assertions += 1;
 assert.throws(() => validateSiteRoutes(fixture), /renderer must be one of legacy, react/);
 
 const routes = canonicalReactRoutes({ site, locales, projects });
+const activeLocaleCount = locales.activeLocales.length;
+const expectedReactRouteCount = (site.pages.filter((page) => page.renderer === "react").length
+  + (site.projects.renderer === "react" ? Object.keys(projects.projectDetails).length : 0)) * activeLocaleCount;
 const runtime = loadRouteRuntime(locales, site);
 const expectedLocales = ["en", "tr", "de", "es", "fr"];
 for (const locale of expectedLocales) {
@@ -53,7 +56,7 @@ for (const locale of expectedLocales) {
   const typoProject = routes.find((route) => route.slug === "pyhton-projects" && route.locale === locale);
   check(typoProject?.pathname === `/${prefix}projects/pyhton-projects/`, `${locale} must preserve pyhton-projects`);
 }
-check(productionReactRoutes({ site, locales, projects }).length === 20, "#26 must expose exactly 20 React-owned Home/About/Works/Games documents");
+check(productionReactRoutes({ site, locales, projects }).length === expectedReactRouteCount, "#29 React document count must derive from the route, locale and project registries");
 for (const route of routes) {
   const expected = route.kind === "companion"
     ? `${route.locale === locales.defaultLocale ? "" : runtime.localeRoutePrefix(route.locale)}${route.route}`
@@ -241,4 +244,4 @@ try {
   fs.rmSync(ssrExecutionRoot, { recursive: true, force: true });
 }
 
-console.log(`Master 3 #26 foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · 20 React-owned production routes.`);
+console.log(`Master 3 #29 foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · ${expectedReactRouteCount} registry-derived React-owned production routes.`);

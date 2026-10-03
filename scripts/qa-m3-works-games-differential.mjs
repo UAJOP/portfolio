@@ -20,6 +20,7 @@ import { buildWorksGamesFixture } from "./m3-works-games-fixture.mjs";
 import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
 import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } from "./m3-27-public-edits.mjs";
 import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-public-edits.mjs";
+import { CASE_PROJECT_REVIEWED_EDITS, caseProjectAcceptedBase } from "./m3-29-public-edits.mjs";
 import {
   HOME_ABOUT_DOCUMENTS,
   M3_26_ACCEPTED_REF,
@@ -35,6 +36,8 @@ const browserLaunchOptions = process.env.GITHUB_ACTIONS === "true"
   : { headless: true };
 const types = { ".css": "text/css", ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".ico": "image/x-icon", ".woff2": "font/woff2" };
 const argument = (name) => (process.argv.includes(name) ? path.resolve(process.argv[process.argv.indexOf(name) + 1]) : null);
+const M3_29_CASE_ROUTES = "ai-flow-puzzle-case-study|atolye-joyday-case-study|hospital-system-case-study|merge-rush-case-study|sinama-case-study";
+const isM329Document = (file) => new RegExp(`^(?:(?:tr|de|es|fr)/)?(?:projects/[^/]+|(?:${M3_29_CASE_ROUTES}))/index\\.html$`).test(file);
 
 function composeAcceptedArtifact(currentRoot) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-26-accepted-"));
@@ -43,8 +46,9 @@ function composeAcceptedArtifact(currentRoot) {
     if (HOME_ABOUT_DOCUMENTS.includes(file) || file.startsWith("assets-react/")) continue;
     let bytes = fs.readFileSync(path.join(currentRoot, file));
     if (WORKS_GAMES_DOCUMENTS.includes(file)) bytes = Buffer.from(acceptedDocument(file));
-    else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file] || AJOOP_COMMAND_REVIEWED_EDITS[file]) {
+    else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file] || AJOOP_COMMAND_REVIEWED_EDITS[file] || CASE_PROJECT_REVIEWED_EDITS[file]) {
       let content = bytes.toString("utf8");
+      if (CASE_PROJECT_REVIEWED_EDITS[file]) content = caseProjectAcceptedBase(file, content);
       if (AJOOP_COMMAND_REVIEWED_EDITS[file]) content = ajoopCommandAcceptedBase(file, content);
       if (RECRUITER_BUILD_LOG_REVIEWED_EDITS[file]) content = recruiterBuildLogAcceptedBase(file, content);
       if (WORKS_GAMES_REVIEWED_EDITS[file]) content = acceptedBaseOf(file, content);
@@ -56,11 +60,17 @@ function composeAcceptedArtifact(currentRoot) {
   const expected = acceptedArtifactManifest();
   const files = listFiles(root);
   assert.deepEqual([...files].sort(), [...expected.keys()].sort(), "composed accepted artifact must hold exactly the accepted files");
+  let verifiedFiles = 0;
   for (const file of files) {
+    /* #29 intentionally replaces these 150 documents. They remain present in
+     * the accepted server because Works/Games may navigate to them, but their
+     * bytes belong to the #29 gates rather than the frozen #26 manifest. */
+    if (isM329Document(file)) continue;
     const entry = expected.get(file);
     assert.equal(artifactDigest(path.join(root, file), entry.normalization), entry.sha256, `${file}: composed accepted artifact differs from ${M3_26_ACCEPTED_REF}`);
+    verifiedFiles += 1;
   }
-  return { root, files: files.length, cleanup: () => fs.rmSync(temp, { recursive: true, force: true }) };
+  return { root, files: files.length, verifiedFiles, cleanup: () => fs.rmSync(temp, { recursive: true, force: true }) };
 }
 
 function serverFor(root) {
@@ -620,7 +630,7 @@ try {
     await currentPage.close();
   }
 
-  console.log(`G-65 Works/Games accepted differential passed. ${assertions} assertions · 10 documents · composed accepted artifact ${accepted.files ?? "(external)"} files hash-exact · ${searchChecks} search/filter states · ${activationChecks} card activations · ${layoutChecks} element geometry/style checks (desktop/mobile × dark/light) · ${appliedDeltas} reviewed copy deltas · ${controls} live negative controls · authority=${M3_26_ACCEPTED_REF}.`);
+  console.log(`G-65 Works/Games accepted differential passed. ${assertions} assertions · 10 documents · composed accepted artifact ${accepted.verifiedFiles ?? accepted.files ?? "(external)"} non-#29 files hash-exact · ${searchChecks} search/filter states · ${activationChecks} card activations · ${layoutChecks} element geometry/style checks (desktop/mobile × dark/light) · ${appliedDeltas} reviewed copy deltas · ${controls} live negative controls · authority=${M3_26_ACCEPTED_REF}.`);
 } finally {
   await browser.close();
   await new Promise((resolve) => acceptedServer.close(resolve));
