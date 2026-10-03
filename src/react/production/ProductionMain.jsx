@@ -12,6 +12,7 @@ const atPath = (source, dataPath) => String(dataPath).split(".").reduce((value, 
 
 function resolveValue(value, props) {
   if (!value || typeof value !== "object") return value;
+  if (!value.type) return value;
   if (value.type === "message") return value.locale ? props.fixedCopy[`${value.locale}:${value.key}`] : props.copy[value.key];
   if (value.type === "role") return props.fixedRoles[`${value.locale}:${value.ref}`];
   if (value.type === "compat") return props.compat[value.locale][value.key];
@@ -141,8 +142,9 @@ function renderNode(node, props, key, catalogState) {
 }
 
 export default function ProductionMain(props) {
-  const catalogPage = props.structure ? { children: props.structure } : null;
-  const page = catalogPage || homeAboutStructure.pages[props.page];
+  const structuredPage = props.structure ? { children: props.structure } : null;
+  const catalogPage = props.catalog ? structuredPage : null;
+  const page = structuredPage || homeAboutStructure.pages[props.page];
   if (!page) throw new Error(`unsupported production React page ${props.page}`);
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");

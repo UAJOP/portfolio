@@ -15,7 +15,7 @@ function ProductionHead({ head }) {
       <meta name="theme-color" content="#07111f" />
       <link rel="canonical" href={head.canonical} />
       {head.alternates.map((link) => <link key={link.hrefLang} rel="alternate" hrefLang={link.hrefLang} href={link.href} />)}
-      <meta name="robots" content="index, follow" />
+      <meta name="robots" content={head.robots || "index, follow"} />
       {head.og.siteName ? <meta property="og:site_name" content={head.og.siteName} /> : null}
       {head.og.locale ? <meta property="og:locale" content={head.og.locale} /> : null}
       <meta property="og:title" content={head.og.title} />
@@ -23,10 +23,14 @@ function ProductionHead({ head }) {
       {head.og.type ? <meta property="og:type" content={head.og.type} /> : null}
       {head.og.url ? <meta property="og:url" content={head.og.url} /> : null}
       <meta property="og:image" content={head.og.image} />
+      {head.og.imageWidth ? <meta property="og:image:width" content={head.og.imageWidth} /> : null}
+      {head.og.imageHeight ? <meta property="og:image:height" content={head.og.imageHeight} /> : null}
+      {head.og.imageAlt ? <meta property="og:image:alt" content={head.og.imageAlt} /> : null}
       {head.twitter.card ? <meta name="twitter:card" content={head.twitter.card} /> : null}
       {head.twitter.title ? <meta name="twitter:title" content={head.twitter.title} /> : null}
       {head.twitter.description ? <meta name="twitter:description" content={head.twitter.description} /> : null}
       {head.twitter.image ? <meta name="twitter:image" content={head.twitter.image} /> : null}
+      {head.twitter.imageAlt ? <meta name="twitter:image:alt" content={head.twitter.imageAlt} /> : null}
       <script>{head.themeBootstrap}</script>
       <script src="/js/core/locale-bootstrap.js" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -37,6 +41,7 @@ function ProductionHead({ head }) {
       <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
       <link rel="stylesheet" href="/style.css" />
       <link rel="stylesheet" href="/css/a11y.css" />
+      {(head.extraStyles || []).map((href) => <link key={href} rel="stylesheet" href={href} />)}
       <link rel="stylesheet" href="/portfolio-v2.css" />
       <link rel="icon" type="image/x-icon" href="/assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" />
       {head.jsonLd ? <script type="application/ld+json">{JSON.stringify(head.jsonLd)}</script> : null}
@@ -121,9 +126,10 @@ export default function ProductionDocument({ document, head, main, recruiter, aj
   return (
     <html lang={document.htmlLang} dir={document.dir} data-route-locale={document.locale}>
       <ProductionHead head={head} />
-      <body data-page={document.page}>
-        <ProductionHeader page={document.page} shell={shell} />
-        <main id="main-content" tabIndex="-1" data-react-main="" data-prerendered="true"><ProductionMain {...main} /></main>
+      <body className={document.bodyClass || undefined} data-page={document.page} data-project-slug={document.projectSlug || undefined}>
+        <ProductionHeader page={document.navPage || document.page} shell={shell} />
+        <main id="main-content" tabIndex="-1" data-react-main="" data-prerendered="true" {...(document.mainAttributes || {})}><ProductionMain {...main} /></main>
+        {document.afterMain?.length ? <ProductionMain page={`${main.page}:after-main`} structure={document.afterMain} /> : null}
         <div id="react-recruiter-root" data-react-recruiter-owner="react" data-prerendered="true"><RecruiterMode model={recruiter} /></div>
         <ProductionFooter shell={shell} />
         <div id="react-ajoop-root" data-react-ajoop-shell="react" data-prerendered="true"><AjoopShell model={ajoop} /></div>
@@ -131,6 +137,7 @@ export default function ProductionDocument({ document, head, main, recruiter, aj
         <script src="/portfolio-data.js" />
         <script src="/script.js" />
         <script src="/portfolio-v2.js" />
+        {(document.scripts || []).map((src) => <script key={src} src={src} />)}
         <script id="react-main-props" type="application/json">{payload}</script>
         <script id="react-recruiter-props" type="application/json">{recruiterPayload}</script>
         <script id="react-ajoop-props" type="application/json">{ajoopPayload}</script>

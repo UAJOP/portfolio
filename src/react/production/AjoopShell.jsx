@@ -172,7 +172,7 @@ export default function AjoopShell({ model }) {
   const keyFor = (index) => `${actionRow.generation}:${index}`;
 
   return (
-    <aside className={open ? "portfolio-chatbot is-open" : "portfolio-chatbot"} data-portfolio-chatbot="" ref={widgetRef}>
+    <aside className={open ? "portfolio-chatbot is-open" : "portfolio-chatbot"} data-portfolio-chatbot="" aria-label={model.a ? copy.title : null} ref={widgetRef}>
       <div className="chatbot-panel" data-chatbot-panel="" aria-hidden={String(!open)} role="dialog" aria-modal="true" aria-labelledby="ajoop-dialog-title" tabIndex={-1} hidden={!open} ref={panelRef}>
         <div className="chatbot-header">
           <AjoopMascot mascot={mascot} />

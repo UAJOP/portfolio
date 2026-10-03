@@ -8,7 +8,8 @@ const normalizeProductionMarkup = (markup) => markup
   .replaceAll("charSet=", "charset=")
   .replaceAll("hrefLang=", "hreflang=")
   .replaceAll("fetchPriority=", "fetchpriority=")
-  .replaceAll("dateTime=", "datetime=");
+  .replaceAll("dateTime=", "datetime=")
+  .replaceAll(' inert=""', " inert");
 
 export function renderProductionMain(props) {
   // React 19 opportunistically hoists eager-image preload hints into the

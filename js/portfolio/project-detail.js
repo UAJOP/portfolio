@@ -10,6 +10,7 @@ function renderProjectDetail(language = (typeof getCurrentLocale === "function" 
   const localized = (value) => typeof getLocalizedValue === "function" ? getLocalizedValue(value, language) : (value?.[language] ?? value?.en ?? value ?? "");
   const root = document.querySelector("[data-project-detail]");
   if (!root) return;
+  if (root.dataset?.reactProjectDetailOwner === "react") return;
 
   const slug = resolveCurrentProjectSlug();
   const project = slug ? projectDetailData[slug] : null;

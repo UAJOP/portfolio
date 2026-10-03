@@ -18,7 +18,7 @@ const read = (file) => fs.readFileSync(path.join(ROOT, file), "utf8");
 
 /** locale.js's mergeLocaleCopy, evaluated from its source rather than restated. */
 const mergeLocaleCopy = (() => {
-  const source = read("js/core/locale.js");
+  const source = read("js/core/locale.js").replace(/\r\n/g, "\n");
   const start = source.indexOf("function mergeLocaleCopy(");
   const end = source.indexOf("\n}\n", start);
   if (start < 0 || end < 0) throw new Error("js/core/locale.js no longer defines mergeLocaleCopy");

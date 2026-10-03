@@ -198,9 +198,17 @@ async function paletteResults(page, queries) {
 }
 
 try {
-  /* ---------- 1. SSR contract: 20 React documents ---------- */
+  /* ---------- 1. SSR contract: every registered React document ---------- */
   const routes = productionReactRoutes();
-  check(routes.length, 20, "#28 covers exactly the 20 React production documents");
+  /* The expected count is derived from the canonical registries, not from the
+   * route adapter under test. */
+  const registryJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
+  const siteRoutes = registryJson("data/site/routes.json");
+  const expectedReactDocuments = (siteRoutes.pages.filter((page) => page.renderer === "react").length
+    + (siteRoutes.projects.renderer === "react" ? Object.keys(registryJson("data/portfolio/project-details.json")).length : 0))
+    * registryJson("data/i18n/locales.json").locales.filter((locale) => locale.active).length;
+  check(routes.length, expectedReactDocuments, "#28 overlays cover exactly the React documents the route, locale and project registries define");
+  check(new Set(routes.map((route) => route.output)).size, routes.length, "#28 React production documents are unique");
   const payloadKeys = { ajoop: ["copy", "language", "mascot"], command: ["copy", "language"] };
   for (const route of routes) {
     const html = fs.readFileSync(path.join(artifact, route.output), "utf8");
@@ -217,9 +225,11 @@ try {
     ok(/<div class="command-results" data-command-results=""><\/div>/.test(html), `${route.output}: palette results are runtime data, absent from SSR`);
     const ajoopPayload = JSON.parse(html.match(/<script id="react-ajoop-props" type="application\/json">([\s\S]*?)<\/script>/)[1]);
     const commandPayload = JSON.parse(html.match(/<script id="react-command-props" type="application\/json">([\s\S]*?)<\/script>/)[1]);
-    check(Object.keys(ajoopPayload).sort(), payloadKeys.ajoop, `${route.output}: Ajoop payload carries chrome only`);
+    const labelsAjoopLandmark = /^(?:(?:tr|de|es|fr)\/)?(?:projects\/[^/]+|(?:sinama|merge-rush|ai-flow-puzzle|atolye-joyday|hospital-system)-case-study)\/index\.html$/.test(route.output);
+    const expectedAjoop = { ...ajoopShellModel(route.locale), ...(labelsAjoopLandmark ? { a: true } : {}) };
+    check(Object.keys(ajoopPayload).sort(), Object.keys(expectedAjoop).sort(), `${route.output}: Ajoop payload carries chrome only`);
     check(Object.keys(commandPayload).sort(), payloadKeys.command, `${route.output}: palette payload carries chrome only`);
-    check(ajoopPayload, ajoopShellModel(route.locale), `${route.output}: Ajoop payload is the canonical model`);
+    check(ajoopPayload, expectedAjoop, `${route.output}: Ajoop payload is the canonical model`);
     check(commandPayload, commandPaletteModel(route.locale), `${route.output}: palette payload is the canonical model`);
     const serialized = JSON.stringify([ajoopPayload, commandPayload]);
     ok(!/token|secret|password|endpoint|ajoop\.kaanbalci|memory|owner|gmail|calendar|drive|oauth/i.test(serialized), `${route.output}: overlay payloads expose no private or bridge data`);
@@ -634,7 +644,7 @@ try {
   controls += 1;
   await controlPage.close();
 
-  console.log(`Master 3 #28 Ajoop + Command Palette passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · 20 React documents · 5 locales · legacy/React differential (shell, transcripts, action rows, palette results, analytics) · pre-hydration adoption · overlay transitions/focus/inert · touch-first · ${controls} negative controls · AI edge stubbed, no network.`);
+  console.log(`Master 3 #28 Ajoop + Command Palette passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · ${routes.length} React documents · 5 locales · legacy/React differential (shell, transcripts, action rows, palette results, analytics) · pre-hydration adoption · overlay transitions/focus/inert · touch-first · ${controls} negative controls · AI edge stubbed, no network.`);
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));
