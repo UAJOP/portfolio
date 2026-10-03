@@ -109,13 +109,134 @@ function layout() {
   };
   const wrap = main.querySelector(".project-search-wrap");
   const field = wrap?.querySelector("[data-project-search]")?.parentElement;
+  const identity = (node) => {
+    const classes = [...node.classList].map((name) => `.${name}`).join("");
+    const key = node.getAttribute("data-message-key");
+    return `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ""}${classes}${key ? `[data-message-key=${JSON.stringify(key)}]` : ""}`;
+  };
+  const details = (node) => {
+    if (!node) return null;
+    const computed = getComputedStyle(node);
+    return {
+      node: identity(node),
+      box: box(node),
+      styles: Object.fromEntries([
+        "display", "visibility", "color", "background-color", "font-size", "font-weight", "text-transform", "border-radius",
+        "content-visibility", "contain-intrinsic-size", "transition-property", "transition-duration", "transition-delay",
+        "animation-name", "animation-duration", "animation-delay", "animation-iteration-count", "animation-play-state",
+      ].map((name) => [name, computed.getPropertyValue(name)])),
+    };
+  };
+  const visible = [...main.querySelectorAll("*")].filter((node) => !node.closest(".project-search-wrap") && node.offsetParent !== null);
+  const animation = (item) => ({
+    node: item.effect?.target instanceof Element ? identity(item.effect.target) : null,
+    playState: item.playState,
+    currentTime: item.currentTime,
+    timing: item.effect?.getComputedTiming(),
+  });
+  const contentVisibility = [...main.querySelectorAll(".section-block, .cta-panel, .project-detail-grid, .math-lab-section")].map((node) => ({
+    node: identity(node),
+    value: getComputedStyle(node).contentVisibility,
+    box: box(node),
+    visible: node.checkVisibility({ contentVisibilityAuto: true }),
+  }));
   return {
-    elements: [...main.querySelectorAll("*")].filter((node) => !node.closest(".project-search-wrap") && node.offsetParent !== null).map((node) => [node.tagName, ...box(node), style(node)].join(",")),
+    elements: visible.map((node) => [node.tagName, ...box(node), style(node)].join(",")),
     /* The wrapper and label element are the documented for/id restructure, so
      * only their display type may differ; geometry and all other styles do not. */
     search: [wrap, wrap?.querySelector("[data-project-search-label]"), field, field?.querySelector("input")].map((node, index) => (node ? [...box(node), style(node, index < 2)].join(",") : null)),
     height: main.offsetHeight,
+    details: {
+      elements: visible.map(details),
+      search: [wrap, wrap?.querySelector("[data-project-search-label]"), field, field?.querySelector("input")].map(details),
+    },
+    state: {
+      readyState: document.readyState,
+      fonts: document.fonts.status,
+      hydrated: window.__m3Hydrated === true,
+      reactMain: main.hasAttribute("data-react-main"),
+      viewport: { width: innerWidth, height: innerHeight, devicePixelRatio, scrollX, scrollY },
+      activeAnimations: main.getAnimations({ subtree: true }).filter((item) => item.playState !== "finished").map(animation),
+      contentVisibility,
+    },
   };
+}
+
+function containment() {
+  const main = document.querySelector("main");
+  const identity = (node) => {
+    const classes = [...node.classList].map((name) => `.${name}`).join("");
+    const key = node.getAttribute("data-message-key");
+    return `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ""}${classes}${key ? `[data-message-key=${JSON.stringify(key)}]` : ""}`;
+  };
+  return [...main.querySelectorAll(".section-block, .cta-panel, .project-detail-grid, .math-lab-section")].map((node) => {
+    const computed = getComputedStyle(node);
+    return {
+      node: identity(node),
+      styles: {
+        "content-visibility": computed.contentVisibility,
+        "contain-intrinsic-size": computed.containIntrinsicSize,
+      },
+    };
+  });
+}
+
+const layoutSignature = ({ elements, search, height, containment: originalContainment }) => ({ elements, search, height, containment: originalContainment });
+
+async function measureLayout(page) {
+  await page.bringToFront();
+  const originalContainment = await page.evaluate(containment);
+  /* Geometry cannot be sampled from content-visibility placeholders. This
+   * measurement-only rule forces both accepted and current pages to lay out
+   * every compared node without changing production CSS or its box styles. */
+  const measurementStyle = await page.addStyleTag({ content: ".section-block,.cta-panel,.site-footer,.project-detail-grid,.math-lab-section{content-visibility:visible!important}" });
+  try {
+    await page.waitForFunction(() => {
+      const main = document.querySelector("main");
+      return document.readyState === "complete"
+        && document.fonts.status === "loaded"
+        && main.getAnimations({ subtree: true }).every((item) => item.effect?.getComputedTiming()?.iterations === Infinity || item.playState === "finished");
+    }, { timeout: 15000 });
+    let previous = null;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      const current = await page.evaluate(layout);
+      current.containment = originalContainment;
+      current.details.containment = originalContainment;
+      current.state.originalContainment = originalContainment;
+      if (previous && isDeepStrictEqual(layoutSignature(current), layoutSignature(previous))) return current;
+      previous = current;
+    }
+    throw new Error(`${page.url()}: layout did not stabilize\n${JSON.stringify(previous?.state, null, 2)}`);
+  } finally {
+    await measurementStyle.evaluate((node) => node.remove());
+    await measurementStyle.dispose();
+  }
+}
+
+function layoutDrift(field, actual, expected) {
+  const values = field === "height" ? [actual.height, expected.height] : [actual[field], expected[field]];
+  const index = field === "height" ? null : Array.from({ length: Math.max(values[0].length, values[1].length) }, (_, item) => item)
+    .find((item) => values[0][item] !== values[1][item]);
+  return JSON.stringify({
+    firstDifference: field === "height" ? { node: "main", actual: actual.height, expected: expected.height } : {
+      index,
+      actual: actual.details[field][index] ?? null,
+      expected: expected.details[field][index] ?? null,
+    },
+    actualState: actual.state,
+    expectedState: expected.state,
+  }, null, 2);
+}
+
+function assertLayout(field, actual, expected, label) {
+  try {
+    if (field === "height") assert.equal(actual.height, expected.height, label);
+    else assert.deepEqual(actual[field], expected[field], label);
+  } catch (error) {
+    error.message += `\nFirst layout difference and readiness diagnostics:\n${layoutDrift(field, actual, expected)}`;
+    throw error;
+  }
 }
 
 function catalogState() {
@@ -394,16 +515,16 @@ try {
         const pages = [];
         for (const [port, isAccepted] of [[ports.accepted, true], [ports.current, false]]) {
           const page = await open(browser, port, route, { viewport, theme, accepted: isAccepted });
-          await page.bringToFront();
-          page.layout = await page.evaluate(layout);
+          page.layout = await measureLayout(page);
           pages.push(page);
         }
         const [expected, actual] = pages.map((page) => page.layout);
-        assert.equal(actual.height, expected.height, `${label}: main height`);
-        assert.deepEqual(actual.search, expected.search, `${label}: search control geometry/style`);
-        assert.deepEqual(actual.elements, expected.elements, `${label}: element geometry/style`);
-        layoutChecks += actual.elements.length + actual.search.length;
-        assertions += 3;
+        assertLayout("containment", actual, expected, `${label}: original content-visibility/contain-intrinsic-size`);
+        assertLayout("height", actual, expected, `${label}: main height`);
+        assertLayout("search", actual, expected, `${label}: search control geometry/style`);
+        assertLayout("elements", actual, expected, `${label}: element geometry/style`);
+        layoutChecks += actual.elements.length + actual.search.length + actual.containment.length;
+        assertions += 4;
         await Promise.all(pages.map((page) => page.close()));
       }
     }
@@ -419,18 +540,24 @@ try {
     ["wrong locale copy", "/works/", liveMain, () => { document.querySelector(".project-card h3 a").textContent = "Wrong locale copy"; }],
     ["unexpected attribute drift", "/works/", liveMain, () => document.querySelector(".project-card").setAttribute("data-category", "ai")],
     ["search copy rewritten after hydration", "/de/works/", liveMain, () => { document.querySelector("[data-project-search]").placeholder = "Nach Projekt, Technologie oder Stichwort suchen..."; }],
-    ["layout drift", "/works/", layout, () => { document.querySelector(".project-card h3").style.fontSize = "40px"; }],
+    ["layout drift", "/works/", layout, () => { document.querySelector(".project-card h3").style.fontSize = "40px"; }, "elements"],
+    ["main height regression", "/games/", layout, () => { document.querySelector("main").style.paddingBottom = "17px"; }, "height"],
+    ["CTA background-color regression", "/fr/works/", layout, () => { document.querySelector(".hero-actions .btn.primary").style.setProperty("background", "transparent", "important"); }, "elements"],
+    ["content-visibility regression", "/games/", layout, () => { document.querySelector(".games-roadmap").style.setProperty("content-visibility", "visible", "important"); }, "containment"],
   ];
-  for (const [name, route, probe, sabotage] of comparisons) {
+  for (const [name, route, probe, sabotage, layoutField] of comparisons) {
     const acceptedPage = await open(browser, ports.accepted, route, { ...controlOptions, accepted: true });
     await acceptedPage.bringToFront();
-    const expected = await acceptedPage.evaluate(probe);
+    const sample = (page) => (probe === layout ? measureLayout(page) : page.evaluate(probe));
+    const comparable = (value) => (probe === layout ? layoutSignature(value) : value);
+    const expected = await sample(acceptedPage);
     const currentPage = await open(browser, ports.current, route, controlOptions);
     await currentPage.bringToFront();
-    assert.deepEqual(await currentPage.evaluate(probe), expected, `${name}: control baseline must match before sabotage`);
+    assert.deepEqual(comparable(await sample(currentPage)), comparable(expected), `${name}: control baseline must match before sabotage`);
     await currentPage.evaluate(sabotage);
-    const actual = await currentPage.evaluate(probe);
-    assert.throws(() => assert.deepEqual(actual, expected), undefined, `${name} negative control did not fail`);
+    const actual = await sample(currentPage);
+    if (layoutField) assert.throws(() => assertLayout(layoutField, actual, expected, name), assert.AssertionError, `${name} negative control did not fail`);
+    else assert.throws(() => assert.deepEqual(actual, expected), undefined, `${name} negative control did not fail`);
     controls += 1;
     await acceptedPage.close();
     await currentPage.close();
