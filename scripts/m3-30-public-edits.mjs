@@ -103,6 +103,10 @@ export const LABS_GAMES_REVIEWED_EDITS = Object.freeze({
       "    document.addEventListener(\"pointermove\", onMove, { signal: lifecycle });\n    document.addEventListener(\"pointerup\", onUp, { signal: lifecycle });\n",
     ],
     [
+      "    const onUp = () => { document.removeEventListener(\"pointermove\", onMove); document.removeEventListener(\"pointerup\", onUp); setTimeout(() => { state.drag = null; }, 0); };\n",
+      "    /* The deferred clear belongs to this drag: a press that follows the release\n     * before the timer runs has already started the next one. */\n    const onUp = () => { const drag = state.drag; document.removeEventListener(\"pointermove\", onMove); document.removeEventListener(\"pointerup\", onUp); setTimeout(() => { if (state.drag === drag) state.drag = null; }, 0); };\n",
+    ],
+    [
       "      });\n",
       "      }, { signal: lifecycle });\n",
     ],

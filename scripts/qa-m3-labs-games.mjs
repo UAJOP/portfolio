@@ -329,6 +329,15 @@ function instrumentation() {
     }
     abort() { state.io.readerAborts += 1; return super.abort(); }
   };
+  /* Zero-delay timers the gate can hold back and deliver later, in order. */
+  state.io.holdTimers = false;
+  state.io.heldTimers = [];
+  const nativeSetTimeout = window.setTimeout.bind(window);
+  window.setTimeout = (callback, delay, ...rest) => {
+    if (!state.io.holdTimers || Number(delay) > 0 || typeof callback !== "function") return nativeSetTimeout(callback, delay, ...rest);
+    state.io.heldTimers.push(() => callback(...rest));
+    return 0;
+  };
   HTMLAnchorElement.prototype.click = function click() {
     if (this.hasAttribute("download")) { state.downloads.push({ name: this.download, href: this.href, blob: blobs.get(this.href) || null }); return undefined; }
     return nativeClick.call(this);
@@ -1477,6 +1486,38 @@ async function runBrowser() {
     tally.lifecycle += 1;
     console.log("[G-71 lifecycle] aiFlowPuzzle stale file read and clipboard completions are ignored after dispose; import and copy work after remount");
 
+    /* 6d. AI Flow drag ownership: the engine clears its drag state in a
+     *     zero-delay timer after the release. A press that arrives before that
+     *     timer runs starts the next drag, which the late clear must not end. */
+    const dragOwnership = async (sabotage = null) => {
+      const opened = await open(browser, `${reactOrigin}/ai-flow-puzzle/`, "desktop-dark", { sabotage });
+      await settle(opened.page, "aiFlowPuzzle");
+      await opened.page.evaluate(helpers);
+      const page = opened.page;
+      const violations = [];
+      const target = '[data-ai-board] .ai-flow-node[data-type="fallback"]';
+      const left = () => page.$eval(target, (element) => element.style.left);
+      await page.evaluate(() => document.querySelector("#ai-flow-puzzle-game").scrollIntoView({ block: "start" }));
+      await page.click('[data-ai-add-node="fallback"]');
+      const before = await left();
+      const [x0, y0] = await at(page, target, 0.5, 0.5), [x1, y1] = await at(page, target, 2.2, 0.5);
+      /* press and release, with the release's deferred clear held back */
+      await page.evaluate(() => { window.__m330.io.holdTimers = true; });
+      await page.mouse.move(x0, y0); await page.mouse.down(); await page.mouse.up();
+      await page.waitForFunction(() => window.__m330.io.heldTimers.length >= 1, { timeout: 5000 });
+      /* the next press starts a drag; only then does the earlier clear run */
+      await page.mouse.down();
+      await page.evaluate(() => { const io = window.__m330.io; io.holdTimers = false; io.heldTimers.splice(0).forEach((run) => run()); });
+      await page.mouse.move(x1, y1, { steps: 6 }); await page.mouse.up();
+      if (await left() === before) violations.push(`a drag that starts before the previous release's clear runs does not move the node (${before})`);
+      if (!sabotage && opened.diagnostics.length) violations.push(`console diagnostics: ${opened.diagnostics.join("; ")}`);
+      await page.close();
+      return violations;
+    };
+    assert.deepEqual(await dragOwnership(), [], "/ai-flow-puzzle/: a late drag clear does not end the next drag");
+    tally.lifecycle += 1;
+    console.log("[G-71 lifecycle] aiFlowPuzzle a drag started before the previous release's deferred clear still moves the node");
+
     /* 7. negative controls: the real shipped script or document is broken, and
      *    the check it targets must report exactly that */
     const control = async (name, observed, pattern) => {
@@ -1504,6 +1545,8 @@ async function runBrowser() {
     await control("pending file read is not aborted on dispose", asyncOwnership({ "/ai-flow-puzzle.js": replace("    pendingReaders.forEach((reader) => reader.abort());\n", "") }), /dispose does not abort the pending file read/);
     await control("stale clipboard success writes into the remounted board", asyncOwnership({ "/ai-flow-puzzle.js": replace('    if (lifecycle.aborted) return;\n    setStatus(t("summaryCopied"), "success");', '    setStatus(t("summaryCopied"), "success");') }), /a stale clipboard resolve changed the remounted board/);
     await control("stale clipboard failure runs the copy fallback", asyncOwnership({ "/ai-flow-puzzle.js": replace("    } catch (error) {\n      if (lifecycle.aborted) return;\n      const area", "    } catch (error) {\n      const area") }), /a stale clipboard reject ran the copy fallback/);
+
+    await control("late drag clear ends the next drag", dragOwnership({ "/ai-flow-puzzle.js": replace("if (state.drag === drag) state.drag = null;", "state.drag = null;") }), /a drag that starts before the previous release\'s clear runs does not move the node/);
 
     const hydrationControl = async (name, url, sabotage, pattern, routeId = "adventure") => {
       const opened = await open(browser, `${reactOrigin}${url}`, "desktop-dark", { sabotage });
