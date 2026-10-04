@@ -733,7 +733,9 @@ function startAiFlowPuzzle(lifecycle) {
       if (el) { el.style.left = `${node.x}%`; el.style.top = `${node.y}%`; }
       renderLines();
     };
-    const onUp = () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); setTimeout(() => { state.drag = null; }, 0); };
+    /* The deferred clear belongs to this drag: a press that follows the release
+     * before the timer runs has already started the next one. */
+    const onUp = () => { const drag = state.drag; document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); setTimeout(() => { if (state.drag === drag) state.drag = null; }, 0); };
     document.addEventListener("pointermove", onMove, { signal: lifecycle });
     document.addEventListener("pointerup", onUp, { signal: lifecycle });
   }
