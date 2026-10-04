@@ -1,4 +1,4 @@
-(function () {
+function startAiFlowPuzzle(lifecycle) {
   const board = document.querySelector("[data-ai-board]");
   const linesLayer = document.querySelector("[data-ai-lines]");
   if (!board || !linesLayer) return;
@@ -532,6 +532,8 @@
 
   function edgeLabel(fromType, toType) {
     const text = (en, tr) => getI18nText(en, tr, lang());
+    /* The three labels below read this flag; without it every connection threw. */
+    const tr = lang() === "tr";
     const map = {
       "trigger->intent": text("message", "mesaj"),
       "intent->condition": text("reservation", "rezervasyon"),
@@ -598,7 +600,7 @@
         <span>${safe(item.level)}</span><strong>${safe(item.title)}</strong><small>${safe(item.short)}</small><em>${isDone ? t("scenarioCompleted") : t("scenarioLocked")}</em>
       </button>`;
     }).join("");
-    els.scenarioHolder.querySelectorAll("[data-ai-scenario]").forEach((button) => button.addEventListener("click", () => resetScenario(Number(button.dataset.aiScenario))));
+    els.scenarioHolder.querySelectorAll("[data-ai-scenario]").forEach((button) => button.addEventListener("click", () => resetScenario(Number(button.dataset.aiScenario)), { signal: lifecycle }));
   }
 
   function renderTemplates() {
@@ -613,7 +615,7 @@
       const id = button.dataset.aiTemplate;
       if (id === "blank") resetScenario(state.scenarioIndex);
       else loadTemplate(id, true);
-    }));
+    }, { signal: lifecycle }));
   }
 
   function renderPalette() {
@@ -624,7 +626,7 @@
         <i class="bx ${nodeIcons[type]}"></i><span><strong>${safe(data.title)}</strong><small>${safe(data.category)}</small></span>
       </button>`;
     }).join("");
-    els.paletteHolder.querySelectorAll("[data-ai-add-node]").forEach((button) => button.addEventListener("click", () => addNode(button.dataset.aiAddNode)));
+    els.paletteHolder.querySelectorAll("[data-ai-add-node]").forEach((button) => button.addEventListener("click", () => addNode(button.dataset.aiAddNode), { signal: lifecycle }));
   }
 
   function renderTestMessages() {
@@ -684,11 +686,11 @@
       element.classList.toggle("is-source", state.selectedSourceId === node.id);
       element.classList.toggle("is-running", state.runningNodeId === node.id);
       element.innerHTML = `<span class="ai-flow-node-icon"><i class="bx ${nodeIcons[node.type]}"></i></span><span class="ai-flow-node-copy"><strong>${safe(node.config?.name || data.title)}</strong><small>${safe(data.category)}</small></span>`;
-      element.addEventListener("pointerdown", (event) => beginDrag(event, node.id));
-      element.addEventListener("click", (event) => { event.preventDefault(); handleNodeClick(node.id); });
+      element.addEventListener("pointerdown", (event) => beginDrag(event, node.id), { signal: lifecycle });
+      element.addEventListener("click", (event) => { event.preventDefault(); handleNodeClick(node.id); }, { signal: lifecycle });
       board.appendChild(element);
     });
-    requestAnimationFrame(renderLines);
+    requestAnimationFrame(() => { if (!lifecycle.aborted) renderLines(); });
   }
 
   function renderLines() {
@@ -732,8 +734,8 @@
       renderLines();
     };
     const onUp = () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); setTimeout(() => { state.drag = null; }, 0); };
-    document.addEventListener("pointermove", onMove);
-    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointermove", onMove, { signal: lifecycle });
+    document.addEventListener("pointerup", onUp, { signal: lifecycle });
   }
 
   function updateConfig(id, key, value) {
@@ -782,11 +784,11 @@
       input.addEventListener("input", () => {
         updateConfig(selected.id, input.dataset.aiConfigField, input.value);
         if (input.previousElementSibling?.tagName === "OUTPUT") input.previousElementSibling.textContent = input.value;
-      });
+      }, { signal: lifecycle });
     });
-    els.inspector.querySelectorAll("[data-ai-start-link]").forEach((button) => button.addEventListener("click", () => { state.selectedSourceId = button.dataset.aiStartLink; renderAll(); setStatus(t("activeSource"), "active"); }));
-    els.inspector.querySelectorAll("[data-ai-remove-node]").forEach((button) => button.addEventListener("click", () => removeNode(button.dataset.aiRemoveNode)));
-    els.inspector.querySelectorAll("[data-ai-remove-link-from]").forEach((button) => button.addEventListener("click", () => removeLink(button.dataset.aiRemoveLinkFrom, button.dataset.aiRemoveLinkTo)));
+    els.inspector.querySelectorAll("[data-ai-start-link]").forEach((button) => button.addEventListener("click", () => { state.selectedSourceId = button.dataset.aiStartLink; renderAll(); setStatus(t("activeSource"), "active"); }, { signal: lifecycle }));
+    els.inspector.querySelectorAll("[data-ai-remove-node]").forEach((button) => button.addEventListener("click", () => removeNode(button.dataset.aiRemoveNode), { signal: lifecycle }));
+    els.inspector.querySelectorAll("[data-ai-remove-link-from]").forEach((button) => button.addEventListener("click", () => removeLink(button.dataset.aiRemoveLinkFrom, button.dataset.aiRemoveLinkTo), { signal: lifecycle }));
   }
 
   function validateCurrentFlow(showResult = true) {
@@ -1012,10 +1014,18 @@
     setStatus(t("exportDone"), "success");
   }
 
+  /* File reads this engine started and that have not finished. Disposal aborts
+   * them, and a completion that was already on its way is ignored: it must not
+   * write into the board of an engine mounted afterwards. */
+  const pendingReaders = new Set();
+
   function importJsonFile(file) {
-    if (!file) return;
+    if (!file || lifecycle.aborted) return;
     const reader = new FileReader();
+    pendingReaders.add(reader);
+    reader.onloadend = () => { pendingReaders.delete(reader); };
     reader.onload = () => {
+      if (lifecycle.aborted) return;
       try {
         const payload = JSON.parse(String(reader.result || "{}"));
         if (!Array.isArray(payload.nodes) || !Array.isArray(payload.connections)) throw new Error("Invalid payload");
@@ -1041,8 +1051,10 @@
     try {
       await navigator.clipboard.writeText(text);
     } catch (error) {
+      if (lifecycle.aborted) return;
       const area = document.createElement("textarea"); area.value = text; document.body.appendChild(area); area.select(); document.execCommand("copy"); area.remove();
     }
+    if (lifecycle.aborted) return;
     setStatus(t("summaryCopied"), "success");
   }
 
@@ -1097,27 +1109,41 @@
   }
 
   function setupEvents() {
-    document.querySelector("[data-ai-run]")?.addEventListener("click", runFlow);
-    document.querySelector("[data-ai-validate]")?.addEventListener("click", () => validateCurrentFlow(true));
-    document.querySelector("[data-ai-hint]")?.addEventListener("click", showHint);
-    document.querySelector("[data-ai-arrange]")?.addEventListener("click", autoArrange);
-    document.querySelector("[data-ai-reset]")?.addEventListener("click", () => resetScenario(state.scenarioIndex));
-    document.querySelector("[data-ai-export]")?.addEventListener("click", exportJson);
-    document.querySelector("[data-ai-import]")?.addEventListener("click", () => els.importInput?.click());
-    els.importInput?.addEventListener("change", () => importJsonFile(els.importInput.files?.[0]));
-    document.querySelector("[data-ai-copy]")?.addEventListener("click", copySummary);
-    document.querySelector("[data-ai-report]")?.addEventListener("click", downloadReport);
-    document.querySelector("[data-ai-png]")?.addEventListener("click", downloadPng);
-    document.querySelector("[data-ai-next]")?.addEventListener("click", nextScenario);
-    document.querySelector("[data-ai-scroll-game]")?.addEventListener("click", () => document.getElementById("ai-flow-puzzle-game")?.scrollIntoView({ behavior: "smooth", block: "start" }));
-    window.addEventListener("resize", renderLines);
+    document.querySelector("[data-ai-run]")?.addEventListener("click", runFlow, { signal: lifecycle });
+    document.querySelector("[data-ai-validate]")?.addEventListener("click", () => validateCurrentFlow(true), { signal: lifecycle });
+    document.querySelector("[data-ai-hint]")?.addEventListener("click", showHint, { signal: lifecycle });
+    document.querySelector("[data-ai-arrange]")?.addEventListener("click", autoArrange, { signal: lifecycle });
+    document.querySelector("[data-ai-reset]")?.addEventListener("click", () => resetScenario(state.scenarioIndex), { signal: lifecycle });
+    document.querySelector("[data-ai-export]")?.addEventListener("click", exportJson, { signal: lifecycle });
+    document.querySelector("[data-ai-import]")?.addEventListener("click", () => els.importInput?.click(), { signal: lifecycle });
+    els.importInput?.addEventListener("change", () => importJsonFile(els.importInput.files?.[0]), { signal: lifecycle });
+    document.querySelector("[data-ai-copy]")?.addEventListener("click", copySummary, { signal: lifecycle });
+    document.querySelector("[data-ai-report]")?.addEventListener("click", downloadReport, { signal: lifecycle });
+    document.querySelector("[data-ai-png]")?.addEventListener("click", downloadPng, { signal: lifecycle });
+    document.querySelector("[data-ai-next]")?.addEventListener("click", nextScenario, { signal: lifecycle });
+    document.querySelector("[data-ai-scroll-game]")?.addEventListener("click", () => document.getElementById("ai-flow-puzzle-game")?.scrollIntoView({ behavior: "smooth", block: "start" }), { signal: lifecycle });
+    window.addEventListener("resize", renderLines, { signal: lifecycle });
     document.addEventListener("keydown", (event) => {
+      /* An open overlay makes the page behind it inert; its keys are not game input. */
+      if (board.closest("[inert]")) return;
       if ((event.key === "Delete" || event.key === "Backspace") && state.selectedNodeId && event.target === document.body) { event.preventDefault(); removeNode(state.selectedNodeId); }
       if (event.key === "Escape") { state.selectedSourceId = null; state.selectedNodeId = null; state.selectedLinkKey = null; renderAll(); setStatus(t("connectTip")); }
-    });
+    }, { signal: lifecycle });
   }
 
   setupEvents();
   resetScenario(0);
   applyText();
-})();
+  lifecycle.addEventListener("abort", () => {
+    state.runSerial += 1;
+    clearTimeout(state.runTimer);
+    pendingReaders.forEach((reader) => reader.abort());
+    pendingReaders.clear();
+    delete window.updateAiFlowPuzzleLanguage;
+  }, { once: true });
+}
+/* Master 3 #30: a React-owned document hosts this engine through
+ * js/pages/engine-host.js, which starts it after hydration and can stop it.
+ * A legacy document boots it immediately, exactly as before. */
+if (document.querySelector("main[data-react-main]")) (window.KaanEngineQueue = window.KaanEngineQueue || []).push(["aiFlowPuzzle", startAiFlowPuzzle]);
+else startAiFlowPuzzle(new AbortController().signal);

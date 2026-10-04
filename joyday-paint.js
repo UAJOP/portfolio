@@ -1,4 +1,4 @@
-(function () {
+function startJoydayPaint(lifecycle) {
   const canvas = document.getElementById("joyday-art-canvas");
   if (!canvas) return;
 
@@ -504,7 +504,7 @@
       <button class="${color.toLowerCase() === state.color.toLowerCase() ? "is-active" : ""}" type="button" data-joyday-color="${color}" style="--swatch:${color}" aria-label="${color}"></button>
     `).join("");
     colorGrid.querySelectorAll("[data-joyday-color]").forEach((button) => {
-      button.addEventListener("click", () => setColor(button.dataset.joydayColor, true));
+      button.addEventListener("click", () => setColor(button.dataset.joydayColor, true), { signal: lifecycle });
     });
     if (paletteName) paletteName.textContent = t().paletteNames[active.key] || active.key;
   }
@@ -593,6 +593,7 @@
     if (value >= mission.target && !state.missionLocked) {
       state.missionLocked = true;
       window.setTimeout(() => {
+        if (lifecycle.aborted) return;
         state.missionIndex = (state.missionIndex + 1) % list.length;
         state.missionLocked = false;
         updateMission();
@@ -813,7 +814,7 @@
     button.addEventListener("click", () => {
       state.canvasType = button.dataset.joydayCanvas;
       setCanvasSize(state.canvasType);
-    });
+    }, { signal: lifecycle });
   });
 
   document.querySelectorAll("[data-joyday-tool]").forEach((button) => {
@@ -821,48 +822,59 @@
       state.tool = button.dataset.joydayTool;
       state.toolsUsed.add(state.tool);
       updateHud();
-    });
+    }, { signal: lifecycle });
   });
 
   infoClose?.addEventListener("click", () => {
     state.infoDismissed = true;
     if (infoBanner) infoBanner.hidden = true;
-  });
+  }, { signal: lifecycle });
 
-  customColor?.addEventListener("input", () => setColor(customColor.value, false));
-  thicknessInput?.addEventListener("input", () => { state.thickness = clamp(Number(thicknessInput.value) || 50, 1, 100); updateHud(); });
-  intensityInput?.addEventListener("input", () => { state.intensity = clamp(Number(intensityInput.value) || 60, 15, 100); updateHud(); });
-  suggestPaletteButton?.addEventListener("click", suggestPalette);
-  newThemeButton?.addEventListener("click", selectRandomTheme);
-  starterButton?.addEventListener("click", starterStains);
-  remixButton?.addEventListener("click", remixFlow);
-  soundToggle?.addEventListener("click", () => { state.sound = !state.sound; if (state.sound) setupAudio(); updateHud(); });
-  undoButton?.addEventListener("click", () => restoreSnapshot(state.historyIndex - 1));
-  redoButton?.addEventListener("click", () => restoreSnapshot(state.historyIndex + 1));
-  clearButton?.addEventListener("click", () => { resetArtworkState(); clearDrawingSurface(); saveSnapshot(); updateHud(); });
-  finishButton?.addEventListener("click", openFinishModal);
-  downloadButton?.addEventListener("click", downloadPNG);
-  modalClose?.addEventListener("click", closeFinishModal);
-  modal?.addEventListener("click", (event) => { if (event.target === modal) closeFinishModal(); });
-  modalNew?.addEventListener("click", () => { closeFinishModal(); resetArtworkState(); clearDrawingSurface(); saveSnapshot(); updateHud(); document.getElementById("joyday-paint-game")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
-  artNameInput?.addEventListener("input", updatePreview);
-  signatureInput?.addEventListener("change", updatePreview);
+  customColor?.addEventListener("input", () => setColor(customColor.value, false), { signal: lifecycle });
+  thicknessInput?.addEventListener("input", () => { state.thickness = clamp(Number(thicknessInput.value) || 50, 1, 100); updateHud(); }, { signal: lifecycle });
+  intensityInput?.addEventListener("input", () => { state.intensity = clamp(Number(intensityInput.value) || 60, 15, 100); updateHud(); }, { signal: lifecycle });
+  suggestPaletteButton?.addEventListener("click", suggestPalette, { signal: lifecycle });
+  newThemeButton?.addEventListener("click", selectRandomTheme, { signal: lifecycle });
+  starterButton?.addEventListener("click", starterStains, { signal: lifecycle });
+  remixButton?.addEventListener("click", remixFlow, { signal: lifecycle });
+  soundToggle?.addEventListener("click", () => { state.sound = !state.sound; if (state.sound) setupAudio(); updateHud(); }, { signal: lifecycle });
+  undoButton?.addEventListener("click", () => restoreSnapshot(state.historyIndex - 1), { signal: lifecycle });
+  redoButton?.addEventListener("click", () => restoreSnapshot(state.historyIndex + 1), { signal: lifecycle });
+  clearButton?.addEventListener("click", () => { resetArtworkState(); clearDrawingSurface(); saveSnapshot(); updateHud(); }, { signal: lifecycle });
+  finishButton?.addEventListener("click", openFinishModal, { signal: lifecycle });
+  downloadButton?.addEventListener("click", downloadPNG, { signal: lifecycle });
+  modalClose?.addEventListener("click", closeFinishModal, { signal: lifecycle });
+  modal?.addEventListener("click", (event) => { if (event.target === modal) closeFinishModal(); }, { signal: lifecycle });
+  modalNew?.addEventListener("click", () => { closeFinishModal(); resetArtworkState(); clearDrawingSurface(); saveSnapshot(); updateHud(); document.getElementById("joyday-paint-game")?.scrollIntoView({ behavior: "smooth", block: "start" }); }, { signal: lifecycle });
+  artNameInput?.addEventListener("input", updatePreview, { signal: lifecycle });
+  signatureInput?.addEventListener("change", updatePreview, { signal: lifecycle });
   exportButtons.forEach((button) => {
     button.addEventListener("click", () => {
       state.exportMode = button.dataset.joydayExportMode || "clean";
       exportButtons.forEach((item) => item.classList.toggle("is-active", item === button));
       updatePreview();
-    });
+    }, { signal: lifecycle });
   });
 
-  canvas.addEventListener("pointerdown", beginPaint);
-  canvas.addEventListener("pointermove", movePaint);
-  window.addEventListener("pointerup", endPaint);
-  canvas.addEventListener("pointerleave", endPaint);
-  window.addEventListener("keydown", (event) => { if (event.key === "Escape") closeFinishModal(); });
+  canvas.addEventListener("pointerdown", beginPaint, { signal: lifecycle });
+  canvas.addEventListener("pointermove", movePaint, { signal: lifecycle });
+  window.addEventListener("pointerup", endPaint, { signal: lifecycle });
+  canvas.addEventListener("pointerleave", endPaint, { signal: lifecycle });
+  window.addEventListener("keydown", (event) => { if (event.key === "Escape") closeFinishModal(); }, { signal: lifecycle });
   window.updateJoydayPaintLanguage = function updateJoydayPaintLanguage() {
     updateHud();
     selectRandomTheme();
     updatePreview();
   };
-})();
+  lifecycle.addEventListener("abort", () => {
+    closeFinishModal();
+    state.audio?.close?.();
+    state.audio = null;
+    delete window.updateJoydayPaintLanguage;
+  }, { once: true });
+}
+/* Master 3 #30: a React-owned document hosts this engine through
+ * js/pages/engine-host.js, which starts it after hydration and can stop it.
+ * A legacy document boots it immediately, exactly as before. */
+if (document.querySelector("main[data-react-main]")) (window.KaanEngineQueue = window.KaanEngineQueue || []).push(["joydayPaint", startJoydayPaint]);
+else startJoydayPaint(new AbortController().signal);

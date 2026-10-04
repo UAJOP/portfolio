@@ -13,6 +13,8 @@ const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "ut
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
 const worksGamesStructure = readJson("data/site/m3-26-works-games-structure.json");
 const caseStudyStructure = readJson("data/site/m3-29-case-studies-structure.json");
+const labsGamesStructure = readJson("data/site/m3-30-labs-games-structure.json");
+const labs = readJson("data/portfolio/labs.json");
 const buildLog = readJson("data/portfolio/build-log.json");
 const meta = readJson("data/portfolio/meta.json");
 const profile = readJson("data/portfolio/profile.json");
@@ -25,6 +27,22 @@ const registry = loadRegistry();
 const site = loadSiteRoutes();
 const routeRuntime = loadRouteRuntime(registry, site);
 const CASE_STUDY_IDS = new Set(Object.keys(caseStudyStructure.pages));
+const LABS_GAMES_ACCEPTED_REF = "760feca095a80393a79562435c685afee13d096d";
+/* The lab-card call to action is resolved exactly as the accepted runtime
+ * resolves it (getI18nText in js/core/locale.js): the locale pack's phrase for
+ * the English source, else the Turkish text portfolio-v2.js carries inline,
+ * else English. No pack defines the phrase today, so German, Spanish and
+ * French show English, as they did; a pack entry added later is picked up
+ * here and by the runtime alike. qa:m3:labs-games holds the result to what
+ * the accepted runtime renders in each locale. */
+const LAB_CARD_ACTION = { source: "Open experiment", tr: "Deneyi aç" };
+function labCardAction(locale) {
+  if (locale === registry.defaultLocale) return LAB_CARD_ACTION.source;
+  const packed = readJson(`data/i18n/packs/${locale}/pages.json`).text?.[LAB_CARD_ACTION.source];
+  if (typeof packed === "string" && packed) return decodeHtml(packed);
+  return locale === "tr" ? LAB_CARD_ACTION.tr : LAB_CARD_ACTION.source;
+}
+const ENGINE_HOST_SCRIPT = "/js/pages/engine-host.js";
 const PROJECT_LABELS = {
   backToWorks: "Back to works",
   askSimilarWork: "Ask for Similar Work",
@@ -206,6 +224,73 @@ function projectDetailStructure({ project, labels, projectLinks }) {
   ];
 }
 
+/* Labs experiment index, from the canonical data/portfolio/labs.json and the
+ * locale content packs — the same sources and markup portfolio-v2.js used to
+ * render client-side into the empty [data-labs-grid]. */
+function labCardNodes(locale, localization) {
+  const field = (index, name) => decodeHtml(localization.canonicalData({ canonical: { labs }, overlay: localization.packs.content, path: `labs.[${index}].${name}` }));
+  return labs.map((item, index) => elementNode("article", { class: "lab-card" }, [
+    elementNode("div", { class: "lab-card-top" }, [elementNode("span", {}, [field(index, "type")]), elementNode("i", { class: "bx bx-flask" })]),
+    elementNode("h3", {}, [item.title]),
+    elementNode("p", {}, [field(index, "description")]),
+    elementNode("div", { class: "project-tags" }, item.tags.map((tag) => elementNode("span", {}, [tag]))),
+    elementNode("a", { href: routeRuntime.localizedInternalHref(item.url, locale) }, [labCardAction(locale), elementNode("i", { class: "bx bx-right-arrow-alt" })]),
+  ]));
+}
+
+function withLabCards(nodes, cards) {
+  let filled = 0;
+  const visit = (list) => list.map((node) => {
+    if (node.type !== "element") return node;
+    if (!node.attributes.some(({ name }) => name === "data-labs-grid")) return { ...node, children: visit(node.children) };
+    filled += 1;
+    return { ...node, children: cards };
+  });
+  const structure = visit(nodes);
+  if (filled !== 1) throw new Error(`Labs shell must contain exactly one experiment index, found ${filled}`);
+  return structure;
+}
+
+const hasAside = (nodes) => nodes.some((node) => node.type === "element" && (node.tag === "aside" || hasAside(node.children)));
+
+function labsGamesPage(route) {
+  const page = labsGamesStructure.pages[route.routeId];
+  if (!page) return null;
+  if (labsGamesStructure.acceptedRef !== LABS_GAMES_ACCEPTED_REF) throw new Error("Labs/mini-game React contract is not tied to the #30 base ref");
+  const localized = page.locales[route.locale];
+  if (!localized) throw new Error(`${route.locale}/${route.routeId}: missing accepted Labs/mini-game contract`);
+  return { page, localized };
+}
+
+/* The accepted Labs document carried no OpenGraph tags; the shared document
+ * head always emits a title, description and image, so those come from the
+ * canonical page meta instead of rendering empty tags. */
+function labsGamesHead(route, localized, localization) {
+  const captured = localized.head.og;
+  let og = captured;
+  if (!(og.title && og.description && og.image)) {
+    const meta = route.locale === registry.defaultLocale ? sourceMeta[route.routeId] : localization.packs.meta?.[route.routeId];
+    if (!meta?.ogTitle || !meta?.ogDescription) throw new Error(`${route.locale}/${route.routeId}: missing canonical meta`);
+    og = { ...og, title: og.title || meta.ogTitle, description: og.description || meta.ogDescription, image: og.image || `${site.origin}/assets/portfolio_website_cover.webp` };
+  }
+  /* The accepted documents carried no structured data. This states only what
+   * the head already states — the page, its language, the site it belongs to
+   * and its author — and claims nothing about the game itself. */
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: localized.head.title,
+    description: localized.head.description,
+    url: `${site.origin}${route.pathname}`,
+    inLanguage: localization.definition.htmlLang || route.locale,
+    image: og.image,
+    isPartOf: { "@type": "WebSite", name: "Kaan Balcı Portfolio", url: `${site.origin}/` },
+    author: { "@type": "Person", name: profile.name, url: `${site.origin}/` },
+  };
+  if (localized.head.canonical !== jsonLd.url) throw new Error(`${route.locale}/${route.routeId}: accepted canonical does not match the route`);
+  return { ...localized.head, og, jsonLd };
+}
+
 const SHELL_MESSAGE_KEYS = [
   "language.selectorAria",
   "nav.open",
@@ -350,6 +435,13 @@ export function productionMainProps(route, {
     if (!localized) throw new Error(`${route.locale}/${route.routeId}: missing accepted case-study contract`);
     return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure: localized.children, data: localizedCanonicalData(route.locale) };
   }
+  const engineShell = labsGamesPage(route);
+  if (engineShell) {
+    const structure = route.routeId === "labs"
+      ? withLabCards(engineShell.localized.children, labCardNodes(route.locale, loadLocalization(route.locale)))
+      : engineShell.localized.children;
+    return { kind: "engineShell", page: route.routeId, locale: route.locale, structure };
+  }
   if (route.kind === "project") {
     const localization = loadLocalization(route.locale);
     const model = projectRouteModel(route, localization);
@@ -453,16 +545,19 @@ export function productionDocumentProps(route, clientEntry) {
   const casePage = caseStudyStructure.pages[route.routeId];
   const caseLocale = casePage?.locales?.[route.locale];
   const projectRoute = route.kind === "project";
+  const engineShell = labsGamesPage(route);
   return {
     main,
     recruiter: recruiterModel(route.locale, localization),
-    ajoop: { ...ajoopShellModel(route.locale), ...((casePage || projectRoute) ? { a: true } : {}) },
+    ajoop: { ...ajoopShellModel(route.locale), ...((casePage || projectRoute || (engineShell && hasAside(engineShell.localized.children))) ? { a: true } : {}) },
     commandPalette: commandPaletteModel(route.locale),
     document: {
       locale: route.locale,
       htmlLang: localization.definition.htmlLang || route.locale,
       dir: localization.definition.dir || "ltr",
-      page: casePage ? "caseStudy" : projectRoute ? "projectDetail" : route.routeId,
+      /* A Labs/mini-game shell keeps the accepted page type: it is what makes
+       * script.js load that page’s runtime modules. */
+      page: casePage ? "caseStudy" : projectRoute ? "projectDetail" : engineShell ? engineShell.page.pageType : route.routeId,
       navPage: casePage || projectRoute ? "works" : route.routeId,
       bodyClass: caseLocale?.bodyClass || null,
       /* Accepted project pages declare their slug on <body>; the retained
@@ -470,10 +565,10 @@ export function productionDocumentProps(route, clientEntry) {
       projectSlug: projectRoute ? route.slug : null,
       mainAttributes: projectRoute ? { "data-project-detail": "", "data-react-project-detail-owner": "react" } : null,
       afterMain: caseLocale?.afterMain || [],
-      scripts: casePage?.scripts || [],
+      scripts: engineShell ? [...engineShell.page.scripts, ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
       clientEntry,
     },
-    head: caseLocale?.head || (projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
+    head: caseLocale?.head || (engineShell ? labsGamesHead(route, engineShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
       route,
       registry,
       routeRuntime,

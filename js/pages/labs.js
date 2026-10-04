@@ -5,7 +5,7 @@
  * #math-3d-canvas element, which exists on exactly one page, so ~250 lines of
  * canvas maths no longer ship with every page.
  */
-function setupAlgorithmic3DLab() {
+function setupAlgorithmic3DLab(lifecycle) {
   const canvas = document.getElementById("math-3d-canvas");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
@@ -201,7 +201,7 @@ function setupAlgorithmic3DLab() {
     state.lastX = event.clientX;
     state.lastY = event.clientY;
     canvas.setPointerCapture?.(event.pointerId);
-  });
+  }, { signal: lifecycle });
   canvas.addEventListener("pointermove", (event) => {
     if (!state.dragging) return;
     const dx = event.clientX - state.lastX;
@@ -211,13 +211,13 @@ function setupAlgorithmic3DLab() {
     state.lastX = event.clientX;
     state.lastY = event.clientY;
     draw();
-  });
+  }, { signal: lifecycle });
   canvas.addEventListener("pointerup", () => {
     state.dragging = false;
-  });
+  }, { signal: lifecycle });
   canvas.addEventListener("pointercancel", () => {
     state.dragging = false;
-  });
+  }, { signal: lifecycle });
   canvas.addEventListener(
     "wheel",
     (event) => {
@@ -228,7 +228,7 @@ function setupAlgorithmic3DLab() {
       );
       draw();
     },
-    { passive: false },
+    { passive: false, signal: lifecycle },
   );
 
   window.addEventListener(
@@ -237,7 +237,7 @@ function setupAlgorithmic3DLab() {
       resizeCanvas();
       draw();
     },
-    { passive: true },
+    { passive: true, signal: lifecycle },
   );
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver(
@@ -247,12 +247,19 @@ function setupAlgorithmic3DLab() {
       { threshold: 0.12 },
     );
     observer.observe(canvas);
+    lifecycle.addEventListener("abort", () => observer.disconnect(), { once: true });
   } else {
     start();
   }
+  lifecycle.addEventListener("abort", stop, { once: true });
 }
 
 /* This page-scoped module owns its own lifecycle. It is loaded only when
  * <body data-page="labs"> is present, so initialization must happen here
- * after the implementation is defined instead of from an earlier COMMON module. */
-setupAlgorithmic3DLab();
+ * after the implementation is defined instead of from an earlier COMMON module.
+ *
+ * Master 3 #30: a React-owned document hosts this engine through
+ * js/pages/engine-host.js, which starts it after hydration and can stop it.
+ * A legacy document boots it immediately, exactly as before. */
+if (document.querySelector("main[data-react-main]")) (window.KaanEngineQueue = window.KaanEngineQueue || []).push(["labs", setupAlgorithmic3DLab]);
+else setupAlgorithmic3DLab(new AbortController().signal);

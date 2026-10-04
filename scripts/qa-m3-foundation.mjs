@@ -32,8 +32,8 @@ const reorderedIndex = reorderedBuildLog.findIndex((entry) => entry.id === build
 check(contentRegistryPath("data/portfolio/build-log.json", `[${reorderedIndex}].title`, reorderedBuildLog) === stableBuildLogPath, "build-log reordering preserves translation authority");
 
 for (const page of site.pages) {
-  const expected = new Set(["home", "about", "works", "games", "sinamaCaseStudy", "mergeRushCaseStudy", "joydayCaseStudy", "hospitalCaseStudy", "aiFlowPuzzleCaseStudy"]).has(page.id) ? "react" : "legacy";
-  check(page.renderer === expected, `${page.id} must have the approved #29 renderer`);
+  const expected = new Set(["home", "about", "works", "games", "sinamaCaseStudy", "mergeRushCaseStudy", "joydayCaseStudy", "hospitalCaseStudy", "aiFlowPuzzleCaseStudy", "labs", "adventure", "joydayPaint", "aiFlowPuzzle"]).has(page.id) ? "react" : "legacy";
+  check(page.renderer === expected, `${page.id} must have the approved #30 renderer`);
 }
 check(site.projects.renderer === "react", "project route family must be React-owned in #29");
 for (const companion of site.companions) check(companion.renderer === "legacy", `${companion.id} must remain legacy-owned in #25-A`);
@@ -56,7 +56,7 @@ for (const locale of expectedLocales) {
   const typoProject = routes.find((route) => route.slug === "pyhton-projects" && route.locale === locale);
   check(typoProject?.pathname === `/${prefix}projects/pyhton-projects/`, `${locale} must preserve pyhton-projects`);
 }
-check(productionReactRoutes({ site, locales, projects }).length === expectedReactRouteCount, "#29 React document count must derive from the route, locale and project registries");
+check(productionReactRoutes({ site, locales, projects }).length === expectedReactRouteCount, "React document count must derive from the route, locale and project registries");
 for (const route of routes) {
   const expected = route.kind === "companion"
     ? `${route.locale === locales.defaultLocale ? "" : runtime.localeRoutePrefix(route.locale)}${route.route}`
@@ -244,4 +244,4 @@ try {
   fs.rmSync(ssrExecutionRoot, { recursive: true, force: true });
 }
 
-console.log(`Master 3 #29 foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · ${expectedReactRouteCount} registry-derived React-owned production routes.`);
+console.log(`Master 3 #30 foundation QA passed. ${assertions} assertions · ${routes.length} canonical locale records · ${expectedReactRouteCount} registry-derived React-owned production routes.`);
