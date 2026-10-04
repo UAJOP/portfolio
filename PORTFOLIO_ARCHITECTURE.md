@@ -93,7 +93,7 @@ Owns UI for the V2 runtime surfaces. New V2 components should be styled here ins
 
 ## Runtime compatibility layer
 
-The old monolithic runtime is preserved byte-for-byte as `legacy-script.js`.
+The old monolithic runtime, `legacy-script.js`, was split into focused modules under `js/` (BRIEF 03) and its inert stub was removed in Master 3 #31-A. The paragraphs below describe the bootloader as first introduced; where they name `legacy-script.js`, read the `js/` module set that `script.js` now loads. See `docs/frontend-runtime-architecture.md`.
 
 `script.js` is now a small bootloader.
 

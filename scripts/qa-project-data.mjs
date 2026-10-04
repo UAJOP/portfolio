@@ -330,10 +330,9 @@ const stripComments = (code) =>
   code.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 /* Every shipped runtime module, so project facts cannot reappear in any of
- * them. BRIEF 03 split legacy-script.js into js/**; the stub is included so a
- * regression that revives it is caught too. */
+ * them. BRIEF 03 split legacy-script.js into js/**; #31-A removed its stub,
+ * and qa:runtime keeps it from returning. */
 const RUNTIME_FILES = [
-  "legacy-script.js",
   "portfolio-v2.js",
   "js/core/shell.js",
   "js/core/theme.js",

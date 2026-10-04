@@ -253,7 +253,7 @@ productionPages.forEach((page) => {
   check(!/<script[^>]+type="module"/.test(source), `${page} must not load a module bundle; production has no build step`);
 });
 
-["portfolio-data.js", "portfolio-v2.js", "legacy-script.js", "script.js", "style.css", "portfolio-v2.css"].forEach(
+["portfolio-data.js", "portfolio-v2.js", "script.js", "style.css", "portfolio-v2.css"].forEach(
   (file) => {
     check(exists(file), `production runtime file was removed: ${file}`);
     if (exists(file)) check(!read(file).includes("react-preview"), `${file} must not reference the React preview`);

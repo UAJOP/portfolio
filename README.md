@@ -40,13 +40,13 @@ See [`PORTFOLIO_ARCHITECTURE.md`](PORTFOLIO_ARCHITECTURE.md) before adding new f
 
 `script.js` is now a small compatibility bootloader rather than the monolithic application runtime.
 
-On pages already migrated to V2 it keeps parser order intact and loads the legacy runtime between the registry and the explicit V2 runtime:
+It keeps parser order intact and loads the runtime modules under `js/` between the registry and the V2 runtime:
 
-`portfolio-data.js → script.js bootloader → legacy-script.js → portfolio-v2.js`
+`portfolio-data.js → script.js bootloader → js/ runtime modules → portfolio-v2.js`
 
 On older pages that still include only `script.js`, the bootloader injects the full stack automatically:
 
-`portfolio-data.js → legacy-script.js → portfolio-v2.js`
+`portfolio-data.js → js/ runtime modules → portfolio-v2.js`
 
 It also injects `portfolio-v2.css` when a legacy page does not already include it. This keeps Recruiter Mode, Ajoop and current portfolio evidence synchronized across older case studies, certificates, 404 and mini-game pages without rewriting every HTML file at once.
 
@@ -80,10 +80,10 @@ Every public page is a clean directory URL, authored where it is served
 - `portfolio-v2.js` — V2 runtime and evidence surfaces
 - `portfolio-v2.css` — V2 component styling
 - `script.js` — global compatibility bootloader
-- `legacy-script.js` — preserved pre-V2 global runtime: navigation, theme, historical translations, dynamic archive details, chatbot shell, command palette, request/game utilities and other established interactions
+- `js/` — runtime modules loaded per page by `script.js`: navigation, theme, translations, project routing, Ajoop, command palette, Recruiter Mode, request and game utilities
 - `style.css` — global styling primitives and legacy component styles
 
-`flagship-copy.js` has been retired; its responsibilities moved to the registry + V2 runtime.
+`flagship-copy.js` and `legacy-script.js` have been retired; their responsibilities moved to the registry, the `js/` modules and the V2 runtime.
 
 ## Recruiter deep links
 

@@ -224,7 +224,7 @@ for (const file of htmlFiles) {
     const allowedEarlyBootstrap = normalized === EARLY_BOOTSTRAP;
     ok(`${file}: does not bypass the manifest with ${src}`, !src.includes("js/") || allowedEarlyBootstrap);
   }
-  ok(`${file}: does not load legacy-script.js directly`, !srcs.includes("legacy-script.js"));
+  ok(`${file}: does not load legacy-script.js directly`, !srcs.some((src) => src.replace(/^\//, "") === "legacy-script.js"));
 }
 
 /* ---------- 5. page types get the modules their DOM needs ---------- */
@@ -565,21 +565,19 @@ ok(
   ok("the navigation collapses at or above 1100px so every production locale fits", Number(collapse?.[1]) >= 1100);
 }
 
-/* ---------- 9. legacy-script.js is an inert stub ---------- */
+/* ---------- 9. legacy-script.js stays retired ---------- */
 
-const stub = read("legacy-script.js");
-const stubCode = stub.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
-ok("legacy-script.js still exists as a compatibility entry point", stub.length > 0);
-ok("legacy-script.js carries no runtime logic (< 40 lines)", stub.split(/\r?\n/).length < 40);
-for (const symbol of [
-  "applyLanguage",
-  "renderProjectDetail",
-  "detectChatbotIntent",
-  "setupProjectRequestForm",
-  "i18nTranslations",
-  "chatbotKeywordMap",
-]) {
-  ok(`legacy-script.js no longer defines ${symbol}`, !new RegExp(`(function|const|let)\\s+${symbol}\\b`).test(stubCode));
+/* Master 3 #31-A removed the inert stub. It was never part of the published
+ * artifact, so no public URL changed; these checks keep it from returning as
+ * a file, a loader entry or a published path. Section 4 already fails any
+ * document that loads it. */
+ok("legacy-script.js stays retired", !exists("legacy-script.js"));
+{
+  const loaderCode = read("script.js").replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
+  ok("the runtime loader does not reference legacy-script.js", !loaderCode.includes("legacy-script"));
+  ok("no runtime module is named legacy-script.js", !ALL_MODULES.some((module) => module.includes("legacy-script")));
+  const artifact = JSON.parse(read("data/site/public-artifact.json"));
+  ok("the published artifact does not list legacy-script.js", !artifact.rootRuntimeFiles.includes("legacy-script.js"));
 }
 
 /* ---------- 10. inline handlers keep a reachable global ---------- */
