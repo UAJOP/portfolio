@@ -74,7 +74,7 @@ function adaptElement(node) {
 /* The accepted image-loading contract. js/features/creative.js applied it at
  * runtime and stands down below [data-react-main], so the prerender carries
  * it, as the earlier React phases do. */
-function withImageLoading(nodes, inHero = false) {
+export function withImageLoading(nodes, inHero = false) {
   for (const node of nodes) {
     if (node.type !== "element") continue;
     const has = (name) => node.attributes.some((attribute) => attribute.name === name);

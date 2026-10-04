@@ -134,6 +134,7 @@ export default function ProductionDocument({ document, head, main, recruiter, aj
         <ProductionFooter shell={shell} />
         <div id="react-ajoop-root" data-react-ajoop-shell="react" data-prerendered="true"><AjoopShell model={ajoop} /></div>
         <div id="react-command-root" data-react-command-owner="react" data-prerendered="true"><CommandPalette model={commandPalette} /></div>
+        {(document.leadScripts || []).map((src) => <script key={src} src={src} />)}
         <script src="/portfolio-data.js" />
         <script src="/script.js" />
         <script src="/portfolio-v2.js" />

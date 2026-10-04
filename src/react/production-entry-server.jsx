@@ -11,7 +11,9 @@ const normalizeProductionMarkup = (markup) => markup
   .replaceAll("dateTime=", "datetime=")
   .replaceAll(' inert=""', " inert")
   .replaceAll(' checked=""', " checked")
-  .replaceAll(" maxLength=", " maxlength=");
+  .replaceAll(" maxLength=", " maxlength=")
+  .replaceAll(" autoComplete=", " autocomplete=")
+  .replaceAll(' required=""', " required");
 
 export function renderProductionMain(props) {
   // React 19 opportunistically hoists eager-image preload hints into the

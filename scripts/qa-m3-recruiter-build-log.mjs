@@ -117,9 +117,15 @@ try {
     assert.ok(home.includes(entry.title.en) && home.includes(entry.detail.en), `${entry.id}: canonical Build Log copy is present without JavaScript`);
     assertions += 2;
   }
-  assert.equal(JSON.parse(fs.readFileSync(path.join(ROOT, "data/site/routes.json"), "utf8")).pages.find((page) => page.id === "now").renderer, "legacy", "/now/ remains explicitly legacy-owned");
-  assert.equal(JSON.parse(fs.readFileSync(path.join(ROOT, "data/site/routes.json"), "utf8")).pages.find((page) => page.id === "blog").renderer, "legacy", "/blog/ remains explicitly legacy-owned");
-  assertions += 3;
+  /* #27 left /now/ legacy-owned; #30.5 migrated it. It server-renders the
+   * whole Build Log from the same canonical entries the homepage excerpts. */
+  const now = fs.readFileSync(path.join(artifact, "now/index.html"), "utf8");
+  assert.equal(count(now, /class="build-log-item"/g), buildLog.length, "/now/ SSR carries every canonical Build Log entry");
+  for (const entry of buildLog) {
+    assert.ok(now.includes(`<time datetime="${entry.date}">${entry.date}</time>`), `${entry.id}: /now/ Build Log date is present without JavaScript`);
+    assertions += 1;
+  }
+  assertions += 2;
 
   const localeRoles = { en: "applied-ai", tr: "solution-engineering", de: "software", es: "game", fr: "applied-ai" };
   for (const [locale, role] of Object.entries(localeRoles)) {
@@ -155,7 +161,9 @@ try {
       const reactSnapshot = await recruiterSnapshot(reactPage);
       await reactPage.close();
       const legacyPage = await browser.newPage();
-      await legacyPage.goto(`http://127.0.0.1:${port}${prefix}/now/?role=${role}`, { waitUntil: "networkidle0" });
+      /* The legacy reference is a document that is still legacy-owned: the 404
+       * companion (#31). /now/ served this purpose until #30.5 migrated it. */
+      await legacyPage.goto(`http://127.0.0.1:${port}${prefix}/404.html?role=${role}`, { waitUntil: "networkidle0" });
       await legacyPage.waitForFunction(() => document.querySelector("[data-recruiter-drawer]")?.getAttribute("aria-hidden") === "false");
       const legacySnapshot = await recruiterSnapshot(legacyPage);
       await legacyPage.close();
@@ -349,12 +357,12 @@ try {
   await page.close();
 
   const legacyPage = await browser.newPage();
-  await legacyPage.goto(`http://127.0.0.1:${port}/now/`, { waitUntil: "networkidle0" });
-  assert.deepEqual(await legacyPage.evaluate(() => ({ owner: document.querySelectorAll("[data-react-recruiter-owner]").length, dialogs: document.querySelectorAll("[data-recruiter-drawer]").length })), { owner: 0, dialogs: 1 }, "legacy /now/ retains exactly one legacy owner"); assertions += 1;
+  await legacyPage.goto(`http://127.0.0.1:${port}/404.html`, { waitUntil: "networkidle0" });
+  assert.deepEqual(await legacyPage.evaluate(() => ({ owner: document.querySelectorAll("[data-react-recruiter-owner]").length, dialogs: document.querySelectorAll("[data-recruiter-drawer]").length })), { owner: 0, dialogs: 1 }, "legacy 404 companion retains exactly one legacy owner"); assertions += 1;
   await legacyPage.click("[data-recruiter-toggle]");
   assert.equal(await legacyPage.$eval("[data-recruiter-drawer]", (node) => node.hidden), false); assertions += 1;
   await legacyPage.keyboard.press("Escape");
-  assert.equal(await legacyPage.evaluate(() => document.activeElement?.matches("[data-recruiter-toggle]")), true, "legacy /now/ keeps its focus-restoring owner"); assertions += 1;
+  assert.equal(await legacyPage.evaluate(() => document.activeElement?.matches("[data-recruiter-toggle]")), true, "legacy 404 companion keeps its focus-restoring owner"); assertions += 1;
   await legacyPage.close();
 
   console.log(`Master 3 #27 Recruiter/Build Log passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · ${productionReactRoutes().length} React documents · 4 canonical roles · 5 locales · deep links/focus/session/legacy boundary/static Build Log verified.`);
