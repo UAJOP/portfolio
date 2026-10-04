@@ -660,6 +660,70 @@ function assertRequestSuite(outcome, label) {
   for (const field of ["budget", "company", "consent", "details", "email", "name", "pageUrl", "phone", "preferredContact", "requestId", "serviceType", "source", "submittedAt", "timeline"]) assert.ok(outcome.success.fields.includes(field), `${label}: payload carries ${field}`);
 }
 
+/* ---- without JavaScript ----
+ * The server markup is read with textContent. innerText is not a measure of
+ * what was rendered on the server: `.section-block` is `content-visibility:
+ * auto`, and a block the browser has not laid out yet (off screen, or simply
+ * before the first frame) contributes no innerText although its text is in
+ * the document. So the document's text is checked as markup, the heading is
+ * checked where it is drawn, and each top-level section is then scrolled into
+ * view and must actually become visible and readable. */
+const noScriptOverview = () => {
+  const main = document.querySelector("main"), heading = main.querySelector("h1");
+  const style = heading ? getComputedStyle(heading) : null, box = heading?.getBoundingClientRect();
+  return {
+    h1: heading?.textContent.trim().length || 0,
+    text: main.textContent.replace(/\s+/g, " ").trim().length,
+    headingVisible: Boolean(heading) && style.visibility === "visible" && style.display !== "none" && Number(style.opacity) > 0 && box.width > 0 && box.height > 0 && box.bottom > 0 && box.top < innerHeight,
+    sections: [...main.querySelectorAll("section")].filter((section) => !section.parentElement.closest("main section")).length,
+    nav: [...document.querySelectorAll("nav.nav-links a")].map((link) => link.getAttribute("href")),
+    buildLog: document.querySelectorAll("[data-build-log] article").length,
+    controls: document.querySelectorAll("[data-request-form] [name]").length,
+    certificates: document.querySelectorAll(".certificate-card").length,
+    policy: document.querySelectorAll(".privacy-policy h2").length,
+  };
+};
+const noScriptSection = (index, scroll) => {
+  const section = [...document.querySelectorAll("main section")].filter((item) => !item.parentElement.closest("main section"))[index];
+  if (scroll) { section.scrollIntoView({ block: "start" }); return null; }
+  const box = section.getBoundingClientRect();
+  let shown = box.width > 0 && box.height > 0;
+  for (let node = section; node && node.nodeType === 1; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    if (style.visibility !== "visible" || style.display === "none" || Number(style.opacity) === 0) shown = false;
+  }
+  return { name: section.className, text: section.textContent.replace(/\s+/g, " ").trim().length, readable: section.innerText.replace(/\s+/g, " ").trim().length, shown, inView: box.bottom > 0 && box.top < innerHeight };
+};
+async function noScriptDocument(page, url) {
+  await page.goto(url, { waitUntil: "load" });
+  const state = await page.evaluate(noScriptOverview);
+  state.blocks = [];
+  for (let index = 0; index < state.sections; index += 1) {
+    await page.evaluate(noScriptSection, index, true);
+    let block = null;
+    /* Scrolling makes the section relevant; the browser renders it on a
+     * following frame. Give it that, bounded. */
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      block = await page.evaluate(noScriptSection, index, false);
+      if (block.readable > 0 || block.text === 0) break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    state.blocks.push(block);
+  }
+  return state;
+}
+function assertNoScriptContent(state, label) {
+  assert.ok(state.h1 > 0 && state.text > 300, `${label}: meaningful content without JavaScript`);
+  assert.ok(state.headingVisible, `${label}: the heading is visible without JavaScript`);
+  assert.ok(state.sections >= 2, `${label}: page sections without JavaScript`);
+  for (const [index, block] of state.blocks.entries()) {
+    const where = `${label}: section ${index} (${block.name})`;
+    assert.ok(block.text > 0, `${where} has content without JavaScript`);
+    assert.ok(block.shown && block.inView, `${where} becomes visible when scrolled to without JavaScript`);
+    assert.ok(block.readable >= block.text * 0.9, `${where} is readable when scrolled to without JavaScript (${block.readable} of ${block.text} characters)`);
+  }
+}
+
 async function runBrowser() {
   const { default: puppeteer } = await import("puppeteer");
   const launch = process.env.GITHUB_ACTIONS === "true" ? { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"], protocolTimeout: 180000 } : { headless: true, protocolTimeout: 180000 };
@@ -712,9 +776,8 @@ async function runBrowser() {
       const page = await browser.newPage();
       await page.setJavaScriptEnabled(false);
       await prepare(page, CONDITIONS[0]);
-      await page.goto(`${reactOrigin}${route.pathname}`, { waitUntil: "load" });
-      const state = await page.evaluate(() => ({ h1: document.querySelector("main h1")?.textContent.trim().length || 0, text: document.querySelector("main").innerText.trim().length, nav: [...document.querySelectorAll("nav.nav-links a")].map((link) => link.getAttribute("href")), buildLog: document.querySelectorAll("[data-build-log] article").length, controls: document.querySelectorAll("[data-request-form] [name]").length, certificates: document.querySelectorAll(".certificate-card").length, policy: document.querySelectorAll(".privacy-policy h2").length, visible: getComputedStyle(document.querySelector("main h1")).visibility === "visible" && document.querySelector("main h1").getBoundingClientRect().height > 0 }));
-      assert.ok(state.h1 > 0 && state.text > 300 && state.visible, `${route.pathname}: meaningful content without JavaScript`);
+      const state = await noScriptDocument(page, `${reactOrigin}${route.pathname}`);
+      assertNoScriptContent(state, route.pathname);
       assert.equal(state.nav.length, 7, `${route.pathname}: navigable without JavaScript`);
       for (const href of state.nav) assert.ok(fs.existsSync(path.join(root, href.replace(/^\//, ""), "index.html")), `${route.pathname}: navigation target ${href}`);
       if (route.routeId === "now") assert.equal(state.buildLog, buildLog.length, `${route.pathname}: Build Log without JavaScript`);
@@ -841,6 +904,24 @@ async function runBrowser() {
     await control("a disabled minimum completion time", /tooQuick: nothing is sent/, async () => {
       assertRequestSuite(await mutatedSuite("/js/request/form.js", "    if (honeypot || completedTooQuickly) {", "    if (honeypot) {"), "mutated form.js");
     });
+    /* Without JavaScript: content that is hidden, never shown or missing. */
+    const noScriptControl = async (pathname, mutate) => {
+      mutations.set(pathname, mutate);
+      const page = await browser.newPage();
+      await page.setJavaScriptEnabled(false);
+      await prepare(page, CONDITIONS[0]);
+      const state = await noScriptDocument(page, `${mutatedOrigin}${pathname}`);
+      await page.close();
+      mutations.clear();
+      assertNoScriptContent(state, `mutated ${pathname}`);
+    };
+    const pathOf = (id, locale) => targetRoutes.find((item) => item.routeId === id && item.locale === locale).pathname;
+    await control("no-JS: a section that stays invisible", /becomes visible when scrolled to/, () => noScriptControl(pathOf("request", "tr"), (source) => source.replace("</head>", "<style>.section-block{visibility:hidden}</style></head>")));
+    await control("no-JS: a section that is never displayed", /becomes visible when scrolled to|is readable when scrolled to/, () => noScriptControl(pathOf("blog", "de"), (source) => source.replace("</head>", "<style>.section-block{display:none}</style></head>")));
+    await control("no-JS: text that is present but unreadable", /is readable when scrolled to/, () => noScriptControl(pathOf("privacy", "es"), (source) => source.replace("</head>", "<style>.privacy-policy p,.privacy-policy li{display:none}</style></head>")));
+    await control("no-JS: an empty section", /has content without JavaScript/, () => noScriptControl(pathOf("now", "fr"), (source) => source.replace(BUILD_LOG, "$1$3").replace(/(<section class="section-shell section-block">)[\s\S]*?(<\/section>)/, "$1$2")));
+    await control("no-JS: missing page content", /meaningful content without JavaScript|page sections without JavaScript/, () => noScriptControl(pathOf("request", "en"), (source) => source.replace(/<section class="section-shell section-block request-layout">[\s\S]*?<\/section>(?=<\/main>)/, "")));
+    await control("no-JS: a hidden heading", /the heading is visible without JavaScript/, () => noScriptControl(pathOf("certificates", "en"), (source) => source.replace("</head>", "<style>main h1{visibility:hidden}</style></head>")));
     await control("a layout change in the React document", /box (x|y|width|height) delta|computed style/, async () => {
       const route = targetRoutes.find((item) => item.routeId === "blog" && item.locale === registry.defaultLocale);
       mutations.set(route.pathname, (source) => source.replace("</head>", "<style>.experience-card{padding-top:40px}</style></head>").replace(/<\/main>/i, `</main>${PROBE}`));
