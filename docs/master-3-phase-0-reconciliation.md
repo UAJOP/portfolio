@@ -399,7 +399,7 @@ Nothing below may be deleted before **all** of its conditions hold. Each deletio
 | `style.css` | G-31 restated rules in place with zero visual diff on every route × both themes × mobile/desktop |
 | `portfolio-v2.css` §16 compat overrides | `style.css` removed |
 | `src/react/styles/*`, `v3-*`, `react-preview.json`, preview routes, `qa-design-token-parity.mjs` | production React uses M2B CSS (G-30); preview retired |
-| `legacy-script.js` stub, `.html` legacy stubs | **kept** (public entry points). Removing them is a URL change, and that is not permitted |
+| `legacy-script.js` stub, `.html` legacy stubs | The `.html` stubs are **kept** (public entry points; removing them is a URL change, and that is not permitted). The `legacy-script.js` stub was removed in #31-A: it was never published, so it was not a public entry point |
 | `resumeLink` constant | all resume links read `profile.resume` |
 
 ---

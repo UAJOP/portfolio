@@ -58,7 +58,7 @@ check(registry?.sinamaEvidence?.healthy?.status === "READY", "healthy SINAMA evi
 check(registry?.sinamaEvidence?.broken?.status === "BLOCKED", "broken SINAMA evidence must remain BLOCKED");
 
 check(!fs.existsSync("flagship-copy.js"), "flagship-copy.js must stay retired");
-check(fs.existsSync("legacy-script.js"), "legacy-script.js compatibility runtime is missing");
+check(!fs.existsSync("legacy-script.js"), "legacy-script.js must stay retired");
 
 const requiredBootPages = [
   ...["home", "works", "games", "blog", "about", "request", "certificates", "sinamaCaseStudy", "mergeRushCaseStudy", "labs", "now"].map(fileFor),

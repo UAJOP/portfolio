@@ -692,7 +692,7 @@ const noScriptSection = (index, scroll) => {
     const style = getComputedStyle(node);
     if (style.visibility !== "visible" || style.display === "none" || Number(style.opacity) === 0) shown = false;
   }
-  return { name: section.className, text: section.textContent.replace(/\s+/g, " ").trim().length, readable: section.innerText.replace(/\s+/g, " ").trim().length, shown, inView: box.bottom > 0 && box.top < innerHeight };
+  return { name: section.className, text: section.textContent.replace(/\s+/g, " ").trim().length, readable: section.innerText.replace(/\s+/g, " ").trim().length, shown, inView: box.bottom > 0 && box.top < innerHeight, at: `top ${Math.round(box.top)}, bottom ${Math.round(box.bottom)}, viewport ${innerHeight}, scrollY ${Math.round(scrollY)}` };
 };
 async function noScriptDocument(page, url) {
   await page.goto(url, { waitUntil: "load" });
@@ -702,10 +702,18 @@ async function noScriptDocument(page, url) {
     await page.evaluate(noScriptSection, index, true);
     let block = null;
     /* Scrolling makes the section relevant; the browser renders it on a
-     * following frame. Give it that, bounded. */
+     * following frame. That frame also re-lays-out the `content-visibility:
+     * auto` sections above it (a skipped one is an 831px placeholder, a
+     * rendered one its real height), and when scroll anchoring does not
+     * compensate the page ends up scrolled past the target: measured 721 to
+     * 866px above the viewport although shown and fully readable. So the
+     * section is put back in view until it settles there, bounded. The
+     * conditions asserted afterwards are unchanged: a section that never
+     * becomes visible, in view and readable still fails. */
     for (let attempt = 0; attempt < 40; attempt += 1) {
       block = await page.evaluate(noScriptSection, index, false);
-      if (block.readable > 0 || block.text === 0) break;
+      if (block.text === 0 || (block.readable > 0 && block.shown && block.inView)) break;
+      if (!block.inView) await page.evaluate(noScriptSection, index, true);
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
     state.blocks.push(block);
@@ -719,7 +727,7 @@ function assertNoScriptContent(state, label) {
   for (const [index, block] of state.blocks.entries()) {
     const where = `${label}: section ${index} (${block.name})`;
     assert.ok(block.text > 0, `${where} has content without JavaScript`);
-    assert.ok(block.shown && block.inView, `${where} becomes visible when scrolled to without JavaScript`);
+    assert.ok(block.shown && block.inView, `${where} becomes visible when scrolled to without JavaScript (shown ${block.shown}, in view ${block.inView}: ${block.at})`);
     assert.ok(block.readable >= block.text * 0.9, `${where} is readable when scrolled to without JavaScript (${block.readable} of ${block.text} characters)`);
   }
 }

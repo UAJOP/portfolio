@@ -252,11 +252,11 @@ npm run generate:projects
 
 ---
 
-## Remaining legacy-script.js Responsibilities
+## legacy-script.js
 
-**None.** It is a 26-line inert stub kept only because it is a public URL — a cached page or external copy may still request `/legacy-script.js`, and an empty valid script beats a 404. It warns once to the console if loaded without the module runtime.
+**Removed in Master 3 #31-A.** After BRIEF 03 it was a 26-line inert stub with no responsibilities. No document, loader or build path referenced it, and it was never in the published artifact (`data/site/public-artifact.json`), so `/legacy-script.js` already answered 404 in production and no public URL changed.
 
-`qa-runtime-modules.mjs` fails if it exceeds 40 lines or redefines any of `applyLanguage`, `renderProjectDetail`, `detectChatbotIntent`, `setupProjectRequestForm`, `i18nTranslations` or `chatbotKeywordMap`.
+`qa-runtime-modules.mjs` fails if the file returns, if a document loads it, if `script.js` or the module manifest references it, or if the artifact lists it; `qa-portfolio-consistency.js` also fails if it returns or a document loads it. The rest of the runtime is still in use; see `docs/master-3-31-legacy-runtime-removal.md` for the dependency classification.
 
 ## Compatibility Globals
 
