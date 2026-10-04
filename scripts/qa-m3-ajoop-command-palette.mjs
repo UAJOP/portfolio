@@ -99,7 +99,7 @@ const overlayState = () => ({
   })(),
 });
 
-async function open(route, { viewport = { width: 1280, height: 860 }, waitForHydration = true, setup = null } = {}) {
+async function open(route, { viewport = { width: 1280, height: 860 }, waitForHydration = true, setup = null, edgeDelayMs = 0 } = {}) {
   const page = await browser.newPage();
   page.diagnostics = [];
   page.on("pageerror", (error) => page.diagnostics.push(`pageerror: ${error.message}`));
@@ -115,7 +115,9 @@ async function open(route, { viewport = { width: 1280, height: 860 }, waitForHyd
   page.on("request", (request) => {
     /* The public AI edge: a deterministic, CORS-clean "unavailable". */
     if (request.url().startsWith("https://ajoop.kaanbalci.com/")) {
-      request.respond({ status: 503, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET, POST, OPTIONS" }, contentType: "application/json", body: "{}" });
+      const unavailable = () => request.respond({ status: 503, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET, POST, OPTIONS" }, contentType: "application/json", body: "{}" }).catch(() => {});
+      if (edgeDelayMs) setTimeout(unavailable, edgeDelayMs);
+      else unavailable();
       return;
     }
     request.continue();
@@ -146,10 +148,34 @@ async function hydrated(page) {
   }, { timeout: 30000 });
 }
 
+/* A turn is settled when the engine has nothing left to change, observed
+ * rather than timed:
+ *   - no pending turn bubble and the action row is no longer busy;
+ *   - the AI bridge's health probe has reached its verdict. Opening the panel
+ *     starts that probe, and a turn sent while it is still "checking" attempts
+ *     a generation, fails against the stubbed edge and is marked
+ *     data-ajoop-turn-status; a turn sent after the "unavailable" verdict is
+ *     not. Clicking before the verdict made the transcript depend on timing;
+ *   - the transcript and the action row are unchanged for three frames.
+ * Nothing is removed from what is compared afterwards. */
+const bridgeState = (page) => page.evaluate(() => (typeof getAjoopAiState === "function" ? getAjoopAiState().state : "absent"));
 async function settleTurn(page) {
-  await page.waitForFunction(() => !document.querySelector("[data-chatbot-messages] [data-ajoop-turn='pending']")
-    && !document.querySelector("[data-chatbot-quicks]")?.classList.contains("is-busy"), { timeout: 30000 });
-  await sleep(50);
+  await page.evaluate(() => { window.__ajoopSettle = { signature: null, frames: 0 }; });
+  await page.waitForFunction(() => {
+    const list = document.querySelector("[data-chatbot-messages]");
+    const row = document.querySelector("[data-chatbot-quicks]");
+    const bridge = typeof getAjoopAiState === "function" ? getAjoopAiState().state : "absent";
+    const idle = list && !list.querySelector("[data-ajoop-turn='pending']")
+      && !row?.classList.contains("is-busy") && row?.getAttribute("aria-busy") !== "true"
+      && bridge !== "checking";
+    const signature = idle ? `${list.innerHTML}
+--actions--
+${row ? row.outerHTML : ""}` : null;
+    const state = window.__ajoopSettle;
+    if (!idle || signature !== state.signature) { state.signature = signature; state.frames = 0; return false; }
+    state.frames += 1;
+    return state.frames >= 3;
+  }, { timeout: 30000, polling: "raf" });
 }
 
 const transcript = (page) => page.evaluate(() => document.querySelector("[data-chatbot-messages]").innerHTML);
@@ -162,24 +188,24 @@ async function conversation(page) {
   await page.click("[data-chatbot-toggle]");
   await page.waitForFunction(() => document.querySelector("[data-portfolio-chatbot]").classList.contains("is-open"));
   await settleTurn(page);
-  steps.push({ step: "greeting", transcript: await transcript(page), actions: await actionRow(page) });
+  steps.push({ step: "greeting", bridge: await bridgeState(page), transcript: await transcript(page), actions: await actionRow(page) });
   await page.click("[data-chatbot-quicks] .chatbot-actions-list button");
   await settleTurn(page);
-  steps.push({ step: "starter", transcript: await transcript(page), actions: await actionRow(page) });
+  steps.push({ step: "starter", bridge: await bridgeState(page), transcript: await transcript(page), actions: await actionRow(page) });
   await page.click("[data-chatbot-quicks] .chatbot-actions-list button");
   await settleTurn(page);
-  steps.push({ step: "follow-up", transcript: await transcript(page), actions: await actionRow(page) });
+  steps.push({ step: "follow-up", bridge: await bridgeState(page), transcript: await transcript(page), actions: await actionRow(page) });
   await page.type("[data-chatbot-input]", "Which projects show AI deployment and reliability?");
   await page.keyboard.press("Enter");
   await settleTurn(page);
-  steps.push({ step: "typed", transcript: await transcript(page), actions: await actionRow(page), input: await page.$eval("[data-chatbot-input]", (node) => node.value) });
+  steps.push({ step: "typed", bridge: await bridgeState(page), transcript: await transcript(page), actions: await actionRow(page), input: await page.$eval("[data-chatbot-input]", (node) => node.value) });
   await page.type("[data-chatbot-input]", "tell me more");
   await page.keyboard.press("Enter");
   await settleTurn(page);
-  steps.push({ step: "multi-turn", transcript: await transcript(page), actions: await actionRow(page) });
+  steps.push({ step: "multi-turn", bridge: await bridgeState(page), transcript: await transcript(page), actions: await actionRow(page) });
   await page.click("[data-chatbot-quicks] .chatbot-actions-secondary button");
   await settleTurn(page);
-  steps.push({ step: "start over", transcript: await transcript(page), actions: await actionRow(page) });
+  steps.push({ step: "start over", bridge: await bridgeState(page), transcript: await transcript(page), actions: await actionRow(page) });
   return steps;
 }
 
@@ -225,7 +251,9 @@ try {
     ok(/<div class="command-results" data-command-results=""><\/div>/.test(html), `${route.output}: palette results are runtime data, absent from SSR`);
     const ajoopPayload = JSON.parse(html.match(/<script id="react-ajoop-props" type="application\/json">([\s\S]*?)<\/script>/)[1]);
     const commandPayload = JSON.parse(html.match(/<script id="react-command-props" type="application\/json">([\s\S]*?)<\/script>/)[1]);
-    const labelsAjoopLandmark = /^(?:(?:tr|de|es|fr)\/)?(?:projects\/[^/]+|(?:sinama|merge-rush|ai-flow-puzzle|atolye-joyday|hospital-system)-case-study)\/index\.html$/.test(route.output);
+    /* #29 project/case-study routes and the #30 mini-game shells have page
+     * asides of their own, so the Ajoop aside is named there (Labs has none). */
+    const labelsAjoopLandmark = /^(?:(?:tr|de|es|fr)\/)?(?:projects\/[^/]+|(?:sinama|merge-rush|ai-flow-puzzle|atolye-joyday|hospital-system)-case-study|adventure|joyday-paint|ai-flow-puzzle)\/index\.html$/.test(route.output);
     const expectedAjoop = { ...ajoopShellModel(route.locale), ...(labelsAjoopLandmark ? { a: true } : {}) };
     check(Object.keys(ajoopPayload).sort(), Object.keys(expectedAjoop).sort(), `${route.output}: Ajoop payload carries chrome only`);
     check(Object.keys(commandPayload).sort(), payloadKeys.command, `${route.output}: palette payload carries chrome only`);
@@ -634,6 +662,37 @@ try {
   const changedTranscript = await transcript(controlPage);
   assert.throws(() => assert.equal(changedTranscript, before), assert.AssertionError, "transcript comparator control did not fail");
   controls += 1;
+  /* A changed action is rejected by the action-row comparison. */
+  const pristineActions = await actionRow(controlPage);
+  await controlPage.evaluate(() => { document.querySelector("[data-chatbot-quicks] .chatbot-actions-list button").textContent += " (changed)"; });
+  const changedActions = await actionRow(controlPage);
+  assert.throws(() => assert.deepEqual(changedActions, pristineActions), assert.AssertionError, "action-row comparator control did not fail");
+  controls += 1;
+  /* The turn-status marker stays part of the comparison. A starter clicked
+   * while the bridge probe is still in flight attempts a generation that fails,
+   * and its bubble says so; the same starter after the verdict does not. The
+   * transcript comparison must tell the two apart. */
+  const settledPage = await open("/");
+  await settledPage.click("[data-chatbot-toggle]");
+  await settledPage.waitForFunction(() => document.querySelector("[data-portfolio-chatbot]").classList.contains("is-open"));
+  await settleTurn(settledPage);
+  assert.equal(await bridgeState(settledPage), "unavailable", "a settled panel has the bridge verdict");
+  await settledPage.click("[data-chatbot-quicks] .chatbot-actions-list button");
+  await settleTurn(settledPage);
+  const settledStarter = await transcript(settledPage);
+  await settledPage.close();
+  assert.doesNotMatch(settledStarter, /data-ajoop-turn-status/, "a turn after the bridge verdict carries no status marker");
+  const racing = await open("/", { edgeDelayMs: 1200 });
+  await racing.click("[data-chatbot-toggle]");
+  await racing.waitForFunction(() => document.querySelector("[data-portfolio-chatbot]").classList.contains("is-open") && document.querySelector("[data-chatbot-quicks] .chatbot-actions-list button"));
+  assert.equal(await bridgeState(racing), "checking", "the delayed edge keeps the bridge probe in flight");
+  await racing.click("[data-chatbot-quicks] .chatbot-actions-list button");
+  await settleTurn(racing);
+  const racedStarter = await transcript(racing);
+  assert.match(racedStarter, /data-ajoop-turn-status="/, "a turn sent before the bridge verdict is marked");
+  assert.throws(() => assert.equal(racedStarter, settledStarter), assert.AssertionError, "turn-status comparator control did not fail");
+  controls += 1;
+  await racing.close();
   await controlPage.keyboard.press("Escape");
   /* A second, classic-style launcher listener would toggle twice per click. */
   await controlPage.evaluate(() => document.querySelector("[data-chatbot-toggle]").addEventListener("click", () => setChatbotOpen(!document.querySelector("[data-portfolio-chatbot]").classList.contains("is-open"))));

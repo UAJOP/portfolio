@@ -1,4 +1,4 @@
-(function () {
+function startCareerAdventure(lifecycle) {
   const canvas = document.getElementById("career-merge-canvas");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
@@ -325,7 +325,7 @@
     if (overloaded) {
       state.lost = true;
       state.message = t("gameOver");
-      setTimeout(resetGame, 1600);
+      setTimeout(() => { if (!lifecycle.aborted) resetGame(); }, 1600);
     }
   }
 
@@ -447,17 +447,19 @@
     ctx.restore();
   }
 
+  let frame = 0;
   function loop() {
+    if (lifecycle.aborted) return;
     stepPhysics();
     draw();
-    requestAnimationFrame(loop);
+    frame = requestAnimationFrame(loop);
   }
 
   let activeTouchPointer = null;
 
   canvas.addEventListener("pointermove", (event) => {
     state.dropX = toCanvasX(event.clientX);
-  });
+  }, { signal: lifecycle });
 
   canvas.addEventListener("pointerdown", (event) => {
     state.dropX = toCanvasX(event.clientX);
@@ -468,7 +470,7 @@
       return;
     }
     dropItem();
-  });
+  }, { signal: lifecycle });
 
   canvas.addEventListener("pointerup", (event) => {
     state.dropX = toCanvasX(event.clientX);
@@ -478,25 +480,36 @@
       canvas.releasePointerCapture?.(event.pointerId);
       dropItem();
     }
-  });
+  }, { signal: lifecycle });
 
   canvas.addEventListener("pointercancel", (event) => {
     if (activeTouchPointer === event.pointerId) activeTouchPointer = null;
-  });
+  }, { signal: lifecycle });
 
-  document.querySelector("[data-adventure-drop]")?.addEventListener("click", dropItem);
-  document.querySelectorAll("[data-adventure-restart]").forEach((button) => button.addEventListener("click", resetGame));
+  document.querySelector("[data-adventure-drop]")?.addEventListener("click", dropItem, { signal: lifecycle });
+  document.querySelectorAll("[data-adventure-restart]").forEach((button) => button.addEventListener("click", resetGame, { signal: lifecycle }));
   window.addEventListener("keydown", (event) => {
     if (!document.body.contains(canvas)) return;
+    /* An open overlay makes the page behind it inert; its keys are not game input. */
+    if (canvas.closest("[inert]")) return;
     if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
     if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") state.dropX = Math.max(LEFT + 36, state.dropX - 24);
     if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") state.dropX = Math.min(RIGHT - 36, state.dropX + 24);
     if (event.key === " " || event.key === "Enter") { event.preventDefault(); dropItem(); }
-  });
-  window.addEventListener("resize", resizeCanvas, { passive: true });
+  }, { signal: lifecycle });
+  window.addEventListener("resize", resizeCanvas, { passive: true, signal: lifecycle });
   window.updateCareerAdventureLanguage = function updateCareerAdventureLanguage() { applyText(); };
+  lifecycle.addEventListener("abort", () => {
+    cancelAnimationFrame(frame);
+    delete window.updateCareerAdventureLanguage;
+  }, { once: true });
   resizeCanvas();
   resetGame();
   applyText();
   loop();
-})();
+}
+/* Master 3 #30: a React-owned document hosts this engine through
+ * js/pages/engine-host.js, which starts it after hydration and can stop it.
+ * A legacy document boots it immediately, exactly as before. */
+if (document.querySelector("main[data-react-main]")) (window.KaanEngineQueue = window.KaanEngineQueue || []).push(["adventure", startCareerAdventure]);
+else startCareerAdventure(new AbortController().signal);

@@ -67,6 +67,8 @@ js/
   pages/
     games.js            adventure, game catalog and Joyday navigation
     labs.js             algorithmic 3D lab
+    engine-host.js      lifecycle host for the retained engines on React-owned
+                        documents (loaded by those documents, not by the manifest)
 ```
 
 21 modules. The original 19-module split remains intact; BRIEF 06 adds two focused common infrastructure modules for analytics configuration and behavior.

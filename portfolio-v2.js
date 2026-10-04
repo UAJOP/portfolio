@@ -288,6 +288,7 @@
 
   function renderLabCards() {
     document.querySelectorAll("[data-labs-grid]").forEach((container) => {
+      if (container.closest("[data-react-main]")) return;
       container.innerHTML = registry.labs.map((item) => `<article class="lab-card"><div class="lab-card-top"><span>${esc(pick(item.type))}</span><i class="bx bx-flask"></i></div><h3>${esc(item.title)}</h3><p>${esc(pick(item.description))}</p><div class="project-tags">${item.tags.map((tag) => `<span>${esc(tag)}</span>`).join("")}</div><a href="${esc(pageHref(item.url))}">${lt("Open experiment", "Deneyi aç")}<i class="bx bx-right-arrow-alt"></i></a></article>`).join("");
     });
   }

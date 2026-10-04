@@ -170,6 +170,8 @@ They are handled in **#30**, alongside Labs, and only as far as necessary:
 - **Gameplay may remain vanilla JS/canvas.** The game stays a plain script, mounted into a container by a thin React wrapper that owns the canvas element's lifecycle.
 - No game logic is rewritten. Rewriting working, self-contained game code to satisfy an architecture is churn with real regression risk and no user benefit.
 
+**As built (#30).** The lifecycle owner is a small classic script, `js/pages/engine-host.js`, rather than a React wrapper component: the shared client bundle had 5 bytes of budget left, and a wrapper would have lived in it. The host mounts each engine after React hydration completes and can dispose and remount it. See `docs/master-3-30-labs-game-shells.md`.
+
 Merge Rush is unaffected: it is a separate product with its own repository and appears here only as a case study.
 
 ## 11. QA strategy

@@ -21,6 +21,7 @@ import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits
 import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } from "./m3-27-public-edits.mjs";
 import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-public-edits.mjs";
 import { CASE_PROJECT_REVIEWED_EDITS, caseProjectAcceptedBase } from "./m3-29-public-edits.mjs";
+import { LABS_GAMES_NEW_PUBLIC_FILES, LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
 import {
   HOME_ABOUT_DOCUMENTS,
   M3_26_ACCEPTED_REF,
@@ -39,15 +40,20 @@ const argument = (name) => (process.argv.includes(name) ? path.resolve(process.a
 const M3_29_CASE_ROUTES = "ai-flow-puzzle-case-study|atolye-joyday-case-study|hospital-system-case-study|merge-rush-case-study|sinama-case-study";
 const isM329Document = (file) => new RegExp(`^(?:(?:tr|de|es|fr)/)?(?:projects/[^/]+|(?:${M3_29_CASE_ROUTES}))/index\\.html$`).test(file);
 
+const M3_30_SHELL_ROUTES = "labs|adventure|joyday-paint|ai-flow-puzzle";
+const isM330Document = (file) => new RegExp(`^(?:(?:tr|de|es|fr)/)?(?:${M3_30_SHELL_ROUTES})/index\\.html$`).test(file);
+
 function composeAcceptedArtifact(currentRoot) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-26-accepted-"));
   const root = path.join(temp, "dist-site");
   for (const file of listFiles(currentRoot)) {
-    if (HOME_ABOUT_DOCUMENTS.includes(file) || file.startsWith("assets-react/")) continue;
+    /* The #30 engine host is a reviewed new file; the accepted artifact never had it. */
+    if (HOME_ABOUT_DOCUMENTS.includes(file) || file.startsWith("assets-react/") || Object.hasOwn(LABS_GAMES_NEW_PUBLIC_FILES, file)) continue;
     let bytes = fs.readFileSync(path.join(currentRoot, file));
     if (WORKS_GAMES_DOCUMENTS.includes(file)) bytes = Buffer.from(acceptedDocument(file));
-    else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file] || AJOOP_COMMAND_REVIEWED_EDITS[file] || CASE_PROJECT_REVIEWED_EDITS[file]) {
+    else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file] || AJOOP_COMMAND_REVIEWED_EDITS[file] || CASE_PROJECT_REVIEWED_EDITS[file] || LABS_GAMES_REVIEWED_EDITS[file]) {
       let content = bytes.toString("utf8");
+      if (LABS_GAMES_REVIEWED_EDITS[file]) content = labsGamesAcceptedBase(file, content);
       if (CASE_PROJECT_REVIEWED_EDITS[file]) content = caseProjectAcceptedBase(file, content);
       if (AJOOP_COMMAND_REVIEWED_EDITS[file]) content = ajoopCommandAcceptedBase(file, content);
       if (RECRUITER_BUILD_LOG_REVIEWED_EDITS[file]) content = recruiterBuildLogAcceptedBase(file, content);
@@ -66,6 +72,9 @@ function composeAcceptedArtifact(currentRoot) {
      * the accepted server because Works/Games may navigate to them, but their
      * bytes belong to the #29 gates rather than the frozen #26 manifest. */
     if (isM329Document(file)) continue;
+    /* #30 likewise replaces the Labs and mini-game documents; the #30 gate
+     * (qa:m3:labs-games) owns their bytes and behaviour. */
+    if (isM330Document(file)) continue;
     const entry = expected.get(file);
     assert.equal(artifactDigest(path.join(root, file), entry.normalization), entry.sha256, `${file}: composed accepted artifact differs from ${M3_26_ACCEPTED_REF}`);
     verifiedFiles += 1;
@@ -630,7 +639,7 @@ try {
     await currentPage.close();
   }
 
-  console.log(`G-65 Works/Games accepted differential passed. ${assertions} assertions · 10 documents · composed accepted artifact ${accepted.verifiedFiles ?? accepted.files ?? "(external)"} non-#29 files hash-exact · ${searchChecks} search/filter states · ${activationChecks} card activations · ${layoutChecks} element geometry/style checks (desktop/mobile × dark/light) · ${appliedDeltas} reviewed copy deltas · ${controls} live negative controls · authority=${M3_26_ACCEPTED_REF}.`);
+  console.log(`G-65 Works/Games accepted differential passed. ${assertions} assertions · 10 documents · composed accepted artifact ${accepted.verifiedFiles ?? accepted.files ?? "(external)"} non-#29/#30 files hash-exact · ${searchChecks} search/filter states · ${activationChecks} card activations · ${layoutChecks} element geometry/style checks (desktop/mobile × dark/light) · ${appliedDeltas} reviewed copy deltas · ${controls} live negative controls · authority=${M3_26_ACCEPTED_REF}.`);
 } finally {
   await browser.close();
   await new Promise((resolve) => acceptedServer.close(resolve));

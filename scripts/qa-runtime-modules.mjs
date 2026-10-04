@@ -66,6 +66,9 @@ const EARLY_BOOTSTRAP = "js/core/locale-bootstrap.js";
 /* Historical EN/TR dictionaries are still read by build tooling while the
  * browser now consumes generated locale packs plus i18n-runtime.js. */
 const BUILD_ONLY_MODULES = new Set(["js/core/i18n.js"]);
+/* Loaded by a React-owned document's own script tag, never by the manifest:
+ * the #30 lifecycle host for the retained Labs/mini-game engines. */
+const REACT_DOCUMENT_MODULES = new Set(["js/pages/engine-host.js"]);
 
 /* ---------- 1. every referenced module exists, and every runtime module is referenced ---------- */
 
@@ -85,8 +88,12 @@ ok("js/ contains runtime modules", onDisk.length > 0);
 for (const module of onDisk) {
   ok(
     `module is referenced by the manifest or explicitly non-runtime: ${module}`,
-    ALL_MODULES.includes(module) || module === EARLY_BOOTSTRAP || BUILD_ONLY_MODULES.has(module),
+    ALL_MODULES.includes(module) || module === EARLY_BOOTSTRAP || BUILD_ONLY_MODULES.has(module) || REACT_DOCUMENT_MODULES.has(module),
   );
+}
+for (const module of REACT_DOCUMENT_MODULES) {
+  ok(`React-document module exists: ${module}`, exists(module));
+  ok(`React-document module is not shipped by the manifest: ${module}`, !ALL_MODULES.includes(module));
 }
 for (const module of BUILD_ONLY_MODULES) {
   ok(`build-only module exists: ${module}`, exists(module));
@@ -266,7 +273,12 @@ const labsSource = read("js/pages/labs.js");
 const creativeSource = read("js/features/creative.js");
 ok(
   "labs page module initializes the Algorithmic 3D canvas after defining it",
-  /function\s+setupAlgorithmic3DLab\b[\s\S]*?\nsetupAlgorithmic3DLab\(\);\s*$/.test(labsSource),
+  /function\s+setupAlgorithmic3DLab\b[\s\S]*?\nif \(document\.querySelector\("main\[data-react-main\]"\)\) [^\n]*\.push\(\["labs", setupAlgorithmic3DLab\]\);\nelse setupAlgorithmic3DLab\(new AbortController\(\)\.signal\);\s*$/.test(labsSource),
+);
+ok(
+  "labs page module starts exactly once: hosted on a React document, directly on a legacy one",
+  (labsSource.match(/setupAlgorithmic3DLab\(new AbortController\(\)\.signal\)/g) || []).length === 1
+    && !/\nsetupAlgorithmic3DLab\(\);/.test(labsSource),
 );
 ok(
   "COMMON creative module no longer owns the Labs 3D startup",

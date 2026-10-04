@@ -9,7 +9,9 @@ const normalizeProductionMarkup = (markup) => markup
   .replaceAll("hrefLang=", "hreflang=")
   .replaceAll("fetchPriority=", "fetchpriority=")
   .replaceAll("dateTime=", "datetime=")
-  .replaceAll(' inert=""', " inert");
+  .replaceAll(' inert=""', " inert")
+  .replaceAll(' checked=""', " checked")
+  .replaceAll(" maxLength=", " maxlength=");
 
 export function renderProductionMain(props) {
   // React 19 opportunistically hoists eager-image preload hints into the

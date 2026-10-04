@@ -21,6 +21,7 @@ import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits
 import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } from "./m3-27-public-edits.mjs";
 import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-public-edits.mjs";
 import { CASE_PROJECT_REVIEWED_EDITS, caseProjectAcceptedBase } from "./m3-29-public-edits.mjs";
+import { LABS_GAMES_NEW_PUBLIC_FILES, LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
 import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
 import { assertHomeAboutPayload } from "./m3-25b-home-about-payload.mjs";
 
@@ -51,10 +52,17 @@ const APPROVED_AJOOP_COMMAND_CHANGES = new Set(Object.keys(AJOOP_COMMAND_REVIEWE
 const APPROVED_CASE_PROJECT_CHANGES = new Set(Object.keys(CASE_PROJECT_REVIEWED_EDITS));
 const PHASE_26_PAGE_IDS = new Set(["home", "about", "works", "games"]);
 const PHASE_29_CASE_STUDY_IDS = new Set(["sinamaCaseStudy", "mergeRushCaseStudy", "joydayCaseStudy", "hospitalCaseStudy", "aiFlowPuzzleCaseStudy"]);
+const APPROVED_LABS_GAMES_CHANGES = new Set(Object.keys(LABS_GAMES_REVIEWED_EDITS));
+const APPROVED_LABS_GAMES_NEW_FILES = new Set(Object.keys(LABS_GAMES_NEW_PUBLIC_FILES));
+const PHASE_30_PAGE_IDS = new Set(["labs", "adventure", "joydayPaint", "aiFlowPuzzle"]);
 
 /* A file a later phase edited again is checked against an earlier phase by
  * first reversing the later phase's reviewed edits. */
-const beforeCaseProject = (file, content) => (CASE_PROJECT_REVIEWED_EDITS[file] ? caseProjectAcceptedBase(file, content) : content);
+const beforeLabsGames = (file, content) => (LABS_GAMES_REVIEWED_EDITS[file] ? labsGamesAcceptedBase(file, content) : content);
+const beforeCaseProject = (file, content) => {
+  const current = beforeLabsGames(file, content);
+  return CASE_PROJECT_REVIEWED_EDITS[file] ? caseProjectAcceptedBase(file, current) : current;
+};
 const beforeAjoopCommand = (file, content) => {
   const current = beforeCaseProject(file, content);
   return AJOOP_COMMAND_REVIEWED_EDITS[file] ? ajoopCommandAcceptedBase(file, current) : current;
@@ -98,13 +106,26 @@ function assertReviewedAjoopCommandDelta(directory, edits = AJOOP_COMMAND_REVIEW
 function assertReviewedCaseProjectDelta(directory, edits = CASE_PROJECT_REVIEWED_EDITS) {
   const accepted = acceptedArtifactManifest();
   for (const file of Object.keys(edits)) {
-    const base = caseProjectAcceptedBase(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    const base = caseProjectAcceptedBase(file, beforeLabsGames(file, fs.readFileSync(path.join(directory, file), "utf8")), edits[file]);
     const layered = ajoopCommandDelta?.files.find((entry) => entry.path === file)
       || recruiterBuildLogDelta?.files.find((entry) => entry.path === file)
       || worksGamesDelta?.files.find((entry) => entry.path === file)
       || publicDelta?.files.find((entry) => entry.path === file)
       || accepted.get(file);
     assert.equal(digest(base), layered?.sha256, `${file}: #29 delta is not exactly the accepted prior phase plus reviewed edits`);
+  }
+}
+
+function assertReviewedLabsGamesDelta(directory, edits = LABS_GAMES_REVIEWED_EDITS) {
+  const accepted = acceptedArtifactManifest();
+  for (const file of Object.keys(edits)) {
+    const base = labsGamesAcceptedBase(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    const layered = ajoopCommandDelta?.files.find((entry) => entry.path === file)
+      || recruiterBuildLogDelta?.files.find((entry) => entry.path === file)
+      || worksGamesDelta?.files.find((entry) => entry.path === file)
+      || publicDelta?.files.find((entry) => entry.path === file)
+      || accepted.get(file);
+    assert.equal(digest(base), layered?.sha256, `${file}: #30 delta is not exactly the accepted prior phase plus reviewed edits`);
   }
 }
 
@@ -139,15 +160,18 @@ const localeCountOf = (routes) => new Set(routes.map((route) => route.locale)).s
  * family. A React route outside the approved phases is not excused here. */
 const isPhase29Route = (route) => route.kind === "project" || PHASE_29_CASE_STUDY_IDS.has(route.routeId);
 
-/** The React ownership the artifact may have: the #25-B/#26 pages plus #29. */
+/** The React ownership the artifact may have: the #25-B/#26 pages, #29 and
+ * the four #30 Labs/mini-game pages. */
 function assertApprovedReactOwnership(routes) {
   const migratedDocuments = new Set(routes.filter((route) => PHASE_26_PAGE_IDS.has(route.routeId)).map((route) => route.output));
   const phase29Documents = new Set(routes.filter(isPhase29Route).map((route) => route.output));
   assert.equal(migratedDocuments.size, 20, "parity model requires exactly 20 migrated Home/About/Works/Games documents");
   const projectSlugCount = Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, "data/portfolio/project-details.json"), "utf8"))).length;
   assert.equal(phase29Documents.size, (PHASE_29_CASE_STUDY_IDS.size + projectSlugCount) * localeCountOf(routes), "#29 must cover the five case studies and every canonical project slug in every locale");
-  assert.deepEqual(routes.filter((route) => !PHASE_26_PAGE_IDS.has(route.routeId) && !isPhase29Route(route)).map((route) => route.output), [], "every React document must belong to an approved migration phase");
-  return { migratedDocuments, phase29Documents };
+  const phase30Documents = new Set(routes.filter((route) => PHASE_30_PAGE_IDS.has(route.routeId)).map((route) => route.output));
+  assert.equal(phase30Documents.size, PHASE_30_PAGE_IDS.size * localeCountOf(routes), "#30 must cover Labs and the three mini-game pages in every locale");
+  assert.deepEqual(routes.filter((route) => !PHASE_26_PAGE_IDS.has(route.routeId) && !isPhase29Route(route) && !PHASE_30_PAGE_IDS.has(route.routeId)).map((route) => route.output), [], "every React document must belong to an approved migration phase");
+  return { migratedDocuments, phase29Documents, phase30Documents };
 }
 
 function assertClean(label, result) {
@@ -242,23 +266,30 @@ try {
   await buildProductionSite({ outputDirectory: mixed });
 
   const productionRoutes = productionReactRoutes();
-  const { migratedDocuments, phase29Documents } = assertApprovedReactOwnership(productionRoutes);
+  const { migratedDocuments, phase29Documents, phase30Documents } = assertApprovedReactOwnership(productionRoutes);
   /* Negative control through the real path: flip one unapproved page to
    * `renderer: "react"` in a copy of the validated registry, let the production
    * route adapter derive its records, and require the same ownership check the
    * real artifact passes above to reject them on the unapproved-phase assertion. */
   const liveSite = loadSiteRoutes();
-  const unauthorizedSite = { ...liveSite, pages: liveSite.pages.map((page) => (page.id === "labs" ? { ...page, renderer: "react" } : page)) };
-  assert.equal(liveSite.pages.find((page) => page.id === "labs")?.renderer, "legacy", "the ownership control needs a route that is not React-owned today");
+  const unauthorizedSite = { ...liveSite, pages: liveSite.pages.map((page) => (page.id === "now" ? { ...page, renderer: "react" } : page)) };
+  assert.equal(liveSite.pages.find((page) => page.id === "now")?.renderer, "legacy", "the ownership control needs a route that is not React-owned today");
   const unauthorizedRoutes = productionReactRoutes({ site: unauthorizedSite });
   assert.equal(unauthorizedRoutes.length, productionRoutes.length + localeCountOf(productionRoutes), "the adapter must derive the unauthorized route in every locale");
   assert.throws(
     () => assertApprovedReactOwnership(unauthorizedRoutes),
-    (error) => error instanceof assert.AssertionError && /every React document must belong to an approved migration phase/.test(error.message) && error.actual.includes("labs/index.html") && error.actual.includes("tr/labs/index.html"),
-    "#29 ownership control: an unauthorized React route was not rejected by the ownership check",
+    (error) => error instanceof assert.AssertionError && /every React document must belong to an approved migration phase/.test(error.message) && error.actual.includes("now/index.html") && error.actual.includes("tr/now/index.html"),
+    "ownership control: an unauthorized React route was not rejected by the ownership check",
+  );
+  /* #30 is approved for exactly four pages: dropping one from the registry,
+   * through the same adapter and check, must fail on the #30 coverage rule. */
+  assert.throws(
+    () => assertApprovedReactOwnership(productionReactRoutes({ site: { ...liveSite, pages: liveSite.pages.map((page) => (page.id === "joydayPaint" ? { ...page, renderer: "legacy" } : page)) } })),
+    (error) => error instanceof assert.AssertionError && /#30 must cover Labs and the three mini-game pages in every locale/.test(error.message),
+    "#30 ownership control: a missing #30 React route was not rejected by the ownership check",
   );
   const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
-  const allowed = new Set([...migratedDocuments, ...phase29Documents, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES, ...APPROVED_CASE_PROJECT_CHANGES]);
+  const allowed = new Set([...migratedDocuments, ...phase29Documents, ...phase30Documents, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES, ...APPROVED_CASE_PROJECT_CHANGES, ...APPROVED_LABS_GAMES_CHANGES, ...APPROVED_LABS_GAMES_NEW_FILES]);
   const finalFiles = listFiles(mixed);
   const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
   const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
@@ -266,7 +297,12 @@ try {
   assertClean("unchanged #25-A artifact protection", accepted);
 
   const extras = finalFiles.filter((file) => !baseline.files.some((entry) => entry.path === file));
-  assert.ok(extras.length > 0 && extras.every((file) => file.startsWith(bundlePrefix)), "only namespaced React bundles may be new files");
+  const newPublicFiles = extras.filter((file) => !file.startsWith(bundlePrefix));
+  assert.ok(extras.some((file) => file.startsWith(bundlePrefix)), "the artifact must carry a namespaced React bundle");
+  assert.deepEqual(newPublicFiles.sort(), [...APPROVED_LABS_GAMES_NEW_FILES].sort(), "only namespaced React bundles and the reviewed #30 engine host may be new files");
+  for (const file of newPublicFiles) {
+    assert.equal(digest(fs.readFileSync(path.join(mixed, file))), LABS_GAMES_NEW_PUBLIC_FILES[file], `${file}: new public file drifted from its reviewed #30 pin`);
+  }
   for (const relative of migratedDocuments) {
     const previous = baseline.files.find((entry) => entry.path === relative);
     assert.ok(previous, `migrated document is absent from #25-A baseline: ${relative}`);
@@ -321,7 +357,9 @@ try {
   assert.deepEqual(recruiterSupersededByAjoopCommand, ["js/core/i18n-runtime.js"], "#28 may layer onto exactly one #27 public path");
   const recruiterSupersededByCaseProject = [...APPROVED_RECRUITER_BUILD_LOG_CHANGES].filter((file) => APPROVED_CASE_PROJECT_CHANGES.has(file));
   assert.deepEqual(recruiterSupersededByCaseProject, [], "#29 must not layer onto any #27 public path");
-  const recruiterSuperseded = new Set(recruiterSupersededByAjoopCommand);
+  const recruiterSupersededByLabsGames = [...APPROVED_RECRUITER_BUILD_LOG_CHANGES].filter((file) => APPROVED_LABS_GAMES_CHANGES.has(file));
+  assert.deepEqual(recruiterSupersededByLabsGames, ["portfolio-v2.js"], "#30 may layer onto exactly one #27 public path");
+  const recruiterSuperseded = new Set([...recruiterSupersededByAjoopCommand, ...recruiterSupersededByLabsGames]);
   assertClean("accepted #27 public delta", compareArtifactManifest(
     { files: recruiterBuildLogDelta.files.filter((entry) => !recruiterSuperseded.has(entry.path)) },
     mixed,
@@ -355,6 +393,17 @@ try {
   ]) {
     assert.throws(() => assertReviewedCaseProjectDelta(mixed, edits), undefined, `#29 reviewed delta ${name} control did not fail`);
   }
+  for (const [phase, approved] of [["#26", APPROVED_WORKS_GAMES_CHANGES], ["#28", APPROVED_AJOOP_COMMAND_CHANGES], ["#29", APPROVED_CASE_PROJECT_CHANGES]]) {
+    assert.deepEqual([...approved].filter((file) => APPROVED_LABS_GAMES_CHANGES.has(file)), [], `#30 must not layer onto any ${phase} public path`);
+  }
+  assertReviewedLabsGamesDelta(mixed);
+  for (const [name, edits] of [
+    ["missing engine lifecycle", { ...LABS_GAMES_REVIEWED_EDITS, "adventure-game.js": LABS_GAMES_REVIEWED_EDITS["adventure-game.js"].slice(1) }],
+    ["missing Labs engine lifecycle", { ...LABS_GAMES_REVIEWED_EDITS, "js/pages/labs.js": LABS_GAMES_REVIEWED_EDITS["js/pages/labs.js"].slice(0, -1) }],
+    ["missing lab-card stand-down", { ...LABS_GAMES_REVIEWED_EDITS, "portfolio-v2.js": [] }],
+  ]) {
+    assert.throws(() => assertReviewedLabsGamesDelta(mixed, edits), undefined, `#30 reviewed delta ${name} control did not fail`);
+  }
 
   /* Home/About: byte-identical to the accepted 24be2f8 documents except for
    * the content-addressed React bundle name. The snapshot hashes are
@@ -383,7 +432,7 @@ try {
   assertClean("same-tree unchanged legacy protection", neutral);
 
   console.log(
-    `Master 3 #26 route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=${migratedDocuments.size} later-phase=${phase29Documents.size} bundles=${extras.length} unexplained=0.`,
+    `Master 3 #26 route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=${migratedDocuments.size} later-phase=${phase29Documents.size + phase30Documents.size} bundles=${extras.length - newPublicFiles.length} reviewed-new-files=${newPublicFiles.length} unexplained=0.`,
   );
   console.log(
     `Canonical EOL contract passed. ${fixtureAssertions} assertions · LF=CRLF for recognized text only · binary bytes exact.`,
@@ -394,6 +443,7 @@ try {
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
   console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=3-controls home-about=${HOME_ABOUT_DOCUMENTS.length}-exact git-history=none accept-current=disabled.`);
   console.log(`Accepted #28 public delta guard passed. authority=${AJOOP_COMMAND_ACCEPTED_BASE} exact=${ajoopCommandDelta.files.length} reviewed-edits=${Object.values(AJOOP_COMMAND_REVIEWED_EDITS).flat().length} base-anchored=5-controls overlay roots stripped before prior parity checks accept-current=disabled.`);
+  console.log(`Accepted #30 public delta guard passed. authority=760feca095a80393a79562435c685afee13d096d reviewed-edits=${Object.values(LABS_GAMES_REVIEWED_EDITS).flat().length} new-files=${newPublicFiles.length} base-anchored=3-controls accept-current=disabled.`);
   console.log(`Accepted #27 public delta guard passed. authority=${RECRUITER_BUILD_LOG_ACCEPTED_BASE} exact=${recruiterBuildLogDelta.files.length} reviewed-edits=${Object.values(RECRUITER_BUILD_LOG_REVIEWED_EDITS).flat().length} base-anchored=3-controls React-doc additions stripped before prior parity checks accept-current=disabled.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
