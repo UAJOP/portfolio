@@ -251,9 +251,10 @@ try {
     ok(/<div class="command-results" data-command-results=""><\/div>/.test(html), `${route.output}: palette results are runtime data, absent from SSR`);
     const ajoopPayload = JSON.parse(html.match(/<script id="react-ajoop-props" type="application\/json">([\s\S]*?)<\/script>/)[1]);
     const commandPayload = JSON.parse(html.match(/<script id="react-command-props" type="application\/json">([\s\S]*?)<\/script>/)[1]);
-    /* #29 project/case-study routes and the #30 mini-game shells have page
-     * asides of their own, so the Ajoop aside is named there (Labs has none). */
-    const labelsAjoopLandmark = /^(?:(?:tr|de|es|fr)\/)?(?:projects\/[^/]+|(?:sinama|merge-rush|ai-flow-puzzle|atolye-joyday|hospital-system)-case-study|adventure|joyday-paint|ai-flow-puzzle)\/index\.html$/.test(route.output);
+    /* #29 project/case-study routes, the #30 mini-game shells and the #30.5
+     * Experience page have page asides of their own, so the Ajoop aside is
+     * named there (Labs and the other #30.5 pages have none). */
+    const labelsAjoopLandmark = /^(?:(?:tr|de|es|fr)\/)?(?:projects\/[^/]+|(?:sinama|merge-rush|ai-flow-puzzle|atolye-joyday|hospital-system)-case-study|adventure|joyday-paint|ai-flow-puzzle|blog)\/index\.html$/.test(route.output);
     const expectedAjoop = { ...ajoopShellModel(route.locale), ...(labelsAjoopLandmark ? { a: true } : {}) };
     check(Object.keys(ajoopPayload).sort(), Object.keys(expectedAjoop).sort(), `${route.output}: Ajoop payload carries chrome only`);
     check(Object.keys(commandPayload).sort(), payloadKeys.command, `${route.output}: palette payload carries chrome only`);
@@ -315,12 +316,16 @@ try {
 
   /* ---------- 3. Legacy vs React differential, five locales ---------- */
   const queries = ["", "a", "works", "cv", "recruiter", "zz-no-command"];
+  const CLASSIC = "/404.html";
   /* The classic palette's ids per locale and query: the oracle for later checks. */
   const classicIds = {};
   const idsOf = (tree) => (tree?.children || []).filter((child) => child.tag === "button").map((child) => Object.fromEntries(child.attributes)["data-command-id"]);
+  /* The classic reference is a document that is still legacy-owned: the 404
+   * companion (#31), which loads the COMMON runtime and no page module. /now/
+   * served this purpose until #30.5 migrated it. */
   for (const locale of LOCALES) {
-    const legacy = await open(`${prefix(locale)}/now/`);
-    check(await legacy.evaluate(() => [document.querySelectorAll("[data-react-ajoop-shell], [data-react-command-owner]").length, document.querySelectorAll("[data-portfolio-chatbot]").length, document.querySelectorAll("[data-command-palette]").length]), [0, 1, 1], `${locale} /now/: legacy owners only (negative control)`);
+    const legacy = await open(`${prefix(locale)}${CLASSIC}`);
+    check(await legacy.evaluate(() => [document.querySelectorAll("[data-react-ajoop-shell], [data-react-command-owner]").length, document.querySelectorAll("[data-portfolio-chatbot]").length, document.querySelectorAll("[data-command-palette]").length]), [0, 1, 1], `${locale} ${CLASSIC}: legacy owners only (negative control)`);
     const legacyShell = await legacy.evaluate(canonicalTree, "[data-portfolio-chatbot]", { skip: ["[data-chatbot-messages]", "[data-chatbot-quicks]"], ignore: SHELL_IGNORED_ATTRIBUTES });
     const legacyPalette = await legacy.evaluate(canonicalTree, "[data-command-palette]", { skip: ["[data-command-results]"] });
     const legacyConversation = await conversation(legacy);
@@ -341,7 +346,7 @@ try {
         await page.keyboard.press("Escape");
       }
       if (pageId !== "games/") {
-        /* Games adds its own command (js/pages/games.js); other pages share /now/'s list. */
+        /* Games adds its own command (js/pages/games.js); other pages share the classic list. */
         check(await paletteResults(page, queries), legacyResults, `${route}: palette results equal the classic palette for every query`);
       }
       check(await page.evaluate(() => window.__hydrationErrors), [], `${route}: zero hydration errors`);
@@ -371,7 +376,7 @@ try {
     await page.close();
     return state;
   };
-  const classicSwitch = await afterLanguageCommand("/now/");
+  const classicSwitch = await afterLanguageCommand(CLASSIC);
   check(classicSwitch.lang !== "en", true, "the language command changes the locale in place");
   check(await afterLanguageCommand("/"), classicSwitch, "after an in-place locale change the React shell, transcript, action row and palette equal the classic ones");
 
@@ -425,7 +430,7 @@ try {
     const routeLocale = route === "/" ? "en" : route.split("/")[1];
     const hydratedIds = await palettePage.evaluate(() => [...document.querySelectorAll("[data-command-results] [data-command-id]")].map((node) => node.dataset.commandId));
     ok(hydratedIds.length > 0, `${route}: hydrated results exist for the pre-typed query`);
-    /* Works adds no commands, so its list equals the classic /now/ list. */
+    /* Works adds no commands, so its list equals the classic list. */
     check(hydratedIds, classicIds[routeLocale].recruiter, `${route}: text typed before hydration filters the hydrated results exactly as the classic palette`);
     await palettePage.evaluate(() => {
       window.__remembered = 0;
@@ -536,11 +541,11 @@ try {
     await page.close();
   }
 
-  const legacyLauncher = await open("/now/");
+  const legacyLauncher = await open(CLASSIC);
   check(await legacyLauncher.evaluate(() => {
     const launcher = document.querySelector("[data-chatbot-toggle]");
     return { owner: document.querySelectorAll("[data-react-ajoop-shell]").length, marker: document.querySelectorAll("[data-ajoop-interactive]").length, visibility: getComputedStyle(launcher).visibility };
-  }), { owner: 0, marker: 0, visibility: "visible" }, "legacy /now/: the classic launcher is unchanged (negative control)");
+  }), { owner: 0, marker: 0, visibility: "visible" }, "legacy 404 companion: the classic launcher is unchanged (negative control)");
   await legacyLauncher.close();
 
   /* ---------- 5. Overlay transitions, focus, inert, Escape, backdrop ---------- */
@@ -630,7 +635,7 @@ try {
     return result;
   };
   const analyticsIds = ["works", "cv", "linkedin"];
-  check(await commandAnalytics("/de/", analyticsIds), await commandAnalytics("/de/now/", analyticsIds), "palette command analytics and destinations equal the classic palette");
+  check(await commandAnalytics("/de/", analyticsIds), await commandAnalytics(`/de${CLASSIC}`, analyticsIds), "palette command analytics and destinations equal the classic palette");
 
   /* ---------- 7. Internal navigation keeps one owner per page ---------- */
   const navigationPage = await open("/");

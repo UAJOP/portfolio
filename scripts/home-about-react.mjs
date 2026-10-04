@@ -14,6 +14,7 @@ const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json"
 const worksGamesStructure = readJson("data/site/m3-26-works-games-structure.json");
 const caseStudyStructure = readJson("data/site/m3-29-case-studies-structure.json");
 const labsGamesStructure = readJson("data/site/m3-30-labs-games-structure.json");
+const remainingRoutesStructure = readJson("data/site/m3-30-5-remaining-routes-structure.json");
 const labs = readJson("data/portfolio/labs.json");
 const buildLog = readJson("data/portfolio/build-log.json");
 const meta = readJson("data/portfolio/meta.json");
@@ -28,6 +29,7 @@ const site = loadSiteRoutes();
 const routeRuntime = loadRouteRuntime(registry, site);
 const CASE_STUDY_IDS = new Set(Object.keys(caseStudyStructure.pages));
 const LABS_GAMES_ACCEPTED_REF = "760feca095a80393a79562435c685afee13d096d";
+const REMAINING_ROUTES_ACCEPTED_REF = "726fcde72939828ad441a7b625ef79feb1dbe662";
 /* The lab-card call to action is resolved exactly as the accepted runtime
  * resolves it (getI18nText in js/core/locale.js): the locale pack's phrase for
  * the English source, else the Turkish text portfolio-v2.js carries inline,
@@ -238,17 +240,71 @@ function labCardNodes(locale, localization) {
   ]));
 }
 
-function withLabCards(nodes, cards) {
+/* Server-render the one container the accepted runtime filled client-side. */
+function withFilledContainer(nodes, attribute, children, what) {
   let filled = 0;
   const visit = (list) => list.map((node) => {
     if (node.type !== "element") return node;
-    if (!node.attributes.some(({ name }) => name === "data-labs-grid")) return { ...node, children: visit(node.children) };
+    if (!node.attributes.some(({ name }) => name === attribute)) return { ...node, children: visit(node.children) };
     filled += 1;
-    return { ...node, children: cards };
+    return { ...node, children };
   });
   const structure = visit(nodes);
-  if (filled !== 1) throw new Error(`Labs shell must contain exactly one experiment index, found ${filled}`);
+  if (filled !== 1) throw new Error(`${what}, found ${filled}`);
   return structure;
+}
+
+const withLabCards = (nodes, cards) => withFilledContainer(nodes, "data-labs-grid", cards, "Labs shell must contain exactly one experiment index");
+
+function localizedBuildLogEntries(locale, localization) {
+  return buildLog.map((entry) => localizedBuildLogEntry({
+    entry,
+    overlay: localization.packs.content,
+    locale,
+    defaultLocale: registry.defaultLocale,
+  })).map((entry) => ({ ...entry, title: decodeHtml(entry.title), detail: decodeHtml(entry.detail) }));
+}
+
+/* The whole Build Log of /now/, from the canonical data/portfolio/build-log.json
+ * and the locale content packs — the same source and markup portfolio-v2.js
+ * used to render client-side into the empty [data-build-log]. Release-state
+ * names are product terms and stay identical in every language. */
+const BUILD_LOG_STATUS = { shipped: "Shipped", building: "Building", integration: "Integration" };
+function buildLogNodes(locale, localization) {
+  return localizedBuildLogEntries(locale, localization).map((entry) => elementNode("article", { class: "build-log-item" }, [
+    elementNode("time", { dateTime: entry.date }, [entry.date]),
+    elementNode("div", {}, [
+      elementNode("div", { class: "build-log-meta" }, [
+        elementNode("span", {}, [entry.area]),
+        elementNode("span", { class: `build-log-status is-${entry.status}` }, [BUILD_LOG_STATUS[entry.status] || entry.status]),
+      ]),
+      elementNode("h3", {}, [entry.title]),
+      elementNode("p", {}, [entry.detail]),
+    ]),
+  ]));
+}
+
+/* The Certificates training label is resolved exactly as the accepted runtime resolves
+ * it (getUiText("training") in js/core/locale.js, applied over the static
+ * text): the locale UI pack's value. The accepted static documents carry the
+ * page-phrase translation instead, which differs in Turkish and German; the
+ * visitor saw the UI-pack value, so that is what the server renders.
+ * qa:m3:remaining-routes holds the result to what the accepted runtime shows. */
+function withTrainingLabel(nodes, locale) {
+  if (locale === registry.defaultLocale) return nodes;
+  const packed = readJson(`data/i18n/packs/${locale}/ui.json`).training;
+  if (typeof packed !== "string" || !packed) throw new Error(`${locale}/certificates: missing UI pack phrase "training"`);
+  return withFilledContainer(nodes, "data-training-type", [textNode(decodeHtml(packed))], "Certificates page must contain exactly one training label");
+}
+
+/* #30.5: Now, Experience, Certificates, Request and Privacy. */
+function remainingRoutePage(route) {
+  const page = route.kind === "page" ? remainingRoutesStructure.pages[route.routeId] : null;
+  if (!page) return null;
+  if (remainingRoutesStructure.acceptedRef !== REMAINING_ROUTES_ACCEPTED_REF) throw new Error("Remaining-routes React contract is not tied to the #30.5 base ref");
+  const localized = page.locales[route.locale];
+  if (!localized) throw new Error(`${route.locale}/${route.routeId}: missing accepted remaining-route contract`);
+  return { page, localized };
 }
 
 const hasAside = (nodes) => nodes.some((node) => node.type === "element" && (node.tag === "aside" || hasAside(node.children)));
@@ -442,6 +498,14 @@ export function productionMainProps(route, {
       : engineShell.localized.children;
     return { kind: "engineShell", page: route.routeId, locale: route.locale, structure };
   }
+  const captured = remainingRoutePage(route);
+  if (captured) {
+    const structure = route.routeId === "now"
+      ? withFilledContainer(captured.localized.children, "data-build-log", buildLogNodes(route.locale, loadLocalization(route.locale)), "Now page must contain exactly one Build Log")
+      : route.routeId === "certificates" ? withTrainingLabel(captured.localized.children, route.locale)
+        : captured.localized.children;
+    return { kind: "capturedPage", page: route.routeId, locale: route.locale, structure };
+  }
   if (route.kind === "project") {
     const localization = loadLocalization(route.locale);
     const model = projectRouteModel(route, localization);
@@ -469,12 +533,7 @@ export function productionMainProps(route, {
     return [locale, Object.fromEntries([...requirements.compat].sort().map((key) => [key, decodeHtml(accepted.message(key))]))];
   }));
   const links = Object.fromEntries([...requirements.internal].sort().map((href) => [href, routeRuntime.localizedInternalHref(href, route.locale)]));
-  const localizedBuildLog = buildLog.map((entry) => localizedBuildLogEntry({
-    entry,
-    overlay: localization.packs.content,
-    locale: route.locale,
-    defaultLocale: registry.defaultLocale,
-  })).map((entry) => ({ ...entry, title: decodeHtml(entry.title), detail: decodeHtml(entry.detail) }));
+  const localizedBuildLog = localizedBuildLogEntries(route.locale, localization);
   const props = {
     page: route.routeId,
     locale: route.locale,
@@ -546,10 +605,12 @@ export function productionDocumentProps(route, clientEntry) {
   const caseLocale = casePage?.locales?.[route.locale];
   const projectRoute = route.kind === "project";
   const engineShell = labsGamesPage(route);
+  const captured = remainingRoutePage(route);
+  const capturedShell = engineShell || captured;
   return {
     main,
     recruiter: recruiterModel(route.locale, localization),
-    ajoop: { ...ajoopShellModel(route.locale), ...((casePage || projectRoute || (engineShell && hasAside(engineShell.localized.children))) ? { a: true } : {}) },
+    ajoop: { ...ajoopShellModel(route.locale), ...((casePage || projectRoute || (capturedShell && hasAside(capturedShell.localized.children))) ? { a: true } : {}) },
     commandPalette: commandPaletteModel(route.locale),
     document: {
       locale: route.locale,
@@ -557,7 +618,7 @@ export function productionDocumentProps(route, clientEntry) {
       dir: localization.definition.dir || "ltr",
       /* A Labs/mini-game shell keeps the accepted page type: it is what makes
        * script.js load that page’s runtime modules. */
-      page: casePage ? "caseStudy" : projectRoute ? "projectDetail" : engineShell ? engineShell.page.pageType : route.routeId,
+      page: casePage ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
       navPage: casePage || projectRoute ? "works" : route.routeId,
       bodyClass: caseLocale?.bodyClass || null,
       /* Accepted project pages declare their slug on <body>; the retained
@@ -565,10 +626,12 @@ export function productionDocumentProps(route, clientEntry) {
       projectSlug: projectRoute ? route.slug : null,
       mainAttributes: projectRoute ? { "data-project-detail": "", "data-react-project-detail-owner": "react" } : null,
       afterMain: caseLocale?.afterMain || [],
+      /* Scripts the accepted document ran before the runtime loader. */
+      leadScripts: captured?.page.leadScripts || [],
       scripts: engineShell ? [...engineShell.page.scripts, ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
       clientEntry,
     },
-    head: caseLocale?.head || (engineShell ? labsGamesHead(route, engineShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
+    head: caseLocale?.head || (capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
       route,
       registry,
       routeRuntime,

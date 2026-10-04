@@ -56,13 +56,14 @@ This is the locked master roadmap for Portfolio Modernization V3, agreed with th
 | #28 | Ajoop + Command Palette React Migration | Deterministic Ajoop and Command Palette. |
 | #29 | Case Studies + Dynamic Project Routes | SINAMA, Merge Rush, Joyday, Hospital, AI Flow Puzzle and shared case-study architecture. |
 | #30 | Labs + Mini-game Shell Migration | Labs plus React shells around Adventure / Joyday Paint / AI Flow Puzzle. Gameplay may remain vanilla JS/canvas. |
+| #30.5 | Remaining Public Routes | Now, Experience, Certificates, Request and Privacy. Completes canonical React ownership; see `docs/master-3-30-5-remaining-routes.md`. |
 | #31 | Legacy Runtime Removal | Only after the migration matrix reaches zero legacy usage: `legacy-script.js`, compatibility layers and duplicate legacy implementations. |
 | #32 | External Dependency + Bundle Cleanup | Fonts, Boxicons, remaining CDN/dependency/bundle cleanup, based on measurement. |
 | #33 | React Architecture Hardening + V3 Final | Final routes, SEO, metadata, accessibility, bundle budgets, visual QA, documentation and the Portfolio Modernization V3 completion checkpoint. |
 
 Each phase is one pull request, reviewed and merged on its own.
 
-Note the shape of this order: **all migration happens before any removal.** Phases #24–#30 move things; #31 is the first phase that deletes anything. That is deliberate, and it is what §9 depends on.
+Note the shape of this order: **all migration happens before any removal.** Phases #24–#30.5 move things; #31 is the first phase that deletes anything. That is deliberate, and it is what §9 depends on.
 
 ## 5. Production parity rules
 

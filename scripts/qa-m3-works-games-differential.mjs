@@ -42,6 +42,8 @@ const isM329Document = (file) => new RegExp(`^(?:(?:tr|de|es|fr)/)?(?:projects/[
 
 const M3_30_SHELL_ROUTES = "labs|adventure|joyday-paint|ai-flow-puzzle";
 const isM330Document = (file) => new RegExp(`^(?:(?:tr|de|es|fr)/)?(?:${M3_30_SHELL_ROUTES})/index\\.html$`).test(file);
+const M3_30_5_ROUTES = "now|blog|certificates|request|privacy";
+const isM3305Document = (file) => new RegExp(`^(?:(?:tr|de|es|fr)/)?(?:${M3_30_5_ROUTES})/index\\.html$`).test(file);
 
 function composeAcceptedArtifact(currentRoot) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-26-accepted-"));
@@ -75,6 +77,9 @@ function composeAcceptedArtifact(currentRoot) {
     /* #30 likewise replaces the Labs and mini-game documents; the #30 gate
      * (qa:m3:labs-games) owns their bytes and behaviour. */
     if (isM330Document(file)) continue;
+    /* #30.5 replaces the five remaining public pages; qa:m3:remaining-routes
+     * owns their bytes and behaviour. */
+    if (isM3305Document(file)) continue;
     const entry = expected.get(file);
     assert.equal(artifactDigest(path.join(root, file), entry.normalization), entry.sha256, `${file}: composed accepted artifact differs from ${M3_26_ACCEPTED_REF}`);
     verifiedFiles += 1;
@@ -639,7 +644,7 @@ try {
     await currentPage.close();
   }
 
-  console.log(`G-65 Works/Games accepted differential passed. ${assertions} assertions · 10 documents · composed accepted artifact ${accepted.verifiedFiles ?? accepted.files ?? "(external)"} non-#29/#30 files hash-exact · ${searchChecks} search/filter states · ${activationChecks} card activations · ${layoutChecks} element geometry/style checks (desktop/mobile × dark/light) · ${appliedDeltas} reviewed copy deltas · ${controls} live negative controls · authority=${M3_26_ACCEPTED_REF}.`);
+  console.log(`G-65 Works/Games accepted differential passed. ${assertions} assertions · 10 documents · composed accepted artifact ${accepted.verifiedFiles ?? accepted.files ?? "(external)"} non-#29/#30/#30.5 files hash-exact · ${searchChecks} search/filter states · ${activationChecks} card activations · ${layoutChecks} element geometry/style checks (desktop/mobile × dark/light) · ${appliedDeltas} reviewed copy deltas · ${controls} live negative controls · authority=${M3_26_ACCEPTED_REF}.`);
 } finally {
   await browser.close();
   await new Promise((resolve) => acceptedServer.close(resolve));

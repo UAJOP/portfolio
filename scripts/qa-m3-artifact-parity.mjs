@@ -55,6 +55,8 @@ const PHASE_29_CASE_STUDY_IDS = new Set(["sinamaCaseStudy", "mergeRushCaseStudy"
 const APPROVED_LABS_GAMES_CHANGES = new Set(Object.keys(LABS_GAMES_REVIEWED_EDITS));
 const APPROVED_LABS_GAMES_NEW_FILES = new Set(Object.keys(LABS_GAMES_NEW_PUBLIC_FILES));
 const PHASE_30_PAGE_IDS = new Set(["labs", "adventure", "joydayPaint", "aiFlowPuzzle"]);
+/* #30.5 changes no legacy public file and adds none: it is route ownership only. */
+const PHASE_30_5_PAGE_IDS = new Set(["now", "blog", "certificates", "request", "privacy"]);
 
 /* A file a later phase edited again is checked against an earlier phase by
  * first reversing the later phase's reviewed edits. */
@@ -160,8 +162,8 @@ const localeCountOf = (routes) => new Set(routes.map((route) => route.locale)).s
  * family. A React route outside the approved phases is not excused here. */
 const isPhase29Route = (route) => route.kind === "project" || PHASE_29_CASE_STUDY_IDS.has(route.routeId);
 
-/** The React ownership the artifact may have: the #25-B/#26 pages, #29 and
- * the four #30 Labs/mini-game pages. */
+/** The React ownership the artifact may have: the #25-B/#26 pages, #29, the
+ * four #30 Labs/mini-game pages and the five #30.5 remaining public pages. */
 function assertApprovedReactOwnership(routes) {
   const migratedDocuments = new Set(routes.filter((route) => PHASE_26_PAGE_IDS.has(route.routeId)).map((route) => route.output));
   const phase29Documents = new Set(routes.filter(isPhase29Route).map((route) => route.output));
@@ -170,8 +172,11 @@ function assertApprovedReactOwnership(routes) {
   assert.equal(phase29Documents.size, (PHASE_29_CASE_STUDY_IDS.size + projectSlugCount) * localeCountOf(routes), "#29 must cover the five case studies and every canonical project slug in every locale");
   const phase30Documents = new Set(routes.filter((route) => PHASE_30_PAGE_IDS.has(route.routeId)).map((route) => route.output));
   assert.equal(phase30Documents.size, PHASE_30_PAGE_IDS.size * localeCountOf(routes), "#30 must cover Labs and the three mini-game pages in every locale");
-  assert.deepEqual(routes.filter((route) => !PHASE_26_PAGE_IDS.has(route.routeId) && !isPhase29Route(route) && !PHASE_30_PAGE_IDS.has(route.routeId)).map((route) => route.output), [], "every React document must belong to an approved migration phase");
-  return { migratedDocuments, phase29Documents, phase30Documents };
+  const isPhase305Route = (route) => route.kind === "page" && PHASE_30_5_PAGE_IDS.has(route.routeId);
+  const phase305Documents = new Set(routes.filter(isPhase305Route).map((route) => route.output));
+  assert.equal(phase305Documents.size, PHASE_30_5_PAGE_IDS.size * localeCountOf(routes), "#30.5 must cover Now, Experience, Certificates, Request and Privacy in every locale");
+  assert.deepEqual(routes.filter((route) => !PHASE_26_PAGE_IDS.has(route.routeId) && !isPhase29Route(route) && !PHASE_30_PAGE_IDS.has(route.routeId) && !isPhase305Route(route)).map((route) => route.output), [], "every React document must belong to an approved migration phase");
+  return { migratedDocuments, phase29Documents, phase30Documents, phase305Documents };
 }
 
 function assertClean(label, result) {
@@ -266,20 +271,29 @@ try {
   await buildProductionSite({ outputDirectory: mixed });
 
   const productionRoutes = productionReactRoutes();
-  const { migratedDocuments, phase29Documents, phase30Documents } = assertApprovedReactOwnership(productionRoutes);
-  /* Negative control through the real path: flip one unapproved page to
+  const { migratedDocuments, phase29Documents, phase30Documents, phase305Documents } = assertApprovedReactOwnership(productionRoutes);
+  /* Negative control through the real path: flip one unapproved document to
    * `renderer: "react"` in a copy of the validated registry, let the production
    * route adapter derive its records, and require the same ownership check the
-   * real artifact passes above to reject them on the unapproved-phase assertion. */
+   * real artifact passes above to reject them on the unapproved-phase assertion.
+   * Since #30.5 every canonical page is React-owned, so the route that is not
+   * React-owned today is a companion document (#31). */
   const liveSite = loadSiteRoutes();
-  const unauthorizedSite = { ...liveSite, pages: liveSite.pages.map((page) => (page.id === "now" ? { ...page, renderer: "react" } : page)) };
-  assert.equal(liveSite.pages.find((page) => page.id === "now")?.renderer, "legacy", "the ownership control needs a route that is not React-owned today");
+  const unauthorizedSite = { ...liveSite, companions: liveSite.companions.map((companion) => (companion.id === "notFound" ? { ...companion, renderer: "react" } : companion)) };
+  assert.equal(liveSite.companions.find((companion) => companion.id === "notFound")?.renderer, "legacy", "the ownership control needs a route that is not React-owned today");
   const unauthorizedRoutes = productionReactRoutes({ site: unauthorizedSite });
   assert.equal(unauthorizedRoutes.length, productionRoutes.length + localeCountOf(productionRoutes), "the adapter must derive the unauthorized route in every locale");
   assert.throws(
     () => assertApprovedReactOwnership(unauthorizedRoutes),
-    (error) => error instanceof assert.AssertionError && /every React document must belong to an approved migration phase/.test(error.message) && error.actual.includes("now/index.html") && error.actual.includes("tr/now/index.html"),
+    (error) => error instanceof assert.AssertionError && /every React document must belong to an approved migration phase/.test(error.message) && error.actual.includes("404.html") && error.actual.includes("tr/404.html"),
     "ownership control: an unauthorized React route was not rejected by the ownership check",
+  );
+  /* #30.5 is approved for exactly five pages: dropping one from the registry,
+   * through the same adapter and check, must fail on the #30.5 coverage rule. */
+  assert.throws(
+    () => assertApprovedReactOwnership(productionReactRoutes({ site: { ...liveSite, pages: liveSite.pages.map((page) => (page.id === "request" ? { ...page, renderer: "legacy" } : page)) } })),
+    (error) => error instanceof assert.AssertionError && error.message.includes("#30.5 must cover Now, Experience, Certificates, Request and Privacy in every locale"),
+    "#30.5 ownership control: a missing #30.5 React route was not rejected by the ownership check",
   );
   /* #30 is approved for exactly four pages: dropping one from the registry,
    * through the same adapter and check, must fail on the #30 coverage rule. */
@@ -289,7 +303,7 @@ try {
     "#30 ownership control: a missing #30 React route was not rejected by the ownership check",
   );
   const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
-  const allowed = new Set([...migratedDocuments, ...phase29Documents, ...phase30Documents, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES, ...APPROVED_CASE_PROJECT_CHANGES, ...APPROVED_LABS_GAMES_CHANGES, ...APPROVED_LABS_GAMES_NEW_FILES]);
+  const allowed = new Set([...migratedDocuments, ...phase29Documents, ...phase30Documents, ...phase305Documents, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES, ...APPROVED_CASE_PROJECT_CHANGES, ...APPROVED_LABS_GAMES_CHANGES, ...APPROVED_LABS_GAMES_NEW_FILES]);
   const finalFiles = listFiles(mixed);
   const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
   const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
@@ -432,7 +446,7 @@ try {
   assertClean("same-tree unchanged legacy protection", neutral);
 
   console.log(
-    `Master 3 #26 route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=${migratedDocuments.size} later-phase=${phase29Documents.size + phase30Documents.size} bundles=${extras.length - newPublicFiles.length} reviewed-new-files=${newPublicFiles.length} unexplained=0.`,
+    `Master 3 #26 route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=${migratedDocuments.size} later-phase=${phase29Documents.size + phase30Documents.size + phase305Documents.size} bundles=${extras.length - newPublicFiles.length} reviewed-new-files=${newPublicFiles.length} unexplained=0.`,
   );
   console.log(
     `Canonical EOL contract passed. ${fixtureAssertions} assertions · LF=CRLF for recognized text only · binary bytes exact.`,
