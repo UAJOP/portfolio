@@ -25,6 +25,7 @@ import { ROOT, loadRegistry } from "./i18n-catalog.mjs";
 import { decodeHtml } from "./localized-html.mjs";
 import { generateLabsGamesStructure } from "./generate-m3-labs-games-structure.mjs";
 import { LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
+import { ENGINE_HOST_REVIEWED_EDITS, engineHostAcceptedBase } from "./m3-30-1-public-edits.mjs";
 
 /* The approved #30 scope, stated here independently of the route registry. */
 const PAGES = Object.freeze({
@@ -34,6 +35,8 @@ const PAGES = Object.freeze({
   aiFlowPuzzle: { engine: "aiFlowPuzzle", pageType: "game", scripts: ["/ai-flow-puzzle.js"], style: "/css/games/ai-flow-puzzle.css", surface: "[data-ai-board]", ready: "[data-ai-scenarios] button" },
 });
 const ENGINE_HOST = "/js/pages/engine-host.js";
+/* The payload the React entry directly follows in every production document. */
+const LAST_HYDRATION_PAYLOAD = "react-command-props";
 const ENGINE_MARKERS = ["career-merge-canvas", "joyday-art-canvas", "data-ai-board", "math-3d-canvas", "KaanEngineQueue"];
 const RAW_BUDGET = 260000;
 const GZIP_BUDGET = 72000;
@@ -138,6 +141,8 @@ function validateRuntime(route, html) {
   assert.deepEqual(scripts, ["/portfolio-data.js", "/script.js", "/portfolio-v2.js", ...page.scripts, ENGINE_HOST], `${route.pathname}: engine script and lifecycle host`);
   if (page.style) assert.match(html, new RegExp(`<link rel="stylesheet" href="${page.style}"/>`), `${route.pathname}: page stylesheet`);
   assert.ok(html.indexOf(ENGINE_HOST) < html.indexOf('<script id="react-main-props"'), `${route.pathname}: host precedes the hydration payload`);
+  /* The host identifies the React entry as the element after this payload. */
+  assert.match(html, new RegExp(`<script id="${LAST_HYDRATION_PAYLOAD}" type="application/json">[^<]*</script><script type="module" src="/assets-react/[^"]+"></script></body>`), `${route.pathname}: the React entry directly follows the last hydration payload`);
   assert.equal(count(mainOf(html), new RegExp(`<[^>]*${page.surface.startsWith("#") ? `id="${page.surface.slice(1)}"` : page.surface.slice(1, -1)}`, "g")), 1, `${route.pathname}: engine surface is server-rendered`);
   assert.doesNotMatch(mainOf(html), /\son[a-z]+="/, `${route.pathname}: no inline handlers in React-owned markup`);
 }
@@ -201,6 +206,24 @@ async function runStatic() {
     engineFiles[file] = `${bytes.byteLength} B raw/${gzipSync(bytes).byteLength} B gzip`;
   }
 
+  /* The host's bundle-failure fallback answers only to the React entry, which
+   * it recognises as one element — the module script that directly follows the
+   * document's last hydration payload — with no address, content hash,
+   * third-party host or tracker file name involved. */
+  const hostSource = fs.readFileSync(path.join(root, ENGINE_HOST.slice(1)), "utf8");
+  const withoutComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, " ");
+  const hostCode = withoutComments(hostSource);
+  const validateHostEntry = (code) => {
+    assert.equal(code.match(/const LAST_HYDRATION_PAYLOAD = "([^"]+)";/)?.[1], LAST_HYDRATION_PAYLOAD, "engine host: the React entry is located after the last hydration payload");
+    assert.match(code, /const entry = document\.getElementById\(LAST_HYDRATION_PAYLOAD\)\?\.nextElementSibling;\s+return target instanceof HTMLScriptElement && target\.type === "module" && target === entry;/, "engine host: the React entry is one element, compared by identity");
+    assert.match(code, /if \(isReactEntry\(event\.target\)\) release\(\);/, "engine host: only the React entry failing to load releases the engines");
+    assert.equal(/target\.type === "module"\) release\(\)/.test(code), false, "engine host: an arbitrary module failure must not release the engines");
+    for (const forbidden of [bundles[0], "assets-react", "[src", "https://", "cloudflare", "insights", "beacon"]) assert.equal(code.includes(forbidden), false, `engine host: must not identify the entry by address (${forbidden})`);
+  };
+  validateHostEntry(hostCode);
+  assert.equal(engineHostAcceptedBase(ENGINE_HOST.slice(1), hostSource).includes("isReactEntry"), false, "engine host: reversing the reviewed hotfix edits removes the entry check");
+  assert.equal(Object.keys(ENGINE_HOST_REVIEWED_EDITS).join(), ENGINE_HOST.slice(1), "the hotfix edits only the engine host");
+
   let negativeControls = 0;
   const mustFail = (label, expected, action) => {
     assert.throws(action, (error) => error instanceof assert.AssertionError && expected.test(error.message), `${label}: negative control did not fail on its own assertion`);
@@ -224,6 +247,12 @@ async function runStatic() {
   mustFail("wrong locale copy", /: accepted main copy$/m, () => validateCopy(joydayTr.route, sample("joydayPaint").html, joydayTr.accepted));
   mustFail("wrong page type", /: page type keeps the runtime module scope$/m, () => validateDocument(labs.route, mutated("wrong page type", labs.html, /<body data-page="labs"/, '<body data-page="home"'), labs.accepted));
   mustFail("wrong metadata", /: accepted description$/m, () => validateMetadata(adventure.route, mutated("wrong description", adventure.html, /(<meta name="description" content=")[^"]*"/, '$1Wrong"'), adventure.accepted));
+  mustFail("accepted #30 host releases on any module failure", /engine host: the React entry is located after the last hydration payload/, () => validateHostEntry(withoutComments(engineHostAcceptedBase(ENGINE_HOST.slice(1), hostSource))));
+  mustFail("host releases on any module failure", /engine host: (only the React entry failing to load releases the engines|an arbitrary module failure must not release the engines)/, () => validateHostEntry(mutated("any module", hostCode, "if (isReactEntry(event.target)) release();", 'if (event.target.type === "module") release();')));
+  mustFail("host identifies the entry by its namespace", /engine host: (the React entry is one element, compared by identity|must not identify the entry by address)/, () => validateHostEntry(mutated("namespace", hostCode, "target === entry;", 'target.matches(\'[src^="/assets-react/"]\');')));
+  mustFail("host hardcodes the content-hashed entry", /engine host: must not identify the entry by address/, () => validateHostEntry(`${hostCode}\nconst ENTRY = "/assets-react/${bundles[0]}";`));
+  mustFail("host names a third-party tracker", /engine host: must not identify the entry by address/, () => validateHostEntry(`${hostCode}\nconst IGNORED = "cloudflareinsights.com/beacon.min.js";`));
+  mustFail("document whose React entry does not follow the last payload", /: the React entry directly follows the last hydration payload$/m, () => validateRuntime(adventure.route, mutated("entry adjacency", adventure.html, /(<script id="react-command-props" type="application\/json">[\s\S]*?<\/script>)(<script type="module")/, '$1<span hidden=""></span>$2')));
   mustFail("missing lifecycle host", /: engine script and lifecycle host$/m, () => validateRuntime(adventure.route, mutated("missing host", adventure.html, `<script src="${ENGINE_HOST}"></script>`, "")));
   mustFail("missing engine script", /: engine script and lifecycle host$/m, () => validateRuntime(adventure.route, mutated("missing engine", adventure.html, '<script src="/adventure-game.js"></script>', "")));
   mustFail("engine loaded twice", /: engine script and lifecycle host$/m, () => validateRuntime(adventure.route, mutated("double engine", adventure.html, '<script src="/adventure-game.js"></script>', '<script src="/adventure-game.js"></script><script src="/adventure-game.js"></script>')));
@@ -255,6 +284,17 @@ const types = { ".css": "text/css", ".html": "text/html", ".js": "text/javascrip
  * the server markup, watches it until hydration starts, and compares it again
  * the moment hydration completes — before the host starts the engine. */
 const probe = `<script>(()=>{const m=document.querySelector('main[data-react-main]'),nodes=r=>{const a=[r],w=document.createTreeWalker(r,NodeFilter.SHOW_ALL);while(w.nextNode())a.push(w.currentNode);return a},attrs=r=>nodes(r).filter(n=>n.nodeType===1).map(n=>({n,v:JSON.stringify([...n.attributes].map(a=>[a.name,a.value]).sort())}));const p=window.__m330p={html:m.innerHTML,nodes:nodes(m),attrs:attrs(m),before:[],errors:[],signals:0,settled:false,started:false,time:{}};const rec=r=>r.type+':'+r.target.nodeName+(r.attributeName?'@'+r.attributeName:'');const o=new MutationObserver(rs=>{if(!p.started)p.before.push(...rs.map(rec))});o.observe(m,{subtree:true,childList:true,characterData:true,attributes:true});addEventListener('portfolio:react-main-hydration-start',()=>{p.before.push(...o.takeRecords().map(rec));p.started=true;p.time.start=performance.now()});addEventListener('portfolio:react-main-hydration-error',e=>p.errors.push(e.detail||{}));addEventListener('portfolio:react-main-hydrated',()=>{p.time.hydrated=performance.now();p.signals++;const post=document.querySelector('main[data-react-main]'),pa=attrs(post),pn=nodes(post);p.sameMain=post===m;p.sameHtml=post.innerHTML===p.html;p.sameNodes=p.nodes.length===pn.length&&p.nodes.every((n,i)=>n===pn[i]);p.sameAttrs=p.attrs.length===pa.length&&p.attrs.every((x,i)=>x.n===pa[i].n&&x.v===pa[i].v);const h=window.KaanEngineHost;p.hostReady=!!h;p.mountedAtHydration=h?h.ids().filter(id=>h.get(id).mounted):null;p.releasedAtHydration=h?h.released:null});document.addEventListener('DOMContentLoaded',()=>addEventListener('portfolio:react-main-hydrated',()=>{p.time.mounted=performance.now();const h=window.KaanEngineHost;p.mountedAfter=h?h.ids().filter(id=>h.get(id).mounted):null;requestAnimationFrame(()=>requestAnimationFrame(()=>{p.settled=true}))}))})();</script>`;
+/* An unrelated module script that cannot be loaded, as a document carries one
+ * in production (an injected analytics beacon a tracker blocker refuses):
+ * `before` the React entry, so it fails before hydration starts, and `after`
+ * it, so it fails while hydration is under way; and `namespace`, a module under
+ * the React bundle namespace itself (a chunk that no longer exists, say). None
+ * of them is the React entry. */
+const UNRELATED_MODULE = Object.freeze({
+  before: { at: /<\/main>/i, tag: '<script type="module" src="/unrelated/missing-module.js"></script>', place: (match, tag) => `${match}${tag}` },
+  after: { at: /<\/body>/i, tag: '<script type="module" src="https://unrelated-module.invalid/beacon.min.js"></script>', place: (match, tag) => `${tag}${match}` },
+  namespace: { at: /<\/main>/i, tag: '<script type="module" src="/assets-react/unrelated-chunk.js"></script>', place: (match, tag) => `${match}${tag}` },
+});
 const SABOTAGE = Object.freeze({
   text: "document.querySelector('main h1').textContent='hydration drift'",
   attribute: "document.querySelector('main h1').setAttribute('data-hydration-drift','1')",
@@ -276,7 +316,12 @@ function serverFor(directory, { instrument = false, acceptedEngines = false } = 
     if (instrument && path.extname(target) === ".html" && /data-react-main/.test(fs.readFileSync(target, "utf8"))) {
       const mode = url.searchParams.get("sabotage");
       const sabotage = mode !== null && Object.hasOwn(SABOTAGE, mode) ? `<script>${SABOTAGE[mode]}</script>` : "";
-      return response.end(fs.readFileSync(target, "utf8").replace(/<\/main>/i, `</main>${probe}${sabotage}`));
+      let html = fs.readFileSync(target, "utf8").replace(/<\/main>/i, `</main>${probe}${sabotage}`);
+      for (const position of (url.searchParams.get("module") || "").split(",").filter((name) => Object.hasOwn(UNRELATED_MODULE, name))) {
+        const { at, tag, place } = UNRELATED_MODULE[position];
+        html = html.replace(at, (match) => place(match, tag));
+      }
+      return response.end(html);
     }
     /* The accepted side runs the accepted engines: the #30 reviewed edits are
      * reversed, so the comparison is against the pre-#30 runtime bytes. */
@@ -330,6 +375,9 @@ function instrumentation() {
     abort() { state.io.readerAborts += 1; return super.abort(); }
   };
   /* Zero-delay timers the gate can hold back and deliver later, in order. */
+  /* Module scripts that failed to load, by their declared source. */
+  state.moduleErrors = [];
+  document.addEventListener("error", (event) => { if (event.target instanceof HTMLScriptElement && event.target.type === "module") state.moduleErrors.push(event.target.getAttribute("src")); }, true);
   state.io.holdTimers = false;
   state.io.heldTimers = [];
   const nativeSetTimeout = window.setTimeout.bind(window);
@@ -1584,15 +1632,92 @@ async function runBrowser() {
       const corrupt = Buffer.from(href.slice(href.indexOf(",") + 1), "base64"); corrupt[corrupt.length - 40] ^= 0xff;
       await control("corrupted PNG export", rejected("corrupted", `data:image/png;base64,${corrupt.toString("base64")}`), /rejected: .*checksum/);
     }
-    /* the game still starts when the React bundle cannot be fetched */
-    {
-      const bundle = `/assets-react/${fs.readdirSync(path.join(root, "assets-react")).find((file) => file.endsWith(".js"))}`;
-      const opened = await open(browser, `${reactOrigin}/adventure/`, "desktop-dark", { sabotage: { [bundle]: "fail" } });
-      await opened.page.waitForFunction(() => window.KaanEngineHost?.get("adventure")?.mounted === true && document.querySelector("[data-merge-ladder] article"), { timeout: 15000 });
-      assert.equal(await opened.page.evaluate(() => window.__m330p.signals), 0, "bundle failure: hydration never ran");
+    /* 8. the bundle-failure fallback answers to the React entry and to nothing else */
+    const bundle = `/assets-react/${fs.readdirSync(path.join(root, "assets-react")).find((file) => file.endsWith(".js"))}`;
+    const routeOf = (routeId, locale = registry.defaultLocale) => targetRoutes.find((route) => route.routeId === routeId && route.locale === locale);
+    const interfaceAlive = async (page, routeId) => {
+      const violations = [];
+      const engine = PAGES[routeId].engine;
+      if (await page.evaluate((id) => window.KaanEngineHost?.get(id)?.mounted === true, engine) !== true) violations.push("engine is not mounted");
+      if (!(await page.$(PAGES[routeId].ready))) violations.push("engine interface is missing");
+      else if (!(await surfaceVisible(page, routeId))) violations.push("engine surface is not visible");
+      if (routeId === "aiFlowPuzzle" && !violations.length) {
+        const count = () => page.$$eval("[data-ai-board] .ai-flow-node", (nodes) => nodes.length);
+        const before = await count();
+        await page.$eval("[data-ai-add-node]", (button) => button.click());
+        if (await count() !== before + 1) violations.push("engine does not respond to input");
+      }
+      /* Adventure draws on a permanent frame loop; the Labs canvas animates
+       * only while it is on screen and motion is allowed, so it is not sampled. */
+      if (routeId === "adventure" && !violations.length) {
+        await page.bringToFront();
+        const frames = () => page.evaluate(() => window.__m330.frames);
+        const before = await frames();
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        if (await frames() <= before) violations.push("engine animation loop is not running");
+      }
+      return violations;
+    };
+    /* (a) An unrelated module that cannot be loaded, before and after the
+     * React entry: hydration is untouched, the engine mounts once after it,
+     * and the game is there afterwards. */
+    const unrelatedModuleFailure = async (route, conditionName, positions, sabotage = null) => {
+      const opened = await open(browser, `${reactOrigin}${route.pathname}?module=${positions.join(",")}`, conditionName, { sabotage });
+      const violations = [];
+      await settle(opened.page, route.routeId).catch((error) => violations.push(`page did not settle: ${error.message.split("\n")[0]}`));
+      const state = await opened.page.evaluate(hydrationState).catch(() => null);
+      violations.push(...(state ? hydrationViolations(state, PAGES[route.routeId].engine) : ["hydration state unavailable"]));
+      violations.push(...await interfaceAlive(opened.page, route.routeId));
+      const failed = await opened.page.evaluate(() => window.__m330.moduleErrors);
+      const expected = positions.map((position) => UNRELATED_MODULE[position].tag.match(/src="([^"]+)"/)[1]);
+      if (JSON.stringify([...failed].sort()) !== JSON.stringify([...expected].sort())) violations.push(`unrelated modules that failed to load: ${JSON.stringify(failed)}, expected ${JSON.stringify(expected)}`);
+      if (!sabotage && opened.diagnostics.length) violations.push(`console diagnostics: ${opened.diagnostics.join("; ")}`);
       await opened.page.close();
+      return violations;
+    };
+    for (const [routeId, locale, conditionName] of [
+      ["labs", "en", "desktop-dark"], ["adventure", "en", "desktop-dark"], ["joydayPaint", "en", "desktop-dark"], ["aiFlowPuzzle", "en", "desktop-dark"],
+      ["labs", "fr", "mobile-dark"], ["adventure", "tr", "mobile-light"], ["joydayPaint", "de", "mobile-dark"], ["aiFlowPuzzle", "es", "mobile-light"],
+    ]) {
+      const route = routeOf(routeId, locale);
+      assert.deepEqual(await unrelatedModuleFailure(route, conditionName, ["before", "after", "namespace"]), [], `${route.pathname}/${conditionName}: an unrelated module failure must not disturb hydration or the game`);
       tally.lifecycle += 1;
+      console.log(`[G-71 lifecycle] ${route.pathname} ${conditionName} unrelated failing modules (before the entry, after it, and in the React bundle namespace): hydration clean, engine mounted once, game usable`);
     }
+    /* (b) The React entry itself cannot be loaded: no hydration, and the
+     * engine still starts on the server markup, exactly once. */
+    const entryFailure = async (route, conditionName, sabotage = {}) => {
+      const opened = await open(browser, `${reactOrigin}${route.pathname}`, conditionName, { sabotage: { [bundle]: "fail", ...sabotage } });
+      const violations = [];
+      await opened.page.waitForFunction((id, ready) => window.KaanEngineHost?.get(id)?.mounted === true && document.querySelector(ready), { timeout: 6000 }, PAGES[route.routeId].engine, PAGES[route.routeId].ready)
+        .catch(() => violations.push("the fallback did not start the engine"));
+      const state = await opened.page.evaluate(() => ({ signals: window.__m330p.signals, failed: window.__m330.moduleErrors, released: window.KaanEngineHost.released, ids: window.KaanEngineHost.ids() }));
+      if (state.signals !== 0) violations.push("hydration ran although the entry could not be loaded");
+      if (JSON.stringify(state.failed) !== JSON.stringify([bundle])) violations.push(`module failures: ${JSON.stringify(state.failed)}, expected only the React entry`);
+      if (JSON.stringify(state.ids) !== JSON.stringify([PAGES[route.routeId].engine])) violations.push(`engines: ${JSON.stringify(state.ids)}`);
+      if (!violations.length) violations.push(...await interfaceAlive(opened.page, route.routeId));
+      await opened.page.close();
+      return violations;
+    };
+    for (const [routeId, locale, conditionName] of [["adventure", "en", "desktop-dark"], ["joydayPaint", "tr", "mobile-light"], ["aiFlowPuzzle", "en", "mobile-dark"], ["labs", "de", "desktop-light"]]) {
+      const route = routeOf(routeId, locale);
+      assert.deepEqual(await entryFailure(route, conditionName), [], `${route.pathname}/${conditionName}: the game must start when the React entry cannot be loaded`);
+      tally.lifecycle += 1;
+      console.log(`[G-71 lifecycle] ${route.pathname} ${conditionName} React entry cannot be loaded: no hydration, engine started once by the fallback, game usable`);
+    }
+    /* (c) Controls. The accepted #30 host (the reviewed hotfix reversed) is the
+     * original defect: each failure position alone must be caught. A host
+     * without the fallback, and one that answers to a different namespace,
+     * must be caught by the entry-failure check. */
+    const acceptedHost = { [ENGINE_HOST]: (source) => engineHostAcceptedBase(ENGINE_HOST.slice(1), source) };
+    const DISTURBED = /engine started before hydration completed|markup changed before hydration|recoverable hydration error|engine interface is missing|main replaced/;
+    await control("#30 host: an unrelated module failing before hydration releases the engine", unrelatedModuleFailure(routeOf("joydayPaint"), "desktop-dark", ["before"], acceptedHost), DISTURBED);
+    await control("#30 host: an unrelated module failing during hydration releases the engine", unrelatedModuleFailure(routeOf("aiFlowPuzzle"), "desktop-dark", ["after"], acceptedHost), DISTURBED);
+    await control("#30 host: a blocked third-party module on a localized mobile page", unrelatedModuleFailure(routeOf("adventure", "tr"), "mobile-light", ["before", "after"], acceptedHost), DISTURBED);
+    await control("namespace-matching host: a failing module in the React bundle namespace releases the engine", unrelatedModuleFailure(routeOf("joydayPaint"), "desktop-dark", ["namespace"], { [ENGINE_HOST]: replace("target === entry;", 'target.matches(\'[src^="/assets-react/"]\');') }), DISTURBED);
+    await control("#30 host: a failing module in the React bundle namespace releases the engine", unrelatedModuleFailure(routeOf("aiFlowPuzzle", "es"), "mobile-light", ["namespace"], acceptedHost), DISTURBED);
+    await control("host without the entry fallback", entryFailure(routeOf("adventure"), "desktop-dark", { [ENGINE_HOST]: replace("if (isReactEntry(event.target)) release();", "") }), /the fallback did not start the engine/);
+    await control("host that looks for the entry after another payload", entryFailure(routeOf("joydayPaint"), "desktop-dark", { [ENGINE_HOST]: replace('"react-command-props"', '"react-main-props"') }), /the fallback did not start the engine/);
 
     console.log(`G-71 Labs/mini-game browser gate passed. ${tally.hydrated} hydrated documents (${targetRoutes.length} routes; EN in 4 conditions) · ${tally.dom} rendered-main comparisons and ${tally.layout} element-level layout/style comparisons against the accepted runtime · ${tally.behaviour} desktop + ${tally.touch} touch + ${Object.keys(EXTRA).length} extended (win, sound, import) gameplay scripts with the same outcome on accepted and React · ${tally.lifecycle} lifecycle checks · ${tally.isolation} isolation/direct-URL checks · ${tally.negative} observed negative-control failures.`);
     console.log(`  EN desktop metrics: ${Object.entries(metrics).map(([id, value]) => `${id} hydration ${value.hydrationMs} ms · engine mount ${value.mountMs} ms · listeners ${value.listeners}`).join(" | ")}`);

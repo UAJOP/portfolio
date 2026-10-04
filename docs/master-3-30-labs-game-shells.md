@@ -68,6 +68,16 @@ No drawing, physics, scoring, validation or export code changed.
 
 The older gates derive their React document count from the registries. The parity gate approves exactly four more page ids, rejects an unapproved one (`now`) and a missing one (`joydayPaint`) through the real ownership check, and pins the one new public file by hash.
 
+## Production hotfix: the fallback answers only to the React entry
+
+Found in production after #31: the three game pages lost their interface for visitors whose browser refused an unrelated module script. The CDN injects an analytics beacon as a `type="module"` script; with a tracker blocker it fails to load. The host treated any failed module script as "the React bundle cannot be fetched" and released the engines while React was still hydrating. The engine changed the markup, React reported a recoverable hydration error and re-rendered `<main>`, and the nodes the engine had bound to were discarded. Labs was not visibly affected.
+
+The fallback now releases the engines only when the React entry element itself fails to load. The entry is identified by its place in the document, not by its address: it is the module script that directly follows the last hydration payload (`#react-command-props`), and the failing script is compared with that element by identity. No namespace, content hash, third-party host or tracker name is involved, so another module under `/assets-react/` is not mistaken for the entry. `qa:m3:labs-games` holds every document to that adjacency. Everything else is unchanged: mount once after hydration, dispose, remount, and the fallback when the entry cannot be loaded.
+
+`js/pages/engine-host.js` is its #30 bytes plus the three reviewed edits in `scripts/m3-30-1-public-edits.mjs`; the parity gate reverses them against the #30 pin.
+
+`qa:m3:labs-games` now also covers this failure class: unrelated modules that cannot be loaded — one before the React entry, one after it and one under the React bundle namespace — on all four pages (English desktop, and one localized mobile document each) — hydration stays clean, the engine mounts once and the game is usable; the React entry failing on four documents — no hydration, the engine starts once; and controls that run the #30 host and require the original defect to be reported, a host that matches the entry by namespace, a host without the fallback and one looking after another payload. CI could not see the defect before because the built artifact carries no injected script.
+
 ## Known differences from the accepted documents
 
 - The Adventure "View resume" button no longer has an inline `onclick`; React attaches the same `openDrivePreviews()` call.

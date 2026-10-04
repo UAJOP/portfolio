@@ -22,6 +22,7 @@ import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } fro
 import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-public-edits.mjs";
 import { CASE_PROJECT_REVIEWED_EDITS, caseProjectAcceptedBase } from "./m3-29-public-edits.mjs";
 import { LABS_GAMES_NEW_PUBLIC_FILES, LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
+import { ENGINE_HOST_REVIEWED_EDITS, engineHostAcceptedBase } from "./m3-30-1-public-edits.mjs";
 import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
 import { assertHomeAboutPayload } from "./m3-25b-home-about-payload.mjs";
 
@@ -314,8 +315,24 @@ try {
   const newPublicFiles = extras.filter((file) => !file.startsWith(bundlePrefix));
   assert.ok(extras.some((file) => file.startsWith(bundlePrefix)), "the artifact must carry a namespaced React bundle");
   assert.deepEqual(newPublicFiles.sort(), [...APPROVED_LABS_GAMES_NEW_FILES].sort(), "only namespaced React bundles and the reviewed #30 engine host may be new files");
+  /* The #30 host carries the reviewed entry-fallback hotfix: reversing those
+   * edits must reproduce the bytes #30 pinned. */
+  const newPublicFileBase = (file, edits = ENGINE_HOST_REVIEWED_EDITS) => {
+    const content = fs.readFileSync(path.join(mixed, file), "utf8");
+    return edits[file] ? engineHostAcceptedBase(file, content, edits[file]) : content;
+  };
+  assert.deepEqual(Object.keys(ENGINE_HOST_REVIEWED_EDITS), ["js/pages/engine-host.js"], "the entry-fallback hotfix edits exactly the #30 engine host");
   for (const file of newPublicFiles) {
-    assert.equal(digest(fs.readFileSync(path.join(mixed, file))), LABS_GAMES_NEW_PUBLIC_FILES[file], `${file}: new public file drifted from its reviewed #30 pin`);
+    assert.equal(digest(newPublicFileBase(file)), LABS_GAMES_NEW_PUBLIC_FILES[file], `${file}: new public file is not its reviewed #30 pin plus the reviewed hotfix edits`);
+  }
+  /* Controls: an unreviewed extra edit, a missing edit and no reversal at all
+   * must each fail against the #30 pin. */
+  for (const [name, edits] of [
+    ["missing entry-fallback edit", { "js/pages/engine-host.js": ENGINE_HOST_REVIEWED_EDITS["js/pages/engine-host.js"].slice(0, -1) }],
+    ["missing entry selector", { "js/pages/engine-host.js": ENGINE_HOST_REVIEWED_EDITS["js/pages/engine-host.js"].slice(1) }],
+    ["unreversed host", {}],
+  ]) {
+    assert.throws(() => assert.equal(digest(newPublicFileBase("js/pages/engine-host.js", edits)), LABS_GAMES_NEW_PUBLIC_FILES["js/pages/engine-host.js"]), undefined, `engine-host reviewed delta ${name} control did not fail`);
   }
   for (const relative of migratedDocuments) {
     const previous = baseline.files.find((entry) => entry.path === relative);

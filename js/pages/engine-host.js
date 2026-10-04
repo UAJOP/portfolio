@@ -23,6 +23,15 @@
   if (window.KaanEngineHost) return;
 
   const HYDRATED_EVENT = "portfolio:react-main-hydrated";
+  /* The React client entry is one element: the module script a React document
+   * declares directly after its last hydration payload. It is identified by
+   * that position, not by its address, so another module with a similar URL
+   * is never mistaken for it. */
+  const LAST_HYDRATION_PAYLOAD = "react-command-props";
+  const isReactEntry = (target) => {
+    const entry = document.getElementById(LAST_HYDRATION_PAYLOAD)?.nextElementSibling;
+    return target instanceof HTMLScriptElement && target.type === "module" && target === entry;
+  };
   const engines = new Map();
   let released = false;
 
@@ -85,12 +94,14 @@
 
   window.addEventListener(HYDRATED_EVENT, release, { once: true });
   /* If the React client bundle cannot be fetched there is no hydration to wait
-   * for; the server-rendered markup is final, so the game still starts. */
+   * for; the server-rendered markup is final, so the game still starts. Only
+   * that script counts. Any other module that fails to load (an analytics
+   * beacon a tracker blocker refuses, say) says nothing about hydration, and
+   * starting an engine then would change markup React is still hydrating. */
   document.addEventListener(
     "error",
     (event) => {
-      const target = event.target;
-      if (target instanceof HTMLScriptElement && target.type === "module") release();
+      if (isReactEntry(event.target)) release();
     },
     true,
   );
