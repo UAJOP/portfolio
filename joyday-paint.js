@@ -860,7 +860,12 @@ function startJoydayPaint(lifecycle) {
   canvas.addEventListener("pointermove", movePaint, { signal: lifecycle });
   window.addEventListener("pointerup", endPaint, { signal: lifecycle });
   canvas.addEventListener("pointerleave", endPaint, { signal: lifecycle });
-  window.addEventListener("keydown", (event) => { if (event.key === "Escape") closeFinishModal(); }, { signal: lifecycle });
+  window.addEventListener("keydown", (event) => {
+    /* An open overlay makes the page behind it inert; its keys are not game
+     * input, and neither is the Escape that has just closed it. */
+    if (event.defaultPrevented || canvas.closest("[inert]")) return;
+    if (event.key === "Escape") closeFinishModal();
+  }, { signal: lifecycle });
   window.updateJoydayPaintLanguage = function updateJoydayPaintLanguage() {
     updateHud();
     selectRandomTheme();

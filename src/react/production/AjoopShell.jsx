@@ -71,8 +71,7 @@ export default function AjoopShell({ model }) {
     openRef.current = true;
     setOpen(true);
     ajoopEngine.panelState(true);
-    shell.setBackgroundInert(widgetRef.current);
-    shell.setOverlayBodyState(true);
+    shell.claimOverlay(widgetRef.current);
     /* One probe per open, subject to the bridge's own backoff. */
     ajoopEngine.initializeAi();
     window.setTimeout(() => ajoopEngine.focusEntry(), 80);
@@ -84,8 +83,7 @@ export default function AjoopShell({ model }) {
     if (wasOpen) setOpen(false);
     ajoopEngine.panelState(false);
     if (!wasOpen) return;
-    shell.setBackgroundInert();
-    shell.setOverlayBodyState(false);
+    shell.releaseOverlay(widgetRef.current);
     if (restoreFocus) shell.restoreOverlayFocus(panelRef.current);
   };
   handlersRef.current = { openPanel, closePanel };

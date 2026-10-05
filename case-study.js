@@ -88,6 +88,9 @@
   });
   document.addEventListener("keydown", (event) => {
     if (!modal?.classList.contains("is-open")) return;
+    /* An overlay opened over the gallery makes it inert; its keys are not the
+     * gallery's input, and neither is the Escape that has just closed it. */
+    if (event.defaultPrevented || modal.closest("[inert]")) return;
     if (event.key === "Escape") closeModal();
     if (event.key === "Tab" && modalClose) {
       event.preventDefault();

@@ -918,6 +918,10 @@ let portfolioChatbotState = {
    * cards, comparison, prove-it) can read what the brain decided without
    * re-routing the message. */
   lastRoute: null,
+  /* Master 3 #33: true from the first turn until the transcript is replaced
+   * (Start over, a site-language change). While it is true the conversation is
+   * the visitor's, and a content re-sync must not restart it. */
+  conversationStarted: false,
 };
 
 /** The language to answer in. */
@@ -3005,6 +3009,7 @@ function answerAjoopRoute(route, options) {
   const language = ajoopReplyLanguage();
   const settings = options || {};
   portfolioChatbotState.lastRoute = route;
+  portfolioChatbotState.conversationStarted = true;
 
   /* Opens the turn before rendering, so a reply still in flight for a previous
    * turn can be recognised as stale and dropped rather than painted over a
@@ -3255,6 +3260,7 @@ function resetChatbotMessages() {
   /* The container of a turn still in flight is about to be detached; forget it
    * here so nothing later tries to commit an answer into it. */
   ajoopPendingTurn = null;
+  portfolioChatbotState.conversationStarted = false;
   messageList.textContent = "";
   /* The greeting introduces the assistant; it is not an evidence claim, so it
    * carries no provenance line. */
@@ -3275,14 +3281,26 @@ function ajoopHeaderSubtitle(language) {
 function updatePortfolioChatbotLanguage(
   language = getCurrentLocale(),
 ) {
-  portfolioChatbotState.language = renderableLocaleId(language);
+  const siteLanguage = renderableLocaleId(language);
+  /* Master 3 #33 conversation ownership. COMMON modules also call this to
+   * announce content they added after the engine started: portfolio-v2.js at
+   * DOMContentLoaded, the games and request modules while the page is still
+   * loading. A re-sync in the language the conversation is already in is not a
+   * new conversation: a visitor who asked something before the page finished
+   * loading keeps the question, its turn in flight and its follow-ups. */
+  const keepConversation =
+    portfolioChatbotState.conversationStarted &&
+    portfolioChatbotState.language === siteLanguage;
+  portfolioChatbotState.language = siteLanguage;
   /* A site language change resets the conversation, so the conversation
    * language starts again from the new site locale — and the turn, history and
    * panel state behind the old transcript end with it, exactly as they do for
    * Start over. Called after the new language is set so the mascot returns to
    * rest already speaking it. */
-  portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
-  endAjoopConversationTurn();
+  if (!keepConversation) {
+    portfolioChatbotState.replyLanguage = portfolioChatbotState.language;
+    endAjoopConversationTurn();
+  }
   const content = getPortfolioChatbotContent(portfolioChatbotState.language);
   presentAjoop("copy", {
     launcher: content.launcher,
@@ -3293,8 +3311,10 @@ function updatePortfolioChatbotLanguage(
     openLabel: content.openLabel,
     closeLabel: content.closeLabel,
   });
-  renderChatbotQuickActions();
-  resetChatbotMessages();
+  if (!keepConversation) {
+    renderChatbotQuickActions();
+    resetChatbotMessages();
+  }
   renderAjoopBridgeStatus();
 }
 
@@ -3362,17 +3382,14 @@ function setChatbotOpen(
   panel.setAttribute("aria-hidden", String(!isOpen));
   toggle.setAttribute("aria-expanded", String(isOpen));
   if (isOpen) {
-    setBackgroundInert(widget);
-    setOverlayBodyState(true);
+    claimOverlay(widget);
     /* One probe per open, subject to the bridge's own backoff. No polling loop:
      * when the bridge is not configured this is a no-op. */
     if (typeof initializeAjoopAi === "function") initializeAjoopAi();
     setTimeout(focusAjoopEntry, 80);
   } else if (wasOpen) {
-    setBackgroundInert();
-    setOverlayBodyState(false);
+    releaseOverlay(widget);
     if (restoreFocus) restoreOverlayFocus(panel);
-    else overlayTriggerMap.delete(panel);
   }
 }
 

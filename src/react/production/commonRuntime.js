@@ -7,7 +7,7 @@
  * classic scripts (window properties). None is required during SSR, and each
  * accessor tolerates its absence. Nothing here reads `legacy-script.js`.
  *
- *   js/core/shell.js         overlay stacking, inert background, focus trap
+ *   js/core/shell.js         overlay ownership (claim/release by root), focus trap
  *   js/core/analytics.js     analytics events and navigation
  *   js/core/locale.js        current locale, in-place locale changes
  *   js/core/theme.js         theme switching
@@ -25,11 +25,13 @@ const call = (name) => (...args) => {
 
 export const shell = {
   closeMobileNavigation: call("closeMobileNavigation"),
-  setBackgroundInert: call("setBackgroundInert"),
-  setOverlayBodyState: call("setOverlayBodyState"),
+  /* #33: an overlay claims the page by its root element and releases it by the
+   * same element, so a release never clears what another overlay holds. */
+  claimOverlay: call("claimOverlay"),
+  releaseOverlay: call("releaseOverlay"),
   rememberOverlayTrigger: call("rememberOverlayTrigger"),
   /* A close without focus restoration simply does not call this. The trigger
-   * entry it leaves is never read: every open records a fresh one first. */
+   * entry it leaves is how the overlay that replaced it finds its way back. */
   restoreOverlayFocus: call("restoreOverlayFocus"),
   trapFocus: call("trapFocus"),
   getFocusableElements: (container) => call("getFocusableElements")(container) || [],

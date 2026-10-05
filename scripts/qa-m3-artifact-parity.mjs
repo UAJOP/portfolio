@@ -26,6 +26,7 @@ import { LABS_GAMES_NEW_PUBLIC_FILES, LABS_GAMES_REVIEWED_EDITS, labsGamesAccept
 import { ICON_SUBSET_PUBLIC_FILES, iconSubsetAcceptedBase } from "./m3-32a-public-edits.mjs";
 import { generateIconFont } from "./generate-icon-font.mjs";
 import { ENGINE_HOST_REVIEWED_EDITS, engineHostAcceptedBase } from "./m3-30-1-public-edits.mjs";
+import { FINAL_HARDENING_REVIEWED_EDITS, beforeFinalHardening, finalHardeningAcceptedBase } from "./m3-33-public-edits.mjs";
 import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
 import { assertHomeAboutPayload } from "./m3-25b-home-about-payload.mjs";
 
@@ -61,12 +62,18 @@ const APPROVED_LABS_GAMES_NEW_FILES = new Set(Object.keys(LABS_GAMES_NEW_PUBLIC_
 /* #32A changes no legacy public file: it adds the generated icon subset. */
 const APPROVED_ICON_SUBSET_NEW_FILES = new Set(ICON_SUBSET_PUBLIC_FILES);
 const PHASE_30_PAGE_IDS = new Set(["labs", "adventure", "joydayPaint", "aiFlowPuzzle"]);
+/* #33 adds no public file and changes no document: it edits eight runtime files. */
+const APPROVED_FINAL_HARDENING_CHANGES = new Set(Object.keys(FINAL_HARDENING_REVIEWED_EDITS));
 /* #30.5 changes no legacy public file and adds none: it is route ownership only. */
 const PHASE_30_5_PAGE_IDS = new Set(["now", "blog", "certificates", "request", "privacy"]);
 
 /* A file a later phase edited again is checked against an earlier phase by
- * first reversing the later phase's reviewed edits. */
-const beforeLabsGames = (file, content) => (LABS_GAMES_REVIEWED_EDITS[file] ? labsGamesAcceptedBase(file, content) : content);
+ * first reversing the later phase's reviewed edits. #33 is the latest, so its
+ * edits are reversed before any earlier phase is checked. */
+const beforeLabsGames = (file, content) => {
+  const current = beforeFinalHardening(file, content);
+  return LABS_GAMES_REVIEWED_EDITS[file] ? labsGamesAcceptedBase(file, current) : current;
+};
 const beforeCaseProject = (file, content) => {
   const current = beforeLabsGames(file, content);
   return CASE_PROJECT_REVIEWED_EDITS[file] ? caseProjectAcceptedBase(file, current) : current;
@@ -127,7 +134,7 @@ function assertReviewedCaseProjectDelta(directory, edits = CASE_PROJECT_REVIEWED
 function assertReviewedLabsGamesDelta(directory, edits = LABS_GAMES_REVIEWED_EDITS) {
   const accepted = acceptedArtifactManifest();
   for (const file of Object.keys(edits)) {
-    const base = labsGamesAcceptedBase(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    const base = labsGamesAcceptedBase(file, beforeFinalHardening(file, fs.readFileSync(path.join(directory, file), "utf8")), edits[file]);
     const layered = ajoopCommandDelta?.files.find((entry) => entry.path === file)
       || recruiterBuildLogDelta?.files.find((entry) => entry.path === file)
       || worksGamesDelta?.files.find((entry) => entry.path === file)
@@ -135,6 +142,31 @@ function assertReviewedLabsGamesDelta(directory, edits = LABS_GAMES_REVIEWED_EDI
       || accepted.get(file);
     assert.equal(digest(base), layered?.sha256, `${file}: #30 delta is not exactly the accepted prior phase plus reviewed edits`);
   }
+}
+
+/* #33 edits files every earlier phase left as it found them (the overlay
+ * helpers, the certificate dialog) and files #27 to #30 pinned. Reversing its
+ * edits must give the bytes of the latest earlier pin; for a file #29 or #30
+ * edited, that pin is reached through that phase's own reversal. */
+function assertReviewedFinalHardeningDelta(directory, edits = FINAL_HARDENING_REVIEWED_EDITS) {
+  const accepted = acceptedArtifactManifest();
+  let anchored = 0;
+  for (const file of Object.keys(edits)) {
+    const base = finalHardeningAcceptedBase(file, fs.readFileSync(path.join(directory, file), "utf8"), edits[file]);
+    if (CASE_PROJECT_REVIEWED_EDITS[file] || LABS_GAMES_REVIEWED_EDITS[file]) {
+      const earlier = CASE_PROJECT_REVIEWED_EDITS[file] ? caseProjectAcceptedBase(file, base) : labsGamesAcceptedBase(file, base);
+      assert.equal(digest(earlier), accepted.get(file)?.sha256, `${file}: #33 delta is not exactly the accepted prior phase plus reviewed edits`);
+    } else {
+      const layered = ajoopCommandDelta?.files.find((entry) => entry.path === file)
+        || recruiterBuildLogDelta?.files.find((entry) => entry.path === file)
+        || worksGamesDelta?.files.find((entry) => entry.path === file)
+        || publicDelta?.files.find((entry) => entry.path === file)
+        || accepted.get(file);
+      assert.equal(digest(base), layered?.sha256, `${file}: #33 delta is not exactly the accepted prior phase plus reviewed edits`);
+    }
+    anchored += 1;
+  }
+  return anchored;
 }
 
 /* #28 adds the Ajoop shell and Command Palette roots after the footer and
@@ -309,7 +341,7 @@ try {
     "#30 ownership control: a missing #30 React route was not rejected by the ownership check",
   );
   const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
-  const allowed = new Set([...migratedDocuments, ...phase29Documents, ...phase30Documents, ...phase305Documents, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES, ...APPROVED_CASE_PROJECT_CHANGES, ...APPROVED_LABS_GAMES_CHANGES, ...APPROVED_LABS_GAMES_NEW_FILES, ...APPROVED_ICON_SUBSET_NEW_FILES]);
+  const allowed = new Set([...migratedDocuments, ...phase29Documents, ...phase30Documents, ...phase305Documents, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES, ...APPROVED_CASE_PROJECT_CHANGES, ...APPROVED_LABS_GAMES_CHANGES, ...APPROVED_LABS_GAMES_NEW_FILES, ...APPROVED_ICON_SUBSET_NEW_FILES, ...APPROVED_FINAL_HARDENING_CHANGES]);
   const finalFiles = listFiles(mixed);
   const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
   const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
@@ -402,7 +434,9 @@ try {
   assert.deepEqual(recruiterSupersededByCaseProject, [], "#29 must not layer onto any #27 public path");
   const recruiterSupersededByLabsGames = [...APPROVED_RECRUITER_BUILD_LOG_CHANGES].filter((file) => APPROVED_LABS_GAMES_CHANGES.has(file));
   assert.deepEqual(recruiterSupersededByLabsGames, ["portfolio-v2.js"], "#30 may layer onto exactly one #27 public path");
-  const recruiterSuperseded = new Set([...recruiterSupersededByAjoopCommand, ...recruiterSupersededByLabsGames]);
+  const recruiterSupersededByFinalHardening = [...APPROVED_RECRUITER_BUILD_LOG_CHANGES].filter((file) => APPROVED_FINAL_HARDENING_CHANGES.has(file));
+  assert.deepEqual(recruiterSupersededByFinalHardening, ["js/features/recruiter.js"], "#33 may layer onto exactly one #27 public path");
+  const recruiterSuperseded = new Set([...recruiterSupersededByAjoopCommand, ...recruiterSupersededByLabsGames, ...recruiterSupersededByFinalHardening]);
   assertClean("accepted #27 public delta", compareArtifactManifest(
     { files: recruiterBuildLogDelta.files.filter((entry) => !recruiterSuperseded.has(entry.path)) },
     mixed,
@@ -417,7 +451,13 @@ try {
     assert.throws(() => assertReviewedRecruiterBuildLogDelta(mixed, edits), undefined, `#27 reviewed delta ${name} control did not fail`);
   }
   assert.deepEqual(ajoopCommandDelta.files.map((entry) => entry.path).sort(), [...APPROVED_AJOOP_COMMAND_CHANGES].sort(), "#28 public delta must cover the exact five Ajoop/Command Palette ownership paths");
-  assertClean("accepted #28 public delta", compareArtifactManifest(ajoopCommandDelta, mixed, [...APPROVED_AJOOP_COMMAND_CHANGES]));
+  const ajoopSupersededByFinalHardening = [...APPROVED_AJOOP_COMMAND_CHANGES].filter((file) => APPROVED_FINAL_HARDENING_CHANGES.has(file));
+  assert.deepEqual([...ajoopSupersededByFinalHardening].sort(), ["js/ajoop/assistant.js", "js/features/command-palette.js"], "#33 may layer onto exactly two #28 public paths");
+  assertClean("accepted #28 public delta", compareArtifactManifest(
+    { files: ajoopCommandDelta.files.filter((entry) => !ajoopSupersededByFinalHardening.includes(entry.path)) },
+    mixed,
+    [...APPROVED_AJOOP_COMMAND_CHANGES].filter((file) => !ajoopSupersededByFinalHardening.includes(file)),
+  ));
   assertReviewedAjoopCommandDelta(mixed);
   for (const [name, edits] of [
     ["missing Ajoop presentation port", { ...AJOOP_COMMAND_REVIEWED_EDITS, "js/ajoop/assistant.js": AJOOP_COMMAND_REVIEWED_EDITS["js/ajoop/assistant.js"].slice(1) }],
@@ -446,6 +486,19 @@ try {
     ["missing lab-card stand-down", { ...LABS_GAMES_REVIEWED_EDITS, "portfolio-v2.js": [] }],
   ]) {
     assert.throws(() => assertReviewedLabsGamesDelta(mixed, edits), undefined, `#30 reviewed delta ${name} control did not fail`);
+  }
+  /* #33: eight reviewed runtime files, each exactly its earlier pin plus the
+   * reviewed edits. Controls: a missing edit and no reversal at all must each
+   * fail against that pin. */
+  assert.deepEqual([...APPROVED_FINAL_HARDENING_CHANGES].sort(), ["adventure-game.js", "case-study.js", "joyday-paint.js", "js/ajoop/assistant.js", "js/core/shell.js", "js/features/certificates.js", "js/features/command-palette.js", "js/features/recruiter.js"], "#33 edits exactly eight public runtime files");
+  const finalHardeningAnchored = assertReviewedFinalHardeningDelta(mixed);
+  for (const [name, edits] of [
+    ["missing overlay ownership", { ...FINAL_HARDENING_REVIEWED_EDITS, "js/core/shell.js": FINAL_HARDENING_REVIEWED_EDITS["js/core/shell.js"].slice(1) }],
+    ["missing conversation ownership", { ...FINAL_HARDENING_REVIEWED_EDITS, "js/ajoop/assistant.js": FINAL_HARDENING_REVIEWED_EDITS["js/ajoop/assistant.js"].slice(0, -1) }],
+    ["missing game key isolation", { ...FINAL_HARDENING_REVIEWED_EDITS, "joyday-paint.js": [] }],
+    ["unreversed certificate dialog", { ...FINAL_HARDENING_REVIEWED_EDITS, "js/features/certificates.js": [] }],
+  ]) {
+    assert.throws(() => assertReviewedFinalHardeningDelta(mixed, edits), undefined, `#33 reviewed delta ${name} control did not fail`);
   }
 
   /* Home/About: byte-identical to the accepted 24be2f8 documents except for
@@ -487,6 +540,7 @@ try {
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
   console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=3-controls home-about=${HOME_ABOUT_DOCUMENTS.length}-exact git-history=none accept-current=disabled.`);
   console.log(`Accepted #28 public delta guard passed. authority=${AJOOP_COMMAND_ACCEPTED_BASE} exact=${ajoopCommandDelta.files.length} reviewed-edits=${Object.values(AJOOP_COMMAND_REVIEWED_EDITS).flat().length} base-anchored=5-controls overlay roots stripped before prior parity checks accept-current=disabled.`);
+  console.log(`Accepted #33 public delta guard passed. authority=6587ad6555e9f99cdf29f8f57e8f928401982a15 reviewed-edits=${Object.values(FINAL_HARDENING_REVIEWED_EDITS).flat().length} files=${finalHardeningAnchored} base-anchored=4-controls new-files=0 documents-changed=0 accept-current=disabled.`);
   console.log(`Accepted #30 public delta guard passed. authority=760feca095a80393a79562435c685afee13d096d reviewed-edits=${Object.values(LABS_GAMES_REVIEWED_EDITS).flat().length} new-files=${APPROVED_LABS_GAMES_NEW_FILES.size} base-anchored=3-controls accept-current=disabled.`);
   console.log(`Accepted #27 public delta guard passed. authority=${RECRUITER_BUILD_LOG_ACCEPTED_BASE} exact=${recruiterBuildLogDelta.files.length} reviewed-edits=${Object.values(RECRUITER_BUILD_LOG_REVIEWED_EDITS).flat().length} base-anchored=3-controls React-doc additions stripped before prior parity checks accept-current=disabled.`);
 } finally {

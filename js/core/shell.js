@@ -19,8 +19,10 @@ function openDrivePreviews() {
 const navToggle = document.querySelector(".nav-toggle");
 const navLinks = document.querySelector("[data-nav]");
 
-const overlayTriggerMap = new WeakMap();
+const overlayTriggerMap = new Map();
 let inertedBackgroundElements = [];
+/* Open overlay roots in the order they were opened; the last is the foreground. */
+const openOverlayRoots = [];
 
 function getFocusableElements(container) {
   if (!container) return [];
@@ -56,16 +58,76 @@ function trapFocus(event, container) {
 }
 
 function rememberOverlayTrigger(container, trigger = document.activeElement) {
-  if (container && trigger instanceof HTMLElement) {
-    overlayTriggerMap.set(container, trigger);
-  }
+  if (!container || !(trigger instanceof HTMLElement)) return;
+  /* Asked to open again from inside itself (Ctrl+K in the open palette), an
+   * overlay keeps the control it was first opened from. */
+  if (container.contains(trigger) && overlayTriggerMap.has(container)) return;
+  overlayTriggerMap.set(container, trigger);
 }
 
 function restoreOverlayFocus(container) {
-  const trigger = container ? overlayTriggerMap.get(container) : null;
+  let trigger = container ? overlayTriggerMap.get(container) : null;
+  /* A takeover starts inside the overlay it replaces (Ctrl+K in the open Ajoop
+   * panel). That overlay is closed by now, so focus goes back to the control
+   * it was opened from, not to an element that is no longer on screen. */
+  const replaced = new Set();
+  for (;;) {
+    const from = Array.from(overlayTriggerMap.keys()).find(
+      (other) =>
+        other !== container &&
+        !replaced.has(other) &&
+        other.contains(trigger) &&
+        !isOverlayOpen(other),
+    );
+    if (!from) break;
+    replaced.add(from);
+    trigger = overlayTriggerMap.get(from);
+  }
+  replaced.forEach((other) => overlayTriggerMap.delete(other));
   if (trigger?.isConnected) trigger.focus();
   if (container) overlayTriggerMap.delete(container);
 }
+
+/* overlay-ownership:start
+ * One owner model for everything that covers the page: Ajoop, the Command
+ * Palette, Recruiter Mode and the page dialogs that use this contract.
+ *
+ * An overlay claims the page by its own root element and releases it by that
+ * same element. Whoever claimed last is the foreground: only it is
+ * interactive, everything else is inert, and the page is marked
+ * `overlay-modal-open` for as long as any overlay is open. Releasing is
+ * checked against the claim, so an overlay that is not open — or a second
+ * owner of the same markup taking over, as React does at hydration — cannot
+ * clear state another overlay still holds. When the foreground overlay closes
+ * over one that is still open, that one becomes the foreground again. */
+function isOverlayOpen(container) {
+  return openOverlayRoots.some(
+    (root) => root === container || root.contains(container) || container.contains(root),
+  );
+}
+
+function syncOverlayOwnership() {
+  const foreground = openOverlayRoots[openOverlayRoots.length - 1] || null;
+  setBackgroundInert(foreground);
+  setOverlayBodyState(Boolean(foreground));
+}
+
+function claimOverlay(root) {
+  if (!root) return;
+  const at = openOverlayRoots.indexOf(root);
+  if (at !== -1) openOverlayRoots.splice(at, 1);
+  openOverlayRoots.push(root);
+  syncOverlayOwnership();
+}
+
+function releaseOverlay(root) {
+  const at = openOverlayRoots.indexOf(root);
+  if (at === -1) return false;
+  openOverlayRoots.splice(at, 1);
+  syncOverlayOwnership();
+  return true;
+}
+/* overlay-ownership:end */
 
 function setBackgroundInert(activeRoot = null) {
   inertedBackgroundElements.forEach(({ element, wasInert }) => {

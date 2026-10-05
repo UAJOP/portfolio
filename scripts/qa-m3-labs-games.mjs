@@ -27,6 +27,7 @@ import { generateLabsGamesStructure } from "./generate-m3-labs-games-structure.m
 import { LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
 import { ENGINE_HOST_REVIEWED_EDITS, engineHostAcceptedBase } from "./m3-30-1-public-edits.mjs";
 import { servesUpstreamIcons, withIconSubset } from "./m3-32a-public-edits.mjs";
+import { beforeFinalHardening } from "./m3-33-public-edits.mjs";
 
 /* The approved #30 scope, stated here independently of the route registry. */
 const PAGES = Object.freeze({
@@ -331,8 +332,9 @@ function serverFor(directory, { instrument = false, acceptedEngines = false, acc
       if (servesUpstreamIcons(html)) return response.end(withIconSubset(html, file));
     }
     /* The accepted side runs the accepted engines: the #30 reviewed edits are
-     * reversed, so the comparison is against the pre-#30 runtime bytes. */
-    if (acceptedEngines && LABS_GAMES_REVIEWED_EDITS[file.replaceAll("\\", "/")]) return response.end(labsGamesAcceptedBase(file, fs.readFileSync(target, "utf8")));
+     * reversed, so the comparison is against the pre-#30 runtime bytes. #33
+     * edited one engine again; those later edits are reversed first. */
+    if (acceptedEngines && LABS_GAMES_REVIEWED_EDITS[file.replaceAll("\\", "/")]) return response.end(labsGamesAcceptedBase(file, beforeFinalHardening(file.replaceAll("\\", "/"), fs.readFileSync(target, "utf8"))));
     fs.createReadStream(target).pipe(response);
   });
 }
