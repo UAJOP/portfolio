@@ -26,6 +26,7 @@ import { ROOT, loadRegistry } from "./i18n-catalog.mjs";
 import { loadSiteRoutes } from "./site-routes.mjs";
 import { decodeHtml } from "./localized-html.mjs";
 import { generateRemainingRoutesStructure } from "./generate-m3-remaining-routes-structure.mjs";
+import { servesUpstreamIcons, withIconSubset } from "./m3-32a-public-edits.mjs";
 
 /* The approved #30.5 scope, stated here independently of the route registry. */
 const PAGES = Object.freeze({
@@ -381,7 +382,7 @@ const SABOTAGE = Object.freeze({
   text: "document.querySelector('main h1').textContent='hydration drift'",
 });
 
-function serverFor(directory, { instrument = false, mutations = new Map() } = {}) {
+function serverFor(directory, { instrument = false, mutations = new Map(), acceptedIcons = false } = {}) {
   return http.createServer((request, response) => {
     const url = new URL(request.url, "http://local");
     const relative = decodeURIComponent(url.pathname).replace(/^\/+/, "") || "index.html";
@@ -394,6 +395,12 @@ function serverFor(directory, { instrument = false, mutations = new Map() } = {}
       const mode = url.searchParams.get("sabotage");
       const sabotage = mode !== null && Object.hasOwn(SABOTAGE, mode) ? `<script>${SABOTAGE[mode]}</script>` : "";
       return response.end(fs.readFileSync(target, "utf8").replace(/<\/main>/i, `</main>${PROBE}${sabotage}`));
+    }
+    /* #32A: the upstream icon host is unreachable here, so the accepted
+     * documents load the same local icons the React documents do. */
+    if (acceptedIcons && path.extname(target) === ".html") {
+      const html = fs.readFileSync(target, "utf8");
+      if (servesUpstreamIcons(html)) return response.end(withIconSubset(html, relative));
     }
     fs.createReadStream(target).pipe(response);
   });
@@ -736,7 +743,7 @@ async function runBrowser() {
   const { default: puppeteer } = await import("puppeteer");
   const launch = process.env.GITHUB_ACTIONS === "true" ? { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"], protocolTimeout: 180000 } : { headless: true, protocolTimeout: 180000 };
   const mutations = new Map();
-  const reactServer = serverFor(root, { instrument: true }), legacyServer = serverFor(ROOT), mutatedServer = serverFor(root, { instrument: true, mutations });
+  const reactServer = serverFor(root, { instrument: true }), legacyServer = serverFor(ROOT, { acceptedIcons: true }), mutatedServer = serverFor(root, { instrument: true, mutations });
   await Promise.all([reactServer, legacyServer, mutatedServer].map((server) => new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))));
   const [reactOrigin, legacyOrigin, mutatedOrigin] = [reactServer, legacyServer, mutatedServer].map((server) => `http://127.0.0.1:${server.address().port}`);
   const browser = await puppeteer.launch(launch);

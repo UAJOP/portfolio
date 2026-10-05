@@ -15,6 +15,7 @@ import {
   artifactDigest,
   canonicalArtifactBytes,
   compareArtifactManifest,
+  normalizationForArtifactPath,
   validateArtifactManifest,
 } from "./artifact-parity.mjs";
 import { WORKS_GAMES_REVIEWED_EDITS, acceptedBaseOf } from "./m3-26-public-edits.mjs";
@@ -22,6 +23,8 @@ import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } fro
 import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-public-edits.mjs";
 import { CASE_PROJECT_REVIEWED_EDITS, caseProjectAcceptedBase } from "./m3-29-public-edits.mjs";
 import { LABS_GAMES_NEW_PUBLIC_FILES, LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
+import { ICON_SUBSET_PUBLIC_FILES, iconSubsetAcceptedBase } from "./m3-32a-public-edits.mjs";
+import { generateIconFont } from "./generate-icon-font.mjs";
 import { ENGINE_HOST_REVIEWED_EDITS, engineHostAcceptedBase } from "./m3-30-1-public-edits.mjs";
 import { HOME_ABOUT_DOCUMENTS, acceptedArtifactManifest, acceptedHomeAboutHash, bundleNormalized, digest } from "./m3-26-accepted-snapshot.mjs";
 import { assertHomeAboutPayload } from "./m3-25b-home-about-payload.mjs";
@@ -55,6 +58,8 @@ const PHASE_26_PAGE_IDS = new Set(["home", "about", "works", "games"]);
 const PHASE_29_CASE_STUDY_IDS = new Set(["sinamaCaseStudy", "mergeRushCaseStudy", "joydayCaseStudy", "hospitalCaseStudy", "aiFlowPuzzleCaseStudy"]);
 const APPROVED_LABS_GAMES_CHANGES = new Set(Object.keys(LABS_GAMES_REVIEWED_EDITS));
 const APPROVED_LABS_GAMES_NEW_FILES = new Set(Object.keys(LABS_GAMES_NEW_PUBLIC_FILES));
+/* #32A changes no legacy public file: it adds the generated icon subset. */
+const APPROVED_ICON_SUBSET_NEW_FILES = new Set(ICON_SUBSET_PUBLIC_FILES);
 const PHASE_30_PAGE_IDS = new Set(["labs", "adventure", "joydayPaint", "aiFlowPuzzle"]);
 /* #30.5 changes no legacy public file and adds none: it is route ownership only. */
 const PHASE_30_5_PAGE_IDS = new Set(["now", "blog", "certificates", "request", "privacy"]);
@@ -304,7 +309,7 @@ try {
     "#30 ownership control: a missing #30 React route was not rejected by the ownership check",
   );
   const bundlePrefix = `${loadArtifactConfig().reactBundleDirectory}/`;
-  const allowed = new Set([...migratedDocuments, ...phase29Documents, ...phase30Documents, ...phase305Documents, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES, ...APPROVED_CASE_PROJECT_CHANGES, ...APPROVED_LABS_GAMES_CHANGES, ...APPROVED_LABS_GAMES_NEW_FILES]);
+  const allowed = new Set([...migratedDocuments, ...phase29Documents, ...phase30Documents, ...phase305Documents, ...APPROVED_GENERATED_CHANGES, ...APPROVED_WORKS_GAMES_CHANGES, ...APPROVED_RECRUITER_BUILD_LOG_CHANGES, ...APPROVED_AJOOP_COMMAND_CHANGES, ...APPROVED_CASE_PROJECT_CHANGES, ...APPROVED_LABS_GAMES_CHANGES, ...APPROVED_LABS_GAMES_NEW_FILES, ...APPROVED_ICON_SUBSET_NEW_FILES]);
   const finalFiles = listFiles(mixed);
   const pinnedManifest = { files: baseline.files.filter((entry) => !allowed.has(entry.path)) };
   const pinnedFiles = finalFiles.filter((file) => !allowed.has(file) && !file.startsWith(bundlePrefix));
@@ -314,7 +319,14 @@ try {
   const extras = finalFiles.filter((file) => !baseline.files.some((entry) => entry.path === file));
   const newPublicFiles = extras.filter((file) => !file.startsWith(bundlePrefix));
   assert.ok(extras.some((file) => file.startsWith(bundlePrefix)), "the artifact must carry a namespaced React bundle");
-  assert.deepEqual(newPublicFiles.sort(), [...APPROVED_LABS_GAMES_NEW_FILES].sort(), "only namespaced React bundles and the reviewed #30 engine host may be new files");
+  assert.deepEqual(newPublicFiles.sort(), [...APPROVED_LABS_GAMES_NEW_FILES, ...APPROVED_ICON_SUBSET_NEW_FILES].sort(), "only namespaced React bundles, the reviewed #30 engine host and the #32A icon subset may be new files");
+  /* The icon subset is generator output for the pinned upstream package: the
+   * committed files must be current, and the artifact must carry those bytes. */
+  await generateIconFont({ check: true });
+  for (const file of APPROVED_ICON_SUBSET_NEW_FILES) {
+    const normalization = normalizationForArtifactPath(file);
+    assert.equal(artifactDigest(path.join(mixed, file), normalization), artifactDigest(path.join(ROOT, file), normalization), `${file}: artifact does not carry the generated #32A icon subset`);
+  }
   /* The #30 host carries the reviewed entry-fallback hotfix: reversing those
    * edits must reproduce the bytes #30 pinned. */
   const newPublicFileBase = (file, edits = ENGINE_HOST_REVIEWED_EDITS) => {
@@ -322,7 +334,7 @@ try {
     return edits[file] ? engineHostAcceptedBase(file, content, edits[file]) : content;
   };
   assert.deepEqual(Object.keys(ENGINE_HOST_REVIEWED_EDITS), ["js/pages/engine-host.js"], "the entry-fallback hotfix edits exactly the #30 engine host");
-  for (const file of newPublicFiles) {
+  for (const file of APPROVED_LABS_GAMES_NEW_FILES) {
     assert.equal(digest(newPublicFileBase(file)), LABS_GAMES_NEW_PUBLIC_FILES[file], `${file}: new public file is not its reviewed #30 pin plus the reviewed hotfix edits`);
   }
   /* Controls: an unreviewed extra edit, a missing edit and no reversal at all
@@ -439,8 +451,9 @@ try {
   /* Home/About: byte-identical to the accepted 24be2f8 documents except for
    * the content-addressed React bundle name. The snapshot hashes are
    * self-recorded, so the hydration payload is also held to the independently
-   * derived #25-B payload contract. */
-  const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(withoutRecruiterOwnership(withoutOverlayOwnership(fs.readFileSync(path.join(directory, file), "utf8")))));
+   * derived #25-B payload contract. #32A replaced the upstream icon stylesheet
+   * in every React document; that reviewed head edit is reversed first. */
+  const homeAboutBytes = (directory, file) => Buffer.from(bundleNormalized(withoutRecruiterOwnership(withoutOverlayOwnership(iconSubsetAcceptedBase(fs.readFileSync(path.join(directory, file), "utf8"), file)))));
   for (const file of HOME_ABOUT_DOCUMENTS) {
     assert.equal(digest(homeAboutBytes(mixed, file)), acceptedHomeAboutHash(file), `${file}: Home/About drifted from the accepted #25-B document`);
     assertHomeAboutPayload(fs.readFileSync(path.join(mixed, file), "utf8"), file);
@@ -463,7 +476,7 @@ try {
   assertClean("same-tree unchanged legacy protection", neutral);
 
   console.log(
-    `Master 3 #26 route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=${migratedDocuments.size} later-phase=${phase29Documents.size + phase30Documents.size + phase305Documents.size} bundles=${extras.length - newPublicFiles.length} reviewed-new-files=${newPublicFiles.length} unexplained=0.`,
+    `Master 3 #26 route-aware parity passed. pinned=${pinnedManifest.files.length} final=${finalFiles.length} migrated=${migratedDocuments.size} later-phase=${phase29Documents.size + phase30Documents.size + phase305Documents.size} bundles=${extras.length - newPublicFiles.length} reviewed-new-files=${newPublicFiles.length} (#30 ${APPROVED_LABS_GAMES_NEW_FILES.size}, #32A ${APPROVED_ICON_SUBSET_NEW_FILES.size}) unexplained=0.`,
   );
   console.log(
     `Canonical EOL contract passed. ${fixtureAssertions} assertions · LF=CRLF for recognized text only · binary bytes exact.`,
@@ -474,7 +487,7 @@ try {
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
   console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=3-controls home-about=${HOME_ABOUT_DOCUMENTS.length}-exact git-history=none accept-current=disabled.`);
   console.log(`Accepted #28 public delta guard passed. authority=${AJOOP_COMMAND_ACCEPTED_BASE} exact=${ajoopCommandDelta.files.length} reviewed-edits=${Object.values(AJOOP_COMMAND_REVIEWED_EDITS).flat().length} base-anchored=5-controls overlay roots stripped before prior parity checks accept-current=disabled.`);
-  console.log(`Accepted #30 public delta guard passed. authority=760feca095a80393a79562435c685afee13d096d reviewed-edits=${Object.values(LABS_GAMES_REVIEWED_EDITS).flat().length} new-files=${newPublicFiles.length} base-anchored=3-controls accept-current=disabled.`);
+  console.log(`Accepted #30 public delta guard passed. authority=760feca095a80393a79562435c685afee13d096d reviewed-edits=${Object.values(LABS_GAMES_REVIEWED_EDITS).flat().length} new-files=${APPROVED_LABS_GAMES_NEW_FILES.size} base-anchored=3-controls accept-current=disabled.`);
   console.log(`Accepted #27 public delta guard passed. authority=${RECRUITER_BUILD_LOG_ACCEPTED_BASE} exact=${recruiterBuildLogDelta.files.length} reviewed-edits=${Object.values(RECRUITER_BUILD_LOG_REVIEWED_EDITS).flat().length} base-anchored=3-controls React-doc additions stripped before prior parity checks accept-current=disabled.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });

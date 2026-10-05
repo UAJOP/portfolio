@@ -48,7 +48,13 @@ const SCOPED_CSS = {
   ],
 };
 
-const ALL_CSS = [...COMMON_CSS, ...Object.keys(SCOPED_CSS)];
+/* Generated vendor subset (Master 3 #32A, scripts/generate-icon-font.mjs). The
+ * React production document loads it in place of the upstream Boxicons
+ * stylesheet; the authored documents below are the accepted sources and still
+ * carry the upstream link, so none of them may reference it. */
+const VENDOR_CSS = ["css/boxicons-subset.css"];
+
+const ALL_CSS = [...COMMON_CSS, ...Object.keys(SCOPED_CSS), ...VENDOR_CSS];
 
 /* ---------- 1. every stylesheet exists and carries rules ---------- */
 
@@ -128,6 +134,10 @@ for (const file of htmlFiles) {
     const loaded = sheets.includes(sheet);
     if (allowed.includes(file)) ok(`${file}: loads its scoped stylesheet ${sheet}`, loaded);
     else ok(`${file}: does not load page-scoped ${sheet}`, !loaded);
+  }
+
+  for (const sheet of VENDOR_CSS) {
+    ok(`${file}: does not load React-only ${sheet}`, !sheets.includes(sheet));
   }
 
   /* no retired stylesheet */

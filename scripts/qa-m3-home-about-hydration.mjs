@@ -155,7 +155,8 @@ try {
     assert.deepEqual(diagnostics, [], `${route.pathname}: console diagnostics`); assertions += 1;
     assert.equal(shell.locale, route.locale); assert.equal(shell.lang, route.locale); assertions += 2;
     assert.equal(shell.current, 1, `${route.pathname}: one current navigation route`); assertions += 1;
-    assert.deepEqual(shell.styles.filter((href) => href.startsWith("/")), ["/style.css", "/css/a11y.css", "/portfolio-v2.css"]); assertions += 1;
+    /* #32A: the icon subset is a local stylesheet, ahead of the site layers. */
+    assert.deepEqual(shell.styles.filter((href) => href.startsWith("/")), ["/css/boxicons-subset.css", "/style.css", "/css/a11y.css", "/portfolio-v2.css"]); assertions += 1;
     assert.deepEqual([shell.clientBundles, shell.chatbot, shell.recruiter, shell.command, shell.languageSelectors, shell.languageOptions], [1, 1, 1, 1, 1, 5]); assertions += 6;
     assert.equal(shell.buildItems, route.routeId === "home" ? 3 : 0); assertions += 1;
 

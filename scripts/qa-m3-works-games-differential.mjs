@@ -22,6 +22,7 @@ import { RECRUITER_BUILD_LOG_REVIEWED_EDITS, recruiterBuildLogAcceptedBase } fro
 import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-public-edits.mjs";
 import { CASE_PROJECT_REVIEWED_EDITS, caseProjectAcceptedBase } from "./m3-29-public-edits.mjs";
 import { LABS_GAMES_NEW_PUBLIC_FILES, LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
+import { ICON_SUBSET_PUBLIC_FILES, servesUpstreamIcons, withIconSubset } from "./m3-32a-public-edits.mjs";
 import {
   HOME_ABOUT_DOCUMENTS,
   M3_26_ACCEPTED_REF,
@@ -49,8 +50,9 @@ function composeAcceptedArtifact(currentRoot) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-26-accepted-"));
   const root = path.join(temp, "dist-site");
   for (const file of listFiles(currentRoot)) {
-    /* The #30 engine host is a reviewed new file; the accepted artifact never had it. */
-    if (HOME_ABOUT_DOCUMENTS.includes(file) || file.startsWith("assets-react/") || Object.hasOwn(LABS_GAMES_NEW_PUBLIC_FILES, file)) continue;
+    /* The #30 engine host and the #32A icon subset are reviewed new files; the
+     * accepted artifact never had them. */
+    if (HOME_ABOUT_DOCUMENTS.includes(file) || file.startsWith("assets-react/") || Object.hasOwn(LABS_GAMES_NEW_PUBLIC_FILES, file) || ICON_SUBSET_PUBLIC_FILES.includes(file)) continue;
     let bytes = fs.readFileSync(path.join(currentRoot, file));
     if (WORKS_GAMES_DOCUMENTS.includes(file)) bytes = Buffer.from(acceptedDocument(file));
     else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file] || AJOOP_COMMAND_REVIEWED_EDITS[file] || CASE_PROJECT_REVIEWED_EDITS[file] || LABS_GAMES_REVIEWED_EDITS[file]) {
@@ -87,12 +89,20 @@ function composeAcceptedArtifact(currentRoot) {
   return { root, files: files.length, verifiedFiles, cleanup: () => fs.rmSync(temp, { recursive: true, force: true }) };
 }
 
-function serverFor(root) {
+/* #32A: `iconRoot` makes an accepted server hermetic for icons. Its documents
+ * load the local subset the React documents load (served from the current
+ * artifact) instead of fetching the upstream stylesheet from the network. */
+function serverFor(root, { iconRoot = null } = {}) {
   return http.createServer((request, response) => {
     const pathname = decodeURIComponent(new URL(request.url, "http://local").pathname);
-    const file = path.resolve(root, pathname.endsWith("/") ? `${pathname.slice(1)}index.html` : pathname.slice(1));
-    if (!file.startsWith(`${path.resolve(root)}${path.sep}`) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return response.writeHead(404).end("not found");
+    const base = iconRoot && ICON_SUBSET_PUBLIC_FILES.includes(pathname.slice(1)) ? iconRoot : root;
+    const file = path.resolve(base, pathname.endsWith("/") ? `${pathname.slice(1)}index.html` : pathname.slice(1));
+    if (!file.startsWith(`${path.resolve(base)}${path.sep}`) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return response.writeHead(404).end("not found");
     response.writeHead(200, { "content-type": types[path.extname(file).toLowerCase()] || "application/octet-stream", "cache-control": "no-store" });
+    if (iconRoot && path.extname(file) === ".html") {
+      const html = fs.readFileSync(file, "utf8");
+      if (servesUpstreamIcons(html)) return response.end(withIconSubset(html, pathname));
+    }
     fs.createReadStream(file).pipe(response);
   });
 }
@@ -450,7 +460,7 @@ const acceptedArgument = argument("--accepted-root");
 const currentArgument = argument("--root");
 const fixture = currentArgument ? { mixed: currentArgument, cleanup() {} } : await buildWorksGamesFixture();
 const accepted = acceptedArgument ? { root: acceptedArgument, files: null, cleanup() {} } : composeAcceptedArtifact(fixture.mixed);
-const acceptedServer = serverFor(accepted.root);
+const acceptedServer = serverFor(accepted.root, { iconRoot: fixture.mixed });
 const currentServer = serverFor(fixture.mixed);
 await new Promise((resolve) => acceptedServer.listen(0, "127.0.0.1", resolve));
 await new Promise((resolve) => currentServer.listen(0, "127.0.0.1", resolve));
