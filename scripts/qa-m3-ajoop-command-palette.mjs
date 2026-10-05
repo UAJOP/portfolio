@@ -404,16 +404,17 @@ try {
       entryRemoved: !document.querySelector('[data-react-ajoop-shell="react"]').__portfolioReactAjoopEntryCleanup,
       errors: window.__hydrationErrors,
     }));
-    /* Pre-existing engine initialization, identical on the accepted 0543fce
-     * build: portfolio-v2.js syncAjoop() runs at DOMContentLoaded — which a
-     * module bundle delays — and restarts the conversation with the greeting.
-     * #28 changes presentation only, so React adopts exactly that outcome. */
-    check(adopted, { open: true, users: 0, bots: 1, followups: false, entryRemoved: true, errors: [] }, `${route}: React adopted the open shell and the engine's post-init transcript and action row`);
+    /* Until #33, portfolio-v2.js syncAjoop() — which runs at DOMContentLoaded,
+     * and a module bundle delays that — restarted the conversation with the
+     * greeting, and this gate pinned that outcome. #33 gave the conversation
+     * to the engine: a content re-sync in the same language keeps it, so React
+     * adopts the question, its answer and its follow-ups (G-73, section 4). */
+    check(adopted, { open: true, users: 1, bots: 2, followups: true, entryRemoved: true, errors: [] }, `${route}: React adopted the open shell with the early turn's transcript and action row`);
     /* Exactly one owner now: one Enter = one echo; one click = one toggle. */
     await page.type("[data-chatbot-input]", "skills");
     await page.keyboard.press("Enter");
     await settleTurn(page);
-    check(await page.evaluate(() => document.querySelectorAll("[data-chatbot-messages] .chatbot-message.user").length), 1, `${route}: one submit after hydration is one turn`);
+    check(await page.evaluate(() => document.querySelectorAll("[data-chatbot-messages] .chatbot-message.user").length), 2, `${route}: one submit after hydration is one turn`);
     await page.click("[data-chatbot-toggle]");
     check(await page.evaluate(overlayState), { ajoop: false, palette: false, recruiter: false, overlay: false, inert: [], focus: "data-chatbot-toggle" }, `${route}: one launcher click after hydration toggles once`);
     await page.close();

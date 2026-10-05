@@ -119,17 +119,14 @@ function setCommandPaletteOpen(
     button.setAttribute("aria-expanded", String(isOpen));
   });
   if (isOpen) {
-    setBackgroundInert(palette);
-    setOverlayBodyState(true);
+    claimOverlay(palette);
     const input = palette.querySelector("[data-command-input]");
     input.value = "";
     renderCommandPalette();
     setTimeout(() => input.focus(), 40);
   } else if (wasOpen) {
-    setBackgroundInert();
-    setOverlayBodyState(false);
+    releaseOverlay(palette);
     if (restoreFocus) restoreOverlayFocus(palette);
-    else overlayTriggerMap.delete(palette);
   }
   updateUltimateStaticLabels(currentSiteLanguage || "en");
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { shell } from "./commonRuntime.js";
 
 const INTENT_KEY = "kaanbalci-recruiter-intent";
 const BRIDGE_EVENT = "portfolio:react-recruiter-request";
@@ -33,17 +34,6 @@ function markIntent(active, open, { includeReactMain = true } = {}) {
   });
 }
 
-function setBackgroundInert(activeRoot) {
-  const changed = [];
-  if (!("inert" in HTMLElement.prototype)) return () => {};
-  for (const element of document.body.children) {
-    if (element === activeRoot || element.contains(activeRoot) || element.tagName === "SCRIPT") continue;
-    changed.push([element, element.inert]);
-    element.inert = true;
-  }
-  return () => changed.forEach(([element, previous]) => { element.inert = previous; });
-}
-
 function focusableElements(container) {
   return [...container.querySelectorAll(FOCUSABLE)].filter((element) => (
     element.getAttribute("aria-hidden") !== "true"
@@ -61,12 +51,6 @@ export default function RecruiterMode({ model }) {
   const [open, setOpen] = useState(initiallyOpen);
   const openRef = useRef(initiallyOpen);
   const drawerRef = useRef(null);
-  const triggerRef = useRef(
-    typeof HTMLElement !== "undefined" && initialRequest?.trigger instanceof HTMLElement
-      ? initialRequest.trigger
-      : null,
-  );
-  const restoreInertRef = useRef(() => {});
   const profile = model.profiles[role] || model.profiles[DEFAULT_ROLE];
 
   const close = useCallback(({ restoreFocus = true } = {}) => {
@@ -75,19 +59,25 @@ export default function RecruiterMode({ model }) {
     setOpen(false);
     writeIntent(false);
     markIntent(false, false);
-    restoreInertRef.current();
-    restoreInertRef.current = () => {};
-    if (wasOpen && restoreFocus && triggerRef.current?.isConnected) triggerRef.current.focus();
-    triggerRef.current = null;
+    if (!wasOpen) return;
+    /* The page is released before focus returns: the control that opened the
+     * dialog is part of the page this dialog made inert. */
+    shell.releaseOverlay(drawerRef.current);
+    if (restoreFocus) shell.restoreOverlayFocus(drawerRef.current);
   }, []);
 
   const show = useCallback((nextRole, trigger = null) => {
     const wasOpen = openRef.current;
     if (nextRole && model.profiles[nextRole]) setRole(nextRole);
     openRef.current = true;
-    triggerRef.current = trigger instanceof HTMLElement
-      ? trigger
-      : triggerRef.current || document.querySelector("[data-recruiter-toggle]");
+    /* An already open dialog asked to open again keeps the control it was
+     * opened from, unless the request names another one. */
+    if (trigger instanceof HTMLElement || !wasOpen) {
+      shell.rememberOverlayTrigger(
+        drawerRef.current,
+        trigger instanceof HTMLElement ? trigger : document.querySelector("[data-recruiter-toggle]"),
+      );
+    }
     globalThis.closeMobileNavigation?.();
     globalThis.setChatbotOpen?.(false, { restoreFocus: false });
     globalThis.setCommandPaletteOpen?.(false, { restoreFocus: false });
@@ -144,12 +134,14 @@ export default function RecruiterMode({ model }) {
     const pending = owner.__portfolioReactRecruiterRequest;
     if (pending) {
       delete owner.__portfolioReactRecruiterRequest;
-      if (pending.preHydrationApplied) {
-        /* Remove the temporary legacy inert state. The following layout effect
-         * installs React's state from the already-visible SSR dialog. */
-        globalThis.setBackgroundInert?.();
-      } else if (pending.isOpen) show(null, pending.trigger);
-      else close({ restoreFocus: pending.restoreFocus !== false });
+      /* A request the classic entry already applied needs nothing here: it
+       * claimed the page for this same dialog element and remembered its
+       * trigger, so React adopts that state as it is. Whatever the page looks
+       * like, it may belong to another overlay and is not this one's to clear. */
+      if (!pending.preHydrationApplied) {
+        if (pending.isOpen) show(null, pending.trigger);
+        else close({ restoreFocus: pending.restoreFocus !== false });
+      }
     }
     return () => {
       owner.removeEventListener(BRIDGE_EVENT, handleRequest);
@@ -160,12 +152,9 @@ export default function RecruiterMode({ model }) {
   useBrowserLayoutEffect(() => {
     const drawer = drawerRef.current;
     if (!drawer) return undefined;
-    restoreInertRef.current();
-    restoreInertRef.current = () => {};
     document.body.classList.toggle("recruiter-mode-active", open);
-    document.body.classList.toggle("overlay-modal-open", open);
     if (!open) return undefined;
-    restoreInertRef.current = setBackgroundInert(drawer);
+    shell.claimOverlay(drawer);
     const frame = drawer.contains(document.activeElement)
       ? 0
       : requestAnimationFrame(() => drawer.querySelector("[data-recruiter-close]")?.focus());
@@ -192,15 +181,13 @@ export default function RecruiterMode({ model }) {
     return () => {
       if (frame) cancelAnimationFrame(frame);
       document.removeEventListener("keydown", keydown);
-      restoreInertRef.current();
-      restoreInertRef.current = () => {};
+      shell.releaseOverlay(drawer);
     };
   }, [close, open]);
 
   useEffect(() => () => {
     openRef.current = false;
-    restoreInertRef.current();
-    document.body.classList.remove("recruiter-mode-active", "overlay-modal-open");
+    document.body.classList.remove("recruiter-mode-active");
   }, []);
 
   return (

@@ -23,6 +23,7 @@ import { AJOOP_COMMAND_REVIEWED_EDITS, ajoopCommandAcceptedBase } from "./m3-28-
 import { CASE_PROJECT_REVIEWED_EDITS, caseProjectAcceptedBase } from "./m3-29-public-edits.mjs";
 import { LABS_GAMES_NEW_PUBLIC_FILES, LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
 import { ICON_SUBSET_PUBLIC_FILES, servesUpstreamIcons, withIconSubset } from "./m3-32a-public-edits.mjs";
+import { FINAL_HARDENING_REVIEWED_EDITS, beforeFinalHardening } from "./m3-33-public-edits.mjs";
 import {
   HOME_ABOUT_DOCUMENTS,
   M3_26_ACCEPTED_REF,
@@ -55,8 +56,9 @@ function composeAcceptedArtifact(currentRoot) {
     if (HOME_ABOUT_DOCUMENTS.includes(file) || file.startsWith("assets-react/") || Object.hasOwn(LABS_GAMES_NEW_PUBLIC_FILES, file) || ICON_SUBSET_PUBLIC_FILES.includes(file)) continue;
     let bytes = fs.readFileSync(path.join(currentRoot, file));
     if (WORKS_GAMES_DOCUMENTS.includes(file)) bytes = Buffer.from(acceptedDocument(file));
-    else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file] || AJOOP_COMMAND_REVIEWED_EDITS[file] || CASE_PROJECT_REVIEWED_EDITS[file] || LABS_GAMES_REVIEWED_EDITS[file]) {
-      let content = bytes.toString("utf8");
+    else if (WORKS_GAMES_REVIEWED_EDITS[file] || RECRUITER_BUILD_LOG_REVIEWED_EDITS[file] || AJOOP_COMMAND_REVIEWED_EDITS[file] || CASE_PROJECT_REVIEWED_EDITS[file] || LABS_GAMES_REVIEWED_EDITS[file] || FINAL_HARDENING_REVIEWED_EDITS[file]) {
+      /* #33 is the latest phase: its edits are reversed first. */
+      let content = beforeFinalHardening(file, bytes.toString("utf8"));
       if (LABS_GAMES_REVIEWED_EDITS[file]) content = labsGamesAcceptedBase(file, content);
       if (CASE_PROJECT_REVIEWED_EDITS[file]) content = caseProjectAcceptedBase(file, content);
       if (AJOOP_COMMAND_REVIEWED_EDITS[file]) content = ajoopCommandAcceptedBase(file, content);

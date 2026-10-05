@@ -44,8 +44,7 @@ export default function CommandPalette({ model }) {
     if (wasOpen) setOpen(false);
     markToggles(false);
     if (wasOpen) {
-      shell.setBackgroundInert();
-      shell.setOverlayBodyState(false);
+      shell.releaseOverlay(paletteRef.current);
       if (restoreFocus) shell.restoreOverlayFocus(paletteRef.current);
     }
     site.updateStaticLabels(languageRef.current);
@@ -59,8 +58,7 @@ export default function CommandPalette({ model }) {
     openRef.current = true;
     setOpen(true);
     markToggles(true);
-    shell.setBackgroundInert(paletteRef.current);
-    shell.setOverlayBodyState(true);
+    shell.claimOverlay(paletteRef.current);
     if (inputRef.current) inputRef.current.value = "";
     setQuery("");
     setContent(readContent());

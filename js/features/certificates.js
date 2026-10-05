@@ -21,8 +21,7 @@ function closeModal() {
   modalImg.alt = "Certificate preview";
   /* BRIEF 04: the rest of the page becomes interactive again, and focus goes
    * back to the thumbnail that opened the dialog. */
-  setBackgroundInert(null);
-  setOverlayBodyState(false);
+  releaseOverlay(modal);
   restoreOverlayFocus(modal);
 }
 
@@ -39,8 +38,7 @@ if (modal && modalImg && certificatePreviewButtons.length) {
        * Recruiter Mode — remember the trigger, take the background out of the
        * tab order, and move focus into the dialog. */
       rememberOverlayTrigger(modal, button);
-      setBackgroundInert(modal);
-      setOverlayBodyState(true);
+      claimOverlay(modal);
       modalClose?.focus();
     });
   });
@@ -55,6 +53,10 @@ if (modal && modalImg && certificatePreviewButtons.length) {
 
   document.addEventListener("keydown", (event) => {
     if (!modal.classList.contains("is-open")) return;
+    /* Another overlay opened over the dialog makes the page behind it inert;
+     * its keys are not this dialog's input, and neither is the Escape that has
+     * just closed it. */
+    if (event.defaultPrevented || modal.closest("[inert]")) return;
 
     if (event.key === "Escape") {
       closeModal();

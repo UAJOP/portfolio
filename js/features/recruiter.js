@@ -270,16 +270,13 @@ function setRecruiterMode(
   });
 
   if (isOpen) {
-    setBackgroundInert(drawer);
-    setOverlayBodyState(true);
+    claimOverlay(drawer);
     updateUltimateStaticLabels(getCurrentLocale());
     setTimeout(() => drawer.querySelector("[data-recruiter-close]")?.focus(), 0);
   } else if (wasOpen) {
-    setBackgroundInert();
-    setOverlayBodyState(false);
+    releaseOverlay(drawer);
     updateUltimateStaticLabels(getCurrentLocale());
     if (restoreFocus) restoreOverlayFocus(drawer);
-    else overlayTriggerMap.delete(drawer);
   }
 }
 

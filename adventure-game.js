@@ -136,6 +136,10 @@ function startCareerAdventure(lifecycle) {
 
   function resizeCanvas() {
     const wrapper = canvas.parentElement;
+    /* Measure the room the layout offers, not the width set here last time:
+     * that width would hold the wrapper open when the viewport gets narrower
+     * (a rotated tablet, a resized window) and the board would be cut off. */
+    canvas.style.width = "";
     const viewport = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
     const width = Math.min(wrapper.clientWidth, 980);
     const isMobile = viewport <= 640;
@@ -495,7 +499,13 @@ function startCareerAdventure(lifecycle) {
     if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
     if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") state.dropX = Math.max(LEFT + 36, state.dropX - 24);
     if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") state.dropX = Math.min(RIGHT - 36, state.dropX + 24);
-    if (event.key === " " || event.key === "Enter") { event.preventDefault(); dropItem(); }
+    if (event.key === " " || event.key === "Enter") {
+      /* On a focused link or button these keys are that control's own: the
+       * skip link, the navigation and Restart must stay usable from the keyboard. */
+      if (event.target.closest?.("a[href], button, summary, [role='button']")) return;
+      event.preventDefault();
+      dropItem();
+    }
   }, { signal: lifecycle });
   window.addEventListener("resize", resizeCanvas, { passive: true, signal: lifecycle });
   window.updateCareerAdventureLanguage = function updateCareerAdventureLanguage() { applyText(); };
