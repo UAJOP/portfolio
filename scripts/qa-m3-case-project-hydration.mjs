@@ -8,6 +8,7 @@ import puppeteer from "puppeteer";
 import { buildProductionSite } from "./build-production-site.mjs";
 import { canonicalReactRoutes } from "./react-route-adapter.mjs";
 import { ROOT } from "./i18n-catalog.mjs";
+import { servesUpstreamIcons, withIconSubset } from "./m3-32a-public-edits.mjs";
 
 const CASE_IDS = new Set(["sinamaCaseStudy", "mergeRushCaseStudy", "joydayCaseStudy", "hospitalCaseStudy", "aiFlowPuzzleCaseStudy"]);
 const launch = process.env.GITHUB_ACTIONS === "true" ? { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"], protocolTimeout: 180000 } : { headless: true, protocolTimeout: 180000 };
@@ -34,7 +35,7 @@ const SABOTAGE = Object.freeze({
   text: "document.querySelector('main h1').textContent='hydration drift'",
 });
 
-function serverFor(root, instrument = false) {
+function serverFor(root, instrument = false, acceptedIcons = false) {
   return http.createServer((request, response) => {
     const url = new URL(request.url, "http://local");
     const relative = decodeURIComponent(url.pathname).replace(/^\/+/, "") || "index.html";
@@ -49,6 +50,12 @@ function serverFor(root, instrument = false) {
       const style = visual !== null && Object.hasOwn(VISUAL_SABOTAGE, visual) ? `<style>${VISUAL_SABOTAGE[visual]}</style>` : "";
       response.end(html.replace(/<\/head>/i, `${style}</head>`).replace(/<\/main>/i, `</main>${probe}${sabotage}`));
       return;
+    }
+    /* #32A: the upstream icon host is unreachable here, so the accepted
+     * documents load the same local icons the React documents do. */
+    if (acceptedIcons && path.extname(target) === ".html") {
+      const html = fs.readFileSync(target, "utf8");
+      if (servesUpstreamIcons(html)) return response.end(withIconSubset(html, relative));
     }
     fs.createReadStream(target).pipe(response);
   });
@@ -233,7 +240,7 @@ const requestedRoot = process.argv.includes("--root") ? path.resolve(process.arg
 const temporary = requestedRoot ? null : fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-m3-29-browser-"));
 const reactRoot = requestedRoot || path.join(temporary, "site");
 if (!requestedRoot) await buildProductionSite({ outputDirectory: reactRoot });
-const reactServer = serverFor(reactRoot, true), legacyServer = serverFor(ROOT, false);
+const reactServer = serverFor(reactRoot, true), legacyServer = serverFor(ROOT, false, true);
 await Promise.all([new Promise((resolve) => reactServer.listen(0, "127.0.0.1", resolve)), new Promise((resolve) => legacyServer.listen(0, "127.0.0.1", resolve))]);
 const reactOrigin = `http://127.0.0.1:${reactServer.address().port}`;
 const legacyOrigin = `http://127.0.0.1:${legacyServer.address().port}`;

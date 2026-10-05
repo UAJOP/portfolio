@@ -26,6 +26,7 @@ import { decodeHtml } from "./localized-html.mjs";
 import { generateLabsGamesStructure } from "./generate-m3-labs-games-structure.mjs";
 import { LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public-edits.mjs";
 import { ENGINE_HOST_REVIEWED_EDITS, engineHostAcceptedBase } from "./m3-30-1-public-edits.mjs";
+import { servesUpstreamIcons, withIconSubset } from "./m3-32a-public-edits.mjs";
 
 /* The approved #30 scope, stated here independently of the route registry. */
 const PAGES = Object.freeze({
@@ -301,7 +302,7 @@ const SABOTAGE = Object.freeze({
   copy: "document.querySelector('main').append(' hydration drift')",
 });
 
-function serverFor(directory, { instrument = false, acceptedEngines = false } = {}) {
+function serverFor(directory, { instrument = false, acceptedEngines = false, acceptedIcons = false } = {}) {
   return http.createServer((request, response) => {
     const url = new URL(request.url, "http://local");
     const relative = decodeURIComponent(url.pathname).replace(/^\/+/, "") || "index.html";
@@ -322,6 +323,12 @@ function serverFor(directory, { instrument = false, acceptedEngines = false } = 
         html = html.replace(at, (match) => place(match, tag));
       }
       return response.end(html);
+    }
+    /* #32A: the upstream icon host is unreachable here, so the accepted
+     * documents load the same local icons the React documents do. */
+    if (acceptedIcons && path.extname(target) === ".html") {
+      const html = fs.readFileSync(target, "utf8");
+      if (servesUpstreamIcons(html)) return response.end(withIconSubset(html, file));
     }
     /* The accepted side runs the accepted engines: the #30 reviewed edits are
      * reversed, so the comparison is against the pre-#30 runtime bytes. */
@@ -1172,9 +1179,9 @@ const surfaceVisible = (page, routeId) => page.$eval(PAGES[routeId].surface, (no
 
 async function runBrowser() {
   const reactServer = serverFor(root, { instrument: true });
-  const acceptedServer = serverFor(ROOT, { acceptedEngines: true });
+  const acceptedServer = serverFor(ROOT, { acceptedEngines: true, acceptedIcons: true });
   /* The accepted documents with the engines as they ship now (legacy boot). */
-  const legacyServer = serverFor(ROOT);
+  const legacyServer = serverFor(ROOT, { acceptedIcons: true });
   await Promise.all([reactServer, acceptedServer, legacyServer].map((server) => new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))));
   const reactOrigin = `http://127.0.0.1:${reactServer.address().port}`;
   const acceptedOrigin = `http://127.0.0.1:${acceptedServer.address().port}`;

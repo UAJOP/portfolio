@@ -10,6 +10,7 @@ export const GENERATED_SOURCE_CHECKS = Object.freeze([
   "scripts/build-locale-packs.mjs",
   "scripts/generate-i18n.mjs",
   "scripts/generate-localized-routes.mjs",
+  "scripts/generate-icon-font.mjs",
 ]);
 
 const defaultRunner = (script) => spawnSync(process.execPath, [script, "--check"], {

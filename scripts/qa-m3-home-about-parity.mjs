@@ -8,6 +8,7 @@ import { buildHomeAboutFixture, homeAboutRouteRecords, HOME_ABOUT_IDS } from "./
 import { attributes, documentContract, HOME_ABOUT_ATTRIBUTE_EXCEPTIONS } from "./home-about-contract.mjs";
 import { ROOT } from "./i18n-catalog.mjs";
 import { buildProductionReact } from "./prerender-react.mjs";
+import { ICON_SUBSET_LINK, ICON_UPSTREAM_LINK, iconSubsetAcceptedBase } from "./m3-32a-public-edits.mjs";
 
 const ACCEPTED_REF = "34fdfad01f63004ed10d616a7b061e3996c28150";
 const accepted = JSON.parse(fs.readFileSync(path.join(ROOT, "data/site/m3-25b-home-about-accepted.json"), "utf8"));
@@ -47,7 +48,8 @@ try {
   assert.deepEqual(Object.keys(accepted.documents).sort(), migrated.map((route) => route.output).sort()); assertions += 1;
   for (const route of migrated) {
     const reactHtml = fs.readFileSync(path.join(fixture.mixed, route.output), "utf8");
-    const actual = documentContract(reactHtml, { route: route.output, source: "current" });
+    /* #32A: the accepted contract is pinned with the upstream icon stylesheet. */
+    const actual = documentContract(iconSubsetAcceptedBase(reactHtml, route.output), { route: route.output, source: "current" });
     const expected = accepted.documents[route.output];
     for (const region of ["head", "document", "header", "main", "footer"]) {
       assert.deepEqual(actual[region], expected[region], `${route.pathname}: accepted ${region} contract drift`);
@@ -57,7 +59,15 @@ try {
     assert.match(reactHtml, /<main\b[^>]*data-react-main[^>]*data-prerendered="true"/); assertions += 1;
     assert.equal((reactHtml.match(/<a\b[^>]*aria-current="page"[^>]*>/g) || []).length, 1, `${route.pathname}: exactly one current navigation link`); assertions += 1;
   }
-  const home = fs.readFileSync(path.join(fixture.mixed, "index.html"), "utf8");
+  const emittedHome = fs.readFileSync(path.join(fixture.mixed, "index.html"), "utf8");
+  const home = iconSubsetAcceptedBase(emittedHome, "index.html");
+  for (const [label, mutant] of [
+    ["a document that still loads the upstream icon stylesheet", home],
+    ["a document that loads both icon stylesheets", emittedHome.replace(ICON_SUBSET_LINK, `${ICON_SUBSET_LINK}${ICON_UPSTREAM_LINK}`)],
+    ["a duplicated icon stylesheet", emittedHome.replace(ICON_SUBSET_LINK, `${ICON_SUBSET_LINK}${ICON_SUBSET_LINK}`)],
+  ]) {
+    assert.throws(() => iconSubsetAcceptedBase(mutant, "index.html"), /#32A/, `G-62 negative control must reject ${label}`); assertions += 1;
+  }
   const expectedHomeHead = accepted.documents["index.html"].head;
   const jsonLdMatch = home.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/i);
   assert.ok(jsonLdMatch, "Home must contain the accepted Person JSON-LD"); assertions += 1;

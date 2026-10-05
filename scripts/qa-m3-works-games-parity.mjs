@@ -8,6 +8,7 @@ import { ROOT } from "./i18n-catalog.mjs";
 import { documentContract } from "./home-about-contract.mjs";
 import { buildWorksGamesFixture, WORKS_GAMES_IDS } from "./m3-works-games-fixture.mjs";
 import { M3_26_ACCEPTED_REF as ACCEPTED_REF, acceptedDocument } from "./m3-26-accepted-snapshot.mjs";
+import { ICON_SUBSET_LINK, ICON_UPSTREAM_LINK, iconSubsetAcceptedBase } from "./m3-32a-public-edits.mjs";
 
 /* Hermetic: accepted documents come from the committed snapshot, which is
  * verified against the independently accepted #25-A manifest. */
@@ -73,9 +74,11 @@ function assertSearchRegion(html, route) {
 
 /* Migration markers are accepted only where they belong: the React ownership
  * markers on the single <main> opening tag, and aria-current on exactly the
- * selected header link. The same attributes anywhere else remain drift. */
+ * selected header link. The same attributes anywhere else remain drift.
+ * #32A: the accepted document loads the upstream icon stylesheet, so that one
+ * reviewed head edit is reversed first. */
 function normalizeCurrent(html, route) {
-  let out = html.replace(/<div class="project-search-wrap reveal">[\s\S]*?<\/div><\/div>/, "");
+  let out = iconSubsetAcceptedBase(html, route).replace(/<div class="project-search-wrap reveal">[\s\S]*?<\/div><\/div>/, "");
   const mainTag = out.match(/<main\b[^>]*>/i)?.[0] || "";
   assert.ok(mainTag.includes(' data-react-main=""') && mainTag.includes(' data-prerendered="true"'), `${route}: React main markers missing`);
   out = out.replace(mainTag, () => mainTag.replace(' data-react-main=""', "").replace(' data-prerendered="true"', ""));
@@ -184,6 +187,9 @@ try {
     ["unreviewed role copy", esWorks.replace("Mi rol: AI Designer", "Mi rol: Diseñador de IA"), "es/works/index.html"],
     ["reviewed role delta reverted", esWorks.replace("Mi rol: Desarrollador Python / bases de datos", "Mi rol: desarrollador Python y de bases de datos"), "es/works/index.html"],
     ["role delta leaked into another locale", deWorks.replace("Meine Rolle: Python-Entwickler", "Meine Rolle: Python Developer"), "de/works/index.html"],
+    ["upstream icon stylesheet restored", enWorks.replace(ICON_SUBSET_LINK, ICON_UPSTREAM_LINK), "works/index.html"],
+    ["upstream icon stylesheet beside the local subset", enGames.replace(ICON_SUBSET_LINK, `${ICON_SUBSET_LINK}${ICON_UPSTREAM_LINK}`), "games/index.html"],
+    ["icon stylesheet moved behind the site stylesheets", enWorks.replace(ICON_SUBSET_LINK, "").replace('<link rel="stylesheet" href="/portfolio-v2.css"/>', `<link rel="stylesheet" href="/portfolio-v2.css"/>${ICON_SUBSET_LINK}`), "works/index.html"],
   ];
   for (const [name, mutated, route] of negativeControls) {
     assert.throws(() => compare(acceptedDocument(route), mutated, route), undefined, `${name} negative control did not fail`);

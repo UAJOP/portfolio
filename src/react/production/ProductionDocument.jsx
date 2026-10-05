@@ -36,9 +36,7 @@ function ProductionHead({ head }) {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
-      <link rel="preconnect" href="https://unpkg.com" />
-      <link rel="preconnect" href="https://unpkg.com" crossOrigin="" />
-      <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+      <link rel="stylesheet" href="/css/boxicons-subset.css" />
       <link rel="stylesheet" href="/style.css" />
       <link rel="stylesheet" href="/css/a11y.css" />
       {(head.extraStyles || []).map((href) => <link key={href} rel="stylesheet" href={href} />)}
