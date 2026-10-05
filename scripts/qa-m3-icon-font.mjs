@@ -23,7 +23,10 @@
  * broken subset would be equally wrong on both and pass them. Here each side
  * is rendered with the subset and then with the upstream stylesheet and font
  * from the pinned package; icon styles, the geometry of every element and the
- * pixels must not change. Two deliberately broken stylesheets must be caught.
+ * pixels of every icon must not change. Pixels are compared icon by icon, over
+ * each icon's own box: the two sides are separate page loads, and anything
+ * else in the viewport is outside what this change can affect. Two
+ * deliberately broken stylesheets must be caught in those icon pixels.
  *
  * Legacy-owned documents (404, the project-detail shell) are out of scope and
  * still load the upstream stylesheet.
@@ -334,7 +337,7 @@ try {
   const originOf = (side) => `http://127.0.0.1:${servers[side].address().port}`;
   const browser = await puppeteer.launch(process.env.GITHUB_ACTIONS === "true" ? { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] } : { headless: true });
   const report = { icons: 0, hidden: 0, named: 0, bare: 0 };
-  const reference = { pages: 0, icons: 0, elements: 0, rejected: 0 };
+  const reference = { pages: 0, icons: 0, elements: 0, pixels: 0, rejected: 0, swapped: 0, fontless: 0 };
 
   /** Everything the reference comparison holds constant: each icon's glyph,
    * font and box, and the box of every element on the page. */
@@ -349,16 +352,45 @@ try {
       layout: [...document.querySelectorAll("body *")].map((node) => `${node.tagName} ${box(node)}`),
     };
   });
-  /** Pixels, once two consecutive captures agree. */
-  async function stablePixels(page, where) {
-    let previous = await page.screenshot({ type: "png" });
+  /** One capture of every icon Boxicons defines, in document order: its class
+   * identity and the pixels of its own box, or null where it has no box inside
+   * the document. The page is not scrolled, so capturing changes nothing. */
+  async function captureIcons(page) {
+    const regions = await page.evaluate((undefinedIcons) => {
+      const extent = { width: Math.max(document.documentElement.scrollWidth, innerWidth), height: Math.max(document.documentElement.scrollHeight, innerHeight) };
+      return [...document.querySelectorAll(".bx")].filter((node) => !undefinedIcons.some((name) => node.classList.contains(name))).map((node) => {
+        const rect = node.getBoundingClientRect();
+        const [left, top] = [Math.max(0, rect.left + scrollX), Math.max(0, rect.top + scrollY)];
+        const [right, bottom] = [Math.min(extent.width, rect.right + scrollX), Math.min(extent.height, rect.bottom + scrollY)];
+        return { identity: node.getAttribute("class"), clip: right > left && bottom > top ? { x: left, y: top, width: right - left, height: bottom - top } : null };
+      });
+    }, KNOWN_UNDEFINED_ICONS);
+    const icons = [];
+    for (const { identity, clip } of regions) {
+      icons.push({ identity, pixels: clip ? await page.screenshot({ type: "png", clip, captureBeyondViewport: true }) : null });
+    }
+    return icons;
+  }
+  /** The icons of `left` whose pixels are not byte-identical in `right`. Both
+   * sides must hold the same icons in the same order. */
+  function differingIcons(left, right, where) {
+    assert.deepEqual(left.map((icon) => icon.identity), right.map((icon) => icon.identity), `${where}: the two renderings do not hold the same icons in the same order`);
+    return left.flatMap((icon, index) => {
+      const other = right[index].pixels;
+      const same = icon.pixels === null || other === null ? icon.pixels === other : icon.pixels.equals(other);
+      return same ? [] : [`#${index} ${icon.identity}`];
+    });
+  }
+  /** Icon pixels, once two consecutive captures of every icon agree. */
+  async function stableIconPixels(page, where) {
+    let previous = await captureIcons(page);
     for (let attempt = 0; attempt < 20; attempt += 1) {
       await new Promise((resolve) => setTimeout(resolve, 120));
-      const next = await page.screenshot({ type: "png" });
-      if (next.equals(previous)) return next;
+      const next = await captureIcons(page);
+      if (differingIcons(previous, next, where).length === 0) return next;
       previous = next;
     }
-    throw new Error(`${where}: the viewport never settled, so its pixels cannot be compared`);
+    throw new Error(`${where}: the icons never settled, so their pixels cannot be compared`);
   }
   /** A fresh, hermetic load of one document, settled, with its network log. */
   async function open(side, route, variant = null) {
@@ -383,6 +415,13 @@ try {
     await page.evaluate(() => document.fonts.ready);
     /* The icon font has finished: loaded, or failed for the font-less control. */
     await page.waitForFunction((settled) => [...document.fonts].some((face) => face.family.replace(/["']/g, "") === "boxicons" && face.status === settled), { timeout: 15000 }, variant === "no-font" ? "error" : "loaded");
+    /* The React AJOOP launcher, which holds an icon, stays hidden until its
+     * handler is attached; the runtime marks that moment on the shell. Pages
+     * without a React shell (the accepted side) have nothing to wait for. */
+    await page.waitForFunction(() => {
+      const owner = document.querySelector('[data-react-ajoop-shell="react"]');
+      return !owner || owner.hasAttribute("data-ajoop-interactive");
+    }, { timeout: 15000 });
     return { page, requests, statuses };
   }
 
@@ -437,36 +476,47 @@ try {
 
         /* Independent reference: the same document loaded again with the
          * upstream package's own stylesheet and full font where the subset is. */
-        const withSubset = { state: await renderState(page), pixels: await stablePixels(page, `${where} (subset)`) };
+        const withSubset = { state: await renderState(page), icons: await stableIconPixels(page, `${where} (subset)`) };
         await page.close();
         const upstream = await open(side, route, "reference");
         assert.deepEqual(upstream.requests.filter((url) => [`/${ICON_STYLESHEET}`, `/${ICON_FONT}`].includes(url.pathname)).map(String), [], `${where}: the reference load uses nothing of the subset`);
         assert.deepEqual([upstream.statuses.get(REFERENCE), upstream.statuses.get("/__reference/fonts/boxicons.woff2")], [200, 200], `${where}: the reference is the upstream stylesheet and font`);
-        const withUpstream = { state: await renderState(upstream.page), pixels: await stablePixels(upstream.page, `${where} (upstream reference)`) };
+        const withUpstream = { state: await renderState(upstream.page), icons: await stableIconPixels(upstream.page, `${where} (upstream reference)`) };
         await upstream.page.close();
         assert.deepEqual(withSubset.state.icons, withUpstream.state.icons, `${where}: an icon renders differently from the upstream reference`);
         assert.deepEqual(withSubset.state.layout, withUpstream.state.layout, `${where}: the subset moves or resizes an element relative to the upstream reference`);
-        assert.ok(withSubset.pixels.equals(withUpstream.pixels), `${where}: pixels differ from the upstream reference`);
-        assertions += 5;
+        assert.deepEqual(differingIcons(withSubset.icons, withUpstream.icons, where), [], `${where}: icon pixels differ from the upstream reference`);
+        const captured = withSubset.icons.filter((icon) => icon.pixels !== null).length;
+        assert.ok(captured > 0, `${where}: no icon has a box to capture`);
+        assertions += 6;
         reference.pages += 1;
         reference.icons += withSubset.state.icons.length;
         reference.elements += withSubset.state.layout.length;
+        reference.pixels += captured;
 
         /* The comparison has teeth: a wrong glyph and a missing font each
-         * change what it measures. */
+         * change the icon pixels it measures. Every step below is a direct
+         * comparison of two finished captures; a load, a font or a capture that
+         * times out throws and fails the gate instead of passing as a rejection. */
         if (route === "/") {
+          const swapped = (identity) => /(^|\s)bx-(search|moon)(\s|$)/.test(identity);
           const wrong = await open(side, route, "wrong-glyph");
-          const wrongGlyph = { state: await renderState(wrong.page), pixels: await stablePixels(wrong.page, `${where} (wrong glyph)`) };
+          const wrongGlyph = { state: await renderState(wrong.page), icons: await stableIconPixels(wrong.page, `${where} (wrong glyph)`) };
           await wrong.page.close();
           assert.notDeepEqual(wrongGlyph.state.icons, withUpstream.state.icons, `${where}: a swapped glyph was not detected in the icon state`);
-          assert.equal(wrongGlyph.pixels.equals(withUpstream.pixels), false, `${where}: a swapped glyph was not detected in the pixels`);
+          const wrongPixels = differingIcons(wrongGlyph.icons, withUpstream.icons, `${where} (wrong glyph)`);
+          assert.ok(wrongPixels.length > 0, `${where}: a swapped glyph was not detected in the icon pixels`);
+          assert.deepEqual(wrongPixels.filter((icon) => !swapped(icon)), [], `${where}: swapping two glyphs changed the pixels of an icon that was not swapped`);
           const missing = await open(side, route, "no-font");
           assert.equal(missing.statuses.get("/__broken/missing.woff2"), 404, `${where}: the font-less control requests its missing font`);
-          const noFont = await stablePixels(missing.page, `${where} (no font)`);
+          const noFont = await stableIconPixels(missing.page, `${where} (no font)`);
           await missing.page.close();
-          assert.equal(noFont.equals(withUpstream.pixels), false, `${where}: a stylesheet without its font was not detected in the pixels`);
-          assertions += 4;
+          const noFontPixels = differingIcons(noFont, withUpstream.icons, `${where} (no font)`);
+          assert.ok(noFontPixels.length > 0, `${where}: a stylesheet without its font was not detected in the icon pixels`);
+          assertions += 5;
           reference.rejected += 2;
+          reference.swapped = Math.max(reference.swapped, wrongPixels.length);
+          reference.fontless = Math.max(reference.fontless, noFontPixels.length);
         }
       }
     }
@@ -512,7 +562,7 @@ try {
     await Promise.all(Object.values(servers).map((server) => new Promise((resolve) => server.close(resolve))));
   }
 
-  console.log(`Master 3 #32A icon subset passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · Boxicons ${ICON_VERSION} · ${subset.names.length} of ${upstreamIcons.size} icons · font ${sizes.fontBytes} B · stylesheet ${sizes.stylesheetBytes} B raw/${sizes.stylesheetGzipBytes} B gzip · OFL 1.1 complete + MIT notice published, no Reserved Font Name · ${reactDocuments.length} React documents · ${controls.length} negative controls · normalization changes only the icon links on ${reactDocuments.length} accepted + ${reactDocuments.length} emitted documents (${scopeControls.length} scope controls) · ${BROWSER_ROUTES.length} routes rendered hermetically: ${report.icons} icons (${report.hidden} aria-hidden, ${report.named} inside a named control, ${report.bare} decorative without aria-hidden) · ${subset.names.length} glyphs pixel-identical to upstream · upstream-reference rendering identical on ${reference.pages} pages (accepted + React): ${reference.icons} icon states, ${reference.elements} element boxes, pixel-exact · ${reference.rejected} broken stylesheets rejected.`);
+  console.log(`Master 3 #32A icon subset passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · Boxicons ${ICON_VERSION} · ${subset.names.length} of ${upstreamIcons.size} icons · font ${sizes.fontBytes} B · stylesheet ${sizes.stylesheetBytes} B raw/${sizes.stylesheetGzipBytes} B gzip · OFL 1.1 complete + MIT notice published, no Reserved Font Name · ${reactDocuments.length} React documents · ${controls.length} negative controls · normalization changes only the icon links on ${reactDocuments.length} accepted + ${reactDocuments.length} emitted documents (${scopeControls.length} scope controls) · ${BROWSER_ROUTES.length} routes rendered hermetically: ${report.icons} icons (${report.hidden} aria-hidden, ${report.named} inside a named control, ${report.bare} decorative without aria-hidden) · ${subset.names.length} glyphs pixel-identical to upstream · upstream-reference rendering identical on ${reference.pages} pages (accepted + React): ${reference.icons} icon states, ${reference.elements} element boxes, ${reference.pixels} icon boxes pixel-exact · ${reference.rejected} broken stylesheets rejected in the icon pixels (swapped glyph: ${reference.swapped} icons, missing font: ${reference.fontless} icons).`);
 } finally {
   if (temporary) fs.rmSync(temporary, { recursive: true, force: true });
 }
