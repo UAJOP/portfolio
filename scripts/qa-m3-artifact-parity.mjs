@@ -62,7 +62,8 @@ const APPROVED_LABS_GAMES_NEW_FILES = new Set(Object.keys(LABS_GAMES_NEW_PUBLIC_
 /* #32A changes no legacy public file: it adds the generated icon subset. */
 const APPROVED_ICON_SUBSET_NEW_FILES = new Set(ICON_SUBSET_PUBLIC_FILES);
 const PHASE_30_PAGE_IDS = new Set(["labs", "adventure", "joydayPaint", "aiFlowPuzzle"]);
-/* #33 adds no public file and changes no document: it edits eight runtime files. */
+/* #33 adds no public file and changes no document: it edits eight runtime
+ * files and, in its responsive hotfix, the shared stylesheet. */
 const APPROVED_FINAL_HARDENING_CHANGES = new Set(Object.keys(FINAL_HARDENING_REVIEWED_EDITS));
 /* #30.5 changes no legacy public file and adds none: it is route ownership only. */
 const PHASE_30_5_PAGE_IDS = new Set(["now", "blog", "certificates", "request", "privacy"]);
@@ -452,7 +453,7 @@ try {
   }
   assert.deepEqual(ajoopCommandDelta.files.map((entry) => entry.path).sort(), [...APPROVED_AJOOP_COMMAND_CHANGES].sort(), "#28 public delta must cover the exact five Ajoop/Command Palette ownership paths");
   const ajoopSupersededByFinalHardening = [...APPROVED_AJOOP_COMMAND_CHANGES].filter((file) => APPROVED_FINAL_HARDENING_CHANGES.has(file));
-  assert.deepEqual([...ajoopSupersededByFinalHardening].sort(), ["js/ajoop/assistant.js", "js/features/command-palette.js"], "#33 may layer onto exactly two #28 public paths");
+  assert.deepEqual([...ajoopSupersededByFinalHardening].sort(), ["js/ajoop/assistant.js", "js/features/command-palette.js", "portfolio-v2.css"], "#33 may layer onto exactly three #28 public paths");
   assertClean("accepted #28 public delta", compareArtifactManifest(
     { files: ajoopCommandDelta.files.filter((entry) => !ajoopSupersededByFinalHardening.includes(entry.path)) },
     mixed,
@@ -487,16 +488,17 @@ try {
   ]) {
     assert.throws(() => assertReviewedLabsGamesDelta(mixed, edits), undefined, `#30 reviewed delta ${name} control did not fail`);
   }
-  /* #33: eight reviewed runtime files, each exactly its earlier pin plus the
-   * reviewed edits. Controls: a missing edit and no reversal at all must each
-   * fail against that pin. */
-  assert.deepEqual([...APPROVED_FINAL_HARDENING_CHANGES].sort(), ["adventure-game.js", "case-study.js", "joyday-paint.js", "js/ajoop/assistant.js", "js/core/shell.js", "js/features/certificates.js", "js/features/command-palette.js", "js/features/recruiter.js"], "#33 edits exactly eight public runtime files");
+  /* #33: eight reviewed runtime files and the shared stylesheet, each exactly
+   * its earlier pin plus the reviewed edits. Controls: a missing edit and no
+   * reversal at all must each fail against that pin. */
+  assert.deepEqual([...APPROVED_FINAL_HARDENING_CHANGES].sort(), ["adventure-game.js", "case-study.js", "joyday-paint.js", "js/ajoop/assistant.js", "js/core/shell.js", "js/features/certificates.js", "js/features/command-palette.js", "js/features/recruiter.js", "portfolio-v2.css"], "#33 edits exactly eight public runtime files and the shared stylesheet");
   const finalHardeningAnchored = assertReviewedFinalHardeningDelta(mixed);
   for (const [name, edits] of [
     ["missing overlay ownership", { ...FINAL_HARDENING_REVIEWED_EDITS, "js/core/shell.js": FINAL_HARDENING_REVIEWED_EDITS["js/core/shell.js"].slice(1) }],
     ["missing conversation ownership", { ...FINAL_HARDENING_REVIEWED_EDITS, "js/ajoop/assistant.js": FINAL_HARDENING_REVIEWED_EDITS["js/ajoop/assistant.js"].slice(0, -1) }],
     ["missing game key isolation", { ...FINAL_HARDENING_REVIEWED_EDITS, "joyday-paint.js": [] }],
     ["unreversed certificate dialog", { ...FINAL_HARDENING_REVIEWED_EDITS, "js/features/certificates.js": [] }],
+    ["unreversed full-row button wrap", { ...FINAL_HARDENING_REVIEWED_EDITS, "portfolio-v2.css": [] }],
   ]) {
     assert.throws(() => assertReviewedFinalHardeningDelta(mixed, edits), undefined, `#33 reviewed delta ${name} control did not fail`);
   }
@@ -540,7 +542,7 @@ try {
   console.log(`Accepted public delta guard passed. authority=${ACCEPTED_DELTA} exact=${publicDelta.files.length} accept-current=disabled.`);
   console.log(`Accepted #26 public delta guard passed. authority=${WORKS_GAMES_ACCEPTED_BASE} exact=${worksGamesDelta.files.length} reviewed-edits=${Object.values(WORKS_GAMES_REVIEWED_EDITS).flat().length} base-anchored=3-controls home-about=${HOME_ABOUT_DOCUMENTS.length}-exact git-history=none accept-current=disabled.`);
   console.log(`Accepted #28 public delta guard passed. authority=${AJOOP_COMMAND_ACCEPTED_BASE} exact=${ajoopCommandDelta.files.length} reviewed-edits=${Object.values(AJOOP_COMMAND_REVIEWED_EDITS).flat().length} base-anchored=5-controls overlay roots stripped before prior parity checks accept-current=disabled.`);
-  console.log(`Accepted #33 public delta guard passed. authority=6587ad6555e9f99cdf29f8f57e8f928401982a15 reviewed-edits=${Object.values(FINAL_HARDENING_REVIEWED_EDITS).flat().length} files=${finalHardeningAnchored} base-anchored=4-controls new-files=0 documents-changed=0 accept-current=disabled.`);
+  console.log(`Accepted #33 public delta guard passed. authority=6587ad6555e9f99cdf29f8f57e8f928401982a15 reviewed-edits=${Object.values(FINAL_HARDENING_REVIEWED_EDITS).flat().length} files=${finalHardeningAnchored} base-anchored=5-controls new-files=0 documents-changed=0 accept-current=disabled.`);
   console.log(`Accepted #30 public delta guard passed. authority=760feca095a80393a79562435c685afee13d096d reviewed-edits=${Object.values(LABS_GAMES_REVIEWED_EDITS).flat().length} new-files=${APPROVED_LABS_GAMES_NEW_FILES.size} base-anchored=3-controls accept-current=disabled.`);
   console.log(`Accepted #27 public delta guard passed. authority=${RECRUITER_BUILD_LOG_ACCEPTED_BASE} exact=${recruiterBuildLogDelta.files.length} reviewed-edits=${Object.values(RECRUITER_BUILD_LOG_REVIEWED_EDITS).flat().length} base-anchored=3-controls React-doc additions stripped before prior parity checks accept-current=disabled.`);
 } finally {

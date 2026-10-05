@@ -4719,6 +4719,21 @@ html[data-theme="light"] :is(
     white-space: normal;
   }
 
+  /* Full-row buttons wrap too: a label longer than its row (long localized
+   * copy, a wider fallback font) breaks inside the button instead of spilling
+   * past the viewport. A label that fits on one line renders as before. */
+  .case-actions .btn,
+  .cta-actions .btn,
+  .contact-actions .btn,
+  .request-form-actions .btn,
+  .recruiter-actions .btn {
+    min-width: 0;
+    padding: var(--space-2) var(--space-3);
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   .project-detail-meta,
   html[data-theme="light"] .project-detail-meta {
     grid-template-columns: minmax(0, 1fr);

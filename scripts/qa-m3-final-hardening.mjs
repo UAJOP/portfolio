@@ -1110,6 +1110,15 @@ try {
     await structureMutant("content wider than the viewport", "/de/blog/", intoMain('<div style="width:640px;height:4px"></div>'), /reaches outside the viewport/);
     await structureMutant("skipped heading level", "/about/", intoMain("<h1>Extra</h1><h4>Deep</h4>"), /<h1> elements|heading level jumps/);
     await structureMutant("server-rendered content removed", "/now/", (html) => html.replace(/(<main\b[^>]*>)[\s\S]*?(<\/main>)/, "$1<h1>Now</h1>$2"), /carries only \d+ characters/);
+    /* A full-row action button wraps a label that is longer than its row. The
+     * label is lengthened here until no font holds it on one line, so the check
+     * does not depend on the fonts of the machine it runs on. */
+    const FULL_ROW = ":is(.case-actions, .cta-actions, .contact-actions, .request-form-actions) .btn";
+    const longLabels = (css) => `${css}\n${FULL_ROW}::after{content:" and a label that no row of a narrow viewport can hold on one line"}`;
+    for (const route of [routeFor("es", "sinamaCaseStudy"), routeFor("de", "request")]) {
+      equal(await against({ "/portfolio-v2.css": longLabels }, () => structureWithoutJavaScript(route.pathname)), [], `${route.pathname}: a full-row button wraps a label longer than its row`);
+    }
+    rejects("pre-hotfix stylesheet: a full-row button label overflows the viewport", await against({ "/portfolio-v2.css": (css) => longLabels(finalHardeningAcceptedBase("portfolio-v2.css", css)) }, () => structureWithoutJavaScript(routeFor("es", "sinamaCaseStudy").pathname)), /horizontal overflow/);
     console.log(`[G-73 no-JS] ${routes.length} canonical documents at 320px without JavaScript: SSR content, overflow, accessible names, ARIA references, headings, landmarks`);
   }
 
