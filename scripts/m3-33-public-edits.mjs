@@ -22,7 +22,11 @@ import assert from "node:assert/strict";
  *   case-study.js                  keys of a covering overlay are not the
  *                                  gallery's
  *   joyday-paint.js                keys of a covering overlay are not the
- *                                  game's */
+ *                                  game's
+ *   portfolio-v2.css               responsive hotfix after the merge: a
+ *                                  full-row action button wraps a label that
+ *                                  is longer than its row instead of letting
+ *                                  it overflow the viewport */
 export const FINAL_HARDENING_REVIEWED_EDITS = Object.freeze({
   "adventure-game.js": [
     [
@@ -118,6 +122,12 @@ export const FINAL_HARDENING_REVIEWED_EDITS = Object.freeze({
     [
       "\n  if (isOpen) {\n    setBackgroundInert(drawer);\n    setOverlayBodyState(true);\n    updateUltimateStaticLabels(getCurrentLocale());\n    setTimeout(() => drawer.querySelector(\"[data-recruiter-close]\")?.focus(), 0);\n  } else if (wasOpen) {\n    setBackgroundInert();\n    setOverlayBodyState(false);\n    updateUltimateStaticLabels(getCurrentLocale());\n    if (restoreFocus) restoreOverlayFocus(drawer);\n    else overlayTriggerMap.delete(drawer);\n  }\n}\n",
       "\n  if (isOpen) {\n    claimOverlay(drawer);\n    updateUltimateStaticLabels(getCurrentLocale());\n    setTimeout(() => drawer.querySelector(\"[data-recruiter-close]\")?.focus(), 0);\n  } else if (wasOpen) {\n    releaseOverlay(drawer);\n    updateUltimateStaticLabels(getCurrentLocale());\n    if (restoreFocus) restoreOverlayFocus(drawer);\n  }\n}\n"
+    ]
+  ],
+  "portfolio-v2.css": [
+    [
+      "    text-align: center;\n    white-space: normal;\n  }\n\n  .project-detail-meta,\n",
+      "    text-align: center;\n    white-space: normal;\n  }\n\n  /* Full-row buttons wrap too: a label longer than its row (long localized\n   * copy, a wider fallback font) breaks inside the button instead of spilling\n   * past the viewport. A label that fits on one line renders as before. */\n  .case-actions .btn,\n  .cta-actions .btn,\n  .contact-actions .btn,\n  .request-form-actions .btn,\n  .recruiter-actions .btn {\n    min-width: 0;\n    padding: var(--space-2) var(--space-3);\n    text-align: center;\n    white-space: normal;\n    overflow-wrap: anywhere;\n  }\n\n  .project-detail-meta,\n"
     ]
   ]
 });
