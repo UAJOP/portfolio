@@ -68,7 +68,11 @@ const EARLY_BOOTSTRAP = "js/core/locale-bootstrap.js";
 const BUILD_ONLY_MODULES = new Set(["js/core/i18n.js"]);
 /* Loaded by a React-owned document's own script tag, never by the manifest:
  * the #30 lifecycle host for the retained Labs/mini-game engines. */
-const REACT_DOCUMENT_MODULES = new Set(["js/pages/engine-host.js"]);
+const REACT_DOCUMENT_MODULES = new Set([
+  "js/pages/engine-host.js",
+  /* V4 motion runtime, deferred by documents that consume V4 primitives. */
+  "js/v4/runtime.js",
+]);
 
 /* ---------- 1. every referenced module exists, and every runtime module is referenced ---------- */
 

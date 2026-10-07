@@ -525,5 +525,14 @@
   "works.tag.unrealEngine5": "Unreal Engine 5",
   "works.tag.validation": "Validación",
   "works.tag.vitest": "Vitest",
-  "works.tag.windowsForms": "Windows Forms"
+  "works.tag.windowsForms": "Windows Forms",
+  "home.flow.aria": "Flujo de ingeniería forward deployed",
+  "home.flow.handoff": "Evidencia de entrega",
+  "home.flow.human.label": "Nodo de decisión humana",
+  "home.flow.human.value": "El criterio dirige el sistema",
+  "home.flow.stage.build": "Construir",
+  "home.flow.stage.deliver": "Entregar",
+  "home.flow.stage.discover": "Descubrir",
+  "home.flow.stage.evaluate": "Evaluar",
+  "home.flow.stage.scope": "Delimitar"
 }

@@ -3,7 +3,11 @@ import RecruiterMode from "./RecruiterMode.jsx";
 import AjoopShell from "./AjoopShell.jsx";
 import CommandPalette from "./CommandPalette.jsx";
 
-function ProductionHead({ head }) {
+/* Routes that consume V4 primitives: each gets its composition stylesheet and
+ * the motion runtime. Every other route ships neither. */
+const V4_ROUTES = new Set(["home"]);
+
+function ProductionHead({ head, page }) {
   return (
     <head>
       <meta charSet="utf-8" />
@@ -35,12 +39,15 @@ function ProductionHead({ head }) {
       <script src="/js/core/locale-bootstrap.js" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" />
       <link rel="stylesheet" href="/css/boxicons-subset.css" />
       <link rel="stylesheet" href="/style.css" />
       <link rel="stylesheet" href="/css/a11y.css" />
       {(head.extraStyles || []).map((href) => <link key={href} rel="stylesheet" href={href} />)}
       <link rel="stylesheet" href="/portfolio-v2.css" />
+      {/* V4 layer: the shared system on every route, compositions per route. */}
+      <link rel="stylesheet" href="/css/v4-system.css" />
+      {V4_ROUTES.has(page) ? <link rel="stylesheet" href={`/css/v4-${page}.css`} /> : null}
       <link rel="icon" type="image/x-icon" href="/assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" />
       {head.jsonLd ? <script type="application/ld+json">{JSON.stringify(head.jsonLd)}</script> : null}
     </head>
@@ -123,7 +130,7 @@ export default function ProductionDocument({ document, head, main, recruiter, aj
   const commandPayload = JSON.stringify(commandPalette).replaceAll("<", "\\u003c");
   return (
     <html lang={document.htmlLang} dir={document.dir} data-route-locale={document.locale}>
-      <ProductionHead head={head} />
+      <ProductionHead head={head} page={document.page} />
       <body className={document.bodyClass || undefined} data-page={document.page} data-project-slug={document.projectSlug || undefined}>
         <ProductionHeader page={document.navPage || document.page} shell={shell} />
         <main id="main-content" tabIndex="-1" data-react-main="" data-prerendered="true" {...(document.mainAttributes || {})}><ProductionMain {...main} /></main>
@@ -141,6 +148,7 @@ export default function ProductionDocument({ document, head, main, recruiter, aj
         <script id="react-recruiter-props" type="application/json">{recruiterPayload}</script>
         <script id="react-ajoop-props" type="application/json">{ajoopPayload}</script>
         <script id="react-command-props" type="application/json">{commandPayload}</script>
+        {V4_ROUTES.has(document.page) ? <script src="/js/v4/runtime.js" defer /> : null}
         <script type="module" src={`/${document.clientEntry}`} />
       </body>
     </html>

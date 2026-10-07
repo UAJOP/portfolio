@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:,">
+  <title>V4 system specimen</title>
+  <!-- Development-only specimen of css/v4-system.css. Served by
+       scripts/v4-preview-server.mjs at /__v4/specimen; never part of dist-site. -->
+  <script>
+    document.documentElement.dataset.theme = new URLSearchParams(location.search).get("theme") === "light" ? "light" : "dark";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/v4-system.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font: var(--v4-type-body); }
+    main { width: min(100% - 4rem, 1280px); margin: 0 auto; padding: 3.5rem 0 5rem; }
+    header { display: flex; justify-content: space-between; align-items: end; gap: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--v4-rule-strong); }
+    header h1 { margin: 0.6rem 0 0; }
+    header nav { display: flex; gap: 1rem; }
+    header a { color: var(--v4-ink-secondary); }
+    section { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 2rem; padding: 2.5rem 0; border-bottom: 1px solid var(--v4-rule); }
+    section > h2 { margin: 0; }
+    section > h2 small { display: block; margin-top: 0.5rem; color: var(--v4-ink-muted); font: var(--v4-type-status); letter-spacing: var(--v4-track-status); text-transform: none; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 0.75rem; }
+    .swatch { display: grid; gap: 0.4rem; }
+    .swatch i { height: 3.25rem; border: 1px solid var(--v4-rule-strong); border-radius: var(--v4-radius); background: var(--chip); }
+    .type { display: grid; gap: 1.4rem; }
+    .type > div { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1.5rem; align-items: baseline; }
+    .type p { margin: 0; color: var(--v4-ink); }
+    .motion { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.75rem; }
+    .motion div { display: grid; gap: 0.5rem; padding: 0.9rem; border: 1px solid var(--v4-rule); border-radius: var(--v4-radius); }
+    .motion b { color: var(--v4-ink); font: 600 1.05rem / 1 var(--v4-mono); }
+    .motion i { position: relative; height: 2px; background: var(--v4-rule); }
+    .motion i::after { position: absolute; top: -3px; left: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--v4-signal); content: ""; animation: specimen-run var(--d) var(--e, var(--v4-ease-out)) infinite alternate; }
+    @keyframes specimen-run { to { left: calc(100% - 8px); } }
+    .stage { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+    .panel { position: relative; padding: 1.5rem; border: 1px solid var(--v4-rule); border-radius: var(--v4-radius); }
+    .panel > .v4-status { display: block; margin-bottom: 1rem; }
+    .orbit-panel { padding: 2.5rem 6.5rem 2.5rem 2rem; overflow: clip; }
+    .orbit-panel .v4-flow { max-width: 25rem; margin-inline: auto; }
+    .orbit-core { position: absolute; top: 48%; left: 46%; width: 34%; aspect-ratio: 1; border: 1px solid var(--v4-rule-strong); border-radius: 50%; background: var(--v4-surface); translate: -50% -50%; }
+    .actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .action { min-height: 48px; padding: 0 1.2rem; border: 1px solid var(--v4-accent-fill); border-radius: var(--v4-radius); background-color: var(--v4-accent-fill); color: var(--v4-on-accent); font: 700 0.84rem var(--v4-display); cursor: pointer; }
+    .states { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .states .v4-state { padding: 0.7rem 0.9rem; border: 1px solid var(--v4-rule); border-radius: 3px; background: var(--v4-living-surface); }
+    .ambient-demo { min-height: 13rem; padding: 1.5rem 1.5rem 2rem; border: 1px solid var(--v4-rule); border-radius: var(--v4-radius); overflow: clip; }
+    .ambient-demo h3 { margin: 2.2rem 0 0; max-width: 16ch; color: var(--v4-ink); }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <span class="v4-label">V4-01 · shared design + motion system</span>
+      <h1 class="v4-heading-lg">System specimen</h1>
+    </div>
+    <nav class="v4-status"><a href="?theme=dark">Dark</a><a href="?theme=light">Light</a><a href="/">Home</a></nav>
+  </header>
+
+  <section>
+    <h2 class="v4-label">Colour + atmosphere<small>css/v4-system.css · 1</small></h2>
+    <div class="swatches" data-swatches></div>
+  </section>
+
+  <section>
+    <h2 class="v4-label">Type<small>Manrope · IBM Plex Mono</small></h2>
+    <div class="type">
+      <div><span class="v4-status">.v4-display</span><p class="v4-display">Deployable systems.</p></div>
+      <div><span class="v4-status">.v4-heading-lg</span><p class="v4-heading-lg">Engineering evidence for forward-deployed work.</p></div>
+      <div><span class="v4-status">.v4-heading</span><p class="v4-heading">Evaluation harness for agent reliability</p></div>
+      <div><span class="v4-status">.v4-lead</span><p class="v4-lead">From discovery and technical scoping through prototyping, evaluation and production-ready delivery.</p></div>
+      <div><span class="v4-status">.v4-body</span><p class="v4-body">Body copy carries the explanation. It stays in the reading register and never competes with evidence.</p></div>
+      <div><span class="v4-status">.v4-label</span><p class="v4-label">Forward Deployed Engineer</p></div>
+      <div><span class="v4-status">.v4-evidence-label</span><p class="v4-evidence-label">Strongest evidence</p></div>
+      <div><span class="v4-status">.v4-status</span><p class="v4-status">Retrieving · 3 sources</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="v4-label">Motion<small>five speeds · three curves</small></h2>
+    <div class="motion">
+      <div style="--d: var(--v4-motion-feedback)"><span class="v4-status">feedback</span><b>140ms</b><i></i></div>
+      <div style="--d: var(--v4-motion-ui)"><span class="v4-status">ui</span><b>260ms</b><i></i></div>
+      <div style="--d: var(--v4-motion-emphasis)"><span class="v4-status">emphasis</span><b>560ms</b><i></i></div>
+      <div style="--d: var(--v4-motion-signal); --e: linear"><span class="v4-status">signal travel</span><b>13s</b><i></i></div>
+      <div style="--d: var(--v4-motion-ambient); --e: linear"><span class="v4-status">ambient drift</span><b>32s</b><i></i></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="v4-label">Signal flow<small>one primitive · two stage sets · two layouts</small></h2>
+    <div class="stage">
+      <div class="panel orbit-panel" data-v4-ambient>
+        <span class="v4-status">orbit · delivery (Home)</span>
+        <div data-flow="delivery"></div>
+      </div>
+      <div class="panel">
+        <span class="v4-status">rail · retrieval pipeline (sample stage set)</span>
+        <div data-flow="retrieval"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="v4-label">Ambient + kinetic<small>[data-v4-ambient~="grain"] · [data-v4-kinetic]</small></h2>
+    <div class="ambient-demo" data-v4-ambient="grain">
+      <span class="v4-status">move the pointer: light, depth and heading respond</span>
+      <h3 class="v4-heading-lg" data-v4-kinetic>Light with a source, type with weight.</h3>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="v4-label">Action + hand-off<small>[data-v4-magnetic] · .v4-signal-rule</small></h2>
+    <div style="display: grid; gap: 1.75rem">
+      <div class="actions">
+        <button class="action" type="button" data-v4-magnetic>Magnetic action</button>
+        <span class="v4-status">pointer only · keyboard focus never moves it</span>
+      </div>
+      <div class="v4-signal-rule" data-v4-signal-rule><span>Delivery evidence</span><i aria-hidden="true"></i></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="v4-label">Living state<small>.v4-state · real states only</small></h2>
+    <div class="states">
+      <span class="v4-state">Idle</span>
+      <span class="v4-state" data-v4-state="active">Responding</span>
+      <span class="v4-state" data-v4-state="fallback">Fallback</span>
+      <span class="v4-state" data-v4-state="error">Error</span>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { flowGeometry, HUB } from "/__v4/src/flowGeometry.js";
+
+  const swatches = [
+    "canvas", "canvas-raised", "surface", "surface-strong", "evidence", "ink", "ink-secondary", "ink-muted",
+    "rule-strong", "accent", "accent-fill", "focus", "signal", "signal-strong", "signal-muted", "trace",
+    "ambient-light", "ambient-shadow", "state-idle", "state-active", "state-fallback", "state-error",
+  ];
+  document.querySelector("[data-swatches]").innerHTML = swatches
+    .map((name) => `<div class="swatch"><i style="--chip: var(--v4-${name})"></i><span class="v4-status">--v4-${name}</span></div>`)
+    .join("");
+
+  /* Mirrors src/react/v4/SignalFlow.jsx for this page only. */
+  const svg = (tag, attributes) => `<${tag} ${Object.entries(attributes).map(([name, value]) => `${name}="${value}"`).join(" ")}/>`;
+  function renderFlow(model) {
+    const geometry = flowGeometry(model);
+    const field = [
+      geometry.hub ? svg("circle", { class: "v4-flow__orbit", cx: geometry.hub.x, cy: geometry.hub.y, r: geometry.hub.radius, pathLength: 100, transform: `rotate(-64 ${geometry.hub.x} ${geometry.hub.y})`, style: `--v4-at:${geometry.arrival[HUB] ?? 0}` }) : "",
+      geometry.loop ? svg("path", { class: "v4-flow__loop", d: geometry.loop }) : "",
+      ...geometry.links.map((link) => svg("line", { class: "v4-flow__link", "data-v4-flow-link": link.id, x1: geometry.hub.x, y1: geometry.hub.y, x2: link.x, y2: link.y, pathLength: 100 })),
+      svg("path", { class: "v4-flow__trace", d: geometry.trace }),
+      `<g class="v4-flow__signal">${["comet", "halo", "head"].map((part) => svg("path", { class: `v4-flow__${part}`, d: geometry.trace, pathLength: 1000 })).join("")}</g>`,
+    ].join("");
+    const stages = model.stages.map((stage, index) => `
+      <li class="v4-flow__stage" data-v4-flow-stage="${stage.id}" ${stage.id === model.rest ? "data-v4-flow-rest" : ""}
+          style="--v4-x:${stage.x}%;--v4-y:${stage.y}%;--v4-at:${geometry.arrival[stage.id] ?? 0};--v4-seq:${Math.round((index / model.stages.length) * 100) / 100}">
+        <i class="v4-flow__node" aria-hidden="true"></i><span class="v4-flow__index" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><strong class="v4-flow__label">${stage.label}</strong>
+      </li>`).join("");
+    const hub = model.hub ? `<p class="v4-flow__hub" style="--v4-at:${geometry.arrival[HUB] ?? 0}"><span>${model.hub.label}</span><strong>${model.hub.value}</strong></p>` : "";
+    return `<div class="v4-flow" data-v4-flow="${model.id}" data-v4-flow-layout="${model.layout}"
+      style="--v4-flow-aspect:${geometry.aspect};${model.hub ? `--v4-hub-x:${model.hub.x}%;--v4-hub-y:${model.hub.y}%` : ""}">
+      <svg class="v4-flow__field" viewBox="${geometry.viewBox}" aria-hidden="true">${field}</svg>
+      <ol class="v4-flow__stages" aria-label="${model.aria}">${stages}</ol>${hub}${model.hub ? '<i class="orbit-core" aria-hidden="true"></i>' : ""}</div>`;
+  }
+
+  const delivery = {
+    id: "delivery", layout: "orbit", field: { width: 500, height: 600 }, aria: "Forward deployed engineering flow",
+    hub: { x: 46, y: 48, radius: 34, label: "Human decision node", value: "Judgment directs the system" },
+    stages: [
+      { id: "discover", x: 5, y: 13, label: "Discover" }, { id: "scope", x: 79, y: 15, label: "Scope" },
+      { id: "build", x: 82, y: 50, label: "Build" }, { id: "evaluate", x: 80, y: 90, label: "Evaluate" },
+      { id: "deliver", x: 5, y: 94, label: "Deliver" },
+    ],
+    route: ["discover", "scope", HUB, "build", "evaluate", "deliver"], loop: true, rest: "build",
+  };
+  const retrieval = {
+    id: "retrieval", layout: "rail", field: { width: 100, height: 100 }, aria: "Sample retrieval pipeline",
+    stages: ["Resolve entity", "Retrieve", "Synthesize", "Evaluate", "Respond"].map((label, index) => ({ id: `s${index}`, x: 0, y: index * 25, label })),
+    route: ["s0", "s1", "s2", "s3", "s4"], rest: "s2",
+  };
+  document.querySelector('[data-flow="delivery"]').outerHTML = renderFlow(delivery);
+  document.querySelector('[data-flow="retrieval"]').outerHTML = renderFlow(retrieval);
+</script>
+<script src="/js/v4/runtime.js" defer></script>
+</body>
+</html>

@@ -54,7 +54,12 @@ const SCOPED_CSS = {
  * carry the upstream link, so none of them may reference it. */
 const VENDOR_CSS = ["css/boxicons-subset.css"];
 
-const ALL_CSS = [...COMMON_CSS, ...Object.keys(SCOPED_CSS), ...VENDOR_CSS];
+/* V4 layer (css/v4-system.css header). Linked only by the React production
+ * document: the shared system on every route, a composition per consuming
+ * route. Like the vendor subset, no authored document may reference it. */
+const V4_CSS = ["css/v4-system.css", "css/v4-home.css"];
+
+const ALL_CSS = [...COMMON_CSS, ...Object.keys(SCOPED_CSS), ...VENDOR_CSS, ...V4_CSS];
 
 /* ---------- 1. every stylesheet exists and carries rules ---------- */
 
@@ -136,7 +141,7 @@ for (const file of htmlFiles) {
     else ok(`${file}: does not load page-scoped ${sheet}`, !loaded);
   }
 
-  for (const sheet of VENDOR_CSS) {
+  for (const sheet of [...VENDOR_CSS, ...V4_CSS]) {
     ok(`${file}: does not load React-only ${sheet}`, !sheets.includes(sheet));
   }
 

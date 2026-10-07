@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "delivery",
+  "layout": "orbit",
+  "field": { "width": 500, "height": 600 },
+  "aria": "home.flow.aria",
+  "hub": {
+    "x": 46,
+    "y": 48,
+    "radius": 34,
+    "label": "home.flow.human.label",
+    "value": "home.flow.human.value"
+  },
+  "stages": [
+    { "id": "discover", "x": 5, "y": 13, "label": "home.flow.stage.discover" },
+    { "id": "scope", "x": 79, "y": 15, "label": "home.flow.stage.scope" },
+    { "id": "build", "x": 82, "y": 50, "label": "home.flow.stage.build" },
+    { "id": "evaluate", "x": 80, "y": 90, "label": "home.flow.stage.evaluate" },
+    { "id": "deliver", "x": 5, "y": 94, "label": "home.flow.stage.deliver" }
+  ],
+  "route": ["discover", "scope", "@hub", "build", "evaluate", "deliver"],
+  "loop": true,
+  "rest": "build",
+  "handoff": "home.flow.handoff"
+}

@@ -347,6 +347,23 @@ function labsGamesHead(route, localized, localization) {
   return { ...localized.head, og, jsonLd };
 }
 
+/* V4: the Home hero's delivery flow. Geometry is authored in
+ * data/site/v4-home-flow.json; every label resolves through the canonical
+ * message catalog like the rest of the page. */
+const v4HomeFlow = readJson("data/site/v4-home-flow.json");
+function v4HomeModel(message) {
+  const { schemaVersion, ...flow } = v4HomeFlow;
+  return {
+    flow: {
+      ...flow,
+      aria: message(flow.aria),
+      handoff: message(flow.handoff),
+      hub: { ...flow.hub, label: message(flow.hub.label), value: message(flow.hub.value) },
+      stages: flow.stages.map((stage) => ({ ...stage, label: message(stage.label) })),
+    },
+  };
+}
+
 const SHELL_MESSAGE_KEYS = [
   "language.selectorAria",
   "nav.open",
@@ -543,8 +560,10 @@ export function productionMainProps(route, {
     data: localizedCanonicalData(route.locale),
     buildLog: localizedBuildLog,
   };
+  if (route.routeId === "home") props.v4 = v4HomeModel((key) => required(localization.message(key), key));
   if (!catalogPage) return props;
-  /* Catalog-only props; Home/About keep exactly their accepted payload. */
+  /* Catalog-only props; About keeps exactly its accepted payload, Home adds
+   * only the V4 flow model above. */
   const fixedLocalization = Object.fromEntries(["en", "tr"].map((locale) => [locale, loadLocalization(locale)]));
   const roleLine = (ref, locale, labelSource) => `${required(labelSource.message(worksGamesStructure.roleLabel), worksGamesStructure.roleLabel)} ${required(projectRole(ref, locale, roleSources), `${ref} role`)}`;
   const search = catalogSearchCopy(route.routeId, route.locale, catalogSources);

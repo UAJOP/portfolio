@@ -525,5 +525,14 @@
   "works.tag.unrealEngine5": "Unreal Engine 5",
   "works.tag.validation": "Doğrulama",
   "works.tag.vitest": "Vitest",
-  "works.tag.windowsForms": "Windows Forms"
+  "works.tag.windowsForms": "Windows Forms",
+  "home.flow.aria": "Forward deployed mühendislik akışı",
+  "home.flow.handoff": "Teslimat kanıtı",
+  "home.flow.human.label": "İnsan karar düğümü",
+  "home.flow.human.value": "Sistemi muhakeme yönlendirir",
+  "home.flow.stage.build": "Geliştir",
+  "home.flow.stage.deliver": "Teslim et",
+  "home.flow.stage.discover": "Keşfet",
+  "home.flow.stage.evaluate": "Değerlendir",
+  "home.flow.stage.scope": "Kapsamla"
 }

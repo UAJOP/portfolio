@@ -1,0 +1,633 @@
+/* V4 Home composition ------------------------------------------------------
+ *
+ * Home is the first consumer of css/v4-system.css. Everything here is scoped
+ * to body[data-page="home"] and only composes system tokens and primitives:
+ * the hero is an ambient region, its heading is kinetic, its primary action is
+ * magnetic, and the portrait sits at the hub of the delivery flow (stage
+ * positions: data/site/v4-home-flow.json). The sections below the hero keep
+ * the editorial baseline until V4-04. */
+
+body[data-page="home"] main {
+  overflow: clip;
+}
+
+/* 1. Hero ------------------------------------------------------------------ */
+
+body[data-page="home"] .hero {
+  --v4-ambient-inset: 0 -12% -10% 40%;
+  --v4-ambient-x: 56%;
+  --v4-ambient-y: 44%;
+  grid-template-columns: minmax(0, 1.17fr) minmax(430px, 0.83fr);
+  align-items: center;
+  gap: clamp(1rem, 3.5vw, 3.5rem);
+  min-height: calc(100svh - 72px);
+  /* The first screen ends above the floating controls' band. */
+  padding-block: clamp(3.5rem, 6.5vh, 7rem) max(clamp(5.5rem, 9vh, 7rem), var(--v4-float-clearance));
+}
+
+body[data-page="home"] .hero-copy {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+  max-width: 800px;
+  padding-top: 0;
+  text-shadow: 0 8px 32px var(--v4-canvas);
+}
+
+body[data-page="home"] .eyebrow,
+body[data-page="home"] .project-meta,
+body[data-page="home"] .identity-proof span,
+body[data-page="home"] .build-log-item time,
+body[data-page="home"] .build-log-meta {
+  font-family: var(--v4-mono);
+}
+
+body[data-page="home"] .eyebrow {
+  margin-bottom: 0;
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+}
+
+body[data-page="home"] .eyebrow::before {
+  width: 2rem;
+  height: 1px;
+  border-radius: 0;
+  background: var(--v4-accent);
+  box-shadow: none;
+}
+
+body[data-page="home"] .hero h1 {
+  max-width: 13.8ch;
+  margin-top: clamp(1.25rem, 3vh, 2rem);
+  color: var(--v4-ink);
+  font: var(--v4-type-display);
+  letter-spacing: var(--v4-track-display);
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  text-wrap: balance;
+}
+
+body[data-page="home"] .hero-text {
+  max-width: 61ch;
+  margin-top: clamp(1.5rem, 3.5vh, 2.25rem);
+  color: var(--v4-ink-secondary);
+  font: var(--v4-type-lead);
+}
+
+body[data-page="home"] .hero-actions {
+  gap: 0.65rem;
+  margin-top: clamp(1.75rem, 4vh, 2.5rem);
+}
+
+body[data-page="home"] .hero-actions .btn {
+  min-height: 48px;
+  padding-inline: 1.15rem;
+  border-radius: var(--v4-radius);
+  font-family: var(--v4-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+body[data-page="home"] .hero-actions .btn.primary {
+  border-color: var(--v4-accent-fill);
+  background-color: var(--v4-accent-fill);
+  box-shadow: none;
+  color: var(--v4-on-accent);
+}
+
+body[data-page="home"] .hero-actions .btn.primary:hover {
+  border-color: var(--v4-accent);
+  background-color: var(--v4-accent);
+  color: #09111a;
+}
+
+html[data-theme="light"] body[data-page="home"] .hero-actions .btn.primary:hover {
+  border-color: var(--v4-accent-strong);
+  background-color: var(--v4-accent-strong);
+  color: var(--v4-on-accent);
+}
+
+body[data-page="home"] .hero-actions .btn.ghost {
+  border-color: var(--v4-rule-strong);
+  background: transparent;
+  color: var(--v4-ink);
+}
+
+body[data-page="home"] .hero-actions .btn:last-child {
+  border-color: transparent;
+  background: transparent;
+  color: var(--v4-ink-secondary);
+}
+
+body[data-page="home"] .hero-actions .btn:last-child::after {
+  margin-left: 0.35rem;
+  color: var(--v4-accent);
+  content: "↗";
+}
+
+body[data-page="home"] .identity-proof {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 0;
+  margin-top: clamp(2.25rem, 5vh, 3.5rem);
+  border-top-color: var(--v4-rule-strong);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--v4-canvas-raised) 72%, transparent), transparent 94%);
+  backdrop-filter: blur(12px);
+}
+
+body[data-page="home"] .identity-proof > div {
+  min-width: 0;
+  padding: 0.95rem 1.1rem 0 0;
+}
+
+body[data-page="home"] .identity-proof > div + div {
+  padding-left: 1.1rem;
+  border-left: 1px solid var(--v4-rule);
+}
+
+body[data-page="home"] .identity-proof span {
+  color: var(--v4-ink-muted);
+  font-size: 0.61rem;
+}
+
+body[data-page="home"] .identity-proof strong {
+  color: var(--v4-ink);
+  font-family: var(--v4-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+body[data-page="home"] .identity-proof a {
+  text-decoration-color: var(--v4-accent);
+  text-underline-offset: 5px;
+}
+
+/* 2. Hero visual: the portrait at the hub of the delivery flow -------------- */
+
+/* The flow sizes the visual; the portrait is placed on the flow's hub
+ * (46% / 48%) and layered between the route and the stage labels. */
+body[data-page="home"] .hero-visual {
+  /* Stage labels on the flow's end side may run this far past it; the visual
+   * gives the room up from its own column, so they never reach the gutter. */
+  --v4-flow-reserve: 1.75rem;
+  position: relative;
+  z-index: 2;
+  display: block;
+  align-self: center;
+  margin-inline-end: var(--v4-flow-reserve);
+  translate:
+    calc(var(--v4-px) * var(--v4-amp-depth))
+    calc(var(--v4-py) * var(--v4-amp-depth) * 0.75);
+  transition: translate var(--v4-motion-emphasis) var(--v4-ease-out);
+}
+
+/* One far orbit behind the system, moving against the pointer. With the
+ * flow's hub ring it makes two depth rings, and no more. */
+body[data-page="home"] .hero-visual::before {
+  position: absolute;
+  z-index: -1;
+  top: 6%;
+  left: 2%;
+  width: 104%;
+  aspect-ratio: 1.25;
+  border: 1px solid color-mix(in srgb, var(--v4-signal) 18%, transparent);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+  rotate: -14deg;
+  translate:
+    calc(var(--v4-px) * var(--v4-amp-depth) * -2)
+    calc(var(--v4-py) * var(--v4-amp-depth) * -1.5);
+  transition: translate var(--v4-motion-emphasis) var(--v4-ease-out);
+}
+
+body[data-page="home"] .profile-card {
+  position: absolute;
+  z-index: 1;
+  top: 15.7%;
+  left: 15%;
+  width: 62%;
+}
+
+body[data-page="home"] .v4-flow {
+  --v4-hub-reach: 15%;
+}
+
+body[data-page="home"] .profile-card img {
+  aspect-ratio: 4 / 5;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: saturate(0.72) contrast(1.05);
+  object-position: center 16%;
+  -webkit-mask-image: radial-gradient(ellipse 68% 72% at 50% 44%, #000 50%, rgba(0, 0, 0, 0.88) 62%, transparent 84%);
+  mask-image: radial-gradient(ellipse 68% 72% at 50% 44%, #000 50%, rgba(0, 0, 0, 0.88) 62%, transparent 84%);
+}
+
+body[data-page="home"] .profile-meta {
+  position: relative;
+  z-index: 2;
+  margin-top: -2rem;
+  padding: 0.8rem 0.75rem 0;
+  border-top: 1px solid var(--v4-rule-strong);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--v4-canvas) 76%, transparent), transparent);
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+
+body[data-page="home"] .profile-meta strong {
+  justify-content: center;
+  text-wrap: balance;
+  color: var(--v4-ink);
+  font-family: var(--v4-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+body[data-page="home"] .profile-meta strong::before {
+  width: 6px;
+  height: 6px;
+  background: var(--v4-state-active);
+}
+
+body[data-page="home"] .profile-meta span {
+  padding-left: 0;
+  color: var(--v4-ink-muted);
+  font-family: var(--v4-mono);
+  font-size: 0.72rem;
+}
+
+/* The flow's stages now say what the capability line said; it stays in the
+ * document for assistive technology. */
+body[data-page="home"] .hero-stack {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
+/* 3. Hand-off into the evidence -------------------------------------------- */
+
+body[data-page="home"] .hero > .v4-signal-rule {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+body[data-page="home"] .hero + .section-shell {
+  position: relative;
+  margin-top: 0;
+  padding-top: clamp(5rem, 9vw, 8rem);
+  border-top: 1px solid var(--v4-rule);
+}
+
+body[data-page="home"] .hero + .section-shell::before {
+  position: absolute;
+  z-index: -1;
+  top: -8rem;
+  right: -12%;
+  left: 34%;
+  height: 23rem;
+  background: radial-gradient(ellipse at top, var(--v4-ambient-light-far), transparent 68%);
+  content: "";
+  pointer-events: none;
+}
+
+/* 4. Sections below the hero (editorial baseline) --------------------------- */
+
+body[data-page="home"] .section-block {
+  padding-top: clamp(5.5rem, 10vw, 9rem);
+}
+
+body[data-page="home"] .section-heading h2,
+body[data-page="home"] .contact-hub h2 {
+  color: var(--v4-ink);
+  font-family: var(--v4-display);
+  font-weight: 700;
+  letter-spacing: var(--v4-track-heading-lg);
+}
+
+body[data-page="home"] .section-heading h2 {
+  font: var(--v4-type-heading-lg);
+  letter-spacing: var(--v4-track-heading-lg);
+}
+
+body[data-page="home"] .section-heading > p:not(.eyebrow),
+body[data-page="home"] .evidence-card p,
+body[data-page="home"] .service-card p,
+body[data-page="home"] .timeline-card p,
+body[data-page="home"] .contact-hub p {
+  color: var(--v4-ink-secondary);
+}
+
+body[data-page="home"] .selected-work-grid {
+  gap: 1px;
+  border: 1px solid var(--v4-rule);
+  background: var(--v4-rule);
+}
+
+body[data-page="home"] .evidence-card,
+html[data-theme="light"] body[data-page="home"] .evidence-card {
+  border: 0;
+  border-radius: 0;
+  background: var(--v4-canvas);
+}
+
+body[data-page="home"] .selected-work-grid > .evidence-card:first-child,
+html[data-theme="light"] body[data-page="home"] .selected-work-grid > .evidence-card:first-child {
+  background: var(--v4-evidence);
+}
+
+body[data-page="home"] .evidence-card-media {
+  border-color: var(--v4-rule);
+  background: var(--v4-surface);
+}
+
+body[data-page="home"] .evidence-card h3 {
+  color: var(--v4-ink);
+  font-family: var(--v4-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+body[data-page="home"] .evidence-card .project-actions a {
+  color: var(--v4-accent-strong);
+  font-family: var(--v4-mono);
+  font-size: 0.76rem;
+}
+
+body[data-page="home"] .service-card,
+html[data-theme="light"] body[data-page="home"] .service-card {
+  border-top-color: var(--v4-rule-strong);
+  background: transparent;
+}
+
+body[data-page="home"] .service-card h3,
+body[data-page="home"] .timeline-card h3,
+body[data-page="home"] .build-log-item h3 {
+  color: var(--v4-ink);
+  font-family: var(--v4-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+body[data-page="home"] .timeline-card,
+body[data-page="home"] .build-log-item {
+  border-color: var(--v4-rule);
+}
+
+body[data-page="home"] .contact-hub,
+html[data-theme="light"] body[data-page="home"] .contact-hub {
+  padding: clamp(2rem, 5vw, 4rem);
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 0;
+  background: var(--v4-surface);
+  box-shadow: none;
+}
+
+/* 5. AJOOP as a system port ------------------------------------------------ */
+
+/* Presentation only: the launcher's behaviour and state are untouched. */
+body[data-page="home"] .chatbot-launcher {
+  gap: 0.65rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 3px;
+  background: var(--v4-living-surface);
+  box-shadow: 0 14px 44px var(--v4-ambient-shadow);
+  color: var(--v4-ink-secondary);
+  font-family: var(--v4-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  backdrop-filter: blur(16px);
+}
+
+html[data-theme="light"] body[data-page="home"] .chatbot-launcher {
+  box-shadow: 0 14px 40px rgba(16, 21, 28, 0.14);
+}
+
+body[data-page="home"] .chatbot-launcher::before {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--v4-state-idle);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--v4-state-idle) 14%, transparent);
+  content: "";
+}
+
+body[data-page="home"] .chatbot-launcher-icon {
+  width: auto;
+  height: auto;
+  border: 0;
+  background: transparent;
+  color: var(--v4-accent);
+}
+
+/* 6. Responsive ------------------------------------------------------------ */
+
+@media (max-width: 1100px) {
+  body[data-page="home"] .hero {
+    min-height: calc(100svh - 64px);
+  }
+}
+
+@media (max-width: 900px) {
+  body[data-page="home"] .hero {
+    --v4-ambient-inset: 38% -14% -6% -14%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3.5rem;
+    min-height: auto;
+    padding-block: 4rem 5rem;
+  }
+
+  body[data-page="home"] .hero h1 {
+    max-width: 18ch;
+  }
+
+  body[data-page="home"] .hero-visual {
+    width: min(100% - 2 * var(--v4-flow-reserve), 31rem);
+    margin-inline: auto;
+  }
+}
+
+/* The phone composition is its own layout, not a scaled desktop: headline,
+ * then the portrait beside the flow as a rail, then the pitch and actions. */
+@media (max-width: 560px) {
+  body[data-page="home"] .hero {
+    --v4-ambient-inset: 30% -30% 14% -8%;
+    gap: 0;
+    padding-block: 3.25rem 4.25rem;
+  }
+
+  body[data-page="home"] .hero-copy {
+    display: contents;
+  }
+
+  body[data-page="home"] .hero-copy > .eyebrow {
+    order: 1;
+  }
+
+  body[data-page="home"] .hero h1 {
+    order: 2;
+    max-width: 12ch;
+    font-size: clamp(2.42rem, 11.15vw, 2.95rem);
+    line-height: 0.98;
+  }
+
+  body[data-page="home"] .hero-visual {
+    order: 3;
+    display: grid;
+    grid-template-columns: minmax(0, 0.96fr) minmax(9.5rem, 1.04fr);
+    gap: 1.1rem;
+    align-items: center;
+    width: 100%;
+    margin: 1.9rem 0 0;
+    padding-top: 1.5rem;
+    translate: none;
+  }
+
+  body[data-page="home"] .hero-visual::before {
+    top: 4%;
+    left: -34%;
+    width: 150%;
+    opacity: 0.6;
+  }
+
+  body[data-page="home"] .hero-text {
+    order: 4;
+    margin-top: 1.75rem;
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  body[data-page="home"] .hero-actions {
+    order: 5;
+  }
+
+  body[data-page="home"] .hero-actions .btn:last-child {
+    border-color: var(--v4-rule-strong);
+  }
+
+  body[data-page="home"] .identity-proof {
+    order: 6;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 2.25rem;
+  }
+
+  body[data-page="home"] .identity-proof > div,
+  body[data-page="home"] .identity-proof > div + div {
+    grid-template-columns: minmax(7.6rem, 0.75fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--v4-rule);
+    border-left: 0;
+  }
+
+  body[data-page="home"] .identity-proof strong {
+    overflow-wrap: anywhere;
+  }
+
+  body[data-page="home"] .profile-card {
+    position: relative;
+    top: auto;
+    left: auto;
+    display: block;
+    width: 100%;
+  }
+
+  body[data-page="home"] .profile-card img {
+    aspect-ratio: 3 / 4;
+    -webkit-mask-image: radial-gradient(ellipse 76% 72% at 50% 43%, #000 50%, rgba(0, 0, 0, 0.86) 63%, transparent 86%);
+    mask-image: radial-gradient(ellipse 76% 72% at 50% 43%, #000 50%, rgba(0, 0, 0, 0.86) 63%, transparent 86%);
+  }
+
+  body[data-page="home"] .profile-meta {
+    margin-top: -0.65rem;
+    padding: 0.7rem 0 0;
+    text-align: left;
+  }
+
+  body[data-page="home"] .profile-meta strong {
+    justify-content: flex-start;
+    font-size: 0.66rem;
+  }
+
+  body[data-page="home"] .profile-meta span {
+    font-size: 0.6rem;
+  }
+
+  /* The hub caption heads the whole visual; its second line stays available
+   * to assistive technology. */
+  body[data-page="home"] .v4-flow {
+    position: static;
+  }
+
+  body[data-page="home"] .v4-flow__hub {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+  }
+
+  body[data-page="home"] .v4-flow__hub strong {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  body[data-page="home"] .section-block,
+  body[data-page="home"] .hero + .section-shell {
+    padding-top: 5rem;
+  }
+
+  body[data-page="home"] .selected-work-grid {
+    border-inline: 0;
+  }
+
+  body[data-page="home"] .contact-hub {
+    padding: 1.5rem;
+  }
+
+  body[data-page="home"] .chatbot-launcher {
+    width: 3.25rem;
+    min-width: 3.25rem;
+    height: 3.25rem;
+    padding: 0;
+    font-size: 0;
+  }
+
+  body[data-page="home"] .chatbot-launcher::before {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+    width: 0.32rem;
+    height: 0.32rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="home"] .hero-visual,
+  body[data-page="home"] .hero-visual::before {
+    translate: none;
+    transition: none;
+  }
+
+  body[data-page="home"] .evidence-card-media img,
+  body[data-page="home"] .identity-proof a::after {
+    transition: none !important;
+  }
+}

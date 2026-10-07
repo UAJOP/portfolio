@@ -1,6 +1,7 @@
 import { Fragment, createElement, memo, useState } from "react";
 import homeAboutStructure from "../../../data/site/m3-25b-home-about-structure.json";
 import BuildLog from "./BuildLog.jsx";
+import { applyHomeV4 } from "../v4/homeConsumer.jsx";
 
 const PROP_NAMES = {
   class: "className",
@@ -125,12 +126,15 @@ function renderNode(node, props, key, catalogState) {
   if (catalogState && isSection && !descendantCards(node).some((card) => cardVisible(card, props, catalogState))) {
     classes.add("is-hidden");
   }
+  /* V4 primitives the Home hero opts into; null on every other route. */
+  const v4Children = props.v4 ? applyHomeV4(props.v4, node, classes, attributes, key) : null;
   if (classes.size) attributes.className = [...classes].join(" ");
-  const children = buildLogLimit
+  const ownChildren = buildLogLimit
     ? <BuildLog entries={props.buildLog} limit={Number(buildLogLimit)} />
     : node.children.some((child) => child.type !== "space")
       ? node.children.flatMap((child, index) => child.type === "space" ? [] : [renderNode(child, props, `${key}.${index}`, catalogState)])
       : undefined;
+  const children = v4Children ? [...(ownChildren || []), ...v4Children] : ownChildren;
   const element = createElement(node.tag, { ...attributes, key }, children);
   if (!isFilterBar) return element;
   return (
