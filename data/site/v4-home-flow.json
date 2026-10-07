@@ -1,25 +1,28 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "delivery",
   "layout": "orbit",
-  "field": { "width": 500, "height": 600 },
+  "field": { "width": 600, "height": 600 },
   "aria": "home.flow.aria",
   "hub": {
-    "x": 46,
-    "y": 48,
-    "radius": 34,
+    "x": 48,
+    "y": 50,
+    "radius": 22,
     "label": "home.flow.human.label",
     "value": "home.flow.human.value"
   },
+  "inlet": { "x": -22, "y": 27 },
+  "outlet": { "x": -7, "y": 117 },
   "stages": [
-    { "id": "discover", "x": 5, "y": 13, "label": "home.flow.stage.discover" },
-    { "id": "scope", "x": 79, "y": 15, "label": "home.flow.stage.scope" },
-    { "id": "build", "x": 82, "y": 50, "label": "home.flow.stage.build" },
-    { "id": "evaluate", "x": 80, "y": 90, "label": "home.flow.stage.evaluate" },
-    { "id": "deliver", "x": 5, "y": 94, "label": "home.flow.stage.deliver" }
+    { "id": "discover", "x": 9, "y": 17, "label": "home.flow.stage.discover" },
+    { "id": "scope", "x": 76, "y": 9, "label": "home.flow.stage.scope" },
+    { "id": "build", "x": 92, "y": 47, "label": "home.flow.stage.build" },
+    { "id": "evaluate", "x": 79, "y": 87, "label": "home.flow.stage.evaluate" },
+    { "id": "deliver", "x": 12, "y": 83, "label": "home.flow.stage.deliver" }
   ],
-  "route": ["discover", "scope", "@hub", "build", "evaluate", "deliver"],
+  "route": ["@in", "discover", "scope", "@hub", "build", "evaluate", "deliver", "@out"],
   "loop": true,
   "rest": "build",
-  "handoff": "home.flow.handoff"
+  "handoff": "home.flow.handoff",
+  "flagship": ["sinama-case-study", "ai-chatbot-flow-design", "atolye-joyday-case-study"]
 }

@@ -1,7 +1,8 @@
 import { Fragment, createElement, memo, useState } from "react";
 import homeAboutStructure from "../../../data/site/m3-25b-home-about-structure.json";
 import BuildLog from "./BuildLog.jsx";
-import { applyHomeV4 } from "../v4/homeConsumer.jsx";
+import { applyV4 } from "../v4/consumers.jsx";
+import EcosystemMap from "../v4/EcosystemMap.jsx";
 
 const PROP_NAMES = {
   class: "className",
@@ -126,8 +127,8 @@ function renderNode(node, props, key, catalogState) {
   if (catalogState && isSection && !descendantCards(node).some((card) => cardVisible(card, props, catalogState))) {
     classes.add("is-hidden");
   }
-  /* V4 primitives the Home hero opts into; null on every other route. */
-  const v4Children = props.v4 ? applyHomeV4(props.v4, node, classes, attributes, key) : null;
+  /* V4 primitives a consuming route opts into; null on every other route. */
+  const v4Children = props.v4 ? applyV4(props.page, props.v4, node, classes, attributes, key) : null;
   if (classes.size) attributes.className = [...classes].join(" ");
   const ownChildren = buildLogLimit
     ? <BuildLog entries={props.buildLog} limit={Number(buildLogLimit)} />
@@ -153,5 +154,8 @@ export default function ProductionMain(props) {
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
   const catalogState = catalogPage ? { category, query, setCategory, setQuery } : null;
-  return page.children.map((node, index) => renderNode(node, props, `${props.page}.${index}`, catalogState));
+  const sections = page.children.map((node, index) => renderNode(node, props, `${props.page}.${index}`, catalogState));
+  /* V4: Home places the project ecosystem straight after its flagship evidence. */
+  if (props.v4?.ecosystem) sections.splice(2, 0, <EcosystemMap key={`${props.page}.v4-ecosystem`} model={props.v4.ecosystem} />);
+  return sections;
 }

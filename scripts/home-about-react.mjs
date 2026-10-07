@@ -7,7 +7,7 @@ import { loadRouteRuntime, loadSiteRoutes } from "./site-routes.mjs";
 import { decodeHtml } from "./localized-html.mjs";
 import { createHomeAboutHeadModel, createSiteHeadRenderer } from "./site-head.mjs";
 import { catalogSearchCopy, defaultCatalogSources, defaultRoleSources, projectRole } from "./m3-works-games-catalog-copy.mjs";
-import { ajoopShellModel, commandPaletteModel } from "./m3-28-overlay-copy.mjs";
+import { ajoopShellModel, commandPaletteModel, runtimeCollection } from "./m3-28-overlay-copy.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
@@ -351,9 +351,90 @@ function labsGamesHead(route, localized, localization) {
  * data/site/v4-home-flow.json; every label resolves through the canonical
  * message catalog like the rest of the page. */
 const v4HomeFlow = readJson("data/site/v4-home-flow.json");
-function v4HomeModel(message) {
-  const { schemaVersion, ...flow } = v4HomeFlow;
+/* V4: the project ecosystem. Capabilities are the Works catalog's filter
+ * categories and projects are its cards; a wire exists only where a card is
+ * filed under a category. Read from the same structure the Works page
+ * renders, so the map cannot drift from the catalog or claim a relationship
+ * the catalog does not make. */
+function v4EcosystemModel(locale, message) {
+  const canonical = localizedCanonicalData(locale);
+  const attribute = (node, name) => node.attributes.find((entry) => entry.name === name)?.value;
+  const hasClass = (node, name) => String(attribute(node, "class") || "").split(/\s+/).includes(name);
+  const text = (node) => {
+    if (node.type === "message") return message(node.key);
+    if (node.type === "data") return String(node.path).split(".").reduce((value, segment) => value?.[segment], canonical);
+    if (node.type === "text") return node.value;
+    return node.type === "element" ? node.children.map(text).join("") : "";
+  };
+  const find = (node, test) => {
+    if (node.type !== "element") return null;
+    if (test(node)) return node;
+    for (const child of node.children) {
+      const hit = find(child, test);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const capabilities = [];
+  const projects = [];
+  let tier = -1;
+  const walk = (node) => {
+    if (node.type !== "element") return;
+    const filter = attribute(node, "data-filter-btn");
+    if (filter !== undefined && filter !== "all") capabilities.push({ id: filter, label: text(node) });
+    if (attribute(node, "data-project-section") !== undefined) tier += 1;
+    if (hasClass(node, "project-card")) {
+      const link = find(find(node, (entry) => entry.tag === "h3"), (entry) => entry.tag === "a");
+      const target = attribute(link, "href");
+      const href = target?.type === "internal" ? routeRuntime.localizedInternalHref(target.path, locale) : target?.type === "data" ? text(target) : target;
+      const status = find(node, (entry) => hasClass(entry, "project-status"));
+      const id = String(attribute(node, "data-project-link") || attribute(node, "data-game-link")).split("/").filter(Boolean).pop();
+      if (!id || typeof href !== "string" || !href) throw new Error(`${locale}: Works catalog card without a canonical destination`);
+      projects.push({
+        id,
+        title: text(link),
+        href,
+        categories: String(attribute(node, "data-category")).split(/\s+/).filter(Boolean),
+        tier: hasClass(node, "is-archive") ? "archive" : tier === 0 ? "primary" : "supporting",
+        ...(status ? { status: text(status) } : {}),
+      });
+      return;
+    }
+    node.children.forEach(walk);
+  };
+  worksGamesStructure.pages.works.children.forEach(walk);
+  const known = new Set(capabilities.map((capability) => capability.id));
+  for (const project of projects) {
+    if (!project.title || !project.categories.length || project.categories.some((id) => !known.has(id))) {
+      throw new Error(`${locale}: Works catalog card ${project.id} is not filed under a known catalog category`);
+    }
+  }
   return {
+    eyebrow: message("home.ecosystem.eyebrow"),
+    title: message("home.ecosystem.title"),
+    lead: message("home.ecosystem.lead"),
+    capabilitiesLabel: message("home.ecosystem.capabilities"),
+    projectsLabel: message("home.ecosystem.projects"),
+    viewAll: { label: message("home.hero.viewWork"), href: routeRuntime.localizedInternalHref("/works/", locale) },
+    capabilities,
+    projects,
+  };
+}
+
+function v4HomeModel(locale, message) {
+  const { schemaVersion, ...flow } = v4HomeFlow;
+  /* AJOOP's flagship port speaks only in the assistant's own shipped copy:
+   * its shell strings and the first of its own quick questions. */
+  const ajoop = ajoopShellModel(locale);
+  const quicks = (runtimeCollection("ajoop", locale).quicks || []).slice(0, 4).map((quick) => quick.label).filter(Boolean);
+  if (quicks.length !== 4) throw new Error(`${locale}: AJOOP quick questions are missing from its shipped copy`);
+  const ecosystem = v4EcosystemModel(locale, message);
+  for (const id of flow.flagship) {
+    if (!ecosystem.projects.some((project) => project.id === id)) throw new Error(`${locale}: flagship ${id} is not a Works catalog project`);
+  }
+  return {
+    ecosystem,
+    ajoop: { title: ajoop.copy.title, subtitle: ajoop.copy.subtitle, launcher: ajoop.copy.launcher, prompt: ajoop.copy.inputPlaceholder, state: ajoop.mascot.label, quicks },
     flow: {
       ...flow,
       aria: message(flow.aria),
@@ -560,7 +641,9 @@ export function productionMainProps(route, {
     data: localizedCanonicalData(route.locale),
     buildLog: localizedBuildLog,
   };
-  if (route.routeId === "home") props.v4 = v4HomeModel((key) => required(localization.message(key), key));
+  if (route.routeId === "home") props.v4 = v4HomeModel(route.locale, (key) => required(localization.message(key), key));
+  /* Works consumes V4 primitives by attribute only; it needs no model. */
+  if (route.routeId === "works") props.v4 = {};
   if (!catalogPage) return props;
   /* Catalog-only props; About keeps exactly its accepted payload, Home adds
    * only the V4 flow model above. */

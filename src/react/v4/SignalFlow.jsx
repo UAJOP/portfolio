@@ -4,12 +4,18 @@ import { flowGeometry, HUB } from "./flowGeometry.js";
  *
  * A stage set, the route a signal takes through it, and optionally the hub
  * that directs it. The markup is complete without JavaScript: stages are an
- * ordered list, the trace is inline SVG, and the travelling signal and each
- * stage's arrival are CSS animations timed from the geometry. js/v4/runtime.js
- * only adds pointer focus and offscreen pausing.
+ * ordered list, the currents are inline SVG, and the travelling signal and
+ * each stage's arrival are CSS animations timed from the geometry.
+ * js/v4/runtime.js only adds pointer focus and offscreen pausing.
+ *
+ * Two SVG layers, so the still network never repaints with the signal:
+ *   depth   the hub's ring, the background loop, the hub's line to every
+ *           stage, and the route's glow
+ *   field   the route itself, the line a focused stage lights, the signal
  *
  * model: { id, layout: "orbit" | "rail", field, stages[{ id, x, y, label }],
- *          route[], hub?{ x, y, radius, label, value }, loop?, rest?, aria } */
+ *          route[], hub?{ x, y, radius, label, value }, inlet?, outlet?,
+ *          loop?, rest?, aria } */
 export default function SignalFlow({ model }) {
   const geometry = flowGeometry(model);
   const count = model.stages.length;
@@ -23,6 +29,12 @@ export default function SignalFlow({ model }) {
         ...(model.hub ? { "--v4-hub-x": `${model.hub.x}%`, "--v4-hub-y": `${model.hub.y}%` } : {}),
       }}
     >
+      <svg className="v4-flow__depth" viewBox={geometry.viewBox} aria-hidden="true" focusable="false">
+        <path className="v4-flow__glow" d={geometry.trace} />
+        {geometry.loop ? <path className="v4-flow__loop" d={geometry.loop} /> : null}
+        {geometry.hub ? <circle className="v4-flow__ring" cx={geometry.hub.x} cy={geometry.hub.y} r={geometry.hub.radius * 1.5} /> : null}
+        {geometry.spokes.map((spoke) => <path key={spoke.id} className="v4-flow__spoke" d={spoke.d} />)}
+      </svg>
       <svg className="v4-flow__field" viewBox={geometry.viewBox} aria-hidden="true" focusable="false">
         {geometry.hub ? (
           <circle
@@ -35,9 +47,8 @@ export default function SignalFlow({ model }) {
             style={{ "--v4-at": geometry.arrival[HUB] ?? 0 }}
           />
         ) : null}
-        {geometry.loop ? <path className="v4-flow__loop" d={geometry.loop} /> : null}
-        {geometry.links.map((link) => (
-          <line key={link.id} className="v4-flow__link" data-v4-flow-link={link.id} x1={geometry.hub.x} y1={geometry.hub.y} x2={link.x} y2={link.y} pathLength="100" />
+        {geometry.spokes.map((spoke) => (
+          <path key={spoke.id} className="v4-flow__link" data-v4-flow-link={spoke.id} d={spoke.d} pathLength="100" />
         ))}
         <path className="v4-flow__trace" d={geometry.trace} />
         <g className="v4-flow__signal">

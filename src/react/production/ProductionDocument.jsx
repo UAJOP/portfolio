@@ -5,7 +5,7 @@ import CommandPalette from "./CommandPalette.jsx";
 
 /* Routes that consume V4 primitives: each gets its composition stylesheet and
  * the motion runtime. Every other route ships neither. */
-const V4_ROUTES = new Set(["home"]);
+const V4_ROUTES = new Set(["home", "works"]);
 
 function ProductionHead({ head, page }) {
   return (

@@ -534,5 +534,10 @@
   "home.flow.stage.deliver": "Liefern",
   "home.flow.stage.discover": "Erkunden",
   "home.flow.stage.evaluate": "Evaluieren",
-  "home.flow.stage.scope": "Abgrenzen"
+  "home.flow.stage.scope": "Abgrenzen",
+  "home.ecosystem.eyebrow": "Projekt-Ökosystem",
+  "home.ecosystem.title": "Wie alles zusammenhängt.",
+  "home.ecosystem.lead": "Jedes Projekt steht auf den Fähigkeiten, die es tatsächlich nutzt. Wählen Sie eine Fähigkeit, um die Arbeit dahinter zu sehen.",
+  "home.ecosystem.capabilities": "Fähigkeiten",
+  "home.ecosystem.projects": "Projekte"
 }

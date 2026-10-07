@@ -534,5 +534,10 @@
   "home.flow.stage.deliver": "Livrer",
   "home.flow.stage.discover": "Découvrir",
   "home.flow.stage.evaluate": "Évaluer",
-  "home.flow.stage.scope": "Cadrer"
+  "home.flow.stage.scope": "Cadrer",
+  "home.ecosystem.eyebrow": "Écosystème de projets",
+  "home.ecosystem.title": "Comment tout se connecte.",
+  "home.ecosystem.lead": "Chaque projet repose sur les compétences qu’il mobilise réellement. Choisissez une compétence pour voir le travail qui la soutient.",
+  "home.ecosystem.capabilities": "Compétences",
+  "home.ecosystem.projects": "Projets"
 }

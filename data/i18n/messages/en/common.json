@@ -534,5 +534,10 @@
   "home.flow.stage.deliver": "Deliver",
   "home.flow.stage.discover": "Discover",
   "home.flow.stage.evaluate": "Evaluate",
-  "home.flow.stage.scope": "Scope"
+  "home.flow.stage.scope": "Scope",
+  "home.ecosystem.eyebrow": "Project ecosystem",
+  "home.ecosystem.title": "How everything connects.",
+  "home.ecosystem.lead": "Every project sits on the capabilities it actually exercises. Pick a capability to see the work behind it.",
+  "home.ecosystem.capabilities": "Capabilities",
+  "home.ecosystem.projects": "Projects"
 }

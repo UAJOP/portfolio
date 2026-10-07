@@ -534,5 +534,10 @@
   "home.flow.stage.deliver": "Teslim et",
   "home.flow.stage.discover": "Keşfet",
   "home.flow.stage.evaluate": "Değerlendir",
-  "home.flow.stage.scope": "Kapsamla"
+  "home.flow.stage.scope": "Kapsamla",
+  "home.ecosystem.eyebrow": "Proje ekosistemi",
+  "home.ecosystem.title": "Her şey birbirine nasıl bağlanıyor.",
+  "home.ecosystem.lead": "Her proje, gerçekten kullandığı yetkinliklerin üzerinde durur. Arkasındaki işi görmek için bir yetkinlik seçin.",
+  "home.ecosystem.capabilities": "Yetkinlikler",
+  "home.ecosystem.projects": "Projeler"
 }

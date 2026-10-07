@@ -155,7 +155,7 @@
     const field = [
       geometry.hub ? svg("circle", { class: "v4-flow__orbit", cx: geometry.hub.x, cy: geometry.hub.y, r: geometry.hub.radius, pathLength: 100, transform: `rotate(-64 ${geometry.hub.x} ${geometry.hub.y})`, style: `--v4-at:${geometry.arrival[HUB] ?? 0}` }) : "",
       geometry.loop ? svg("path", { class: "v4-flow__loop", d: geometry.loop }) : "",
-      ...geometry.links.map((link) => svg("line", { class: "v4-flow__link", "data-v4-flow-link": link.id, x1: geometry.hub.x, y1: geometry.hub.y, x2: link.x, y2: link.y, pathLength: 100 })),
+      ...geometry.spokes.map((spoke) => svg("path", { class: "v4-flow__link", "data-v4-flow-link": spoke.id, d: spoke.d, pathLength: 100 })),
       svg("path", { class: "v4-flow__trace", d: geometry.trace }),
       `<g class="v4-flow__signal">${["comet", "halo", "head"].map((part) => svg("path", { class: `v4-flow__${part}`, d: geometry.trace, pathLength: 1000 })).join("")}</g>`,
     ].join("");
@@ -167,6 +167,7 @@
     const hub = model.hub ? `<p class="v4-flow__hub" style="--v4-at:${geometry.arrival[HUB] ?? 0}"><span>${model.hub.label}</span><strong>${model.hub.value}</strong></p>` : "";
     return `<div class="v4-flow" data-v4-flow="${model.id}" data-v4-flow-layout="${model.layout}"
       style="--v4-flow-aspect:${geometry.aspect};${model.hub ? `--v4-hub-x:${model.hub.x}%;--v4-hub-y:${model.hub.y}%` : ""}">
+      <svg class="v4-flow__depth" viewBox="${geometry.viewBox}" aria-hidden="true">${svg("path", { class: "v4-flow__glow", d: geometry.trace })}${geometry.spokes.map((spoke) => svg("path", { class: "v4-flow__spoke", d: spoke.d })).join("")}</svg>
       <svg class="v4-flow__field" viewBox="${geometry.viewBox}" aria-hidden="true">${field}</svg>
       <ol class="v4-flow__stages" aria-label="${model.aria}">${stages}</ol>${hub}${model.hub ? '<i class="orbit-core" aria-hidden="true"></i>' : ""}</div>`;
   }

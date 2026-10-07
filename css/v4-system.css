@@ -14,6 +14,8 @@
  *   8. Kinetic      art-directed headings
  *   9. Living state idle / active / fallback / error
  *  10. Motion discipline: bounded, paused offscreen, still under reduced motion
+ *  11. System node · 12. Ecosystem · 13. Connected card · 14. Current field
+ *  15. Section handoff · 16. their reduced-motion and forced-colours states
  *
  * Primitives are opted into by attribute or class and stay inert until then.
  * Route compositions live in css/v4-<route>.css; js/v4/runtime.js adds pointer
@@ -23,48 +25,53 @@
 
 :root {
   /* Canvas and ink */
-  --v4-canvas: #0a0d12;
-  --v4-canvas-raised: #0f141b;
-  --v4-surface: #131922;
-  --v4-surface-strong: #17202b;
-  --v4-ink: #f3f1ec;
-  --v4-ink-secondary: #bac2cc;
-  --v4-ink-muted: #7f8a98;
-  --v4-rule: rgba(230, 235, 242, 0.12);
-  --v4-rule-strong: rgba(230, 235, 242, 0.24);
-  --v4-grid: rgba(230, 235, 242, 0.035);
-  --v4-header: rgba(10, 13, 18, 0.93);
+  --v4-canvas: #050912;
+  --v4-canvas-raised: #080e1a;
+  --v4-surface: #0c1424;
+  --v4-surface-strong: #111c31;
+  --v4-ink: #f3f6fb;
+  --v4-ink-secondary: #b6c2d6;
+  --v4-ink-muted: #73829a;
+  --v4-rule: rgba(150, 180, 230, 0.13);
+  --v4-rule-strong: rgba(150, 180, 230, 0.27);
+  --v4-grid: rgba(150, 180, 230, 0.04);
+  --v4-header: rgba(5, 9, 18, 0.9);
 
   /* Action */
-  --v4-accent: #82a9d8;
-  --v4-accent-strong: #b0cae9;
-  --v4-accent-fill: #315f98;
+  --v4-accent: #62adff;
+  --v4-accent-strong: #b4d8ff;
+  --v4-accent-fill: #1c5fd6;
   --v4-on-accent: #ffffff;
-  --v4-action-sheen: rgba(207, 226, 251, 0.3);
-  --v4-focus: #b0cae9;
+  --v4-action-sheen: rgba(210, 232, 255, 0.32);
+  --v4-focus: #b4d8ff;
 
-  /* Signal: the one moving thing. Dark reads as an instrument glow. */
-  --v4-signal: #8fb8ee;
-  --v4-signal-strong: #cfe2fb;
-  --v4-signal-muted: rgba(143, 184, 238, 0.3);
-  --v4-signal-glow: rgba(143, 184, 238, 0.2);
-  --v4-trace: rgba(173, 197, 224, 0.27);
-  --v4-trace-muted: rgba(173, 197, 224, 0.13);
+  /* Signal: the one moving thing. Dark is a deep navy field lit by it. */
+  --v4-signal: #4fa8ff;
+  --v4-signal-strong: #cfe6ff;
+  --v4-signal-muted: rgba(79, 168, 255, 0.34);
+  --v4-signal-glow: rgba(79, 168, 255, 0.22);
+  --v4-trace: rgba(120, 172, 255, 0.32);
+  /* Data current: electric blue running to cyan, with one violet accent. */
+  --v4-current: #3d9bff;
+  --v4-current-2: #35e0cf;
+  --v4-current-glow: rgba(61, 155, 255, 0.5);
+  --v4-violet: #8f7dff;
+  --v4-trace-muted: rgba(120, 172, 255, 0.15);
 
   /* Atmosphere */
-  --v4-ambient-light: rgba(96, 146, 214, 0.16);
-  --v4-ambient-light-far: rgba(72, 116, 176, 0.07);
-  --v4-ambient-shadow: rgba(3, 6, 10, 0.55);
-  --v4-grain-opacity: 0.11;
+  --v4-ambient-light: rgba(36, 104, 255, 0.26);
+  --v4-ambient-light-far: rgba(32, 196, 214, 0.08);
+  --v4-ambient-shadow: rgba(1, 3, 8, 0.6);
+  --v4-grain-opacity: 0.12;
 
   /* Evidence and living-state surfaces */
-  --v4-evidence: #111821;
-  --v4-evidence-rule: rgba(143, 184, 238, 0.22);
-  --v4-living-surface: rgba(15, 20, 27, 0.88);
-  --v4-state-idle: #82a9d8;
-  --v4-state-active: #70bf91;
-  --v4-state-fallback: #d6a765;
-  --v4-state-error: #e0786c;
+  --v4-evidence: #0a1222;
+  --v4-evidence-rule: rgba(79, 168, 255, 0.26);
+  --v4-living-surface: rgba(8, 14, 26, 0.88);
+  --v4-state-idle: #62adff;
+  --v4-state-active: #3fd6a0;
+  --v4-state-fallback: #e0aa5c;
+  --v4-state-error: #ec7a6c;
   --v4-success: var(--v4-state-active);
 
   /* Typography: Manrope carries the editorial register, IBM Plex Mono the
@@ -110,42 +117,46 @@
 /* Light is its own design, not an inverted dark: warm drafting paper, and a
  * signal drawn in ink rather than lit. */
 html[data-theme="light"] {
-  --v4-canvas: #f2f0eb;
-  --v4-canvas-raised: #e9e6df;
-  --v4-surface: #faf9f6;
+  --v4-canvas: #eef0f3;
+  --v4-canvas-raised: #e4e7ec;
+  --v4-surface: #f7f8fa;
   --v4-surface-strong: #ffffff;
-  --v4-ink: #10151c;
-  --v4-ink-secondary: #46505b;
-  --v4-ink-muted: #68727d;
-  --v4-rule: rgba(16, 21, 28, 0.12);
-  --v4-rule-strong: rgba(16, 21, 28, 0.24);
-  --v4-grid: rgba(16, 21, 28, 0.04);
-  --v4-header: rgba(242, 240, 235, 0.94);
+  --v4-ink: #0d1420;
+  --v4-ink-secondary: #414c5c;
+  --v4-ink-muted: #657183;
+  --v4-rule: rgba(13, 20, 32, 0.12);
+  --v4-rule-strong: rgba(13, 20, 32, 0.24);
+  --v4-grid: rgba(13, 20, 32, 0.045);
+  --v4-header: rgba(238, 240, 243, 0.94);
 
-  --v4-accent: #285b94;
-  --v4-accent-strong: #173f6d;
-  --v4-accent-fill: #285b94;
+  --v4-accent: #1f58b8;
+  --v4-accent-strong: #143f8a;
+  --v4-accent-fill: #1f58b8;
   --v4-on-accent: #ffffff;
   --v4-action-sheen: rgba(255, 255, 255, 0.26);
-  --v4-focus: #173f6d;
+  --v4-focus: #143f8a;
 
-  --v4-signal: #1f5fbe;
-  --v4-signal-strong: #2f74d8;
-  --v4-signal-muted: rgba(31, 95, 190, 0.34);
-  --v4-signal-glow: rgba(31, 95, 190, 0.14);
-  --v4-trace: rgba(23, 49, 84, 0.36);
-  --v4-trace-muted: rgba(23, 49, 84, 0.17);
+  --v4-signal: #1657c9;
+  --v4-signal-strong: #2d74e6;
+  --v4-signal-muted: rgba(22, 87, 201, 0.34);
+  --v4-signal-glow: rgba(22, 87, 201, 0.13);
+  --v4-trace: rgba(18, 52, 110, 0.36);
+  --v4-current: #1657c9;
+  --v4-current-2: #0b8a93;
+  --v4-current-glow: rgba(22, 87, 201, 0.2);
+  --v4-violet: #5a48c9;
+  --v4-trace-muted: rgba(18, 52, 110, 0.17);
 
-  --v4-ambient-light: rgba(64, 122, 204, 0.15);
-  --v4-ambient-light-far: rgba(64, 122, 204, 0.07);
-  --v4-ambient-shadow: rgba(16, 21, 28, 0.1);
-  --v4-grain-opacity: 0.09;
+  --v4-ambient-light: rgba(40, 110, 220, 0.14);
+  --v4-ambient-light-far: rgba(11, 138, 147, 0.06);
+  --v4-ambient-shadow: rgba(13, 20, 32, 0.1);
+  --v4-grain-opacity: 0.08;
 
-  --v4-evidence: #fbfaf7;
-  --v4-evidence-rule: rgba(31, 95, 190, 0.26);
-  --v4-living-surface: rgba(250, 249, 246, 0.9);
-  --v4-state-idle: #285b94;
-  --v4-state-active: #267450;
+  --v4-evidence: #fafbfc;
+  --v4-evidence-rule: rgba(22, 87, 201, 0.26);
+  --v4-living-surface: rgba(247, 248, 250, 0.92);
+  --v4-state-idle: #1f58b8;
+  --v4-state-active: #17795a;
   --v4-state-fallback: #8f6216;
   --v4-state-error: #b2443a;
 }
@@ -447,7 +458,8 @@ html[data-theme="light"] .footer-socials a:hover {
   font-family: var(--v4-mono);
 }
 
-.v4-flow__field {
+.v4-flow__field,
+.v4-flow__depth {
   display: none;
 }
 
@@ -661,6 +673,54 @@ html[data-theme="light"] .footer-socials a:hover {
     aspect-ratio: var(--v4-flow-aspect);
   }
 
+  /* The still network: on its own layer, so the travelling signal never
+   * repaints it, and a little deeper against the pointer than the route. */
+  [data-v4-flow-layout="orbit"] .v4-flow__depth {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    fill: none;
+    pointer-events: none;
+    translate:
+      calc(var(--v4-px) * var(--v4-amp-depth) * -1.5)
+      calc(var(--v4-py) * var(--v4-amp-depth) * -1.1);
+    transition: translate var(--v4-motion-emphasis) var(--v4-ease-out);
+    will-change: translate;
+  }
+
+  .v4-flow__glow {
+    stroke: var(--v4-current-glow);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 18;
+    filter: blur(10px);
+    opacity: 0.4;
+    transition: opacity var(--v4-motion-emphasis) var(--v4-ease-out);
+  }
+
+  /* A pointer on a stage brings the whole route's glow up with it. */
+  .v4-flow[data-v4-flow-focused] .v4-flow__glow {
+    opacity: 0.75;
+  }
+
+  .v4-flow__ring {
+    stroke: var(--v4-trace-muted);
+    stroke-dasharray: 1 8;
+    stroke-width: 1;
+  }
+
+  /* The hub's line to every stage: always there, lit by focus. */
+  .v4-flow__spoke {
+    stroke: var(--v4-trace);
+    stroke-dasharray: 2 6;
+    stroke-linecap: round;
+    stroke-width: 1;
+  }
+
   [data-v4-flow-layout="orbit"] .v4-flow__field {
     position: absolute;
     z-index: 0;
@@ -687,8 +747,9 @@ html[data-theme="light"] .footer-socials a:hover {
   }
 
   .v4-flow__trace {
-    stroke: var(--v4-trace);
-    stroke-width: 1.1;
+    stroke: var(--v4-current);
+    stroke-width: 1.5;
+    opacity: 0.62;
   }
 
   /* The background loop: delivery always feeds the next discovery. */
@@ -707,10 +768,10 @@ html[data-theme="light"] .footer-socials a:hover {
   }
 
   .v4-flow__link {
-    stroke: var(--v4-signal);
+    stroke: var(--v4-current-2);
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
-    stroke-width: 1.2;
+    stroke-width: 2.2;
     opacity: 0;
     transition:
       stroke-dashoffset var(--v4-motion-emphasis) var(--v4-ease-out),
@@ -719,7 +780,7 @@ html[data-theme="light"] .footer-socials a:hover {
 
   .v4-flow__link[data-v4-on] {
     stroke-dashoffset: 0;
-    opacity: 0.78;
+    opacity: 1;
   }
 
   .v4-flow__signal {
@@ -736,8 +797,8 @@ html[data-theme="light"] .footer-socials a:hover {
   }
 
   .v4-flow__comet {
-    stroke-dasharray: 72 928;
-    stroke-width: 2;
+    stroke-dasharray: 110 890;
+    stroke-width: 2.8;
     animation: v4-flow-comet var(--v4-flow-travel) var(--v4-ease-signal);
   }
 
@@ -749,11 +810,12 @@ html[data-theme="light"] .footer-socials a:hover {
 
   .v4-flow__signal .v4-flow__halo {
     stroke: var(--v4-signal-glow);
-    stroke-width: 20;
+    stroke-width: 28;
   }
 
   .v4-flow__head {
-    stroke-width: 6.5;
+    stroke: var(--v4-signal-strong);
+    stroke-width: 8.5;
   }
 
   [data-v4-flow-layout="orbit"] .v4-flow__stages {
@@ -786,7 +848,7 @@ html[data-theme="light"] .footer-socials a:hover {
   [data-v4-flow-layout="orbit"] .v4-flow__hub {
     position: absolute;
     z-index: 2;
-    top: 0;
+    top: var(--v4-hub-top, 0%);
     left: var(--v4-hub-x);
     grid-template-rows: auto auto 1fr;
     justify-items: center;
@@ -821,20 +883,20 @@ html[data-theme="light"] .footer-socials a:hover {
 }
 
 /* The comet's tail ends at the head: at journey fraction p the head sits at
- * 1000p and the tail covers the 72 units behind it. Both fade across the wrap. */
+ * 1000p and the tail covers the 110 units behind it. Both fade at the ends. */
 @keyframes v4-flow-comet {
   0% {
-    stroke-dashoffset: 72;
+    stroke-dashoffset: 110;
     opacity: 0;
   }
 
   4%,
   95% {
-    opacity: 0.6;
+    opacity: 0.85;
   }
 
   100% {
-    stroke-dashoffset: -928;
+    stroke-dashoffset: -890;
     opacity: 0;
   }
 }
@@ -1043,6 +1105,831 @@ html[data-theme="light"] .footer-socials a:hover {
   [data-v4-magnetic],
   [data-v4-kinetic],
   [data-v4-ambient]::before {
+    translate: none;
+  }
+}
+
+/* 11. System node ---------------------------------------------------------- */
+
+/* One node family for everything the system is made of: a capability, a
+ * project, a stage, a state. Its states are set by markup (aria-pressed), by
+ * the user (hover, focus) or by the runtime (data-v4-state: active | related);
+ * a node with no state inside an activated system recedes. */
+.v4-node {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  color: var(--v4-ink-secondary);
+  font: 500 0.72rem / 1.25 var(--v4-mono);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition:
+    opacity var(--v4-motion-ui) var(--v4-ease-out),
+    color var(--v4-motion-feedback) var(--v4-ease-out),
+    border-color var(--v4-motion-feedback) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.v4-node:focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 4px;
+}
+
+.v4-node__dot {
+  position: relative;
+  flex: none;
+  width: 0.62rem;
+  height: 0.62rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 50%;
+  background: var(--v4-canvas);
+  transition:
+    border-color var(--v4-motion-feedback) var(--v4-ease-out),
+    background-color var(--v4-motion-feedback) var(--v4-ease-out);
+}
+
+.v4-node__dot::after {
+  position: absolute;
+  inset: -0.55rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--v4-current-glow), transparent 68%);
+  content: "";
+  opacity: 0;
+  transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.v4-node:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state="active"]) {
+  color: var(--v4-ink);
+}
+
+.v4-node:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state="active"]) .v4-node__dot {
+  border-color: var(--v4-current);
+  background: var(--v4-current);
+}
+
+.v4-node:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state="active"]) .v4-node__dot::after {
+  opacity: 1;
+}
+
+.v4-node[data-v4-state="related"] {
+  color: var(--v4-ink);
+}
+
+.v4-node[data-v4-state="related"] .v4-node__dot {
+  border-color: var(--v4-current-2);
+  background: var(--v4-current-2);
+}
+
+/* 12. Ecosystem ------------------------------------------------------------ */
+
+/* Rendered by src/react/v4/EcosystemMap.jsx. The default layout is a
+ * capability rail over a project list. From 1100px it is a spatial map: the
+ * capabilities that share work form a ring joined by one current, the rest
+ * sit further out, and every project is wired to what it is filed under. */
+.v4-eco {
+  position: relative;
+  margin-top: clamp(1.75rem, 4vw, 3rem);
+}
+
+.v4-eco__field {
+  display: none;
+}
+
+.v4-eco__capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.v4-eco__capability {
+  min-height: 44px;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 999px;
+  background: var(--v4-living-surface);
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.v4-eco__capability small {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+}
+
+.v4-eco__capability:is([aria-pressed="true"], [data-v4-state="active"]) {
+  border-color: var(--v4-current);
+  background: color-mix(in srgb, var(--v4-current) 16%, var(--v4-canvas-raised));
+  box-shadow:
+    inset 0 0 0 1px var(--v4-current),
+    0 0 3.5rem -0.4rem var(--v4-current-glow);
+}
+
+/* Pinned is a decision, and looks like one. */
+.v4-eco__capability[aria-pressed="true"] {
+  outline: 1px dashed var(--v4-current-2);
+  outline-offset: 5px;
+}
+
+.v4-eco__capability[data-v4-state="related"] {
+  border-color: var(--v4-current-2);
+  box-shadow: 0 0 2.5rem -0.6rem var(--v4-current-glow);
+}
+
+.v4-eco__projects {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1.5rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v4-eco__projects li {
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-eco__project {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  min-height: 52px;
+  padding: 0.6rem 0;
+}
+
+.v4-eco__title {
+  color: var(--v4-ink);
+  font: 600 0.95rem / 1.3 var(--v4-display);
+  letter-spacing: -0.01em;
+}
+
+.v4-eco__project small {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+  text-transform: uppercase;
+}
+
+.v4-eco .v4-node[data-v4-state] .v4-node__dot {
+  scale: 1.45;
+}
+
+.v4-eco .v4-node[data-v4-state] .v4-node__dot::after {
+  opacity: 1;
+}
+
+/* Activation: what is connected comes forward, the rest recedes hard. */
+.v4-eco[data-v4-eco-active] .v4-node:not([data-v4-state], :hover, :focus-visible) {
+  opacity: 0.2;
+}
+
+/* What the map is showing, in words. */
+.v4-eco__readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  align-items: center;
+  min-height: 2.75rem;
+  margin: 1.25rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--v4-rule);
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.v4-eco__readout a {
+  margin-left: auto;
+  color: var(--v4-accent-strong);
+}
+
+.v4-eco__readout a::after {
+  margin-left: 0.5rem;
+  content: "→";
+}
+
+.v4-eco__readout[data-v4-live] {
+  border-top-color: var(--v4-current);
+}
+
+.v4-eco__readout[data-v4-live] span:first-child {
+  color: var(--v4-ink);
+}
+
+.v4-eco__readout[data-v4-live] span:first-child::before {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.6rem;
+  border-radius: 50%;
+  background: var(--v4-current);
+  box-shadow: 0 0 0.9rem var(--v4-current-glow);
+  content: "";
+}
+
+.v4-eco__readout[data-v4-live] span + span {
+  color: var(--v4-ink-secondary);
+}
+
+@media (max-width: 560px) {
+  .v4-eco__projects {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .v4-eco {
+    max-width: 72rem;
+    margin: 0.5rem auto 0;
+    aspect-ratio: var(--v4-eco-aspect);
+  }
+
+  /* The field the map sits in. */
+  .v4-eco::before {
+    position: absolute;
+    z-index: -1;
+    inset: 6% 10%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--v4-ambient-light), transparent);
+    content: "";
+    pointer-events: none;
+  }
+
+  .v4-eco__field {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    fill: none;
+    pointer-events: none;
+  }
+
+  .v4-eco__loop-glow {
+    stroke: var(--v4-current-glow);
+    stroke-width: 24;
+    filter: blur(12px);
+    opacity: 0.6;
+  }
+
+  .v4-eco__loop {
+    stroke: var(--v4-current);
+    stroke-dasharray: 1;
+    stroke-width: 1.8;
+    opacity: 0.9;
+    transition: stroke-dashoffset 1500ms var(--v4-ease-in-out);
+  }
+
+  .v4-eco__wire {
+    stroke: var(--v4-trace);
+    stroke-dasharray: 1;
+    stroke-linecap: round;
+    stroke-width: 1.1;
+    transition:
+      stroke-dashoffset 1100ms var(--v4-ease-in-out) 350ms,
+      stroke var(--v4-motion-ui) var(--v4-ease-out),
+      stroke-width var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-eco__wire-glow {
+    stroke: var(--v4-current-glow);
+    stroke-linecap: round;
+    stroke-width: 10;
+    filter: blur(5px);
+    opacity: 0;
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  /* Set by the runtime until the map first comes into view: the currents
+   * then draw once. Without the runtime they are simply drawn. */
+  .v4-eco[data-v4-await] :is(.v4-eco__wire, .v4-eco__loop) {
+    stroke-dashoffset: 1;
+  }
+
+  .v4-eco__edge {
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-eco[data-v4-eco-active] .v4-eco__edge:not([data-v4-state]) {
+    opacity: 0.1;
+  }
+
+  .v4-eco[data-v4-eco-active] :is(.v4-eco__loop, .v4-eco__loop-glow) {
+    opacity: 0.3;
+  }
+
+  .v4-eco__edge[data-v4-state="active"] .v4-eco__wire {
+    stroke: var(--v4-current);
+    stroke-width: 2.3;
+  }
+
+  .v4-eco__edge[data-v4-state="active"] .v4-eco__wire-glow {
+    opacity: 0.9;
+  }
+
+  .v4-eco__pulse {
+    stroke: var(--v4-current-2);
+    stroke-dasharray: 12 88;
+    stroke-dashoffset: 12;
+    stroke-linecap: round;
+    stroke-width: 3.2;
+    opacity: 0;
+  }
+
+  /* One pulse from the project to the capability each time a wire activates. */
+  .v4-eco__edge[data-v4-state="active"] .v4-eco__pulse {
+    animation: v4-edge-pulse 900ms var(--v4-ease-in-out);
+  }
+
+  .v4-eco__capabilities,
+  .v4-eco__projects {
+    position: absolute;
+    inset: 0;
+    display: block;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .v4-eco__capability,
+  .v4-eco__projects li {
+    position: absolute;
+    top: var(--v4-y);
+    left: var(--v4-x);
+    pointer-events: auto;
+  }
+
+  .v4-eco__capability {
+    flex-direction: column;
+    gap: 0.25rem;
+    width: max-content;
+    max-width: 8.5rem;
+    min-height: 3.1rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 0.9rem;
+    background: var(--v4-canvas-raised);
+    font-size: 0.64rem;
+    text-align: center;
+    translate: -50% -50%;
+    transition:
+      scale var(--v4-motion-ui) var(--v4-ease-out),
+      opacity var(--v4-motion-ui) var(--v4-ease-out),
+      border-color var(--v4-motion-feedback) var(--v4-ease-out),
+      background-color var(--v4-motion-ui) var(--v4-ease-out),
+      box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  /* Hubs that share work are the map's anchors. */
+  .v4-eco__capability[data-v4-eco-tier="core"] {
+    max-width: 10.5rem;
+    min-height: 4.4rem;
+    padding: 0.8rem 1.15rem;
+    border-color: var(--v4-signal-muted);
+    box-shadow: 0 0 3rem -1rem var(--v4-current-glow);
+    color: var(--v4-ink);
+    font-size: 0.8rem;
+  }
+
+  .v4-eco__capability .v4-node__dot {
+    display: none;
+  }
+
+  .v4-eco__capability:is([aria-pressed="true"], [data-v4-state="active"]) {
+    z-index: 2;
+    scale: 1.14;
+  }
+
+  .v4-eco__capability[data-v4-state="related"] {
+    scale: 1.06;
+  }
+
+  .v4-eco__projects li {
+    width: 15.5%;
+    border: 0;
+    translate: -50% -0.31rem;
+  }
+
+  .v4-eco__projects li[data-v4-eco-side="above"] {
+    translate: -50% calc(-100% + 0.31rem);
+  }
+
+  /* The link hugs its own words, so its hit area is the label, not the slot. */
+  .v4-eco__project {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: fit-content;
+    min-height: 0;
+    margin-inline: auto;
+    padding: 0;
+    text-align: center;
+  }
+
+  [data-v4-eco-side="above"] .v4-eco__project {
+    flex-direction: column-reverse;
+  }
+
+  .v4-eco__title {
+    font-size: 0.84rem;
+    text-wrap: balance;
+    transition: text-shadow var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-eco__project[data-v4-eco-tier="archive"] .v4-eco__title {
+    color: var(--v4-ink-secondary);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+
+  .v4-eco__project[data-v4-state] .v4-eco__title {
+    color: var(--v4-ink);
+    text-shadow: 0 0 1.5rem var(--v4-current-glow);
+  }
+}
+
+@keyframes v4-edge-pulse {
+  0% {
+    stroke-dashoffset: 12;
+    opacity: 0;
+  }
+
+  15%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: -88;
+    opacity: 0;
+  }
+}
+
+/* 13. Connected card ------------------------------------------------------- */
+
+/* A card that belongs to the system: a light under the pointer, a current
+ * along its top edge when it is focused, related or receiving a signal, and
+ * an image with a little depth. Its content is never hidden behind any of it. */
+[data-v4-card] {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--v4-rule);
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, var(--v4-surface), var(--v4-canvas-raised));
+  transition:
+    border-color var(--v4-motion-ui) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+[data-v4-card]::before,
+[data-v4-card]::after {
+  position: absolute;
+  z-index: 2;
+  content: "";
+  pointer-events: none;
+}
+
+[data-v4-card]::before {
+  inset: 0;
+  background: radial-gradient(22rem circle at var(--v4-hx, 50%) var(--v4-hy, 0%), var(--v4-signal-glow), transparent 62%);
+  opacity: 0;
+  transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+[data-v4-card]::after {
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--v4-current) 30%, var(--v4-current-2) 70%, transparent);
+  scale: 0 1;
+  transform-origin: 0 50%;
+  transition: scale var(--v4-motion-emphasis) var(--v4-ease-out);
+}
+
+[data-v4-card]:is(:hover, :focus-within, [data-v4-related]) {
+  border-color: var(--v4-rule-strong);
+  box-shadow: 0 1.75rem 4rem -2.25rem var(--v4-current-glow);
+}
+
+[data-v4-card]:is(:hover, :focus-within)::before {
+  opacity: 1;
+}
+
+[data-v4-card]:is(:hover, :focus-within, [data-v4-related])::after {
+  scale: 1 1;
+}
+
+[data-v4-card][data-v4-related] {
+  border-color: var(--v4-current);
+  box-shadow:
+    0 0 0 1px var(--v4-current),
+    0 1.75rem 4rem -1.75rem var(--v4-current-glow);
+}
+
+[data-v4-card] img {
+  transition:
+    scale var(--v4-motion-emphasis) var(--v4-ease-out),
+    translate var(--v4-motion-emphasis) var(--v4-ease-out);
+}
+
+[data-v4-card]:is(:hover, :focus-within) img {
+  scale: 1.045;
+  translate:
+    calc(var(--v4-cx, 0) * var(--v4-amp-depth) * -0.8)
+    calc(var(--v4-cy, 0) * var(--v4-amp-depth) * -0.6);
+}
+
+[data-v4-card] a:focus-visible,
+[data-v4-card] button:focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 3px;
+}
+
+/* Receiving a signal: once when a row of cards is first seen
+ * ([data-v4-arrive]), and each time the set they belong to is reconfigured
+ * ([data-v4-reconfig], set by the runtime). The current crosses each card's
+ * top edge in turn and the card settles back to rest. */
+:is([data-v4-arrive], [data-v4-reconfig]) [data-v4-card] {
+  animation: v4-card-receive 900ms var(--v4-ease-out) calc(var(--v4-order, 0) * 130ms) backwards;
+}
+
+:is([data-v4-arrive], [data-v4-reconfig]) [data-v4-card]::after {
+  animation: v4-card-current 900ms var(--v4-ease-in-out) calc(var(--v4-order, 0) * 130ms) backwards;
+}
+
+[data-v4-reconfig] [data-v4-card],
+[data-v4-reconfig] [data-v4-card]::after {
+  animation-duration: 520ms;
+  animation-delay: 0ms;
+}
+
+[data-v4-await] [data-v4-card],
+[data-v4-await] [data-v4-card]::after {
+  animation: none;
+}
+
+@keyframes v4-card-receive {
+  0%,
+  35% {
+    border-color: var(--v4-current);
+    box-shadow:
+      0 0 0 1px var(--v4-current),
+      0 1.75rem 4rem -1.5rem var(--v4-current-glow);
+  }
+}
+
+@keyframes v4-card-current {
+  0% {
+    scale: 0 1;
+  }
+
+  45%,
+  70% {
+    scale: 1 1;
+  }
+}
+
+/* Capability ports: the system's nodes, carried on a surface that uses them. */
+.v4-ports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v4-ports .v4-node {
+  gap: 0.4rem;
+  padding: 0.28rem 0.6rem 0.28rem 0.5rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 999px;
+  background: var(--v4-living-surface);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.v4-ports .v4-node__dot {
+  width: 0.42rem;
+  height: 0.42rem;
+}
+
+.v4-ports .v4-node[data-v4-state] {
+  border-color: var(--v4-current);
+  box-shadow: 0 0 1.75rem -0.3rem var(--v4-current-glow);
+  color: var(--v4-ink);
+}
+
+.v4-ports .v4-node[data-v4-state] .v4-node__dot {
+  border-color: var(--v4-current);
+  background: var(--v4-current);
+}
+
+/* 14. Current field -------------------------------------------------------- */
+
+/* Data currents behind a section, full-bleed, in two depths: far ones that
+ * sweep the whole field and near ones that converge and part. They draw once
+ * on first paint and then hold still; the two depths drift against the
+ * pointer at different rates, and the near glow answers its presence. */
+.v4-current-field {
+  position: absolute;
+  z-index: -1;
+  top: var(--v4-field-top, 0);
+  left: calc(50% - 50vw);
+  width: 100vw;
+  height: var(--v4-field-height, 100%);
+  overflow: visible;
+  fill: none;
+  pointer-events: none;
+  /* Kept out of the reading zone, full strength where the system lives. */
+  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, var(--v4-field-read, 0.08)), rgba(0, 0, 0, calc(var(--v4-field-read, 0.08) * 1.8)) 38%, #000 60%, #000 92%, rgba(0, 0, 0, 0.55));
+  mask-image: linear-gradient(90deg, rgba(0, 0, 0, var(--v4-field-read, 0.08)), rgba(0, 0, 0, calc(var(--v4-field-read, 0.08) * 1.8)) 38%, #000 60%, #000 92%, rgba(0, 0, 0, 0.55));
+}
+
+.v4-current-field g {
+  transition:
+    translate var(--v4-motion-emphasis) var(--v4-ease-out),
+    opacity var(--v4-motion-emphasis) var(--v4-ease-out);
+}
+
+.v4-current-field__far {
+  translate:
+    calc(var(--v4-px) * var(--v4-amp-depth) * -0.6)
+    calc(var(--v4-py) * var(--v4-amp-depth) * -0.4);
+}
+
+.v4-current-field__near,
+.v4-current-field__glow {
+  translate:
+    calc(var(--v4-px) * var(--v4-amp-depth) * -2.4)
+    calc(var(--v4-py) * var(--v4-amp-depth) * -1.7);
+}
+
+.v4-current-field__far path {
+  stroke: var(--v4-trace);
+  stroke-dasharray: 1;
+  stroke-linecap: round;
+  stroke-width: 1;
+  animation: v4-current-draw 2400ms var(--v4-ease-in-out) calc(var(--v4-seq) * 150ms) both;
+}
+
+.v4-current-field__near path {
+  stroke: url("#v4-current-ink");
+  stroke-dasharray: 1;
+  stroke-linecap: round;
+  stroke-width: 2.1;
+  animation: v4-current-draw 2400ms var(--v4-ease-in-out) calc(var(--v4-seq) * 150ms) both;
+}
+
+.v4-current-field__glow {
+  filter: blur(13px);
+  opacity: var(--v4-field-glow, 0.5);
+  animation: v4-current-rise 2600ms var(--v4-ease-out) both;
+}
+
+.v4-current-field__glow path {
+  stroke: var(--v4-current-glow);
+  stroke-linecap: round;
+  stroke-width: 16;
+}
+
+/* Set by the runtime while a pointer is inside the ambient region. */
+[data-v4-pointer] .v4-current-field__glow {
+  opacity: calc(var(--v4-field-glow, 0.5) * 1.7);
+}
+
+@keyframes v4-current-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes v4-current-rise {
+  from {
+    opacity: 0;
+  }
+}
+
+/* 15. Section handoff ------------------------------------------------------ */
+
+/* The current carried down the edge of a section, so one section reads as
+ * continuing into the next: a track, the current filling it, and a lit head
+ * leading the way. Where scroll-driven animation exists the current advances
+ * as the section passes; elsewhere it is simply there, complete. */
+.v4-handoff {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1.25rem;
+  width: 2px;
+  background: var(--v4-trace-muted);
+  pointer-events: none;
+  view-timeline-name: --v4-handoff;
+}
+
+.v4-handoff::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--v4-current), var(--v4-current-2));
+  box-shadow: 0 0 14px var(--v4-current-glow);
+  content: "";
+  transform-origin: 50% 0;
+}
+
+.v4-handoff::after {
+  position: absolute;
+  top: 100%;
+  left: -5px;
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--v4-current-2);
+  box-shadow:
+    0 0 0 4px var(--v4-signal-glow),
+    0 0 22px 4px var(--v4-current-glow);
+  content: "";
+}
+
+@supports (animation-timeline: view()) {
+  .v4-handoff::before,
+  .v4-handoff::after {
+    animation: v4-handoff-fill linear both;
+    animation-timeline: --v4-handoff;
+    animation-range: entry 0% cover 72%;
+  }
+
+  .v4-handoff::after {
+    animation-name: v4-handoff-head;
+  }
+}
+
+@keyframes v4-handoff-fill {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes v4-handoff-head {
+  from {
+    top: 0%;
+  }
+
+  to {
+    top: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .v4-handoff {
+    display: none;
+  }
+}
+
+/* 16. Connected-system discipline ------------------------------------------ */
+
+@media (forced-colors: active) {
+  .v4-current-field,
+  .v4-handoff,
+  [data-v4-card]::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-eco *,
+  .v4-current-field *,
+  .v4-current-field,
+  .v4-handoff::before,
+  .v4-handoff::after,
+  [data-v4-card],
+  [data-v4-card]::before,
+  [data-v4-card]::after,
+  [data-v4-card] img,
+  .v4-node,
+  .v4-node * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .v4-eco[data-v4-await] :is(.v4-eco__wire, .v4-eco__loop) {
+    stroke-dashoffset: 0;
+  }
+
+  .v4-current-field g,
+  [data-v4-card]:is(:hover, :focus-within) img {
+    scale: none;
     translate: none;
   }
 }
