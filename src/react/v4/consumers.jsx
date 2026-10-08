@@ -316,7 +316,87 @@ function hub(v4, node, classes, attributes, key) {
   ];
 }
 
-const CONSUMERS = { home, works, detail, experience, certificates, about, hub };
+/* Joyday Action Painting (V4-E06.1): the page's own studio markup becomes an
+ * entered play mode. Nothing of the accepted structure is edited and the
+ * painting engine is not touched: this adds the studio's shell controls —
+ * exit, fullscreen, new canvas, the start state, a failure state, a notice
+ * for no JavaScript — and marks the elements js/pages/joyday-studio.js and
+ * css/v4-joyday-studio.css work with. Every control is a real button; the
+ * sound switch is the engine's own. */
+const STUDIO_ICONS = {
+  exit: "M15 6l-6 6 6 6M9 12h11",
+  fullscreen: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
+  newCanvas: "M12 5v14M5 12h14",
+  extras: "M5 7h14M5 12h14M5 17h14M9 5v4M15 10v4M11 15v4",
+};
+
+function StudioIcon({ name }) {
+  return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={STUDIO_ICONS[name]} /></svg>;
+}
+
+function joydayStudio(v4, node, classes, attributes, key) {
+  const { labels } = v4;
+  if (attributes.id === "joyday-paint-game") {
+    attributes["data-jds-root"] = "";
+    attributes["aria-label"] = labels.aria;
+    return {
+      arrange: (own) => [
+        <div key={`${key}.jds-bar-start`} className="jds-bar jds-bar--start">
+          <button type="button" className="jds-btn" data-jds-exit=""><StudioIcon name="exit" /><span>{labels.exit}</span></button>
+          <strong className="jds-title" aria-hidden="true">Joyday Action Painting</strong>
+        </div>,
+        <div key={`${key}.jds-bar-end`} className="jds-bar jds-bar--end">
+          {/* Offered only where the browser can do it (the controller shows it). */}
+          <button type="button" className="jds-btn" data-jds-fullscreen="" data-jds-label-on={labels.fullscreenExit} data-jds-label-off={labels.fullscreen} aria-pressed="false" hidden><StudioIcon name="fullscreen" /><span>{labels.fullscreen}</span></button>
+          <button type="button" className="jds-btn" data-jds-new=""><StudioIcon name="newCanvas" /><span>{labels.newCanvas}</span></button>
+          <button type="button" className="jds-btn jds-btn--extras" data-jds-extras="" aria-pressed="false" aria-label={labels.extras} title={labels.extras}><StudioIcon name="extras" /></button>
+        </div>,
+        <h2 key={`${key}.jds-start`} className="jds-start">{labels.startTitle}</h2>,
+        ...own,
+        <div key={`${key}.jds-go`} className="jds-go">
+          <button type="button" className="jds-cta" data-jds-start="">{labels.startCta}</button>
+          <button type="button" className="jds-btn" data-jds-resume="" hidden><span>{labels.keepPainting}</span></button>
+        </div>,
+        /* The studio's mood, said once when a palette changes it. The names
+           travel as data; the controller writes the one that applies. */
+        <p key={`${key}.jds-mood`} className="jds-mood" data-jds-mood-label="" data-jds-moods={JSON.stringify(v4.moods)} role="status" hidden>
+          <b>{v4.moodLabel}</b>
+          <strong />
+          <span />
+        </p>,
+        <div key={`${key}.jds-error`} className="jds-error" role="alert" data-jds-error="" hidden>
+          <strong>{labels.errorTitle}</strong>
+          <p>{labels.errorText}</p>
+          <div>
+            <button type="button" className="jds-cta" data-jds-reload="">{labels.errorReload}</button>
+            <button type="button" className="jds-btn" data-jds-exit=""><span>{labels.exit}</span></button>
+          </div>
+        </div>,
+      ],
+    };
+  }
+  /* The hero's own action is the way in. Without JavaScript there is no
+   * studio to enter: the action gives way to a plain notice. */
+  if (node.tag === "a" && attributes.href === "#joyday-paint-game") attributes["data-jds-enter"] = "";
+  if (classes.has("joyday-paint-copy")) {
+    return [
+      <noscript key={`${key}.jds-noscript`}>
+        <style>{"[data-jds-enter]{display:none!important}"}</style>
+        <p className="jds-noscript">{labels.noscript} <a href={v4.caseStudyHref}>{labels.caseStudy}</a></p>
+      </noscript>,
+    ];
+  }
+  /* The finished artwork's choices: keep painting, start again, or leave. */
+  if (classes.has("joyday-finish-actions")) {
+    return [
+      <button key={`${key}.jds-keep`} type="button" className="btn ghost" data-jds-keep="">{labels.keepPainting}</button>,
+      <button key={`${key}.jds-leave`} type="button" className="btn ghost" data-jds-exit="">{labels.exit}</button>,
+    ];
+  }
+  return null;
+}
+
+const CONSUMERS = { home, works, detail, experience, certificates, about, hub, joydayStudio };
 
 export function applyV4(page, v4, node, classes, attributes, key) {
   const consumer = CONSUMERS[v4.consumer || page];

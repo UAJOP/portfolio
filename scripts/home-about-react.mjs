@@ -640,6 +640,33 @@ function v4AjoopHead(route, localization) {
   };
 }
 
+/* V4-E06.1: Joyday Action Painting's entered play mode. The accepted page
+ * markup and the painting engine are untouched; the route's consumer adds the
+ * studio's own controls around them (src/react/v4/consumers.jsx), and
+ * js/pages/joyday-studio.js and css/v4-joyday-studio.css run it. This is the
+ * copy those controls carry, from the canonical message catalog. */
+const JOYDAY_STUDIO_ROUTE = "joydayPaint";
+const JOYDAY_STUDIO_SCRIPT = "/js/pages/joyday-studio.js";
+const JOYDAY_STUDIO_MOODS = ["pop", "soft", "sunset", "blue", "electric", "morning"];
+const JOYDAY_STUDIO_KEYS = ["aria", "exit", "fullscreen", "fullscreenExit", "newCanvas", "extras", "start.title", "start.cta", "keepPainting", "noscript", "caseStudy", "error.title", "error.text", "error.reload"];
+function v4JoydayStudioModel(locale, localization) {
+  const labels = Object.fromEntries(JOYDAY_STUDIO_KEYS.map((key) => {
+    const value = localization.message(`joyday.studio.${key}`);
+    if (typeof value !== "string" || !value) throw new Error(`${locale}/${JOYDAY_STUDIO_ROUTE}: missing joyday.studio.${key}`);
+    /* start.title → startTitle: the consumer reads plain property names. */
+    return [key.replace(/\.(\w)/g, (match, letter) => letter.toUpperCase()), decodeHtml(value)];
+  }));
+  /* V4-E06.1B: the studio's moods, named in the visitor's language. Which
+   * mood a palette belongs to is decided in the browser from its colours. */
+  const moodCopy = (key) => {
+    const value = localization.message(`joyday.studio.mood.${key}`);
+    if (typeof value !== "string" || !value) throw new Error(`${locale}/${JOYDAY_STUDIO_ROUTE}: missing joyday.studio.mood.${key}`);
+    return decodeHtml(value);
+  };
+  const moods = Object.fromEntries(JOYDAY_STUDIO_MOODS.map((id) => [id, { name: moodCopy(`${id}.name`), note: moodCopy(`${id}.note`) }]));
+  return { consumer: "joydayStudio", labels, moodLabel: moodCopy("label"), moods, caseStudyHref: routeRuntime.localizedInternalHref("/atolye-joyday-case-study/", locale) };
+}
+
 const SHELL_MESSAGE_KEYS = [
   "language.selectorAria",
   "nav.open",
@@ -796,7 +823,8 @@ export function productionMainProps(route, {
     const structure = route.routeId === "labs"
       ? withLabCards(engineShell.localized.children, labCardNodes(route.locale, loadLocalization(route.locale)))
       : engineShell.localized.children;
-    return { kind: "engineShell", page: route.routeId, locale: route.locale, structure };
+    const studio = route.routeId === JOYDAY_STUDIO_ROUTE ? { v4: v4JoydayStudioModel(route.locale, loadLocalization(route.locale)) } : {};
+    return { kind: "engineShell", page: route.routeId, locale: route.locale, structure, ...studio };
   }
   const captured = remainingRoutePage(route);
   if (captured) {
@@ -937,7 +965,7 @@ export function productionDocumentProps(route, clientEntry) {
        * script.js load that page’s runtime modules. */
       /* The AJOOP case study is a case study; the Hub is its own page type. */
       hub: hubRoute,
-      v4Styles: ajoopCaseRoute ? ["ajoop"] : [],
+      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : [],
       page: casePage || ajoopCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
       navPage: casePage || projectRoute ? "works" : route.routeId,
       bodyClass: caseLocale?.bodyClass || (ajoopCaseRoute ? "case-study-page" : null),
@@ -948,7 +976,8 @@ export function productionDocumentProps(route, clientEntry) {
       afterMain: caseLocale?.afterMain || [],
       /* Scripts the accepted document ran before the runtime loader. */
       leadScripts: captured?.page.leadScripts || [],
-      scripts: engineShell ? [...engineShell.page.scripts, ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
+      /* The engine host stays the document's last classic script. */
+      scripts: engineShell ? [...engineShell.page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : []), ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
       clientEntry,
     },
     head: caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({

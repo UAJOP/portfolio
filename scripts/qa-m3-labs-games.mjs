@@ -28,6 +28,7 @@ import { LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public
 import { ENGINE_HOST_REVIEWED_EDITS, engineHostAcceptedBase } from "./m3-30-1-public-edits.mjs";
 import { servesUpstreamIcons, withIconSubset } from "./m3-32a-public-edits.mjs";
 import { beforeFinalHardening } from "./m3-33-public-edits.mjs";
+import { JOYDAY_STUDIO_ROUTE, JOYDAY_STUDIO_SCRIPT, withoutJoydayStudio } from "./v4-e06-1-joyday-studio-edits.mjs";
 
 /* The approved #30 scope, stated here independently of the route registry. */
 const PAGES = Object.freeze({
@@ -106,7 +107,9 @@ function validateMetadata(route, html, accepted) {
 }
 
 function validateCopy(route, html, accepted) {
-  const reactMain = route.routeId === "labs" ? withoutLabCards(html) : mainOf(html);
+  /* V4-E06.1: Joyday carries its studio shell on top of the accepted page; the
+   * declared additions are set aside and everything else is held as before. */
+  const reactMain = route.routeId === "labs" ? withoutLabCards(html) : route.routeId === JOYDAY_STUDIO_ROUTE ? withoutJoydayStudio(mainOf(html)) : mainOf(html);
   assert.equal(normalize(reactMain), normalize(mainOf(accepted)), `${route.pathname}: accepted main copy`);
   assert.equal(inlineCopy(reactMain), inlineCopy(mainOf(accepted)), `${route.pathname}: accepted inline whitespace`);
   for (const tag of ["section", "article", "aside", "h2", "h3", "canvas", "button", "input", "select", "a", "img"]) {
@@ -140,7 +143,7 @@ function validateStructuredData(route, html) {
 function validateRuntime(route, html) {
   const page = PAGES[route.routeId];
   const scripts = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"[^>]*>/gi)].map((match) => match[1]).filter((src) => !src.startsWith("/assets-react/") && src !== "/js/core/locale-bootstrap.js");
-  assert.deepEqual(scripts, ["/portfolio-data.js", "/script.js", "/portfolio-v2.js", ...page.scripts, ENGINE_HOST], `${route.pathname}: engine script and lifecycle host`);
+  assert.deepEqual(scripts, ["/portfolio-data.js", "/script.js", "/portfolio-v2.js", ...page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : []), ENGINE_HOST], `${route.pathname}: engine script and lifecycle host`);
   if (page.style) assert.match(html, new RegExp(`<link rel="stylesheet" href="${page.style}"/>`), `${route.pathname}: page stylesheet`);
   assert.ok(html.indexOf(ENGINE_HOST) < html.indexOf('<script id="react-main-props"'), `${route.pathname}: host precedes the hydration payload`);
   /* The host identifies the React entry as the element after this payload. */
