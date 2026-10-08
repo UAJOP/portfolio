@@ -572,7 +572,7 @@
   "ajoop.hub.how": "So funktioniert AJOOP",
   "ajoop.hub.open": "AJOOP Hub öffnen",
   "ajoop.hub.noscript": "AJOOP benötigt JavaScript, um ein Gespräch zu führen. Alles, worauf er sich stützt, ist auf diesen Seiten veröffentlicht.",
-  "ajoop.hub.loading": "Das Gespräch ist verfügbar, sobald diese Seite vollständig geladen ist.",
+  "ajoop.hub.loading": "Das Gespräch öffnet sich hier, sobald die Skripte dieser Seite laufen.",
   "ajoop.hub.aria.identity": "AJOOP-Status",
   "ajoop.hub.aria.conversation": "Gespräch mit AJOOP",
   "ajoop.hub.aria.context": "Antwortkontext",

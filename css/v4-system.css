@@ -2446,3 +2446,75 @@ body .page-hero[data-v4-entry] + :not(.v4-tracker)::before {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* 23. AJOOP brand ---------------------------------------------------------- */
+
+/* AJOOP's approved identity (scripts/v4-ajoop-brand-assets.mjs writes these
+ * files from the brand pack). The mark has a rendering per theme. The app
+ * icon and the Living Hub artwork are dark surfaces in both, and the wordmark
+ * is only ever set on that artwork, so it has the one rendering drawn for a
+ * dark ground. Set as backgrounds, so only what a page shows is fetched and
+ * the name beside each one stays text. */
+:root {
+  --ajoop-mark: url("/assets/ajoop-mark-dark.webp");
+  --ajoop-wordmark: url("/assets/ajoop-wordmark-dark.webp");
+  --ajoop-app-icon: url("/assets/ajoop-launcher-192.webp");
+  /* The ground the Living Hub artwork is painted on. */
+  --ajoop-art-ground: #070d18;
+}
+
+html[data-theme="light"] {
+  --ajoop-mark: url("/assets/ajoop-mark-light.webp");
+}
+
+.ajoop-mark,
+.ajoop-app-icon {
+  display: block;
+  background: center / contain no-repeat;
+}
+
+.ajoop-mark {
+  aspect-ratio: 1;
+  background-image: var(--ajoop-mark);
+}
+
+/* The icon's tile stops short of its canvas; drawn edge to edge here. */
+.ajoop-app-icon {
+  aspect-ratio: 1;
+  background-image: var(--ajoop-app-icon);
+  background-size: 118%;
+}
+
+/* The Living Hub artwork, framed on its core. A frame shows the upper part of
+ * the image only: the title lettered into the artwork stays out of it, and
+ * the name is set by the mark and the wordmark instead. */
+.ajoop-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+/* The launcher carries the app icon in place of a generic chat glyph. Its
+ * size, behaviour and label are the launcher's own. */
+body .chatbot-launcher .chatbot-launcher-icon {
+  border-radius: 0;
+  background: var(--ajoop-app-icon) center / 118% no-repeat;
+}
+
+body .chatbot-launcher .chatbot-launcher-icon i {
+  display: none;
+}
+
+/* The name is written AJOOP wherever the interface sets it as a label. The
+ * engine's own strings are untouched. */
+.chatbot-header h2,
+.chatbot-launcher [data-chatbot-launcher-text] {
+  text-transform: uppercase;
+}
+
+.chatbot-launcher [data-chatbot-launcher-text] {
+  font-size: 0.86em;
+  letter-spacing: 0.05em;
+}

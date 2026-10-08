@@ -409,12 +409,13 @@ body[data-page="home"] .chatbot-launcher::before {
   content: "";
 }
 
-body[data-page="home"] .chatbot-launcher-icon {
-  width: auto;
-  height: auto;
+/* The port's launcher is a quiet chip, so it carries the mark itself rather
+ * than the app icon. */
+body[data-page="home"] .chatbot-launcher .chatbot-launcher-icon {
+  width: 1.5rem;
+  height: 1.5rem;
   border: 0;
-  background: transparent;
-  color: var(--v4-accent);
+  background: var(--ajoop-mark) center / contain no-repeat;
 }
 
 /* 6. Responsive ------------------------------------------------------------ */
@@ -697,40 +698,26 @@ body[data-page="home"] .selected-work-grid > .evidence-card:first-child .project
   margin-top: auto;
 }
 
-/* AJOOP's field: the system's own node, at rest and ready. */
-body[data-page="home"] .v4-port__field {
+/* AJOOP's field: the Living Hub core, the same artwork its Hub and its case
+ * study open with, under the system's app icon. A dark surface in both
+ * themes. */
+body[data-page="home"] .selected-work-grid > .v4-port .v4-port__field {
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(circle at 50% 50%, var(--v4-ambient-light), transparent 58%),
-    linear-gradient(100deg, transparent 49.6%, var(--v4-trace-muted) 49.8% 50.2%, transparent 50.4%),
-    linear-gradient(16deg, transparent 49.7%, var(--v4-trace-muted) 49.9% 50.1%, transparent 50.3%),
-    var(--v4-canvas);
+  background: var(--ajoop-art-ground);
 }
 
-body[data-page="home"] .v4-port__field i {
-  grid-area: 1 / 1;
-  border: 1px solid var(--v4-signal-muted);
-  border-radius: 50%;
+/* The upper three quarters of the artwork, so its core sits on the port's
+ * line and its lettered title stays out of the frame. */
+body[data-page="home"] .v4-port__field .ajoop-art {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 132%;
 }
 
-body[data-page="home"] .v4-port__field i:nth-child(1) {
-  width: 1.1rem;
-  height: 1.1rem;
-  border-color: var(--v4-current-2);
-  background: var(--v4-current-2);
-  box-shadow: 0 0 2.5rem 0.4rem var(--v4-current-glow);
-}
-
-body[data-page="home"] .v4-port__field i:nth-child(2) {
-  width: 5.5rem;
-  height: 5.5rem;
-}
-
-body[data-page="home"] .v4-port__field i:nth-child(3) {
-  width: 11rem;
-  height: 11rem;
-  border-color: var(--v4-trace-muted);
+body[data-page="home"] .v4-port__node .ajoop-app-icon {
+  width: clamp(3.75rem, 5.5vw, 4.75rem);
+  filter: drop-shadow(0 0.75rem 1.75rem rgba(3, 8, 20, 0.7));
 }
 
 body[data-page="home"] .v4-port__open {
@@ -986,13 +973,22 @@ body[data-page="home"] .v4-port__node {
 }
 
 body[data-page="home"] .v4-port__state {
+  --v4-state: #62adff;
   position: absolute;
+  z-index: 1;
   top: 0.8rem;
   right: 0.9rem;
   padding: 0.3rem 0.6rem;
-  border: 1px solid var(--v4-rule-strong);
+  border: 1px solid rgba(150, 180, 230, 0.27);
   border-radius: 999px;
-  background: var(--v4-living-surface);
+  background: rgba(8, 14, 26, 0.88);
+  color: #b6c2d6;
+}
+
+/* The port's name, as the system writes it. */
+body[data-page="home"] .v4-port h3 {
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
 }
 
 body[data-page="home"] .v4-port__quicks {

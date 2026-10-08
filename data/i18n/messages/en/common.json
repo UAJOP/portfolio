@@ -572,7 +572,7 @@
   "ajoop.hub.how": "How AJOOP works",
   "ajoop.hub.open": "Open AJOOP Hub",
   "ajoop.hub.noscript": "AJOOP needs JavaScript to hold a conversation. Everything it draws on is published on these pages.",
-  "ajoop.hub.loading": "The conversation becomes available once this page has finished loading.",
+  "ajoop.hub.loading": "The conversation opens here once this page's scripts are running.",
   "ajoop.hub.aria.identity": "AJOOP status",
   "ajoop.hub.aria.conversation": "Conversation with AJOOP",
   "ajoop.hub.aria.context": "Answer context",

@@ -13,12 +13,22 @@
  * wires draw once when the diagram is first seen; nothing travels along them
  * that is not the visitor's own pointer or focus.
  *
- * AjoopEntry: the case study's way into the live system — the assistant's own
- * shipped title, resting state and quick questions, each an ordinary link to
- * the Hub. */
+ * AjoopEntry: the case study's way into the live system — the Living Hub
+ * artwork under the approved lockup, then the assistant's own resting state
+ * and quick questions, each an ordinary link to the Hub.
+ *
+ * LivingHubArt: the approved artwork, one image in three widths. It is always
+ * a dark surface; the frame around it decides how much of it shows. */
 const share = (value, of) => `${Math.round((value / of) * 10000) / 100}%`;
 const NOSCRIPT_STYLE = { __html: ".v4-ajoop-sys__panels [hidden]{display:block!important}.v4-ajoop-sys__rest{display:none!important}" };
-const MASCOT = { __html: '<svg viewBox="0 0 40 40" aria-hidden="true" focusable="false"><g class="ajoop-mascot-antenna"><line x1="20" y1="9" x2="20" y2="4"></line><circle class="ajoop-mascot-bulb" cx="20" cy="3" r="2.4"></circle></g><rect class="ajoop-mascot-head" x="7" y="9" width="26" height="22" rx="8"></rect><g class="ajoop-mascot-face"><rect class="ajoop-mascot-eye is-left" x="13" y="16" width="4" height="6" rx="2"></rect><rect class="ajoop-mascot-eye is-right" x="23" y="16" width="4" height="6" rx="2"></rect><rect class="ajoop-mascot-mouth" x="15" y="25" width="10" height="2.4" rx="1.2"></rect></g></svg>' };
+const ART = "/assets/ajoop-living-hub";
+const ART_SET = [640, 960, 1600].map((width) => `${ART}-${width}.webp ${width}w`).join(", ");
+
+/* `priority` is for the one place the artwork can be the largest thing in the
+ * first viewport; everywhere else it loads when it is near. */
+export function LivingHubArt({ sizes, priority = false }) {
+  return <img className="ajoop-art" src={`${ART}-960.webp`} srcSet={ART_SET} sizes={sizes} width="1600" height="900" alt="" {...(priority ? { fetchPriority: "high" } : { loading: "lazy", decoding: "async" })} />;
+}
 
 export default function AjoopSystem({ model }) {
   const at = (point) => ({ "--v4-x": share(point.x, model.width), "--v4-y": share(point.y, model.height) });
@@ -65,9 +75,10 @@ export default function AjoopSystem({ model }) {
 export function AjoopEntry({ model }) {
   return (
     <div className="v4-ajoop-entry" data-v4-card="">
-      <div className="v4-ajoop-entry__identity">
-        <span className="ajoop-mascot" data-ajoop-mascot="idle" aria-hidden="true" dangerouslySetInnerHTML={MASCOT} />
-        <p><strong>{model.title}</strong><span>{model.subtitle}</span></p>
+      <div className="v4-ajoop-entry__media">
+        <LivingHubArt sizes="(min-width: 981px) 44vw, 100vw" priority />
+        {/* The page's heading already says the name; this is its lockup. */}
+        <span className="v4-ajoop-entry__lockup" aria-hidden="true" />
         <span className="v4-state">{model.state}</span>
       </div>
       <p className="v4-ajoop-entry__ask">{model.ask}</p>

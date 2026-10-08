@@ -559,7 +559,7 @@ function v4AjoopMainProps(route, loadLocalization) {
     v4: {
       ...v4DetailModel(route, structure, message),
       system: ajoopSystemModel({ message }),
-      entry: { href: href("/ajoop/"), title: shell.copy.title, subtitle: shell.copy.subtitle, state: shell.mascot.label, ask: message("ajoop.case.hero.askLabel"), quicks, cta: message("ajoop.case.cta.try") },
+      entry: { href: href("/ajoop/"), state: shell.mascot.label, ask: message("ajoop.case.hero.askLabel"), quicks, cta: message("ajoop.case.cta.try") },
     },
   };
 }

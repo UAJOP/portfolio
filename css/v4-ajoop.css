@@ -12,7 +12,13 @@
  *
  * Everything that looks alive is a state the engine reported
  * ([data-v4-live] on the Hub). Transitions are bounded and settle; nothing
- * here runs while the engine is at rest. */
+ * here runs while the engine is at rest.
+ *
+ * Both surfaces carry AJOOP's approved identity (css/v4-system.css, "AJOOP
+ * brand"): the mark where the system names itself, the wordmark once, where
+ * it signs the case study's visual, and the Living Hub artwork as the
+ * system's core — always a dark surface, in a frame, never behind the
+ * conversation. */
 
 /* 1. Hub: entry ------------------------------------------------------------ */
 
@@ -40,6 +46,90 @@ body[data-page="ajoop"] .page-hero[data-v4-entry] > p:not(.eyebrow) {
   grid-row: auto;
   max-width: 58ch;
   margin-top: 1.1rem;
+}
+
+/* The Living Hub core, where the hero's currents converge (the field's own
+ * nexus is at 71.5% / 50%). Feathered into the canvas, under the lines; once
+ * a question has been asked it steps back and stays there. */
+.v4-hub-core {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 71.5%;
+  width: clamp(34rem, 62vw, 58rem);
+  aspect-ratio: 27 / 10;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0.92;
+  pointer-events: none;
+  translate: -50% -50%;
+  -webkit-mask-image: radial-gradient(ellipse closest-side, #000 34%, rgba(0, 0, 0, 0.5) 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side, #000 34%, rgba(0, 0, 0, 0.5) 62%, transparent 100%);
+  transition:
+    opacity 900ms var(--v4-ease-out),
+    scale 900ms var(--v4-ease-out);
+}
+
+/* The frame is the band of the artwork from 12% to 78% of its height: the
+ * core sits just below the middle and the lettered title stays out. */
+.v4-hub-core .ajoop-art {
+  position: absolute;
+  top: -18.2%;
+  left: 0;
+  height: 151.5%;
+}
+
+body:has(.v4-hub [data-chatbot-messages] .chatbot-message.user) .v4-hub-core {
+  opacity: 0.3;
+  scale: 0.94;
+}
+
+/* On a light page the artwork is not blended in: it is a dark panel of its
+ * own, set where the currents meet. */
+html[data-theme="light"] .v4-hub-core {
+  right: 0;
+  left: auto;
+  width: clamp(20rem, 38vw, 34rem);
+  aspect-ratio: 21 / 9;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 0.9rem;
+  background: var(--ajoop-art-ground);
+  box-shadow: 0 2rem 4rem -2rem rgba(13, 20, 32, 0.45);
+  opacity: 1;
+  translate: 0 -50%;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+html[data-theme="light"] .v4-hub-core .ajoop-art {
+  position: static;
+  height: 100%;
+}
+
+html[data-theme="light"] body:has(.v4-hub [data-chatbot-messages] .chatbot-message.user) .v4-hub-core {
+  opacity: 0.55;
+  scale: 0.96;
+}
+
+@media (max-width: 900px) {
+  .v4-hub-core {
+    top: 0;
+    right: 0;
+    left: auto;
+    width: min(100%, 26rem);
+    opacity: 0.5;
+    translate: 0 -12%;
+  }
+
+  html[data-theme="light"] .v4-hub-core {
+    position: relative;
+    z-index: 0;
+    top: auto;
+    grid-row: 5;
+    width: 100%;
+    margin-top: 1.5rem;
+    translate: none;
+  }
 }
 
 .v4-hub__noscript {
@@ -128,25 +218,30 @@ body[data-page="ajoop"] .page-hero[data-v4-entry] > p:not(.eyebrow) {
   align-items: center;
 }
 
-.v4-hub__identity .ajoop-mascot {
+/* AJOOP's mark, on a tile whose edge takes the live state. */
+.v4-hub__mark {
+  display: grid;
+  place-items: center;
   width: 3.5rem;
   height: 3.5rem;
-  border-color: color-mix(in srgb, var(--v4-hub-live) 55%, var(--v4-rule-strong));
+  border: 1px solid color-mix(in srgb, var(--v4-hub-live) 55%, var(--v4-rule-strong));
+  border-radius: 0.95rem;
+  background: var(--v4-canvas);
   box-shadow: 0 0 2.5rem -0.6rem color-mix(in srgb, var(--v4-hub-live) 60%, transparent);
   transition:
     border-color var(--v4-motion-ui) var(--v4-ease-out),
     box-shadow var(--v4-motion-emphasis) var(--v4-ease-out);
 }
 
-.v4-hub__identity .ajoop-mascot svg {
-  width: 2.5rem;
-  height: 2.5rem;
+.v4-hub__mark .ajoop-mark {
+  width: 2.3rem;
 }
 
 .v4-hub__identity h2 {
   color: var(--v4-ink);
   font: 700 1.5rem / 1.1 var(--v4-display);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
 }
 
 .v4-hub__identity p {
@@ -266,6 +361,44 @@ body[data-page="ajoop"] .page-hero[data-v4-entry] > p:not(.eyebrow) {
   outline: 0;
 }
 
+/* The empty field: the mark, in the room under the greeting. It leaves when
+ * the first question is asked. Shown only where that can be known, where
+ * there is room for it, and once the composer is live. */
+.v4-hub__idle {
+  display: none;
+}
+
+@supports selector(:has(*)) {
+  @media (min-width: 761px) {
+    .v4-hub__idle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      display: grid;
+      place-items: center;
+      height: var(--v4-hub-log);
+      padding-top: 5.5rem;
+      opacity: 0.5;
+      pointer-events: none;
+      transition: opacity var(--v4-motion-emphasis) var(--v4-ease-out);
+    }
+
+    .v4-hub__idle .ajoop-mark {
+      width: clamp(4.5rem, 7vw, 6rem);
+      filter: drop-shadow(0 0 2.5rem var(--v4-current-glow));
+    }
+
+    .v4-hub__field:has(.chatbot-message.user) .v4-hub__idle {
+      opacity: 0;
+    }
+
+    [data-react-ajoop-shell]:not([data-ajoop-interactive]) .v4-hub__idle {
+      display: none;
+    }
+  }
+}
+
 /* The current along the field's top edge takes the live state. */
 .v4-hub__field::before {
   position: absolute;
@@ -289,8 +422,13 @@ body[data-page="ajoop"] .page-hero[data-v4-entry] > p:not(.eyebrow) {
   outline-offset: 3px;
 }
 
+.v4-hub {
+  --v4-hub-log: clamp(20rem, 58vh, 40rem);
+}
+
 .v4-hub .chatbot-messages {
-  height: clamp(20rem, 58vh, 40rem);
+  position: relative;
+  height: var(--v4-hub-log);
   max-height: none;
   padding: 1.5rem clamp(1rem, 2.5vw, 1.75rem) 1rem;
   overflow-y: auto;
@@ -485,8 +623,8 @@ body[data-page="ajoop"] .page-hero[data-v4-entry] > p:not(.eyebrow) {
     order: 5;
   }
 
-  .v4-hub .chatbot-messages {
-    height: clamp(18rem, 52vh, 30rem);
+  .v4-hub {
+    --v4-hub-log: clamp(18rem, 52vh, 30rem);
   }
 
   .v4-hub__context {
@@ -508,9 +646,14 @@ body[data-page="ajoop"] .page-hero[data-v4-entry] > p:not(.eyebrow) {
     padding: 1rem;
   }
 
-  .v4-hub__identity .ajoop-mascot {
+  .v4-hub__mark {
     width: 2.9rem;
     height: 2.9rem;
+    border-radius: 0.8rem;
+  }
+
+  .v4-hub__mark .ajoop-mark {
+    width: 1.9rem;
   }
 
   .v4-hub__scope {
@@ -535,8 +678,8 @@ body[data-page="ajoop"] .page-hero[data-v4-entry] > p:not(.eyebrow) {
     top: 5.75rem;
   }
 
-  .v4-hub .chatbot-messages {
-    height: clamp(22rem, calc(100vh - 25rem), 44rem);
+  .v4-hub {
+    --v4-hub-log: clamp(22rem, calc(100vh - 25rem), 44rem);
   }
 }
 
@@ -562,35 +705,59 @@ body.case-study-page .case-hero-visual[data-v4-ajoop-entry] {
   list-style: none;
 }
 
-.v4-ajoop-entry__identity {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.9rem;
-  align-items: center;
+/* The project's visual: the Living Hub artwork in a cinema frame, signed with
+ * the approved lockup. A dark surface in both themes, so the lockup on it is
+ * always the one drawn for dark. */
+.v4-ajoop-entry__media {
+  --v4-entry-pad: clamp(1.25rem, 2.5vw, 1.75rem);
+  position: relative;
+  aspect-ratio: 21 / 9;
+  margin: calc(var(--v4-entry-pad) * -1) calc(var(--v4-entry-pad) * -1) 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--v4-rule);
+  border-radius: calc(0.75rem - 1px) calc(0.75rem - 1px) 0 0;
+  background: var(--ajoop-art-ground);
 }
 
-.v4-ajoop-entry__identity .ajoop-mascot {
-  width: 3.25rem;
-  height: 3.25rem;
+body.case-study-page .v4-ajoop-entry__media .ajoop-art {
+  height: 100%;
+  min-height: 0;
+  border-radius: 0;
 }
 
-.v4-ajoop-entry__identity strong {
-  display: block;
-  color: var(--v4-ink);
-  font: 700 1.35rem / 1.1 var(--v4-display);
-  letter-spacing: -0.03em;
+/* Keeps the lockup and the state legible over the artwork's brighter edges. */
+.v4-ajoop-entry__media::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 9, 18, 0.72), transparent 42%);
+  content: "";
+  pointer-events: none;
 }
 
-.v4-ajoop-entry__identity p span {
-  color: var(--v4-ink-muted);
-  font: var(--v4-type-label);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.v4-ajoop-entry__lockup {
+  position: absolute;
+  z-index: 1;
+  top: clamp(0.8rem, 1.6vw, 1.15rem);
+  left: clamp(0.9rem, 1.8vw, 1.3rem);
+  width: clamp(12.5rem, 54%, 21rem);
+  aspect-ratio: 672 / 197;
+  background: var(--ajoop-wordmark) center / contain no-repeat;
+}
+
+.v4-ajoop-entry__media .v4-state {
+  --v4-state: #62adff;
+  position: absolute;
+  z-index: 1;
+  top: clamp(0.9rem, 1.8vw, 1.3rem);
+  right: clamp(0.9rem, 1.8vw, 1.3rem);
+  padding: 0.3rem 0.65rem;
+  border: 1px solid rgba(150, 180, 230, 0.27);
+  border-radius: 999px;
+  background: rgba(8, 14, 26, 0.88);
+  color: #b6c2d6;
 }
 
 .v4-ajoop-entry__ask {
-  padding-top: 1rem;
-  border-top: 1px solid var(--v4-rule);
   color: var(--v4-ink-muted);
   font: var(--v4-type-label);
   letter-spacing: var(--v4-track-label);
@@ -730,6 +897,39 @@ body.case-study-page .case-hero-visual[data-v4-ajoop-entry] {
       linear-gradient(180deg, transparent calc(var(--v4-sys-boundary) - 0.5px), color-mix(in srgb, var(--v4-ink-muted) 7%, transparent) var(--v4-sys-boundary)),
       radial-gradient(ellipse 60% 55% at 55% 34%, var(--v4-ambient-light), transparent 70%),
       var(--v4-canvas-raised);
+  }
+
+  /* The path's core, where its two answer sources sit: the rings of the
+   * Living Hub drawn as rules, and AJOOP's mark at their centre. It is not a
+   * part of the path: nothing is wired to it and it cannot be selected. */
+  .v4-ajoop-sys::before,
+  .v4-ajoop-sys::after {
+    position: absolute;
+    top: 34.62%;
+    left: 58.18%;
+    aspect-ratio: 1;
+    content: "";
+    pointer-events: none;
+    translate: -50% -50%;
+  }
+
+  .v4-ajoop-sys::before {
+    width: 26rem;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, transparent 0 2.5rem, color-mix(in srgb, var(--v4-current-2) 30%, transparent) 2.5rem calc(2.5rem + 1px));
+    -webkit-mask-image: radial-gradient(circle closest-side, #000 18%, transparent 96%);
+    mask-image: radial-gradient(circle closest-side, #000 18%, transparent 96%);
+  }
+
+  .v4-ajoop-sys::after {
+    width: 2.5rem;
+    background: var(--ajoop-mark) center / contain no-repeat;
+    opacity: 0.8;
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-ajoop-sys[data-v4-eco-active]::after {
+    opacity: 0.4;
   }
 
   .v4-ajoop-sys__field {
@@ -949,6 +1149,7 @@ body.case-study-page .v4-ajoop-live {
 
 @media (prefers-reduced-motion: reduce) {
   .v4-hub *,
+  .v4-hub-core,
   .v4-hub__field::before,
   .v4-ajoop-sys *,
   .v4-ajoop-entry * {
@@ -961,25 +1162,7 @@ body.case-study-page .v4-ajoop-live {
   }
 }
 
-/* 7. At rest, at rest ------------------------------------------------------ */
-
-/* The panel's mascot idles on a loop, which is fine for a dialog that is
- * open for a minute. On a page it would never stop, so here the resting face
- * is still, and a state's own motion plays twice and settles; the state is
- * still carried by the face it shows and by the words beside it. */
-.v4-hub .ajoop-mascot[data-ajoop-mascot="idle"],
-.v4-hub .ajoop-mascot[data-ajoop-mascot="idle"] *,
-.v4-ajoop-entry .ajoop-mascot,
-.v4-ajoop-entry .ajoop-mascot * {
-  animation: none !important;
-}
-
-.v4-hub .ajoop-mascot,
-.v4-hub .ajoop-mascot * {
-  animation-iteration-count: 2 !important;
-}
-
-/* 8. Between the two AJOOP routes ------------------------------------------ */
+/* 7. Between the two AJOOP routes ------------------------------------------ */
 
 /* The case study and the Hub hand over to each other as one system: an
  * ordinary link, with the browser's own cross-document transition where it

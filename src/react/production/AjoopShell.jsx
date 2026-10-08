@@ -236,7 +236,6 @@ export default function AjoopShell({ model }) {
       <AjoopHub
         model={model.hub}
         copy={copy}
-        mascot={<AjoopMascot mascot={mascot} />}
         mascotState={mascot}
         service={service}
         turn={turn}

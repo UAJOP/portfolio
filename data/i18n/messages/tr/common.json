@@ -572,7 +572,7 @@
   "ajoop.hub.how": "AJOOP nasıl çalışır",
   "ajoop.hub.open": "AJOOP Hub'ı aç",
   "ajoop.hub.noscript": "AJOOP'un sohbet edebilmesi için JavaScript gerekir. Yararlandığı her şey bu sayfalarda yayımlanmıştır.",
-  "ajoop.hub.loading": "Sohbet, bu sayfanın yüklenmesi tamamlandığında kullanılabilir olur.",
+  "ajoop.hub.loading": "Sohbet, bu sayfanın betikleri çalıştığında burada açılır.",
   "ajoop.hub.aria.identity": "AJOOP durumu",
   "ajoop.hub.aria.conversation": "AJOOP ile sohbet",
   "ajoop.hub.aria.context": "Yanıt bağlamı",

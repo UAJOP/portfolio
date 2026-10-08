@@ -1,7 +1,7 @@
 import SignalFlow, { SignalRule } from "./SignalFlow.jsx";
 import { EcosystemField } from "./EcosystemMap.jsx";
 import { EvidencePorts, MilestoneToggle } from "./CareerCurrent.jsx";
-import AjoopSystem, { AjoopEntry } from "./AjoopSystem.jsx";
+import AjoopSystem, { AjoopEntry, LivingHubArt } from "./AjoopSystem.jsx";
 
 /* Route consumers of the V4 system.
  *
@@ -55,13 +55,16 @@ function CapabilityPorts({ capabilities }) {
 /* AJOOP in the flagship row: not a project card but the live system itself.
  * Every word is the assistant's own shipped copy — its resting state, its
  * composer line and its own quick questions — and every control opens the
- * same conversation the launcher does. Nothing here simulates a reply. */
+ * same conversation the launcher does. Nothing here simulates a reply. Its
+ * media is the same Living Hub artwork and app icon the Hub and the case
+ * study open with. */
 function AjoopPort({ model }) {
   const open = () => globalThis.setChatbotOpen?.(true);
   return (
     <article className="evidence-card v4-port" data-v4-card="">
       <div className="evidence-card-media v4-port__field">
-        <span className="v4-port__node" aria-hidden="true"><i /><i /><i /></span>
+        <LivingHubArt sizes="(min-width: 1101px) 30vw, (min-width: 700px) 50vw, 100vw" />
+        <span className="v4-port__node" aria-hidden="true"><i className="ajoop-app-icon" /></span>
         <span className="v4-state v4-port__state">{model.state}</span>
       </div>
       <div className="evidence-card-content">
@@ -231,9 +234,16 @@ function about(v4, node, classes, attributes, key) {
   return entry(node, classes, attributes, key);
 }
 
-/* The Hub: the page is the hero; the conversation is the shell's own root. */
+/* The Hub: the page is the hero; the conversation is the shell's own root.
+ * The hero's field converges on the Living Hub core, which steps back once a
+ * conversation is under way (css/v4-ajoop.css). */
 function hub(v4, node, classes, attributes, key) {
-  return entry(node, classes, attributes, key);
+  const extra = entry(node, classes, attributes, key);
+  if (!classes.has("page-hero")) return extra;
+  return [
+    <figure key={`${key}.v4-core`} className="v4-hub-core" aria-hidden="true"><LivingHubArt sizes="(min-width: 901px) 60vw, 100vw" priority /></figure>,
+    ...extra,
+  ];
 }
 
 const CONSUMERS = { home, works, detail, experience, certificates, about, hub };

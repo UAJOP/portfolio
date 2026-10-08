@@ -4,7 +4,8 @@
  * transcript, the action row and the composer are the shell's own elements
  * (src/react/production/AjoopShell.jsx), handed in and placed here. This
  * component adds only what a page surface needs around them — an identity and
- * status rail, and a context surface — and it draws nothing it was not told.
+ * status rail under AJOOP's mark, and a context surface — and it draws
+ * nothing it was not told.
  *
  * Everything that looks alive is state the engine reported through its
  * presentation port: the mascot's state, the service verdict, whether a turn
@@ -41,7 +42,7 @@ const LIT = {
   error: ["ajoop"],
 };
 
-export default function AjoopHub({ model, copy, mascot, mascotState, service, turn, busy, widgetRef, panelRef, transcript, actionRow, composer }) {
+export default function AjoopHub({ model, copy, mascotState, service, turn, busy, widgetRef, panelRef, transcript, actionRow, composer }) {
   const { labels } = model;
   const live = liveStateOf({ mascot: mascotState, turn });
   const lit = LIT[live];
@@ -51,7 +52,7 @@ export default function AjoopHub({ model, copy, mascot, mascotState, service, tu
     <section className="v4-hub section-shell" data-portfolio-chatbot="" data-v4-hub="" data-v4-live={live} aria-labelledby="ajoop-dialog-title" ref={widgetRef}>
       <aside className="v4-hub__rail" aria-label={labels.identity}>
         <div className="v4-hub__identity">
-          {mascot}
+          <span className="v4-hub__mark" aria-hidden="true"><i className="ajoop-mark" /></span>
           <div>
             <h2 id="ajoop-dialog-title" data-chatbot-title="">{copy.title}</h2>
             <p data-chatbot-subtitle="">{copy.subtitle}</p>
@@ -78,6 +79,9 @@ export default function AjoopHub({ model, copy, mascot, mascotState, service, tu
       </aside>
 
       <div className="v4-hub__field" data-chatbot-panel="" role="group" aria-label={labels.conversation} tabIndex={-1} ref={panelRef}>
+        {/* The empty field, before the first question: the mark, and nothing
+            once the conversation has begun (css/v4-ajoop.css). */}
+        <span className="v4-hub__idle" aria-hidden="true"><i className="ajoop-mark" /></span>
         {transcript}
         {actionRow}
         {composer}

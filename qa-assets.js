@@ -29,12 +29,19 @@ const referencedAssets = new Map();
 
 runtimeSources.forEach(([file, source]) => {
   for (const match of source.matchAll(quotedAssetPattern)) {
-    const asset = match[1]
-      .replace("https://kaanbalci.com", "")
-      .replace(/^\//, "")
-      .split(/[?#]/)[0];
-    if (!referencedAssets.has(asset)) referencedAssets.set(asset, new Set());
-    referencedAssets.get(asset).add(file);
+    /* A srcset is one quoted value holding several candidates, each followed
+     * by its width or density. */
+    const candidates = /\s\d+(?:\.\d+)?[wx]\s*(?:,|$)/.test(match[1])
+      ? match[1].split(/,\s+/).map((candidate) => candidate.trim().replace(/\s+\d+(?:\.\d+)?[wx]$/, ""))
+      : [match[1]];
+    for (const candidate of candidates) {
+      const asset = candidate
+        .replace("https://kaanbalci.com", "")
+        .replace(/^\//, "")
+        .split(/[?#]/)[0];
+      if (!referencedAssets.has(asset)) referencedAssets.set(asset, new Set());
+      referencedAssets.get(asset).add(file);
+    }
   }
 });
 
