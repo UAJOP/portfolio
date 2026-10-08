@@ -30,9 +30,11 @@
  *
  * Bounded to six turns and 700 characters each: enough that "peki stack?"
  * still knows which project is in play, small enough that it can never grow
- * into a transcript. It is never persisted, never sent anywhere but the
- * bridge, and it is cleared by Start over and by a site-language change —
- * both of which start a visibly new conversation.
+ * into a transcript. This module never persists it and it is never sent
+ * anywhere but the bridge; it is cleared by Start over and by a site-language
+ * change — both of which start a visibly new conversation. Since V4-E04 the
+ * assistant can rebuild it after a page load from its own bounded, expiring
+ * session copy of the conversation (see restoreAjoopRagMemory).
  *
  * It records the conversation the visitor SAW, not the requests that happened
  * to succeed — see rememberAjoopRagExchange below.
@@ -61,6 +63,38 @@ function ajoopRagRemember(role, value) {
 function clearAjoopRagHistory() {
   ajoopRagHistory.length = 0;
   ajoopRagConversationState = { version: 1, scope: null, referents: [], orderedReferents: [] };
+}
+
+/**
+ * V4-E04: the conversation resumed in another document of the same tab.
+ *
+ * assistant.js rebuilds the history from the bounded session copy it owns (the
+ * exchanges the visitor was shown, nothing else) and hands it here, so a
+ * question asked in the Hub after one asked in the launcher reaches the bridge
+ * with the same memory it would have had without the page load. Every entry
+ * passes through the same bounds as a live turn, and the referent hint is
+ * validated exactly as a server reply's would be.
+ */
+function restoreAjoopRagMemory(snapshot) {
+  clearAjoopRagHistory();
+  const source = snapshot && typeof snapshot === "object" ? snapshot : {};
+  (Array.isArray(source.history) ? source.history : []).forEach((entry) => {
+    if (entry && (entry.role === "user" || entry.role === "assistant")) {
+      ajoopRagRemember(entry.role, entry.content);
+    }
+  });
+  const conversationState = validateAjoopConversationState(source.conversationState);
+  if (conversationState) ajoopRagConversationState = conversationState;
+}
+
+/** The referent hint as it stands: canonical ids only, never message text. */
+function snapshotAjoopRagConversationState() {
+  return {
+    version: ajoopRagConversationState.version,
+    scope: ajoopRagConversationState.scope,
+    referents: ajoopRagConversationState.referents.slice(),
+    orderedReferents: ajoopRagConversationState.orderedReferents.slice(),
+  };
 }
 
 /**

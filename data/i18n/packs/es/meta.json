@@ -23,6 +23,18 @@
     "ogTitle": "Caso de estudio de AI Flow Puzzle | Kaan Balcı",
     "title": "Caso de estudio de AI Flow Puzzle | Kaan Balcı"
   },
+  "ajoop": {
+    "description": "Hable con AJOOP, el asistente público integrado en el portfolio de Kaan Balcı. Responde a partir del portfolio publicado y muestra la evidencia que utilizó.",
+    "ogDescription": "Hable con AJOOP, el asistente público integrado en el portfolio de Kaan Balcı. Responde a partir del portfolio publicado y muestra la evidencia que utilizó.",
+    "ogTitle": "AJOOP Hub: asistente del portfolio | Kaan Balcı",
+    "title": "AJOOP Hub: asistente del portfolio | Kaan Balcı"
+  },
+  "ajoopCaseStudy": {
+    "description": "Cómo funciona AJOOP: un asistente de portfolio local-first con recuperación, respaldo determinista, evidencia en cada respuesta del portfolio y un límite estricto entre lo público y lo privado.",
+    "ogDescription": "Cómo funciona AJOOP: un asistente de portfolio local-first con recuperación, respaldo determinista, evidencia en cada respuesta del portfolio y un límite estricto entre lo público y lo privado.",
+    "ogTitle": "Caso de estudio de AJOOP | Kaan Balcı",
+    "title": "Caso de estudio de AJOOP | Kaan Balcı"
+  },
   "blog": {
     "description": "La experiencia de Kaan Balcı en entrega técnica de cara al cliente: Conversational AI empresarial, evaluación de LLM, software full-stack y un producto de negocio en vivo.",
     "ogDescription": "Un hilo recorre todos los puestos: la entrega técnica de cara al cliente, desde flujos de AI empresariales hasta un producto de negocio en vivo.",

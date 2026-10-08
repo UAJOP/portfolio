@@ -32943,7 +32943,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "value": "Your theme and language choices are saved in your browser's local storage. AJOOP and Recruiter Mode keep minimal state for the current visit in session storage; AJOOP does not store your messages there."
+                          "value": "Your theme and language choices are saved in your browser's local storage. AJOOP and Recruiter Mode keep minimal state for the current visit in session storage. AJOOP does not permanently retain your messages. To keep the launcher and AJOOP Hub in sync, a bounded copy of the current conversation may be stored temporarily in this browser tab’s session storage for up to 15 minutes. It is cleared when you start over, change language, or end the tab session."
                         }
                       ]
                     }
@@ -33523,7 +33523,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "value": "Tema ve dil tercihleriniz tarayıcınızın yerel depolamasına (local storage) kaydedilir. AJOOP ve İK Modu, mevcut ziyaret için asgari durumu oturum depolamasında (session storage) tutar; AJOOP mesajlarınızı orada saklamaz."
+                          "value": "Tema ve dil tercihleriniz tarayıcınızın yerel depolamasına (local storage) kaydedilir. AJOOP ve Recruiter Mode, mevcut ziyarete ait asgari durumu oturum depolamasında tutar. AJOOP mesajlarınızı kalıcı olarak saklamaz. Launcher ile AJOOP Hub'ı eşzamanlı tutmak için, mevcut sohbetin sınırlı bir kopyası bu tarayıcı sekmesinin oturum depolamasında en fazla 15 dakika süreyle geçici olarak saklanabilir. Baştan başladığınızda, dili değiştirdiğinizde veya sekme oturumunu sonlandırdığınızda temizlenir."
                         }
                       ]
                     }
@@ -34103,7 +34103,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "value": "Ihre Theme- und Spracheinstellungen werden im lokalen Speicher Ihres Browsers gespeichert. AJOOP und der Recruiter Mode halten einen minimalen Zustand für den aktuellen Besuch im Sitzungsspeicher; Ihre Nachrichten speichert AJOOP dort nicht."
+                          "value": "Ihre Theme- und Spracheinstellungen werden im lokalen Speicher Ihres Browsers gespeichert. AJOOP und der Recruiter Mode halten einen minimalen Zustand für den aktuellen Besuch im Sitzungsspeicher. AJOOP bewahrt Ihre Nachrichten nicht dauerhaft auf. Um den Launcher und den AJOOP Hub synchron zu halten, kann eine begrenzte Kopie des aktuellen Gesprächs vorübergehend, für höchstens 15 Minuten, im Sitzungsspeicher dieses Browser-Tabs gespeichert werden. Sie wird gelöscht, wenn Sie neu beginnen, die Sprache wechseln oder die Tab-Sitzung beenden."
                         }
                       ]
                     }
@@ -34683,7 +34683,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "value": "Sus preferencias de tema e idioma se guardan en el almacenamiento local de su navegador. AJOOP y el Recruiter Mode guardan un estado mínimo de la visita actual en el almacenamiento de sesión; AJOOP no guarda allí sus mensajes."
+                          "value": "Sus preferencias de tema e idioma se guardan en el almacenamiento local de su navegador. AJOOP y el Recruiter Mode guardan un estado mínimo de la visita actual en el almacenamiento de sesión. AJOOP no conserva sus mensajes de forma permanente. Para mantener sincronizados el lanzador y AJOOP Hub, puede guardarse temporalmente una copia acotada de la conversación actual en el almacenamiento de sesión de esta pestaña del navegador durante un máximo de 15 minutos. Se borra cuando usted empieza de nuevo, cambia de idioma o finaliza la sesión de la pestaña."
                         }
                       ]
                     }
@@ -35263,7 +35263,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "value": "Vos choix de thème et de langue sont enregistrés dans le stockage local de votre navigateur. AJOOP et le Recruiter Mode conservent un état minimal pour la visite en cours dans le stockage de session ; AJOOP n'y enregistre pas vos messages."
+                          "value": "Vos choix de thème et de langue sont enregistrés dans le stockage local de votre navigateur. AJOOP et le Recruiter Mode conservent un état minimal pour la visite en cours dans le stockage de session. AJOOP ne conserve pas vos messages de façon permanente. Pour garder le lanceur et AJOOP Hub synchronisés, une copie bornée de la conversation en cours peut être stockée temporairement dans le stockage de session de cet onglet du navigateur, pendant 15 minutes au plus. Elle est effacée lorsque vous recommencez, changez de langue ou mettez fin à la session de l'onglet."
                         }
                       ]
                     }

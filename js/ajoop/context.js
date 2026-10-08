@@ -17,6 +17,11 @@
  * Structured conversation memory. Keep this block DOM-free and pass the store
  * in, so QA can exercise it against a fake storage object.
  *
+ * V4-E04 note: the bounded, expiring copy of the conversation that lets the
+ * launcher and the Hub be one conversation is NOT kept here. It lives in
+ * assistant.js (ajoop-session), under its own key and its own rules; this
+ * record is unchanged.
+ *
  * WHAT IS PERSISTED: routing metadata only — the resolved intent, the resolved
  * entity ids, a repeat counter and the page type. Raw visitor messages are
  * never written to storage. Ajoop answers from canonical site data, so it never

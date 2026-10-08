@@ -23,6 +23,18 @@
     "ogTitle": "AI Flow Puzzle Vaka Çalışması | Kaan Balcı",
     "title": "AI Flow Puzzle Vaka Çalışması | Kaan Balcı"
   },
+  "ajoop": {
+    "description": "Kaan Balcı'nın portfolyosuna yerleşik herkese açık asistan AJOOP ile konuşun. Yayımlanmış portfolyodan yanıt verir ve kullandığı kanıtı gösterir.",
+    "ogDescription": "Kaan Balcı'nın portfolyosuna yerleşik herkese açık asistan AJOOP ile konuşun. Yayımlanmış portfolyodan yanıt verir ve kullandığı kanıtı gösterir.",
+    "ogTitle": "AJOOP Hub — Portfolyo Asistanı | Kaan Balcı",
+    "title": "AJOOP Hub — Portfolyo Asistanı | Kaan Balcı"
+  },
+  "ajoopCaseStudy": {
+    "description": "AJOOP nasıl çalışır: retrieval, deterministik fallback, her portfolyo yanıtında kanıt ve katı bir public/private sınırı olan local-first bir portfolyo asistanı.",
+    "ogDescription": "AJOOP nasıl çalışır: retrieval, deterministik fallback, her portfolyo yanıtında kanıt ve katı bir public/private sınırı olan local-first bir portfolyo asistanı.",
+    "ogTitle": "AJOOP Vaka Çalışması | Kaan Balcı",
+    "title": "AJOOP Vaka Çalışması | Kaan Balcı"
+  },
   "blog": {
     "description": "Conversational AI, LLM değerlendirme, workflow otomasyonu, yazılım geliştirme ve gerçek işletme dijital ürünleri alanlarında profesyonel deneyim.",
     "ogDescription": "Kurumsal conversational AI, yazılım ve dijital ürün çalışmalarını kapsayan profesyonel deneyim.",

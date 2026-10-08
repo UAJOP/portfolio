@@ -9,6 +9,7 @@ import { createHomeAboutHeadModel, createSiteHeadRenderer } from "./site-head.mj
 import { catalogSearchCopy, defaultCatalogSources, defaultRoleSources, projectRole } from "./m3-works-games-catalog-copy.mjs";
 import { ajoopShellModel, commandPaletteModel, runtimeCollection } from "./m3-28-overlay-copy.mjs";
 import { v4AboutModel, v4CertificatesModel, v4ExperienceModel } from "./v4-inner-pages.mjs";
+import { ajoopCaseStudyStructure, ajoopHubModel, ajoopHubStructure, ajoopSystemModel } from "./v4-ajoop-pages.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
@@ -485,7 +486,7 @@ function v4HomeModel(locale, message) {
   }
   return {
     ecosystem,
-    ajoop: { title: ajoop.copy.title, subtitle: ajoop.copy.subtitle, launcher: ajoop.copy.launcher, prompt: ajoop.copy.inputPlaceholder, state: ajoop.mascot.label, quicks },
+    ajoop: { title: ajoop.copy.title, subtitle: ajoop.copy.subtitle, launcher: ajoop.copy.launcher, prompt: ajoop.copy.inputPlaceholder, state: ajoop.mascot.label, quicks, links: [["/ajoop/", "ajoop.hub.open"], ["/ajoop-case-study/", "ajoop.hub.how"]].map(([target, key]) => ({ href: routeRuntime.localizedInternalHref(target, locale), label: message(key) })) },
     flow: {
       ...flow,
       aria: message(flow.aria),
@@ -524,6 +525,72 @@ function v4AboutPageModel(route, children, localization, message) {
     recruiter: recruiterModel(route.locale, localization),
     experience: { label: message("shell.nav.blog"), title: experienceTitle(route.locale), href: routeRuntime.localizedInternalHref("/blog/", route.locale) },
   });
+}
+
+/* V4-E04: the two AJOOP routes (scripts/v4-ajoop-pages.mjs). */
+const AJOOP_ROUTES = new Set(["ajoop", "ajoopCaseStudy"]);
+const ajoopKnowledge = readJson("data/portfolio/ajoop-master-knowledge.json").projects.flagship["Ajoop Portfolio Copilot"];
+const THEME_BOOTSTRAP = '(function(){try{var t=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();';
+
+function v4AjoopMainProps(route, loadLocalization) {
+  const localization = loadLocalization(route.locale);
+  const message = (key) => {
+    const value = localization.message(key);
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+    return value;
+  };
+  const href = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+  if (route.routeId === "ajoop") {
+    const links = [["/works/", "shell.nav.works"], ["/blog/", "shell.nav.blog"], ["/about/", "shell.nav.about"], ["/certificates/", "shell.nav.certificates"], ["/ajoop-case-study/", "ajoop.hub.how"]].map(([target, key]) => ({ href: href(target), label: message(key) }));
+    return { kind: "v4Page", page: "ajoop", locale: route.locale, structure: ajoopHubStructure({ message, links }), v4: { consumer: "hub" } };
+  }
+  if (!Array.isArray(ajoopKnowledge?.architecture_public_safe) || !ajoopKnowledge.architecture_public_safe.length) throw new Error("AJOOP public-safe architecture record is missing");
+  const structure = ajoopCaseStudyStructure({
+    message,
+    hubHref: href("/ajoop/"),
+    worksHref: { href: href("/works/"), label: message("home.hero.viewWork") },
+    stack: ajoopKnowledge.architecture_public_safe,
+  });
+  /* The shipped quick questions, as the way into the live assistant. */
+  const shell = ajoopShellModel(route.locale);
+  const quicks = (runtimeCollection("ajoop", route.locale).quicks || []).slice(0, 4).map((quick) => quick.label).filter(Boolean);
+  return {
+    kind: "caseStudy", page: route.routeId, locale: route.locale, structure, data: localizedCanonicalData(route.locale),
+    v4: {
+      ...v4DetailModel(route, structure, message),
+      system: ajoopSystemModel({ message }),
+      entry: { href: href("/ajoop/"), title: shell.copy.title, subtitle: shell.copy.subtitle, state: shell.mascot.label, ask: message("ajoop.case.hero.askLabel"), quicks, cta: message("ajoop.case.cta.try") },
+    },
+  };
+}
+
+/* The head of an AJOOP route, from its canonical per-locale meta. */
+function v4AjoopHead(route, localization) {
+  const meta = route.locale === registry.defaultLocale ? sourceMeta[route.routeId] : localization.packs.meta?.[route.routeId];
+  if (!meta?.title || !meta?.description) throw new Error(`${route.locale}/${route.routeId}: missing canonical meta`);
+  const headRenderer = createSiteHeadRenderer({
+    registry,
+    indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
+    absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
+  });
+  const canonical = `${site.origin}${route.pathname}`;
+  const image = `${site.origin}/assets/portfolio_website_cover.webp`;
+  const caseStudy = route.routeId === "ajoopCaseStudy";
+  return {
+    title: meta.title, description: meta.description, keywords: null, canonical, robots: "index, follow",
+    alternates: headRenderer.alternateLinkRecords(route.route, true),
+    og: { siteName: "Kaan Balcı Portfolio", locale: localization.definition.ogLocale || localization.definition.htmlLang, title: meta.ogTitle || meta.title, description: meta.ogDescription || meta.description, type: caseStudy ? "article" : "website", url: canonical, image },
+    twitter: { card: "summary_large_image", title: meta.ogTitle || meta.title, description: meta.ogDescription || meta.description, image },
+    themeBootstrap: THEME_BOOTSTRAP,
+    /* States what the head states and nothing about the system itself. */
+    jsonLd: {
+      "@context": "https://schema.org", "@type": "WebPage", name: meta.title, description: meta.description, url: canonical,
+      inLanguage: localization.definition.htmlLang || route.locale, image,
+      isPartOf: { "@type": "WebSite", name: "Kaan Balcı Portfolio", url: `${site.origin}/` },
+      author: { "@type": "Person", name: profile.name, url: `${site.origin}/` },
+    },
+    ...(caseStudy ? { extraStyles: ["/case-study.css"] } : {}),
+  };
 }
 
 const SHELL_MESSAGE_KEYS = [
@@ -663,6 +730,7 @@ export function productionMainProps(route, {
   catalogSources = defaultCatalogSources(),
   roleSources = defaultRoleSources(),
 } = {}) {
+  if (AJOOP_ROUTES.has(route.routeId)) return v4AjoopMainProps(route, loadLocalization);
   if (CASE_STUDY_IDS.has(route.routeId)) {
     if (caseStudyStructure.acceptedRef !== "6650aacd844cde957888d296f086c1eb21992991") throw new Error("Case-study React contract is not tied to the #29 base ref");
     const page = caseStudyStructure.pages[route.routeId];
@@ -801,10 +869,18 @@ export function productionDocumentProps(route, clientEntry) {
   const engineShell = labsGamesPage(route);
   const captured = remainingRoutePage(route);
   const capturedShell = engineShell || captured;
+  const ajoopRoute = AJOOP_ROUTES.has(route.routeId);
+  const hubRoute = route.routeId === "ajoop";
+  const ajoopCaseRoute = route.routeId === "ajoopCaseStudy";
+  /* One conversation, two presentations: the Hub route renders the shell as
+   * the Hub; every other route's panel links to it. */
+  const ajoopPresentation = hubRoute
+    ? { hub: ajoopHubModel({ message: (key) => localization.message(key), caseStudyHref: href("/ajoop-case-study/") }) }
+    : { hubLink: { href: href("/ajoop/"), label: localization.message("ajoop.hub.open") } };
   return {
     main,
     recruiter: recruiterModel(route.locale, localization),
-    ajoop: { ...ajoopShellModel(route.locale), ...((casePage || projectRoute || (capturedShell && hasAside(capturedShell.localized.children))) ? { a: true } : {}) },
+    ajoop: { ...ajoopShellModel(route.locale), ...ajoopPresentation, ...((casePage || ajoopCaseRoute || projectRoute || (capturedShell && hasAside(capturedShell.localized.children))) ? { a: true } : {}) },
     commandPalette: commandPaletteModel(route.locale),
     document: {
       locale: route.locale,
@@ -812,9 +888,12 @@ export function productionDocumentProps(route, clientEntry) {
       dir: localization.definition.dir || "ltr",
       /* A Labs/mini-game shell keeps the accepted page type: it is what makes
        * script.js load that page’s runtime modules. */
-      page: casePage ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
+      /* The AJOOP case study is a case study; the Hub is its own page type. */
+      hub: hubRoute,
+      v4Styles: ajoopCaseRoute ? ["ajoop"] : [],
+      page: casePage || ajoopCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
       navPage: casePage || projectRoute ? "works" : route.routeId,
-      bodyClass: caseLocale?.bodyClass || null,
+      bodyClass: caseLocale?.bodyClass || (ajoopCaseRoute ? "case-study-page" : null),
       /* Accepted project pages declare their slug on <body>; the retained
        * runtime (project routing, AJOOP page context) reads it from there. */
       projectSlug: projectRoute ? route.slug : null,
@@ -825,7 +904,7 @@ export function productionDocumentProps(route, clientEntry) {
       scripts: engineShell ? [...engineShell.page.scripts, ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
       clientEntry,
     },
-    head: caseLocale?.head || (capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
+    head: caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
       route,
       registry,
       routeRuntime,

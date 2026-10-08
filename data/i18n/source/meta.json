@@ -23,6 +23,18 @@
     "ogTitle": "Merge Rush: Tiny Factory Case Study",
     "ogDescription": "Phaser 3 + TypeScript merge-game development focused on product loop, progression, responsive gameplay and platform architecture."
   },
+  "ajoop": {
+    "title": "AJOOP Hub | Kaan Balcı",
+    "description": "Talk to AJOOP, the public assistant built into Kaan Balcı's portfolio. It answers from the published portfolio and shows the evidence it used.",
+    "ogTitle": "AJOOP Hub | Kaan Balcı",
+    "ogDescription": "Talk to AJOOP, the public assistant built into Kaan Balcı's portfolio. It answers from the published portfolio and shows the evidence it used."
+  },
+  "ajoopCaseStudy": {
+    "title": "AJOOP Case Study | Kaan Balcı",
+    "description": "How AJOOP works: a local-first portfolio assistant with retrieval, a deterministic fallback, evidence on every portfolio answer and a strict public/private boundary.",
+    "ogTitle": "AJOOP Case Study | Kaan Balcı",
+    "ogDescription": "How AJOOP works: a local-first portfolio assistant with retrieval, a deterministic fallback, evidence on every portfolio answer and a strict public/private boundary."
+  },
   "now": {
     "title": "Now / Build Log | Kaan Balcı",
     "description": "Current build log for Kaan Balcı — active work across SINAMA, Merge Rush and portfolio engineering.",

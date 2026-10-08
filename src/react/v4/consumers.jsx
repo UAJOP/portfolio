@@ -1,6 +1,7 @@
 import SignalFlow, { SignalRule } from "./SignalFlow.jsx";
 import { EcosystemField } from "./EcosystemMap.jsx";
 import { EvidencePorts, MilestoneToggle } from "./CareerCurrent.jsx";
+import AjoopSystem, { AjoopEntry } from "./AjoopSystem.jsx";
 
 /* Route consumers of the V4 system.
  *
@@ -73,6 +74,8 @@ function AjoopPort({ model }) {
           <span>{model.prompt}</span>
           <b aria-hidden="true">{model.launcher}</b>
         </button>
+        {/* The same assistant as a page, and how it is built. */}
+        <p className="v4-port__links">{model.links.map((link) => <a key={link.href} href={link.href}>{link.label}</a>)}</p>
       </div>
     </article>
   );
@@ -158,6 +161,10 @@ function detail(v4, node, classes, attributes, key) {
     attributes["data-v4-ambient"] = "grain";
     return [<CurrentField key={`${key}.v4-field`} />, ...(v4.ports.length ? [<CapabilityPorts key={`${key}.v4-ports`} capabilities={v4.ports} />] : [])];
   }
+  /* The AJOOP case study: its hero opens onto the live system, and its
+   * architecture section carries the system diagram. */
+  if (attributes["data-v4-ajoop-entry"] !== undefined && v4.entry) return [<AjoopEntry key={`${key}.v4-entry`} model={v4.entry} />];
+  if (attributes["data-v4-ajoop-system"] !== undefined && v4.system) return [<AjoopSystem key={`${key}.v4-system`} model={v4.system} />];
   if (classes.has("case-hero-visual")) attributes["data-v4-anchor"] = "";
   if (classes.has("case-section")) attributes.id = `v4-s-${key.split(".").pop()}`;
   if (classes.has("case-journey")) attributes["data-v4-process"] = "";
@@ -224,7 +231,12 @@ function about(v4, node, classes, attributes, key) {
   return entry(node, classes, attributes, key);
 }
 
-const CONSUMERS = { home, works, detail, experience, certificates, about };
+/* The Hub: the page is the hero; the conversation is the shell's own root. */
+function hub(v4, node, classes, attributes, key) {
+  return entry(node, classes, attributes, key);
+}
+
+const CONSUMERS = { home, works, detail, experience, certificates, about, hub };
 
 export function applyV4(page, v4, node, classes, attributes, key) {
   const consumer = CONSUMERS[v4.consumer || page];

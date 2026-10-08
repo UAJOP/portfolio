@@ -88,6 +88,14 @@ window.KAAN_I18N = {
         "legacy": "merge-rush-case-study.html"
       },
       {
+        "id": "ajoop",
+        "route": "ajoop/"
+      },
+      {
+        "id": "ajoopCaseStudy",
+        "route": "ajoop-case-study/"
+      },
+      {
         "id": "now",
         "route": "now/",
         "legacy": "now.html"

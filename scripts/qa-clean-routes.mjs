@@ -164,7 +164,11 @@ const PROJECT_SLUGS = [
   "portfolio-website",
 ];
 
-equal(STATIC_ROUTES.length, MIGRATION.length, "the registry declares exactly the migrated static pages");
+/* V4-E04: routes born clean have no pre-migration URL and so no legacy stub;
+ * they are named here so a page cannot join the registry unnoticed. */
+const NATIVE_ROUTES = ["ajoop/", "ajoop-case-study/"];
+equal(STATIC_ROUTES.filter((page) => page.legacy).length, MIGRATION.length, "the registry declares exactly the migrated static pages");
+equal(STATIC_ROUTES.filter((page) => !page.legacy).map((page) => page.page).sort().join(), [...NATIVE_ROUTES].sort().join(), "pages without a legacy path are exactly the declared native routes");
 for (const [legacy, route] of MIGRATION) {
   const page = STATIC_ROUTES.find((item) => item.legacy === legacy);
   assert(Boolean(page), `registry has no page for legacy ${legacy}`);

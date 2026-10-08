@@ -17,7 +17,7 @@
  *  11. System node · 12. Ecosystem · 13. Connected card · 14. Current field
  *  15. Section handoff · 16. their reduced-motion and forced-colours states
  *  17. Mode switch · 18. Section tracker · 19. Process
- *  20. Inner-page entry · 21. Onward
+ *  20. Inner-page entry · 21. Onward · 22. AJOOP panel link
  *
  * Primitives are opted into by attribute or class and stay inert until then.
  * Route compositions live in css/v4-<route>.css; js/v4/runtime.js adds pointer
@@ -2418,4 +2418,31 @@ body .page-hero[data-v4-entry] + :not(.v4-tracker)::before {
   .v4-onward__link i {
     transition: none !important;
   }
+}
+
+/* 22. AJOOP panel: the way into the Hub ------------------------------------ */
+
+/* The launcher panel and the Hub are one conversation; this is the panel's
+ * one link to the other presentation. */
+.chatbot-header .chatbot-hub-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-top: 0.3rem;
+  color: var(--v4-accent-strong);
+  font: 500 0.6rem / 1.2 var(--v4-mono);
+  letter-spacing: 0.09em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.chatbot-header .chatbot-hub-link::after {
+  margin-left: 0.4rem;
+  content: "↗";
+}
+
+.chatbot-header .chatbot-hub-link:is(:hover, :focus-visible) {
+  color: var(--v4-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

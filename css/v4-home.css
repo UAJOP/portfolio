@@ -1082,3 +1082,34 @@ body[data-page="home"] .hero + .section-shell,
 body[data-page="home"] .v4-eco-section {
   content-visibility: visible;
 }
+
+/* 7. AJOOP port: the way to its Hub and its case study ---------------------- */
+
+.v4-port__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin: 0.9rem 0 0;
+}
+
+.v4-port__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--v4-accent-strong);
+  font: 500 0.66rem / 1.2 var(--v4-mono);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.v4-port__links a::after {
+  margin-left: 0.45rem;
+  content: "→";
+}
+
+.v4-port__links a:is(:hover, :focus-visible) {
+  color: var(--v4-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

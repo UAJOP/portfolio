@@ -6,11 +6,11 @@ import CommandPalette from "./CommandPalette.jsx";
 /* Routes that consume V4 primitives, by page type, and the composition
  * stylesheet each one loads with the motion runtime. Every other route ships
  * neither. */
-const V4_ROUTES = new Map([["home", "home"], ["works", "works"], ["caseStudy", "detail"], ["blog", "experience"], ["certificates", "certificates"], ["about", "about"]]);
+const V4_ROUTES = new Map([["home", "home"], ["works", "works"], ["caseStudy", "detail"], ["blog", "experience"], ["certificates", "certificates"], ["about", "about"], ["ajoop", "ajoop"]]);
 
 const V4_REVEAL = 'addEventListener("pagereveal",function(e){var t=e.viewTransition;t&&[t.ready,t.finished,t.updateCallbackDone].forEach(function(p){p&&p.catch&&p.catch(function(){})})});';
 
-function ProductionHead({ head, page }) {
+function ProductionHead({ head, page, v4Styles = [] }) {
   return (
     <head>
       <meta charSet="utf-8" />
@@ -51,6 +51,7 @@ function ProductionHead({ head, page }) {
       {/* V4 layer: the shared system on every route, compositions per route. */}
       <link rel="stylesheet" href="/css/v4-system.css" />
       {V4_ROUTES.has(page) ? <link rel="stylesheet" href={`/css/v4-${V4_ROUTES.get(page)}.css`} /> : null}
+      {v4Styles.map((name) => <link key={name} rel="stylesheet" href={`/css/v4-${name}.css`} />)}
       {/* An incoming cross-document view transition the browser skips rejects its
           promises before any deferred script runs; that is the fallback working. */}
       {V4_ROUTES.has(page) ? <script>{V4_REVEAL}</script> : null}
@@ -134,16 +135,20 @@ export default function ProductionDocument({ document, head, main, recruiter, aj
   const recruiterPayload = JSON.stringify(recruiter).replaceAll("<", "\\u003c");
   const ajoopPayload = JSON.stringify(ajoop).replaceAll("<", "\\u003c");
   const commandPayload = JSON.stringify(commandPalette).replaceAll("<", "\\u003c");
+  const ajoopRoot = <div id="react-ajoop-root" data-react-ajoop-shell="react" data-prerendered="true"><AjoopShell model={ajoop} /></div>;
   return (
     <html lang={document.htmlLang} dir={document.dir} data-route-locale={document.locale}>
-      <ProductionHead head={head} page={document.page} />
+      <ProductionHead head={head} page={document.page} v4Styles={document.v4Styles} />
       <body className={document.bodyClass || undefined} data-page={document.page} data-project-slug={document.projectSlug || undefined}>
         <ProductionHeader page={document.navPage || document.page} shell={shell} />
         <main id="main-content" tabIndex="-1" data-react-main="" data-prerendered="true" {...(document.mainAttributes || {})}><ProductionMain {...main} /></main>
         {document.afterMain?.length ? <ProductionMain page={`${main.page}:after-main`} structure={document.afterMain} /> : null}
+        {/* On the Hub route the shell is the page's conversation surface, so
+            its root sits with the content rather than after the footer. */}
+        {document.hub ? ajoopRoot : null}
         <div id="react-recruiter-root" data-react-recruiter-owner="react" data-prerendered="true"><RecruiterMode model={recruiter} /></div>
         <ProductionFooter shell={shell} />
-        <div id="react-ajoop-root" data-react-ajoop-shell="react" data-prerendered="true"><AjoopShell model={ajoop} /></div>
+        {document.hub ? null : ajoopRoot}
         <div id="react-command-root" data-react-command-owner="react" data-prerendered="true"><CommandPalette model={commandPalette} /></div>
         {(document.leadScripts || []).map((src) => <script key={src} src={src} />)}
         <script src="/portfolio-data.js" />
