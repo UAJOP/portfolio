@@ -421,6 +421,56 @@ function v4EcosystemModel(locale, message) {
   };
 }
 
+/* V4 Works: the same catalog map, with the labels for its three views. */
+function v4WorksModel(locale, message) {
+  const { capabilities, projects, capabilitiesLabel, projectsLabel } = v4EcosystemModel(locale, message);
+  return {
+    ecosystem: { capabilities, projects, capabilitiesLabel, projectsLabel },
+    labels: { viewAria: message("works.view.aria"), grid: message("works.view.grid"), map: message("works.view.map"), capability: message("works.view.capability") },
+  };
+}
+
+/* V4 project detail: what the shell adds to a page that already has its
+ * content. The tracker lists the page's own sections under their own labels;
+ * related work is every other catalog project filed under a capability this
+ * one is filed under, in catalog order. A page the catalog does not know gets
+ * a tracker and nothing else. */
+function v4DetailModel(route, children, message) {
+  const attribute = (node, name) => node.attributes.find((entry) => entry.name === name)?.value;
+  const hasClass = (node, name) => node.type === "element" && String(attribute(node, "class") || "").split(/\s+/).includes(name);
+  const text = (node) => (node.type === "text" ? node.value : node.type === "message" ? message(node.key) : node.type === "element" ? node.children.map(text).join("") : "");
+  const find = (node, test) => {
+    if (node.type !== "element") return null;
+    if (test(node)) return node;
+    for (const child of node.children) {
+      const hit = find(child, test);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const items = children.flatMap((node, index) => {
+    if (!hasClass(node, "case-section")) return [];
+    const label = find(node, (entry) => hasClass(entry, "eyebrow")) || find(node, (entry) => entry.tag === "h2");
+    const value = label ? text(label).replace(/\s+/g, " ").trim() : "";
+    return value ? [{ id: `v4-s-${index}`, label: value }] : [];
+  });
+  const ecosystem = v4EcosystemModel(route.locale, message);
+  const id = route.route.split("/").filter(Boolean).pop();
+  const self = ecosystem.projects.find((project) => project.id === id);
+  const ports = self ? ecosystem.capabilities.filter((capability) => self.categories.includes(capability.id)) : [];
+  const groups = ports.map((capability) => ({
+    id: capability.id,
+    label: capability.label,
+    projects: ecosystem.projects.filter((project) => project.id !== id && project.categories.includes(capability.id)).map(({ id: projectId, title, href, status }) => ({ id: projectId, title, href, ...(status ? { status } : {}) })),
+  })).filter((group) => group.projects.length);
+  return {
+    consumer: "detail",
+    ports,
+    tracker: { aria: message("project.tracker.aria"), items },
+    related: self && groups.length ? { eyebrow: message("project.related.eyebrow"), title: message("project.related.title"), self: self.title, groups } : null,
+  };
+}
+
 function v4HomeModel(locale, message) {
   const { schemaVersion, ...flow } = v4HomeFlow;
   /* AJOOP's flagship port speaks only in the assistant's own shipped copy:
@@ -587,7 +637,13 @@ export function productionMainProps(route, {
     const page = caseStudyStructure.pages[route.routeId];
     const localized = page.locales[route.locale];
     if (!localized) throw new Error(`${route.locale}/${route.routeId}: missing accepted case-study contract`);
-    return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure: localized.children, data: localizedCanonicalData(route.locale) };
+    const caseLocalization = loadLocalization(route.locale);
+    const caseMessage = (key) => {
+      const value = caseLocalization.message(key);
+      if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+      return value;
+    };
+    return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure: localized.children, data: localizedCanonicalData(route.locale), v4: v4DetailModel(route, localized.children, caseMessage) };
   }
   const engineShell = labsGamesPage(route);
   if (engineShell) {
@@ -642,8 +698,7 @@ export function productionMainProps(route, {
     buildLog: localizedBuildLog,
   };
   if (route.routeId === "home") props.v4 = v4HomeModel(route.locale, (key) => required(localization.message(key), key));
-  /* Works consumes V4 primitives by attribute only; it needs no model. */
-  if (route.routeId === "works") props.v4 = {};
+  if (route.routeId === "works") props.v4 = v4WorksModel(route.locale, (key) => required(localization.message(key), key));
   if (!catalogPage) return props;
   /* Catalog-only props; About keeps exactly its accepted payload, Home adds
    * only the V4 flow model above. */

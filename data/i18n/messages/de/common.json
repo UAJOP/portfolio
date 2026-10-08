@@ -539,5 +539,12 @@
   "home.ecosystem.title": "Wie alles zusammenhängt.",
   "home.ecosystem.lead": "Jedes Projekt steht auf den Fähigkeiten, die es tatsächlich nutzt. Wählen Sie eine Fähigkeit, um die Arbeit dahinter zu sehen.",
   "home.ecosystem.capabilities": "Fähigkeiten",
-  "home.ecosystem.projects": "Projekte"
+  "home.ecosystem.projects": "Projekte",
+  "works.view.aria": "Ansicht der Belege",
+  "works.view.grid": "Projektraster",
+  "works.view.map": "Ökosystem-Karte",
+  "works.view.capability": "Fähigkeiten-Ansicht",
+  "project.tracker.aria": "Auf dieser Seite",
+  "project.related.eyebrow": "Verwandte Arbeiten",
+  "project.related.title": "Folgen Sie den Verbindungen."
 }

@@ -3,9 +3,12 @@ import RecruiterMode from "./RecruiterMode.jsx";
 import AjoopShell from "./AjoopShell.jsx";
 import CommandPalette from "./CommandPalette.jsx";
 
-/* Routes that consume V4 primitives: each gets its composition stylesheet and
- * the motion runtime. Every other route ships neither. */
-const V4_ROUTES = new Set(["home", "works"]);
+/* Routes that consume V4 primitives, by page type, and the composition
+ * stylesheet each one loads with the motion runtime. Every other route ships
+ * neither. */
+const V4_ROUTES = new Map([["home", "home"], ["works", "works"], ["caseStudy", "detail"]]);
+
+const V4_REVEAL = 'addEventListener("pagereveal",function(e){var t=e.viewTransition;t&&[t.ready,t.finished,t.updateCallbackDone].forEach(function(p){p&&p.catch&&p.catch(function(){})})});';
 
 function ProductionHead({ head, page }) {
   return (
@@ -47,7 +50,10 @@ function ProductionHead({ head, page }) {
       <link rel="stylesheet" href="/portfolio-v2.css" />
       {/* V4 layer: the shared system on every route, compositions per route. */}
       <link rel="stylesheet" href="/css/v4-system.css" />
-      {V4_ROUTES.has(page) ? <link rel="stylesheet" href={`/css/v4-${page}.css`} /> : null}
+      {V4_ROUTES.has(page) ? <link rel="stylesheet" href={`/css/v4-${V4_ROUTES.get(page)}.css`} /> : null}
+      {/* An incoming cross-document view transition the browser skips rejects its
+          promises before any deferred script runs; that is the fallback working. */}
+      {V4_ROUTES.has(page) ? <script>{V4_REVEAL}</script> : null}
       <link rel="icon" type="image/x-icon" href="/assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" />
       {head.jsonLd ? <script type="application/ld+json">{JSON.stringify(head.jsonLd)}</script> : null}
     </head>

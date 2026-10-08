@@ -16,6 +16,7 @@
  *  10. Motion discipline: bounded, paused offscreen, still under reduced motion
  *  11. System node · 12. Ecosystem · 13. Connected card · 14. Current field
  *  15. Section handoff · 16. their reduced-motion and forced-colours states
+ *  17. Mode switch · 18. Section tracker · 19. Process
  *
  * Primitives are opted into by attribute or class and stay inert until then.
  * Route compositions live in css/v4-<route>.css; js/v4/runtime.js adds pointer
@@ -1931,5 +1932,302 @@ html[data-theme="light"] .footer-socials a:hover {
   [data-v4-card]:is(:hover, :focus-within) img {
     scale: none;
     translate: none;
+  }
+}
+
+/* 17. Mode switch ---------------------------------------------------------- */
+
+/* A small set of ways to read the same thing. Offered only once the page can
+ * answer ([data-v4-live], set after hydration); before that it is absent and
+ * the default reading stands. */
+.v4-modes {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 0.7rem;
+  background: var(--v4-living-surface);
+}
+
+.v4-modes:not([data-v4-live]) {
+  display: none;
+}
+
+.v4-modes__mode {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 0.95rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--v4-ink-secondary);
+  font: 500 0.68rem / 1 var(--v4-mono);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--v4-motion-ui) var(--v4-ease-out),
+    color var(--v4-motion-feedback) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.v4-modes__mode i {
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.v4-modes__mode:hover {
+  color: var(--v4-ink);
+}
+
+.v4-modes__mode[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--v4-current) 18%, transparent);
+  box-shadow: inset 0 0 0 1px var(--v4-current), 0 0 2rem -0.6rem var(--v4-current-glow);
+  color: var(--v4-ink);
+}
+
+.v4-modes__mode[aria-pressed="true"] i {
+  border-color: var(--v4-current);
+  background: var(--v4-current);
+  box-shadow: 0 0 0.8rem var(--v4-current-glow);
+}
+
+.v4-modes__mode:focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 2px;
+}
+
+/* A controlled ecosystem: what its host's filter currently excludes. */
+.v4-eco [data-v4-out] {
+  opacity: 0.12;
+}
+
+/* 18. Section tracker ------------------------------------------------------ */
+
+/* Where you are in a long page, as a rail of nodes. In-page links; the
+ * runtime marks the section in view with aria-current. */
+.v4-tracker {
+  position: sticky;
+  z-index: 40;
+  top: 72px;
+  border-block: 1px solid var(--v4-rule);
+  background: var(--v4-header);
+  backdrop-filter: blur(16px) saturate(120%);
+}
+
+.v4-tracker ol {
+  display: flex;
+  gap: 0.15rem;
+  width: min(calc(100% - (2 * var(--page-gutter))), var(--v4-content));
+  margin: 0 auto;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.v4-tracker a {
+  min-height: 46px;
+  padding: 0 0.85rem 0 0;
+  margin-right: 0.85rem;
+  border-bottom: 2px solid transparent;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.v4-tracker a small {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+}
+
+.v4-tracker a .v4-node__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+}
+
+.v4-tracker a[aria-current] {
+  border-bottom-color: var(--v4-current);
+  color: var(--v4-ink);
+}
+
+.v4-tracker a[aria-current] .v4-node__dot {
+  border-color: var(--v4-current);
+  background: var(--v4-current);
+}
+
+.v4-tracker a[aria-current] .v4-node__dot::after {
+  opacity: 1;
+}
+
+@media (max-width: 1100px) {
+  .v4-tracker {
+    top: 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .v4-tracker {
+    top: 60px;
+  }
+}
+
+/* 19. Process -------------------------------------------------------------- */
+
+/* An ordered list of steps as nodes on one current. The list stays a list;
+ * the current and the nodes are drawn on it. The first time it is seen the
+ * current runs its length once and each node wakes as it passes. */
+[data-v4-process] {
+  position: relative;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  list-style: none;
+}
+
+[data-v4-process]::before {
+  position: absolute;
+  top: calc(1.45rem - 1px);
+  right: 4%;
+  left: 4%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--v4-current), var(--v4-current-2));
+  box-shadow: 0 0 14px var(--v4-current-glow);
+  content: "";
+  transform-origin: 0 50%;
+  animation: v4-process-run 1700ms var(--v4-ease-in-out) backwards;
+}
+
+[data-v4-process] > li {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  justify-items: center;
+  align-content: start;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0.6rem;
+  border: 0;
+  background: none;
+  text-align: center;
+}
+
+[data-v4-process] > li > strong {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border: 1px solid var(--v4-signal-muted);
+  border-radius: 50%;
+  background: var(--v4-canvas-raised);
+  color: var(--v4-ink-secondary);
+  font: 500 0.72rem / 1 var(--v4-mono);
+  transition:
+    border-color var(--v4-motion-ui) var(--v4-ease-out),
+    background-color var(--v4-motion-ui) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out),
+    color var(--v4-motion-feedback) var(--v4-ease-out);
+  animation: v4-process-wake 800ms var(--v4-ease-out) calc(var(--v4-step, 0) * 260ms) backwards;
+}
+
+[data-v4-process] > li > span {
+  color: var(--v4-ink-secondary);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  transition: color var(--v4-motion-feedback) var(--v4-ease-out);
+}
+
+[data-v4-process] > li:is(:hover, :focus-within) > strong {
+  border-color: var(--v4-current);
+  background: color-mix(in srgb, var(--v4-current) 22%, var(--v4-canvas-raised));
+  box-shadow: 0 0 0 0.4rem var(--v4-signal-glow), 0 0 2.5rem 0 var(--v4-current-glow);
+  color: var(--v4-ink);
+}
+
+[data-v4-process] > li:is(:hover, :focus-within) > span {
+  color: var(--v4-ink);
+}
+
+[data-v4-process] > li:nth-child(2) { --v4-step: 1; }
+[data-v4-process] > li:nth-child(3) { --v4-step: 2; }
+[data-v4-process] > li:nth-child(4) { --v4-step: 3; }
+[data-v4-process] > li:nth-child(5) { --v4-step: 4; }
+[data-v4-process] > li:nth-child(6) { --v4-step: 5; }
+[data-v4-process] > li:nth-child(7) { --v4-step: 6; }
+[data-v4-process] > li:nth-child(8) { --v4-step: 7; }
+
+[data-v4-process][data-v4-await]::before,
+[data-v4-process][data-v4-await] > li > strong {
+  animation: none;
+}
+
+@keyframes v4-process-run {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes v4-process-wake {
+  0%,
+  45% {
+    border-color: var(--v4-current);
+    background: color-mix(in srgb, var(--v4-current) 34%, var(--v4-canvas-raised));
+    box-shadow: 0 0 0 0.45rem var(--v4-signal-glow), 0 0 2.75rem 0 var(--v4-current-glow);
+    color: var(--v4-ink);
+  }
+}
+
+@media (max-width: 760px) {
+  [data-v4-process] {
+    grid-auto-flow: row;
+    gap: 1.1rem;
+  }
+
+  [data-v4-process]::before {
+    top: 1rem;
+    right: auto;
+    bottom: 1rem;
+    left: calc(1.45rem - 1px);
+    width: 2px;
+    height: auto;
+    transform-origin: 50% 0;
+    animation-name: v4-process-fall;
+  }
+
+  [data-v4-process] > li {
+    grid-template-columns: 2.9rem minmax(0, 1fr);
+    gap: 1rem;
+    justify-items: start;
+    align-items: center;
+    padding: 0;
+    text-align: left;
+  }
+}
+
+@keyframes v4-process-fall {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-modes__mode,
+  [data-v4-process]::before,
+  [data-v4-process] > li > strong,
+  [data-v4-process] > li > span {
+    animation: none !important;
+    transition: none !important;
   }
 }

@@ -1,4 +1,5 @@
 import SignalFlow, { SignalRule } from "./SignalFlow.jsx";
+import { EcosystemField } from "./EcosystemMap.jsx";
 
 /* Route consumers of the V4 system.
  *
@@ -7,9 +8,9 @@ import SignalFlow, { SignalRule } from "./SignalFlow.jsx";
  * appends the few elements V4 adds. Each returns the extra children for the
  * node, or null. */
 
-/* The hero's atmosphere: data currents in two depths. The far ones sweep the
- * whole first screen; the near ones converge on the human node and part
- * again. Decorative; drawn once, then still. */
+/* A section's atmosphere: data currents in two depths. The far ones sweep the
+ * whole first screen; the near ones converge on the section's focal node and
+ * part again. Decorative; drawn once, then still. */
 const FAR_CURRENTS = [
   "M-80 700C320 760 640 600 900 660S1260 720 1520 640",
   "M-80 120C300 60 620 200 900 150S1280 40 1520 110",
@@ -39,8 +40,8 @@ function CurrentField() {
   );
 }
 
-/* The capabilities a flagship surface really exercises, as ports on it. They
- * are the same nodes as the ecosystem's and light with them. */
+/* The capabilities a surface really exercises, as ports on it. They are the
+ * same nodes as the ecosystem's and light with them. */
 function CapabilityPorts({ capabilities }) {
   return (
     <ul className="v4-ports">
@@ -101,16 +102,72 @@ function home(v4, node, classes, attributes, key) {
   return null;
 }
 
-function works(v4, node, classes, attributes) {
+/* Works: one catalog, three ways to read it. The view is presentation state
+ * only — the catalog's own filter and search decide what is showing in all
+ * three, and without JavaScript the page is the ordinary project list. */
+const VIEWS = ["grid", "map", "capability"];
+
+function ViewModes({ v4 }) {
+  return (
+    <div className="v4-modes" role="group" aria-label={v4.labels.viewAria} data-v4-live={v4.live ? "" : undefined}>
+      {VIEWS.map((view) => (
+        <button key={view} type="button" className="v4-modes__mode" data-v4-mode={view} aria-pressed={String(v4.view === view)} onClick={() => v4.setView(view)}>
+          <i aria-hidden="true" />
+          {v4.labels[view]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function works(v4, node, classes, attributes, key) {
   if (node.tag === "h1") attributes["data-v4-kinetic"] = "";
   if (classes.has("page-hero")) attributes["data-v4-ambient"] = "grain";
-  if (classes.has("filter-bar")) attributes["data-v4-rail"] = "";
-  if (classes.has("project-card")) attributes["data-v4-card"] = "";
+  if (classes.has("filter-bar")) {
+    attributes["data-v4-rail"] = "";
+    /* What is showing, of what there is: the catalog's own state. */
+    const two = (value) => String(value).padStart(2, "0");
+    attributes["data-v4-count"] = `${two(v4.ecosystem.projects.length - v4.out.size)} / ${two(v4.ecosystem.projects.length)}`;
+  }
+  if (classes.has("project-card")) {
+    attributes["data-v4-card"] = "";
+    const filed = String(attributes["data-category"] || "").split(/\s+/);
+    return [<CapabilityPorts key={`${key}.v4-ports`} capabilities={v4.ecosystem.capabilities.filter((capability) => filed.includes(capability.id))} />];
+  }
+  /* The catalog section becomes the explorer: it carries the view and gains
+   * the mode switch and the map. */
+  if (node.tag === "section" && node.children.some((child) => child.type === "element" && child.attributes.some((entry) => entry.name === "class" && String(entry.value).split(/\s+/).includes("filter-bar")))) {
+    attributes["data-v4-explorer"] = "";
+    attributes["data-v4-view"] = v4.view;
+    return [
+      <ViewModes key={`${key}.v4-modes`} v4={v4} />,
+      <div key={`${key}.v4-map`} className="v4-explorer__map">
+        <EcosystemField model={v4.ecosystem} control={{ category: v4.catalog.category, setCategory: v4.catalog.setCategory, out: v4.out }} />
+      </div>,
+    ];
+  }
   return null;
 }
 
-const CONSUMERS = { home, works };
+/* Project detail: the page is the selected node, opened. Its own sections
+ * become the system; nothing is added to them but the primitives. */
+function detail(v4, node, classes, attributes, key) {
+  if (node.tag === "h1") attributes["data-v4-kinetic"] = "";
+  if (classes.has("case-hero")) {
+    attributes["data-v4-ambient"] = "grain";
+    return [<CurrentField key={`${key}.v4-field`} />, ...(v4.ports.length ? [<CapabilityPorts key={`${key}.v4-ports`} capabilities={v4.ports} />] : [])];
+  }
+  if (classes.has("case-hero-visual")) attributes["data-v4-anchor"] = "";
+  if (classes.has("case-section")) attributes.id = `v4-s-${key.split(".").pop()}`;
+  if (classes.has("case-journey")) attributes["data-v4-process"] = "";
+  if (classes.has("case-proof-strip")) attributes["data-v4-arrive"] = "";
+  if (classes.has("case-proof") || classes.has("case-service-card") || classes.has("case-panel")) attributes["data-v4-card"] = "";
+  return null;
+}
+
+const CONSUMERS = { home, works, detail };
 
 export function applyV4(page, v4, node, classes, attributes, key) {
-  return CONSUMERS[page] ? CONSUMERS[page](v4, node, classes, attributes, key) : null;
+  const consumer = CONSUMERS[v4.consumer || page];
+  return consumer ? consumer(v4, node, classes, attributes, key) : null;
 }

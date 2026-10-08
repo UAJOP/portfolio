@@ -539,5 +539,12 @@
   "home.ecosystem.title": "Her şey birbirine nasıl bağlanıyor.",
   "home.ecosystem.lead": "Her proje, gerçekten kullandığı yetkinliklerin üzerinde durur. Arkasındaki işi görmek için bir yetkinlik seçin.",
   "home.ecosystem.capabilities": "Yetkinlikler",
-  "home.ecosystem.projects": "Projeler"
+  "home.ecosystem.projects": "Projeler",
+  "works.view.aria": "Kanıt görünümü",
+  "works.view.grid": "Proje ızgarası",
+  "works.view.map": "Ekosistem haritası",
+  "works.view.capability": "Yetkinlik görünümü",
+  "project.tracker.aria": "Bu sayfada",
+  "project.related.eyebrow": "İlgili işler",
+  "project.related.title": "Bağlantıları takip edin."
 }

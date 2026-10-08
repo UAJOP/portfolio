@@ -539,5 +539,12 @@
   "home.ecosystem.title": "Comment tout se connecte.",
   "home.ecosystem.lead": "Chaque projet repose sur les compétences qu’il mobilise réellement. Choisissez une compétence pour voir le travail qui la soutient.",
   "home.ecosystem.capabilities": "Compétences",
-  "home.ecosystem.projects": "Projets"
+  "home.ecosystem.projects": "Projets",
+  "works.view.aria": "Vue des preuves",
+  "works.view.grid": "Grille de projets",
+  "works.view.map": "Carte de l’écosystème",
+  "works.view.capability": "Vue par compétence",
+  "project.tracker.aria": "Sur cette page",
+  "project.related.eyebrow": "Travaux liés",
+  "project.related.title": "Suivez les connexions."
 }

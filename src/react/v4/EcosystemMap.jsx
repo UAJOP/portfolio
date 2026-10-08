@@ -1,5 +1,7 @@
 import { ecosystemGeometry } from "./flowGeometry.js";
 
+const two = (value) => String(value).padStart(2, "0");
+
 /* V4 project ecosystem.
  *
  * A map of what the portfolio actually contains: every project on the Works
@@ -12,24 +14,23 @@ import { ecosystemGeometry } from "./flowGeometry.js";
  * pointing at, focusing or pressing a node lights what it is really connected
  * to, lets the rest recede, and says so in the readout. Below 1100px the map
  * becomes a capability rail over a project list; the wires are not squeezed
- * onto a phone. */
-export default function EcosystemMap({ model }) {
+ * onto a phone.
+ *
+ * `control` hands the pressed capability to a host instead of the runtime:
+ * { category, setCategory, out } — the Works catalog's own filter state, and
+ * the ids of the projects its filter and search currently exclude. */
+export function EcosystemField({ model, control = null }) {
   const geometry = ecosystemGeometry(model);
   const projectsOf = (capability) => model.projects.filter((project) => project.categories.includes(capability.id));
-  const two = (value) => String(value).padStart(2, "0");
+  const out = (id) => (control?.out.has(id) ? "" : undefined);
   return (
-    <section className="section-shell section-block v4-eco-section" aria-labelledby="v4-eco-title" data-v4-ambient="">
-      <div className="section-heading">
-        <p className="eyebrow">{model.eyebrow}</p>
-        <h2 id="v4-eco-title">{model.title}</h2>
-        <p>{model.lead}</p>
-      </div>
-      <div className="v4-eco" data-v4-eco="" style={{ "--v4-eco-aspect": geometry.aspect }}>
+    <>
+      <div className="v4-eco" data-v4-eco="" data-v4-eco-controlled={control ? "" : undefined} style={{ "--v4-eco-aspect": geometry.aspect }}>
         <svg className="v4-eco__field" viewBox={geometry.viewBox} aria-hidden="true" focusable="false">
           <path className="v4-eco__loop-glow" d={geometry.loop} />
           <path className="v4-eco__loop" d={geometry.loop} pathLength="1" />
           {geometry.edges.map((edge) => (
-            <g key={`${edge.project}:${edge.capability}`} className="v4-eco__edge" data-v4-edge={`${edge.project} ${edge.capability}`}>
+            <g key={`${edge.project}:${edge.capability}`} className="v4-eco__edge" data-v4-edge={`${edge.project} ${edge.capability}`} data-v4-out={out(edge.project)}>
               <path className="v4-eco__wire-glow" d={edge.d} />
               <path className="v4-eco__wire" d={edge.d} pathLength="1" />
               <path className="v4-eco__pulse" d={edge.d} pathLength="100" />
@@ -48,7 +49,8 @@ export default function EcosystemMap({ model }) {
                 data-v4-eco-kind="capability"
                 data-v4-eco-tier={at.tier}
                 data-v4-eco-links={projectsOf(capability).map((project) => project.id).join(" ")}
-                aria-pressed="false"
+                aria-pressed={control ? String(control.category === capability.id) : "false"}
+                onClick={control ? () => control.setCategory(control.category === capability.id ? "all" : capability.id) : undefined}
                 style={{ "--v4-x": at.x, "--v4-y": at.y, "--v4-degree": at.degree }}
               >
                 <i className="v4-node__dot" aria-hidden="true" />
@@ -62,7 +64,7 @@ export default function EcosystemMap({ model }) {
           {model.projects.map((project) => {
             const at = geometry.project(project.id);
             return (
-              <li key={project.id} data-v4-eco-side={at.side} style={{ "--v4-x": at.x, "--v4-y": at.y }}>
+              <li key={project.id} data-v4-eco-side={at.side} data-v4-out={out(project.id)} style={{ "--v4-x": at.x, "--v4-y": at.y }}>
                 <a
                   className="v4-node v4-eco__project"
                   href={project.href}
@@ -85,8 +87,22 @@ export default function EcosystemMap({ model }) {
       <p className="v4-eco__readout" data-v4-eco-readout="" aria-live="polite">
         <span>{model.capabilitiesLabel} {two(model.capabilities.length)}</span>
         <span>{model.projectsLabel} {two(model.projects.length)}</span>
-        <a href={model.viewAll.href}>{model.viewAll.label}</a>
+        {model.viewAll ? <a href={model.viewAll.href}>{model.viewAll.label}</a> : null}
       </p>
+    </>
+  );
+}
+
+/* The ecosystem as a section of its own (Home). */
+export default function EcosystemMap({ model }) {
+  return (
+    <section className="section-shell section-block v4-eco-section" aria-labelledby="v4-eco-title" data-v4-ambient="">
+      <div className="section-heading">
+        <p className="eyebrow">{model.eyebrow}</p>
+        <h2 id="v4-eco-title">{model.title}</h2>
+        <p>{model.lead}</p>
+      </div>
+      <EcosystemField model={model} />
       <i className="v4-handoff" aria-hidden="true" />
     </section>
   );

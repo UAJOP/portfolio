@@ -539,5 +539,12 @@
   "home.ecosystem.title": "Cómo se conecta todo.",
   "home.ecosystem.lead": "Cada proyecto se apoya en las capacidades que realmente ejercita. Elige una capacidad para ver el trabajo que hay detrás.",
   "home.ecosystem.capabilities": "Capacidades",
-  "home.ecosystem.projects": "Proyectos"
+  "home.ecosystem.projects": "Proyectos",
+  "works.view.aria": "Vista de evidencias",
+  "works.view.grid": "Cuadrícula de proyectos",
+  "works.view.map": "Mapa del ecosistema",
+  "works.view.capability": "Vista por capacidad",
+  "project.tracker.aria": "En esta página",
+  "project.related.eyebrow": "Trabajo relacionado",
+  "project.related.title": "Sigue las conexiones."
 }

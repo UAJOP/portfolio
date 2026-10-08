@@ -11,6 +11,9 @@
  *   [data-v4-card]        pointer position inside a connected card
  *   [data-v4-arrive]      a row of cards receiving the signal when first seen
  *   [data-v4-rail]        a filter rail whose set of cards has just changed
+ *   [data-v4-tracker]     which section of the page is in view
+ *   [data-v4-process]     a process running its current once, when first seen
+ *   connected cards       which one was chosen, so the next page can open from it
  *   all V4 regions        paused while outside the viewport, and their
  *                         bounded signal replayed when they return
  *
@@ -24,14 +27,16 @@
 
   if (window.V4Motion) return;
 
-  var REGIONS = "[data-v4-ambient], [data-v4-flow], [data-v4-signal-rule], [data-v4-eco], [data-v4-arrive]";
+  var REGIONS = "[data-v4-ambient], [data-v4-flow], [data-v4-signal-rule], [data-v4-eco], [data-v4-arrive], [data-v4-process]";
   /* Regions that hold their first-view moment until they are first seen. */
-  var FIRST_VIEW = "[data-v4-eco], [data-v4-arrive]";
+  var FIRST_VIEW = "[data-v4-eco], [data-v4-arrive], [data-v4-process]";
   var FOCUS_RADIUS = 96;
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
   var controller = null;
   var observer = null;
+  /* Extra observers, disconnected with everything else on destroy. */
+  var watchers = [];
   var frame = 0;
   var writes = new Map();
 
@@ -204,8 +209,16 @@
     var lines = readout ? Array.from(readout.querySelectorAll("span")) : [];
     var resting = lines.map(function (line) { return line.textContent; });
     var labelOf = function (node) { return (node.querySelector(".v4-eco__title, span") || node).textContent.trim(); };
+    /* A host-controlled map: its host sets aria-pressed (on Works, from the
+     * catalog filter). The runtime then reads the pin instead of owning it. */
+    var controlled = root.hasAttribute("data-v4-eco-controlled");
     var pinned = null;
     var shown = null;
+    var held = function () {
+      if (!controlled) return pinned;
+      var pressed = root.querySelector('[aria-pressed="true"]');
+      return pressed ? pressed.getAttribute("data-v4-eco-node") : null;
+    };
 
     function show(id) {
       if (id === shown) return;
@@ -252,52 +265,90 @@
       var node = nodeOf(event);
       if (node && event.pointerType !== "touch") show(node.getAttribute("data-v4-eco-node"));
     });
-    listen(root, "pointerleave", function () { show(pinned); });
+    listen(root, "pointerleave", function () { show(held()); });
     listen(root, "focusin", function (event) {
       var node = nodeOf(event);
       if (node) show(node.getAttribute("data-v4-eco-node"));
     });
     listen(root, "focusout", function (event) {
-      if (!root.contains(event.relatedTarget)) show(pinned);
+      if (!root.contains(event.relatedTarget)) show(held());
     });
     listen(root, "click", function (event) {
       var node = nodeOf(event);
-      if (!node || node.getAttribute("data-v4-eco-kind") !== "capability") return;
+      if (controlled || !node || node.getAttribute("data-v4-eco-kind") !== "capability") return;
       var id = node.getAttribute("data-v4-eco-node");
       pin(pinned === id ? null : id);
     });
     listen(root, "keydown", function (event) {
       if (event.key === "Escape" && pinned) pin(null);
     });
+    if (controlled && "MutationObserver" in window) {
+      var pressWatch = new MutationObserver(function () { show(held()); });
+      pressWatch.observe(root, { attributes: true, attributeFilter: ["aria-pressed"], subtree: true });
+      watchers.push(pressWatch);
+      show(held());
+    }
   }
 
-  /* A filter rail: when its set of cards changes, the set is told so (the
-   * cards take the current once) and the rail carries a count of what is
-   * showing, read from the cards themselves after the catalog has updated.
-   * The catalog's own logic decides what shows; nothing here filters. */
+  /* A filter rail: when the count it carries changes (its host renders it
+   * from the catalog's own state), the set of cards is told so and takes the
+   * current once. The catalog decides what shows; nothing here filters. */
   function rail(bar) {
+    if (reducedMotion.matches || !("MutationObserver" in window)) return;
     var scope = bar.closest("section") || document;
-    var search = scope.querySelector("[data-project-search]");
-    var cards = function () { return Array.from(scope.querySelectorAll("[data-v4-card]")); };
-    var two = function (value) { return (value < 10 ? "0" : "") + value; };
-    function count() {
-      var all = cards();
-      var showing = all.filter(function (entry) { return !entry.classList.contains("is-hidden"); }).length;
-      bar.setAttribute("data-v4-count", two(showing) + " / " + two(all.length));
-    }
-    function changed() {
-      /* Two frames: after the catalog's own render has landed. */
-      requestAnimationFrame(function () { requestAnimationFrame(function () {
-        count();
-        if (reducedMotion.matches) return;
-        scope.removeAttribute("data-v4-reconfig");
-        void scope.offsetWidth;
-        scope.setAttribute("data-v4-reconfig", "");
-      }); });
-    }
-    count();
-    listen(bar, "click", function (event) { if (event.target.closest && event.target.closest("button")) changed(); });
-    if (search) listen(search, "input", changed);
+    var watch = new MutationObserver(function () {
+      scope.removeAttribute("data-v4-reconfig");
+      void scope.offsetWidth;
+      scope.setAttribute("data-v4-reconfig", "");
+    });
+    watch.observe(bar, { attributes: true, attributeFilter: ["data-v4-count"] });
+    watchers.push(watch);
+  }
+
+  /* Section tracker: mark the section whose top has most recently passed
+   * under the tracker. Plain links without this; this only says where you are. */
+  function tracker(nav) {
+    if (!("IntersectionObserver" in window)) return;
+    var links = Array.from(nav.querySelectorAll('a[href^="#"]'));
+    var sections = links.map(function (link) { return document.getElementById(link.getAttribute("href").slice(1)); }).filter(Boolean);
+    var passed = new Set();
+    var mark = function () {
+      var current = null;
+      sections.forEach(function (section) { if (passed.has(section)) current = section; });
+      links.forEach(function (link) {
+        var here = current && link.getAttribute("href") === "#" + current.id;
+        if (here) {
+          link.setAttribute("aria-current", "true");
+          if (link.scrollIntoView && nav.scrollWidth > nav.clientWidth) link.scrollIntoView({ block: "nearest", inline: "center" });
+        } else link.removeAttribute("aria-current");
+      });
+    };
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        /* Above the line a third of the way down: reached, or scrolled past. */
+        if (entry.isIntersecting || entry.boundingClientRect.top < 0) passed.add(entry.target); else passed.delete(entry.target);
+      });
+      write(nav, mark);
+    }, { rootMargin: "0px 0px -66% 0px" });
+    sections.forEach(function (section) { spy.observe(section); });
+    watchers.push(spy);
+  }
+
+  /* The connected card being left for its own page carries a name the next
+   * document can pick up (CSS view transitions); only ever one at a time.
+   * Navigation itself is untouched. */
+  function anchors(root) {
+    var named = null;
+    var choose = function (event) {
+      var surface = event.target.closest ? event.target.closest("[data-v4-card]") : null;
+      var visual = surface ? surface.querySelector("img") : null;
+      if (visual === named) return;
+      if (named) named.style.removeProperty("view-transition-name");
+      named = visual;
+      if (named) named.style.setProperty("view-transition-name", "v4-project-visual");
+    };
+    listen(root, "pointerdown", choose);
+    listen(root, "focusin", choose);
   }
 
   function card(surface) {
@@ -339,6 +390,8 @@
      * touch. Only the pointer-following effects below are gated. */
     root.querySelectorAll("[data-v4-eco]").forEach(ecosystem);
     root.querySelectorAll("[data-v4-rail]").forEach(rail);
+    root.querySelectorAll("[data-v4-tracker]").forEach(tracker);
+    if (!reducedMotion.matches && root.querySelector("[data-v4-explorer]")) anchors(root.querySelector("[data-v4-explorer]"));
     if (reducedMotion.matches) return;
     root.querySelectorAll("[data-v4-kinetic]").forEach(kinetic);
     if (!finePointer.matches) return;
@@ -351,6 +404,8 @@
   function destroy() {
     if (controller) controller.abort();
     if (observer) observer.disconnect();
+    watchers.forEach(function (watcher) { watcher.disconnect(); });
+    watchers = [];
     if (frame) cancelAnimationFrame(frame);
     controller = observer = null;
     frame = 0;
@@ -358,6 +413,18 @@
   }
 
   window.V4Motion = { init: init, destroy: destroy, replay: replay };
+
+  /* A cross-document view transition the browser decides to skip rejects its
+   * promises. That is the fallback working, not an error. */
+  ["pageswap", "pagereveal"].forEach(function (type) {
+    window.addEventListener(type, function (event) {
+      var transition = event.viewTransition;
+      if (!transition) return;
+      [transition.ready, transition.finished, transition.updateCallbackDone].forEach(function (promise) {
+        if (promise && promise.catch) promise.catch(function () {});
+      });
+    });
+  });
 
   /* React owns the markup these primitives live in. Hydration has to finish,
    * and be seen to finish untouched, before anything here writes to it: start

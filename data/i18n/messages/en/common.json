@@ -539,5 +539,12 @@
   "home.ecosystem.title": "How everything connects.",
   "home.ecosystem.lead": "Every project sits on the capabilities it actually exercises. Pick a capability to see the work behind it.",
   "home.ecosystem.capabilities": "Capabilities",
-  "home.ecosystem.projects": "Projects"
+  "home.ecosystem.projects": "Projects",
+  "works.view.aria": "Evidence view",
+  "works.view.grid": "Project grid",
+  "works.view.map": "Ecosystem map",
+  "works.view.capability": "Capability view",
+  "project.tracker.aria": "On this page",
+  "project.related.eyebrow": "Related work",
+  "project.related.title": "Follow the connections."
 }

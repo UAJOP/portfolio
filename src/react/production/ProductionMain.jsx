@@ -1,8 +1,9 @@
-import { Fragment, createElement, memo, useState } from "react";
+import { Fragment, createElement, memo, useEffect, useState } from "react";
 import homeAboutStructure from "../../../data/site/m3-25b-home-about-structure.json";
 import BuildLog from "./BuildLog.jsx";
 import { applyV4 } from "../v4/consumers.jsx";
 import EcosystemMap from "../v4/EcosystemMap.jsx";
+import { RelatedWork, SectionTracker } from "../v4/DetailShell.jsx";
 
 const PROP_NAMES = {
   class: "className",
@@ -154,8 +155,28 @@ export default function ProductionMain(props) {
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
   const catalogState = catalogPage ? { category, query, setCategory, setQuery } : null;
-  const sections = page.children.map((node, index) => renderNode(node, props, `${props.page}.${index}`, catalogState));
+  /* V4 view state (Works). `live` turns on once hydrated, so controls that
+   * need JavaScript are not offered before it can answer. */
+  const [view, setView] = useState("grid");
+  const [live, setLive] = useState(false);
+  useEffect(() => { setLive(true); }, []);
+  let live4 = props;
+  if (props.v4 && catalogState) {
+    /* The projects the catalog's own filter and search currently exclude. */
+    const out = new Set(page.children.flatMap(descendantCards).filter((card) => !cardVisible(card, props, catalogState)).map((card) => {
+      const attributes = resolvedAttributes(card, props);
+      return String(attributes["data-project-link"] || attributes["data-game-link"]).split("/").filter(Boolean).pop();
+    }));
+    live4 = { ...props, v4: { ...props.v4, view, setView, live, catalog: catalogState, out } };
+  }
+  const sections = page.children.map((node, index) => renderNode(node, live4, `${props.page}.${index}`, catalogState));
   /* V4: Home places the project ecosystem straight after its flagship evidence. */
-  if (props.v4?.ecosystem) sections.splice(2, 0, <EcosystemMap key={`${props.page}.v4-ecosystem`} model={props.v4.ecosystem} />);
+  if (props.v4?.flow && props.v4.ecosystem) sections.splice(2, 0, <EcosystemMap key={`${props.page}.v4-ecosystem`} model={props.v4.ecosystem} />);
+  /* V4: a project detail gains its tracker after the hero and its related
+   * work before the closing section. */
+  if (props.v4?.consumer === "detail") {
+    if (props.v4.related) sections.splice(sections.length - 1, 0, <RelatedWork key={`${props.page}.v4-related`} model={props.v4.related} />);
+    sections.splice(1, 0, <SectionTracker key={`${props.page}.v4-tracker`} model={props.v4.tracker} />);
+  }
   return sections;
 }
