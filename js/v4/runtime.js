@@ -256,7 +256,8 @@
         if (lines.length >= 2) {
           readout.toggleAttribute("data-v4-live", Boolean(active));
           lines[0].textContent = active ? labelOf(active) : resting[0];
-          lines[1].textContent = active ? nodes.filter(function (node) { return related.indexOf(node.getAttribute("data-v4-eco-node")) >= 0; }).map(labelOf).join(" · ") : resting[1];
+          /* A node the map shows in more than one place is named once. */
+          lines[1].textContent = active ? nodes.filter(function (node) { return related.indexOf(node.getAttribute("data-v4-eco-node")) >= 0; }).map(labelOf).filter(function (label, index, labels) { return labels.indexOf(label) === index; }).join(" · ") : resting[1];
         }
       });
     }

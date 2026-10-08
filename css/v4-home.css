@@ -4,9 +4,10 @@
  * to body[data-page="home"] and only composes system tokens and primitives:
  * the hero is an ambient region, its heading is kinetic, its primary action is
  * magnetic, and the portrait sits at the hub of the delivery flow (stage
- * positions: data/site/v4-home-flow.json). The sections below the hero keep
- * the editorial baseline until V4-04, except the flagship evidence and the
- * project ecosystem, which carry the Connected Systems direction (section 7). */
+ * positions: data/site/v4-home-flow.json). Sections 1–9 are the hero, the
+ * shared baseline and the AJOOP port; section 10 (V4-E05) is the final
+ * composition of everything below the hero, and where it and section 4
+ * disagree, section 10 is the page. */
 
 body[data-page="home"] main {
   overflow: clip;
@@ -630,127 +631,6 @@ body[data-page="home"] .hero {
   }
 }
 
-/* Flagship evidence: four system surfaces, AJOOP among them as a live port. */
-body[data-page="home"] .selected-work-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1rem, 2vw, 1.5rem);
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card,
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child {
-  display: flex;
-  grid-column: auto;
-  overflow: hidden;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(1) {
-  order: 1;
-}
-
-body[data-page="home"] .selected-work-grid > .v4-port {
-  order: 2;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(3) {
-  order: 3;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(2) {
-  order: 4;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card .evidence-card-media,
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child .evidence-card-media {
-  height: auto;
-  min-height: 0;
-  aspect-ratio: 16 / 9;
-  border-right: 0;
-  border-bottom: 1px solid var(--v4-rule);
-  background: var(--v4-canvas);
-}
-
-/* The image sinks into the card instead of sitting on it. */
-body[data-page="home"] .evidence-card-media::after {
-  position: absolute;
-  inset: 55% 0 0;
-  background: linear-gradient(180deg, transparent, var(--v4-surface));
-  content: "";
-  pointer-events: none;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card .evidence-card-content,
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child .evidence-card-content {
-  justify-content: flex-start;
-  padding: clamp(1.1rem, 2vw, 1.6rem);
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card h3,
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child h3 {
-  font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.75rem);
-  line-height: 1.15;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child p:not(.project-role) {
-  font-size: inherit;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child .project-actions {
-  margin-top: auto;
-}
-
-/* AJOOP's field: the Living Hub core, the same artwork its Hub and its case
- * study open with, under the system's app icon. A dark surface in both
- * themes. */
-body[data-page="home"] .selected-work-grid > .v4-port .v4-port__field {
-  display: grid;
-  place-items: center;
-  background: var(--ajoop-art-ground);
-}
-
-/* The upper three quarters of the artwork, so its core sits on the port's
- * line and its lettered title stays out of the frame. */
-body[data-page="home"] .v4-port__field .ajoop-art {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 132%;
-}
-
-body[data-page="home"] .v4-port__node .ajoop-app-icon {
-  width: clamp(3.75rem, 5.5vw, 4.75rem);
-  filter: drop-shadow(0 0.75rem 1.75rem rgba(3, 8, 20, 0.7));
-}
-
-body[data-page="home"] .v4-port__open {
-  min-height: 40px;
-  padding: 0 1.1rem;
-  border: 1px solid var(--v4-current);
-  border-radius: var(--v4-radius);
-  background: color-mix(in srgb, var(--v4-current) 12%, transparent);
-  color: var(--v4-ink);
-  font: 500 0.74rem / 1 var(--v4-mono);
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background-color var(--v4-motion-feedback) var(--v4-ease-out);
-}
-
-body[data-page="home"] .v4-port__open:hover {
-  background: color-mix(in srgb, var(--v4-current) 26%, transparent);
-}
-
-/* Ecosystem: its own ambient region, joined to the flagship row above. */
-body[data-page="home"] .v4-eco-section {
-  --v4-ambient-inset: 12% calc(50% - 50vw) -6%;
-  --v4-ambient-x: 50%;
-  --v4-ambient-y: 58%;
-}
-
-@media (max-width: 760px) {
-  body[data-page="home"] .selected-work-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 /* 8. System-first (V4-E01.1) ------------------------------------------------ */
 
 /* The hero is a network the person directs, not a portrait with lines: the
@@ -860,94 +740,30 @@ html[data-theme="light"] body[data-page="home"] .hero {
   --v4-field-glow: 0.34;
 }
 
-/* Flagship evidence as system modules: the primary three in one row, the
- * supporting enterprise evidence as a strip beneath them. */
-body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(1) {
-  --v4-order: 0;
+/* 9. AJOOP as a live port --------------------------------------------------- */
+
+/* AJOOP's field: the Living Hub core, the same artwork its Hub and its case
+ * study open with, under the system's app icon. A dark surface in both
+ * themes. */
+body[data-page="home"] .selected-work-grid > .v4-port .v4-port__field {
+  display: grid;
+  place-items: center;
+  background: var(--ajoop-art-ground);
 }
 
-body[data-page="home"] .selected-work-grid > .v4-port {
-  --v4-order: 1;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(3) {
-  --v4-order: 2;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(2) {
-  --v4-order: 3;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card .evidence-card-content,
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child .evidence-card-content {
-  padding: 1.05rem 1.15rem 1.15rem;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card h3,
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child h3 {
-  margin-top: 0.7rem;
-  font-size: clamp(1.15rem, 1rem + 0.5vw, 1.4rem);
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card p:not(.project-role),
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child p:not(.project-role) {
-  font-size: 0.93rem;
-  line-height: 1.55;
-}
-
-body[data-page="home"] .selected-work-grid > .evidence-card .project-actions,
-body[data-page="home"] .selected-work-grid > .evidence-card:first-child .project-actions {
-  padding-top: 0.9rem;
-}
-
-body[data-page="home"] .evidence-card > .v4-ports {
+/* The field is a band: the artwork is set on its core, so the core sits on
+ * the port's line and the artwork's lettered title stays out of the frame. */
+body[data-page="home"] .v4-port__field .ajoop-art {
   position: absolute;
-  z-index: 3;
-  top: 0.75rem;
-  left: 0.8rem;
+  inset: 50% 0 auto;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  translate: 0 -43%;
 }
 
-@media (min-width: 901px) {
-  body[data-page="home"] .selected-work-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(2) {
-    flex-direction: row;
-    grid-column: 1 / -1;
-  }
-
-  body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(2) .evidence-card-media {
-    flex: none;
-    width: 17rem;
-    height: auto;
-    aspect-ratio: auto;
-    border-right: 1px solid var(--v4-rule);
-    border-bottom: 0;
-  }
-
-  body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(2) .evidence-card-media::after {
-    display: none;
-  }
-
-  body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(2) .evidence-card-content {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 2.5rem;
-    align-content: center;
-    align-items: center;
-  }
-
-  body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(2) .evidence-card-content > * {
-    grid-column: 1;
-  }
-
-  body[data-page="home"] .selected-work-grid > .evidence-card:nth-child(2) .project-actions {
-    grid-row: 1 / span 4;
-    grid-column: 2;
-    margin: 0;
-    padding: 0;
-  }
+body[data-page="home"] .v4-port__node .ajoop-app-icon {
+  width: clamp(3.75rem, 5.5vw, 4.75rem);
+  filter: drop-shadow(0 0.75rem 1.75rem rgba(3, 8, 20, 0.7));
 }
 
 /* AJOOP as a live port: its node on a line that runs out to both neighbours,
@@ -1063,23 +879,9 @@ body[data-page="home"] .v4-port__composer b {
   body[data-page="home"] .v4-current-field {
     opacity: 0.5;
   }
-
-  body[data-page="home"] .selected-work-grid > .evidence-card .evidence-card-media,
-  body[data-page="home"] .selected-work-grid > .evidence-card:first-child .evidence-card-media {
-    aspect-ratio: 2 / 1;
-  }
 }
 
-/* These two sections draw outside their own box (the hand-off spine in the
- * gutter, the ecosystem's full-bleed field), which the site-wide
- * content-visibility: auto would clip. They are the second and third things on
- * the page, so rendering them eagerly costs nothing worth keeping. */
-body[data-page="home"] .hero + .section-shell,
-body[data-page="home"] .v4-eco-section {
-  content-visibility: visible;
-}
-
-/* 7. AJOOP port: the way to its Hub and its case study ---------------------- */
+/* The way to its Hub and its case study. */
 
 .v4-port__links {
   display: flex;
@@ -1108,4 +910,1002 @@ body[data-page="home"] .v4-eco-section {
   color: var(--v4-ink);
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+/* 10. Final Home (V4-E05) --------------------------------------------------- */
+
+/* Home is one story on one current: who, the flagship proof, how the rest
+ * connects, how the work is done, where it comes from, what is being built
+ * now, what to do next. The hero and the proof take their room; everything
+ * after them is a short section. */
+body[data-page="home"] .v4-eco-section ~ .section-block {
+  padding-top: clamp(4.25rem, 7.5vw, 6.5rem);
+}
+
+body[data-page="home"] .v4-eco-section ~ .section-block .section-heading h2 {
+  font-size: clamp(1.55rem, 1.2rem + 1.3vw, 2.3rem);
+  line-height: 1.1;
+  letter-spacing: var(--v4-track-heading);
+}
+
+/* These draw outside their own box (the hand-off spine in the gutter, the
+ * ecosystem's full-bleed light), which the site-wide content-visibility: auto
+ * would clip. They are the second and third things on the page, so rendering
+ * them eagerly costs nothing worth keeping. */
+body[data-page="home"] .hero + .section-shell,
+body[data-page="home"] .v4-eco-section {
+  content-visibility: visible;
+}
+
+/* 10.1 Flagship proof: one lead system, two beside it, one supporting strip -- */
+
+body[data-page="home"] .selected-work-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 1.6vw, 1.4rem);
+}
+
+body[data-page="home"] .selected-work-grid > .evidence-card {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / -1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body[data-page="home"] .selected-work-grid > [data-v4-flagship="ajoop"] {
+  --v4-order: 1;
+}
+
+body[data-page="home"] .selected-work-grid > [data-v4-flagship="route"] {
+  --v4-order: 2;
+}
+
+body[data-page="home"] .selected-work-grid > [data-v4-support] {
+  --v4-order: 3;
+}
+
+body[data-page="home"] .selected-work-grid > .evidence-card .evidence-card-media {
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 2 / 1;
+  border-right: 0;
+  border-bottom: 1px solid var(--v4-rule);
+  background: var(--v4-canvas);
+}
+
+body[data-page="home"] .selected-work-grid > .evidence-card .evidence-card-content {
+  justify-content: flex-start;
+  min-width: 0;
+  padding: 1.15rem 1.2rem 1.25rem;
+}
+
+body[data-page="home"] .selected-work-grid > .evidence-card h3 {
+  margin-top: 0.7rem;
+  font-size: clamp(1.2rem, 1rem + 0.6vw, 1.5rem);
+  line-height: 1.15;
+}
+
+body[data-page="home"] .selected-work-grid > .evidence-card p:not(.project-role) {
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+
+body[data-page="home"] .selected-work-grid > .evidence-card .project-actions {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+body[data-page="home"] .evidence-card > .v4-ports {
+  position: absolute;
+  z-index: 3;
+  top: 0.75rem;
+  left: 0.8rem;
+}
+
+/* The lead system is set a size up. */
+body[data-page="home"] .selected-work-grid > [data-v4-flagship="pipeline"] h3 {
+  font-size: clamp(1.45rem, 1.1rem + 1.3vw, 2.1rem);
+  letter-spacing: -0.035em;
+}
+
+body[data-page="home"] .selected-work-grid > [data-v4-flagship="pipeline"] p:not(.project-role) {
+  max-width: 58ch;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* SINAMA's cover is its mark on its own ground: shown whole at every width,
+ * on that ground, as a dark product panel in both themes. */
+body[data-page="home"] .selected-work-grid > [data-v4-flagship="pipeline"] .evidence-card-media {
+  background: #0e191a;
+}
+
+body[data-page="home"] [data-v4-flagship="pipeline"] .evidence-card-media img {
+  padding: 4% 6%;
+  object-fit: contain;
+}
+
+/* Joyday is a live business site: its own page, from the top. */
+body[data-page="home"] [data-v4-flagship="route"] .evidence-card-media img {
+  object-position: 50% 0;
+}
+
+body[data-page="home"] [data-v4-flagship="route"] .v4-sig__proof {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+/* 10.2 A flagship's own system ---------------------------------------------- */
+
+/* Its proof strip, as its case study states it: figures, and a release
+ * policy as the verdicts it can return. */
+body[data-page="home"] .v4-sig__proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.75rem;
+  margin: 1.1rem 0 0;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid var(--v4-rule);
+}
+
+body[data-page="home"] .v4-sig__proof > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.3rem;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+body[data-page="home"] .v4-sig__proof dt {
+  max-width: 19ch;
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-evidence);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body[data-page="home"] .v4-sig__proof dd {
+  margin: 0;
+  color: var(--v4-ink);
+  font: 700 1.4rem / 1 var(--v4-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+body[data-page="home"] .v4-sig__proof [data-v4-proof="states"] dt {
+  max-width: none;
+}
+
+body[data-page="home"] .v4-sig__proof [data-v4-proof="states"] dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+body[data-page="home"] .v4-sig__proof b {
+  --v4-verdict: var(--v4-state-idle);
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  min-height: 1.4rem;
+  padding: 0 0.6rem 0 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--v4-verdict) 50%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--v4-verdict) 9%, transparent);
+  font: 500 0.6rem / 1 var(--v4-mono);
+  letter-spacing: 0.1em;
+}
+
+body[data-page="home"] .v4-sig__proof b::before {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--v4-verdict);
+  content: "";
+}
+
+body[data-page="home"] .v4-sig__proof [data-v4-verdict="0"] {
+  --v4-verdict: var(--v4-state-active);
+}
+
+body[data-page="home"] .v4-sig__proof [data-v4-verdict="1"] {
+  --v4-verdict: var(--v4-state-fallback);
+}
+
+body[data-page="home"] .v4-sig__proof [data-v4-verdict="2"] {
+  --v4-verdict: var(--v4-state-error);
+}
+
+/* Its journey: the steps its case study documents, on the process primitive
+ * (css/v4-system.css, 19), under the heading the case study gives them. */
+body[data-page="home"] .v4-sig {
+  min-width: 0;
+}
+
+body[data-page="home"] .v4-sig__caption {
+  margin: 0;
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-evidence);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+body[data-page="home"] .v4-sig__steps {
+  margin-top: 1rem;
+}
+
+body[data-page="home"] .v4-sig__steps > li > strong {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.62rem;
+}
+
+body[data-page="home"] .v4-sig__steps > li > span {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+/* In hand, the current runs the journey again, step by step. */
+body[data-page="home"] [data-v4-flagship]:is(:hover, :focus-within) .v4-sig__steps > li > strong {
+  border-color: var(--v4-current);
+  color: var(--v4-ink);
+  transition-delay: calc(var(--v4-step, 0) * 70ms);
+}
+
+/* SINAMA: an evidence pipeline, the width of its card. */
+body[data-page="home"] [data-v4-sig="pipeline"] {
+  padding: 1.1rem 1.2rem 1.35rem;
+  border-top: 1px solid var(--v4-rule);
+  background: color-mix(in srgb, var(--v4-canvas) 60%, transparent);
+}
+
+body[data-page="home"] [data-v4-sig="pipeline"] .v4-sig__steps::before {
+  top: calc(1rem - 1px);
+}
+
+body[data-page="home"] [data-v4-sig="pipeline"] .v4-sig__steps > li {
+  gap: 0.65rem;
+  padding: 0 0.45rem;
+}
+
+/* Joyday: a customer's route through a real business, stop by stop. */
+body[data-page="home"] [data-v4-sig="route"] {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--v4-rule-strong);
+}
+
+body[data-page="home"] [data-v4-sig="route"] .v4-sig__steps {
+  grid-auto-flow: row;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+/* The line between stops is a path walked, not a current. */
+body[data-page="home"] [data-v4-sig="route"] .v4-sig__steps::before {
+  top: 0.75rem;
+  right: auto;
+  bottom: 0.75rem;
+  left: calc(0.75rem - 0.5px);
+  width: 0;
+  height: auto;
+  border-left: 1px dashed var(--v4-signal-muted);
+  background: none;
+  box-shadow: none;
+  animation: none;
+}
+
+body[data-page="home"] [data-v4-sig="route"] .v4-sig__steps > li {
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  gap: 0.6rem;
+  justify-items: start;
+  align-items: start;
+  padding: 0;
+  text-align: left;
+}
+
+body[data-page="home"] [data-v4-sig="route"] .v4-sig__steps > li > strong {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.35rem;
+  font-size: 0.56rem;
+}
+
+body[data-page="home"] [data-v4-sig="route"] .v4-sig__steps > li > span {
+  padding-top: 0.12rem;
+  text-wrap: wrap;
+}
+
+/* 10.3 Supporting evidence: a strip under the flagships, not a fourth -------- */
+
+body[data-page="home"] .selected-work-grid > [data-v4-support] {
+  border-style: dashed;
+  border-color: var(--v4-rule-strong);
+  background: transparent;
+}
+
+body[data-page="home"] .v4-support-label {
+  order: -1;
+  padding: 0.7rem 1.2rem;
+  border-bottom: 1px dashed var(--v4-rule);
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-evidence);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+body[data-page="home"] .selected-work-grid > [data-v4-support] h3 {
+  font-size: 1.15rem;
+}
+
+/* Its cover is lettered on the left; the strip shows the flow it draws. */
+body[data-page="home"] .selected-work-grid > [data-v4-support] .evidence-card-media img {
+  object-position: 100% 50%;
+}
+
+body[data-page="home"] .selected-work-grid > [data-v4-support] > .v4-ports {
+  top: 3.1rem;
+}
+
+/* 10.4 Flagship layout by width ---------------------------------------------- */
+
+@media (min-width: 761px) {
+  /* The lead: its media beside its case, its pipeline beneath both. */
+  body[data-page="home"] .selected-work-grid > [data-v4-flagship="pipeline"] {
+    display: grid;
+    grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-flagship="pipeline"] .evidence-card-media {
+    grid-area: 1 / 1;
+    height: 100%;
+    min-height: 15rem;
+    aspect-ratio: auto;
+    border-right: 1px solid var(--v4-rule);
+    border-bottom: 0;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-flagship="pipeline"] .evidence-card-media img,
+  body[data-page="home"] .selected-work-grid > [data-v4-support] .evidence-card-media img {
+    position: absolute;
+    inset: 0;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-flagship="pipeline"] .evidence-card-content {
+    grid-area: 1 / 2;
+    padding: clamp(1.3rem, 2.2vw, 1.9rem);
+  }
+
+  body[data-page="home"] [data-v4-sig="pipeline"] {
+    grid-column: 1 / -1;
+    padding-inline: clamp(1.3rem, 2.2vw, 1.9rem);
+  }
+
+  body[data-page="home"] .selected-work-grid > :is([data-v4-flagship="ajoop"], [data-v4-flagship="route"]) {
+    grid-column: auto;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-support] {
+    display: grid;
+    grid-template-columns: 12rem minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-support] .evidence-card-media {
+    grid-area: 1 / 1 / 3 / 2;
+    height: 100%;
+    aspect-ratio: auto;
+    border-right: 1px dashed var(--v4-rule);
+    border-bottom: 0;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-support] > .v4-ports {
+    top: 0.75rem;
+  }
+
+  body[data-page="home"] .v4-support-label {
+    grid-area: 1 / 2;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-support] .evidence-card-content {
+    display: grid;
+    grid-area: 2 / 2;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2.5rem;
+    align-content: center;
+    align-items: center;
+    padding-block: 0.9rem 1rem;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-support] .evidence-card-content > * {
+    grid-column: 1;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-support] h3 {
+    margin-top: 0.45rem;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-support] .project-actions {
+    grid-row: 1 / span 4;
+    grid-column: 2;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@media (min-width: 1101px) {
+  /* The two beside the lead: a band of the system's own surface, then the
+   * system. Joyday's route runs down the side of its case. */
+  body[data-page="home"] .selected-work-grid > :is([data-v4-flagship="ajoop"], [data-v4-flagship="route"]) .evidence-card-media {
+    aspect-ratio: 3.6 / 1;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-flagship="route"] .evidence-card-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.74fr);
+    grid-template-rows: repeat(5, auto) 1fr;
+    column-gap: 1.4rem;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-flagship="route"] .evidence-card-content > * {
+    grid-column: 1;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-flagship="route"] .evidence-card-content > [data-v4-sig="route"] {
+    grid-row: 1 / -1;
+    grid-column: 2;
+    margin-top: 0;
+    padding: 0 0 0 1.3rem;
+    border-top: 0;
+    border-left: 1px dashed var(--v4-rule-strong);
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-flagship="route"] .project-actions {
+    align-self: end;
+  }
+}
+
+@media (max-width: 760px) {
+  /* The pipeline reads down the card. */
+  body[data-page="home"] [data-v4-sig="pipeline"] .v4-sig__steps {
+    gap: 0.7rem;
+  }
+
+  body[data-page="home"] [data-v4-sig="pipeline"] .v4-sig__steps::before {
+    top: 0.8rem;
+    bottom: 0.8rem;
+    left: calc(1rem - 1px);
+  }
+
+  body[data-page="home"] [data-v4-sig="pipeline"] .v4-sig__steps > li {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.8rem;
+    padding: 0;
+  }
+
+  body[data-page="home"] [data-v4-sig="pipeline"] .v4-sig__steps > li > span {
+    text-wrap: wrap;
+  }
+}
+
+@media (max-width: 560px) {
+  /* A phone gets the systems, not tall media: bands, and figures in one row. */
+  body[data-page="home"] .selected-work-grid > .evidence-card .evidence-card-media {
+    aspect-ratio: 2.7 / 1;
+  }
+
+  body[data-page="home"] .selected-work-grid > [data-v4-support] .evidence-card-media {
+    aspect-ratio: 4.5 / 1;
+  }
+
+  body[data-page="home"] .v4-sig__proof {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem 1rem;
+  }
+
+  body[data-page="home"] .v4-sig__proof [data-v4-proof="states"] {
+    grid-column: 1 / -1;
+  }
+
+  body[data-page="home"] .v4-sig__proof dd {
+    font-size: 1.25rem;
+  }
+}
+
+/* 10.5 Connected ecosystem: the catalog, read by capability ------------------ */
+
+/* Rendered by EcosystemLanes (src/react/v4/EcosystemMap.jsx). A list at every
+ * width: one lane per capability, the projects filed under it on the lane. */
+body[data-page="home"] .v4-eco-section {
+  --v4-ambient-inset: 8% calc(50% - 50vw) -4%;
+  --v4-ambient-x: 68%;
+  --v4-ambient-y: 46%;
+  padding-top: clamp(4.5rem, 8vw, 7rem);
+}
+
+.v4-lanes {
+  position: relative;
+  display: grid;
+  margin-top: clamp(1.75rem, 4vw, 3rem);
+  border-top: 1px solid var(--v4-rule-strong);
+}
+
+.v4-lane {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(11rem, 16rem) minmax(0, 1fr);
+  gap: 0.5rem clamp(1rem, 3vw, 2.5rem);
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--v4-rule);
+}
+
+/* The lane's current: there when the lane, or anything on it, is in hand. */
+.v4-lane::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--v4-current), var(--v4-current-2) 55%, transparent);
+  box-shadow: 0 0 14px var(--v4-current-glow);
+  content: "";
+  pointer-events: none;
+  scale: 0 1;
+  transform-origin: 0 50%;
+  transition: scale var(--v4-motion-emphasis) var(--v4-ease-out);
+}
+
+.v4-lane[data-v4-state="active"]::after {
+  scale: 1 1;
+}
+
+.v4-lane__capability {
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--v4-ink);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.v4-lane__capability small {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+}
+
+/* Pinned is a decision, and looks like one. */
+.v4-lane__capability[aria-pressed="true"] span {
+  text-decoration: underline dashed var(--v4-current-2);
+  text-underline-offset: 6px;
+}
+
+.v4-lane__projects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v4-lane__projects li {
+  min-width: 0;
+}
+
+.v4-lane__project {
+  min-height: 40px;
+  padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 1.25rem;
+  background: var(--v4-living-surface);
+}
+
+.v4-lane__project .v4-eco__title {
+  font-size: 0.86rem;
+}
+
+.v4-lane__project small {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Flagships are the largest thing on their lanes; the archive is the quietest. */
+.v4-lane__project[data-v4-eco-tier="flagship"] {
+  min-height: 46px;
+  padding: 0.5rem 1.1rem 0.5rem 0.85rem;
+  border-color: var(--v4-signal-muted);
+  background: color-mix(in srgb, var(--v4-current) 11%, var(--v4-canvas-raised));
+}
+
+.v4-lane__project[data-v4-eco-tier="flagship"] .v4-eco__title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.v4-lane__project[data-v4-eco-tier="flagship"] .v4-node__dot {
+  border-color: var(--v4-current);
+  background: var(--v4-current);
+}
+
+.v4-lane__project[data-v4-eco-tier="archive"] {
+  border-style: dashed;
+  border-color: var(--v4-rule);
+  background: transparent;
+}
+
+.v4-lane__project[data-v4-eco-tier="archive"] .v4-eco__title {
+  color: var(--v4-ink-secondary);
+  font-weight: 500;
+}
+
+.v4-lane__project:is(:hover, :focus-visible, [data-v4-state]) {
+  border-color: var(--v4-current);
+  box-shadow: 0 0 2.5rem -0.6rem var(--v4-current-glow);
+}
+
+.v4-lane__project[data-v4-state="related"] {
+  border-color: var(--v4-current-2);
+}
+
+/* Activation: what is connected comes forward, the rest recedes. */
+.v4-lanes[data-v4-eco-active] .v4-node:not([data-v4-state], :hover, :focus-visible) {
+  opacity: 0.26;
+}
+
+/* AJOOP, under the map: not filed in the catalog, so on no lane. It is what
+ * answers over all of it. */
+.v4-eco__ajoop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  margin: 1.25rem 0 0;
+  padding: 0.7rem 1rem 0.7rem 0.8rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 0.75rem;
+  background: var(--v4-living-surface);
+  color: var(--v4-ink-secondary);
+  font: var(--v4-type-label);
+  letter-spacing: 0.06em;
+}
+
+.v4-eco__ajoop .ajoop-mark {
+  flex: none;
+  width: 1.6rem;
+}
+
+.v4-eco__ajoop strong {
+  color: var(--v4-ink);
+  font: 700 0.8rem / 1 var(--v4-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.v4-eco__ajoop span {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.v4-eco__ajoop a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--v4-accent-strong);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.v4-eco__ajoop a::after {
+  margin-left: 0.5rem;
+  content: "→";
+}
+
+.v4-eco__ajoop a:is(:hover, :focus-visible) {
+  color: var(--v4-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 760px) {
+  /* On a phone the section's light stays a hint behind the list. */
+  body[data-page="home"] .v4-eco-section::before {
+    opacity: 0.45;
+  }
+
+  .v4-lane {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.55rem 0 0.95rem;
+  }
+
+  .v4-lane__project {
+    max-width: 100%;
+  }
+}
+
+/* 10.6 Operating model: four stages on one current --------------------------- */
+
+body[data-page="home"] .service-grid[data-v4-model] {
+  gap: 0;
+}
+
+body[data-page="home"] .service-grid[data-v4-model] .service-card,
+html[data-theme="light"] body[data-page="home"] .service-grid[data-v4-model] .service-card {
+  position: relative;
+  padding: 1.6rem clamp(1rem, 2vw, 1.75rem) 0 0;
+  border-top: 1px solid var(--v4-rule-strong);
+}
+
+/* Each stage is a node on the rule; the current reaches the one in hand. */
+body[data-page="home"] .service-grid[data-v4-model] .service-card::before {
+  position: absolute;
+  z-index: 1;
+  top: -0.34rem;
+  left: 0;
+  width: 0.62rem;
+  height: 0.62rem;
+  border: 1px solid var(--v4-signal-muted);
+  border-radius: 50%;
+  background: var(--v4-canvas);
+  content: "";
+  transition:
+    border-color var(--v4-motion-feedback) var(--v4-ease-out),
+    background-color var(--v4-motion-feedback) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+body[data-page="home"] .service-grid[data-v4-model] .service-card::after {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--v4-current), var(--v4-current-2));
+  content: "";
+  scale: 0 1;
+  transform-origin: 0 50%;
+  transition: scale var(--v4-motion-emphasis) var(--v4-ease-out);
+}
+
+body[data-page="home"] .service-grid[data-v4-model] .service-card:hover::before {
+  border-color: var(--v4-current);
+  background: var(--v4-current);
+  box-shadow: 0 0 1.25rem var(--v4-current-glow);
+}
+
+body[data-page="home"] .service-grid[data-v4-model] .service-card:hover::after {
+  scale: 1 1;
+}
+
+body[data-page="home"] .service-grid[data-v4-model] .service-card h3::before {
+  color: var(--v4-accent);
+  font-family: var(--v4-mono);
+}
+
+@media (max-width: 1100px) {
+  body[data-page="home"] .service-grid[data-v4-model] {
+    row-gap: 2rem;
+  }
+}
+
+/* 10.7 Experience bridge ----------------------------------------------------- */
+
+/* The summary keeps its three roles and its way into Experience; the row
+ * under it carries on to Certificates and About. */
+body[data-page="home"] .timeline-card {
+  padding-block: 1.05rem;
+}
+
+body[data-page="home"] .timeline-card > span {
+  color: var(--v4-ink-muted);
+  font-family: var(--v4-mono);
+}
+
+body[data-page="home"] .split-section .section-heading .btn {
+  min-height: 46px;
+  border-color: var(--v4-rule-strong);
+  border-radius: var(--v4-radius);
+  background: transparent;
+  box-shadow: none;
+  color: var(--v4-ink);
+  font-family: var(--v4-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+body[data-page="home"] .split-section .section-heading .btn:is(:hover, :focus-visible) {
+  border-color: var(--v4-current);
+  color: var(--v4-ink);
+}
+
+body[data-page="home"] .v4-onward {
+  margin-top: clamp(2.25rem, 4.5vw, 3.5rem);
+}
+
+/* 10.8 Latest build: three entries across, as a log -------------------------- */
+
+body[data-page="home"] .build-log-list {
+  border-top-color: var(--v4-rule-strong);
+}
+
+body[data-page="home"] .build-log-item p {
+  color: var(--v4-ink-secondary);
+}
+
+body[data-page="home"] .section-kicker-row > a {
+  color: var(--v4-accent-strong);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 901px) {
+  body[data-page="home"] .build-log-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 clamp(1.5rem, 3vw, 2.75rem);
+  }
+
+  body[data-page="home"] .build-log-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.7rem;
+    align-content: start;
+    padding: 1.1rem 0 0;
+    border-bottom: 0;
+  }
+}
+
+/* 10.9 Closing hand-off ------------------------------------------------------ */
+
+/* The page ends where the current does: one lit panel, the one decision it
+ * exists for, and the ways back into the system. */
+body[data-page="home"] .contact-hub,
+html[data-theme="light"] body[data-page="home"] .contact-hub {
+  --v4-ambient-inset: 0;
+  --v4-ambient-x: 82%;
+  --v4-ambient-y: 8%;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+  overflow: hidden;
+  margin-top: clamp(4.5rem, 8vw, 7rem);
+  padding: clamp(2rem, 5vw, 4.25rem);
+  border-radius: 0.75rem;
+}
+
+body[data-page="home"] .contact-hub::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--v4-current), var(--v4-current-2) 45%, transparent 85%);
+  box-shadow: 0 0 18px var(--v4-current-glow);
+  content: "";
+}
+
+body[data-page="home"] .contact-hub h2 {
+  max-width: 18ch;
+  font: var(--v4-type-heading-lg);
+  letter-spacing: var(--v4-track-heading-lg);
+  text-wrap: balance;
+}
+
+body[data-page="home"] .contact-hub > div:first-child > p:not(.eyebrow) {
+  max-width: 62ch;
+  font: var(--v4-type-lead);
+}
+
+body[data-page="home"] .contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-start;
+  justify-self: stretch;
+  width: 100%;
+  max-width: none;
+}
+
+body[data-page="home"] .contact-actions .btn {
+  flex: none;
+  width: auto;
+  min-height: 48px;
+  padding-inline: 1.15rem;
+  border-radius: var(--v4-radius);
+  font-family: var(--v4-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+body[data-page="home"] .contact-actions .btn.primary {
+  border-color: var(--v4-accent-fill);
+  background-color: var(--v4-accent-fill);
+  box-shadow: none;
+  color: var(--v4-on-accent);
+}
+
+body[data-page="home"] .contact-actions .btn.ghost {
+  border-color: var(--v4-rule-strong);
+  background: transparent;
+  color: var(--v4-ink);
+}
+
+body[data-page="home"] .contact-actions .btn.ghost:is(:hover, :focus-visible) {
+  border-color: var(--v4-current);
+}
+
+@media (max-width: 560px) {
+  body[data-page="home"] .contact-hub,
+  html[data-theme="light"] body[data-page="home"] .contact-hub {
+    padding: 1.5rem 1.25rem 1.75rem;
+  }
+
+  body[data-page="home"] .contact-actions .btn {
+    flex: 1 1 calc(50% - 0.3rem);
+    padding-inline: 0.75rem;
+    text-align: center;
+  }
+
+  body[data-page="home"] .contact-actions .btn.primary {
+    flex-basis: 100%;
+  }
+}
+
+/* 10.10 Light theme ---------------------------------------------------------- */
+
+/* Light is drawn, not inverted: the lanes and the model keep their lines on
+ * paper, lit nodes are ink-blue rather than cyan, and AJOOP's field stays the
+ * one dark product surface. */
+html[data-theme="light"] body[data-page="home"] [data-v4-sig="pipeline"] {
+  background: color-mix(in srgb, var(--v4-canvas-raised) 55%, transparent);
+}
+
+html[data-theme="light"] .v4-lane__project,
+html[data-theme="light"] .v4-eco__ajoop {
+  background: var(--v4-surface-strong);
+}
+
+html[data-theme="light"] .v4-lane__project[data-v4-eco-tier="flagship"] {
+  border-color: var(--v4-current);
+  background: color-mix(in srgb, var(--v4-current) 7%, var(--v4-surface-strong));
+}
+
+html[data-theme="light"] .v4-lane__project[data-v4-eco-tier="archive"] {
+  background: transparent;
+}
+
+html[data-theme="light"] body[data-page="home"] .contact-hub {
+  background: var(--v4-surface-strong);
+}
+
+/* 10.11 Motion discipline ---------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-lane::after,
+  body[data-page="home"] .service-grid[data-v4-model] .service-card::before,
+  body[data-page="home"] .service-grid[data-v4-model] .service-card::after,
+  body[data-page="home"] [data-v4-flagship] .v4-sig__steps > li > strong {
+    transition: none !important;
+    transition-delay: 0s !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .v4-lane::after,
+  body[data-page="home"] .contact-hub::after {
+    display: none;
+  }
 }

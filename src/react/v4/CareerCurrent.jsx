@@ -21,14 +21,17 @@ function Ports({ items }) {
   );
 }
 
-export function Onward({ model }) {
+/* One destination, or (Home) a row of them. */
+export function Onward({ model, links = [model] }) {
   return (
-    <nav className="section-shell v4-onward" aria-label={model.label}>
-      <a className="v4-onward__link" href={model.href}>
-        <small>{model.label}</small>
-        <strong>{model.title}</strong>
-        <i aria-hidden="true" />
-      </a>
+    <nav className="section-shell v4-onward" aria-label={links.map((link) => link.label).join(" · ")} data-v4-onward-row={links.length > 1 ? "" : undefined}>
+      {links.map((link) => (
+        <a key={link.href} className="v4-onward__link" href={link.href}>
+          <small>{link.label}</small>
+          <strong>{link.title}</strong>
+          <i aria-hidden="true" />
+        </a>
+      ))}
     </nav>
   );
 }

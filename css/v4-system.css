@@ -2413,6 +2413,18 @@ body .page-hero[data-v4-entry] + :not(.v4-tracker)::before {
   outline-offset: 6px;
 }
 
+/* A row of destinations shares the rule; each keeps its own current. */
+.v4-onward[data-v4-onward-row] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 0 clamp(1.5rem, 4vw, 4rem);
+}
+
+.v4-onward[data-v4-onward-row] .v4-onward__link strong {
+  font: 600 1.05rem / 1.35 var(--v4-display);
+  letter-spacing: -0.015em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .v4-onward__link::before,
   .v4-onward__link i {

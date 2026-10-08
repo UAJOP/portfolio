@@ -473,20 +473,67 @@ function v4DetailModel(route, children, message) {
   };
 }
 
+/* V4-E05: what a flagship's Home card shows of its system, read from that
+ * project's own case study in the visitor's language: the journey it
+ * documents (with the heading it documents it under) and its proof strip.
+ * Nothing is authored for Home; a case study that stops carrying either
+ * fails the build. */
+function v4FlagshipSignature(locale, pageId) {
+  const children = caseStudyStructure.pages[pageId]?.locales?.[locale]?.children;
+  if (!children) throw new Error(`${locale}: flagship case study ${pageId} is missing`);
+  const classOf = (node) => String(node.attributes.find((entry) => entry.name === "class")?.value || "").split(/\s+/);
+  const all = (node, test, hits = []) => {
+    if (node.type !== "element") return hits;
+    if (test(node)) hits.push(node);
+    node.children.forEach((child) => all(child, test, hits));
+    return hits;
+  };
+  const clean = (node) => plainText(node).replace(/\s+/g, " ").trim();
+  const parts = (node) => node.children.filter((child) => child.type === "element").map(clean);
+  const section = children.find((node) => all(node, (entry) => classOf(entry).includes("case-journey")).length);
+  const steps = section ? all(section, (entry) => classOf(entry).includes("case-journey"))[0].children.filter((child) => child.type === "element").map((step) => parts(step)[1]) : [];
+  const caption = section ? clean(all(section, (entry) => entry.tag === "h2")[0]) : "";
+  const proof = children.flatMap((node) => all(node, (entry) => classOf(entry).includes("case-proof"))).map((entry) => { const [value, label] = parts(entry); return { value, label }; });
+  if (steps.length < 3 || steps.some((step) => !step) || !caption || !proof.length || proof.some((entry) => !entry.value || !entry.label)) throw new Error(`${locale}: flagship case study ${pageId} no longer documents a journey and a proof strip`);
+  return { caption, steps, proof };
+}
+
 function v4HomeModel(locale, message) {
-  const { schemaVersion, ...flow } = v4HomeFlow;
+  const { schemaVersion, signatures, ...flow } = v4HomeFlow;
   /* AJOOP's flagship port speaks only in the assistant's own shipped copy:
    * its shell strings and the first of its own quick questions. */
   const ajoop = ajoopShellModel(locale);
   const quicks = (runtimeCollection("ajoop", locale).quicks || []).slice(0, 4).map((quick) => quick.label).filter(Boolean);
   if (quicks.length !== 4) throw new Error(`${locale}: AJOOP quick questions are missing from its shipped copy`);
   const ecosystem = v4EcosystemModel(locale, message);
-  for (const id of flow.flagship) {
+  for (const id of [...flow.evidence, ...flow.flagship]) {
     if (!ecosystem.projects.some((project) => project.id === id)) throw new Error(`${locale}: flagship ${id} is not a Works catalog project`);
   }
+  const href = (target) => routeRuntime.localizedInternalHref(target, locale);
+  const hub = { href: href("/ajoop/"), label: message("ajoop.hub.open") };
+  const firstHeading = (node) => (node.type !== "element" ? null : node.tag === "h1" ? node : node.children.map(firstHeading).find(Boolean) || null);
+  const certificatesTitle = plainText(remainingRoutesStructure.pages.certificates.locales[locale].children.map(firstHeading).find(Boolean)).replace(/\s+/g, " ").trim();
+  if (!certificatesTitle) throw new Error(`${locale}: Certificates page title is missing`);
   return {
-    ecosystem,
-    ajoop: { title: ajoop.copy.title, subtitle: ajoop.copy.subtitle, launcher: ajoop.copy.launcher, prompt: ajoop.copy.inputPlaceholder, state: ajoop.mascot.label, quicks, links: [["/ajoop/", "ajoop.hub.open"], ["/ajoop-case-study/", "ajoop.hub.how"]].map(([target, key]) => ({ href: routeRuntime.localizedInternalHref(target, locale), label: message(key) })) },
+    /* The catalog map, with what Home adds to it: which projects are the
+     * flagships, and AJOOP — not a catalog project, so it is wired to no
+     * capability — as the system that answers over all of it, in its Hub's
+     * own words. */
+    ecosystem: {
+      ...ecosystem,
+      flagship: flow.flagship,
+      ajoop: { title: ajoop.copy.title, heading: message("ajoop.hub.scope.heading"), scope: ["projects", "experience", "skills", "certificates"].map((key) => message(`ajoop.hub.scope.${key}`)), link: hub },
+    },
+    signatures: Object.fromEntries(Object.entries(signatures).map(([id, pageId]) => [id, v4FlagshipSignature(locale, pageId)])),
+    supportLabel: message("portfolio.label.supportingEvidence"),
+    /* The way on from the experience summary: the two pages it does not
+     * already link, each under its own title. */
+    bridge: [
+      { label: message("shell.nav.certificates"), title: certificatesTitle, href: href("/certificates/") },
+      { label: message("shell.nav.about"), title: message("about.hero.title"), href: href("/about/") },
+    ],
+    closing: [{ href: href("/works/"), label: message("home.hero.viewWork") }, hub],
+    ajoop: { title: ajoop.copy.title, subtitle: ajoop.copy.subtitle, lead: message("ajoop.hub.lead"), launcher: ajoop.copy.launcher, prompt: ajoop.copy.inputPlaceholder, state: ajoop.mascot.label, quicks, links: [hub, { href: href("/ajoop-case-study/"), label: message("ajoop.hub.how") }] },
     flow: {
       ...flow,
       aria: message(flow.aria),

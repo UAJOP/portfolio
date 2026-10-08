@@ -61,15 +61,16 @@ function CapabilityPorts({ capabilities }) {
 function AjoopPort({ model }) {
   const open = () => globalThis.setChatbotOpen?.(true);
   return (
-    <article className="evidence-card v4-port" data-v4-card="">
+    <article className="evidence-card v4-port" data-v4-card="" data-v4-flagship="ajoop">
       <div className="evidence-card-media v4-port__field">
-        <LivingHubArt sizes="(min-width: 1101px) 30vw, (min-width: 700px) 50vw, 100vw" />
+        <LivingHubArt sizes="(min-width: 1101px) 22vw, (min-width: 700px) 40vw, 100vw" />
         <span className="v4-port__node" aria-hidden="true"><i className="ajoop-app-icon" /></span>
         <span className="v4-state v4-port__state">{model.state}</span>
       </div>
       <div className="evidence-card-content">
         <div className="project-meta"><span>{model.subtitle}</span></div>
         <h3>{model.title}</h3>
+        <p>{model.lead}</p>
         <ul className="v4-port__quicks">
           {model.quicks.map((quick) => <li key={quick}><button type="button" onClick={open}>{quick}</button></li>)}
         </ul>
@@ -84,6 +85,44 @@ function AjoopPort({ model }) {
   );
 }
 
+const two = (value) => String(value).padStart(2, "0");
+
+/* A flagship's own journey, as its case study documents it: the steps on one
+ * current, under the heading the case study gives them. */
+function Journey({ signature, kind }) {
+  return (
+    <div className="v4-sig" data-v4-sig={kind}>
+      <h4 className="v4-sig__caption">{signature.caption}</h4>
+      <ol className="v4-sig__steps" data-v4-process="">
+        {signature.steps.map((step, index) => <li key={step}><strong>{two(index + 1)}</strong><span>{step}</span></li>)}
+      </ol>
+    </div>
+  );
+}
+
+/* Its proof strip. A value that lists states (a release policy's verdicts)
+ * is set as those states; any other is a figure. */
+function Proof({ signature }) {
+  return (
+    <dl className="v4-sig__proof">
+      {signature.proof.map((entry) => {
+        const states = entry.value.includes(" / ") ? entry.value.split(" / ") : null;
+        return (
+          <div key={entry.label} data-v4-proof={states ? "states" : "figure"}>
+            <dt>{entry.label}</dt>
+            <dd>{states ? states.map((state, index) => <b key={state} data-v4-verdict={index}>{state}</b>) : entry.value}</dd>
+          </div>
+        );
+      })}
+    </dl>
+  );
+}
+
+/* Home's evidence cards are keyed by position; the catalog says what each
+ * is. Two are flagships, shown with their own system; the third is the
+ * enterprise evidence that supports them. */
+const SIGNATURE_KINDS = { 0: "pipeline", 2: "route" };
+
 function home(v4, node, classes, attributes, key) {
   if (node.tag === "h1") attributes["data-v4-kinetic"] = "";
   /* Magnetic is for the one action the hero exists to produce. */
@@ -93,17 +132,48 @@ function home(v4, node, classes, attributes, key) {
     return [<CurrentField key={`${key}.v4-field`} />, <SignalRule key={`${key}.v4-rule`} label={v4.flow.handoff} />];
   }
   if (classes.has("hero-visual")) return [<SignalFlow key={`${key}.v4-flow`} model={v4.flow} />];
+  const path = key.split(".");
   if (classes.has("evidence-card")) {
     attributes["data-v4-card"] = "";
-    /* Flagship cards are keyed by position; the catalog says what each is. */
-    const project = v4.ecosystem.projects.find((entry) => entry.id === v4.flow.flagship[Number(key.split(".").pop())]);
+    const position = Number(path.pop());
+    const id = v4.flow.evidence[position];
+    const project = v4.ecosystem.projects.find((entry) => entry.id === id);
     const capabilities = project ? v4.ecosystem.capabilities.filter((capability) => project.categories.includes(capability.id)) : [];
-    return capabilities.length ? [<CapabilityPorts key={`${key}.v4-ports`} capabilities={capabilities} />] : null;
+    const signature = v4.signatures[id];
+    attributes[signature ? "data-v4-flagship" : "data-v4-support"] = signature ? SIGNATURE_KINDS[position] : "";
+    return [
+      ...(capabilities.length ? [<CapabilityPorts key={`${key}.v4-ports`} capabilities={capabilities} />] : []),
+      /* The lead flagship's pipeline runs the width of its card. */
+      ...(signature && position === 0 ? [<Journey key={`${key}.v4-sig`} signature={signature} kind="pipeline" />] : []),
+      ...(signature ? [] : [<span key={`${key}.v4-support`} className="v4-support-label">{v4.supportLabel}</span>]),
+    ];
+  }
+  if (classes.has("evidence-card-content")) {
+    const position = Number(path[path.length - 2]);
+    const signature = v4.signatures[v4.flow.evidence[position]];
+    if (!signature) return null;
+    /* Between the card's summary and its links. */
+    return {
+      arrange: (own) => [
+        ...own.slice(0, -1),
+        <Proof key={`${key}.v4-proof`} signature={signature} />,
+        ...(position === 0 ? [] : [<Journey key={`${key}.v4-sig`} signature={signature} kind={SIGNATURE_KINDS[position]} />]),
+        own[own.length - 1],
+      ],
+    };
   }
   if (classes.has("selected-work-grid")) {
     attributes["data-v4-arrive"] = "";
-    return [<AjoopPort key={`${key}.v4-ajoop`} model={v4.ajoop} />];
+    /* Reading order is the order shown: the lead flagship, AJOOP, the third
+     * flagship, then the supporting evidence. */
+    return { arrange: ([lead, support, third]) => [lead, <AjoopPort key={`${key}.v4-ajoop`} model={v4.ajoop} />, third, support] };
   }
+  /* The closing hand-off also leads back into the work and to AJOOP. */
+  if (classes.has("contact-actions")) {
+    return { arrange: ([first, ...rest]) => [first, ...v4.closing.map((link) => <a key={link.href} className="btn ghost" href={link.href}>{link.label}</a>), ...rest] };
+  }
+  if (classes.has("service-grid")) attributes["data-v4-model"] = "";
+  if (classes.has("contact-hub")) attributes["data-v4-ambient"] = "";
   /* The flagship section carries the current down from the hero. */
   if (key === "home.1") return [<i key={`${key}.v4-handoff`} className="v4-handoff" aria-hidden="true" />];
   return null;

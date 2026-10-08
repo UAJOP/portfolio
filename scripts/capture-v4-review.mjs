@@ -16,18 +16,14 @@
  *
  * AJOOP's AI edge is stubbed for the whole run, by the mechanism the project
  * already accepts for UI QA (scripts/qa-m3-ajoop-command-palette.mjs): requests
- * to the public edge are intercepted in the browser. Nothing is simulated in
- * the page — every answer shown is the engine's own deterministic answer, and
- * every state shown is the state the engine reported.
+ * to the public edge are intercepted in the browser and answered 503, as they
+ * are whenever the local bridge is switched off. Nothing is simulated in the
+ * page.
  *
- *   "down"      the edge answers 503: assistance is unavailable, as it is
- *               whenever the local bridge is switched off.
- *   "degraded"  the edge reports healthy, then fails each generation: a turn
- *               whose AI assistance was attempted and failed.
- *
- * V4_BASELINE_ORIGIN (optional): a preview server on the previous phase's
- * build. When set, the case study's LCP is measured on both builds in turn,
- * so the two numbers come from the same minutes on the same machine. */
+ * Optional, for before/after numbers measured in the same minutes on the same
+ * machine — a build of the previous phase, exported somewhere else:
+ *   V4_BASELINE_ORIGIN   a preview server on that build
+ *   V4_BASELINE_ROOT     that build's checkout (its dist-site/ is read for sizes) */
 import { spawn, spawnSync } from "node:child_process";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -36,49 +32,52 @@ import { gzipSync } from "node:zlib";
 import puppeteer from "puppeteer";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const PHASE = "v4-e04-1-ajoop-brand-lock";
-const PACK = "V4-E04-1-review-pack.zip";
-const TITLE = "V4-E04.1 · AJOOP Brand Integration + Visual Lock";
+const PHASE = "v4-e05-final-home";
+const PACK = "V4-E05-review-pack.zip";
+const TITLE = "V4-E05 · Final Home Evolution";
 const OUTPUT = process.env.V4_CAPTURE_DIR || `C:\\PC-Audit\\v4-review\\${PHASE}`;
 const FRAMES = join(OUTPUT, "motion-frames");
 /* Its own port: 4174/4175 may be held by a long-running `npm run dev:v4`. */
 const PORT = process.env.V4_CAPTURE_PORT || "4184";
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 const BASELINE = process.env.V4_BASELINE_ORIGIN || null;
+const BASELINE_ROOT = process.env.V4_BASELINE_ROOT || null;
 const EDGE = "https://ajoop.kaanbalci.com/";
 const SERVER_SCRIPT = join(ROOT, "scripts", "v4-preview-server.mjs");
 const DESKTOP = { width: 1440, height: 900 };
+/* The flagship row is taller than one screen; one still shows it whole. */
+const DESKTOP_TALL = { width: 1440, height: 1400 };
+const TABLET = { width: 820, height: 1180 };
 const MOBILE = { width: 390, height: 844 };
 const LOCALES = ["en", "tr", "de", "es", "fr"];
 const localized = (locale, path) => (locale === "en" ? path : `/${locale}${path}`);
+const HOME = "/";
 const HUB = "/ajoop/";
 const CASE = "/ajoop-case-study/";
-const SESSION_KEY = "ajoop-session-v1";
 const node = (id) => `[data-v4-eco-node="${id}"]`;
-const TOGGLE = "[data-chatbot-toggle]";
-const INPUT = "[data-chatbot-input]";
-const QUESTION = "best projects";
-const FOLLOW_UP = "Who is Kaan?";
-/* What the site ships of the approved brand pack (scripts/v4-ajoop-brand-assets.mjs). */
-const BRAND = { markDark: "ajoop-mark-dark.webp", markLight: "ajoop-mark-light.webp", wordmark: "ajoop-wordmark-dark.webp", appIcon: "ajoop-launcher-192.webp", art: [640, 960, 1600].map((width) => `ajoop-living-hub-${width}.webp`) };
-const BRAND_FILES = [BRAND.markDark, BRAND.markLight, BRAND.wordmark, BRAND.appIcon, ...BRAND.art];
+const GRID = ".selected-work-grid";
+const LANES = ".v4-lanes";
+const CLOSING = ".contact-hub";
+const SINAMA = "sinama-case-study";
+const JOYDAY = "atolye-joyday-case-study";
 
 /* In contact-sheet order. `steps` run in order: ["click", selector],
  * ["hover", selector], ["focus", selector], ["top", selector] (scroll it just
- * under the header), ["into", selector] (centre it), ["ask", text] (type into
- * the composer, send, wait for the turn to settle), ["goto", path]. */
+ * under the header), ["into", selector] (centre it), ["end"] (the page's
+ * end), ["goto", path]. */
 const shots = [
-  { name: "01-hub-dark-branded-idle.png", label: "AJOOP Hub · dark · idle: the Living Hub core on the hero's nexus, the mark in the rail and in the empty field", viewport: DESKTOP, theme: "dark", path: HUB },
-  { name: "02-hub-dark-active-conversation.png", label: "Hub · dark · conversation active: the core has stepped back, the empty-field mark is gone", viewport: DESKTOP, theme: "dark", path: HUB, steps: [["ask", QUESTION], ["top", ".page-hero"]] },
-  { name: "03-hub-light.png", label: "Hub · light: the light mark; the artwork as a contained dark panel", viewport: DESKTOP, theme: "light", path: HUB },
-  { name: "04-hub-mobile.png", label: "Hub · mobile: the mark in the identity bar, conversation first", viewport: MOBILE, theme: "dark", path: HUB },
-  { name: "05-case-study-hero-dark.png", label: "Case study · hero · dark: the Living Hub visual under the approved lockup", viewport: DESKTOP, theme: "dark", path: CASE },
-  { name: "06-case-study-architecture.png", label: "Case study · architecture: the same path, around the core and the mark; Local model bridge in hand", viewport: DESKTOP, theme: "dark", path: CASE, steps: [["into", ".v4-ajoop-sys"], ["hover", node("bridge")]] },
-  { name: "07-case-study-light.png", label: "Case study · light: the visual stays a dark product surface", viewport: DESKTOP, theme: "light", path: CASE },
-  { name: "08-case-study-mobile.png", label: "Case study · mobile: the visual and the entry into the Hub", viewport: MOBILE, theme: "dark", path: CASE, steps: [["top", ".v4-ajoop-entry"]] },
-  { name: "09-launcher-approved-icon.png", label: "Launcher · the approved app icon; the panel it opens, unchanged", viewport: DESKTOP, theme: "dark", path: "/about/", steps: [["click", TOGGLE]] },
-  { name: "10-home-ajoop-flagship.png", label: "Home · AJOOP flagship: the same artwork and app icon, the same two links", viewport: DESKTOP, theme: "dark", path: "/", steps: [["into", ".v4-port"]] },
+  { name: "01-dark-desktop-hero.png", label: "Dark · 1440 × 900 · hero: identity and the system premise", viewport: DESKTOP, theme: "dark" },
+  { name: "02-dark-desktop-flagship-trio.png", label: "Dark · flagship trio (tall capture, 1440 × 1400): SINAMA leads with its pipeline; AJOOP and Atölye Joyday beside it; the supporting strip beneath", viewport: DESKTOP_TALL, theme: "dark", steps: [["top", GRID]] },
+  { name: "03-dark-desktop-ecosystem.png", label: "Dark · 1440 × 900 · ecosystem: the catalog read by capability, SINAMA in hand", viewport: DESKTOP, theme: "dark", steps: [["top", ".v4-eco-section"], ["hover", `.v4-lane__project${node(SINAMA)}`]] },
+  { name: "04-dark-desktop-closing.png", label: "Dark · 1440 × 900 · the page's end: the closing hand-off into the footer", viewport: DESKTOP, theme: "dark", steps: [["end"]] },
+  { name: "05-light-desktop-hero.png", label: "Light · 1440 × 900 · hero", viewport: DESKTOP, theme: "light" },
+  { name: "06-light-desktop-flagship.png", label: "Light · flagship area (tall capture, 1440 × 1400): SINAMA and AJOOP keep their dark product surfaces", viewport: DESKTOP_TALL, theme: "light", steps: [["top", GRID]] },
+  { name: "07-mobile-hero.png", label: "Mobile · 390 × 844 · hero", viewport: MOBILE, theme: "dark", touch: true },
+  { name: "08-mobile-flagships.png", label: "Mobile · flagships: the lead system first", viewport: MOBILE, theme: "dark", touch: true, steps: [["top", GRID]] },
+  { name: "09-mobile-ecosystem.png", label: "Mobile · ecosystem as lanes; supporting work on the same lanes", viewport: MOBILE, theme: "dark", touch: true, steps: [["top", LANES]] },
+  { name: "10-mobile-closing-footer.png", label: "Mobile · closing hand-off and footer", viewport: MOBILE, theme: "dark", touch: true, steps: [["top", CLOSING]] },
 ];
+
 
 const wait = (ms) => new Promise((done) => setTimeout(done, ms));
 
@@ -185,6 +184,7 @@ async function run(page, steps = []) {
     if (action === "ask") await ask(page, target);
     if (action === "goto") { await visit(page, target); await wait(1800); }
     if (action === "top" || action === "into") await scrollTo(page, target, action);
+    if (action === "end") { await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" })); await wait(1900); }
   }
 }
 
@@ -200,121 +200,132 @@ const motionState = (page) => page.evaluate(() => {
 const overflow = (page) => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 const layoutShift = (page) => page.evaluate(() => Math.round((window.__cls || 0) * 10000) / 10000);
 
-/* The conversation as the visitor sees it, wherever it is presented. */
-const transcript = (page) => page.evaluate(() => [...document.querySelectorAll("[data-chatbot-messages] .chatbot-message")].map((message) => ({
-  who: message.classList.contains("user") ? "user" : "bot",
-  text: message.querySelector("[data-chatbot-prose]")?.textContent.trim() || "",
-  cards: [...message.querySelectorAll(".ajoop-card-title")].map((entry) => entry.textContent.trim()),
-  provenance: message.querySelector("[data-ajoop-provenance]")?.textContent.trim() || null,
-  status: message.getAttribute("data-ajoop-turn-status"),
-})));
-
-/* The Hub, as the page reports it. */
-const hub = (page) => page.evaluate((key) => {
-  const root = document.querySelector("[data-v4-hub]");
-  const shown = (selector) => [...document.querySelectorAll(selector)].filter((entry) => entry.getClientRects().length);
-  let record = null;
-  try { record = JSON.parse(sessionStorage.getItem(key) || "null"); } catch { record = "unreadable"; }
+/* Home, as the page reports it. */
+const home = (page) => page.evaluate(() => {
+  const text = (entry) => entry?.textContent.replace(/\s+/g, " ").trim() || "";
+  const box = (entry) => { const rect = entry.getBoundingClientRect(); return { left: Math.round(rect.left), top: Math.round(rect.top + scrollY), width: Math.round(rect.width), height: Math.round(rect.height) }; };
+  const signature = (card) => ({
+    caption: text(card?.querySelector(".v4-sig__caption")),
+    steps: [...(card?.querySelectorAll(".v4-sig__steps > li > span") || [])].map(text),
+    proof: [...(card?.querySelectorAll(".v4-sig__proof > div") || [])].map((entry) => ({ value: [...entry.querySelectorAll("dd b")].map(text).join(" / ") || text(entry.querySelector("dd")), label: text(entry.querySelector("dt")) })),
+  });
+  const kind = (entry) => (entry.matches(".hero") ? "hero" : entry.querySelector(".selected-work-grid") ? "flagship" : entry.matches(".v4-eco-section") ? "ecosystem" : entry.querySelector(".service-grid") ? "model" : entry.querySelector(".timeline-preview") ? "experience" : entry.matches(".v4-onward") ? "bridge" : entry.querySelector("[data-build-log]") ? "latest" : entry.matches(".contact-hub") ? "closing" : entry.querySelector(".compact-evidence-grid") ? "supporting-list" : "other");
+  const cards = [...document.querySelectorAll(".selected-work-grid > *")];
+  const lanes = document.querySelector(".v4-lanes");
   return {
-    present: Boolean(root),
-    live: root?.getAttribute("data-v4-live") || null,
-    stateLabel: root?.querySelector("[data-v4-hub-state]")?.textContent.trim() || null,
-    launchers: shown(".chatbot-launcher").length,
-    dialogs: document.querySelectorAll('[data-v4-hub] [role="dialog"], [data-v4-hub][aria-modal], [data-v4-hub] [aria-modal]').length,
-    inert: document.querySelectorAll("main[inert], header[inert], footer[inert]").length,
-    fieldShown: shown(".v4-hub__field").length,
-    composer: shown("[data-chatbot-input]").length,
-    staticNote: shown(".v4-hub__static").length,
-    messages: document.querySelectorAll("[data-chatbot-messages] .chatbot-message").length,
-    lit: [...(root?.querySelectorAll(".v4-hub__path li[data-v4-state]") || [])].map((entry) => entry.getAttribute("data-v4-stage")).join(),
-    evidence: [...(root?.querySelectorAll(".v4-hub__evidence li") || [])].map((entry) => ({ title: entry.textContent.trim(), href: entry.querySelector("a")?.getAttribute("href") || null })),
-    provenance: root?.querySelector(".v4-hub__provenance")?.textContent.trim() || null,
-    service: root?.querySelector("[data-chatbot-bridge]")?.getAttribute("data-ajoop-service") || null,
-    scope: root?.querySelectorAll(".v4-hub__scope .v4-ports li").length || 0,
-    how: root?.querySelector(".v4-hub__how")?.getAttribute("href") || null,
-    actions: shown("[data-chatbot-quicks] button").map((entry) => entry.textContent.trim()),
-    connected: document.querySelectorAll(".ajoop-provenance-connected, .ajoop-action-preview").length,
-    session: record && record !== "unreadable" ? { version: record.version, language: record.language, messages: record.messages.length, keys: Object.keys(record).sort().join(), bytes: JSON.stringify(record).length } : record,
-    elsewhere: { local: Object.keys(localStorage).filter((name) => /ajoop-session/i.test(name) || /ajoop-session/i.test(localStorage.getItem(name) || "")).length, cookie: /ajoop/i.test(document.cookie) },
-  };
-}, SESSION_KEY);
-
-/* The case study, as the page reports it. */
-const caseStudy = (page) => page.evaluate(() => {
-  const root = document.querySelector(".v4-ajoop-sys");
-  const shown = (selector) => [...document.querySelectorAll(selector)].filter((entry) => entry.getClientRects().length);
-  return {
-    heading: document.querySelector("h1")?.textContent.trim(),
-    tracker: [...document.querySelectorAll("[data-v4-tracker] a")].map((entry) => entry.textContent.replace(/\s+/g, " ").trim()),
-    trackerTargets: [...document.querySelectorAll("[data-v4-tracker] a")].every((entry) => document.getElementById(entry.getAttribute("href").slice(1))),
-    stack: [...document.querySelectorAll(".case-stack span")].map((entry) => entry.textContent.trim()),
-    proofFigures: document.querySelectorAll(".case-proof").length,
-    nodes: [...root.querySelectorAll('.v4-ajoop-sys__node[data-v4-zone="public"]')].map((entry) => entry.getAttribute("data-v4-eco-node")),
-    parts: root.querySelectorAll("[data-v4-eco-node]").length,
-    ownerLinks: root.querySelector('.v4-ajoop-sys__node[data-v4-zone="private"]').getAttribute("data-v4-eco-links"),
-    ownerEdges: root.querySelectorAll('[data-v4-edge~="owner"]').length,
-    edges: root.querySelectorAll(".v4-ajoop-sys__edge").length,
-    boundary: shown(".v4-ajoop-sys__boundary").length,
-    fieldShown: shown(".v4-ajoop-sys__field").length,
-    active: root.hasAttribute("data-v4-eco-active"),
-    activeNode: root.querySelector('[data-v4-state="active"][data-v4-eco-node]')?.getAttribute("data-v4-eco-node") || null,
-    related: [...root.querySelectorAll('[data-v4-state="related"][data-v4-eco-node]')].map((entry) => entry.getAttribute("data-v4-eco-node")).join(),
-    litEdges: root.querySelectorAll('.v4-ajoop-sys__edge[data-v4-state="active"]').length,
-    pressed: [...root.querySelectorAll('[aria-pressed="true"]')].map((entry) => entry.getAttribute("data-v4-eco-node")).join(),
-    panel: shown("[data-v4-eco-panel]").map((entry) => entry.getAttribute("data-v4-eco-panel")).join(),
-    panelsShown: shown(".v4-ajoop-sys__panel").length,
-    waiting: root.hasAttribute("data-v4-await"),
-    entryLinks: [...document.querySelectorAll(".v4-ajoop-entry a")].map((entry) => entry.getAttribute("href")),
-    cta: [...document.querySelectorAll(".case-actions a, .v4-ajoop-live a.btn.primary")].map((entry) => entry.getAttribute("href")),
-    canvases: document.querySelectorAll("canvas").length,
-  };
-});
-
-/* The approved identity, as each page actually renders it: which file every
- * brand surface resolves to, its box, and the state of every brand image. */
-const brand = (page) => page.evaluate(() => {
-  const file = (value) => (/url\(/.test(value || "") ? value.replace(/^.*url\(["']?/, "").replace(/["']?\).*$/, "").split("/").pop() : null);
-  const one = (selector, pseudo) => {
-    const entry = document.querySelector(selector);
-    if (!entry) return null;
-    const style = getComputedStyle(entry, pseudo);
-    const rect = entry.getBoundingClientRect();
-    return { file: file(style.backgroundImage), width: pseudo ? Math.round(parseFloat(style.width)) : Math.round(rect.width), height: pseudo ? Math.round(parseFloat(style.height)) : Math.round(rect.height), shown: entry.getClientRects().length > 0, opacity: Number(style.opacity), transform: style.textTransform, text: pseudo ? null : entry.textContent.trim() };
-  };
-  return {
-    hubMark: one(".v4-hub__mark .ajoop-mark"),
-    hubTitle: one(".v4-hub__identity h2"),
-    hubIdle: one(".v4-hub__idle"),
-    hubIdleMark: one(".v4-hub__idle .ajoop-mark"),
-    hubCore: one(".v4-hub-core"),
-    hubCoreMotion: document.querySelector(".v4-hub-core") ? getComputedStyle(document.querySelector(".v4-hub-core")).transitionDuration : null,
-    hubMascots: document.querySelectorAll(".v4-hub .ajoop-mascot, .v4-ajoop-entry .ajoop-mascot").length,
-    entryLockup: one(".v4-ajoop-entry__lockup"),
-    entryMedia: one(".v4-ajoop-entry__media"),
-    systemCore: one(".v4-ajoop-sys", "::after"),
-    launcher: one(".chatbot-launcher"),
-    launcherIcon: one(".chatbot-launcher .chatbot-launcher-icon"),
-    launcherGlyph: one(".chatbot-launcher .chatbot-launcher-icon i"),
-    launcherText: one(".chatbot-launcher [data-chatbot-launcher-text]"),
-    panelTitle: one(".chatbot-header h2"),
-    hubLink: document.querySelector(".chatbot-hub-link")?.getAttribute("href") || null,
-    portIcon: one(".v4-port__node .ajoop-app-icon"),
-    portTitle: one(".v4-port h3"),
-    images: [...document.images].filter((image) => /\/assets\/ajoop-/.test(image.currentSrc || image.getAttribute("src") || "")).map((image) => ({
-      chosen: (image.currentSrc || "").split("/").pop() || null,
-      natural: image.naturalWidth,
-      complete: image.complete,
-      width: image.getAttribute("width"),
-      height: image.getAttribute("height"),
-      loading: image.getAttribute("loading"),
-      priority: image.getAttribute("fetchpriority"),
-      alt: image.getAttribute("alt"),
-      box: `${Math.round(image.getBoundingClientRect().width)}×${Math.round(image.getBoundingClientRect().height)}`,
+    sections: [...document.querySelectorAll("main > *")].map(kind),
+    heights: Object.fromEntries([...document.querySelectorAll("main > *")].map((entry) => [kind(entry), box(entry).height])),
+    heading: text(document.querySelector("h1")),
+    cards: cards.map((card) => ({
+      title: text(card.querySelector("h3")),
+      role: card.hasAttribute("data-v4-flagship") ? `flagship:${card.getAttribute("data-v4-flagship")}` : card.hasAttribute("data-v4-support") ? "support" : "other",
+      links: [...card.querySelectorAll("a[href]")].map((link) => link.getAttribute("href")),
+      ports: [...card.querySelectorAll(".v4-ports [data-v4-cap]")].map((port) => port.getAttribute("data-v4-cap")),
+      related: card.hasAttribute("data-v4-related"),
+      opacity: Number(getComputedStyle(card).opacity),
+      box: box(card),
     })),
-    /* The approved pack lives outside the site; nothing may point back at it. */
-    offSite: [...document.querySelectorAll("[src], [srcset], link[href]")].filter((entry) => /OneDrive|Masa|AJOOP-ASSETS|file:/i.test(`${entry.getAttribute("src") || ""} ${entry.getAttribute("srcset") || ""} ${entry.getAttribute("href") || ""}`)).length,
+    sinama: signature(cards[0]),
+    joyday: signature(cards[2]),
+    supportLabel: text(document.querySelector(".v4-support-label")),
+    port: {
+      state: text(document.querySelector(".v4-port__state")),
+      lead: text(document.querySelector(".v4-port .evidence-card-content > p")),
+      quicks: document.querySelectorAll(".v4-port__quicks button").length,
+      composer: document.querySelectorAll(".v4-port__composer").length,
+      links: [...document.querySelectorAll(".v4-port__links a")].map((link) => link.getAttribute("href")),
+      panelOpen: document.querySelector("[data-chatbot-toggle]")?.getAttribute("aria-expanded") || null,
+    },
+    lanes: [...document.querySelectorAll(".v4-lane")].map((lane) => ({
+      id: lane.querySelector(".v4-lane__capability")?.getAttribute("data-v4-eco-node"),
+      label: text(lane.querySelector(".v4-lane__capability span")),
+      lit: lane.getAttribute("data-v4-state") === "active",
+      pressed: lane.querySelector(".v4-lane__capability")?.getAttribute("aria-pressed"),
+      projects: [...lane.querySelectorAll(".v4-lane__project")].map((project) => ({ id: project.getAttribute("data-v4-eco-node"), tier: project.getAttribute("data-v4-eco-tier"), href: project.getAttribute("href"), state: project.getAttribute("data-v4-state"), title: text(project.querySelector(".v4-eco__title")) })),
+    })),
+    lanesActive: Boolean(lanes?.hasAttribute("data-v4-eco-active")),
+    lanesWaiting: Boolean(lanes?.hasAttribute("data-v4-await")),
+    readout: [...document.querySelectorAll("[data-v4-eco-readout] span")].map(text),
+    ecoLinks: [...document.querySelectorAll("[data-v4-eco-readout] a, .v4-eco__ajoop a")].map((link) => link.getAttribute("href")),
+    ecoAjoop: text(document.querySelector(".v4-eco__ajoop")),
+    model: [...document.querySelectorAll(".service-grid[data-v4-model] .service-card h3")].map(text),
+    roles: [...document.querySelectorAll(".timeline-card h3")].map(text),
+    bridge: [...document.querySelectorAll(".split-section .btn, .v4-onward a")].map((link) => link.getAttribute("href")),
+    buildLog: document.querySelectorAll(".build-log-item").length,
+    closing: [...document.querySelectorAll(".contact-actions a")].map((link) => link.getAttribute("href")),
+    internal: [...new Set([...document.querySelectorAll("main a[href]")].map((link) => link.getAttribute("href")).filter((href) => href.startsWith("/")))],
+    external: [...document.querySelectorAll('main a[href^="http"]')].map((link) => ({ href: link.getAttribute("href"), rel: link.getAttribute("rel") || "", target: link.getAttribute("target") || "" })),
+    images: [...document.querySelectorAll("main img")].map((image) => ({ file: (image.currentSrc || image.getAttribute("src") || "").split("/").pop(), loading: image.getAttribute("loading"), priority: image.getAttribute("fetchpriority"), width: image.getAttribute("width"), height: image.getAttribute("height"), loaded: image.complete && image.naturalWidth > 0 })),
+    canvases: document.querySelectorAll("canvas").length,
+    launcher: (() => { const entry = document.querySelector(".chatbot-launcher"); return entry && entry.getClientRects().length ? box(entry) : null; })(),
   };
 });
+
+/* What the two flagship case studies document, read from the same accepted
+ * structure the build reads — independently, so the page can be held to it. */
+async function canonicalSignatures(locale) {
+  const structure = JSON.parse(await readFile(join(ROOT, "data", "site", "m3-29-case-studies-structure.json"), "utf8"));
+  const text = (entry) => (entry.type === "text" ? entry.value : entry.type === "element" ? entry.children.map(text).join("") : "");
+  const clean = (entry) => text(entry).replace(/\s+/g, " ").trim();
+  const classOf = (entry) => String(entry.attributes?.find((attribute) => attribute.name === "class")?.value || "").split(/\s+/);
+  const all = (entry, test, hits = []) => { if (entry.type !== "element") return hits; if (test(entry)) hits.push(entry); entry.children.forEach((child) => all(child, test, hits)); return hits; };
+  const read = (pageId) => {
+    const children = structure.pages[pageId].locales[locale].children;
+    const section = children.find((entry) => all(entry, (item) => classOf(item).includes("case-journey")).length);
+    const parts = (entry) => entry.children.filter((child) => child.type === "element").map(clean);
+    return {
+      caption: clean(all(section, (item) => item.tag === "h2")[0]),
+      steps: all(section, (item) => classOf(item).includes("case-journey"))[0].children.filter((child) => child.type === "element").map((step) => parts(step)[1]),
+      proof: children.flatMap((entry) => all(entry, (item) => classOf(item).includes("case-proof"))).map((entry) => { const [value, label] = parts(entry); return { value, label }; }),
+    };
+  };
+  return { sinama: read("sinamaCaseStudy"), joyday: read("joydayCaseStudy") };
+}
+
+/* The Works catalog, as the Works page itself renders it. */
+const catalog = (page) => page.evaluate(() => ({
+  capabilities: [...document.querySelectorAll("[data-filter-btn]")].map((entry) => entry.getAttribute("data-filter-btn")).filter((id) => id !== "all"),
+  projects: [...document.querySelectorAll(".project-card[data-category]")].map((card) => ({ id: String(card.getAttribute("data-project-link") || card.getAttribute("data-game-link")).split("/").filter(Boolean).pop(), categories: card.getAttribute("data-category").split(/\s+/).filter(Boolean) })),
+}));
+
+/* What a cold load of a page transfers before anyone scrolls, and by its end. */
+async function transfer(browser, origin, viewport) {
+  const context = await browser.createBrowserContext();
+  const page = await context.newPage();
+  await stubEdge(page, "down", origin);
+  await page.setViewport({ ...viewport, deviceScaleFactor: 1 });
+  await page.setCacheEnabled(false);
+  await page.goto(`${origin}${HOME}`, { waitUntil: "networkidle2" });
+  await wait(1500);
+  const read = () => page.evaluate((site) => {
+    const entries = performance.getEntriesByType("resource").filter((entry) => entry.name.startsWith(site));
+    const kind = (name) => (/\.(webp|png|jpe?g|avif|ico|svg)(\?|$)/.test(name) ? "images" : /\.css(\?|$)/.test(name) ? "css" : /\.m?js(\?|$)/.test(name) ? "js" : /\.woff2?(\?|$)/.test(name) ? "fonts" : "other");
+    const totals = {};
+    for (const entry of entries) totals[kind(entry.name)] = (totals[kind(entry.name)] || 0) + (entry.encodedBodySize || 0);
+    const images = entries.filter((entry) => kind(entry.name) === "images").map((entry) => entry.name.split("/").pop());
+    return { requests: entries.length, bytes: Object.values(totals).reduce((sum, value) => sum + value, 0), byKind: totals, images, repeated: images.filter((name, index) => images.indexOf(name) !== index) };
+  }, origin);
+  const firstScreen = await read();
+  await page.evaluate(async () => { for (let top = 0; top < document.documentElement.scrollHeight; top += innerHeight * 0.8) { scrollTo(0, top); await new Promise((done) => setTimeout(done, 220)); } });
+  await wait(1500);
+  const wholePage = await read();
+  await context.close();
+  return { firstScreen, wholePage };
+}
+
+/* Main-thread work over an idle window, once the page has settled. */
+async function idleWork(page, ms = 5000) {
+  const session = await page.createCDPSession();
+  await session.send("Performance.enable");
+  const read = async () => Object.fromEntries((await session.send("Performance.getMetrics")).metrics.map((metric) => [metric.name, metric.value]));
+  await page.evaluate(() => { window.__long = 0; new PerformanceObserver((list) => { window.__long += list.getEntries().length; }).observe({ type: "longtask" }); });
+  const before = await read();
+  await wait(ms);
+  const after = await read();
+  const long = await page.evaluate(() => window.__long);
+  await session.detach();
+  return { windowMs: ms, taskMs: Math.round((after.TaskDuration - before.TaskDuration) * 1000), scriptMs: Math.round((after.ScriptDuration - before.ScriptDuration) * 1000), layouts: after.LayoutCount - before.LayoutCount, styleRecalcs: after.RecalcStyleCount - before.RecalcStyleCount, longTasks: long };
+}
 
 /* LCP of one cold load, fresh context, on whichever build `origin` serves. */
 async function lcpOnce(browser, origin, path, viewport, throttled) {
@@ -402,6 +413,7 @@ try {
   const problems = [];
   const failures = [];
   const expect = (label, condition) => { if (!condition) failures.push(label); };
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   /* Every page gets its own tab, and so its own session storage. */
   const fresh = async (options) => {
     const context = await browser.createBrowserContext();
@@ -422,283 +434,214 @@ try {
 
   /* ---------- motion frames: one continuous session, one tab ---------- */
   const frames = [];
-  const film = await fresh({ viewport: DESKTOP, theme: "dark", path: "/about/" });
+  const film = await fresh({ viewport: DESKTOP, theme: "dark", settle: 300 });
   const frame = async (label) => {
     const file = join(FRAMES, `${String(frames.length + 1).padStart(2, "0")}-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}.png`);
     await film.screenshot({ path: file, type: "png" });
     frames.push({ file, label, width: 960 });
   };
-  const glide = async (selector) => {
-    const point = await film.evaluate((target) => {
+  const glide = async (selector, at = 0.5) => {
+    const point = await film.evaluate((target, share) => {
       const rect = document.querySelector(target).getBoundingClientRect();
-      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    }, selector);
+      return { x: rect.left + rect.width * share, y: rect.top + rect.height / 2 };
+    }, selector, at);
     await film.mouse.move(point.x, point.y, { steps: 14 });
   };
-  const jump = (selector, block = "center", offset = 0) => film.evaluate((target, where, by) => { document.querySelector(target).scrollIntoView({ block: where, behavior: "instant" }); if (by) window.scrollBy({ top: by, behavior: "instant" }); }, selector, block, offset);
-  const hasQuestion = () => film.waitForFunction(() => document.querySelector("[data-chatbot-messages] .chatbot-message.user"), { timeout: 20000, polling: "raf" });
-  await film.click(TOGGLE); await wait(260); await frame("Launcher opens, under the approved app icon");
-  await wait(700); await ask(film, QUESTION);
-  /* Caught as the conversation lands: the core is still on its way back. */
-  await Promise.all([film.waitForNavigation({ waitUntil: "domcontentloaded" }), film.click(".chatbot-hub-link")]);
-  await hasQuestion(); await film.evaluate(() => document.fonts.ready);
-  await frame("Hub opens with the same conversation: the core begins to step back");
-  await wait(2200); await frame("Hub identity settled: the core receded, the mark holding the rail");
-  await Promise.all([film.waitForNavigation({ waitUntil: "domcontentloaded" }), film.click(".v4-hub__how")]);
-  await film.waitForFunction(() => document.querySelector(".v4-ajoop-entry .ajoop-art")?.complete, { timeout: 20000 }); await film.evaluate(() => document.fonts.ready);
-  await wait(260); await frame("Case-study hero enters: the Living Hub visual under the lockup");
-  await wait(1500); await jump(".v4-ajoop-sys"); await wait(2600); await glide(node("bridge")); await wait(420);
-  await frame("Architecture activates: Local model bridge, around the core");
-  await film.mouse.move(3, 300); await jump(".v4-ajoop-live"); await wait(1200);
-  await Promise.all([film.waitForNavigation({ waitUntil: "networkidle2" }), film.click(".v4-ajoop-live .btn.primary")]);
-  await hasQuestion(); await wait(1500);
-  await frame("Handoff: back in the Hub, the conversation intact");
-  const filmed = await transcript(film);
-  expect("Motion session: the launcher's conversation is the one the Hub shows at the end", filmed.length === 3 && filmed[1].text === QUESTION && filmed[2].cards.length > 0);
+  const jump = (selector, offset = -110) => film.evaluate((target, by) => { document.querySelector(target).scrollIntoView({ block: "start", behavior: "instant" }); window.scrollBy({ top: by, behavior: "instant" }); }, selector, offset);
+  await frame("Hero, as it opens: the signal on its way round the delivery flow");
+  await glide('[data-v4-flow-stage="evaluate"]'); await wait(700);
+  await frame("Hero response: the pointer nearest Evaluate lights that stage and its line to the hub");
+  await film.mouse.move(3, 300); await jump(GRID); await wait(2400); await glide('[data-v4-flagship="pipeline"] .evidence-card-content'); await wait(900);
+  await frame("Flagship emphasis: SINAMA in hand, the current running its pipeline again");
+  await film.mouse.move(3, 300); await jump(".v4-eco-section"); await wait(1500); await glide(`.v4-lane__project${node(SINAMA)}`); await wait(800);
+  await frame("Ecosystem relationship: SINAMA lights both capabilities it is filed under");
+  await film.mouse.move(3, 300); await jump('[data-v4-flagship="ajoop"]', -140); await wait(900);
+  await Promise.all([film.waitForNavigation({ waitUntil: "networkidle2" }), film.click(".v4-port__links a")]);
+  await film.evaluate(() => document.fonts.ready); await wait(1500);
+  const arrived = new URL(film.url()).pathname;
+  await frame("Hand-off: Home's AJOOP port opens the Hub");
+  await film.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+  await visit(film, HOME); await wait(1200);
+  await frame("Reduced motion: the hero as a designed still, the route drawn and its rest stage lit");
+  expect("Motion session: the port's first link arrives at the Hub", arrived === HUB);
   await film.done();
 
-  /* ---------- brand: the Hub ---------- */
-  const b = {};
-  const h = {};
-  const hubPage = await fresh({ viewport: DESKTOP, theme: "dark", path: HUB });
-  h.initial = await hub(hubPage);
-  b.hubIdle = await brand(hubPage);
-  const coreImage = b.hubIdle.images[0];
-  expect("Hub: a page surface, not a dialog — no launcher, no modal, nothing inert, composer present", h.initial.present && h.initial.launchers === 0 && h.initial.dialogs === 0 && h.initial.inert === 0 && h.initial.fieldShown === 1 && h.initial.composer === 1 && h.initial.staticNote === 0);
-  expect("Hub: opens idle with the greeting, its scope and no stored conversation", h.initial.live === "idle" && h.initial.messages === 1 && h.initial.scope === 5 && h.initial.session === null && h.initial.evidence.length === 0);
-  expect("Hub brand: the rail carries the approved mark (dark rendering), not the panel's mascot", b.hubIdle.hubMark?.file === BRAND.markDark && b.hubIdle.hubMark.shown && b.hubIdle.hubMascots === 0);
-  expect("Hub brand: the name is set AJOOP", b.hubIdle.hubTitle.transform === "uppercase" && b.hubIdle.hubTitle.text.toUpperCase() === "AJOOP");
-  expect("Hub brand: the empty field shows the mark", b.hubIdle.hubIdle.shown && b.hubIdle.hubIdle.opacity > 0.4 && b.hubIdle.hubIdleMark.file === BRAND.markDark);
-  expect("Hub brand: the Living Hub core is one sized, eager, decorative image, loaded", b.hubIdle.images.length === 1 && BRAND.art.includes(coreImage.chosen) && coreImage.complete && coreImage.natural > 0 && coreImage.width === "1600" && coreImage.height === "900" && coreImage.loading === null && coreImage.alt === "" && b.hubIdle.hubCore.opacity > 0.9);
-  expect("Hub brand: nothing points at the approved pack's folder", b.hubIdle.offSite === 0);
-  /* Every live state the Hub passes through during one real turn. */
-  await hubPage.evaluate(() => {
-    const root = document.querySelector("[data-v4-hub]");
-    window.__states = [root.getAttribute("data-v4-live")];
-    new MutationObserver(() => { const next = root.getAttribute("data-v4-live"); if (window.__states.at(-1) !== next) window.__states.push(next); }).observe(root, { attributes: true, attributeFilter: ["data-v4-live"] });
+  /* ---------- structure and hierarchy ---------- */
+  const q = {};
+  const canon = await canonicalSignatures("en");
+  const desk = await fresh({ viewport: DESKTOP, theme: "dark" });
+  q.initial = await home(desk);
+  const [lead, port, third, support] = q.initial.cards;
+  expect("Structure: one story in order — hero, flagship proof, ecosystem, operating model, experience, bridge, latest build, closing", same(q.initial.sections, ["hero", "flagship", "ecosystem", "model", "experience", "bridge", "latest", "closing"]));
+  expect("Flagship hierarchy: SINAMA, AJOOP, Atölye Joyday in reading order, then the supporting evidence — four surfaces, three flagships", q.initial.cards.length === 4 && same(q.initial.cards.map((card) => card.role), ["flagship:pipeline", "flagship:ajoop", "flagship:route", "support"]) && lead.title.startsWith("SINAMA") && port.title.toUpperCase() === "AJOOP" && third.title === "Atölye Joyday" && support.title === "AI Chatbot Flow Design");
+  expect("Flagship hierarchy, drawn: the lead spans the row; AJOOP and Joyday share the next; the supporting strip sits beneath both", lead.box.width > port.box.width * 1.9 && lead.box.top < port.box.top && port.box.top === third.box.top && port.box.left < third.box.left && support.box.top > third.box.top && support.box.height < third.box.height);
+  expect("Supporting evidence is labelled as such, in the catalog's own words", Boolean(q.initial.supportLabel) && support.links[0] === "/projects/ai-chatbot-flow-design/");
+  expect("SINAMA: the pipeline and proof shown are its case study's, word for word and figure for figure", same(q.initial.sinama, canon.sinama) && canon.sinama.steps.length === 6);
+  expect("Atölye Joyday: the route and proof shown are its case study's, word for word and figure for figure", same(q.initial.joyday, canon.joyday) && canon.joyday.steps.length === 6);
+  expect("Flagship links: each case study, and SINAMA's and Joyday's live sites", lead.links[0] === "/sinama-case-study/" && third.links[0] === "/atolye-joyday-case-study/" && lead.links.length === 2 && third.links.length === 2);
+  expect("AJOOP on Home: its own resting state, summary, four quick questions and one composer — and exactly two links, to the Hub and the case study", Boolean(q.initial.port.state) && Boolean(q.initial.port.lead) && q.initial.port.quicks === 4 && q.initial.port.composer === 1 && same(q.initial.port.links, [HUB, CASE]));
+  expect("Collapsed sections: four operating stages, three roles, the build log's latest three, and no separate supporting list", q.initial.model.length === 4 && q.initial.roles.length === 3 && q.initial.buildLog === 3 && !q.initial.sections.includes("supporting-list"));
+  expect("Bridge: Experience from the summary, then Certificates and About", same(q.initial.bridge, ["/blog/", "/certificates/", "/about/"]));
+  expect("Closing: the capability view first, then Works, the AJOOP Hub, Request and contact", q.initial.closing[0].startsWith("/?role=") && same(q.initial.closing.slice(1, 4), ["/works/", HUB, "/request/"]) && q.initial.closing.some((href) => href.startsWith("mailto:")));
+  expect("Media: the portrait is the one prioritised image; everything below the hero is lazy; every image declares its size", q.initial.images.filter((image) => image.priority === "high").length === 1 && q.initial.images.filter((image) => image.loading !== "lazy").length === 1 && q.initial.images.every((image) => image.width && image.height));
+  expect("No canvas on Home", q.initial.canvases === 0);
+
+  /* ---------- ecosystem: the catalog, and nothing else ---------- */
+  const works = await fresh({ viewport: DESKTOP, theme: "dark", path: "/works/", settle: 600 });
+  q.catalog = await catalog(works);
+  await works.done();
+  const filed = (capability) => q.catalog.projects.filter((project) => project.categories.includes(capability)).map((project) => project.id);
+  const laneOf = Object.fromEntries(q.initial.lanes.map((lane) => [lane.id, lane.projects.map((project) => project.id)]));
+  const drawn = q.initial.lanes.flatMap((lane) => lane.projects);
+  expect("Ecosystem: one lane per Works capability, each carrying exactly the projects the Works catalog files under it, in catalog order", q.catalog.capabilities.length > 0 && same(Object.keys(laneOf).sort(), [...q.catalog.capabilities].sort()) && q.catalog.capabilities.every((capability) => same(laneOf[capability], filed(capability))));
+  expect("Ecosystem: every catalog project is on a lane, and nothing that is not in the catalog", same([...new Set(drawn.map((project) => project.id))].sort(), q.catalog.projects.map((project) => project.id).sort()));
+  expect("Ecosystem: only SINAMA and Atölye Joyday are set as flagships; flagship lanes come first", drawn.every((project) => (project.tier === "flagship") === [SINAMA, JOYDAY].includes(project.id)) && q.initial.lanes.findIndex((lane) => !lane.projects.some((project) => project.tier === "flagship")) === q.initial.lanes.filter((lane) => lane.projects.some((project) => project.tier === "flagship")).length);
+  expect("Ecosystem: AJOOP is on no lane — it closes the section as the assistant that answers over it, with one link to its Hub", !drawn.some((project) => /ajoop/i.test(project.href)) && same(q.initial.ecoLinks, ["/works/", HUB]) && q.initial.ecoAjoop.toUpperCase().startsWith("AJOOP"));
+
+  /* ---------- every link Home exposes ---------- */
+  q.links = [];
+  for (const href of q.initial.internal) q.links.push({ href, status: (await fetch(`${ORIGIN}${href.split("#")[0]}`)).status });
+  expect("Links: every internal destination Home links to is served", q.links.length > 10 && q.links.every((link) => link.status === 200));
+  expect("Links: every external one opens apart from the site, without an opener", q.initial.external.length > 0 && q.initial.external.every((link) => link.target === "_blank" && /noopener/.test(link.rel)));
+
+  /* ---------- interaction ---------- */
+  await scrollTo(desk, LANES, "into");
+  await desk.hover(`.v4-lane__project${node(SINAMA)}`); await wait(700);
+  q.hover = await home(desk);
+  const sinamaLanes = q.catalog.projects.find((project) => project.id === SINAMA).categories;
+  expect("Relationship highlight: SINAMA in hand lights the lanes it is filed under, everywhere it sits, and its flagship card answers", q.hover.lanesActive && same(q.hover.lanes.filter((lane) => lane.lit).map((lane) => lane.id).sort(), [...sinamaLanes].sort()) && q.hover.lanes.flatMap((lane) => lane.projects).filter((project) => project.id === SINAMA).every((project) => project.state === "active") && q.hover.cards[0].related && !q.hover.cards[2].related);
+  expect("Relationship highlight: the readout says it in words, naming each capability once", q.hover.readout[0].startsWith("SINAMA") && same(q.hover.readout[1].split(" · ").sort(), q.hover.lanes.filter((lane) => sinamaLanes.includes(lane.id)).map((lane) => lane.label).sort()));
+  await desk.mouse.move(3, 300); await wait(500);
+  q.released = await home(desk);
+  expect("Relationship highlight: releasing it returns the map to rest", !q.released.lanesActive && same(q.released.readout, q.initial.readout));
+  /* Keyboard: reach a capability, pin it, walk onto its first project. */
+  await desk.focus(`.v4-lane__capability${node("ai")}`); await desk.keyboard.press("Enter"); await wait(400);
+  q.pinned = await home(desk);
+  await desk.keyboard.press("Tab"); await wait(400);
+  q.focus = await desk.evaluate(() => { const style = getComputedStyle(document.activeElement); return { node: document.activeElement.getAttribute("data-v4-eco-node"), outline: style.outlineStyle !== "none" && parseFloat(style.outlineWidth) >= 2 }; });
+  await desk.keyboard.press("Escape"); await wait(300);
+  q.unpinned = await home(desk);
+  expect("Keyboard: a capability can be pinned and released, and Tab moves onto its first project with a visible focus ring", q.pinned.lanes.find((lane) => lane.id === "ai").pressed === "true" && q.focus.node === laneOf.ai[0] && q.focus.outline && q.unpinned.lanes.every((lane) => lane.pressed === "false"));
+  q.tabOrder = await desk.evaluate(() => {
+    const cards = [...document.querySelectorAll(".selected-work-grid > *")];
+    return [...document.querySelectorAll(".selected-work-grid a[href], .selected-work-grid button")].map((entry) => cards.findIndex((card) => card.contains(entry)));
   });
-  await ask(hubPage, QUESTION);
-  await hubPage.evaluate(() => document.activeElement.blur()); await wait(900);
-  h.asked = { ...(await hub(hubPage)), states: await hubPage.evaluate(() => window.__states), transcript: await transcript(hubPage) };
-  b.hubActive = await brand(hubPage);
-  const lastAnswer = h.asked.transcript.at(-1);
-  expect("Hub: a turn passes through real states — composing, retrieving, then a grounded answer", h.asked.states.includes("composing") && h.asked.states.includes("retrieving") && h.asked.live === "grounded" && h.asked.states.indexOf("retrieving") < h.asked.states.lastIndexOf("grounded"));
-  expect("Hub: the context surface lists exactly the evidence the answer itself shows", lastAnswer.cards.length > 0 && JSON.stringify(h.asked.evidence.map((item) => item.title)) === JSON.stringify(lastAnswer.cards) && h.asked.lit === "ajoop,evidence,answer" && Boolean(h.asked.provenance));
-  expect("Hub: the bounded copy lives in this tab's session storage only", h.asked.session?.version === 1 && h.asked.session.language === "en" && h.asked.session.messages === 2 && h.asked.session.keys === "actions,conversationState,language,messages,replyLanguage,turn,version" && h.asked.elsewhere.local === 0 && !h.asked.elsewhere.cookie);
-  expect("Public/private boundary: no connected source, no action preview, no request beyond the site, its fonts and the public edge", h.asked.connected === 0 && hubPage.foreignRequests.length === 0);
-  expect("Hub brand: once a question is asked the core steps back and the empty-field mark leaves", b.hubActive.hubCore.opacity < 0.35 && b.hubActive.hubIdle.opacity === 0 && b.hubActive.hubMark.file === BRAND.markDark);
-  await wait(2600);
-  h.atRest = await motionState(hubPage);
-  expect("Hub: nothing loops and the page comes to rest", h.atRest.endless === 0 && h.atRest.running === 0);
-  h.shift = await layoutShift(hubPage);
-  await hubPage.click('[data-chatbot-action-kind="reset"]'); await wait(1300);
-  h.reset = await hub(hubPage);
-  b.hubReset = await brand(hubPage);
-  expect("Hub: Start over clears the conversation, its stored copy and the context surface — and the idle identity returns", h.reset.messages === 1 && h.reset.session === null && h.reset.evidence.length === 0 && b.hubReset.hubCore.opacity > 0.9 && b.hubReset.hubIdle.opacity > 0.4);
-  expect("Hub desktop: no horizontal overflow", (await overflow(hubPage)) === 0);
-  await hubPage.done();
+  expect("Keyboard: focus moves through the flagship row in the order it is drawn", q.tabOrder.length >= 12 && q.tabOrder.every((card, index) => index === 0 || card >= q.tabOrder[index - 1]));
+  await desk.focus(".contact-actions a:last-child");
+  q.leaves = false;
+  for (let press = 0; press < 12 && !q.leaves; press += 1) { await desk.keyboard.press("Tab"); q.leaves = await desk.evaluate(() => Boolean(document.activeElement?.closest("footer"))); }
+  expect("Keyboard: focus leaves the closing panel for the footer — no trap", q.leaves);
+  /* The port opens the launcher's own conversation, not a second one. */
+  await scrollTo(desk, ".v4-port", "into");
+  await desk.click(".v4-port__composer"); await wait(900);
+  q.portOpens = (await home(desk)).port.panelOpen;
+  expect("AJOOP port: its composer opens the global launcher's panel", q.portOpens === "true");
+  await desk.keyboard.press("Escape"); await wait(400);
+  await desk.evaluate(() => { document.activeElement?.blur(); scrollTo(0, 0); });
+  /* The hero's signal is bounded: once it has run, nothing is left running. */
+  await wait(27000);
+  q.atRest = await motionState(desk);
+  q.idle = await idleWork(desk);
+  q.shift = await layoutShift(desk);
+  expect("Idle: nothing loops, and once the hero's signal has run nothing is animating", q.atRest.endless === 0 && q.atRest.running === 0);
+  expect("Idle: the main thread is quiet — no long task in five seconds at rest", q.idle.longTasks === 0);
+  expect("Home desktop: no horizontal overflow", (await overflow(desk)) === 0);
+  await desk.done();
 
-  const hubLight = await fresh({ viewport: DESKTOP, theme: "light", path: HUB });
-  b.hubLight = await brand(hubLight);
-  expect("Hub light: the light mark in the rail and the empty field; the artwork contained in a dark panel, not blended into the page", b.hubLight.hubMark.file === BRAND.markLight && b.hubLight.hubIdleMark.file === BRAND.markLight && b.hubLight.hubCore.opacity === 1 && (await hubLight.evaluate(() => { const style = getComputedStyle(document.querySelector(".v4-hub-core")); return style.maskImage === "none" && parseFloat(style.borderTopWidth) > 0; })));
-  expect("Hub light: no horizontal overflow", (await overflow(hubLight)) === 0);
-  await hubLight.done();
+  /* ---------- themes and widths ---------- */
+  q.widths = {};
+  for (const [name, viewport] of [["desktop", DESKTOP], ["tablet", TABLET], ["mobile", MOBILE]]) for (const theme of ["dark", "light"]) {
+    const page = await fresh({ viewport, theme, touch: viewport !== DESKTOP, settle: 700 });
+    const state = await home(page);
+    q.widths[`${name}-${theme}`] = { overflow: await overflow(page), flagship: state.heights.flagship, ecosystem: state.heights.ecosystem, page: await page.evaluate(() => document.documentElement.scrollHeight), launcher: state.launcher };
+    expect(`${name} ${theme}: no horizontal overflow, four flagship surfaces, six lanes`, q.widths[`${name}-${theme}`].overflow === 0 && state.cards.length === 4 && state.lanes.length === q.catalog.capabilities.length);
+    if (name === "mobile" && theme === "dark") {
+      q.phone = state;
+      q.phoneReach = await page.evaluate(() => {
+        const reach = (selector) => { const entry = document.querySelector(selector); entry.scrollIntoView({ block: "center", behavior: "instant" }); const rect = entry.getBoundingClientRect(); const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2); return Boolean(hit && entry.contains(hit)) && rect.height >= 32; };
+        return [".hero-actions .btn.primary", '[data-v4-flagship="pipeline"] .project-actions a', ".v4-port__composer", ".v4-lane__capability", ".contact-actions .btn.primary"].map(reach);
+      });
+      expect("Phone: one column, the lead system first; the pipeline and the route read down their cards", state.cards.every((card) => card.box.left === state.cards[0].box.left) && state.cards.map((card) => card.box.top).every((top, index, tops) => index === 0 || top > tops[index - 1]) && state.sinama.steps.length === 6);
+      expect("Phone: the primary action of the hero, the lead flagship, the port, the lanes and the closing can each be reached at the centre of the screen", q.phoneReach.every(Boolean));
+    }
+    await page.done();
+  }
 
-  /* Touch + phone. */
-  const phone = await fresh({ viewport: MOBILE, theme: "dark", path: HUB, touch: true });
-  b.hubPhone = await brand(phone);
-  await phone.evaluate(() => document.querySelector(".v4-hub__field").scrollIntoView({ block: "start", behavior: "instant" })); await wait(500);
-  await ask(phone, QUESTION, { tap: true });
-  h.phone = { ...(await hub(phone)), reach: await phone.evaluate(() => {
-    document.querySelector("[data-chatbot-send]").scrollIntoView({ block: "center", behavior: "instant" });
-    return ["[data-chatbot-send]", "[data-chatbot-input]"].map((selector) => { const rect = document.querySelector(selector).getBoundingClientRect(); const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2); return Boolean(hit && hit.closest(selector)); });
-  }) };
-  expect("Hub phone: the mark heads the identity bar; the empty-field mark is not drawn over the short transcript", b.hubPhone.hubMark.file === BRAND.markDark && b.hubPhone.hubMark.shown && !b.hubPhone.hubIdle.shown);
-  expect("Hub touch: a question can be asked on a phone and no fixed control covers the composer or send", h.phone.live === "grounded" && h.phone.launchers === 0 && h.phone.reach.every(Boolean));
-  expect("Hub mobile: no horizontal overflow", (await overflow(phone)) === 0);
-  await phone.done();
+  /* ---------- without JavaScript ---------- */
+  const plain = await fresh({ viewport: DESKTOP, theme: "dark", noJs: true, settle: 600 });
+  q.noJs = await home(plain);
+  q.noJsNav = await plain.evaluate(() => ({ nav: document.querySelectorAll(".site-header nav a[href]").length, mail: document.querySelectorAll('main a[href^="mailto:"]').length, hidden: [...document.querySelectorAll("main > *")].filter((entry) => Number(getComputedStyle(entry).opacity) < 1).length }));
+  expect("Without JavaScript: identity, the four flagship surfaces with their systems and links, every lane, the bridge and the contact path are all there and visible", Boolean(q.noJs.heading) && same(q.noJs.cards.map((card) => card.links), q.initial.cards.map((card) => card.links)) && same(q.noJs.sinama, canon.sinama) && same(q.noJs.joyday, canon.joyday) && same(q.noJs.lanes.map((lane) => lane.projects.map((project) => project.href)), q.initial.lanes.map((lane) => lane.projects.map((project) => project.href))) && same(q.noJs.bridge, q.initial.bridge) && same(q.noJs.closing, q.initial.closing) && q.noJsNav.nav >= 7 && q.noJsNav.mail >= 1 && q.noJs.cards.every((card) => card.opacity === 1) && !q.noJs.lanesWaiting);
+  await plain.done();
 
-  const hubPlain = await fresh({ viewport: DESKTOP, theme: "dark", path: HUB, noJs: true, settle: 600 });
-  const loadingCopy = JSON.parse(await readFile(join(ROOT, "data", "i18n", "messages", "en", "common.json"), "utf8"))["ajoop.hub.loading"];
-  h.noJs = await hubPlain.evaluate(() => {
-    const shown = (selector) => [...document.querySelectorAll(selector)].filter((entry) => entry.getClientRects().length).length;
-    return { heading: document.querySelector("h1").textContent.trim(), notice: shown(".v4-hub__noscript"), noticeLinks: document.querySelectorAll(".v4-hub__noscript a[href]").length, identity: shown(".v4-hub__identity"), scope: shown(".v4-hub__scope .v4-ports li"), composer: shown("[data-chatbot-input]"), staticNote: shown(".v4-hub__static"), staticText: document.querySelector(".v4-hub__static").textContent.trim(), how: shown(".v4-hub__how") };
-  });
-  b.hubNoJs = await brand(hubPlain);
-  expect("Hub without JavaScript: identity, scope, a plain notice and links — no dead composer", Boolean(h.noJs.heading) && h.noJs.notice === 1 && h.noJs.noticeLinks === 5 && h.noJs.identity === 1 && h.noJs.scope === 5 && h.noJs.composer === 0 && h.noJs.staticNote === 1 && h.noJs.how === 1);
-  expect("Hub without JavaScript: the static line makes no promise about loading, and is the catalog's own", h.noJs.staticText === loadingCopy && !/finished loading|becomes available/i.test(h.noJs.staticText));
-  expect("Hub without JavaScript: the mark and the core still render; the empty-field mark does not", b.hubNoJs.hubMark.file === BRAND.markDark && b.hubNoJs.images[0]?.natural > 0 && !b.hubNoJs.hubIdle.shown);
-  await hubPlain.done();
+  /* ---------- reduced motion ---------- */
+  const still = await fresh({ viewport: DESKTOP, theme: "dark", reducedMotion: true });
+  await scrollTo(still, GRID, "top"); await still.hover('[data-v4-flagship="pipeline"] .evidence-card-content'); await wait(500);
+  await scrollTo(still, LANES, "into"); await still.hover(`.v4-lane__project${node(JOYDAY)}`); await wait(500);
+  q.reducedMotion = { motion: await motionState(still), lanes: (await home(still)).lanes.filter((lane) => lane.lit).map((lane) => lane.id), transition: await still.evaluate(() => getComputedStyle(document.querySelector(".v4-lane"), "::after").transitionDuration) };
+  expect("Reduced motion: nothing animates or travels, and a relationship is still shown — by state, at once", q.reducedMotion.motion.running === 0 && same(q.reducedMotion.lanes, ["web"]) && /^0s/.test(q.reducedMotion.transition));
+  await still.done();
 
-  const hubStill = await fresh({ viewport: DESKTOP, theme: "dark", path: HUB, reducedMotion: true });
-  await ask(hubStill, QUESTION); await hubStill.evaluate(() => document.activeElement.blur()); await wait(400);
-  h.reducedMotion = { ...(await hub(hubStill)), motion: await motionState(hubStill) };
-  b.hubStill = await brand(hubStill);
-  expect("Hub reduced motion: every state is still stated, the core steps back without a transition, nothing animates", h.reducedMotion.live === "grounded" && Boolean(h.reducedMotion.stateLabel) && h.reducedMotion.motion.running === 0 && b.hubStill.hubCore.opacity < 0.35 && /^0s/.test(b.hubStill.hubCoreMotion));
-  await hubStill.done();
-
-  /* ---------- launcher ↔ Hub: one conversation ---------- */
-  const c = {};
-  const tab = await fresh({ viewport: DESKTOP, theme: "dark", path: "/about/", edge: "degraded" });
-  b.launcher = await brand(tab);
-  expect("Launcher brand: the approved app icon at the launcher's own size; the glyph it replaces is not drawn", b.launcher.launcherIcon?.file === BRAND.appIcon && b.launcher.launcherIcon.width === 44 && b.launcher.launcherIcon.height === 44 && b.launcher.launcher.height === 56 && !b.launcher.launcherGlyph.shown);
-  expect("Launcher brand: its label and the panel's title are set AJOOP; the engine's strings are untouched", b.launcher.launcherText.transform === "uppercase" && b.launcher.panelTitle.transform === "uppercase" && b.launcher.launcherText.text === "Ask Ajoop" && b.launcher.panelTitle.text === "Ajoop");
-  expect("Launcher → Hub: the launcher stays on ordinary pages and links to the Hub", b.launcher.launcher.shown && b.launcher.hubLink === HUB);
-  await tab.click(TOGGLE); await wait(600);
-  c.focus = await tab.evaluate(() => ({ expanded: document.querySelector("[data-chatbot-toggle]").getAttribute("aria-expanded"), inPanel: Boolean(document.activeElement?.closest("[data-chatbot-panel]")), dialog: document.querySelector("[data-chatbot-panel]").getAttribute("role") }));
-  expect("Launcher: opening it still moves focus into its dialog", c.focus.expanded === "true" && c.focus.inPanel && c.focus.dialog === "dialog");
-  await ask(tab, QUESTION);
-  c.launcher = await transcript(tab);
-  await Promise.all([tab.waitForNavigation({ waitUntil: "networkidle2" }), tab.click(".chatbot-hub-link")]);
-  await tab.waitForFunction(() => document.querySelector("[data-chatbot-messages] .chatbot-message.user"), { timeout: 20000 }); await wait(900);
-  c.hubArrived = { path: new URL(tab.url()).pathname, transcript: await transcript(tab), state: await hub(tab) };
-  const conversation = (messages) => JSON.stringify(messages.slice(1));
-  expect("Launcher → Hub: the Hub opens on the same conversation, message for message, with its evidence and follow-ups", c.hubArrived.path === HUB && c.launcher.length === 3 && conversation(c.hubArrived.transcript) === conversation(c.launcher) && c.hubArrived.state.evidence.length === c.launcher.at(-1).cards.length && c.hubArrived.state.actions.length > 0);
-  const sentBefore = tab.edgeRequests.length;
-  await ask(tab, FOLLOW_UP);
-  c.hubContinued = await transcript(tab);
-  const generation = tab.edgeRequests.slice(sentBefore).map((body) => { try { return JSON.parse(body); } catch { return null; } }).find((body) => body && body.mode === "rag");
-  c.memory = generation ? generation.history.map((entry) => `${entry.role}: ${entry.content.slice(0, 40)}`) : null;
-  expect("Launcher → Hub: the next question reaches the engine with the launcher exchange as its memory", Boolean(generation) && generation.history.length === 2 && generation.history[0].role === "user" && generation.history[0].content === QUESTION);
-  await visit(tab, "/works/"); await wait(700);
-  await tab.click(TOGGLE); await wait(700);
-  c.backInLauncher = await transcript(tab);
-  expect("Hub → launcher: reopening the launcher on another page continues the same conversation", c.hubContinued.length === 5 && conversation(c.backInLauncher) === conversation(c.hubContinued));
-  await tab.done();
-
-  const launcherLight = await fresh({ viewport: MOBILE, theme: "light", path: "/about/", touch: true, settle: 900 });
-  b.launcherPhone = await brand(launcherLight);
-  c.phoneLauncher = await launcherLight.evaluate(() => { const rect = document.querySelector(".chatbot-launcher").getBoundingClientRect(); return { right: Math.round(innerWidth - rect.right), bottom: Math.round(innerHeight - rect.bottom), width: Math.round(rect.width), height: Math.round(rect.height) }; });
-  expect("Launcher phone + light: the same app icon, inside the viewport's safe area", b.launcherPhone.launcherIcon.file === BRAND.appIcon && b.launcherPhone.launcherIcon.shown && c.phoneLauncher.right >= 8 && c.phoneLauncher.bottom >= 8 && c.phoneLauncher.height >= 44 && (await overflow(launcherLight)) === 0);
-  await launcherLight.done();
-
-  /* ---------- case-study smoke ---------- */
-  const s = {};
-  const study = await fresh({ viewport: DESKTOP, theme: "dark", path: CASE });
-  s.initial = await caseStudy(study);
-  b.caseStudy = await brand(study);
-  const heroImage = b.caseStudy.images[0];
-  const canonicalStack = JSON.parse(await readFile(join(ROOT, "data", "portfolio", "ajoop-master-knowledge.json"), "utf8")).projects.flagship["Ajoop Portfolio Copilot"].architecture_public_safe;
-  expect("Case study: seven sections, each reachable from the tracker", s.initial.heading === "AJOOP" && s.initial.tracker.length === 7 && s.initial.trackerTargets);
-  expect("Case study: the stack is the portfolio's own public-safe record, and no figures are claimed", JSON.stringify(s.initial.stack) === JSON.stringify(canonicalStack) && s.initial.proofFigures === 0);
-  expect("Case study: still seven public parts on seven wires and one private part with no wire — the brand pass added no node and no wire", s.initial.nodes.length === 7 && s.initial.parts === 8 && s.initial.edges === 7 && s.initial.ownerLinks === "" && s.initial.ownerEdges === 0 && s.initial.boundary === 1 && s.initial.canvases === 0);
-  expect("Case study: every way into the Hub is an ordinary link to it", s.initial.entryLinks.length === 5 && s.initial.entryLinks.every((href) => href === HUB) && s.initial.cta.length === 2 && s.initial.cta.every((href) => href === HUB));
-  expect("Case study brand: the hero visual is one sized, high-priority, non-lazy image, loaded, in a 21:9 frame", b.caseStudy.images.length === 1 && BRAND.art.includes(heroImage.chosen) && heroImage.complete && heroImage.natural > 0 && heroImage.width === "1600" && heroImage.height === "900" && heroImage.priority === "high" && heroImage.loading === null && Math.abs(b.caseStudy.entryMedia.width / b.caseStudy.entryMedia.height - 21 / 9) < 0.02);
-  expect("Case study brand: the approved lockup signs the visual; the diagram's core carries the mark", b.caseStudy.entryLockup.file === BRAND.wordmark && b.caseStudy.entryLockup.shown && b.caseStudy.systemCore.file === BRAND.markDark && b.caseStudy.hubMascots === 0 && b.caseStudy.offSite === 0);
-  await scrollTo(study, ".v4-ajoop-sys", "into");
-  await study.hover(node("bridge")); await wait(700);
-  s.hover = await caseStudy(study);
-  expect("Case study: a part in hand lights what it is wired to and explains itself", s.hover.activeNode === "bridge" && s.hover.related === "state,evidence" && s.hover.litEdges === 2 && s.hover.panel === "bridge");
-  /* The core is not a part: the point at its centre selects nothing. */
-  await study.mouse.move(3, 300); await wait(500);
-  s.core = await study.evaluate(() => {
-    const rect = document.querySelector(".v4-ajoop-sys").getBoundingClientRect();
-    const hit = document.elementFromPoint(rect.left + rect.width * 0.5818, rect.top + rect.height * 0.3462);
-    return { button: Boolean(hit?.closest("button, a")), within: Boolean(hit?.closest(".v4-ajoop-sys")) };
-  });
-  expect("Case study: the mark at the diagram's core is not a part — nothing there can be selected", s.core.within && !s.core.button);
-  await study.focus(node("owner")); await study.keyboard.press("Enter"); await study.mouse.move(3, 300); await wait(600);
-  s.owner = await caseStudy(study);
-  expect("Case study keyboard: the private track can be read, and lights nothing in the public path", s.owner.pressed === "owner" && s.owner.panel === "owner" && s.owner.litEdges === 0 && s.owner.related === "");
-  await study.keyboard.press("Escape"); await study.evaluate(() => document.activeElement.blur()); await wait(2800);
-  s.atRest = await motionState(study);
-  expect("Case study: nothing loops and the page comes to rest", s.atRest.endless === 0 && s.atRest.running === 0);
-  s.shift = await layoutShift(study);
-  expect("Case study desktop: no horizontal overflow", (await overflow(study)) === 0);
-  await study.done();
-
-  const studyLight = await fresh({ viewport: DESKTOP, theme: "light", path: CASE });
-  b.caseLight = await brand(studyLight);
-  expect("Case study light: the visual stays a dark surface under the same lockup; the diagram's core takes the light mark", b.caseLight.entryLockup.file === BRAND.wordmark && b.caseLight.systemCore.file === BRAND.markLight && (await studyLight.evaluate(() => getComputedStyle(document.querySelector(".v4-ajoop-entry__media")).backgroundColor)) === "rgb(7, 13, 24)");
-  expect("Case study light: no horizontal overflow", (await overflow(studyLight)) === 0);
-  await studyLight.done();
-
-  const studyPhone = await fresh({ viewport: MOBILE, theme: "dark", path: CASE, touch: true });
-  s.phone = await caseStudy(studyPhone);
-  await scrollTo(studyPhone, ".v4-ajoop-entry", "top");
-  b.casePhone = await brand(studyPhone);
-  expect("Case study phone: the path is a list of its eight parts, not a squeezed diagram", s.phone.fieldShown === 0 && s.phone.panelsShown === 8);
-  expect("Case study phone: the visual loads at a phone's width and the lockup fits its frame", b.casePhone.images[0].natural > 0 && b.casePhone.images[0].chosen === BRAND.art[0] && b.casePhone.entryLockup.width < b.casePhone.entryMedia.width * 0.62);
-  expect("Case study mobile: no horizontal overflow", (await overflow(studyPhone)) === 0);
-  await studyPhone.done();
-
-  const studyPlain = await fresh({ viewport: DESKTOP, theme: "dark", path: CASE, noJs: true, settle: 600 });
-  s.noJs = await caseStudy(studyPlain);
-  b.caseNoJs = await brand(studyPlain);
-  expect("Case study without JavaScript: the path is drawn, all eight parts are explained, and the visual and lockup are there", s.noJs.fieldShown === 1 && s.noJs.panelsShown === 8 && !s.noJs.waiting && s.noJs.cta.length === 2 && b.caseNoJs.images[0]?.natural > 0 && b.caseNoJs.entryLockup.file === BRAND.wordmark);
-  await studyPlain.done();
-
-  const studyStill = await fresh({ viewport: DESKTOP, theme: "dark", path: CASE, reducedMotion: true });
-  await studyStill.click(node("planner")); await studyStill.mouse.move(3, 300); await wait(400);
-  s.reducedMotion = { ...(await caseStudy(studyStill)), motion: await motionState(studyStill) };
-  expect("Case study reduced motion: a part still pins, nothing animates", s.reducedMotion.pressed === "planner" && s.reducedMotion.motion.running === 0);
-  await studyStill.done();
-
-  /* ---------- Home's flagship port ---------- */
-  const home = await fresh({ viewport: DESKTOP, theme: "dark", path: "/", settle: 900 });
-  b.homeBefore = await brand(home);
-  const portLinks = await home.evaluate(() => [...document.querySelectorAll(".v4-port__links a")].map((entry) => entry.getAttribute("href")));
-  await scrollTo(home, ".v4-port", "into");
-  b.home = await brand(home);
-  s.homeFlagship = await home.evaluate(() => [...document.querySelectorAll(".selected-work-grid > *")].map((entry) => entry.querySelector("h3")?.textContent.trim()));
-  expect("Home: the AJOOP port links to the Hub and the case study", JSON.stringify(portLinks) === JSON.stringify([HUB, CASE]));
-  expect("Home brand: the port carries the Living Hub artwork (lazy, sized, loaded once in view) under the app icon, and its name is set AJOOP", b.homeBefore.images[0].loading === "lazy" && b.home.images.length === 1 && b.home.images[0].natural > 0 && b.home.images[0].width === "1600" && b.home.images[0].height === "900" && b.home.portIcon.file === BRAND.appIcon && b.home.portTitle.transform === "uppercase");
-  expect("Home brand: the port's launcher chip carries the mark at the chip's own height", b.home.launcherIcon.file === BRAND.markDark && b.home.launcher.height === 56);
-  expect("Home: no horizontal overflow", (await overflow(home)) === 0);
-  await home.done();
-
-  /* ---------- every locale: both routes, and the launcher on shared layout ---------- */
+  /* ---------- every locale ---------- */
   const locales = {};
   for (const locale of LOCALES) {
-    locales[locale] = {};
-    for (const [surface, path] of [["hub", HUB], ["caseStudy", CASE], ["home", "/"]]) {
-      const wide = await fresh({ viewport: DESKTOP, theme: "dark", path: localized(locale, path), settle: 700 });
-      const narrow = await fresh({ viewport: MOBILE, theme: "dark", path: localized(locale, path), settle: 700 });
-      const seen = await brand(wide);
-      locales[locale][surface] = { desktop: await overflow(wide), mobile: await overflow(narrow), lang: await wide.evaluate(() => document.documentElement.lang), heading: await wide.evaluate(() => document.querySelector("h1").textContent.trim()) };
-      if (surface === "hub") Object.assign(locales[locale], { state: await wide.evaluate(() => document.querySelector("[data-v4-hub-state]").textContent.trim()), links: await wide.evaluate(() => document.querySelector(".v4-hub__how").getAttribute("href")), staticNote: await wide.evaluate(() => document.querySelector(".v4-hub__static").textContent.trim()), mark: seen.hubMark?.file });
-      if (surface === "caseStudy") Object.assign(locales[locale], { lockup: seen.entryLockup?.file, launcher: seen.launcherIcon?.file, launcherLabel: seen.launcherText?.text });
-      if (surface === "home") Object.assign(locales[locale], { port: seen.portIcon?.file });
-      expect(`${locale} ${surface}: served in its locale with no horizontal overflow at 1440 or 390`, locales[locale][surface].desktop === 0 && locales[locale][surface].mobile === 0 && locales[locale][surface].lang.startsWith(locale) && Boolean(locales[locale][surface].heading));
-      await wide.done();
-      await narrow.done();
-    }
-    const catalog = JSON.parse(await readFile(join(ROOT, "data", "i18n", "messages", locale, "common.json"), "utf8"));
-    expect(`${locale}: the Hub links to its own locale's case study and carries the same identity`, locales[locale].links === localized(locale, CASE) && locales[locale].mark === BRAND.markDark && locales[locale].lockup === BRAND.wordmark && locales[locale].launcher === BRAND.appIcon && locales[locale].port === BRAND.appIcon);
-    expect(`${locale}: the Hub's static line is its catalog's own`, locales[locale].staticNote === catalog["ajoop.hub.loading"]);
+    const wide = await fresh({ viewport: DESKTOP, theme: "dark", path: localized(locale, HOME), settle: 700 });
+    const narrow = await fresh({ viewport: MOBILE, theme: "dark", path: localized(locale, HOME), touch: true, settle: 700 });
+    const state = await home(wide);
+    const localCanon = await canonicalSignatures(locale);
+    const statuses = [];
+    for (const href of state.internal) statuses.push((await fetch(`${ORIGIN}${href.split("#")[0]}`)).status);
+    locales[locale] = { desktop: await overflow(wide), mobile: await overflow(narrow), lang: await wide.evaluate(() => document.documentElement.lang), heading: state.heading, sections: state.sections.length, pipeline: state.sinama.steps[0], route: state.joyday.steps[0], links: state.internal.length, served: statuses.every((status) => status === 200), flagshipHeight: state.heights.flagship };
+    expect(`${locale}: served in its locale, the same eight sections, no horizontal overflow at 1440 or 390`, locales[locale].desktop === 0 && locales[locale].mobile === 0 && locales[locale].lang.startsWith(locale) && Boolean(state.heading) && same(state.sections, q.initial.sections));
+    expect(`${locale}: both flagship systems are that locale's case study, and every internal link stays in the locale and is served`, same(state.sinama, localCanon.sinama) && same(state.joyday, localCanon.joyday) && locales[locale].served && (locale === "en" || state.internal.every((href) => href.startsWith(`/${locale}/`))));
+    await wide.done();
+    await narrow.done();
   }
-  expect("Locales: the static line is translated in each", new Set(LOCALES.map((locale) => locales[locale].staticNote)).size === LOCALES.length);
-
-  /* ---------- the shipped brand files ---------- */
-  const assets = [];
-  for (const file of BRAND_FILES) {
-    const response = await fetch(`${ORIGIN}/assets/${file}`);
-    const bytes = Buffer.from(await response.arrayBuffer());
-    assets.push({ file, status: response.status, type: response.headers.get("content-type"), bytes: bytes.length, webp: bytes.subarray(0, 4).toString("latin1") === "RIFF" && bytes.subarray(8, 12).toString("latin1") === "WEBP" });
-  }
-  expect("Brand files: every one the pages use is served from the site as WebP", assets.every((asset) => asset.status === 200 && asset.type === "image/webp" && asset.webp));
-  expect("Brand files: within budget — icons and marks under 24 KB each, the largest artwork under 130 KB", assets.every((asset) => asset.bytes < (asset.file.includes("living-hub") ? 130 : 24) * 1024));
-  const shippedBrand = (await readdir(join(ROOT, "dist-site", "assets"))).filter((file) => file.startsWith("ajoop-")).sort();
-  expect("Brand files: the build ships exactly these, and no original PNG from the pack", JSON.stringify(shippedBrand) === JSON.stringify([...BRAND_FILES].sort()));
+  expect("Locales: the flagship systems are translated, not repeated in English", new Set(LOCALES.map((locale) => locales[locale].pipeline)).size === LOCALES.length && new Set(LOCALES.map((locale) => locales[locale].route)).size === LOCALES.length);
 
   /* ---------- measurements + pack ---------- */
-  const lcp = await lcpCompare(browser, CASE);
+  const lcp = await lcpCompare(browser, HOME);
   console.log("[v4:capture] LCP measured");
-  const sizeOf = async (file) => {
-    const bytes = await readFile(join(ROOT, "dist-site", file));
-    return { file, raw: bytes.length, gzip: gzipSync(bytes).length };
+  const builds = { ...(BASELINE ? { before: BASELINE } : {}), after: ORIGIN };
+  const transfers = {};
+  for (const [name, viewport] of [["1440 × 900", DESKTOP], ["390 × 844", MOBILE]]) {
+    transfers[name] = {};
+    for (const build of Object.keys(builds)) transfers[name][build] = await transfer(browser, builds[build], viewport);
+    expect(`Transfer ${name}: no image is fetched twice, and one rendition of the AJOOP artwork`, transfers[name].after.wholePage.repeated.length === 0 && transfers[name].after.wholePage.images.filter((file) => file.startsWith("ajoop-living-hub")).length === 1);
+  }
+  let idleBefore = null;
+  if (BASELINE) {
+    const context = await browser.createBrowserContext();
+    const page = await context.newPage();
+    await stubEdge(page, "down", BASELINE);
+    await page.setViewport({ ...DESKTOP, deviceScaleFactor: 1 });
+    await page.goto(`${BASELINE}${HOME}`, { waitUntil: "networkidle2" });
+    await wait(27000);
+    idleBefore = await idleWork(page);
+    await context.close();
+  }
+  const reactEntry = async (root) => (await readFile(join(root, "dist-site", "index.html"), "utf8")).match(/assets-react\/[^"]+\.js/)[0];
+  const sizeOf = async (root, file) => {
+    const bytes = await readFile(join(root, "dist-site", file));
+    return { raw: bytes.length, gzip: gzipSync(bytes).length };
   };
-  const reactEntry = (await readFile(join(ROOT, "dist-site", "index.html"), "utf8")).match(/assets-react\/[^"]+\.js/)[0];
-  const sizes = await Promise.all(["css/v4-system.css", "css/v4-ajoop.css", "css/v4-home.css", "js/v4/runtime.js", "js/ajoop/assistant.js", "js/ajoop/rag-client.js", reactEntry, "ajoop/index.html", "ajoop-case-study/index.html", "index.html"].map(sizeOf));
+  const sizes = [];
+  for (const file of ["index.html", "css/v4-home.css", "css/v4-system.css", "js/v4/runtime.js", "react"]) {
+    const after = await sizeOf(ROOT, file === "react" ? await reactEntry(ROOT) : file);
+    const before = BASELINE_ROOT ? await sizeOf(BASELINE_ROOT, file === "react" ? await reactEntry(BASELINE_ROOT) : file) : null;
+    sizes.push({ file: file === "react" ? "assets-react/production-main-*.js" : file, before, after });
+  }
 
   await sheet(browser, "00-contact-sheet.png", TITLE, "Contact sheet · every panel is a production-build capture; full-size files sit beside this sheet", shots.map((shot) => ({ file: join(OUTPUT, shot.name), label: shot.label, width: shot.viewport.width === MOBILE.width ? 390 : 1080 })), 4680);
   await sheet(browser, "00-motion-frames.png", `${TITLE} · motion`, "Motion frames, in order, from one continuous session in one tab", frames, 3100);
 
-  const summary = { phase: PHASE, capturedAt: new Date().toISOString(), origin: ORIGIN, baselineOrigin: BASELINE, aiEdge: "stubbed: “down” (503) unless a check says “degraded” (healthy, then every generation fails)", brand: b, brandFiles: assets, hub: h, conversation: c, caseStudy: s, lcpCaseStudy: lcp, locales, sizes, motionFrames: frames.map((entry) => entry.label), consoleProblems: problems, failures };
+  const summary = { phase: PHASE, capturedAt: new Date().toISOString(), origin: ORIGIN, baselineOrigin: BASELINE, aiEdge: "stubbed: “down” (503)", home: q, canonical: canon, locales, lcpHome: lcp, transfers, idleBefore, sizes, motionFrames: frames.map((entry) => entry.label), consoleProblems: problems, failures };
   await writeFile(join(OUTPUT, "qa-summary.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
 
   const kb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`;
-  const lcpCell = (cell) => (cell ? `${cell.medianMs} ms on <${cell.element}>${cell.file ? ` (${cell.file})` : ""} · CLS ≤ ${cell.clsMax} · images ${cell.imageKb} KB` : "not measured");
+  const delta = (before, after) => (before === null || before === undefined ? "" : ` (${after - before >= 0 ? "+" : "−"}${kb(Math.abs(after - before))})`);
+  const lcpCell = (cell) => (cell ? `${cell.medianMs} ms on <${cell.element}>${cell.file ? ` (${cell.file})` : ""} · CLS ≤ ${cell.clsMax}` : "not measured");
+  const moved = (row) => `${kb(row.bytes)} in ${row.requests} requests (images ${kb(row.byKind.images || 0)}, CSS ${kb(row.byKind.css || 0)}, JS ${kb(row.byKind.js || 0)})`;
   const readme = `# ${TITLE} · review pack
 
 Generated by \`npm run v4:review-pack\` on ${summary.capturedAt} from the production build in \`dist-site/\`.
@@ -709,9 +652,13 @@ Nothing in this folder is in Git.
 - **\`qa-summary.json\`** — everything measured in this run.
 - **\`${PACK}\`** — everything here.
 
-## How AJOOP was run for this pack
+AJOOP's public AI edge (\`${EDGE}\`) was stubbed (503) for every capture and check; nothing was scripted into the page.
 
-AJOOP's public AI edge (\`${EDGE}\`) was **stubbed** for every capture and check, with the mechanism the project already uses for AJOOP UI QA (browser request interception). No model reply was simulated and nothing was scripted into the page: with the edge “down” (503) every answer shown is the engine's own deterministic answer with its real evidence cards; the launcher ↔ Hub check runs with the edge “degraded” so that a generation is really attempted and its memory can be read.
+## Home, in order
+
+${q.initial.sections.map((section, index) => `${index + 1}. ${section} — ${q.initial.heights[section]} px at 1440`).join("\n")}
+
+Page height: ${Object.entries(q.widths).map(([name, entry]) => `${name} ${entry.page} px`).join(" · ")}.
 
 ## Still panels
 
@@ -723,45 +670,49 @@ ${shots.map((shot, index) => `| ${index + 1} | ${shot.name} | ${shot.label} |`).
 
 ${frames.map((entry, index) => `${index + 1}. ${entry.label}`).join("\n")}
 
-## Brand, as rendered
+## Flagship hierarchy, as rendered
 
-- Hub rail and empty field: \`${b.hubIdle.hubMark.file}\` (dark) / \`${b.hubLight.hubMark.file}\` (light); the panel's mascot elements on the Hub and the case study: ${b.hubIdle.hubMascots + b.caseStudy.hubMascots}.
-- Hub core: \`${coreImage.chosen}\` chosen at 1440 from the 640/960/1600 set, drawn ${coreImage.box}; opacity ${b.hubIdle.hubCore.opacity} idle → ${b.hubActive.hubCore.opacity} once a question is asked → ${b.hubReset.hubCore.opacity} after Start over. Light theme: a bordered dark panel, opacity ${b.hubLight.hubCore.opacity}.
-- Case-study visual: \`${heroImage.chosen}\` at 1440, \`${b.casePhone.images[0].chosen}\` at 390; \`fetchpriority="${heroImage.priority}"\`, not lazy, ${heroImage.width} × ${heroImage.height} declared; lockup \`${b.caseStudy.entryLockup.file}\` in both themes (the visual is a dark surface in both); diagram core \`${b.caseStudy.systemCore.file}\` / \`${b.caseLight.systemCore.file}\`.
-- Launcher: \`${b.launcher.launcherIcon.file}\` at ${b.launcher.launcherIcon.width} × ${b.launcher.launcherIcon.height} in a ${b.launcher.launcher.height}px launcher; on Home's chip \`${b.home.launcherIcon.file}\` at ${b.home.launcherIcon.width} × ${b.home.launcherIcon.height}.
-- Home port: \`${b.home.images[0].chosen}\` (lazy) under \`${b.home.portIcon.file}\`.
-- Casing: the Hub title, the launcher label, the panel title and Home's port name are set in capitals by the stylesheet; their text is still the engine's (“${b.launcher.launcherText.text}”, “${b.launcher.panelTitle.text}”).
+${q.initial.cards.map((card) => `- **${card.title}** — ${card.role}, ${card.box.width} × ${card.box.height} at 1440; links ${card.links.join(", ")}`).join("\n")}
+- SINAMA's pipeline: “${q.initial.sinama.caption}” — ${q.initial.sinama.steps.length} steps; proof ${q.initial.sinama.proof.map((entry) => `${entry.value} ${entry.label}`).join(" · ")}. All of it read from its case study.
+- Atölye Joyday's route: “${q.initial.joyday.caption}” — ${q.initial.joyday.steps.length} stops; proof ${q.initial.joyday.proof.map((entry) => `${entry.value} ${entry.label}`).join(" · ")}. All of it read from its case study.
+- AJOOP: state “${q.initial.port.state}”, ${q.initial.port.quicks} quick questions, links ${q.initial.port.links.join(" and ")}; its composer opens the global launcher (${q.portOpens}).
 
-| Shipped file | Size |
-| --- | --- |
-${assets.map((asset) => `| assets/${asset.file} | ${kb(asset.bytes)} |`).join("\n")}
+## Ecosystem, as rendered
+
+${q.initial.lanes.map((lane) => `- ${lane.label}: ${lane.projects.map((project) => `${project.title}${project.tier === "flagship" ? " (flagship)" : project.tier === "archive" ? " (archive)" : ""}`).join(" · ")}`).join("\n")}
+- AJOOP is not a Works catalog project, so it is on no lane: “${q.initial.ecoAjoop}”.
 
 ## Focused QA (this run)
 
 - Failures: ${failures.length ? failures.map((failure) => `\n  - ${failure}`).join("") : "none"}
 - Console warnings/errors (including React hydration reports; the stubbed edge's own network messages excluded): ${problems.length ? problems.map((problem) => `\n  - ${problem}`).join("") : "none"}
-- Engine, unchanged: one real Hub turn went ${h.asked.states.join(" → ")}; final “${h.asked.stateLabel}”, path lit ${h.asked.lit}; evidence ${h.asked.evidence.map((item) => item.title).join(" · ")} — the same ${lastAnswer.cards.length} cards the answer shows.
-- One conversation: launcher ${c.launcher.length} messages → Hub ${c.hubArrived.transcript.length} (identical) → after one more question ${c.hubContinued.length} → launcher on /works/ ${c.backInLauncher.length} (identical). Memory sent with the Hub question: ${c.memory ? c.memory.join(" | ") : "none"}.
-- Session copy: key \`${SESSION_KEY}\`, ${h.asked.session.messages} messages / ${h.asked.session.bytes} bytes after one turn, fields ${h.asked.session.keys}; localStorage hits ${h.asked.elsewhere.local}, cookie ${h.asked.elsewhere.cookie}; cleared by Start over (${h.reset.session === null}).
-- Public/private negative control: ${h.asked.connected} connected-source or action-preview elements, ${hubPage.foreignRequests.length} requests outside the site, its fonts and the public edge.
-- Without JavaScript: Hub notice ${h.noJs.notice} with ${h.noJs.noticeLinks} links, composer ${h.noJs.composer}, static line “${h.noJs.staticText}”; case study explains ${s.noJs.panelsShown} parts.
-- Case study: ${s.initial.nodes.length} public parts, ${s.initial.edges} wires, private track wires ${s.initial.ownerEdges}; Local model bridge lights ${s.hover.related}; the core is selectable: ${s.core.button}.
-- Reduced motion: Hub ${h.reducedMotion.motion.running} running animations, core transition ${b.hubStill.hubCoreMotion}; case study ${s.reducedMotion.motion.running}.
-- At rest: ${h.atRest.running} time-driven animations running on the Hub and ${s.atRest.running} on the case study; no canvas.
-- Layout shift over the whole session: Hub ${h.shift}, case study ${s.shift} (1440 × 900).
-- Locales (EN/TR/DE/ES/FR; Hub, case study and Home at 1440 and 390): overflow ${LOCALES.map((locale) => ["hub", "caseStudy", "home"].map((surface) => `${locales[locale][surface].desktop}/${locales[locale][surface].mobile}`).join("/")).join(" · ")}; launcher label ${LOCALES.map((locale) => locales[locale].launcherLabel).join(" · ")}.
+- Overflow (1440 / 820 / 390, dark and light): ${Object.entries(q.widths).map(([name, entry]) => `${name} ${entry.overflow}`).join(" · ")}.
+- Links: ${q.links.length} internal destinations, all ${q.links.every((link) => link.status === 200) ? "served" : "NOT all served"}; ${q.initial.external.length} external, each in a new tab without an opener.
+- Relationship highlight: SINAMA lights ${q.hover.lanes.filter((lane) => lane.lit).map((lane) => lane.label).join(" + ")}; readout “${q.hover.readout.join(" — ")}”.
+- Keyboard: capability pinned ${q.pinned.lanes.find((lane) => lane.id === "ai").pressed}, Tab lands on ${q.focus.node} with a focus ring (${q.focus.outline}), Escape releases; flagship row focus order by card ${q.tabOrder.join("")}; focus leaves the closing panel (${q.leaves}).
+- Without JavaScript: ${q.noJs.cards.length} flagship surfaces, ${q.noJs.lanes.length} lanes, ${q.noJs.closing.length} closing actions, ${q.noJsNav.nav} navigation links; sections not fully visible: ${q.noJsNav.hidden}.
+- Reduced motion: ${q.reducedMotion.motion.running} running animations; lanes lit for Joyday: ${q.reducedMotion.lanes.join()}; lane transition ${q.reducedMotion.transition}.
+- At rest (1440, after the hero's bounded signal): ${q.atRest.running} time-driven animations running, ${q.atRest.endless} endless; over ${q.idle.windowMs} ms idle: ${q.idle.taskMs} ms of main-thread tasks, ${q.idle.scriptMs} ms script, ${q.idle.layouts} layouts, ${q.idle.longTasks} long tasks${idleBefore ? ` (before: ${idleBefore.taskMs} ms tasks, ${idleBefore.scriptMs} ms script, ${idleBefore.layouts} layouts, ${idleBefore.longTasks} long tasks)` : ""}.
+- Layout shift over the whole desktop session: ${q.shift}.
+- Locales (EN/TR/DE/ES/FR at 1440 and 390): overflow ${LOCALES.map((locale) => `${locales[locale].desktop}/${locales[locale].mobile}`).join(" · ")}; internal links ${LOCALES.map((locale) => `${locales[locale].links} ${locales[locale].served ? "ok" : "FAILED"}`).join(" · ")}; flagship section height ${LOCALES.map((locale) => locales[locale].flagshipHeight).join(" · ")} px.
 
-## Case-study LCP (headless Chromium, ${BASELINE ? "E04 and E04.1 measured in turn, " : ""}5 cold loads each, median)
+## Home LCP (headless Chromium, ${BASELINE ? "E04.1 and E05 measured in turn, " : ""}5 cold loads each, median)
 
-| Viewport | Conditions | ${BASELINE ? "E04 (before) | " : ""}E04.1 (after) |
+| Viewport | Conditions | ${BASELINE ? "E04.1 (before) | " : ""}E05 (after) |
 | --- | --- | ${BASELINE ? "--- | " : ""}--- |
 ${lcp.map((row) => `| ${row.viewport} | ${row.conditions} | ${BASELINE ? `${lcpCell(row.before)} | ` : ""}${lcpCell(row.after)} |`).join("\n")}
+
+## Transfer (cold load, same-origin resources, encoded bytes)
+
+| Viewport | Build | Before scrolling | By the end of the page |
+| --- | --- | --- | --- |
+${Object.entries(transfers).flatMap(([name, entry]) => Object.entries(entry).map(([build, rows]) => `| ${name} | ${build === "before" ? "E04.1" : "E05"} | ${moved(rows.firstScreen)} | ${moved(rows.wholePage)} |`)).join("\n")}
 
 ## Sizes
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-${sizes.map((size) => `| ${size.file} | ${kb(size.raw)} | ${kb(size.gzip)} |`).join("\n")}
+${sizes.map((size) => `| ${size.file} | ${kb(size.after.raw)}${delta(size.before?.raw, size.after.raw)} | ${kb(size.after.gzip)}${delta(size.before?.gzip, size.after.gzip)} |`).join("\n")}
 `;
   await writeFile(join(OUTPUT, "README.md"), readme, "utf8");
 

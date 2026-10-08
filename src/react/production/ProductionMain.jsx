@@ -148,7 +148,9 @@ function renderNode(node, props, key, catalogState) {
   if (catalogState && isSection && !descendantCards(node).some((card) => cardVisible(card, props, catalogState))) {
     classes.add("is-hidden");
   }
-  /* V4 primitives a consuming route opts into; null on every other route. */
+  /* V4 primitives a consuming route opts into; null on every other route. A
+   * consumer returns the children it adds, or { arrange } to place them
+   * among the node's own. */
   const v4Children = props.v4 ? applyV4(props.page, props.v4, node, classes, attributes, key) : null;
   if (classes.size) attributes.className = [...classes].join(" ");
   const ownChildren = buildLogLimit
@@ -156,7 +158,7 @@ function renderNode(node, props, key, catalogState) {
     : node.children.some((child) => child.type !== "space")
       ? node.children.flatMap((child, index) => child.type === "space" ? [] : [renderNode(child, props, `${key}.${index}`, catalogState)])
       : undefined;
-  const children = v4Children ? [...(ownChildren || []), ...v4Children] : ownChildren;
+  const children = !v4Children ? ownChildren : v4Children.arrange ? v4Children.arrange(ownChildren || []) : [...(ownChildren || []), ...v4Children];
   const element = createElement(node.tag, { ...attributes, key }, children);
   if (!isFilterBar) return element;
   return (
@@ -195,8 +197,24 @@ export default function ProductionMain(props) {
     live4 = { ...props, v4: { ...props.v4, view, setView, live, catalog: catalogState, out } };
   }
   const sections = page.children.map((node, index) => renderNode(node, live4, `${props.page}.${index}`, catalogState));
-  /* V4: Home places the project ecosystem straight after its flagship evidence. */
-  if (props.v4?.flow && props.v4.ecosystem) sections.splice(2, 0, <EcosystemMap key={`${props.page}.v4-ecosystem`} model={props.v4.ecosystem} />);
+  /* V4-E05: Home is one story — who, the flagship proof, how the rest
+   * connects, how the work is done, where it comes from, what is being built
+   * now, what to do next. The ecosystem takes the place of the supporting
+   * evidence list, whose projects it carries, and the way on to Certificates
+   * and About follows the experience summary. */
+  if (props.v4?.flow && props.v4.ecosystem) {
+    const [hero, flagship, model, experience, , latest, closing] = sections;
+    return [
+      hero,
+      flagship,
+      <EcosystemMap key={`${props.page}.v4-ecosystem`} model={props.v4.ecosystem} />,
+      model,
+      experience,
+      <Onward key={`${props.page}.v4-bridge`} links={props.v4.bridge} />,
+      latest,
+      closing,
+    ];
+  }
   /* V4: a project detail gains its tracker after the hero and its related
    * work before the closing section. */
   if (props.v4?.consumer === "detail") {

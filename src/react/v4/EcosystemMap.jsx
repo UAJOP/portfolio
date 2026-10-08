@@ -93,6 +93,62 @@ export function EcosystemField({ model, control = null }) {
   );
 }
 
+/* The ecosystem as Home tells it: the same catalog read by capability. Each
+ * capability is a lane and the projects filed under it sit on it — a project
+ * filed under two capabilities sits on both, and taking it in hand lights
+ * both. Flagships are set largest and their lanes come first; the rest keep
+ * the catalog's own order and tier. The spatial map of the same data is the
+ * Works page's; this is the short version, and it is a list at every width.
+ *
+ * AJOOP is not a catalog project, so it has no lane and no wire. It closes
+ * the section as what it is: the assistant that answers over all of this. */
+function EcosystemLanes({ model }) {
+  const flagship = (project) => model.flagship.includes(project.id);
+  const lanes = model.capabilities
+    .map((capability, order) => ({ ...capability, order, projects: model.projects.filter((project) => project.categories.includes(capability.id)) }))
+    .sort((a, b) => Number(b.projects.some(flagship)) - Number(a.projects.some(flagship)) || b.projects.length - a.projects.length || a.order - b.order);
+  return (
+    <>
+      <div className="v4-lanes" data-v4-eco="">
+        {lanes.map((lane) => {
+          const ids = lane.projects.map((project) => project.id);
+          return (
+            <div key={lane.id} className="v4-lane" data-v4-edge={[lane.id, ...ids].join(" ")}>
+              <button type="button" className="v4-node v4-lane__capability" data-v4-eco-node={lane.id} data-v4-eco-kind="capability" data-v4-eco-links={ids.join(" ")} aria-pressed="false">
+                <i className="v4-node__dot" aria-hidden="true" />
+                <span>{lane.label}</span>
+                <small aria-hidden="true">{two(ids.length)}</small>
+              </button>
+              <ul className="v4-lane__projects" aria-label={lane.label}>
+                {lane.projects.map((project) => (
+                  <li key={project.id}>
+                    <a className="v4-node v4-lane__project" href={project.href} data-v4-eco-node={project.id} data-v4-eco-kind="project" data-v4-eco-links={project.categories.join(" ")} data-v4-eco-tier={flagship(project) ? "flagship" : project.tier}>
+                      <i className="v4-node__dot" aria-hidden="true" />
+                      <span className="v4-eco__title">{project.title}</span>
+                      {project.status ? <small>{project.status}</small> : null}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+      <p className="v4-eco__readout" data-v4-eco-readout="" aria-live="polite">
+        <span>{model.capabilitiesLabel} {two(model.capabilities.length)}</span>
+        <span>{model.projectsLabel} {two(model.projects.length)}</span>
+        <a href={model.viewAll.href}>{model.viewAll.label}</a>
+      </p>
+      <p className="v4-eco__ajoop">
+        <i className="ajoop-mark" aria-hidden="true" />
+        <strong>{model.ajoop.title}</strong>
+        <span>{model.ajoop.heading}: {model.ajoop.scope.join(" · ")}</span>
+        <a href={model.ajoop.link.href}>{model.ajoop.link.label}</a>
+      </p>
+    </>
+  );
+}
+
 /* The ecosystem as a section of its own (Home). */
 export default function EcosystemMap({ model }) {
   return (
@@ -102,7 +158,7 @@ export default function EcosystemMap({ model }) {
         <h2 id="v4-eco-title">{model.title}</h2>
         <p>{model.lead}</p>
       </div>
-      <EcosystemField model={model} />
+      <EcosystemLanes model={model} />
       <i className="v4-handoff" aria-hidden="true" />
     </section>
   );

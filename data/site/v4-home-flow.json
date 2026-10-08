@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "id": "delivery",
   "layout": "orbit",
   "field": { "width": 600, "height": 600 },
@@ -24,5 +24,7 @@
   "loop": true,
   "rest": "build",
   "handoff": "home.flow.handoff",
-  "flagship": ["sinama-case-study", "ai-chatbot-flow-design", "atolye-joyday-case-study"]
+  "evidence": ["sinama-case-study", "ai-chatbot-flow-design", "atolye-joyday-case-study"],
+  "flagship": ["sinama-case-study", "atolye-joyday-case-study"],
+  "signatures": { "sinama-case-study": "sinamaCaseStudy", "atolye-joyday-case-study": "joydayCaseStudy" }
 }
