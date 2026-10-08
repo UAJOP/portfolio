@@ -21,9 +21,9 @@ import { gzipSync } from "node:zlib";
 import puppeteer from "puppeteer";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const PHASE = "v4-e02-works-project-detail";
-const PACK = "V4-E02-review-pack.zip";
-const TITLE = "V4-E02 · Works + Project Detail";
+const PHASE = "v4-e03-experience-certificates-about";
+const PACK = "V4-E03-review-pack.zip";
+const TITLE = "V4-E03 · Experience + Certificates + About";
 const OUTPUT = process.env.V4_CAPTURE_DIR || `C:\\PC-Audit\\v4-review\\${PHASE}`;
 const FRAMES = join(OUTPUT, "motion-frames");
 /* Its own port: 4174/4175 may be held by a long-running `npm run dev:v4`. */
@@ -34,36 +34,45 @@ const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
 const LOCALES = ["en", "tr", "de", "es", "fr"];
 const localized = (locale, path) => (locale === "en" ? path : `/${locale}${path}`);
-const DETAIL = "/sinama-case-study/";
-const CASE_STUDIES = ["/sinama-case-study/", "/merge-rush-case-study/", "/atolye-joyday-case-study/", "/hospital-system-case-study/", "/ai-flow-puzzle-case-study/"];
-const RAIL = "[data-v4-rail]";
+const EXPERIENCE = "/blog/";
+const CERTIFICATES = "/certificates/";
+const ABOUT = "/about/";
+const SURFACES = [["experience", EXPERIENCE], ["certificates", CERTIFICATES], ["about", ABOUT]];
 const mode = (name) => `[data-v4-mode="${name}"]`;
-const filter = (name) => `[data-filter-btn="${name}"]`;
+const node = (id) => `[data-v4-eco-node="${id}"]`;
+const star = (index) => `.v4-sky__stars li:nth-child(${index}) .v4-sky__star`;
+const hub = (index) => `.v4-sky__hub:nth-child(${index})`;
+const cluster = (id) => `[data-v4-cluster="${id}"]`;
+const SKY = [["click", mode("constellation")], ["into", ".v4-sky"]];
 
 /* In contact-sheet order. `steps` run in order: ["click", selector],
  * ["hover", selector], ["top", selector] (scroll it just under the header),
- * ["into", selector] (centre it), ["type", selector, text]. */
+ * ["into", selector] (centre it). */
 const shots = [
-  { name: "01-works-dark-project-grid.png", label: "Works · dark · Project Grid", viewport: DESKTOP, theme: "dark", path: "/works/", steps: [["top", RAIL]] },
-  { name: "02-works-dark-ecosystem-map.png", label: "Works · dark · Ecosystem Map", viewport: DESKTOP, theme: "dark", path: "/works/", steps: [["click", mode("map")], ["into", ".v4-explorer__map .v4-eco"]] },
-  { name: "03-works-dark-capability-view.png", label: "Works · dark · Capability View (Software)", viewport: DESKTOP, theme: "dark", path: "/works/", steps: [["click", mode("capability")], ["click", filter("software")], ["top", RAIL]] },
-  { name: "04-works-light.png", label: "Works · light · Ecosystem Map, AI & Automation", viewport: DESKTOP, theme: "light", path: "/works/", steps: [["click", mode("map")], ["click", '.v4-explorer__map [data-v4-eco-node="ai"]'], ["into", ".v4-explorer__map .v4-eco"]] },
-  { name: "05-works-mobile.png", label: "Works · mobile · explorer", viewport: MOBILE, theme: "dark", path: "/works/", steps: [["top", RAIL]] },
-  { name: "06-works-filter-reconfigure.png", label: "Works · reconfigured to Games & Interactive (map)", viewport: DESKTOP, theme: "dark", path: "/works/", steps: [["click", mode("map")], ["click", filter("game")], ["top", RAIL]] },
-  { name: "07-sinama-detail-hero.png", label: "SINAMA · detail hero", viewport: DESKTOP, theme: "dark", path: DETAIL },
-  { name: "08-sinama-detail-process.png", label: "SINAMA · evidence pipeline (step under the pointer)", viewport: DESKTOP, theme: "dark", path: DETAIL, steps: [["into", "[data-v4-process]"], ["hover", "[data-v4-process] > li:nth-child(5)"]] },
-  { name: "09-sinama-detail-evidence.png", label: "SINAMA · proof figures and problem", viewport: DESKTOP, theme: "dark", path: DETAIL, steps: [["top", ".case-proof-strip"]] },
-  { name: "10-sinama-detail-mobile.png", label: "SINAMA · mobile hero", viewport: MOBILE, theme: "dark", path: DETAIL },
-  { name: "11-related-work.png", label: "SINAMA · related work", viewport: DESKTOP, theme: "dark", path: DETAIL, steps: [["into", ".v4-related"], ["hover", ".v4-related__project"]] },
-  { name: "12-reduced-motion.png", label: "Works · reduced motion · Ecosystem Map", viewport: DESKTOP, theme: "dark", path: "/works/", reducedMotion: true, steps: [["click", mode("map")], ["into", ".v4-explorer__map .v4-eco"]] },
-  { name: "13-no-js-works.png", label: "Works · JavaScript disabled (ordinary project list)", viewport: DESKTOP, theme: "dark", path: "/works/", noJs: true, steps: [["top", RAIL]] },
-  { name: "14-no-js-detail.png", label: "SINAMA · JavaScript disabled", viewport: DESKTOP, theme: "dark", path: DETAIL, noJs: true, steps: [["into", "[data-v4-process]"]] },
-  { name: "15-sinama-detail-architecture.png", label: "SINAMA · contracts and architecture components", viewport: DESKTOP, theme: "dark", path: DETAIL, steps: [["top", "#v4-s-10"]] },
-  { name: "16-sinama-detail-light.png", label: "SINAMA · light hero", viewport: DESKTOP, theme: "light", path: DETAIL },
-  { name: "17-sinama-process-mobile.png", label: "SINAMA · mobile pipeline and tracker", viewport: MOBILE, theme: "dark", path: DETAIL, steps: [["top", "[data-v4-process]"]] },
-  { name: "18-works-mobile-capability.png", label: "Works · mobile · Capability View (AI & Automation)", viewport: MOBILE, theme: "dark", path: "/works/", steps: [["click", mode("capability")], ["click", filter("ai")], ["top", RAIL]] },
-  { name: "19-works-mobile-map.png", label: "Works · mobile · Ecosystem Map (Software)", viewport: MOBILE, theme: "dark", path: "/works/", steps: [["click", mode("map")], ["click", filter("software")], ["top", ".v4-modes"]] },
-  { name: "20-merge-rush-detail.png", label: "Merge Rush · the same shell on another case study", viewport: DESKTOP, theme: "dark", path: "/merge-rush-case-study/" },
+  { name: "01-experience-dark-overview.png", label: "Experience · dark · career current", viewport: DESKTOP, theme: "dark", path: EXPERIENCE, steps: [["into", ".v4-career"]] },
+  { name: "02-experience-active-milestone.png", label: "Experience · CBOT active, its evidence branch lit", viewport: DESKTOP, theme: "dark", path: EXPERIENCE, steps: [["into", ".v4-career"], ["hover", node("r1")]] },
+  { name: "03-experience-mobile.png", label: "Experience · mobile · vertical current, folded milestones", viewport: MOBILE, theme: "dark", path: EXPERIENCE, steps: [["top", ".experience-timeline"]] },
+  { name: "04-experience-light.png", label: "Experience · light · career current", viewport: DESKTOP, theme: "light", path: EXPERIENCE, steps: [["into", ".v4-career"]] },
+  { name: "05-certificates-dark-grid.png", label: "Certificates · dark · Credential Grid", viewport: DESKTOP, theme: "dark", path: CERTIFICATES, steps: [["top", ".v4-sky__controls"]] },
+  { name: "06-certificates-dark-constellation.png", label: "Certificates · dark · Learning Constellation (by skill area)", viewport: DESKTOP, theme: "dark", path: CERTIFICATES, steps: SKY },
+  { name: "07-certificates-active-cluster.png", label: "Certificates · Networking & Systems chosen, a credential open", viewport: DESKTOP, theme: "dark", path: CERTIFICATES, steps: [...SKY, ["click", hub(6)], ["click", star(8)]] },
+  { name: "08-certificates-mobile.png", label: "Certificates · mobile · cluster rail and credential list", viewport: MOBILE, theme: "dark", path: CERTIFICATES, steps: [["click", mode("constellation")], ["click", star(4)], ["top", ".v4-sky__controls"]] },
+  { name: "09-certificates-light.png", label: "Certificates · light · constellation, linked credential open", viewport: DESKTOP, theme: "light", path: CERTIFICATES, steps: [...SKY, ["click", star(4)]] },
+  { name: "10-about-dark-human-system-map.png", label: "About · dark · human system map", viewport: DESKTOP, theme: "dark", path: ABOUT, steps: [["into", ".v4-human"]] },
+  { name: "11-about-active-theme.png", label: "About · AI Deployment active", viewport: DESKTOP, theme: "dark", path: ABOUT, steps: [["into", ".v4-human"], ["hover", node("applied-ai")]] },
+  { name: "12-about-mobile.png", label: "About · mobile · the person first", viewport: MOBILE, theme: "dark", path: ABOUT },
+  { name: "13-about-light.png", label: "About · light · Full-Stack Delivery pinned", viewport: DESKTOP, theme: "light", path: ABOUT, steps: [["into", ".v4-human"], ["click", node("software")]] },
+  { name: "14-reduced-motion.png", label: "Experience · reduced motion · Atölye Joyday active", viewport: DESKTOP, theme: "dark", path: EXPERIENCE, reducedMotion: true, steps: [["into", ".v4-career"], ["hover", node("r0")]] },
+  { name: "15-no-js-certificates.png", label: "Certificates · JavaScript disabled (ordinary credential grid)", viewport: DESKTOP, theme: "dark", path: CERTIFICATES, noJs: true, steps: [["top", ".training-catalog"]] },
+  { name: "16-no-js-experience.png", label: "Experience · JavaScript disabled (chart of links, open chronology)", viewport: DESKTOP, theme: "dark", path: EXPERIENCE, noJs: true, steps: [["into", ".v4-career"]] },
+  { name: "17-no-js-about.png", label: "About · JavaScript disabled", viewport: DESKTOP, theme: "dark", path: ABOUT, noJs: true, steps: [["into", ".v4-human"]] },
+  { name: "18-experience-chronology.png", label: "Experience · the chronology as the current, direction beside it", viewport: DESKTOP, theme: "dark", path: EXPERIENCE, steps: [["top", ".experience-layout"]] },
+  { name: "19-certificates-by-provider.png", label: "Certificates · constellation regrouped by provider", viewport: DESKTOP, theme: "dark", path: CERTIFICATES, steps: [["click", mode("constellation")], ["click", mode("provider")], ["into", ".v4-sky"]] },
+  { name: "20-certificates-grid-cluster.png", label: "Certificates · the grid narrowed by the same cluster rail", viewport: DESKTOP, theme: "dark", path: CERTIFICATES, steps: [["click", cluster("a5")], ["top", ".v4-sky__controls"]] },
+  { name: "21-about-narrative.png", label: "About · narrative: profile beside its heading, tracker marking it", viewport: DESKTOP, theme: "dark", path: ABOUT, steps: [["click", "[data-v4-tracker] li:first-child a"]] },
+  { name: "22-about-journey-handoff.png", label: "About · journey on one current, handing on to Experience", viewport: DESKTOP, theme: "dark", path: ABOUT, steps: [["into", ".journey-grid"]] },
+  { name: "23-about-mobile-themes.png", label: "About · mobile · each theme with its own evidence", viewport: MOBILE, theme: "dark", path: ABOUT, steps: [["top", ".v4-human__panels"]] },
+  { name: "24-experience-light-chronology.png", label: "Experience · light · chronology", viewport: DESKTOP, theme: "light", path: EXPERIENCE, steps: [["top", ".experience-layout"]] },
 ];
 
 const wait = (ms) => new Promise((done) => setTimeout(done, ms));
@@ -80,16 +89,18 @@ async function serverReady() {
   }
 }
 
-async function open(browser, { viewport, theme, reducedMotion = false, noJs = false, path = "/", settle = 2600, waitUntil = "networkidle0" }, problems) {
+async function open(browser, { viewport, theme, reducedMotion = false, noJs = false, touch = false, path = "/", settle = 2600, waitUntil = "networkidle0" }, problems) {
   const page = await browser.newPage();
   page.on("console", (message) => {
     if (["error", "warning"].includes(message.type())) problems.push(`${path} ${message.type()}: ${message.text()}`);
   });
   page.on("pageerror", (error) => problems.push(`${path} pageerror: ${error.message}`));
   if (noJs) await page.setJavaScriptEnabled(false);
-  await page.setViewport({ ...viewport, deviceScaleFactor: 1 });
+  await page.setViewport({ ...viewport, deviceScaleFactor: 1, ...(touch ? { isMobile: true, hasTouch: true } : {}) });
   await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: reducedMotion ? "reduce" : "no-preference" }]);
   await page.evaluateOnNewDocument((nextTheme) => localStorage.setItem("kaanbalci-site-theme", nextTheme), theme);
+  /* React reports a hydration mismatch as an event, not on the console. */
+  if (!noJs) await page.evaluateOnNewDocument(() => window.addEventListener("portfolio:react-main-hydration-error", (event) => console.error(`hydration: ${event.detail.message}`)));
   await page.goto(`${ORIGIN}${path}`, { waitUntil });
   if (!noJs && waitUntil === "networkidle0") {
     await page.evaluate(async () => {
@@ -134,28 +145,93 @@ const motionState = (page) => page.evaluate(() => {
 });
 
 const overflow = (page) => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+const shownCount = (page, selector) => page.evaluate((target) => [...document.querySelectorAll(target)].filter((entry) => entry.getClientRects().length).length, selector);
 
-/* The Works explorer, as the page reports it. */
-const explorer = (page) => page.evaluate(() => {
-  const root = document.querySelector("[data-v4-explorer]");
-  const shown = (selector) => [...root.querySelectorAll(selector)].filter((node) => node.getClientRects().length).length;
+/* The career chart, as the page reports it. */
+const career = (page) => page.evaluate(() => {
+  const root = document.querySelector(".v4-career");
+  const shown = (selector) => [...document.querySelectorAll(selector)].filter((entry) => entry.getClientRects().length);
   return {
-    view: root.getAttribute("data-v4-view"),
-    pressedMode: [...root.querySelectorAll('.v4-modes__mode[aria-pressed="true"]')].map((node) => node.getAttribute("data-v4-mode")).join(),
-    modesShown: shown(".v4-modes__mode"),
-    cardsShown: shown(".project-card"),
-    cardsMatching: root.querySelectorAll(".project-card:not(.is-hidden)").length,
-    mapShown: shown(".v4-explorer__map .v4-eco"),
-    mapProjects: root.querySelectorAll('.v4-explorer__map [data-v4-eco-kind="project"]').length,
-    mapOut: root.querySelectorAll(".v4-explorer__map li[data-v4-out]").length,
-    mapPressed: [...root.querySelectorAll('.v4-explorer__map [aria-pressed="true"]')].map((node) => node.getAttribute("data-v4-eco-node")).join(),
-    mapLitEdges: root.querySelectorAll('.v4-explorer__map [data-v4-edge][data-v4-state="active"]').length,
-    activeFilter: root.querySelector(".filter-btn.active")?.getAttribute("data-filter-btn"),
-    count: root.querySelector("[data-v4-rail]").getAttribute("data-v4-count"),
-    search: root.querySelector("[data-project-search]").value,
-    rows: [...root.querySelectorAll(".project-card:not(.is-hidden)")].filter((card) => getComputedStyle(card).flexDirection === "row").length,
-    ports: root.querySelectorAll(".project-card .v4-ports [data-v4-cap]").length,
-    portsExpected: [...root.querySelectorAll(".project-card")].reduce((sum, card) => sum + card.dataset.category.split(" ").length, 0),
+    chartShown: root.getClientRects().length > 0,
+    roles: [...root.querySelectorAll('[data-v4-eco-kind="role"]')].map((entry) => entry.querySelector(".v4-eco__title").textContent.trim()),
+    anchorsResolve: [...root.querySelectorAll('[data-v4-eco-kind="role"]')].every((entry) => document.querySelector(entry.getAttribute("href"))?.matches(".experience-item")),
+    live: root.querySelectorAll(".v4-career__role[data-v4-live]").length,
+    evidence: [...root.querySelectorAll('[data-v4-eco-kind="project"]')].map((entry) => entry.getAttribute("href")),
+    cardLinks: [...document.querySelectorAll(".experience-card > a")].map((entry) => entry.getAttribute("href")),
+    threads: [...root.querySelectorAll('[data-v4-eco-kind="thread"]')].map((entry) => entry.textContent.trim()),
+    years: [...root.querySelectorAll(".v4-career__years li")].map((entry) => entry.textContent.trim()),
+    active: root.hasAttribute("data-v4-eco-active"),
+    activeNode: root.querySelector('[data-v4-state="active"][data-v4-eco-node]')?.getAttribute("data-v4-eco-node") || null,
+    litEdges: root.querySelectorAll('[data-v4-edge][data-v4-state="active"]').length,
+    entry: shown("[data-v4-eco-panel]").map((entry) => entry.getAttribute("data-v4-eco-panel")).join(),
+    entryText: shown("[data-v4-eco-panel]").map((entry) => entry.textContent.replace(/\s+/g, " ").trim()).join(),
+    milestones: document.querySelectorAll("[data-v4-milestone]").length,
+    folded: document.querySelectorAll("[data-v4-folded]").length,
+    toggles: shown(".v4-milestone__toggle").length,
+    accounts: shown(".experience-card > p").length,
+    direction: document.querySelector(root.querySelector(".v4-career__direction").getAttribute("href"))?.matches(".experience-summary") || false,
+    onward: document.querySelector(".v4-onward__link")?.getAttribute("href"),
+    waiting: root.hasAttribute("data-v4-await"),
+  };
+});
+
+/* The certificates explorer, as the page reports it. */
+const sky = (page) => page.evaluate(() => {
+  const shown = (selector) => [...document.querySelectorAll(selector)].filter((entry) => entry.getClientRects().length);
+  return {
+    view: document.querySelector(".v4-sky-section").getAttribute("data-v4-view"),
+    group: document.querySelector(".v4-sky").getAttribute("data-v4-group"),
+    modes: shown(".v4-sky__controls .v4-modes__mode").length,
+    rail: shown(".v4-sky__cluster").map((entry) => entry.textContent.replace(/\s+/g, " ").trim()),
+    pressedCluster: document.querySelector(".v4-sky__cluster[aria-pressed='true']")?.getAttribute("data-v4-cluster") || "all",
+    count: document.querySelector(".v4-sky__rail").getAttribute("data-v4-count"),
+    cards: shown(".certificate-card").length,
+    categories: shown(".training-category").length,
+    catalogShown: shown(".training-catalog").length,
+    skyShown: shown(".v4-sky").length,
+    fieldShown: shown(".v4-sky__field").length,
+    stars: shown(".v4-sky__star").length,
+    hubs: shown(".v4-sky__hub").map((entry) => entry.querySelector("span").textContent.trim()),
+    starsOut: document.querySelectorAll(".v4-sky__stars li[data-v4-out]").length,
+    starsLinked: document.querySelectorAll(".v4-sky__star[data-v4-linked]").length,
+    litWires: document.querySelectorAll(".v4-sky__wire[data-v4-state]").length,
+    pinned: document.querySelectorAll(".v4-sky__star[aria-pressed='true']").length,
+    panel: shown(".v4-sky__stars .v4-sky__panel").map((entry) => ({ title: entry.querySelector("h3").textContent.trim(), link: entry.querySelector("a")?.getAttribute("href") || null, firstAction: entry.querySelector(".certificate-actions > *").tagName.toLowerCase() }))[0] || null,
+    rest: shown(".v4-sky__rest").map((entry) => entry.textContent.replace(/\s+/g, " ").trim())[0] || null,
+    credentialLinks: [...document.querySelectorAll(".certificate-card .certificate-actions a")].map((entry) => entry.getAttribute("href")),
+    modalOpen: document.querySelector(".image-modal").classList.contains("is-open"),
+  };
+});
+
+/* The human system map, as the page reports it. */
+const human = (page) => page.evaluate(() => {
+  const root = document.querySelector(".v4-human");
+  const shown = (selector) => [...document.querySelectorAll(selector)].filter((entry) => entry.getClientRects().length);
+  return {
+    sections: [...document.querySelectorAll("main > *")].map((entry) => entry.matches(".page-hero") ? "hero" : entry.matches(".v4-tracker") ? "tracker" : entry.matches(".v4-human-section") ? "map" : entry.matches(".about-hero") ? "profile" : entry.matches(".journey-section") ? "journey" : entry.matches(".v4-onward") ? "onward" : entry.matches(".contact-hub") ? "contact" : entry.querySelector(".process-list") ? "process" : entry.querySelector(".capability-grid") ? "capability" : entry.querySelector(".toolbox-grid") ? "toolbox" : "?").join(" → "),
+    fieldShown: shown(".v4-human__field").length,
+    themes: [...root.querySelectorAll('[data-v4-eco-kind="capability"]')].map((entry) => `${entry.getAttribute("data-v4-eco-node")}: ${entry.getAttribute("data-v4-eco-links")}`),
+    themeLabels: [...root.querySelectorAll('[data-v4-eco-kind="capability"]')].map((entry) => entry.textContent.trim()),
+    projects: [...root.querySelectorAll('[data-v4-eco-kind="project"]')].map((entry) => entry.getAttribute("href")),
+    edges: root.querySelectorAll(".v4-human__edge").length,
+    portraits: shown('main img[src*="kaan-balci-profile"]').length,
+    active: root.hasAttribute("data-v4-eco-active"),
+    activeNode: root.querySelector('[data-v4-state="active"][data-v4-eco-node]')?.getAttribute("data-v4-eco-node") || null,
+    related: [...root.querySelectorAll('[data-v4-state="related"][data-v4-eco-node]')].map((entry) => entry.getAttribute("data-v4-eco-node")).join(),
+    litEdges: root.querySelectorAll('.v4-human__edge[data-v4-state="active"]').length,
+    pressed: [...root.querySelectorAll('[aria-pressed="true"]')].map((entry) => entry.getAttribute("data-v4-eco-node")).join(),
+    panel: shown("[data-v4-eco-panel]").map((entry) => entry.getAttribute("data-v4-eco-panel")).join(),
+    panelHeading: shown("[data-v4-eco-panel] h3").map((entry) => entry.textContent.trim()).join(" | "),
+    groups: shown(".v4-human__theme-panel").length,
+    cited: shown(".v4-human__cited a").length,
+    ports: [...document.querySelectorAll(".contact-actions [data-v4-cap]")].map((entry) => entry.getAttribute("data-v4-cap")).join(),
+    litPorts: document.querySelectorAll('.contact-actions [data-v4-cap][data-v4-state="related"]').length,
+    tracker: [...document.querySelectorAll("[data-v4-tracker] a")].map((entry) => entry.textContent.replace(/\s+/g, " ").trim()),
+    trackerTargets: [...document.querySelectorAll("[data-v4-tracker] a")].every((entry) => document.getElementById(entry.getAttribute("href").slice(1))),
+    trackerCurrent: [...document.querySelectorAll("[data-v4-tracker] a[aria-current]")].map((entry) => entry.getAttribute("href")).join(),
+    onward: document.querySelector(".v4-onward__link")?.getAttribute("href"),
+    canvases: document.querySelectorAll("canvas").length,
+    runtime: typeof window.V4Motion?.destroy === "function",
   };
 });
 
@@ -214,7 +290,7 @@ try {
 
   /* ---------- motion frames: one continuous session ---------- */
   const frames = [];
-  const film = await open(browser, { viewport: DESKTOP, theme: "dark", path: "/works/" }, problems);
+  const film = await open(browser, { viewport: DESKTOP, theme: "dark", path: EXPERIENCE, settle: 0, waitUntil: "domcontentloaded" }, problems);
   const frame = async (label) => {
     const file = join(FRAMES, `${String(frames.length + 1).padStart(2, "0")}-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.png`);
     await film.screenshot({ path: file, type: "png" });
@@ -227,223 +303,249 @@ try {
     }, selector);
     await film.mouse.move(point.x + dx, point.y + dy, { steps: 14 });
   };
-  await scrollTo(film, RAIL, "top"); await frame("Works: Project Grid");
-  await film.click(mode("map")); await wait(260); await frame("Grid to Map: cards step back, currents begin to draw");
-  await wait(1500); await scrollTo(film, ".v4-explorer__map .v4-eco", "into"); await frame("Ecosystem Map: at rest");
-  await glide('.v4-explorer__map [data-v4-eco-node="ai"]'); await wait(450); await frame("Map: AI and Automation under the pointer, pulses travelling");
-  await film.mouse.down(); await film.mouse.up(); await film.mouse.move(720, 110, { steps: 8 }); await wait(1100); await frame("Map: AI and Automation chosen, the catalog filter follows");
-  await scrollTo(film, RAIL, "top"); await film.click(mode("capability")); await wait(260); await frame("Map to Capability View: rows arriving");
-  await wait(1300); await frame("Capability View: AI and Automation, settled (filter kept)");
-  await film.click(filter("software")); await wait(180); await frame("Filter reconfigure: rows receding and taking the current");
-  await wait(1000); await frame("Filter reconfigure: settled on Software");
-  await film.click(mode("grid")); await film.click(filter("all")); await wait(1200); await frame("Back to Project Grid, all projects");
-  await scrollTo(film, ".project-card", "into");
-  await glide(".project-card", -80, -40); await wait(700); await frame("Project selection: SINAMA card under the pointer");
-  await Promise.all([film.waitForNavigation({ waitUntil: "domcontentloaded" }), film.click('.project-card h3 a')]);
-  await wait(420); await frame("Project detail entrance: currents drawing around the project");
-  await wait(2300); await frame("Project detail: hero settled");
-  await film.evaluate(() => document.querySelector("[data-v4-process]").scrollIntoView({ block: "center", behavior: "instant" }));
-  await wait(520); await frame("Pipeline enters view: the current runs, nodes wake in order");
-  await wait(1900); await frame("Pipeline: at rest");
-  await glide("[data-v4-process] > li:nth-child(4)"); await wait(700); await frame("Pipeline: step 04 under the pointer");
-  await scrollTo(film, "#v4-s-10", "top"); await glide(".case-service-card", -60, -20); await wait(700); await frame("Contracts: connected card under the pointer, tracker on Deterministic engine");
-  await scrollTo(film, ".v4-related", "into"); await frame("Related work: the path onward");
-  await glide(".v4-related__group:nth-of-type(2) .v4-related__project"); await wait(700); await frame("Related work: Merge Rush under the pointer");
-  await Promise.all([film.waitForNavigation({ waitUntil: "networkidle0" }), film.click(".v4-related__group:nth-of-type(2) .v4-related__project")]);
-  await wait(2200); await frame("Related-project path: arrived at Merge Rush");
+  const jump = (selector, block = "center") => film.evaluate((target, where) => document.querySelector(target).scrollIntoView({ block: where, behavior: "instant" }), selector, block);
+  await film.waitForSelector(".v4-career");
+  await jump(".v4-career"); await wait(650); await frame("Experience: the current entering, lanes beginning to draw");
+  await wait(900); await frame("Experience: roles waking in date order");
+  await wait(3200); await frame("Career current: at rest");
+  await glide(node("r1") + " .v4-node__dot"); await wait(320); await frame("Milestone activation: CBOT under the pointer, the rest receding");
+  await wait(600); await frame("Evidence branch: the pulse reaches AI Chatbot Flow Design");
+  await glide(node("ai-chatbot-flow-design") + " .v4-eco__title"); await wait(700); await frame("Evidence branch highlight: the project lights the role that links it");
+  await glide(node("t0")); await film.mouse.move(3, 300, { steps: 6 }); await glide(node("r0") + " .v4-node__dot"); await wait(700); await frame("The live role: Atölye Joyday, still running");
+  await Promise.all([film.click(node("r0")), wait(1500)]); await film.mouse.move(3, 300); await wait(600); await frame("Choosing a role arrives at its entry in the chronology");
+  await film.goto(`${ORIGIN}${CERTIFICATES}`, { waitUntil: "networkidle0" }); await wait(1800);
+  await jump(".v4-sky__controls", "start"); await film.evaluate(() => window.scrollBy({ top: -140, behavior: "instant" })); await wait(900); await frame("Certificates: Credential Grid");
+  await film.click(mode("constellation")); await film.mouse.move(3, 300); await wait(330); await frame("Grid to Constellation: clusters arriving, wires beginning to draw");
+  await wait(1700); await jump(".v4-sky"); await wait(700); await frame("Learning Constellation: at rest");
+  await glide(hub(6)); await wait(600); await frame("Cluster under the pointer: Networking and Systems lights its credentials");
+  await film.mouse.down(); await film.mouse.up(); await film.mouse.move(720, 130, { steps: 8 }); await wait(900); await frame("Cluster activation: chosen, the others recede, the rail agrees");
+  await glide(star(8) + " .v4-node__dot"); await film.mouse.down(); await film.mouse.up(); await wait(800); await frame("Active credential: its details open beside the field");
+  await jump(".v4-sky__controls", "start"); await film.evaluate(() => window.scrollBy({ top: -110, behavior: "instant" })); await wait(700);
+  await film.click(mode("provider")); await film.mouse.move(3, 300); await wait(280); await frame("Regroup by provider: stars travelling, old wires gone");
+  await jump(".v4-sky"); await wait(1900); await frame("By provider: settled");
+  await film.goto(`${ORIGIN}${ABOUT}`, { waitUntil: "networkidle0" }); await wait(500);
+  await jump(".v4-human"); await wait(500); await frame("About: the human system map drawing its wires");
+  await wait(2600); await frame("Human system map: at rest");
+  await glide(node("applied-ai")); await wait(380); await frame("Human-map activation: AI Deployment under the pointer, pulses leaving");
+  await film.mouse.down(); await film.mouse.up(); await film.mouse.move(1150, 760, { steps: 8 }); await wait(900); await frame("Theme pinned: what it stands for and the work it cites");
+  await glide(node("sinama") + " .v4-eco__title"); await wait(800); await frame("A project under the pointer: the themes that cite it answer");
+  await film.keyboard.press("Escape"); await film.mouse.move(3, 300);
+  await film.click("[data-v4-tracker] li:first-child a"); await film.mouse.move(3, 300); await wait(1700); await frame("Narrative scroll: who, with the tracker marking the profile");
+  await jump(".journey-grid"); await wait(420); await frame("Narrative scroll: the journey's current running as it is first seen");
+  await wait(1900); await glide(".v4-onward__link strong"); await wait(800); await frame("Narrative handoff: the way on to Experience under the pointer");
+  await Promise.all([film.waitForNavigation({ waitUntil: "networkidle0" }), film.click(".v4-onward__link")]);
+  await wait(2600); await frame("Handoff: arrived at Experience");
   await film.close();
 
-  /* ---------- Works smoke ---------- */
-  const works = await open(browser, { viewport: DESKTOP, theme: "dark", path: "/works/" }, problems);
-  const w = {};
-  w.initial = await explorer(works);
-  expect("Works opens as the Project Grid with all three modes offered", w.initial.view === "grid" && w.initial.pressedMode === "grid" && w.initial.modesShown === 3 && w.initial.cardsShown === 10 && w.initial.mapShown === 0);
-  expect("every Works card carries exactly its catalog categories as ports", w.initial.ports === w.initial.portsExpected && w.initial.ports > 0);
-  expect("the rail reports the real count", w.initial.count === "10 / 10");
+  /* ---------- Experience smoke ---------- */
+  const e = {};
+  const experience = await open(browser, { viewport: DESKTOP, theme: "dark", path: EXPERIENCE }, problems);
+  e.initial = await career(experience);
+  expect("Experience: six roles on the chart, each linking to its own entry, one of them live", e.initial.chartShown && e.initial.roles.length === 6 && e.initial.anchorsResolve && e.initial.live === 1 && e.initial.milestones === 6);
+  expect("Experience: a branch exists only for a role whose entry links to a project, to that same project", e.initial.evidence.length === e.initial.cardLinks.length && e.initial.evidence.every((href) => e.initial.cardLinks.includes(href)));
+  expect("Experience: the chart rests on its real totals and leads to the page's own direction", e.initial.entry === "" && /06/.test(e.initial.entryText) && e.initial.direction && !e.initial.active);
+  const reachable = await Promise.all([...e.initial.evidence, e.initial.onward].map(async (href) => (await fetch(`${ORIGIN}${href}`)).status));
+  expect("Experience: every evidence link and the way on resolve", reachable.every((status) => status === 200));
+  await scrollTo(experience, ".v4-career", "into");
+  await experience.hover(node("r1")); await wait(700);
+  e.hover = await career(experience);
+  expect("Experience: pointing at CBOT lights its run and its one branch, and shows its entry", e.hover.active && e.hover.activeNode === "r1" && e.hover.litEdges === 2 && e.hover.entry === "r1" && /CBOT/.test(e.hover.entryText));
+  await experience.mouse.move(3, 300); await wait(600);
+  e.released = await career(experience);
+  expect("Experience: leaving the chart returns it to rest", !e.released.active && e.released.entry === "");
+  await experience.focus(node("r5")); await wait(500);
+  e.keyboard = await career(experience);
+  expect("Experience keyboard: focusing a role activates it and its shared thread", e.keyboard.activeNode === "r5" && e.keyboard.entry === "r5" && e.keyboard.litEdges === 2);
+  await experience.keyboard.press("Enter"); await wait(1200);
+  e.followed = await experience.evaluate(() => ({ hash: location.hash, onScreen: (() => { const rect = document.querySelector(location.hash).getBoundingClientRect(); return rect.top >= 0 && rect.top < innerHeight; })() }));
+  expect("Experience keyboard: Enter on a role arrives at its entry", e.followed.hash === "#v4-role-5" && e.followed.onScreen);
+  await experience.evaluate(() => document.activeElement.blur()); await experience.mouse.move(3, 300);
+  await wait(2600);
+  e.atRest = await motionState(experience);
+  expect("Experience: nothing loops and the page comes to rest", e.atRest.endless === 0 && e.atRest.running === 0);
+  expect("Experience desktop: no horizontal overflow", (await overflow(experience)) === 0);
+  await experience.close();
 
-  await works.click(mode("map")); await wait(900);
-  w.map = await explorer(works);
-  expect("Ecosystem Map: the map replaces the cards without a reload", w.map.view === "map" && w.map.mapShown === 1 && w.map.cardsShown === 0 && w.map.mapProjects === 10);
+  const experiencePhone = await open(browser, { viewport: MOBILE, theme: "dark", path: EXPERIENCE, touch: true }, problems);
+  e.phone = await career(experiencePhone);
+  expect("Experience phone: no squeezed chart; six milestones, all but the first folded", !e.phone.chartShown && e.phone.milestones === 6 && e.phone.folded === 5 && e.phone.toggles === 6 && e.phone.accounts === 1);
+  await experiencePhone.evaluate(() => document.querySelector("#v4-role-1").scrollIntoView({ block: "center", behavior: "instant" })); await wait(500);
+  await experiencePhone.tap("#v4-role-1 .v4-milestone__toggle"); await wait(600);
+  e.phoneOpened = { ...(await career(experiencePhone)), expanded: await experiencePhone.evaluate(() => document.querySelector("#v4-role-1 .v4-milestone__toggle").getAttribute("aria-expanded")) };
+  expect("Experience touch: tapping a milestone opens its account", e.phoneOpened.folded === 4 && e.phoneOpened.accounts === 2 && e.phoneOpened.expanded === "true");
+  expect("Experience mobile: no horizontal overflow", (await overflow(experiencePhone)) === 0);
+  await experiencePhone.close();
 
-  await works.click('.v4-explorer__map [data-v4-eco-node="ai"]'); await works.mouse.move(3, 3); await wait(900);
-  w.mapFiltered = await explorer(works);
-  expect("pressing a capability in the map is the catalog filter: same state, same count", w.mapFiltered.activeFilter === "ai" && w.mapFiltered.mapPressed === "ai" && w.mapFiltered.count === "03 / 10" && w.mapFiltered.mapOut === 7 && w.mapFiltered.mapLitEdges === 3);
+  const experiencePlain = await open(browser, { viewport: DESKTOP, theme: "dark", path: EXPERIENCE, noJs: true, settle: 300 }, []);
+  e.noJs = await career(experiencePlain);
+  expect("Experience without JavaScript: the chart is links, the chronology is open, nothing waits", e.noJs.roles.length === 6 && e.noJs.anchorsResolve && e.noJs.accounts === 6 && e.noJs.toggles === 0 && e.noJs.folded === 0 && !e.noJs.waiting);
+  await experiencePlain.close();
+  const experienceNarrowPlain = await open(browser, { viewport: MOBILE, theme: "dark", path: EXPERIENCE, noJs: true, settle: 300 }, []);
+  e.noJsPhone = await career(experienceNarrowPlain);
+  expect("Experience phone without JavaScript: every account is readable, nothing is folded", e.noJsPhone.accounts === 6 && e.noJsPhone.toggles === 0);
+  await experienceNarrowPlain.close();
+  const experienceStill = await open(browser, { viewport: DESKTOP, theme: "dark", path: EXPERIENCE, reducedMotion: true }, problems);
+  await experienceStill.hover(node("r0")); await wait(400);
+  e.reducedMotion = { ...(await career(experienceStill)), motion: await motionState(experienceStill) };
+  expect("Experience reduced motion: activation still works, nothing animates", e.reducedMotion.activeNode === "r0" && e.reducedMotion.motion.running === 0);
+  await experienceStill.close();
 
-  await works.click(mode("capability")); await wait(900);
-  w.capability = await explorer(works);
-  expect("Capability View keeps the filter and shows its projects as rows", w.capability.view === "capability" && w.capability.activeFilter === "ai" && w.capability.cardsShown === 3 && w.capability.rows === 3);
+  /* ---------- Certificates smoke ---------- */
+  const c = {};
+  const certificates = await open(browser, { viewport: DESKTOP, theme: "dark", path: CERTIFICATES }, problems);
+  c.initial = await sky(certificates);
+  expect("Certificates opens as the Credential Grid with both switches offered", c.initial.view === "grid" && c.initial.modes === 4 && c.initial.cards === 9 && c.initial.categories === 6 && c.initial.skyShown === 0 && c.initial.count === "09 / 09");
+  expect("Certificates: the rail lists the page's own six categories", c.initial.rail.length === 7 && c.initial.pressedCluster === "all");
+  await certificates.click(cluster("a5")); await wait(700);
+  c.gridCluster = await sky(certificates);
+  expect("Certificates grid: a cluster narrows the archive to its own credentials", c.gridCluster.cards === 3 && c.gridCluster.categories === 1 && c.gridCluster.count === "03 / 09");
+  await certificates.click(mode("constellation")); await certificates.mouse.move(3, 300); await wait(1500);
+  c.constellation = await sky(certificates);
+  expect("Constellation: replaces the grid without a reload and keeps the chosen cluster", c.constellation.view === "constellation" && c.constellation.catalogShown === 0 && c.constellation.fieldShown === 1 && c.constellation.stars === 9 && c.constellation.hubs.length === 6 && c.constellation.pressedCluster === "a5" && c.constellation.starsOut === 6 && c.constellation.litWires === 3);
+  expect("Constellation: exactly the credentials that carry a link are marked as linked", c.constellation.starsLinked === c.initial.credentialLinks.length && c.constellation.starsLinked === 6);
+  await certificates.click(cluster("a5")); await wait(500);
+  await scrollTo(certificates, ".v4-sky", "into");
+  await certificates.hover(hub(1)); await wait(600);
+  c.hubHover = await sky(certificates);
+  expect("Constellation: pointing at a cluster lights its credentials and reports its real count", c.hubHover.litWires === 2 && /02/.test(c.hubHover.rest || ""));
+  await certificates.click(star(4)); await wait(700);
+  c.open = await sky(certificates);
+  expect("Constellation: a chosen credential opens its details, its own link first", c.open.pinned === 1 && c.open.panel && c.open.panel.link === c.initial.credentialLinks[3] && c.open.panel.firstAction === "a");
+  await certificates.click(".v4-sky__stars li:nth-child(4) .v4-sky__panel .certificate-preview"); await wait(700);
+  c.preview = await sky(certificates);
+  await certificates.keyboard.press("Escape"); await wait(500);
+  c.previewClosed = await sky(certificates);
+  expect("Constellation: the credential's preview opens the page's own dialog and Escape closes it", c.preview.modalOpen && !c.previewClosed.modalOpen);
+  await certificates.focus(star(9)); await certificates.keyboard.press("Enter"); await wait(600);
+  c.keyboard = await sky(certificates);
+  expect("Constellation keyboard: Enter on a credential opens it; one without a link offers only its preview", c.keyboard.panel && c.keyboard.panel.link === null && c.keyboard.panel.firstAction === "button");
+  await certificates.evaluate(() => document.activeElement.blur());
+  await scrollTo(certificates, ".v4-sky__controls", "top");
+  await certificates.click(mode("provider")); await certificates.mouse.move(3, 300); await wait(1600);
+  c.provider = await sky(certificates);
+  expect("Constellation: regrouping by provider reconfigures it into the two real providers and clears the choice", c.provider.group === "provider" && c.provider.hubs.length === 2 && c.provider.rail.length === 3 && c.provider.pressedCluster === "all" && c.provider.pinned === 0 && c.provider.stars === 9);
+  await certificates.click(cluster("p1")); await wait(700);
+  c.providerCluster = await sky(certificates);
+  await certificates.click(mode("grid")); await wait(700);
+  c.providerGrid = await sky(certificates);
+  expect("Certificates: a provider cluster is the same choice in the constellation and in the grid", c.providerCluster.starsOut === 6 && c.providerCluster.count === "03 / 09" && c.providerGrid.cards === 3 && c.providerGrid.pressedCluster === "p1");
+  await certificates.mouse.move(3, 300); await wait(2600);
+  c.atRest = await motionState(certificates);
+  expect("Certificates: nothing loops and the page comes to rest", c.atRest.endless === 0 && c.atRest.running === 0);
+  expect("Certificates desktop: no horizontal overflow", (await overflow(certificates)) === 0);
+  await certificates.close();
 
-  await works.type("[data-project-search]", "fastapi"); await wait(900);
-  w.searched = await explorer(works);
-  await works.click(mode("grid")); await wait(900);
-  w.backToGrid = await explorer(works);
-  expect("search still narrows the catalog and survives a view change", w.searched.cardsMatching === 1 && w.backToGrid.view === "grid" && w.backToGrid.search === "fastapi" && w.backToGrid.cardsShown === 1 && w.backToGrid.count === "01 / 10");
+  const certificatesPhone = await open(browser, { viewport: MOBILE, theme: "dark", path: CERTIFICATES, touch: true }, problems);
+  await certificatesPhone.evaluate(() => document.querySelector(".v4-sky__controls").scrollIntoView({ block: "center", behavior: "instant" })); await wait(400);
+  await certificatesPhone.tap(mode("constellation")); await wait(800);
+  c.phone = { ...(await sky(certificatesPhone)), railScrolls: await certificatesPhone.evaluate(() => { const rail = document.querySelector(".v4-sky__rail"); return rail.scrollWidth > rail.clientWidth; }) };
+  expect("Certificates phone: a scrollable cluster rail over a credential list, no squeezed field", c.phone.view === "constellation" && c.phone.fieldShown === 0 && c.phone.stars === 9 && c.phone.railScrolls);
+  await certificatesPhone.tap(star(1)); await wait(600);
+  c.phoneOpen = await sky(certificatesPhone);
+  expect("Certificates touch: tapping a credential opens its details in place, link first", c.phoneOpen.pinned === 1 && c.phoneOpen.panel?.firstAction === "a");
+  await certificatesPhone.tap(cluster("a5")); await wait(600);
+  c.phoneCluster = await sky(certificatesPhone);
+  expect("Certificates touch: a cluster narrows the list", c.phoneCluster.stars === 3);
+  expect("Certificates mobile: no horizontal overflow", (await overflow(certificatesPhone)) === 0);
+  await certificatesPhone.close();
 
-  await works.evaluate(() => { const input = document.querySelector("[data-project-search]"); input.focus(); input.select(); });
-  await works.keyboard.press("Backspace"); await works.click(filter("all")); await wait(700);
-  await works.focus(mode("map")); await works.keyboard.press("Enter"); await wait(700);
-  w.keyboard = await explorer(works);
-  expect("keyboard: Enter on a mode switches the view", w.keyboard.view === "map" && w.keyboard.cardsMatching === 10);
-  await works.click(filter("game")); await wait(900);
-  w.railInMap = await explorer(works);
-  expect("the rail filters the map too: three projects stay, the rest recede", w.railInMap.mapPressed === "game" && w.railInMap.mapOut === 7 && w.railInMap.count === "03 / 10");
-  w.motion = await motionState(works);
-  await wait(2500);
-  w.atRest = await motionState(works);
-  expect("Works: nothing loops and the explorer comes to rest", w.motion.endless === 0 && w.atRest.running === 0);
-  expect("Works desktop: no horizontal overflow", (await overflow(works)) === 0);
+  const certificatesPlain = await open(browser, { viewport: DESKTOP, theme: "dark", path: CERTIFICATES, noJs: true, settle: 300 }, []);
+  c.noJs = { cards: await shownCount(certificatesPlain, ".certificate-card"), modes: await shownCount(certificatesPlain, ".v4-modes__mode"), rail: await shownCount(certificatesPlain, ".v4-sky__cluster"), sky: await shownCount(certificatesPlain, ".v4-sky"), links: await shownCount(certificatesPlain, ".certificate-card .certificate-actions a") };
+  expect("Certificates without JavaScript: the ordinary grid, every credential and link, no switches", c.noJs.cards === 9 && c.noJs.modes === 0 && c.noJs.rail === 0 && c.noJs.sky === 0 && c.noJs.links === 6);
+  await certificatesPlain.close();
+  const certificatesStill = await open(browser, { viewport: DESKTOP, theme: "dark", path: CERTIFICATES, reducedMotion: true }, problems);
+  await certificatesStill.click(mode("constellation")); await certificatesStill.click(mode("provider")); await certificatesStill.mouse.move(3, 300); await wait(500);
+  c.reducedMotion = { ...(await sky(certificatesStill)), motion: await motionState(certificatesStill) };
+  expect("Certificates reduced motion: views and grouping still switch, nothing animates", c.reducedMotion.view === "constellation" && c.reducedMotion.group === "provider" && c.reducedMotion.motion.running === 0);
+  await certificatesStill.close();
 
-  /* Selection anchor, then the real navigation. */
-  await works.click(mode("grid")); await works.click(filter("all")); await wait(900);
-  await works.evaluate(() => document.querySelector(".project-card").scrollIntoView({ block: "center", behavior: "instant" }));
-  const visual = await works.evaluate(() => { const rect = document.querySelector(".project-card img").getBoundingClientRect(); return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }; });
-  await works.mouse.move(visual.x, visual.y); await works.mouse.down();
-  w.anchored = await works.evaluate(() => [...document.querySelectorAll(".project-card img")].filter((image) => image.style.viewTransitionName === "v4-project-visual").length);
-  await Promise.all([works.waitForNavigation({ waitUntil: "networkidle0" }), works.mouse.up()]);
-  w.arrived = new URL(works.url()).pathname;
-  w.destinationAnchor = await works.evaluate(() => getComputedStyle(document.querySelector("[data-v4-anchor]")).viewTransitionName);
-  expect("choosing a card names exactly that card's visual, and the link still navigates normally", w.anchored === 1 && w.arrived === DETAIL);
-  expect("the destination hero carries the matching anchor", w.destinationAnchor === "v4-project-visual");
-  await works.close();
-
-  /* Touch + phone. */
-  const phone = await open(browser, { viewport: MOBILE, theme: "dark", path: "/works/" }, problems);
-  await phone.emulate({ viewport: { ...MOBILE, deviceScaleFactor: 1, isMobile: true, hasTouch: true }, userAgent: await browser.userAgent() });
-  await phone.reload({ waitUntil: "networkidle0" }); await wait(2400);
-  await phone.evaluate(() => document.querySelector(".v4-modes").scrollIntoView({ block: "center", behavior: "instant" }));
-  await phone.tap(mode("capability")); await wait(800);
-  w.touch = await explorer(phone);
-  expect("touch: tapping a mode switches the view on a phone", w.touch.view === "capability" && w.touch.modesShown === 3);
-  await phone.tap(mode("map")); await wait(800);
-  w.touchMap = await explorer(phone);
-  expect("phone map is the project list, not a squeezed graph", w.touchMap.view === "map" && await phone.evaluate(() => getComputedStyle(document.querySelector(".v4-explorer__map .v4-eco__field")).display === "none"));
-  expect("Works mobile: no horizontal overflow in any view", (await overflow(phone)) === 0);
-  await phone.close();
-
-  /* Reduced motion and no-JS. */
-  const still = await open(browser, { viewport: DESKTOP, theme: "dark", path: "/works/", reducedMotion: true }, problems);
-  await still.click(mode("map")); await wait(500);
-  w.reducedMotion = { ...(await explorer(still)), motion: await motionState(still) };
-  expect("reduced motion: views still switch, nothing animates", w.reducedMotion.view === "map" && w.reducedMotion.mapShown === 1 && w.reducedMotion.motion.running === 0);
-  await still.close();
-  const plain = await open(browser, { viewport: DESKTOP, theme: "dark", path: "/works/", noJs: true, settle: 300 }, []);
-  w.noJs = await plain.evaluate(() => {
-    const shown = (selector) => [...document.querySelectorAll(selector)].filter((node) => node.getClientRects().length).length;
-    return { modes: shown(".v4-modes__mode"), cards: shown(".project-card"), map: shown(".v4-explorer__map .v4-eco"), links: document.querySelectorAll(".project-card h3 a[href]").length };
-  });
-  expect("without JavaScript Works is the ordinary project list: no mode switch, every card and link present", w.noJs.modes === 0 && w.noJs.cards === 10 && w.noJs.map === 0 && w.noJs.links === 10);
-  await plain.close();
-
-  /* ---------- project-detail smoke ---------- */
-  const detail = await open(browser, { viewport: DESKTOP, theme: "dark", path: DETAIL }, problems);
-  const d = {};
-  d.facts = await detail.evaluate(() => {
-    const links = [...document.querySelectorAll("[data-v4-tracker] a")];
-    return {
-      tracker: links.map((link) => link.textContent.replace(/\s+/g, " ").trim()),
-      trackerTargets: links.every((link) => document.getElementById(link.getAttribute("href").slice(1))?.classList.contains("case-section")),
-      sections: document.querySelectorAll("main .case-section").length,
-      ports: [...document.querySelectorAll(".case-hero .v4-ports [data-v4-cap]")].map((port) => port.getAttribute("data-v4-cap")).join(),
-      steps: document.querySelectorAll("[data-v4-process] > li").length,
-      processWaiting: document.querySelector("[data-v4-process]").hasAttribute("data-v4-await"),
-      proof: [...document.querySelectorAll(".case-proof strong")].map((node) => node.textContent.trim()),
-      cards: document.querySelectorAll("main [data-v4-card]").length,
-      related: [...document.querySelectorAll(".v4-related__group")].map((group) => `${group.querySelector("h3").textContent.trim()}: ${group.querySelectorAll("a").length}`),
-      relatedLinks: [...document.querySelectorAll(".v4-related__project")].map((link) => link.getAttribute("href")),
-      heading: document.querySelector("h1").textContent.trim(),
-      runtime: typeof window.V4Motion?.destroy === "function",
-      canvases: document.querySelectorAll("canvas").length,
-    };
-  });
-  expect("detail: the tracker lists every content section, each link reaching its section", d.facts.tracker.length === d.facts.sections && d.facts.tracker.length >= 2 && d.facts.trackerTargets);
-  expect("detail: the hero carries exactly SINAMA's catalog capabilities", d.facts.ports === "ai,software");
-  expect("detail: the six-step pipeline is a process that waits to be seen", d.facts.steps === 6 && d.facts.processWaiting);
-  expect("detail: related work is grouped by the two shared capabilities, five projects in catalog order", d.facts.related.length === 2 && d.facts.relatedLinks.length === 5);
-  const reachable = await Promise.all(d.facts.relatedLinks.map(async (href) => (await fetch(`${ORIGIN}${href}`)).status));
-  expect("detail: every related link resolves", reachable.every((status) => status === 200));
-
-  await scrollTo(detail, "[data-v4-process]", "into");
-  d.afterScroll = await detail.evaluate(() => ({
-    waiting: document.querySelector("[data-v4-process]").hasAttribute("data-v4-await"),
-    current: [...document.querySelectorAll("[data-v4-tracker] a[aria-current]")].map((link) => link.getAttribute("href")),
-    section: document.querySelector("[data-v4-process]").closest(".case-section").id,
-  }));
-  expect("detail: the pipeline runs when first seen and the tracker marks its section", !d.afterScroll.waiting && d.afterScroll.current.length === 1 && d.afterScroll.current[0] === `#${d.afterScroll.section}`);
-  await detail.click("[data-v4-tracker] li:last-child a"); await wait(1400);
-  d.jumped = await detail.evaluate(() => ({ hash: location.hash, current: document.querySelector("[data-v4-tracker] a[aria-current]")?.getAttribute("href") }));
-  expect("detail: a tracker link jumps to its section and becomes current", d.jumped.hash === d.jumped.current && Boolean(d.jumped.hash));
-
-  const session = await detail.createCDPSession();
+  /* ---------- About smoke ---------- */
+  const a = {};
+  const about = await open(browser, { viewport: DESKTOP, theme: "dark", path: ABOUT }, problems);
+  a.initial = await human(about);
+  expect("About reads in narrative order", a.initial.sections === "hero → tracker → map → profile → process → capability → toolbox → journey → onward → contact");
+  expect("About: the map's themes are the page's own four capability focuses", a.initial.themes.length === 4 && a.initial.ports === a.initial.themes.map((theme) => theme.split(":")[0]).join());
+  expect("About: five evidence projects on eleven wires, one portrait, no canvas", a.initial.projects.length === 5 && a.initial.edges === 11 && a.initial.portraits === 1 && a.initial.canvases === 0);
+  expect("About: at rest the map lists what each theme stands for", a.initial.panel === "" && !a.initial.active);
+  expect("About: the tracker reaches every chapter", a.initial.tracker.length === 6 && a.initial.trackerTargets);
+  const aboutLinks = await Promise.all([...a.initial.projects, a.initial.onward].map(async (href) => (await fetch(`${ORIGIN}${href}`)).status));
+  expect("About: every project link and the way on resolve", aboutLinks.every((status) => status === 200));
+  await scrollTo(about, ".v4-human", "into");
+  await about.hover(node("game")); await wait(700);
+  a.hover = await human(about);
+  expect("About: pointing at a theme lights exactly the work its profile cites", a.hover.activeNode === "game" && a.hover.related === "hospital,mergeRush" && a.hover.litEdges === 2 && a.hover.panel === "game" && a.hover.litPorts === 1);
+  await about.click(node("applied-ai")); await about.mouse.move(1150, 760); await wait(700);
+  a.pinned = await human(about);
+  expect("About: pressing a theme pins it and keeps its statement open", a.pinned.pressed === "applied-ai" && a.pinned.panel === "applied-ai" && a.pinned.litEdges === 3 && a.pinned.cited === 3);
+  await about.hover(node("hospital")); await wait(600);
+  a.project = await human(about);
+  expect("About: a project lights the themes that cite it", a.project.activeNode === "hospital" && a.project.related === "software,game" && a.project.panel === "hospital");
+  await about.focus(node("applied-ai")); await about.keyboard.press("Escape"); await about.evaluate(() => document.activeElement.blur()); await about.mouse.move(3, 300); await wait(600);
+  a.released = await human(about);
+  expect("About keyboard: Escape releases the pin and the map returns to rest", a.released.pressed === "" && !a.released.active && a.released.panel === "");
+  await about.click("[data-v4-tracker] li:first-child a"); await wait(1500);
+  a.narrative = await human(about);
+  expect("About: the tracker marks the chapter being read", a.narrative.trackerCurrent === "#v4-s-1");
+  const session = await about.createCDPSession();
   await session.send("Performance.enable");
   const sample = async () => Object.fromEntries((await session.send("Performance.getMetrics")).metrics.map(({ name, value }) => [name, value]));
   await wait(2500);
-  d.atRest = await motionState(detail);
+  a.atRest = await motionState(about);
   const before = await sample();
   await wait(5000);
   const after = await sample();
   const idle = Object.fromEntries(["ScriptDuration", "LayoutDuration", "RecalcStyleDuration", "TaskDuration"].map((name) => [name, Math.round((after[name] - before[name]) * 1000)]));
-  expect("detail: nothing loops and the page comes to rest", d.atRest.endless === 0 && d.atRest.running === 0);
-  await detail.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" })); await wait(700);
-  d.pausedOffscreen = await detail.evaluate(() => {
-    const regions = [...document.querySelectorAll("[data-v4-ambient], [data-v4-process], [data-v4-arrive]")];
+  expect("About: nothing loops and the page comes to rest", a.atRest.endless === 0 && a.atRest.running === 0);
+  a.pausedOffscreen = await about.evaluate(() => {
+    const regions = [...document.querySelectorAll("[data-v4-ambient], [data-v4-eco], [data-v4-arrive]")];
     const off = regions.filter((region) => { const rect = region.getBoundingClientRect(); return rect.bottom < -64 || rect.top > innerHeight + 64; });
     return { offscreen: off.length, paused: off.filter((region) => region.hasAttribute("data-v4-paused")).length };
   });
-  expect("detail: offscreen V4 regions are paused", d.pausedOffscreen.offscreen > 0 && d.pausedOffscreen.paused === d.pausedOffscreen.offscreen);
-  const lcp = await detail.evaluate(() => new Promise((done) => {
+  expect("About: offscreen V4 regions are paused", a.pausedOffscreen.offscreen > 0 && a.pausedOffscreen.paused === a.pausedOffscreen.offscreen);
+  const lcp = await about.evaluate(() => new Promise((done) => {
     new PerformanceObserver((list) => {
       const entry = list.getEntries().at(-1);
       done({ ms: Math.round(entry.startTime), element: entry.element?.tagName.toLowerCase() || null });
     }).observe({ type: "largest-contentful-paint", buffered: true });
     setTimeout(() => done(null), 1500);
   }));
-  expect("detail desktop: no horizontal overflow", (await overflow(detail)) === 0);
-  await detail.close();
+  expect("About desktop: no horizontal overflow", (await overflow(about)) === 0);
+  await about.close();
 
-  const detailPlain = await open(browser, { viewport: DESKTOP, theme: "dark", path: DETAIL, noJs: true, settle: 300 }, []);
-  d.noJs = await detailPlain.evaluate(() => ({
-    tracker: document.querySelectorAll('[data-v4-tracker] a[href^="#v4-s-"]').length,
-    steps: document.querySelectorAll("[data-v4-process] > li").length,
-    related: document.querySelectorAll(".v4-related__project[href]").length,
-    waiting: document.querySelectorAll("[data-v4-await]").length,
-  }));
-  expect("without JavaScript the detail page keeps its tracker links, pipeline and related work", d.noJs.tracker >= 2 && d.noJs.steps === 6 && d.noJs.related === 5 && d.noJs.waiting === 0);
-  await detailPlain.close();
+  const aboutPhone = await open(browser, { viewport: MOBILE, theme: "dark", path: ABOUT, touch: true }, problems);
+  a.phone = await human(aboutPhone);
+  expect("About phone: the portrait leads and each theme is a group of its own evidence, no squeezed orbit", a.phone.fieldShown === 0 && a.phone.portraits === 1 && a.phone.groups === 4 && a.phone.cited === 11);
+  expect("About mobile: no horizontal overflow", (await overflow(aboutPhone)) === 0);
+  await aboutPhone.close();
+  const aboutPlain = await open(browser, { viewport: DESKTOP, theme: "dark", path: ABOUT, noJs: true, settle: 300 }, []);
+  a.noJs = await human(aboutPlain);
+  expect("About without JavaScript: the map, its project links, its themes' statements and the tracker are all there", a.noJs.projects.length === 5 && a.noJs.panel === "" && a.noJs.tracker.length === 6 && a.noJs.portraits === 1 && a.noJs.sections === a.initial.sections);
+  await aboutPlain.close();
+  const aboutStill = await open(browser, { viewport: DESKTOP, theme: "dark", path: ABOUT, reducedMotion: true }, problems);
+  await aboutStill.click(node("software")); await aboutStill.mouse.move(1150, 760); await wait(400);
+  a.reducedMotion = { ...(await human(aboutStill)), motion: await motionState(aboutStill) };
+  expect("About reduced motion: a theme still pins, nothing animates", a.reducedMotion.pressed === "software" && a.reducedMotion.motion.running === 0);
+  await aboutStill.close();
 
-  const detailStill = await open(browser, { viewport: DESKTOP, theme: "dark", path: DETAIL, reducedMotion: true }, problems);
-  await scrollTo(detailStill, "[data-v4-process]", "into");
-  d.reducedMotion = await motionState(detailStill);
-  expect("reduced motion: the detail page does not animate", d.reducedMotion.running === 0);
-  await detailStill.close();
-
-  /* The shell on every case study, and both surfaces in every locale. */
-  const shell = {};
-  for (const path of CASE_STUDIES) {
-    const page = await open(browser, { viewport: MOBILE, theme: "dark", path, settle: 900 }, problems);
-    shell[path] = await page.evaluate(() => ({
-      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      tracker: document.querySelectorAll("[data-v4-tracker] a").length,
-      related: document.querySelectorAll(".v4-related__project").length,
-      ports: document.querySelectorAll(".case-hero .v4-ports [data-v4-cap]").length,
-      emptyTrackerLabels: [...document.querySelectorAll("[data-v4-tracker] a span")].filter((label) => !label.textContent.trim()).length,
-    }));
-    expect(`${path} (390): shell renders with real ports, a labelled tracker and no overflow`, shell[path].overflow === 0 && shell[path].ports > 0 && shell[path].tracker >= 2 && shell[path].emptyTrackerLabels === 0);
-    await page.close();
-  }
+  /* ---------- all three surfaces in every locale ---------- */
   const locales = {};
   for (const locale of LOCALES) {
     locales[locale] = {};
-    for (const [surface, path] of [["works", "/works/"], ["detail", DETAIL]]) {
+    for (const [surface, path] of SURFACES) {
       const wide = await open(browser, { viewport: DESKTOP, theme: "dark", path: localized(locale, path), settle: 800 }, problems);
-      if (surface === "works") { await wide.click(mode("capability")); await wait(500); }
+      if (surface === "certificates") { await wide.click(mode("constellation")); await wait(900); }
       const narrow = await open(browser, { viewport: MOBILE, theme: "dark", path: localized(locale, path), settle: 800 }, problems);
+      if (surface === "certificates") { await narrow.click(mode("constellation")); await wait(600); }
       locales[locale][surface] = { desktop: await overflow(wide), mobile: await overflow(narrow) };
-      if (surface === "works") locales[locale].modes = await wide.evaluate(() => [...document.querySelectorAll(".v4-modes__mode")].map((node) => node.textContent.trim()));
-      if (surface === "detail") locales[locale].tracker = await wide.evaluate(() => document.querySelectorAll("[data-v4-tracker] a").length);
+      if (surface === "experience") locales[locale].labels = await wide.evaluate(() => [document.querySelector(".v4-career-section > .eyebrow").textContent.trim(), document.querySelector(".v4-career__now").textContent.trim(), document.querySelector(".v4-career__direction").textContent.trim()]);
+      if (surface === "experience") locales[locale].clipped = await wide.evaluate(() => { const box = document.querySelector(".v4-career").getBoundingClientRect(); return [...document.querySelectorAll(".v4-career .v4-node")].filter((entry) => { const rect = entry.getBoundingClientRect(); return rect.left < 0 || rect.right > innerWidth || rect.bottom > box.bottom + 4; }).length; });
+      if (surface === "certificates") locales[locale].modes = await wide.evaluate(() => [...document.querySelectorAll(".v4-modes__mode")].map((entry) => entry.textContent.trim()));
+      if (surface === "about") locales[locale].themes = await wide.evaluate(() => [...document.querySelectorAll(".v4-human__theme")].map((entry) => entry.textContent.trim()));
       expect(`${locale} ${surface}: no horizontal overflow at 1440 or 390`, locales[locale][surface].desktop === 0 && locales[locale][surface].mobile === 0);
       await wide.close();
       await narrow.close();
     }
+    expect(`${locale}: the career chart keeps every label inside its field`, locales[locale].clipped === 0);
   }
 
   /* ---------- measurements + pack ---------- */
@@ -452,12 +554,12 @@ try {
     return { file, raw: bytes.length, gzip: gzipSync(bytes).length };
   };
   const reactEntry = (await readFile(join(ROOT, "dist-site", "index.html"), "utf8")).match(/assets-react\/[^"]+\.js/)[0];
-  const sizes = await Promise.all(["css/v4-system.css", "css/v4-works.css", "css/v4-detail.css", "js/v4/runtime.js", reactEntry, "works/index.html", "sinama-case-study/index.html"].map(sizeOf));
+  const sizes = await Promise.all(["css/v4-system.css", "css/v4-experience.css", "css/v4-certificates.css", "css/v4-about.css", "js/v4/runtime.js", reactEntry, "blog/index.html", "certificates/index.html", "about/index.html"].map(sizeOf));
 
   await sheet(browser, "00-contact-sheet.png", TITLE, "Contact sheet · every panel is a production-build capture; full-size files sit beside this sheet", shots.map((shot) => ({ file: join(OUTPUT, shot.name), label: shot.label, width: shot.viewport.width === MOBILE.width ? 390 : 1080 })), 4680);
   await sheet(browser, "00-motion-frames.png", `${TITLE} · motion`, "Motion frames, in order, from one continuous session", frames, 4120);
 
-  const summary = { phase: PHASE, capturedAt: new Date().toISOString(), origin: ORIGIN, works: w, detail: d, idleFiveSecondsMs: idle, lcp, caseStudies: shell, locales, sizes, motionFrames: frames.map((entry) => entry.label), consoleProblems: problems, failures };
+  const summary = { phase: PHASE, capturedAt: new Date().toISOString(), origin: ORIGIN, experience: e, certificates: c, about: a, idleFiveSecondsMs: idle, lcp, locales, sizes, motionFrames: frames.map((entry) => entry.label), consoleProblems: problems, failures };
   await writeFile(join(OUTPUT, "qa-summary.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
 
   const kb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`;
@@ -483,19 +585,20 @@ ${frames.map((entry, index) => `${index + 1}. ${entry.label}`).join("\n")}
 ## Focused QA (this run)
 
 - Failures: ${failures.length ? failures.map((failure) => `\n  - ${failure}`).join("") : "none"}
-- Console warnings/errors: ${problems.length ? problems.map((problem) => `\n  - ${problem}`).join("") : "none"}
-- Works: three modes; the map's capability buttons and the rail are one filter state (AI & Automation: ${w.mapFiltered.count}, ${w.mapFiltered.mapOut} projects receding, ${w.mapFiltered.mapLitEdges} wires lit); search "fastapi" → ${w.backToGrid.count} and survives a view change.
-- Works without JavaScript: ${w.noJs.cards} cards, ${w.noJs.modes} mode buttons, ${w.noJs.links} project links.
-- SINAMA detail: tracker ${d.facts.tracker.join(" · ")}; ${d.facts.steps} pipeline steps; proof ${d.facts.proof.join(" · ")}; related ${d.facts.related.join(" · ")}.
-- Transition: ${w.anchored} card visual named on selection, destination anchor "${w.destinationAnchor}", arrived at ${w.arrived}.
-- Shell on every case study at 390 px: ${Object.entries(shell).map(([path, value]) => `${path} tracker ${value.tracker}, related ${value.related}`).join(" · ")}.
-- Locales (EN/TR/DE/ES/FR, Works and SINAMA at 1440 and 390): overflow ${LOCALES.map((locale) => `${locales[locale].works.desktop}/${locales[locale].works.mobile}/${locales[locale].detail.desktop}/${locales[locale].detail.mobile}`).join(" · ")}.
+- Console warnings/errors (including React hydration reports): ${problems.length ? problems.map((problem) => `\n  - ${problem}`).join("") : "none"}
+- Experience: roles ${e.initial.roles.join(" · ")}; years ${e.initial.years.join(" ")}; ${e.initial.live} live; branches to ${e.initial.evidence.join(" and ")}; shared thread ${e.initial.threads.join(", ") || "none"}; CBOT under the pointer lights ${e.hover.litEdges} edges.
+- Experience phone: ${e.phone.folded} of ${e.phone.milestones} milestones folded, ${e.phoneOpened.folded} after one tap; without JavaScript ${e.noJsPhone.accounts} accounts readable.
+- Certificates: rail ${c.initial.rail.join(" · ")}; Networking & Systems → grid ${c.gridCluster.count}, constellation ${c.constellation.starsOut} receding and ${c.constellation.litWires} wires lit; ${c.constellation.starsLinked} of 9 credentials carry a link; by provider ${c.provider.hubs.join(" · ")}.
+- Certificates without JavaScript: ${c.noJs.cards} cards, ${c.noJs.links} credential links, ${c.noJs.modes} switches.
+- About: ${a.initial.sections}; themes ${a.initial.themeLabels.join(" · ")}; wires ${a.initial.themes.join(" | ")}; tracker ${a.initial.tracker.join(" · ")}.
+- About phone: ${a.phone.groups} theme groups citing ${a.phone.cited} evidence links.
+- Locales (EN/TR/DE/ES/FR; Experience, Certificates constellation and About at 1440 and 390): overflow ${LOCALES.map((locale) => SURFACES.map(([surface]) => `${locales[locale][surface].desktop}/${locales[locale][surface].mobile}`).join("/")).join(" · ")}.
 
 ## Performance (headless Chromium, 1440×900)
 
-- SINAMA detail, five idle seconds at rest: main-thread tasks ${idle.TaskDuration} ms, style recalculation ${idle.RecalcStyleDuration} ms, layout ${idle.LayoutDuration} ms, script ${idle.ScriptDuration} ms.
-- LCP on the detail page (local, unthrottled): ${lcp ? `${lcp.ms} ms on <${lcp.element}>` : "not reported"}.
-- No canvas, no animation loop: ${d.facts.canvases} canvases; at rest ${d.atRest.running} time-driven animations running on the detail page and ${w.atRest.running} on Works.
+- About, five idle seconds at rest: main-thread tasks ${idle.TaskDuration} ms, style recalculation ${idle.RecalcStyleDuration} ms, layout ${idle.LayoutDuration} ms, script ${idle.ScriptDuration} ms.
+- LCP on About (local, unthrottled): ${lcp ? `${lcp.ms} ms on <${lcp.element}>` : "not reported"}.
+- No canvas, no animation loop: at rest ${e.atRest.running} time-driven animations running on Experience, ${c.atRest.running} on Certificates and ${a.atRest.running} on About.
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |

@@ -8,6 +8,7 @@ import { decodeHtml } from "./localized-html.mjs";
 import { createHomeAboutHeadModel, createSiteHeadRenderer } from "./site-head.mjs";
 import { catalogSearchCopy, defaultCatalogSources, defaultRoleSources, projectRole } from "./m3-works-games-catalog-copy.mjs";
 import { ajoopShellModel, commandPaletteModel, runtimeCollection } from "./m3-28-overlay-copy.mjs";
+import { v4AboutModel, v4CertificatesModel, v4ExperienceModel } from "./v4-inner-pages.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
@@ -495,6 +496,36 @@ function v4HomeModel(locale, message) {
   };
 }
 
+/* V4 inner pages (scripts/v4-inner-pages.mjs): Experience and Certificates
+ * are captured documents, so their models are read from the localized
+ * structure itself, with the English contract supplying what must not depend
+ * on a language (month names, provider identity). */
+const plainText = (node) => (!node ? "" : node.type === "text" ? node.value : node.type === "element" ? node.children.map(plainText).join("") : "");
+const experienceTitle = (locale) => plainText(remainingRoutesStructure.pages.blog.locales[locale].children.find((node) => node.type === "element").children.find((node) => node.tag === "h1")).replace(/\s+/g, " ").trim();
+function v4CapturedModel(route, captured, structure, message) {
+  const english = captured.page.locales[registry.defaultLocale].children;
+  if (route.routeId === "blog") {
+    return v4ExperienceModel({
+      locale: route.locale, children: structure, english, text: plainText, message,
+      ecosystem: v4EcosystemModel(route.locale, message),
+      asOf: meta.updatedAt,
+      about: { label: message("shell.nav.about"), title: message("about.hero.title"), href: routeRuntime.localizedInternalHref("/about/", route.locale) },
+    });
+  }
+  if (route.routeId === "certificates") return v4CertificatesModel({ locale: route.locale, children: structure, english, text: plainText, message });
+  return null;
+}
+
+function v4AboutPageModel(route, children, localization, message) {
+  const text = (node) => (!node ? "" : node.type === "message" ? message(node.key) : node.type === "text" ? node.value : node.type === "element" ? node.children.map(text).join("") : "");
+  const value = (entry) => (entry?.type === "message" ? message(entry.key) : entry?.type === "internal" ? routeRuntime.localizedInternalHref(entry.path, route.locale) : entry);
+  return v4AboutModel({
+    locale: route.locale, children, text, value, message,
+    recruiter: recruiterModel(route.locale, localization),
+    experience: { label: message("shell.nav.blog"), title: experienceTitle(route.locale), href: routeRuntime.localizedInternalHref("/blog/", route.locale) },
+  });
+}
+
 const SHELL_MESSAGE_KEYS = [
   "language.selectorAria",
   "nav.open",
@@ -658,7 +689,13 @@ export function productionMainProps(route, {
       ? withFilledContainer(captured.localized.children, "data-build-log", buildLogNodes(route.locale, loadLocalization(route.locale)), "Now page must contain exactly one Build Log")
       : route.routeId === "certificates" ? withTrainingLabel(captured.localized.children, route.locale)
         : captured.localized.children;
-    return { kind: "capturedPage", page: route.routeId, locale: route.locale, structure };
+    const capturedLocalization = loadLocalization(route.locale);
+    const v4 = v4CapturedModel(route, captured, structure, (key) => {
+      const value = capturedLocalization.message(key);
+      if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+      return value;
+    });
+    return { kind: "capturedPage", page: route.routeId, locale: route.locale, structure, ...(v4 ? { v4 } : {}) };
   }
   if (route.kind === "project") {
     const localization = loadLocalization(route.locale);
@@ -699,9 +736,9 @@ export function productionMainProps(route, {
   };
   if (route.routeId === "home") props.v4 = v4HomeModel(route.locale, (key) => required(localization.message(key), key));
   if (route.routeId === "works") props.v4 = v4WorksModel(route.locale, (key) => required(localization.message(key), key));
+  if (route.routeId === "about") props.v4 = v4AboutPageModel(route, page.children, localization, (key) => required(localization.message(key), key));
   if (!catalogPage) return props;
-  /* Catalog-only props; About keeps exactly its accepted payload, Home adds
-   * only the V4 flow model above. */
+  /* Catalog-only props; Home and About add only their V4 models above. */
   const fixedLocalization = Object.fromEntries(["en", "tr"].map((locale) => [locale, loadLocalization(locale)]));
   const roleLine = (ref, locale, labelSource) => `${required(labelSource.message(worksGamesStructure.roleLabel), worksGamesStructure.roleLabel)} ${required(projectRole(ref, locale, roleSources), `${ref} role`)}`;
   const search = catalogSearchCopy(route.routeId, route.locale, catalogSources);

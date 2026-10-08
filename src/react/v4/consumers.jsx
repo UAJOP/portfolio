@@ -1,5 +1,6 @@
 import SignalFlow, { SignalRule } from "./SignalFlow.jsx";
 import { EcosystemField } from "./EcosystemMap.jsx";
+import { EvidencePorts, MilestoneToggle } from "./CareerCurrent.jsx";
 
 /* Route consumers of the V4 system.
  *
@@ -165,7 +166,65 @@ function detail(v4, node, classes, attributes, key) {
   return null;
 }
 
-const CONSUMERS = { home, works, detail };
+/* Inner pages enter the same way: an atmospheric hero with a kinetic title. */
+function entry(node, classes, attributes, key) {
+  if (node.tag === "h1") attributes["data-v4-kinetic"] = "";
+  if (!classes.has("page-hero")) return null;
+  attributes["data-v4-ambient"] = "grain";
+  attributes["data-v4-entry"] = "";
+  return [<CurrentField key={`${key}.v4-field`} />];
+}
+
+/* Experience: the chronology is the current. Each entry is a milestone on it
+ * with the id the chart links to; the page's own direction is where it leads. */
+function experience(v4, node, classes, attributes, key) {
+  const role = v4.career.roles[v4.ordinal.get(node)];
+  if (classes.has("experience-summary")) attributes.id = "v4-direction";
+  if (classes.has("experience-timeline")) attributes["data-v4-current"] = "";
+  if (classes.has("experience-item")) {
+    attributes.id = role.anchor;
+    attributes["data-v4-milestone"] = "";
+    if (role.live) attributes["data-v4-live"] = "";
+  }
+  if (classes.has("experience-card")) {
+    return [
+      ...(role.evidence?.capabilities.length ? [<EvidencePorts key={`${key}.v4-ports`} evidence={role.evidence} />] : []),
+      <MilestoneToggle key={`${key}.v4-toggle`} labels={v4.milestone} />,
+    ];
+  }
+  return entry(node, classes, attributes, key);
+}
+
+/* Certificates: the catalog stays the archive. A chosen cluster narrows it,
+ * and the constellation view stands in for it. */
+function certificates(v4, node, classes, attributes, key) {
+  const { sky, state } = v4;
+  const outside = (credential) => Boolean(state.cluster) && credential[state.group] !== state.cluster;
+  if (classes.has("training-catalog")) attributes["data-v4-view"] = state.view;
+  if (classes.has("training-category")) {
+    const listed = sky.credentials.filter((credential) => credential.area === `a${v4.ordinal.get(node)}`);
+    if (listed.every(outside)) attributes["data-v4-out"] = "";
+  }
+  if (classes.has("certificate-card")) {
+    attributes["data-v4-card"] = "";
+    if (outside(sky.credentials[v4.ordinal.get(node)])) attributes["data-v4-out"] = "";
+  }
+  return entry(node, classes, attributes, key);
+}
+
+/* About: the narrative's sections carry the ids its tracker links to, the
+ * portrait moves into the map, and every capability focus is a port. */
+function about(v4, node, classes, attributes, key) {
+  const path = key.split(".");
+  if (path.length === 2 && v4.tracker.items.some((item) => item.id === `v4-s-${path[1]}`)) attributes.id = `v4-s-${path[1]}`;
+  if (classes.has("about-photo")) attributes["data-v4-moved"] = "";
+  if (classes.has("journey-grid")) attributes["data-v4-arrive"] = "";
+  const focus = node.tag === "a" ? /[?&]role=([\w-]+)/.exec(String(attributes.href)) : null;
+  if (focus && v4.human.themes.some((theme) => theme.id === focus[1])) attributes["data-v4-cap"] = focus[1];
+  return entry(node, classes, attributes, key);
+}
+
+const CONSUMERS = { home, works, detail, experience, certificates, about };
 
 export function applyV4(page, v4, node, classes, attributes, key) {
   const consumer = CONSUMERS[v4.consumer || page];

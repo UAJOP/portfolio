@@ -1,0 +1,697 @@
+/* V4 Certificates composition ----------------------------------------------
+ *
+ * Certificates reads two ways. The credential grid is the archive and the
+ * default; the learning constellation (src/react/v4/Constellation.jsx) shows
+ * the same credentials clustered by the category they are listed under or by
+ * the provider named on them. One rail of clusters serves both. Nothing is
+ * scored; a credential's own link stays its first action everywhere. */
+
+body[data-page="certificates"] main {
+  overflow: clip;
+}
+
+body[data-page="certificates"] .page-hero[data-v4-entry] h1 {
+  max-width: 24ch;
+  font-size: clamp(1.75rem, 2.55vw, 2.6rem);
+}
+
+/* 1. Views and clusters ---------------------------------------------------- */
+
+.v4-sky-section {
+  padding-top: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+.v4-sky__controls {
+  scroll-margin-top: 6.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.v4-sky__rail {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1.1rem;
+}
+
+.v4-sky__rail:not([data-v4-live]) {
+  display: none;
+}
+
+.v4-sky__rail::before {
+  position: absolute;
+  z-index: -1;
+  top: 22px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--v4-trace), var(--v4-trace-muted) 70%, transparent);
+  content: "";
+}
+
+/* What is showing, of what there is. */
+.v4-sky__rail::after {
+  margin-left: auto;
+  padding-left: 0.75rem;
+  background: var(--v4-canvas);
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  content: attr(data-v4-count);
+}
+
+.v4-sky__cluster {
+  flex: none;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 999px;
+  background: var(--v4-canvas-raised);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.v4-sky__cluster small {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+}
+
+.v4-sky__cluster:hover {
+  border-color: var(--v4-current);
+}
+
+.v4-sky__cluster[aria-pressed="true"] {
+  border-color: var(--v4-current);
+  box-shadow:
+    inset 0 0 0 1px var(--v4-current),
+    0 0 2.5rem -0.6rem var(--v4-current-glow);
+}
+
+/* 2. The constellation ----------------------------------------------------- */
+
+.v4-sky {
+  position: relative;
+  display: none;
+  margin-top: 1.5rem;
+}
+
+[data-v4-view="constellation"] .v4-sky {
+  display: block;
+}
+
+body[data-page="certificates"] .training-catalog[data-v4-view="constellation"] {
+  display: none;
+}
+
+.v4-sky :is(ul, p) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v4-sky__field,
+.v4-sky__core,
+.v4-sky__hubs {
+  display: none;
+}
+
+/* Phone and tablet: the clusters are the rail above, the credentials a list.
+ * Each row opens its own details in place. */
+.v4-sky__stars li {
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-sky__stars li[data-v4-out] {
+  display: none;
+}
+
+.v4-sky__star {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.2rem 0.85rem;
+  align-items: center;
+  width: 100%;
+  min-height: 60px;
+  padding: 0.75rem 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.v4-sky__star span {
+  color: var(--v4-ink);
+  font: 600 0.95rem / 1.35 var(--v4-display);
+  letter-spacing: -0.01em;
+}
+
+.v4-sky__star small {
+  grid-column: 2;
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+  text-transform: uppercase;
+}
+
+.v4-sky__star::after {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 1.5px solid var(--v4-ink-muted);
+  border-bottom: 1.5px solid var(--v4-ink-muted);
+  content: "";
+  rotate: 45deg;
+  transition: rotate var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.v4-sky__star[aria-pressed="true"]::after {
+  rotate: 225deg;
+}
+
+/* A credential that carries its own link says so on its node. */
+.v4-sky__star[data-v4-linked] .v4-node__dot {
+  border-color: var(--v4-current);
+  background: var(--v4-current);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--v4-current) 22%, transparent);
+}
+
+.v4-sky__star[aria-pressed="true"] .v4-node__dot {
+  border-color: var(--v4-current-2);
+  background: var(--v4-current-2);
+}
+
+.v4-sky__panel {
+  padding: 0.25rem 0 1.4rem 1.5rem;
+}
+
+.v4-sky__panel[hidden] {
+  display: none;
+}
+
+.v4-sky__kicker {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.v4-sky__kicker strong {
+  color: var(--v4-ink-secondary);
+  font-weight: 500;
+  text-align: right;
+}
+
+.v4-sky__panel h3 {
+  display: none;
+}
+
+.v4-sky__panel dl {
+  display: grid;
+  gap: 0;
+  margin: 0.9rem 0 0;
+}
+
+.v4-sky__panel dl > div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-sky__panel dt {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+  text-transform: uppercase;
+}
+
+.v4-sky__panel dd {
+  margin: 0;
+  color: var(--v4-ink);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.v4-sky__panel .certificate-actions {
+  margin-top: 0;
+  padding-top: 1rem;
+}
+
+.v4-sky__rest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid var(--v4-rule-strong);
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.v4-sky__rest strong {
+  flex-basis: 100%;
+  color: var(--v4-ink);
+  font: 600 1rem / 1.3 var(--v4-display);
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+@media (max-width: 1099px) {
+  /* The rail scrolls; it never wraps into a wall. */
+  .v4-sky__rail {
+    flex-wrap: nowrap;
+    margin-inline: calc(-1 * var(--page-gutter, 20px));
+    padding: 0 var(--page-gutter, 20px) 0.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .v4-sky__rail::after {
+    display: none;
+  }
+
+  .v4-sky__cluster {
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 560px) {
+  .v4-sky__controls .v4-modes {
+    display: flex;
+    width: 100%;
+  }
+
+  .v4-sky__controls .v4-modes:not([data-v4-live]) {
+    display: none;
+  }
+
+  .v4-sky__controls .v4-modes__mode {
+    flex: 1;
+    justify-content: center;
+    padding: 0 0.5rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+  }
+}
+
+/* From 1100px: a spatial map. Clusters ring the core, credentials sit off
+ * their cluster, and the open credential's details stand beside the field. */
+@media (min-width: 1100px) {
+  .v4-sky {
+    --v4-field: 0.72;
+    aspect-ratio: 1 / 0.4608;
+    margin-top: 0.75rem;
+  }
+
+  .v4-sky::before {
+    position: absolute;
+    z-index: -1;
+    top: 4%;
+    bottom: 4%;
+    left: 6%;
+    width: 60%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--v4-ambient-light), transparent);
+    content: "";
+    pointer-events: none;
+  }
+
+  .v4-sky__field {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: calc(100% * var(--v4-field));
+    height: 100%;
+    overflow: visible;
+    fill: none;
+    pointer-events: none;
+  }
+
+  .v4-sky__spoke {
+    stroke: var(--v4-rule-strong);
+    stroke-dasharray: 1;
+    stroke-width: 1;
+    transition: stroke var(--v4-motion-ui) var(--v4-ease-out);
+    animation: v4-current-draw 700ms var(--v4-ease-in-out) calc(120ms + var(--v4-seq) * 60ms) both;
+  }
+
+  .v4-sky__wire {
+    stroke: var(--v4-trace);
+    stroke-dasharray: 1;
+    stroke-linecap: round;
+    stroke-width: 1.2;
+    transition:
+      stroke var(--v4-motion-ui) var(--v4-ease-out),
+      stroke-width var(--v4-motion-ui) var(--v4-ease-out),
+      opacity var(--v4-motion-ui) var(--v4-ease-out);
+    animation: v4-current-draw 800ms var(--v4-ease-in-out) calc(420ms + var(--v4-seq) * 45ms) both;
+  }
+
+  .v4-sky :is(.v4-sky__spoke, .v4-sky__wire)[data-v4-state] {
+    stroke: var(--v4-current);
+    stroke-width: 2.1;
+  }
+
+  .v4-sky__wire[data-v4-out] {
+    opacity: 0.14;
+  }
+
+  .v4-sky[data-v4-lit] .v4-sky__wire:not([data-v4-state]) {
+    opacity: 0.22;
+  }
+
+  .v4-sky__core,
+  .v4-sky__hub,
+  .v4-sky__star {
+    position: absolute;
+    top: var(--v4-y);
+    left: calc(var(--v4-x) * var(--v4-field));
+  }
+
+  .v4-sky__core {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.15rem;
+    width: 5.6rem;
+    height: 5.6rem;
+    border: 1px solid var(--v4-signal-muted);
+    border-radius: 50%;
+    background: var(--v4-canvas-raised);
+    box-shadow:
+      0 0 0 0.55rem color-mix(in srgb, var(--v4-current) 8%, transparent),
+      0 0 4rem -0.5rem var(--v4-current-glow);
+    translate: -50% -50%;
+  }
+
+  .v4-sky__core strong {
+    color: var(--v4-ink);
+    font: 700 1.5rem / 1 var(--v4-display);
+    letter-spacing: -0.03em;
+  }
+
+  .v4-sky__core span {
+    color: var(--v4-ink-muted);
+    font: var(--v4-type-status);
+    letter-spacing: var(--v4-track-status);
+    text-transform: uppercase;
+  }
+
+  .v4-sky__hubs {
+    display: block;
+  }
+
+  .v4-sky__hub {
+    flex-direction: column;
+    gap: 0.25rem;
+    width: max-content;
+    max-width: 9.5rem;
+    min-height: 3.1rem;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--v4-rule-strong);
+    border-radius: 0.9rem;
+    background: var(--v4-canvas-raised);
+    font-size: 0.64rem;
+    text-align: center;
+    text-transform: uppercase;
+    cursor: pointer;
+    translate: -50% -50%;
+    transition:
+      scale var(--v4-motion-ui) var(--v4-ease-out),
+      opacity var(--v4-motion-ui) var(--v4-ease-out),
+      border-color var(--v4-motion-feedback) var(--v4-ease-out),
+      box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+    animation: v4-sky-arrive 520ms var(--v4-ease-out) both;
+  }
+
+  .v4-sky__hub .v4-node__dot {
+    display: none;
+  }
+
+  .v4-sky__hub small {
+    color: var(--v4-ink-muted);
+    font: var(--v4-type-status);
+    letter-spacing: var(--v4-track-status);
+  }
+
+  .v4-sky__hub:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state]) {
+    z-index: 2;
+    border-color: var(--v4-current);
+    box-shadow: 0 0 3rem -0.5rem var(--v4-current-glow);
+  }
+
+  .v4-sky__hub[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--v4-current) 16%, var(--v4-canvas-raised));
+    box-shadow:
+      inset 0 0 0 1px var(--v4-current),
+      0 0 3.5rem -0.4rem var(--v4-current-glow);
+    outline: 1px dashed var(--v4-current-2);
+    outline-offset: 5px;
+    scale: 1.1;
+  }
+
+  .v4-sky__hub[data-v4-out] {
+    opacity: 0.3;
+  }
+
+  .v4-sky__stars li {
+    border: 0;
+  }
+
+  .v4-sky__stars li[data-v4-out] {
+    display: block;
+  }
+
+  /* A star: its node on the point, its name under it. It travels when the
+   * grouping changes. */
+  .v4-sky__star {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 9.2rem;
+    min-height: 0;
+    padding: 0 0 0.3rem;
+    text-align: center;
+    translate: -50% -0.31rem;
+    transition:
+      top 760ms var(--v4-ease-in-out),
+      left 760ms var(--v4-ease-in-out),
+      opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-sky__star[data-v4-above] {
+    flex-direction: column-reverse;
+    padding: 0.3rem 0 0;
+    translate: -50% calc(-100% + 0.31rem);
+  }
+
+  .v4-sky__star::after,
+  .v4-sky__star small {
+    display: none;
+  }
+
+  .v4-sky__star span {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--v4-ink-secondary);
+    font-size: 0.74rem;
+    font-weight: 500;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    text-wrap: balance;
+    transition: color var(--v4-motion-feedback) var(--v4-ease-out), text-shadow var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-sky__star:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state]) {
+    z-index: 3;
+  }
+
+  .v4-sky__star:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state]) span {
+    color: var(--v4-ink);
+    text-shadow: 0 0 1.5rem var(--v4-current-glow);
+  }
+
+  .v4-sky__star[data-v4-state] .v4-node__dot {
+    scale: 1.45;
+  }
+
+  .v4-sky__star[data-v4-state] .v4-node__dot::after {
+    opacity: 1;
+  }
+
+  .v4-sky__star[aria-pressed="true"] .v4-node__dot {
+    outline: 1px dashed var(--v4-current-2);
+    outline-offset: 5px;
+  }
+
+  [data-v4-out] > .v4-sky__star {
+    opacity: 0.2;
+  }
+
+  .v4-sky[data-v4-lit] li:not([data-v4-out]) > .v4-sky__star:not([data-v4-state], :hover, :focus-visible) {
+    opacity: 0.42;
+  }
+
+  /* The open credential, beside the field. */
+  .v4-sky__panel {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 25.5%;
+    padding: 1.25rem 1.25rem 1.3rem;
+    border: 1px solid var(--v4-rule-strong);
+    border-radius: 0.9rem;
+    background: var(--v4-living-surface);
+    translate: 0 -50%;
+  }
+
+  .v4-sky__panel:not(.v4-sky__rest)::before {
+    position: absolute;
+    top: -1px;
+    right: 1rem;
+    left: 1rem;
+    height: 2px;
+    background: linear-gradient(90deg, var(--v4-current), var(--v4-current-2));
+    content: "";
+  }
+
+  .v4-sky__panel h3 {
+    display: block;
+    margin: 0.7rem 0 0;
+    color: var(--v4-ink);
+    font: 600 1.05rem / 1.3 var(--v4-display);
+    letter-spacing: -0.015em;
+    overflow-wrap: anywhere;
+  }
+
+  .v4-sky__panel dl > div {
+    grid-template-columns: 5.6rem minmax(0, 1fr);
+  }
+
+  /* At rest the place is held by the totals, not by a card. */
+  .v4-sky__rest {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0 0 0 1.25rem;
+    border: 0;
+    border-left: 1px solid var(--v4-rule-strong);
+    border-radius: 0;
+    background: none;
+  }
+
+  .v4-sky__rest[hidden] {
+    display: none;
+  }
+}
+
+@keyframes v4-sky-arrive {
+  from {
+    opacity: 0;
+    scale: 0.86;
+  }
+}
+
+/* 3. The credential grid --------------------------------------------------- */
+
+body[data-page="certificates"] .training-catalog [data-v4-out] {
+  display: none;
+}
+
+body[data-page="certificates"] .training-category:first-child {
+  border-top: 0;
+}
+
+body[data-page="certificates"] .training-category-heading .eyebrow {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+}
+
+body[data-page="certificates"] .training-category-heading h2 {
+  color: var(--v4-ink);
+  font: var(--v4-type-heading-lg);
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.2rem);
+  letter-spacing: var(--v4-track-heading-lg);
+}
+
+body[data-page="certificates"] .certificate-card[data-v4-card] {
+  overflow: hidden;
+}
+
+body[data-page="certificates"] .certificate-card h3 {
+  font-family: var(--v4-display);
+  letter-spacing: var(--v4-track-heading);
+}
+
+body[data-page="certificates"] .certificate-kicker span {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: 0.09em;
+}
+
+/* The credential's own link is its first action, everywhere it appears. */
+body[data-page="certificates"] .certificate-actions a,
+html[data-theme="light"] body[data-page="certificates"] .certificate-actions a {
+  order: -1;
+  flex: none;
+  white-space: nowrap;
+  border-color: var(--v4-accent-fill);
+  border-radius: var(--v4-radius);
+  background: var(--v4-accent-fill);
+  color: var(--v4-on-accent);
+}
+
+body[data-page="certificates"] .certificate-actions a:hover {
+  border-color: var(--v4-accent-fill);
+  box-shadow: 0 0 2.25rem -0.4rem var(--v4-current-glow);
+  color: var(--v4-on-accent);
+}
+
+body[data-page="certificates"] .certificate-actions button,
+html[data-theme="light"] body[data-page="certificates"] .certificate-actions button {
+  border-color: var(--v4-rule-strong);
+  border-radius: var(--v4-radius);
+  background: transparent;
+  color: var(--v4-ink);
+}
+
+body[data-page="certificates"] .certificate-actions :is(a, button):focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 3px;
+}
+
+/* 4. Discipline ------------------------------------------------------------ */
+
+@media (forced-colors: active) {
+  .v4-sky::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-sky *,
+  .v4-sky__cluster {
+    animation: none !important;
+    transition: none !important;
+  }
+}

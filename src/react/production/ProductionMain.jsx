@@ -1,9 +1,12 @@
-import { Fragment, createElement, memo, useEffect, useState } from "react";
+import { Fragment, createElement, memo, useEffect, useMemo, useState } from "react";
 import homeAboutStructure from "../../../data/site/m3-25b-home-about-structure.json";
 import BuildLog from "./BuildLog.jsx";
 import { applyV4 } from "../v4/consumers.jsx";
 import EcosystemMap from "../v4/EcosystemMap.jsx";
 import { RelatedWork, SectionTracker } from "../v4/DetailShell.jsx";
+import CareerCurrent, { Onward } from "../v4/CareerCurrent.jsx";
+import Constellation from "../v4/Constellation.jsx";
+import HumanMap from "../v4/HumanMap.jsx";
 
 const PROP_NAMES = {
   class: "className",
@@ -72,6 +75,23 @@ function shouldIgnoreCardActivation(event) {
   const selection = window.getSelection();
   return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
 }
+
+/* V4 inner pages address repeated entries by position: the nth entry of a
+ * kind in the structure is the nth record of its model. */
+const ORDINAL_CLASSES = ["experience-item", "experience-card", "training-category", "certificate-card"];
+function ordinalsOf(nodes) {
+  const ordinal = new Map();
+  const seen = {};
+  const walk = (node) => {
+    if (node.type !== "element") return;
+    const classes = String(node.attributes.find((entry) => entry.name === "class")?.value || "").split(/\s+/);
+    for (const name of ORDINAL_CLASSES) if (classes.includes(name)) { ordinal.set(node, seen[name] || 0); seen[name] = (seen[name] || 0) + 1; }
+    node.children.forEach(walk);
+  };
+  nodes.forEach(walk);
+  return ordinal;
+}
+const topLevelIndex = (nodes, name) => nodes.findIndex((node) => node.type === "element" && String(node.attributes.find((entry) => entry.name === "class")?.value || "").split(/\s+/).includes(name));
 
 const CatalogSearch = memo(function CatalogSearch({ catalog, setQuery }) {
   return (
@@ -160,7 +180,12 @@ export default function ProductionMain(props) {
   const [view, setView] = useState("grid");
   const [live, setLive] = useState(false);
   useEffect(() => { setLive(true); }, []);
+  /* V4 Certificates: which view, which grouping, which cluster. */
+  const [sky, setSky] = useState({ view: "grid", group: "area", cluster: null });
+  const consumer = props.v4?.consumer;
+  const ordinal = useMemo(() => (consumer === "experience" || consumer === "certificates" ? ordinalsOf(props.structure) : null), [consumer, props.structure]);
   let live4 = props;
+  if (ordinal) live4 = { ...props, v4: { ...props.v4, ordinal, state: sky } };
   if (props.v4 && catalogState) {
     /* The projects the catalog's own filter and search currently exclude. */
     const out = new Set(page.children.flatMap(descendantCards).filter((card) => !cardVisible(card, props, catalogState)).map((card) => {
@@ -177,6 +202,30 @@ export default function ProductionMain(props) {
   if (props.v4?.consumer === "detail") {
     if (props.v4.related) sections.splice(sections.length - 1, 0, <RelatedWork key={`${props.page}.v4-related`} model={props.v4.related} />);
     sections.splice(1, 0, <SectionTracker key={`${props.page}.v4-tracker`} model={props.v4.tracker} />);
+  }
+  /* V4 inner pages. Experience gains its career chart under the hero and the
+   * way on to About before its closing section. */
+  if (consumer === "experience") {
+    sections.splice(sections.length - 1, 0, <Onward key={`${props.page}.v4-onward`} model={props.v4.handoff} />);
+    sections.splice(topLevelIndex(page.children, "page-hero") + 1, 0, <CareerCurrent key={`${props.page}.v4-career`} model={props.v4.career} />);
+  }
+  /* Certificates gains its views, and the constellation, above the catalog. */
+  if (consumer === "certificates") {
+    sections.splice(topLevelIndex(page.children, "training-catalog"), 0, <Constellation key={`${props.page}.v4-sky`} sky={props.v4.sky} state={sky} setState={setSky} live={live} />);
+  }
+  /* About reads in narrative order, with the human map after the hero and
+   * the way on to Experience after the journey that summarises it. */
+  if (consumer === "about") {
+    const [hero, ...story] = props.v4.order.map((index) => sections[index]);
+    const closing = story.pop();
+    return [
+      hero,
+      <SectionTracker key={`${props.page}.v4-tracker`} model={props.v4.tracker} />,
+      <HumanMap key={`${props.page}.v4-human`} model={props.v4.human} />,
+      ...story,
+      <Onward key={`${props.page}.v4-onward`} model={props.v4.handoff} />,
+      closing,
+    ];
   }
   return sections;
 }

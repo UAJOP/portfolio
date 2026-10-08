@@ -13,6 +13,7 @@
  *   [data-v4-rail]        a filter rail whose set of cards has just changed
  *   [data-v4-tracker]     which section of the page is in view
  *   [data-v4-process]     a process running its current once, when first seen
+ *   [data-v4-current]     a chronology whose entries fold on a phone
  *   connected cards       which one was chosen, so the next page can open from it
  *   all V4 regions        paused while outside the viewport, and their
  *                         bounded signal replayed when they return
@@ -33,6 +34,7 @@
   var FOCUS_RADIUS = 96;
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+  var narrow = window.matchMedia("(max-width: 760px)");
   var controller = null;
   var observer = null;
   /* Extra observers, disconnected with everything else on destroy. */
@@ -209,6 +211,9 @@
     var lines = readout ? Array.from(readout.querySelectorAll("span")) : [];
     var resting = lines.map(function (line) { return line.textContent; });
     var labelOf = function (node) { return (node.querySelector(".v4-eco__title, span") || node).textContent.trim(); };
+    /* A map may carry an entry per node beside it ([data-v4-eco-panel], the
+     * unnamed one being its resting entry); the active node's is the one shown. */
+    var panels = Array.from((root.parentElement || document).querySelectorAll("[data-v4-eco-panel]"));
     /* A host-controlled map: its host sets aria-pressed (on Works, from the
      * catalog filter). The runtime then reads the pin instead of owning it. */
     var controlled = root.hasAttribute("data-v4-eco-controlled");
@@ -243,6 +248,10 @@
         ports.forEach(function (port) {
           if (capabilities.indexOf(port.getAttribute("data-v4-cap")) >= 0) port.setAttribute("data-v4-state", "related"); else port.removeAttribute("data-v4-state");
         });
+        if (panels.length) {
+          var own = panels.some(function (panel) { return panel.getAttribute("data-v4-eco-panel") === id; }) ? id : "";
+          panels.forEach(function (panel) { panel.hidden = panel.getAttribute("data-v4-eco-panel") !== own; });
+        }
         /* Say what is lit, in the lit nodes' own words. */
         if (lines.length >= 2) {
           readout.toggleAttribute("data-v4-live", Boolean(active));
@@ -334,6 +343,36 @@
     watchers.push(spy);
   }
 
+  /* Milestones on a phone: every entry but the first folds to its heading and
+   * opens on request. Folding is state, not motion, and exists only while this
+   * runs: without it, and on wider screens, every entry is simply open. */
+  function milestones(list) {
+    var items = Array.from(list.querySelectorAll("[data-v4-milestone]"));
+    var fold = function () {
+      items.forEach(function (item, index) {
+        var toggle = item.querySelector(".v4-milestone__toggle");
+        if (!toggle) return;
+        item.toggleAttribute("data-v4-foldable", narrow.matches);
+        item.toggleAttribute("data-v4-folded", narrow.matches && index > 0);
+        toggle.setAttribute("aria-expanded", String(!(narrow.matches && index > 0)));
+      });
+    };
+    list.addEventListener("click", function (event) {
+      var toggle = event.target.closest ? event.target.closest(".v4-milestone__toggle") : null;
+      var item = toggle ? toggle.closest("[data-v4-milestone]") : null;
+      if (!item) return;
+      toggle.setAttribute("aria-expanded", String(item.hasAttribute("data-v4-folded")));
+      item.toggleAttribute("data-v4-folded");
+    }, { signal: controller.signal });
+    narrow.addEventListener("change", fold, { signal: controller.signal });
+    /* An entry reached by its link from elsewhere arrives open. */
+    listen(window, "hashchange", function () {
+      var target = document.getElementById(location.hash.slice(1));
+      if (target && items.indexOf(target) >= 0 && target.hasAttribute("data-v4-folded")) target.querySelector(".v4-milestone__toggle").click();
+    });
+    fold();
+  }
+
   /* The connected card being left for its own page carries a name the next
    * document can pick up (CSS view transitions); only ever one at a time.
    * Navigation itself is untouched. */
@@ -391,6 +430,7 @@
     root.querySelectorAll("[data-v4-eco]").forEach(ecosystem);
     root.querySelectorAll("[data-v4-rail]").forEach(rail);
     root.querySelectorAll("[data-v4-tracker]").forEach(tracker);
+    root.querySelectorAll("[data-v4-current]").forEach(milestones);
     if (!reducedMotion.matches && root.querySelector("[data-v4-explorer]")) anchors(root.querySelector("[data-v4-explorer]"));
     if (reducedMotion.matches) return;
     root.querySelectorAll("[data-v4-kinetic]").forEach(kinetic);
