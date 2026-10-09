@@ -1,0 +1,69 @@
+/* The Request page's collaboration surface (V4-E06.6) -------------------------
+ *
+ * Linked by the React production document of /request/. The form itself is
+ * the accepted one. This closes the empty band between the introduction and
+ * the form, keeps the "how it works" column in view beside a long form, and
+ * styles the direct-contact panel. */
+
+body[data-page="request"] .request-hero {
+  min-height: 0;
+  padding-bottom: 28px;
+}
+
+body[data-page="request"] .request-layout {
+  padding-top: 36px;
+}
+
+@media (min-width: 1001px) {
+  body[data-page="request"] .request-copy {
+    position: sticky;
+    top: 96px;
+    align-self: start;
+  }
+}
+
+.v4-request-direct h2 {
+  margin: 0 0 8px;
+}
+
+.v4-request-direct > p:not(.eyebrow) {
+  margin: 0;
+  color: var(--v4-ink-secondary);
+}
+
+.v4-request-direct__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 16px;
+}
+
+.v4-request-direct__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 9px;
+  color: var(--v4-ink);
+  font: 600 0.9rem / 1 Inter, "Segoe UI", sans-serif;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: border-color var(--v4-motion-feedback) var(--v4-ease-out);
+}
+
+.v4-request-direct__links a:hover {
+  border-color: var(--v4-accent);
+  color: var(--v4-accent-strong);
+}
+
+.v4-request-direct__links a:focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-request-direct__links a {
+    transition: none;
+  }
+}

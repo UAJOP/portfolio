@@ -922,7 +922,7 @@
           "en": "Source Archive",
           "tr": "Kaynak Arşivi"
         },
-        "image": "assets/hospital_form_app_cover.webp",
+        "image": "assets/hospital-system-patient-workflow.webp",
         "gallery": [
           "assets/hospital-system-patient-workflow.webp",
           "assets/hospital-system-secretary-workflow.webp",
@@ -1047,9 +1047,11 @@
           "en": "Academic Project",
           "tr": "Akademik Proje"
         },
-        "image": "assets/what-is-data-analyst.jpg",
+        "image": "assets/catalog/source/cars-price-distribution.png",
         "gallery": [
-          "assets/what-is-data-analyst.jpg"
+          "assets/catalog/source/cars-price-distribution.png",
+          "assets/catalog/source/cars-correlation-heatmap.png",
+          "assets/catalog/source/cars-model-results.png"
         ],
         "stack": [
           "Python",
@@ -1131,9 +1133,9 @@
           "en": "Academic Project",
           "tr": "Akademik Proje"
         },
-        "image": "assets/insatagram.webp",
+        "image": "assets/catalog/source/my-museum-login-screen.png",
         "gallery": [
-          "assets/insatagram.webp"
+          "assets/catalog/source/my-museum-login-screen.png"
         ],
         "stack": [
           "Kotlin",
@@ -1823,9 +1825,9 @@
           "en": "Academic Project",
           "tr": "Akademik Proje"
         },
-        "image": "assets/agency_db_cover.webp",
+        "image": "assets/catalog/source/agency-db-er-diagram.png",
         "gallery": [
-          "assets/agency_db_cover.webp"
+          "assets/catalog/source/agency-db-er-diagram.png"
         ],
         "stack": [
           "MySQL",

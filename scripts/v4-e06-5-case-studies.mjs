@@ -81,7 +81,7 @@ export function careerAdventureCaseStructure({ message, href }) {
       ],
       stack: ["Vanilla JavaScript", "Canvas 2D", "Web Audio", "Node.js"],
       actions: [action(href("/adventure/"), message("adventure.play.enter"), "primary"), action(href("/games/"), message("mergeRush.cta.gamePortfolio"))],
-      image: { src: "/assets/kaanin_kariyer_cover.webp", alt: c("coverAlt"), width: "1920", height: "1072" },
+      image: { src: "/assets/catalog/source/career-adventure.webp", alt: c("coverAlt"), width: "1280", height: "800" },
     }),
     element("section", { class: "case-proof-strip is-four section-shell", "aria-label": c("proof.aria") }, [
       proof("13", c("proof.objects")), proof("120", c("proof.steps")), proof("500", c("proof.runs")), proof("5", c("proof.locales")),
@@ -143,7 +143,7 @@ export function portfolioCaseStructure({ message, href, repositoryCount }) {
       ],
       stack: ["React 19", "Vite", "Static prerender", "Vanilla JavaScript", "Node.js build", "Puppeteer"],
       actions: [action(href("/works/"), message("home.hero.viewWork"), "primary"), action("https://github.com/UAJOP/portfolio", "GitHub", "ghost", true)],
-      image: { src: "/assets/portfolio_website_cover.webp", alt: c("coverAlt") },
+      image: { src: "/assets/catalog/source/portfolio-v4.webp", alt: c("coverAlt"), width: "1280", height: "800" },
     }),
     element("section", { class: "case-proof-strip is-four section-shell", "aria-label": c("proof.aria") }, [
       proof("5", c("proof.locales")), proof("4", c("proof.games")), proof(String(repositoryCount), c("proof.repos")), proof("0", c("proof.servers")),

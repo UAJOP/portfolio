@@ -11,7 +11,13 @@ import { ajoopShellModel, commandPaletteModel, runtimeCollection } from "./m3-28
 import { v4AboutModel, v4CertificatesModel, v4ExperienceModel } from "./v4-inner-pages.mjs";
 import { ajoopCaseStudyStructure, ajoopHubModel, ajoopHubStructure, ajoopSystemModel } from "./v4-ajoop-pages.mjs";
 import { withMergeRushPlayable } from "./v4-e06-4-merge-rush-edits.mjs";
-import { CATALOG_STYLE, loadCatalog, withGamesCatalog, withWorksCatalog } from "./v4-e06-5-catalog.mjs";
+import { CATALOG_STYLE, cardEntries, loadCatalog, withGamesCatalog, withWorksCatalog } from "./v4-e06-5-catalog.mjs";
+/* V4-E06.6: a project page's hero is what its catalog card shows: an authentic image, or the identity plate. */
+const catalogCards = loadCatalog();
+const cardBySlug = new Map(cardEntries(catalogCards).filter((entry) => entry.detailSlug).map((entry) => [entry.detailSlug, entry]));
+const RETIRED_COVERS = new Set(catalogCards.cards.retiredCovers);
+const isRetiredCover = (value) => RETIRED_COVERS.has(decodeURIComponent(String(value).split("/").pop()));
+import { REQUEST_STYLE, withRequestSurface } from "./v4-e06-6-request.mjs";
 import { CAREER_CASE_ROUTE, V4_NATIVE_CASE_ROUTES, aiFlowV4Section, careerAdventureCaseStructure, joydayPaintSection, nativeCaseHead, portfolioCaseStructure, withAddedSection } from "./v4-e06-5-case-studies.mjs";
 import { MERGE_RUSH_CASE_ROUTE, MERGE_RUSH_ROUTE, MERGE_RUSH_SCRIPT, mergeRushCaseStudyStructure, mergeRushHead, mergeRushStructure } from "./v4-merge-rush-page.mjs";
 
@@ -100,6 +106,41 @@ const projectSchemaType = (project) => {
   return "CreativeWork";
 };
 
+/* The hero and the gallery never show a retired cover. With an authentic
+ * image the record's own gallery follows; with a plate there is no gallery. */
+function projectVisual(slug, canonical, asset) {
+  const entry = cardBySlug.get(slug);
+  const card = entry?.card;
+  if (card?.plate) {
+    const [first, ...rest] = entry.tech.split(" · ");
+    return { image: null, plate: { first, rest: rest.join(" · ") }, gallery: [], fit: null, backdrop: null };
+  }
+  const image = card?.image ? card.image.source : canonical.image;
+  const gallery = (canonical.gallery?.length ? canonical.gallery : [image]).filter((file) => !isRetiredCover(file));
+  if (isRetiredCover(image)) throw new Error(`project ${slug}: its hero is a retired cover`);
+  return { image: asset(image), plate: null, gallery: (gallery.length ? gallery : [image]).map(asset), fit: card?.image?.fit || null, backdrop: card?.image?.backdrop || null };
+}
+
+/* A captured case study whose hero was a retired cover shows the project's own screenshot instead. */
+const CASE_COVER = { "hospital_form_app_cover.webp": { src: "/assets/hospital-system-patient-workflow.webp", width: "1557", height: "905" } };
+function withAuthenticCaseCovers(nodes, route) {
+  const next = structuredClone(nodes);
+  const walk = (node) => {
+    if (node.type !== "element") return;
+    if (node.tag === "img") {
+      const src = node.attributes.find((entry) => entry.name === "src");
+      if (src && isRetiredCover(src.value)) {
+        const replacement = CASE_COVER[decodeURIComponent(String(src.value).split("/").pop())];
+        if (!replacement) throw new Error(`${route.routeId}: a retired cover has no authentic replacement`);
+        node.attributes = [...node.attributes.filter((entry) => !["src", "width", "height"].includes(entry.name)), ...Object.entries(replacement).map(([name, value]) => ({ name, value }))];
+      }
+    }
+    node.children.forEach(walk);
+  };
+  next.forEach(walk);
+  return next;
+}
+
 function projectRouteModel(route, localization) {
   const canonical = projectDetails[route.slug];
   if (!canonical) throw new Error(`${route.locale}/project:${route.slug}: missing canonical record`);
@@ -123,7 +164,7 @@ function projectRouteModel(route, localization) {
     /* V4-E06.5: a record without an impact or a process says nothing there; the generic fallbacks are gone. */
     impact: impact ? decodeHtml(impact) : null,
     process: process ? process.map((step) => ({ title: decodeHtml(step.title), text: decodeHtml(step.text) })) : null,
-    image: asset(canonical.image), gallery: (canonical.gallery?.length ? canonical.gallery : [canonical.image]).map(asset),
+    ...projectVisual(route.slug, canonical, asset),
     stack,
     features: localization.canonicalData({ canonical, overlay, path: "features" }).map(decodeHtml),
     links: (canonical.links || []).map((link, linkIndex) => ({
@@ -151,7 +192,7 @@ function createProjectHeadModel(route, model, localization) {
     indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
     absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
   });
-  const image = `${site.origin}${model.project.image}`;
+  const image = `${site.origin}${model.project.image || "/assets/portfolio_website_cover.webp"}`;
   const jsonLd = {
     "@context": "https://schema.org", "@type": projectSchemaType(model.project), name: model.project.title,
     description: truncateDescription(model.project.overview || model.project.subtitle, 300), url: model.project.canonical, image, dateCreated: model.project.year,
@@ -195,7 +236,9 @@ function projectDetailStructure({ project, labels, projectLinks }) {
           elementNode("button", { class: "btn ghost", type: "button", "data-copy-project-link": true }, [labels.copyProjectLink]),
         ]),
       ]),
-      elementNode("div", { class: "project-detail-visual reveal delay-1" }, [elementNode("img", { src: project.image, alt: `${project.title} ${labels.preview}`, decoding: "async", fetchpriority: "high" })]),
+      project.plate
+        ? elementNode("div", { class: "project-detail-visual v4-detail-plate reveal delay-1", "aria-hidden": "true" }, [elementNode("span", { class: "v4-detail-plate__name" }, [project.plate.first]), ...(project.plate.rest ? [elementNode("span", { class: "v4-detail-plate__tech" }, [project.plate.rest])] : [])])
+        : elementNode("div", { class: "project-detail-visual reveal delay-1" }, [elementNode("img", { src: project.image, alt: `${project.title} ${labels.preview}`, decoding: "async", fetchpriority: "high", ...(project.fit ? { "data-fit": project.fit } : {}), ...(project.backdrop ? { "data-backdrop": project.backdrop } : {}) })]),
     ]),
     elementNode("section", { class: "section-shell project-detail-meta reveal delay-2" }, [
       [[labels.role, project.role], [labels.year, project.year], [labels.projectType, project.type], [labels.status, project.status]].map(([label, value]) => elementNode("article", {}, [elementNode("span", {}, [label]), elementNode("strong", {}, [value])])),
@@ -216,10 +259,10 @@ function projectDetailStructure({ project, labels, projectLinks }) {
         elementNode("div", { class: "detail-panel compact-panel" }, [elementNode("h3", {}, [labels.highlights]), elementNode("ul", { class: "detail-list" }, project.features.map((item) => elementNode("li", {}, [item])))]),
       ]),
     ]),
-    elementNode("section", { class: "section-shell section-block" }, [
+    ...(project.gallery.length ? [elementNode("section", { class: "section-shell section-block" }, [
       elementNode("div", { class: "section-heading reveal" }, [elementNode("p", { class: "eyebrow" }, [labels.gallery]), elementNode("h2", {}, [labels.galleryTitle]), elementNode("p", {}, [labels.galleryBody])]),
-      elementNode("div", { class: "detail-gallery" }, project.gallery.map((image) => elementNode("img", { class: "reveal", src: image, alt: `${project.title} ${labels.galleryImage}`, loading: "lazy", decoding: "async" }))),
-    ]),
+      elementNode("div", { class: "detail-gallery" }, project.gallery.map((image) => elementNode("img", { class: "reveal", src: image, alt: `${project.title} ${labels.galleryImage}`, loading: "lazy", decoding: "async", ...(project.fit ? { "data-fit": project.fit } : {}), ...(project.backdrop ? { "data-backdrop": project.backdrop } : {}) }))),
+    ])] : []),
     elementNode("section", { class: "section-shell detail-navigation reveal" }, [
       elementNode("a", { class: "btn ghost", href: projectLinks.previous }, [icon("bx bx-left-arrow-alt"), labels.previousProject]),
       elementNode("a", { class: "btn primary", href: projectLinks.works }, [labels.allWorks]),
@@ -778,7 +821,7 @@ function v4NativeCaseHead(route, localization) {
     ogLocale: localization.definition.ogLocale || localization.definition.htmlLang,
     authorName: profile.name,
     themeBootstrap: THEME_BOOTSTRAP,
-    image: `${site.origin}${route.routeId === CAREER_CASE_ROUTE ? "/assets/kaanin_kariyer_cover.webp" : "/assets/portfolio_website_cover.webp"}`,
+    image: `${site.origin}${route.routeId === CAREER_CASE_ROUTE ? "/assets/catalog/source/career-adventure.webp" : "/assets/portfolio_website_cover.webp"}`,
   });
 }
 
@@ -941,7 +984,7 @@ export function productionMainProps(route, {
         ? withAddedSection(localized.children, aiFlowV4Section({ message: caseMessage }))
         : route.routeId === "joydayCaseStudy"
           ? withAddedSection(localized.children, joydayPaintSection({ message: caseMessage, href: caseHref }))
-          : localized.children;
+          : withAuthenticCaseCovers(localized.children, route);
     return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure, data: localizedCanonicalData(route.locale), v4: v4DetailModel(route, structure, caseMessage) };
   }
   const engineShell = labsGamesPage(route);
@@ -956,16 +999,19 @@ export function productionMainProps(route, {
   }
   const captured = remainingRoutePage(route);
   if (captured) {
-    const structure = route.routeId === "now"
-      ? withFilledContainer(captured.localized.children, "data-build-log", buildLogNodes(route.locale, loadLocalization(route.locale)), "Now page must contain exactly one Build Log")
-      : route.routeId === "certificates" ? withTrainingLabel(captured.localized.children, route.locale)
-        : captured.localized.children;
     const capturedLocalization = loadLocalization(route.locale);
-    const v4 = v4CapturedModel(route, captured, structure, (key) => {
+    const capturedMessage = (key) => {
       const value = capturedLocalization.message(key);
       if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
       return value;
-    });
+    };
+    const structure = route.routeId === "now"
+      ? withFilledContainer(captured.localized.children, "data-build-log", buildLogNodes(route.locale, loadLocalization(route.locale)), "Now page must contain exactly one Build Log")
+      : route.routeId === "certificates" ? withTrainingLabel(captured.localized.children, route.locale)
+        /* V4-E06.6: the Request page's collaboration surface (scripts/v4-e06-6-request.mjs). */
+        : route.routeId === "request" ? withRequestSurface(captured.localized.children, capturedMessage)
+          : captured.localized.children;
+    const v4 = v4CapturedModel(route, captured, structure, capturedMessage);
     return { kind: "capturedPage", page: route.routeId, locale: route.locale, structure, ...(v4 ? { v4 } : {}) };
   }
   if (route.kind === "project") {
@@ -1094,7 +1140,7 @@ export function productionDocumentProps(route, clientEntry) {
        * script.js load that page’s runtime modules. */
       /* The AJOOP case study is a case study; the Hub is its own page type. */
       hub: hubRoute,
-      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : route.routeId === CAREER_ADVENTURE_ROUTE ? ["career-adventure"] : ["works", "games"].includes(route.routeId) ? [CATALOG_STYLE] : [],
+      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : route.routeId === CAREER_ADVENTURE_ROUTE ? ["career-adventure"] : ["works", "games"].includes(route.routeId) ? [CATALOG_STYLE] : route.routeId === "request" ? [REQUEST_STYLE] : projectRoute ? ["project"] : [],
       page: casePage || ajoopCaseRoute || nativeCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
       /* The playable Merge Rush page belongs to Games. */
       navPage: casePage || projectRoute || nativeCaseRoute ? "works" : route.routeId === MERGE_RUSH_ROUTE ? "games" : route.routeId,

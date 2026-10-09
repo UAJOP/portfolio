@@ -1,0 +1,69 @@
+/* Project pages' hero visuals (V4-E06.6) ---------------------------------------
+ *
+ * Linked by the React production documents of /projects/<slug>/.
+ *
+ * A project page shows an authentic image whole when cropping would cut it
+ * (a phone screen, a diagram, a figure), and a typographic identity plate when
+ * no authentic image exists. A plate is the project's real stack set in type;
+ * it is not a screenshot and does not look like one. */
+
+.project-detail-visual img[data-fit="contain"],
+.detail-gallery img[data-fit="contain"] {
+  object-fit: contain;
+  background: var(--v4-canvas);
+}
+
+.project-detail-visual img[data-backdrop="light"],
+.detail-gallery img[data-backdrop="light"] {
+  background: #fff;
+}
+
+.project-detail-visual.v4-detail-plate {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 14px;
+  min-height: 360px;
+  padding: 0 clamp(24px, 5vw, 48px);
+  border-color: var(--v4-rule);
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--v4-ambient-light) 0%, transparent 62%),
+    linear-gradient(var(--v4-grid) 1px, transparent 1px) 0 0 / 100% 32px,
+    linear-gradient(90deg, var(--v4-grid) 1px, transparent 1px) 0 0 / 32px 100%,
+    var(--v4-canvas-raised);
+}
+
+.project-detail-visual.v4-detail-plate::before {
+  content: none;
+}
+
+.project-detail-visual.v4-detail-plate::after {
+  content: "";
+  position: absolute;
+  right: clamp(24px, 5vw, 48px);
+  bottom: 36px;
+  width: 36%;
+  height: 32%;
+  border-right: 1px solid var(--v4-trace);
+  border-bottom: 1px solid var(--v4-trace);
+  border-bottom-right-radius: 14px;
+}
+
+.v4-detail-plate__name {
+  color: var(--v4-ink);
+  font: 800 clamp(2.2rem, 1.6rem + 2.4vw, 3.8rem) / 1 var(--v4-display);
+  letter-spacing: -0.04em;
+}
+
+.v4-detail-plate__tech {
+  color: var(--v4-accent-strong);
+  font: var(--v4-type-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .project-detail-visual.v4-detail-plate {
+    min-height: 220px;
+  }
+}

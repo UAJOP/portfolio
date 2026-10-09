@@ -308,7 +308,7 @@
         "tr": "Yazılım / Veritabanı"
       },
       "year": "2024",
-      "image": "assets/hospital_form_app_cover.webp",
+      "image": "assets/hospital-system-patient-workflow.webp",
       "linkUrls": [
         "hospital-system-case-study.html",
         "https://github.com/UAJOP/Hospital-System"
@@ -344,13 +344,13 @@
         "tr": "Veri Analizi"
       },
       "year": "2024",
-      "image": "assets/what-is-data-analyst.jpg",
+      "image": "assets/catalog/source/cars-price-distribution.png",
       "linkUrls": [
         "https://github.com/UAJOP/Cars-Dataset-Analysis",
         "https://www.youtube.com/watch?v=3O3N9WXuUNw"
       ],
       "stackCount": 7,
-      "galleryCount": 1,
+      "galleryCount": 3,
       "featureCount": 5
     },
     "my-museum": {
@@ -380,7 +380,7 @@
         "tr": "Mobil Geliştirme"
       },
       "year": "2023",
-      "image": "assets/insatagram.webp",
+      "image": "assets/catalog/source/my-museum-login-screen.png",
       "linkUrls": [
         "https://github.com/UAJOP/MyMuseum"
       ],
@@ -767,7 +767,7 @@
         "tr": "Veri / Backend"
       },
       "year": "2024",
-      "image": "assets/agency_db_cover.webp",
+      "image": "assets/catalog/source/agency-db-er-diagram.png",
       "linkUrls": [
         "https://github.com/UAJOP/Agency-Db"
       ],

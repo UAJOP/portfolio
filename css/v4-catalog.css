@@ -1,12 +1,14 @@
-/* The complete catalog (V4-E06.5) ---------------------------------------------
+/* The complete catalog (V4-E06.5, cards V4-E06.6) -------------------------------
  *
  * Linked by the React production documents of /works/ and /games/. The
- * curated cards above it stay the page's first read; this is the index behind
- * them: four collapsed groups of compact rows on Works (plus the factual
- * relations and the capability evidence), and the native archive on Games.
+ * curated explorer above it stays the page's first read; this is the gallery
+ * behind it. Each group is a <details> whose content is a card grid, so the
+ * catalog is complete without JavaScript and keyboard-operable as the browser
+ * gives it.
  *
- * Every group is a <details>, so the catalog is complete without JavaScript
- * and keyboard-operable as the browser gives it. Nothing animates. */
+ * One card, three tiers (featured, standard, compact). A tier changes size
+ * and density, never completeness, and no tier is dimmed: archive is a
+ * lifecycle state. The only motion is hover and focus feedback. */
 
 .v4-catalog {
   scroll-margin-top: 96px;
@@ -21,10 +23,11 @@
 }
 
 .v4-catalog__group > summary {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: 4px 14px;
   align-items: baseline;
-  gap: 14px;
-  padding: 18px 4px;
+  padding: 20px 4px;
   cursor: pointer;
   list-style: none;
   color: var(--v4-ink);
@@ -36,13 +39,18 @@
 
 .v4-catalog__group > summary::after {
   content: "+";
-  margin-left: auto;
+  grid-column: 4;
+  grid-row: 1;
   color: var(--v4-accent);
-  font: 500 1.1rem / 1 var(--v4-mono);
+  font: 500 1.2rem / 1 var(--v4-mono);
 }
 
 .v4-catalog__group[open] > summary::after {
   content: "−";
+}
+
+.v4-catalog__group > summary:hover .v4-catalog__label {
+  color: var(--v4-accent-strong);
 }
 
 .v4-catalog__group > summary:focus-visible {
@@ -51,13 +59,38 @@
 }
 
 .v4-catalog__label {
-  font: 700 clamp(1.05rem, 0.98rem + 0.3vw, 1.25rem) / 1.25 var(--v4-display);
+  margin: 0;
+  font: 700 clamp(1.1rem, 1rem + 0.45vw, 1.4rem) / 1.25 var(--v4-display);
+  letter-spacing: var(--v4-track-heading);
+  transition: color var(--v4-motion-feedback) var(--v4-ease-out);
 }
 
 .v4-catalog__count {
   color: var(--v4-accent);
   font: var(--v4-type-label);
   letter-spacing: 0.1em;
+}
+
+.v4-catalog__summary-note {
+  grid-column: 1 / 4;
+  grid-row: 2;
+  max-width: 46rem;
+  color: var(--v4-ink-secondary);
+  font: 400 0.95rem / 1.55 Inter, "Segoe UI", sans-serif;
+}
+
+.v4-catalog__cue {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.v4-catalog__group[open] > summary .v4-catalog__cue {
+  visibility: hidden;
 }
 
 .v4-catalog__note {
@@ -67,58 +100,196 @@
   font: 400 0.95rem / 1.6 Inter, "Segoe UI", sans-serif;
 }
 
-.v4-catalog__list,
-.v4-catalog__relations {
+/* ---------- card grids ---------- */
+
+.v4-pcards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
   margin: 0;
-  padding: 0 0 18px;
+  padding: 6px 0 30px;
   list-style: none;
 }
 
-.v4-catalog__row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr) minmax(0, 1.3fr) 3.2rem minmax(0, 0.8fr) minmax(0, 1.5fr);
-  gap: 6px 18px;
-  align-items: baseline;
-  padding: 11px 4px;
-  border-top: 1px solid var(--v4-rule);
-  font: 400 0.92rem / 1.45 Inter, "Segoe UI", sans-serif;
-  color: var(--v4-ink-secondary);
+.v4-catalog--games .v4-pcards {
+  padding-bottom: 0;
 }
 
-.v4-catalog__title {
-  color: var(--v4-ink);
-  font-weight: 600;
-  text-decoration: none;
+@media (min-width: 761px) {
+  .v4-pcards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .v4-pcard--lead {
+    grid-column: span 2;
+  }
 }
 
-span.v4-catalog__title {
-  color: var(--v4-ink-secondary);
+@media (min-width: 1101px) {
+  .v4-pcards--standard {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .v4-pcards--compact,
+  .v4-pcards--standard[data-card-group="nativeGames"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
-a.v4-catalog__title:hover,
-.v4-catalog__links a:hover,
-.v4-catalog__relations a:hover,
-.v4-catalog__clusters a:hover {
-  color: var(--v4-accent);
-  text-decoration: underline;
+/* ---------- the card ---------- */
+
+.v4-pcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--v4-rule);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--v4-surface) 0%, var(--v4-canvas-raised) 100%);
+  transition: border-color var(--v4-motion-feedback) var(--v4-ease-out), transform var(--v4-motion-feedback) var(--v4-ease-out), box-shadow var(--v4-motion-feedback) var(--v4-ease-out);
 }
 
-.v4-catalog :is(a):focus-visible {
+/* The current: a short lit trace on the card's top edge. */
+.v4-pcard::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 20px;
+  width: 44px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--v4-current), transparent);
+  pointer-events: none;
+}
+
+.v4-pcard:hover,
+.v4-pcard:focus-within {
+  border-color: var(--v4-rule-strong);
+  box-shadow: 0 14px 34px var(--v4-ambient-shadow);
+}
+
+@media (hover: hover) {
+  .v4-pcard:not(.v4-pcard--note):hover {
+    transform: translateY(-2px);
+  }
+}
+
+.v4-pcard:has(.v4-catalog__title:focus-visible) {
   outline: 2px solid var(--v4-focus);
   outline-offset: 2px;
+}
+
+.v4-pcard__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid var(--v4-rule);
+  background: var(--v4-canvas);
+}
+
+.v4-pcard__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.v4-pcard__media--contain img {
+  object-fit: contain;
+}
+
+/* A project without an authentic image: its real stack, set in type on the
+ * V4 grid. Typographic on purpose, so it cannot be read as a screenshot. */
+.v4-pcard__media--plate {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 10px;
+  padding: 0 22px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--v4-ambient-light) 0%, transparent 62%),
+    linear-gradient(var(--v4-grid) 1px, transparent 1px) 0 0 / 100% 28px,
+    linear-gradient(90deg, var(--v4-grid) 1px, transparent 1px) 0 0 / 28px 100%,
+    var(--v4-canvas-raised);
+}
+
+.v4-pcard__media--plate::after {
+  content: "";
+  position: absolute;
+  right: 22px;
+  bottom: 20px;
+  width: 38%;
+  height: 34%;
+  border-right: 1px solid var(--v4-trace);
+  border-bottom: 1px solid var(--v4-trace);
+  border-bottom-right-radius: 12px;
+}
+
+.v4-pcard__monogram {
+  color: var(--v4-ink);
+  font: 800 clamp(2rem, 1.5rem + 1.6vw, 3rem) / 1 var(--v4-display);
+  letter-spacing: -0.04em;
+}
+
+.v4-pcard__plate-tech {
+  color: var(--v4-accent-strong);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The four browser games share one mark: they can be played here. */
+.v4-pcard[data-card-playable] .v4-pcard__media::after {
+  content: "▶";
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding-left: 2px;
+  border: 1px solid var(--v4-action-sheen);
+  border-radius: 50%;
+  background: var(--v4-accent-fill);
+  color: var(--v4-on-accent);
+  font: 400 0.8rem / 1 var(--v4-mono);
+  box-shadow: 0 6px 18px var(--v4-ambient-shadow);
+}
+
+.v4-pcard__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px 20px;
+}
+
+.v4-pcard__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: center;
+  margin: 0;
+  color: var(--v4-ink-secondary);
 }
 
 .v4-catalog__kind,
 .v4-catalog__year {
   font: var(--v4-type-label);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
+.v4-catalog__year {
+  color: var(--v4-ink-muted);
+}
+
 .v4-catalog__status {
-  justify-self: start;
-  padding: 2px 8px;
-  border: 1px solid var(--v4-rule);
+  margin-left: auto;
+  padding: 3px 9px;
+  border: 1px solid var(--v4-rule-strong);
   border-radius: 999px;
   color: var(--v4-ink);
   font: var(--v4-type-label);
@@ -129,14 +300,208 @@ a.v4-catalog__title:hover,
 
 .v4-catalog__status:is([data-catalog-status="live"], [data-catalog-status="playable"]) {
   border-color: var(--v4-accent);
-  color: var(--v4-accent);
+  color: var(--v4-accent-strong);
 }
 
-.v4-catalog__links {
+.v4-pcard__title {
+  margin: 0;
+  font: 700 1.14rem / 1.25 var(--v4-display);
+  letter-spacing: var(--v4-track-heading);
+}
+
+.v4-pcard--featured .v4-pcard__title {
+  font-size: clamp(1.2rem, 1.1rem + 0.45vw, 1.45rem);
+}
+
+.v4-pcard--compact .v4-catalog__status {
+  margin-left: 0;
+}
+
+.v4-pcard--featured:not(.v4-pcard--lead) .v4-pcard__media {
+  aspect-ratio: 16 / 9;
+}
+
+.v4-pcard--compact .v4-pcard__title,
+.v4-pcard--note .v4-pcard__title {
+  font-size: 1.02rem;
+}
+
+.v4-catalog__title {
+  color: var(--v4-ink);
+  text-decoration: none;
+}
+
+/* The whole card opens the project; the action links sit above this layer. */
+a.v4-catalog__title::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+a.v4-catalog__title:focus-visible {
+  outline: none;
+}
+
+.v4-pcard:hover a.v4-catalog__title {
+  color: var(--v4-accent-strong);
+}
+
+.v4-pcard__role {
+  margin: 0;
+  color: var(--v4-accent-strong);
+  font: 500 0.84rem / 1.4 Inter, "Segoe UI", sans-serif;
+}
+
+.v4-pcard__summary {
+  margin: 0;
+  color: var(--v4-ink-secondary);
+  font: 400 0.94rem / 1.6 Inter, "Segoe UI", sans-serif;
+}
+
+.v4-pcard--compact .v4-pcard__summary,
+.v4-pcard--note .v4-pcard__summary {
+  font-size: 0.89rem;
+}
+
+.v4-pcard__stack {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 14px;
-  justify-content: flex-end;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v4-pcard__stack li {
+  padding: 3px 8px;
+  border: 1px solid var(--v4-rule);
+  border-radius: 6px;
+  background: var(--v4-canvas);
+  color: var(--v4-ink-secondary);
+  font: 500 0.66rem / 1.4 var(--v4-mono);
+  letter-spacing: 0.02em;
+}
+
+.v4-pcard__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: auto 0 0;
+  padding-top: 8px;
+}
+
+.v4-pcard__actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 9px;
+  color: var(--v4-ink);
+  font: 600 0.84rem / 1 Inter, "Segoe UI", sans-serif;
+  text-decoration: none;
+  transition: border-color var(--v4-motion-feedback) var(--v4-ease-out), background-color var(--v4-motion-feedback) var(--v4-ease-out);
+}
+
+.v4-pcard__actions a:first-child {
+  border-color: transparent;
+  background: var(--v4-accent-fill);
+  color: var(--v4-on-accent);
+}
+
+.v4-pcard__actions a:hover {
+  border-color: var(--v4-accent);
+}
+
+.v4-pcard__actions a:first-child:hover {
+  background: color-mix(in srgb, var(--v4-accent-fill) 82%, white);
+}
+
+.v4-catalog :is(a):focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 2px;
+}
+
+/* The lead card of a group reads across: image beside the text. */
+@media (min-width: 761px) {
+  .v4-pcard--lead {
+    flex-direction: row;
+  }
+
+  .v4-pcard--lead .v4-pcard__media {
+    flex: 0 0 48%;
+    aspect-ratio: auto;
+    min-height: 300px;
+    border-right: 1px solid var(--v4-rule);
+    border-bottom: 0;
+  }
+
+  .v4-pcard--lead .v4-pcard__media img {
+    position: absolute;
+    inset: 0;
+  }
+
+  .v4-pcard--lead .v4-pcard__body {
+    justify-content: center;
+    padding: 26px 28px;
+  }
+
+  .v4-pcard--lead .v4-pcard__actions {
+    margin-top: 6px;
+  }
+}
+
+/* The unfinished repositories: a note in the collection, not a card of work. */
+.v4-pcard--note {
+  gap: 10px;
+  padding: 20px;
+  border-style: dashed;
+  background: transparent;
+}
+
+.v4-pcard--note::before {
+  content: none;
+}
+
+.v4-pcard__unfinished {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v4-pcard__unfinished li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--v4-rule);
+  font: 400 0.9rem / 1.4 Inter, "Segoe UI", sans-serif;
+}
+
+.v4-pcard__unfinished .v4-catalog__title {
+  flex: 1 1 100%;
+  font-weight: 600;
+}
+
+.v4-pcard__unfinished .v4-catalog__status {
+  margin-left: 0;
+}
+
+.v4-pcard__unfinished .v4-catalog__links {
+  margin-left: auto;
+}
+
+/* ---------- relations and capability evidence (the proof layer) ---------- */
+
+.v4-catalog__relations {
+  margin: 0;
+  padding: 0 0 18px;
+  list-style: none;
 }
 
 .v4-catalog__links a,
@@ -144,8 +509,18 @@ a.v4-catalog__title:hover,
 .v4-catalog__clusters a {
   color: var(--v4-ink);
   text-decoration: underline;
-  text-decoration-color: var(--v4-rule);
+  text-decoration-color: var(--v4-rule-strong);
   text-underline-offset: 3px;
+}
+
+.v4-pcard__actions.v4-catalog__links a {
+  text-decoration: none;
+}
+
+.v4-pcard__unfinished .v4-catalog__links a:hover,
+.v4-catalog__relations a:hover,
+.v4-catalog__clusters a:hover {
+  color: var(--v4-accent);
 }
 
 .v4-catalog__relations li {
@@ -189,38 +564,134 @@ a.v4-catalog__title:hover,
   font: 400 0.92rem / 1.5 Inter, "Segoe UI", sans-serif;
 }
 
-@media (max-width: 980px) {
-  .v4-catalog__row {
-    grid-template-columns: minmax(0, 1fr) auto;
+@media (max-width: 760px) {
+  .v4-catalog__group > summary {
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
-  .v4-catalog__title {
-    grid-column: 1;
+  .v4-catalog__group > summary::after {
+    grid-column: 3;
   }
 
-  .v4-catalog__status {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-  }
-
-  .v4-catalog__kind,
-  .v4-catalog__tech,
-  .v4-catalog__year {
+  .v4-catalog__summary-note {
     grid-column: 1 / -1;
   }
 
-  .v4-catalog__kind,
-  .v4-catalog__year {
-    display: inline;
-  }
-
-  .v4-catalog__links {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
+  .v4-catalog__cue {
+    display: none;
   }
 
   .v4-catalog__clusters {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .v4-pcard__actions a {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-pcard,
+  .v4-pcard__actions a,
+  .v4-catalog__label {
+    transition: none;
+  }
+
+  .v4-pcard:not(.v4-pcard--note):hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .v4-pcard__media--plate {
+    aspect-ratio: 16 / 7;
+  }
+}
+
+/* ---------- Games: the four browser games (V4-E06.6) ----------
+ * Their cards keep the accepted layout; they gain the playable mark and real
+ * actions, so Play and Case Study read as the two things to do. */
+.games-grid .game-card[data-card-playable] {
+  position: relative;
+}
+
+.games-grid .game-card[data-card-playable] > img {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.games-grid .game-card[data-card-playable] .project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.games-grid .game-card[data-card-playable] .project-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 9px;
+  color: var(--v4-ink);
+  font: 600 0.88rem / 1 Inter, "Segoe UI", sans-serif;
+  text-decoration: none;
+}
+
+.games-grid .game-card[data-card-playable] .project-actions a:first-child {
+  border-color: transparent;
+  background: var(--v4-accent-fill);
+  color: var(--v4-on-accent);
+}
+
+.games-grid .game-card[data-card-playable] .project-actions a:first-child::before {
+  content: "▶";
+  margin-right: 8px;
+  font-size: 0.7rem;
+}
+
+.games-grid .game-card[data-card-playable] .project-actions a:first-child::after {
+  content: none;
+}
+
+.games-grid .game-card[data-card-playable] .project-actions a:hover {
+  border-color: var(--v4-accent);
+}
+
+/* ---------- authentic visuals on a light ground (diagrams, figures) ---------- */
+.v4-pcard__media--light,
+.v4-pcard__media--light img,
+body[data-page="works"] .project-card img.v4-cover-light {
+  background: #fff;
+}
+
+/* ---------- the curated cards: a plate where a retired cover stood ---------- */
+body[data-page="works"] .project-card > .v4-curated-plate {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+}
+
+body[data-page="works"] [data-v4-view="capability"] .catalog-grid > .project-card > .v4-curated-plate {
+  flex: none;
+  align-self: stretch;
+  width: clamp(6.5rem, 22vw, 15rem);
+  aspect-ratio: auto;
+  padding: 0 14px;
+  border-bottom: 0;
+}
+
+body[data-page="works"] [data-v4-view="capability"] .v4-curated-plate .v4-pcard__monogram {
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+body[data-page="works"] [data-v4-view="capability"] .v4-curated-plate::after {
+  content: none;
+}
+
+body[data-page="works"] [data-v4-view="capability"] .v4-curated-plate .v4-pcard__plate-tech {
+  display: none;
 }

@@ -55,7 +55,34 @@
         "qa-reliability",
         "full-stack"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "Python",
+          "FastAPI",
+          "PostgreSQL",
+          "Next.js",
+          "AI evaluation"
+        ],
+        "image": {
+          "source": "assets/sinama-works-card.webp",
+          "fit": "contain",
+          "variants": [
+            {
+              "src": "assets/catalog/sinama-640.webp",
+              "width": 640,
+              "height": 480
+            },
+            {
+              "src": "assets/catalog/sinama-960.webp",
+              "width": 960,
+              "height": 720
+            }
+          ]
+        },
+        "roleRef": "sinama"
+      }
     },
     {
       "id": "ajoop",
@@ -81,7 +108,30 @@
         "applied-ai",
         "qa-reliability"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "Retrieval",
+          "Curated knowledge base",
+          "Deterministic fallback"
+        ],
+        "image": {
+          "source": "assets/ajoop-living-hub-960.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/ajoop-640.webp",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "src": "assets/catalog/ajoop-960.webp",
+              "width": 960,
+              "height": 540
+            }
+          ]
+        }
+      }
     },
     {
       "id": "portfolio-v4",
@@ -110,7 +160,31 @@
         "interactive-ux",
         "full-stack"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "React",
+          "Vite",
+          "Static prerender",
+          "Five locales"
+        ],
+        "image": {
+          "source": "assets/catalog/source/portfolio-v4.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/portfolio-v4-640.webp",
+              "width": 640,
+              "height": 400
+            },
+            {
+              "src": "assets/catalog/portfolio-v4-960.webp",
+              "width": 960,
+              "height": 600
+            }
+          ]
+        }
+      }
     },
     {
       "id": "atolye-joyday",
@@ -136,7 +210,32 @@
         "web-product",
         "automation"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "JavaScript",
+          "Apps Script",
+          "Reservation flow",
+          "SEO"
+        ],
+        "image": {
+          "source": "assets/joyday-homepage-preview.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/atolye-joyday-640.webp",
+              "width": 640,
+              "height": 322
+            },
+            {
+              "src": "assets/catalog/atolye-joyday-960.webp",
+              "width": 960,
+              "height": 483
+            }
+          ]
+        },
+        "roleRef": "atolye-joyday-official-website"
+      }
     },
     {
       "id": "ai-chatbot-flow-design",
@@ -160,7 +259,19 @@
         "conversational-ai",
         "automation"
       ],
-      "evidence": "documented"
+      "evidence": "documented",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "Conversation design",
+          "NLU",
+          "IVR",
+          "Human handoff",
+          "Chatbot QA"
+        ],
+        "roleRef": "ai-chatbot-flow-design",
+        "plate": true
+      }
     },
     {
       "id": "merge-rush",
@@ -185,7 +296,31 @@
         "qa-reliability",
         "interactive-ux"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "Phaser 3",
+          "TypeScript",
+          "Vite",
+          "Vitest"
+        ],
+        "image": {
+          "source": "assets/merge-rush/poster.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/merge-rush-640.webp",
+              "width": 640,
+              "height": 400
+            },
+            {
+              "src": "assets/catalog/merge-rush-960.webp",
+              "width": 960,
+              "height": 600
+            }
+          ]
+        }
+      }
     },
     {
       "id": "ai-flow-puzzle",
@@ -211,7 +346,31 @@
         "conversational-ai",
         "game-systems"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "JavaScript",
+          "SVG wiring",
+          "Node logic",
+          "Validation"
+        ],
+        "image": {
+          "source": "assets/catalog/source/ai-flow-puzzle.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/ai-flow-puzzle-640.webp",
+              "width": 640,
+              "height": 400
+            },
+            {
+              "src": "assets/catalog/ai-flow-puzzle-960.webp",
+              "width": 960,
+              "height": 600
+            }
+          ]
+        }
+      }
     },
     {
       "id": "career-adventure",
@@ -237,7 +396,30 @@
         "interactive-ux",
         "qa-reliability"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "JavaScript",
+          "Canvas 2D",
+          "Merge mechanic"
+        ],
+        "image": {
+          "source": "assets/catalog/source/career-adventure.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/career-adventure-640.webp",
+              "width": 640,
+              "height": 400
+            },
+            {
+              "src": "assets/catalog/career-adventure-960.webp",
+              "width": 960,
+              "height": 600
+            }
+          ]
+        }
+      }
     },
     {
       "id": "joyday-action-painting",
@@ -261,12 +443,36 @@
         "interactive-ux",
         "game-systems"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "featured",
+        "stack": [
+          "JavaScript",
+          "Canvas 2D",
+          "PNG export",
+          "Touch"
+        ],
+        "image": {
+          "source": "assets/catalog/source/joyday-action-painting.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/joyday-action-painting-640.webp",
+              "width": 640,
+              "height": 400
+            },
+            {
+              "src": "assets/catalog/joyday-action-painting-960.webp",
+              "width": 960,
+              "height": 600
+            }
+          ]
+        }
+      }
     },
     {
       "id": "hospital-system",
       "title": "Hospital Form App",
-      "group": "current",
+      "group": "software",
       "tier": "selected",
       "kind": "desktopApp",
       "status": "sourceArchive",
@@ -287,7 +493,33 @@
         "full-stack",
         "data-sql"
       ],
-      "evidence": "source-evidenced"
+      "evidence": "source-evidenced",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "C#",
+          ".NET Framework",
+          "Windows Forms",
+          "SQL Server",
+          "ADO.NET"
+        ],
+        "image": {
+          "source": "assets/hospital-system-patient-workflow.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/hospital-system-640.webp",
+              "width": 640,
+              "height": 372
+            },
+            {
+              "src": "assets/catalog/hospital-system-960.webp",
+              "width": 960,
+              "height": 558
+            }
+          ]
+        },
+        "roleRef": "hospital-form-app"
+      }
     },
     {
       "id": "my-museum",
@@ -311,7 +543,35 @@
         "mobile",
         "full-stack"
       ],
-      "evidence": "build-verified"
+      "evidence": "build-verified",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Kotlin",
+          "Android Studio",
+          "Firebase",
+          "Mobile UI",
+          "Database"
+        ],
+        "roleRef": "my-museum",
+        "image": {
+          "source": "assets/catalog/source/my-museum-login-screen.png",
+          "fit": "contain",
+          "evidence": "UAJOP/MyMuseum docs/screenshots/login-screen.png",
+          "variants": [
+            {
+              "src": "assets/catalog/my-museum-640.webp",
+              "width": 640,
+              "height": 1387
+            },
+            {
+              "src": "assets/catalog/my-museum-960.webp",
+              "width": 960,
+              "height": 2080
+            }
+          ]
+        }
+      }
     },
     {
       "id": "hospital-appointment-system",
@@ -334,7 +594,19 @@
         "full-stack",
         "data-sql"
       ],
-      "evidence": "source-evidenced"
+      "evidence": "source-evidenced",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Python",
+          "Tkinter",
+          "MySQL",
+          "MySQL Connector",
+          "PIL"
+        ],
+        "plate": true,
+        "roleRef": "hospital-appointment-system"
+      }
     },
     {
       "id": "agency-db",
@@ -357,7 +629,36 @@
       "capabilities": [
         "data-sql"
       ],
-      "evidence": "source-evidenced"
+      "evidence": "source-evidenced",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "MySQL",
+          "SQL",
+          "Stored procedures",
+          "Triggers",
+          "ER diagram"
+        ],
+        "roleRef": "agency-db",
+        "image": {
+          "source": "assets/catalog/source/agency-db-er-diagram.png",
+          "fit": "contain",
+          "backdrop": "light",
+          "evidence": "UAJOP/Agency-Db docs/diagrams/agency-er-diagram.png",
+          "variants": [
+            {
+              "src": "assets/catalog/agency-db-640.webp",
+              "width": 640,
+              "height": 391
+            },
+            {
+              "src": "assets/catalog/agency-db-960.webp",
+              "width": 960,
+              "height": 587
+            }
+          ]
+        }
+      }
     },
     {
       "id": "cars-dataset-analysis",
@@ -381,7 +682,36 @@
       "capabilities": [
         "data-sql"
       ],
-      "evidence": "runtime-verified"
+      "evidence": "runtime-verified",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Python",
+          "pandas",
+          "Matplotlib",
+          "Seaborn",
+          "scikit-learn"
+        ],
+        "roleRef": "cars-dataset-analysis",
+        "image": {
+          "source": "assets/catalog/source/cars-price-distribution.png",
+          "fit": "contain",
+          "backdrop": "light",
+          "evidence": "UAJOP/Cars-Dataset-Analysis docs/figures/price-distribution.png",
+          "variants": [
+            {
+              "src": "assets/catalog/cars-dataset-analysis-640.webp",
+              "width": 640,
+              "height": 444
+            },
+            {
+              "src": "assets/catalog/cars-dataset-analysis-960.webp",
+              "width": 960,
+              "height": 666
+            }
+          ]
+        }
+      }
     },
     {
       "id": "control-panel",
@@ -405,7 +735,18 @@
         "full-stack",
         "data-sql"
       ],
-      "evidence": "source-evidenced"
+      "evidence": "source-evidenced",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "PHP",
+          "MySQL",
+          "CSS",
+          "JavaScript"
+        ],
+        "roleRef": "control-panel",
+        "plate": true
+      }
     },
     {
       "id": "escape-island",
@@ -428,7 +769,31 @@
       "capabilities": [
         "game-systems"
       ],
-      "evidence": "source-evidenced"
+      "evidence": "source-evidenced",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Unreal Engine 5.4",
+          "C++",
+          "Blueprints"
+        ],
+        "image": {
+          "source": "assets/escape-island-cover.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/escape-island-640.webp",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "src": "assets/catalog/escape-island-960.webp",
+              "width": 960,
+              "height": 540
+            }
+          ]
+        },
+        "roleRef": "escape-island"
+      }
     },
     {
       "id": "warehouse-war",
@@ -451,7 +816,31 @@
       "capabilities": [
         "game-systems"
       ],
-      "evidence": "source-evidenced"
+      "evidence": "source-evidenced",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Unreal Engine 5.4",
+          "Blueprints",
+          "Environment layout"
+        ],
+        "image": {
+          "source": "assets/warehouse-wreckage-cover.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/warehouse-war-640.webp",
+              "width": 640,
+              "height": 375
+            },
+            {
+              "src": "assets/catalog/warehouse-war-960.webp",
+              "width": 960,
+              "height": 563
+            }
+          ]
+        },
+        "roleRef": "warehouse-war"
+      }
     },
     {
       "id": "drivenfinity",
@@ -476,7 +865,31 @@
         "game-systems",
         "mobile"
       ],
-      "evidence": "source-evidenced"
+      "evidence": "source-evidenced",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Unity 2020.2",
+          "C#",
+          "Mobile"
+        ],
+        "image": {
+          "source": "assets/drivenfinity-cover.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/drivenfinity-640.webp",
+              "width": 640,
+              "height": 298
+            },
+            {
+              "src": "assets/catalog/drivenfinity-960.webp",
+              "width": 960,
+              "height": 446
+            }
+          ]
+        },
+        "roleRef": "drivenfinity"
+      }
     },
     {
       "id": "dunker-madness",
@@ -500,7 +913,32 @@
       "capabilities": [
         "game-systems"
       ],
-      "evidence": "source-evidenced"
+      "evidence": "source-evidenced",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Unity 2020.2",
+          "C#",
+          "2D Physics",
+          "Input System"
+        ],
+        "image": {
+          "source": "assets/Ekran görüntüsü 2025-02-25 202336.png",
+          "variants": [
+            {
+              "src": "assets/catalog/dunker-madness-640.webp",
+              "width": 640,
+              "height": 314
+            },
+            {
+              "src": "assets/catalog/dunker-madness-724.webp",
+              "width": 724,
+              "height": 355
+            }
+          ]
+        },
+        "roleRef": "dunker-madness"
+      }
     },
     {
       "id": "tank-savage",
@@ -523,7 +961,31 @@
       "capabilities": [
         "game-systems"
       ],
-      "evidence": "media-only"
+      "evidence": "media-only",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Unreal Engine",
+          "Third-person",
+          "Design document"
+        ],
+        "image": {
+          "source": "assets/maxresdefault.jpg",
+          "variants": [
+            {
+              "src": "assets/catalog/tank-savage-640.webp",
+              "width": 640,
+              "height": 277
+            },
+            {
+              "src": "assets/catalog/tank-savage-960.webp",
+              "width": 960,
+              "height": 416
+            }
+          ]
+        },
+        "roleRef": "tank-savage"
+      }
     },
     {
       "id": "extract-shoot-zero",
@@ -546,7 +1008,31 @@
       "capabilities": [
         "game-systems"
       ],
-      "evidence": "media-only"
+      "evidence": "media-only",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Unreal Engine",
+          "Third-person",
+          "Shooter"
+        ],
+        "image": {
+          "source": "assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg",
+          "variants": [
+            {
+              "src": "assets/catalog/extract-shoot-zero-640.webp",
+              "width": 640,
+              "height": 356
+            },
+            {
+              "src": "assets/catalog/extract-shoot-zero-720.webp",
+              "width": 720,
+              "height": 400
+            }
+          ]
+        },
+        "roleRef": "extract-shoot-zero"
+      }
     },
     {
       "id": "legacy-of-the-lost",
@@ -569,7 +1055,31 @@
       "capabilities": [
         "game-systems"
       ],
-      "evidence": "media-only"
+      "evidence": "media-only",
+      "card": {
+        "tier": "standard",
+        "stack": [
+          "Unreal Engine 5",
+          "Environmental puzzle",
+          "Design document"
+        ],
+        "image": {
+          "source": "assets/legacy-of-the-lost-cover.webp",
+          "variants": [
+            {
+              "src": "assets/catalog/legacy-of-the-lost-640.webp",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "src": "assets/catalog/legacy-of-the-lost-960.webp",
+              "width": 960,
+              "height": 540
+            }
+          ]
+        },
+        "roleRef": "legacy-of-the-lost"
+      }
     }
   ],
   "relations": [
@@ -868,6 +1378,15 @@
           "detailSlug": "my-java-projects",
           "links": {
             "github": "https://github.com/UAJOP/My-java-projects"
+          },
+          "card": {
+            "tier": "compact",
+            "stack": [
+              "Java",
+              "OOP",
+              "IntelliJ IDEA"
+            ],
+            "plate": true
           }
         },
         {
@@ -881,6 +1400,15 @@
           "detailSlug": "pyhton-projects",
           "links": {
             "github": "https://github.com/UAJOP/Pyhton-Projects"
+          },
+          "card": {
+            "tier": "compact",
+            "stack": [
+              "Python",
+              "Scripting",
+              "Exercises"
+            ],
+            "plate": true
           }
         },
         {
@@ -894,6 +1422,15 @@
           "detailSlug": "calculator-android-studio",
           "links": {
             "github": "https://github.com/UAJOP/Calculator-Android-Studio"
+          },
+          "card": {
+            "tier": "compact",
+            "stack": [
+              "Kotlin",
+              "Android Studio",
+              "XML layouts"
+            ],
+            "plate": true
           }
         },
         {
@@ -907,6 +1444,15 @@
           "detailSlug": "mandelas-web-site-project",
           "links": {
             "github": "https://github.com/UAJOP/Mandelas-Web-site-Project"
+          },
+          "card": {
+            "tier": "compact",
+            "stack": [
+              "HTML",
+              "CSS",
+              "Static page"
+            ],
+            "plate": true
           }
         },
         {
@@ -921,7 +1467,16 @@
           "links": {
             "github": "https://github.com/UAJOP/Porto-25"
           },
-          "supersededBy": "portfolio-v4"
+          "supersededBy": "portfolio-v4",
+          "card": {
+            "tier": "compact",
+            "stack": [
+              "HTML",
+              "Tailwind CSS",
+              "Responsive layout"
+            ],
+            "plate": true
+          }
         },
         {
           "id": "unity-essentials",
@@ -935,7 +1490,30 @@
           "links": {
             "github": "https://github.com/UAJOP/UnityEssentials"
           },
-          "historicalName": "Ajoop"
+          "historicalName": "Ajoop",
+          "card": {
+            "tier": "compact",
+            "stack": [
+              "Unity 6",
+              "C#",
+              "Six scenes"
+            ],
+            "image": {
+              "source": "assets/unity-essentials-cover.webp",
+              "variants": [
+                {
+                  "src": "assets/catalog/unity-essentials-640.webp",
+                  "width": 640,
+                  "height": 360
+                },
+                {
+                  "src": "assets/catalog/unity-essentials-960.webp",
+                  "width": 960,
+                  "height": 540
+                }
+              ]
+            }
+          }
         },
         {
           "id": "ic-supply",
@@ -946,7 +1524,16 @@
           "tech": "PHP · MySQL",
           "repo": null,
           "detailSlug": "ic-supply",
-          "links": {}
+          "links": {},
+          "card": {
+            "tier": "compact",
+            "stack": [
+              "PHP",
+              "MySQL",
+              "Login & registration"
+            ],
+            "plate": true
+          }
         },
         {
           "id": "calculator-javascript",
@@ -978,5 +1565,41 @@
         }
       ]
     }
-  ]
+  ],
+  "cards": {
+    "note": "Presentation only (V4-E06.6). tier: featured | standard | compact. image.variants are written by scripts/v4-e06-6-card-images.mjs; image.evidence names the repository file an image was taken from; plate: true marks a typographic identity plate (the stack, set in type), used where no authentic image exists.",
+    "lead": {
+      "current": "sinama",
+      "nativeGames": "escape-island"
+    },
+    "retiredCovers": [
+      "agency_db_cover.webp",
+      "control_panel_cover.webp",
+      "ic_supply_cover.webp",
+      "porto_25_cover.webp",
+      "hospital_form_app_cover.webp",
+      "ai_flow_chatbot_design_cover.webp",
+      "ai_flow_puzzle_cover.webp",
+      "kaanin_kariyer_cover.webp",
+      "insatagram.webp",
+      "hastane.jpg",
+      "what-is-data-analyst.jpg",
+      "calculator-cartoon-illustration-png.webp",
+      "java.png",
+      "Python-Symbol.png",
+      "images (1).png"
+    ],
+    "curatedOnly": [
+      "merge-rush-case-cover.svg"
+    ],
+    "curatedCoverOwner": {
+      "ai_flow_chatbot_design_cover.webp": "ai-chatbot-flow-design",
+      "merge-rush-case-cover.svg": "merge-rush",
+      "hospital_form_app_cover.webp": "hospital-system",
+      "ai_flow_puzzle_cover.webp": "ai-flow-puzzle",
+      "hastane.jpg": "hospital-appointment-system",
+      "what-is-data-analyst.jpg": "cars-dataset-analysis",
+      "insatagram.webp": "my-museum"
+    }
+  }
 }

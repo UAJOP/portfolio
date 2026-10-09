@@ -1,5 +1,6 @@
 /**
- * V4-E06.5 — the complete catalog on Works and the native archive on Games.
+ * V4-E06.5 / E06.6 — the complete catalog on Works and the native archive on
+ * Games, presented as cards.
  *
  * data/portfolio/catalog.json is the coverage registry: one public identity
  * per standalone project, one collection of earlier learning artifacts that
@@ -7,20 +8,22 @@
  * turns its public part into page structure at build time:
  *
  *   Works   a "Complete catalog" section after the curated explorer: three
- *           collapsed groups of project rows, the learning collection, then
- *           the factual relations and the capability evidence. The curated cards, the filter, the
- *           System Map and the Capability View above it are unchanged.
- *   Games   a "Native game archive" section under the four browser games,
- *           and Play plus Case Study on each of the four.
+ *           collapsed groups of project cards, the learning collection as
+ *           compact cards, then the factual relations and the capability
+ *           evidence. The curated cards, the filter, the System Map and the
+ *           Capability View above it are unchanged.
+ *   Games   the four browser games with one playable treatment (Play plus
+ *           Case Study, a frame of the game itself), then the native archive
+ *           as cards.
  *
  * Groups are <details>, so the whole catalog is reachable without
- * JavaScript and nothing here needs hydration state. Rows are not project
- * cards: they do not enter the explorer's filter, map or counts, and they do
- * not reach Home.
+ * JavaScript and nothing here needs hydration state. Catalog cards are not
+ * the explorer's project cards: they do not enter its filter, map or counts,
+ * and they do not reach Home.
  *
- * Only `identities`, `collections` and `relations` are read here. `repositories` (which
- * names private repositories) is for the audit document and the coverage
- * gate, and is never rendered.
+ * Only `identities`, `collections`, `relations` and `cards` are read here.
+ * `repositories` (which names private repositories) is for the audit
+ * document and the coverage gate, and is never rendered.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -57,64 +60,142 @@ function link(target, label) {
   return element("a", { href: href(target), ...(external ? { target: "_blank", rel: "noopener noreferrer" } : {}) }, [label]);
 }
 
-function row(identity) {
-  const primary = primaryPath(identity);
-  if (!primary) throw new Error(`catalog: ${identity.id} has no public page`);
-  const detail = detailPath(identity);
-  const actions = [
-    identity.links.play ? link(identity.links.play, message(identity.kind === "assistant" ? "catalog.link.open" : "catalog.link.play")) : null,
-    identity.links.caseStudy && identity.links.caseStudy !== primary ? link(identity.links.caseStudy, message("catalog.link.caseStudy")) : null,
-    detail && detail !== primary ? link(detail, message("catalog.link.details")) : null,
-    identity.links.live ? link(identity.links.live, message("catalog.link.live")) : null,
-    identity.links.github ? link(identity.links.github, "GitHub") : null,
-    identity.links.video ? link(identity.links.video, "Video") : null,
+/* ---------- the card system (V4-E06.6) ----------
+ *
+ * One card, three tiers. `featured` is the flagship size, `standard` a full
+ * project card, `compact` the denser archive and learning card. Every tier has
+ * the same parts in the same order: a visual, kind · year · status, the title,
+ * the role where one is recorded, one line on what was built, the stack and
+ * the links that exist. A tier changes size and density, never completeness.
+ *
+ * The visual is the project's own image, in variants written by
+ * scripts/v4-e06-6-card-images.mjs. A project without an authentic image gets
+ * a typographic identity plate (its real stack on the V4 grid), which
+ * is plainly not a screenshot. */
+const SIZES = {
+  lead: "(max-width: 760px) 92vw, 560px",
+  featured: "(max-width: 760px) 92vw, (max-width: 1100px) 46vw, 590px",
+  standard: "(max-width: 760px) 92vw, (max-width: 1100px) 46vw, 390px",
+  compact: "(max-width: 760px) 92vw, (max-width: 1100px) 46vw, 290px",
+};
+
+/** The typographic identity plate: the entry's real stack, set in type. */
+export function plateNode(entry, extraClass = "") {
+  if (!entry.card?.plate) throw new Error(`catalog: ${entry.id} has no plate`);
+  const [first, ...rest] = entry.tech.split(" · ");
+  return element("div", { class: `v4-pcard__media v4-pcard__media--plate${extraClass ? ` ${extraClass}` : ""}`, "aria-hidden": "true", "data-plate-kind": entry.kind }, [
+    element("span", { class: "v4-pcard__monogram" }, [first]),
+    rest.length ? element("span", { class: "v4-pcard__plate-tech" }, [rest.join(" · ")]) : null,
+  ]);
+}
+
+/** Every catalog entry that has a card, by id and by project slug. */
+export function cardEntries(catalog = loadCatalog()) {
+  return [...catalog.identities, ...(catalog.collections || []).flatMap((collection) => collection.members)].filter((entry) => entry.card);
+}
+
+function visual(entry, sizes) {
+  const { image } = entry.card;
+  if (!image) return plateNode(entry);
+  if (!image.variants?.length) throw new Error(`catalog: ${entry.id} has no image variants; run scripts/v4-e06-6-card-images.mjs`);
+  const [smallest] = image.variants;
+  return element("div", { class: `v4-pcard__media${image.fit === "contain" ? " v4-pcard__media--contain" : ""}${image.backdrop === "light" ? " v4-pcard__media--light" : ""}` }, [
+    /* The title beside it names the project; the image adds no text of its own. */
+    element("img", {
+      alt: "", src: `/${smallest.src}`, srcset: image.variants.map((variant) => `/${variant.src} ${variant.width}w`).join(", "), sizes,
+      width: String(smallest.width), height: String(smallest.height), loading: "lazy", decoding: "async",
+    }),
+  ]);
+}
+
+function actionsOf(entry) {
+  const detail = detailPath(entry);
+  return [
+    entry.links.play ? link(entry.links.play, message(entry.kind === "assistant" ? "catalog.link.open" : "catalog.link.play")) : null,
+    entry.links.caseStudy ? link(entry.links.caseStudy, message("catalog.link.caseStudy")) : null,
+    detail ? link(detail, message("catalog.link.details")) : null,
+    entry.links.live ? link(entry.links.live, message("catalog.link.live")) : null,
+    entry.links.github ? link(entry.links.github, "GitHub") : null,
+    entry.links.video ? link(entry.links.video, "Video") : null,
   ].filter(Boolean);
-  return element("li", { class: "v4-catalog__row", "data-catalog-id": identity.id }, [
-    element("a", { class: "v4-catalog__title", href: href(primary) }, [identity.title]),
-    element("span", { class: "v4-catalog__kind" }, [message(`catalog.kind.${identity.kind}`)]),
-    element("span", { class: "v4-catalog__tech" }, [identity.tech]),
-    element("span", { class: "v4-catalog__year" }, [identity.year]),
-    element("span", { class: "v4-catalog__status", "data-catalog-status": identity.status }, [message(`catalog.status.${identity.status}`)]),
-    actions.length ? element("span", { class: "v4-catalog__links" }, actions) : null,
+}
+
+function card(entry, { heading, member = false, lead = false }) {
+  if (!entry.card) throw new Error(`catalog: ${entry.id} has no card`);
+  const primary = member ? detailPath(entry) : primaryPath(entry);
+  if (!primary) throw new Error(`catalog: ${entry.id} has no public page`);
+  const tier = entry.card.tier;
+  return element("li", {
+    class: `v4-catalog__row v4-pcard v4-pcard--${tier}${lead ? " v4-pcard--lead" : ""}`,
+    [member ? "data-catalog-member" : "data-catalog-id"]: entry.id,
+    "data-card-tier": tier,
+    ...(entry.kind === "browserGame" ? { "data-card-playable": true } : {}),
+  }, [
+    visual(entry, SIZES[lead ? "lead" : tier]),
+    element("div", { class: "v4-pcard__body" }, [
+      element("p", { class: "v4-pcard__meta" }, [
+        element("span", { class: "v4-catalog__kind" }, [message(`catalog.kind.${entry.kind}`)]),
+        element("span", { class: "v4-catalog__year" }, [entry.year]),
+        element("span", { class: "v4-catalog__status", "data-catalog-status": entry.status }, [message(`catalog.status.${entry.status}`)]),
+      ]),
+      element(heading, { class: "v4-pcard__title" }, [element("a", { class: "v4-catalog__title", href: href(primary) }, [entry.title])]),
+      entry.card.roleRef ? element("p", { class: "v4-pcard__role" }, [{ type: "role", ref: entry.card.roleRef }]) : null,
+      element("p", { class: "v4-pcard__summary" }, [message(`catalog.card.${entry.id}.summary`)]),
+      element("ul", { class: "v4-pcard__stack" }, entry.card.stack.map((token) => element("li", {}, [token]))),
+      element("p", { class: "v4-catalog__links v4-pcard__actions" }, actionsOf(entry)),
+    ]),
   ]);
 }
 
-/* A member of a collection: a learning artifact, not a project. It links to
- * an archive page when one exists; an incomplete artifact has no page and is
- * named without a link. */
-function memberRow(member) {
-  const detail = member.detailSlug ? `/projects/${member.detailSlug}/` : null;
-  const actions = [member.links.github ? link(member.links.github, "GitHub") : null].filter(Boolean);
-  return element("li", { class: "v4-catalog__row v4-catalog__row--member", "data-catalog-member": member.id }, [
-    detail ? element("a", { class: "v4-catalog__title", href: href(detail) }, [member.title]) : element("span", { class: "v4-catalog__title" }, [member.title]),
-    element("span", { class: "v4-catalog__kind" }, [message(`catalog.kind.${member.kind}`)]),
-    element("span", { class: "v4-catalog__tech" }, [member.tech]),
-    element("span", { class: "v4-catalog__year" }, [member.year]),
-    element("span", { class: "v4-catalog__status", "data-catalog-status": member.status }, [message(`catalog.status.${member.status}`)]),
-    actions.length ? element("span", { class: "v4-catalog__links" }, actions) : null,
+/* The repositories that were never finished: named for the record inside the
+ * learning collection, with their source link and no card, image or page. */
+function unfinishedNote(members, heading) {
+  if (!members.length) return null;
+  return element("li", { class: "v4-pcard v4-pcard--note" }, [
+    element(heading, { class: "v4-pcard__title" }, [message("catalog.card.unfinished.title")]),
+    element("p", { class: "v4-pcard__summary" }, [message("catalog.card.unfinished.body")]),
+    element("ul", { class: "v4-pcard__unfinished" }, members.map((member) => element("li", { class: "v4-catalog__row", "data-catalog-member": member.id }, [
+      element("span", { class: "v4-catalog__title" }, [member.title]),
+      element("span", { class: "v4-catalog__status", "data-catalog-status": member.status }, [message(`catalog.status.${member.status}`)]),
+      member.links.github ? element("span", { class: "v4-catalog__links" }, [link(member.links.github, "GitHub")]) : null,
+    ]))),
   ]);
 }
 
-function group(catalog, id, { open = false, name = "v4-catalog" } = {}) {
+/** The cards of one group, in catalog order, the group's lead card first. */
+function cardGrid(catalog, id, heading) {
   const collection = (catalog.collections || []).find((entry) => entry.group === id);
   if (collection) {
-    return element("details", { class: "v4-catalog__group v4-catalog__group--collection", id: `catalog-${id}`, name, "data-catalog-collection": collection.id }, [
-      element("summary", {}, [
-        element("span", { class: "v4-catalog__label" }, [message(`catalog.group.${id}`)]),
-        element("span", { class: "v4-catalog__count" }, [two(collection.members.length)]),
-      ]),
-      element("p", { class: "v4-catalog__note" }, [message(`catalog.group.${id}.note`)]),
-      element("ul", { class: "v4-catalog__list" }, collection.members.map(memberRow)),
+    return element("ul", { class: "v4-pcards v4-pcards--compact" }, [
+      ...collection.members.filter((member) => !member.incomplete).map((member) => card(member, { heading, member: true })),
+      unfinishedNote(collection.members.filter((member) => member.incomplete), heading),
     ]);
   }
   const identities = catalog.identities.filter((identity) => identity.group === id);
-  return element("details", { class: "v4-catalog__group", id: `catalog-${id}`, name, ...(open ? { open: "open" } : {}) }, [
+  const leadId = catalog.cards.lead[id];
+  const tiers = new Set(identities.map((identity) => identity.card.tier));
+  if (tiers.size !== 1) throw new Error(`catalog: group ${id} mixes card tiers`);
+  return element("ul", { class: `v4-pcards v4-pcards--${[...tiers][0]}`, "data-card-group": id }, identities.map((identity) => card(identity, { heading, lead: identity.id === leadId })));
+}
+
+function groupCount(catalog, id) {
+  const collection = (catalog.collections || []).find((entry) => entry.group === id);
+  return collection ? collection.members.length : catalog.identities.filter((identity) => identity.group === id).length;
+}
+
+function group(catalog, id) {
+  const collection = (catalog.collections || []).find((entry) => entry.group === id);
+  return element("details", {
+    class: `v4-catalog__group v4-catalog__group--cards${collection ? " v4-catalog__group--collection" : ""}`, id: `catalog-${id}`,
+    ...(collection ? { "data-catalog-collection": collection.id } : {}),
+  }, [
     element("summary", {}, [
-      element("span", { class: "v4-catalog__label" }, [message(`catalog.group.${id}`)]),
-      element("span", { class: "v4-catalog__count" }, [two(identities.length)]),
+      element("h3", { class: "v4-catalog__label" }, [message(`catalog.group.${id}`)]),
+      element("span", { class: "v4-catalog__count" }, [two(groupCount(catalog, id))]),
+      element("span", { class: "v4-catalog__summary-note" }, [message(`catalog.group.${id}.note`)]),
+      element("span", { class: "v4-catalog__cue", "aria-hidden": "true" }, [message("catalog.group.show")]),
     ]),
-    element("p", { class: "v4-catalog__note" }, [message(`catalog.group.${id}.note`)]),
-    element("ul", { class: "v4-catalog__list" }, identities.map(row)),
+    cardGrid(catalog, id, "h4"),
   ]);
 }
 
@@ -125,9 +206,9 @@ function relations(catalog) {
     if (!identity) throw new Error(`catalog relation points at unknown identity ${id}`);
     return element("a", { href: href(primaryPath(identity)) }, [identity.title]);
   };
-  return element("details", { class: "v4-catalog__group v4-catalog__group--relations", id: "catalog-relations", name: "v4-catalog" }, [
+  return element("details", { class: "v4-catalog__group v4-catalog__group--relations", id: "catalog-relations" }, [
     element("summary", {}, [
-      element("span", { class: "v4-catalog__label" }, [message("catalog.relations.title")]),
+      element("h3", { class: "v4-catalog__label" }, [message("catalog.relations.title")]),
       element("span", { class: "v4-catalog__count" }, [two(catalog.relations.length)]),
     ]),
     element("p", { class: "v4-catalog__note" }, [message("catalog.relations.note")]),
@@ -141,9 +222,9 @@ function relations(catalog) {
 function capabilities(catalog) {
   const counted = catalog.identities.filter((identity) => !["learning", "history"].includes(identity.tier));
   const clusters = catalog.capabilities.map((id) => ({ id, identities: counted.filter((identity) => identity.capabilities.includes(id)) })).filter((cluster) => cluster.identities.length);
-  return element("details", { class: "v4-catalog__group v4-catalog__group--capabilities", id: "catalog-capabilities", name: "v4-catalog" }, [
+  return element("details", { class: "v4-catalog__group v4-catalog__group--capabilities", id: "catalog-capabilities" }, [
     element("summary", {}, [
-      element("span", { class: "v4-catalog__label" }, [message("catalog.capabilities.title")]),
+      element("h3", { class: "v4-catalog__label" }, [message("catalog.capabilities.title")]),
       element("span", { class: "v4-catalog__count" }, [two(clusters.length)]),
     ]),
     element("p", { class: "v4-catalog__note" }, [message("catalog.capabilities.note")]),
@@ -176,7 +257,7 @@ export function gamesArchiveSection(catalog = loadCatalog()) {
       element("h2", { id: "v4-native-title" }, [message("catalog.group.nativeGames")]),
       element("p", {}, [message("catalog.games.archiveLead")]),
     ]),
-    element("div", { class: "v4-catalog__groups" }, [group(catalog, "nativeGames", { open: true, name: null })]),
+    cardGrid(catalog, "nativeGames", "h3"),
   ]);
 }
 
@@ -197,9 +278,43 @@ function one(node, test, what) {
   return found[0];
 }
 
-/** Works: the catalog section follows the curated explorer. Nothing above it changes. */
+/**
+ * The curated cards keep everything but a retired cover. A cover that imitated
+ * a screenshot (or was stock art) gives way to what the catalog card shows:
+ * the project's authentic image, or its identity plate.
+ */
+export function withCuratedVisuals(children, catalog = loadCatalog()) {
+  const next = structuredClone(children);
+  const owners = catalog.cards.curatedCoverOwner;
+  const entries = new Map(cardEntries(catalog).map((entry) => [entry.id, entry]));
+  const swap = (node) => {
+    if (!isElement(node)) return;
+    node.children = node.children.map((child) => {
+      if (!isElement(child) || child.tag !== "img" || !hasClass(node, "project-card")) return child;
+      const file = decodeURIComponent(String(attribute(child, "src")?.value || "").split("/").pop());
+      const entry = entries.get(owners[file]);
+      if (!entry) return child;
+      if (entry.card.plate) return plateNode(entry, "v4-curated-plate");
+      const { image } = entry.card;
+      const largest = image.variants.at(-1);
+      const kept = child.attributes.filter((item) => ["alt", "data-message-alt-key", "loading", "decoding"].includes(item.name));
+      const classes = [image.fit === "contain" ? "project-cover-contain" : "", image.backdrop === "light" ? "v4-cover-light" : ""].filter(Boolean).join(" ");
+      child.attributes = [...kept, ...Object.entries({
+        ...(classes ? { class: classes } : {}),
+        src: `/${largest.src}`, srcset: image.variants.map((variant) => `/${variant.src} ${variant.width}w`).join(", "), sizes: SIZES.featured,
+        width: String(largest.width), height: String(largest.height),
+      }).map(([name, value]) => ({ name, value }))];
+      return child;
+    });
+    node.children.forEach(swap);
+  };
+  next.forEach(swap);
+  return next;
+}
+
+/** Works: the catalog section follows the curated explorer, whose cards lose only their retired covers. */
 export function withWorksCatalog(children, catalog = loadCatalog()) {
-  return [...children, worksCatalogSection(catalog)];
+  return [...withCuratedVisuals(children, catalog), worksCatalogSection(catalog)];
 }
 
 /**
@@ -216,6 +331,15 @@ export function withGamesCatalog(children, catalog = loadCatalog()) {
   const playable = catalog.identities.filter((identity) => identity.kind === "browserGame");
   for (const identity of playable) {
     const card = one(root, (node) => hasClass(node, "game-card") && attribute(node, "data-game-link")?.value === identity.links.play, `${identity.id} game card`);
+    /* V4-E06.6: the four share one playable treatment and show the game itself. */
+    card.attributes.push({ name: "data-card-playable", value: true });
+    const cover = one(card, (node) => node.tag === "img", `${identity.id} card image`);
+    const variants = identity.card.image.variants;
+    const kept = cover.attributes.filter((entry) => ["alt", "data-message-alt-key", "loading", "decoding"].includes(entry.name));
+    cover.attributes = [...kept, ...Object.entries({
+      src: `/${variants[0].src}`, srcset: variants.map((variant) => `/${variant.src} ${variant.width}w`).join(", "), sizes: SIZES.featured,
+      width: String(variants[0].width), height: String(variants[0].height),
+    }).map(([name, value]) => ({ name, value }))];
     const content = one(card, (node) => hasClass(node, "project-content"), `${identity.id} card content`);
     const existing = all(content, (node) => hasClass(node, "project-actions"));
     const closing = content.children.filter((node) => isElement(node) && node.tag === "a");

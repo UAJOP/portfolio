@@ -12,6 +12,7 @@ const PROP_NAMES = {
   class: "className",
   tabindex: "tabIndex",
   fetchpriority: "fetchPriority",
+  srcset: "srcSet",
 };
 
 const atPath = (source, dataPath) => String(dataPath).split(".").reduce((value, segment) => value?.[segment], source);

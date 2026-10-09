@@ -38,7 +38,7 @@ products or products whose source is private.
 | Catalog section on Works, native archive on Games | `scripts/v4-e06-5-catalog.mjs`, `css/v4-catalog.css` |
 | New and updated case studies | `scripts/v4-e06-5-case-studies.mjs` |
 | Coverage gate | `scripts/qa-v4-works-coverage.mjs` (`npm run qa:v4:works-coverage`) |
-| Browser QA and review pack | `scripts/v4-e06-5-works-coverage-review.mjs` |
+| Browser QA and review pack | `scripts/v4-e06-6-works-presentation-review.mjs` (supersedes the E06.5 script; see `docs/v4-e06-6-works-presentation.md`) |
 | Retired project pages, with reasons | `retired` in `scripts/fixtures/project-catalog-baseline.json` |
 
 ## Why each non-project repository is not a standalone project
@@ -160,8 +160,9 @@ row in the complete catalog; "member" is a line in the learning collection.
 
 - `npm run qa:v4:works-coverage`: 714 checks. It now also fails if a learning,
   incomplete, private-archive or superseded artifact is a standalone identity.
-- `node scripts/v4-e06-5-works-coverage-review.mjs`: 63 checks on the
-  production build.
+- Browser QA at E06.5: 63 checks on the production build. Since E06.6 the
+  catalog is cards and the browser QA is
+  `scripts/v4-e06-6-works-presentation-review.mjs`.
 - Pass: `qa:data`, `qa:i18n`, `qa:routes`, `qa:foundation`, `qa:projects`,
   `qa:seo`, `qa:performance`, `qa:css`, `qa:design`, `qa:a11y:static`,
   `qa:recruiter`, `qa:analytics`, `qa:js`, `qa:assets`, `qa:links`, `qa:html`,
