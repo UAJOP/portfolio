@@ -20,7 +20,6 @@
  * LivingHubArt: the approved artwork, one image in three widths. It is always
  * a dark surface; the frame around it decides how much of it shows. */
 const share = (value, of) => `${Math.round((value / of) * 10000) / 100}%`;
-const NOSCRIPT_STYLE = { __html: ".v4-ajoop-sys__panels [hidden]{display:block!important}.v4-ajoop-sys__rest{display:none!important}" };
 const ART = "/assets/ajoop-living-hub";
 const ART_SET = [640, 960, 1600].map((width) => `${ART}-${width}.webp ${width}w`).join(", ");
 
@@ -59,7 +58,6 @@ export default function AjoopSystem({ model }) {
         {node(model.owner, "private")}
       </div>
       <div className="v4-ajoop-sys__panels">
-        <noscript><style dangerouslySetInnerHTML={NOSCRIPT_STYLE} /></noscript>
         <p className="v4-ajoop-sys__rest" data-v4-eco-panel="">{model.labels.rest}</p>
         {[...model.nodes, model.owner].map((entry) => (
           <article key={entry.id} className="v4-ajoop-sys__panel" data-v4-eco-panel={entry.id} data-v4-zone={entry.id === model.owner.id ? "private" : "public"} hidden>

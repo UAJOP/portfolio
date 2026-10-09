@@ -34,7 +34,7 @@
     "priority": "0.6"
   },
   "companions": [
-    { "id": "notFound", "document": "404.html", "renderer": "legacy" },
+    { "id": "notFound", "document": "404.html", "renderer": "react" },
     { "id": "projectShell", "document": "project-detail.html", "renderer": "legacy", "legacyProjectParam": "project" }
   ],
   "legacyNotice": {

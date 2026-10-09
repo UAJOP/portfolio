@@ -73,7 +73,7 @@ export function mergeRushStructure({ message, locale, caseStudyHref, gamesHref }
       ]),
     ]),
     element("section", { class: "section-shell mr-about" }, [
-      element("dl", { class: "mr-facts", "aria-label": m("facts.aria") }, [
+      element("dl", { class: "mr-facts" }, [
         fact(m("facts.statusLabel"), m("facts.status")),
         fact(m("facts.loopLabel"), m("facts.loop")),
         fact(m("facts.modesLabel"), m("facts.modes")),

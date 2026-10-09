@@ -50,8 +50,8 @@ function resolveSiteFile(pathname) {
   return null;
 }
 
-function sendFile(response, file, cacheControl = "no-cache") {
-  response.writeHead(200, {
+function sendFile(response, file, cacheControl = "no-cache", status = 200) {
+  response.writeHead(status, {
     "Cache-Control": cacheControl,
     "Content-Type": MIME_TYPES[extname(file).toLowerCase()] || "application/octet-stream",
   });
@@ -83,8 +83,9 @@ const server = createServer(async (request, response) => {
 
     const file = resolveSiteFile(url.pathname);
     if (!file) {
-      response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("Not found");
-      return;
+      const notFound = join(SITE_ROOT, "404.html");
+      if (existsSync(notFound)) return sendFile(response, notFound, "no-cache", 404);
+      response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("Not found"); return;
     }
 
     sendFile(response, file);

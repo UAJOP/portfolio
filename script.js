@@ -95,6 +95,9 @@
     projectDetail: ["js/portfolio/project-detail.js"],
     certificates: ["js/features/certificates.js"],
     request: ["js/request/submission.js", "js/request/form.js"],
+    ajoop: [],
+    ajoopCaseStudy: [],
+    mergeRush: [],
   };
 
   /* Modules whose position in COMMON matters relative to a page module.
@@ -127,6 +130,9 @@
     projectDetail: ["projects"],
     certificates: [],
     request: ["request"],
+    ajoop: [],
+    ajoopCaseStudy: ["case-studies"],
+    mergeRush: ["games"],
   };
 
   /**

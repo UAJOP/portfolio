@@ -320,7 +320,7 @@ try {
   const plainFacts = await plain.evaluate(() => ({
     play: [...document.querySelectorAll("[data-mr-enter]")].filter((node) => node.matches(".mr-enter")).map((node) => getComputedStyle(node).display),
     notice: document.querySelector(".mr-noscript")?.innerText || document.querySelector("noscript")?.textContent || "",
-    links: [...(document.querySelector("noscript")?.innerHTML.matchAll(/href="([^"]+)"/g) || [])].map((match) => match[1]),
+    links: [...(document.querySelector(".mr-noscript")?.parentElement?.innerHTML.matchAll(/href="([^"]+)"/g) || [])].map((match) => match[1]),
     stage: getComputedStyle(document.querySelector("#merge-rush-game")).display,
     caseLink: document.querySelector(".mr-hero__actions a")?.getAttribute("href"),
   }));

@@ -43,7 +43,7 @@ function nodeText(node, props) {
   if (node.type === "message") return props.copy[node.key] || "";
   if (node.type === "role") return props.roles[node.ref] || "";
   if (node.type === "data") return atPath(props.data, node.path) || "";
-  if (node.type === "text") return node.value;
+  if (node.type === "text") return props.notFoundRuntimeCopy?.[node.value] || node.value;
   if (node.type === "space") return " ";
   return node.children.map((child) => nodeText(child, props)).join("");
 }
@@ -111,7 +111,7 @@ function renderNode(node, props, key, catalogState) {
   if (node.type === "message") return props.copy[node.key];
   if (node.type === "role") return props.roles[node.ref];
   if (node.type === "data") return atPath(props.data, node.path);
-  if (node.type === "text") return node.value;
+  if (node.type === "text") return props.notFoundRuntimeCopy?.[node.value] || node.value;
   const attributes = resolvedAttributes(node, props);
   const action = attributes["data-react-action"];
   if (action) {
@@ -183,11 +183,18 @@ export default function ProductionMain(props) {
   const [view, setView] = useState("grid");
   const [live, setLive] = useState(false);
   useEffect(() => { setLive(true); }, []);
+  const [runtimeLocale, setRuntimeLocale] = useState(props.locale);
+  useEffect(() => {
+    if (props.kind !== "notFound") return;
+    const locale = document.documentElement.lang;
+    if (props.localizedCopy?.[locale]) setRuntimeLocale(locale);
+  }, [props.kind, props.localizedCopy]);
   /* V4 Certificates: which view, which grouping, which cluster. */
   const [sky, setSky] = useState({ view: "grid", group: "area", cluster: null });
   const consumer = props.v4?.consumer;
   const ordinal = useMemo(() => (consumer === "experience" || consumer === "certificates" ? ordinalsOf(props.structure) : null), [consumer, props.structure]);
   let live4 = props;
+  if (props.kind === "notFound") live4 = { ...props, notFoundRuntimeCopy: props.localizedCopy?.[runtimeLocale] || null };
   if (ordinal) live4 = { ...props, v4: { ...props.v4, ordinal, state: sky } };
   if (props.v4 && catalogState) {
     /* The projects the catalog's own filter and search currently exclude. */

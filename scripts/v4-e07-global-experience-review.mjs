@@ -342,8 +342,12 @@ try {
     const results = [];
     for (const path of ["/", "/works/", "/request/", "/sinama-case-study/", "/games/"]) {
       const page = await open(browser, { viewport, path, settle: 200 });
-      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
       await wait(350);
+      /* The jump activates below-the-fold lazy media. Re-anchor after that
+       * reserved content settles so this probes the real document end. */
+      await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+      await wait(100);
       results.push([path, await page.evaluate(() => {
         const box = (node) => node.getBoundingClientRect();
         const launcher = box(document.querySelector("[data-chatbot-toggle]"));
@@ -549,8 +553,10 @@ try {
   await works.close();
   const worksPhone = await open(browser, { viewport: PHONE, path: "/works/" });
   await still(worksPhone, "04-works-mobile.png", "04 · Works · phone");
-  await worksPhone.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await worksPhone.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
   await wait(350);
+  await worksPhone.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+  await wait(100);
   await still(worksPhone, "04b-works-mobile-page-end.png", "04b · Phone · page end: footer clear of both floating controls");
   await worksPhone.close();
   for (const [path, file, label] of [

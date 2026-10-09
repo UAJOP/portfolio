@@ -395,7 +395,6 @@ function joydayStudio(v4, node, classes, attributes, key) {
   if (classes.has("joyday-paint-copy")) {
     return [
       <noscript key={`${key}.jds-noscript`}>
-        <style>{"[data-jds-enter]{display:none!important}"}</style>
         <p className="jds-noscript">{labels.noscript} <a href={v4.caseStudyHref}>{labels.caseStudy}</a></p>
       </noscript>,
     ];
@@ -465,7 +464,6 @@ function flowPuzzle(v4, node, classes, attributes, key) {
     return [
       <p key={part("by")} className="afp-by" data-afp-part="by"><span>{labels.by}</span><b>{labels.tagline}</b><i>{labels.premise}</i></p>,
       <noscript key={part("noscript")} data-afp-part="noscript">
-        <style>{"[data-afp-play],.afp-hub{display:none!important}"}</style>
         <p className="afp-noscript">{labels.noscript} <a href={v4.caseStudyHref}>{labels.caseStudy}</a></p>
       </noscript>,
     ];
@@ -506,16 +504,16 @@ function flowPuzzle(v4, node, classes, attributes, key) {
         <div key={part("selbar")} className="afp-selbar" data-afp-part="selbar" data-afp-selbar="" hidden />,
         <div key={part("dock")} className="afp-dock" data-afp-part="dock">
           <button type="button" data-afp-sheet="library"><GameIcon name="nodes" /><span>{labels.library}</span></button>
-          <button type="button" data-afp-press="[data-ai-hint]"><GameIcon name="hint" /><span data-afp-text="hintButton" /></button>
-          <button type="button" className="afp-dock__run" data-afp-run=""><GameIcon name="play" /><span data-afp-text="runFlow" /></button>
+          <button type="button" data-afp-press="[data-ai-hint]" aria-label={labels.failHint}><GameIcon name="hint" /><span data-afp-text="hintButton" /></button>
+          <button type="button" className="afp-dock__run" data-afp-run="" aria-label={labels.tabRun}><GameIcon name="play" /><span data-afp-text="runFlow" /></button>
           <button type="button" data-afp-sheet="side"><GameIcon name="panel" /><span>{labels.panel}</span></button>
         </div>,
         <button key={part("scrim")} type="button" className="afp-scrim" data-afp-part="scrim" data-afp-close="" aria-label={labels.close} tabIndex={-1} />,
         <div key={part("menu")} className="afp-menu" data-afp-part="menu" data-afp-menu-list="" hidden>
           <button type="button" data-afp-leave="">{labels.levels}</button>
-          <button type="button" data-afp-press="[data-ai-arrange]" data-afp-text="arrangeButton" />
-          <button type="button" data-afp-press="[data-ai-reset]" data-afp-text="resetButton" />
-          <button type="button" data-afp-press="[data-ai-validate]" data-afp-text="validateFlow" />
+          <button type="button" data-afp-press="[data-ai-arrange]" data-afp-text="arrangeButton" aria-label={labels.arrangeButton} />
+          <button type="button" data-afp-press="[data-ai-reset]" data-afp-text="resetButton" aria-label={labels.resetButton} />
+          <button type="button" data-afp-press="[data-ai-validate]" data-afp-text="validateFlow" aria-label={labels.validateFlow} />
           <a href={v4.gamesHref}>{labels.exit}</a>
         </div>,
         <section key={part("mission")} className="afp-mission" data-afp-part="mission" role="dialog" aria-modal="true" aria-labelledby="afp-mission-title">
@@ -580,7 +578,6 @@ function careerAdventure(v4, node, classes, attributes, key) {
         <span className="ca-enter__record" data-ca-record="" />
       </p>,
       <noscript key={part("noscript")} data-ca-part="noscript">
-        <style>{"[data-ca-enter],.ca-poster,.adventure-canvas-wrap,.adventure-side .detail-panel:last-child{display:none!important}"}</style>
         <p className="ca-noscript">{labels.noscript} <a href={v4.gamesHref}>{labels.noscriptGames}</a> · <a href={v4.worksHref}>{labels.noscriptWorks}</a></p>
       </noscript>,
     ];
@@ -611,7 +608,7 @@ function careerAdventure(v4, node, classes, attributes, key) {
         <i className="ca-heat" aria-hidden="true" />
         <div className="ca-card ca-brand">
           <strong aria-hidden="true">Career Adventure</strong>
-          <div role="group" aria-label={labels.title}>
+          <div role="group" aria-label={labels.aria}>
             <button type="button" className="ca-icon" data-ca-pause="" aria-label={labels.hudPause} title={labels.hudPause}><AdventureIcon name="pause" /></button>
             <button type="button" className="ca-icon" data-ca-sound="" aria-pressed="true" aria-label={labels.hudSound} title={labels.hudSound}><AdventureIcon name="sound" /></button>
             {/* Offered only where the browser can do it (the controller shows it). */}
@@ -624,7 +621,7 @@ function careerAdventure(v4, node, classes, attributes, key) {
         </dl>
         <div className="ca-card ca-next">
           <span>{labels.hudNext}</span>
-          <canvas data-ca-next="" width="144" height="144" aria-hidden="true" />
+          <canvas data-ca-next="" width="144" height="144" role="img" aria-label={labels.hudNext} />
           <b data-ca-next-name="" />
         </div>
         <div className="ca-card ca-tools" role="group" aria-label={labels.hudTools}>
@@ -633,7 +630,7 @@ function careerAdventure(v4, node, classes, attributes, key) {
           <button type="button" data-ca-tool="debug" title={labels.toolDebugHint}><AdventureIcon name="debug" /><span>{labels.toolDebug}</span><b data-ca-count="debug">0</b></button>
         </div>
         <div className="ca-card ca-stage">
-          <canvas data-ca-stage-icon="" width="112" height="112" aria-hidden="true" />
+          <canvas data-ca-stage-icon="" width="112" height="112" role="img" aria-label={labels.hudPath} />
           <div>
             <strong data-ca-stage-name="" />
             <span data-ca-stage="" />
@@ -736,7 +733,7 @@ function careerAdventure(v4, node, classes, attributes, key) {
         </section>
         <section className="ca-layer ca-layer--win" data-ca-layer="win" role="dialog" aria-modal="true" aria-labelledby="ca-win-title" hidden>
           <div className="ca-panel">
-            <canvas className="ca-trophy" data-ca-trophy="" width="240" height="240" aria-hidden="true" />
+            <canvas className="ca-trophy" data-ca-trophy="" width="240" height="240" role="img" aria-label={labels.winTitle} />
             <h2 id="ca-win-title">{labels.winTitle}</h2>
             <p>{labels.winText}</p>
             <div data-ca-result="win" />

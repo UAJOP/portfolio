@@ -2683,6 +2683,12 @@ body .easter-trigger i {
  * its side) the port is a square the size of the trigger opposite, so the two
  * corners match. */
 @media (max-width: 820px), (max-height: 480px) {
+  /* At the document end both fixed ports must land on footer breathing room,
+   * never on the first/last social target. */
+  .site-footer {
+    padding-bottom: max(5.5rem, calc(env(safe-area-inset-bottom) + 5rem));
+  }
+
   body .chatbot-launcher {
     position: relative;
     justify-content: center;

@@ -101,11 +101,6 @@
       "repository": "UAJOP/Pyhton-Projects",
       "enabled": true
     },
-    "ic-supply": {
-      "provider": "github",
-      "repository": "UAJOP/Ic-Supply",
-      "enabled": true
-    },
     "portfolio-website": {
       "provider": "github",
       "repository": "UAJOP/portfolio",

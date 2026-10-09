@@ -15,36 +15,65 @@ const V4_ROUTES = new Map([["home", "home"], ["works", "works"], ["caseStudy", "
 /* The opt-in, inline and first, so it is known before the page is revealed. */
 const V4_TRANSITION = "@media (prefers-reduced-motion: no-preference){@view-transition{navigation:auto}}";
 const V4_REVEAL = '["pageswap","pagereveal"].forEach(function(n){addEventListener(n,function(e){var t=e.viewTransition;t&&[t.ready,t.finished,t.updateCallbackDone].forEach(function(p){p&&p.catch&&p.catch(function(){})})})});';
+const V4_NO_JS = "[data-jds-enter],[data-afp-play],.afp-hub,[data-ca-enter],.ca-poster,.adventure-canvas-wrap,.adventure-side .detail-panel:last-child{display:none!important}.v4-ajoop-sys__panels [hidden]{display:block!important}.v4-ajoop-sys__rest{display:none!important}";
+const CONTENT_SECURITY_POLICY = "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://ajoop.kaanbalci.com https://cloud.umami.is https://script.google.com; form-action 'self' mailto: https://script.google.com https://docs.google.com; frame-src https://docs.google.com https://drive.google.com; upgrade-insecure-requests";
+const SOCIAL_IMAGE_DIMENSIONS = new Map([
+  ["portfolio_website_cover.webp", [1846, 927]],
+  ["sinama-social-cover.png", [1200, 630]],
+  ["ajoop-living-hub-1600.webp", [1600, 900]],
+  ["hospital-system-patient-workflow.webp", [1557, 905]],
+  ["ai-flow-puzzle.webp", [1280, 800]],
+  ["career-adventure.webp", [1280, 800]],
+  ["joyday-action-painting.webp", [1280, 800]],
+  ["joyday-brand-logo.webp", [1600, 703]],
+  ["my-museum-login-screen.png", [1080, 2340]],
+  ["agency-db-er-diagram.png", [1800, 1100]],
+  ["cars-price-distribution.png", [1774, 1231]],
+]);
+const socialImageDimensions = (url) => SOCIAL_IMAGE_DIMENSIONS.get(String(url || "").split("/").pop()) || [];
 
 function ProductionHead({ head, page, v4Styles = [] }) {
+  const [socialWidth, socialHeight] = socialImageDimensions(head.og.image);
+  const socialUrl = head.og.url || head.canonical;
+  const socialAlt = head.og.imageAlt || (head.og.image && head.og.title ? `${head.og.title} preview` : null);
+  const twitter = {
+    card: head.twitter.card || (head.og.image ? "summary_large_image" : null),
+    title: head.twitter.title || head.og.title,
+    description: head.twitter.description || head.og.description,
+    image: head.twitter.image || head.og.image,
+    imageAlt: head.twitter.imageAlt || socialAlt,
+  };
   return (
     <head>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta httpEquiv="Content-Security-Policy" content={CONTENT_SECURITY_POLICY} />
+      <meta name="referrer" content="strict-origin-when-cross-origin" />
       <style>{V4_TRANSITION}</style>
+      <noscript><style>{V4_NO_JS}</style></noscript>
       <meta name="description" content={head.description} />
       {head.keywords ? <meta name="keywords" content={head.keywords} /> : null}
       <meta name="author" content="Kaan Balcı" />
       <title>{head.title}</title>
       <meta name="theme-color" content="#07111f" />
-      <link rel="canonical" href={head.canonical} />
-      {head.alternates.map((link) => <link key={link.hrefLang} rel="alternate" hrefLang={link.hrefLang} href={link.href} />)}
+      {head.canonical ? <link rel="canonical" href={head.canonical} /> : null}
+      {(head.alternates || []).map((link) => <link key={link.hrefLang} rel="alternate" hrefLang={link.hrefLang} href={link.href} />)}
       <meta name="robots" content={head.robots || "index, follow"} />
       {head.og.siteName ? <meta property="og:site_name" content={head.og.siteName} /> : null}
       {head.og.locale ? <meta property="og:locale" content={head.og.locale} /> : null}
-      <meta property="og:title" content={head.og.title} />
-      <meta property="og:description" content={head.og.description} />
+      {head.og.title ? <meta property="og:title" content={head.og.title} /> : null}
+      {head.og.description ? <meta property="og:description" content={head.og.description} /> : null}
       {head.og.type ? <meta property="og:type" content={head.og.type} /> : null}
-      {head.og.url ? <meta property="og:url" content={head.og.url} /> : null}
-      <meta property="og:image" content={head.og.image} />
-      {head.og.imageWidth ? <meta property="og:image:width" content={head.og.imageWidth} /> : null}
-      {head.og.imageHeight ? <meta property="og:image:height" content={head.og.imageHeight} /> : null}
-      {head.og.imageAlt ? <meta property="og:image:alt" content={head.og.imageAlt} /> : null}
-      {head.twitter.card ? <meta name="twitter:card" content={head.twitter.card} /> : null}
-      {head.twitter.title ? <meta name="twitter:title" content={head.twitter.title} /> : null}
-      {head.twitter.description ? <meta name="twitter:description" content={head.twitter.description} /> : null}
-      {head.twitter.image ? <meta name="twitter:image" content={head.twitter.image} /> : null}
-      {head.twitter.imageAlt ? <meta name="twitter:image:alt" content={head.twitter.imageAlt} /> : null}
+      {socialUrl ? <meta property="og:url" content={socialUrl} /> : null}
+      {head.og.image ? <meta property="og:image" content={head.og.image} /> : null}
+      {head.og.imageWidth || socialWidth ? <meta property="og:image:width" content={head.og.imageWidth || socialWidth} /> : null}
+      {head.og.imageHeight || socialHeight ? <meta property="og:image:height" content={head.og.imageHeight || socialHeight} /> : null}
+      {socialAlt ? <meta property="og:image:alt" content={socialAlt} /> : null}
+      {twitter.card ? <meta name="twitter:card" content={twitter.card} /> : null}
+      {twitter.title ? <meta name="twitter:title" content={twitter.title} /> : null}
+      {twitter.description ? <meta name="twitter:description" content={twitter.description} /> : null}
+      {twitter.image ? <meta name="twitter:image" content={twitter.image} /> : null}
+      {twitter.imageAlt ? <meta name="twitter:image:alt" content={twitter.imageAlt} /> : null}
       <script>{head.themeBootstrap}</script>
       <script src="/js/core/locale-bootstrap.js" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -80,7 +109,7 @@ function ProductionHeader({ page, shell }) {
           <span />
           <strong>{shell.availability}</strong>
         </a>
-        <nav className="nav-links" data-nav="" id="site-navigation">
+        <nav className="nav-links" data-nav="" id="site-navigation" aria-label={text.primaryNavAria}>
           {shell.nav.map((item) => <a key={item.id} className={item.id === page ? "selected" : undefined} aria-current={item.id === page ? "page" : undefined} href={item.href}>{item.label}</a>)}
         </nav>
         <div className="header-actions">
@@ -142,7 +171,7 @@ export default function ProductionDocument({ document, head, main, recruiter, aj
   const commandPayload = JSON.stringify(commandPalette).replaceAll("<", "\\u003c");
   const ajoopRoot = <div id="react-ajoop-root" data-react-ajoop-shell="react" data-prerendered="true"><AjoopShell model={ajoop} /></div>;
   return (
-    <html lang={document.htmlLang} dir={document.dir} data-route-locale={document.locale}>
+    <html lang={document.htmlLang} dir={document.dir} data-route-locale={document.routeLocaleFromPath ? undefined : document.locale} data-route-locale-from-path={document.routeLocaleFromPath ? "" : undefined}>
       <ProductionHead head={head} page={document.page} v4Styles={document.v4Styles} />
       <body className={document.bodyClass || undefined} data-page={document.page} data-project-slug={document.projectSlug || undefined}>
         <ProductionHeader page={document.navPage || document.page} shell={shell} />

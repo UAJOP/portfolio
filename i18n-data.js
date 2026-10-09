@@ -271,10 +271,12 @@ window.KAAN_I18N = {
       "WhatsApp"
     ],
     "projectNames": [
+      "AJOOP",
       "AI Chatbot Flow Design",
       "AI Flow Puzzle",
       "Atölye Joyday",
       "Atölye Joyday Official Website",
+      "Career Adventure",
       "Hospital Appointment System",
       "Hospital Form App",
       "Hospital System",

@@ -70,6 +70,12 @@ const BUILD_ONLY_MODULES = new Set(["js/core/i18n.js"]);
  * the #30 lifecycle host for the retained Labs/mini-game engines. */
 const REACT_DOCUMENT_MODULES = new Set([
   "js/pages/engine-host.js",
+  /* V4 play surfaces are loaded explicitly by their React-owned document so
+   * their lifecycle stays isolated from the shared page manifest. */
+  "js/pages/career-adventure-game.js",
+  "js/pages/flow-puzzle-game.js",
+  "js/pages/joyday-studio.js",
+  "js/pages/merge-rush-game.js",
   /* V4 motion runtime, deferred by documents that consume V4 primitives. */
   "js/v4/runtime.js",
 ]);
@@ -277,7 +283,7 @@ const labsSource = read("js/pages/labs.js");
 const creativeSource = read("js/features/creative.js");
 ok(
   "labs page module initializes the Algorithmic 3D canvas after defining it",
-  /function\s+setupAlgorithmic3DLab\b[\s\S]*?\nif \(document\.querySelector\("main\[data-react-main\]"\)\) [^\n]*\.push\(\["labs", setupAlgorithmic3DLab\]\);\nelse setupAlgorithmic3DLab\(new AbortController\(\)\.signal\);\s*$/.test(labsSource),
+  /function\s+setupAlgorithmic3DLab\b[\s\S]*?\r?\nif \(document\.querySelector\("main\[data-react-main\]"\)\) [^\r\n]*\.push\(\["labs", setupAlgorithmic3DLab\]\);\r?\nelse setupAlgorithmic3DLab\(new AbortController\(\)\.signal\);\s*$/.test(labsSource),
 );
 ok(
   "labs page module starts exactly once: hosted on a React document, directly on a legacy one",

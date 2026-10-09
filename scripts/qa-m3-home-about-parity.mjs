@@ -16,6 +16,20 @@ assert.equal(accepted.schemaVersion, 3);
 assert.equal(accepted.acceptedRef, ACCEPTED_REF);
 assert.equal(accepted.algorithm, "sha256");
 
+/* V4-E08 deliberately hardens metadata without changing the accepted visual
+ * document contract. Remove only those additive head fields before comparing
+ * with the historical #25-B snapshot; qa:v4:e08 owns their positive checks. */
+function historicalHeadView(html) {
+  return html
+    .replace(/<meta http-equiv="Content-Security-Policy"[^>]*\/>/i, "")
+    .replace(/<meta name="referrer"[^>]*\/>/i, "")
+    .replace(/<meta property="og:(?:site_name|locale|type|url|image:width|image:height|image:alt)"[^>]*\/>/gi, "")
+    .replace(/<meta name="twitter:(?:card|title|description|image|image:alt)"[^>]*\/>/gi, "")
+    .replace(/<noscript><style>[\s\S]*?<\/style><\/noscript>/i, "")
+    .replace(/(<nav\b[^>]*class="nav-links"[^>]*) aria-label="[^"]+"([^>]*>)/gi, "$1$2");
+}
+const acceptedEraContract = (html, options) => documentContract(historicalHeadView(html), options);
+
 const rootAt = process.argv.indexOf("--root");
 const requestedRoot = rootAt >= 0 ? path.resolve(process.argv[rootAt + 1]) : null;
 if (requestedRoot && !fs.existsSync(requestedRoot)) throw new Error(`G-62 root does not exist: ${requestedRoot}`);
@@ -49,9 +63,12 @@ try {
   for (const route of migrated) {
     const reactHtml = fs.readFileSync(path.join(fixture.mixed, route.output), "utf8");
     /* #32A: the accepted contract is pinned with the upstream icon stylesheet. */
-    const actual = documentContract(iconSubsetAcceptedBase(reactHtml, route.output), { route: route.output, source: "current" });
+    const actual = acceptedEraContract(iconSubsetAcceptedBase(reactHtml, route.output), { route: route.output, source: "current" });
     const expected = accepted.documents[route.output];
-    for (const region of ["head", "document", "header", "main", "footer"]) {
+    /* Head metadata now has an independently tested E08 production contract;
+     * the V4 main is covered by its accepted E01-E07 browser suites. Keep the
+     * document shell, normalized header and footer pinned to #25-B here. */
+    for (const region of ["document", "header", "footer"]) {
       assert.deepEqual(actual[region], expected[region], `${route.pathname}: accepted ${region} contract drift`);
       assertions += 1;
     }
@@ -68,7 +85,7 @@ try {
   ]) {
     assert.throws(() => iconSubsetAcceptedBase(mutant, "index.html"), /#32A/, `G-62 negative control must reject ${label}`); assertions += 1;
   }
-  const expectedHomeHead = accepted.documents["index.html"].head;
+  const expectedHomeHead = acceptedEraContract(home, { route: "index.html", source: "current" }).head;
   const jsonLdMatch = home.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/i);
   assert.ok(jsonLdMatch, "Home must contain the accepted Person JSON-LD"); assertions += 1;
   for (const [label, mutant] of [
@@ -77,12 +94,12 @@ try {
     ["duplicate JSON-LD", home.replace(jsonLdMatch[0], `${jsonLdMatch[0]}${jsonLdMatch[0]}`)],
     ["changed theme bootstrap", home.replace("kaanbalci-site-theme", "changed-theme-key")],
   ]) {
-    assert.notDeepEqual(documentContract(mutant, { route: "index.html", source: "current" }).head, expectedHomeHead, `G-62 negative control must reject ${label}`);
+    assert.notDeepEqual(acceptedEraContract(mutant, { route: "index.html", source: "current" }).head, expectedHomeHead, `G-62 negative control must reject ${label}`);
     assertions += 1;
   }
   const corruptedJsonLd = home.replace(jsonLdMatch[0], '<script type="application/ld+json">{</script>');
-  assert.throws(() => documentContract(corruptedJsonLd, { route: "index.html", source: "current" }), /not valid JSON/, "G-62 negative control must reject corrupted JSON-LD"); assertions += 1;
-  const homeContract = documentContract(home, { route: "index.html", source: "current" });
+  assert.throws(() => acceptedEraContract(corruptedJsonLd, { route: "index.html", source: "current" }), /not valid JSON/, "G-62 negative control must reject corrupted JSON-LD"); assertions += 1;
+  const homeContract = acceptedEraContract(home, { route: "index.html", source: "current" });
   for (const [label, region, mutate] of [
     ["data attribute removal", "header", (value) => value.replace(' data-availability-badge=""', "")],
     ["ARIA modification", "header", (value) => value.replace(/aria-label="[^"]+"/, 'aria-label="mutated"')],
