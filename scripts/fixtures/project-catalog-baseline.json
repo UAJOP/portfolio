@@ -136,7 +136,7 @@
       "linkUrls": [
         "https://github.com/UAJOP/Drivenfinity"
       ],
-      "stackCount": 5,
+      "stackCount": 3,
       "galleryCount": 1,
       "featureCount": 5
     },
@@ -173,7 +173,7 @@
       ],
       "stackCount": 4,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 4
     },
     "unity-essentials": {
       "fields": [
@@ -194,8 +194,8 @@
         "year"
       ],
       "title": {
-        "en": "Unity Essentials",
-        "tr": "Unity Essentials"
+        "en": "Unity Essentials — First Unity Learning Project",
+        "tr": "Unity Essentials — İlk Unity Öğrenme Projesi"
       },
       "category": {
         "en": "Game Development",
@@ -206,9 +206,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/UnityEssentials"
       ],
-      "stackCount": 4,
+      "stackCount": 2,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 4
     },
     "extract-shoot-zero": {
       "fields": [
@@ -241,9 +241,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/ExtractShoot-Zero"
       ],
-      "stackCount": 5,
+      "stackCount": 1,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 3
     },
     "tank-savage": {
       "fields": [
@@ -276,9 +276,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/TankSavage"
       ],
-      "stackCount": 5,
+      "stackCount": 1,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 4
     },
     "hospital-form-app": {
       "fields": [
@@ -346,7 +346,8 @@
       "year": "2024",
       "image": "assets/what-is-data-analyst.jpg",
       "linkUrls": [
-        "https://github.com/UAJOP/Cars-Dataset-Analysis"
+        "https://github.com/UAJOP/Cars-Dataset-Analysis",
+        "https://www.youtube.com/watch?v=3O3N9WXuUNw"
       ],
       "stackCount": 7,
       "galleryCount": 1,
@@ -416,11 +417,11 @@
       "year": "2023",
       "image": "assets/7477790.png",
       "linkUrls": [
-        "https://github.com/UAJOP/Wheather-App"
+        "https://github.com/UAJOP/Weather-App"
       ],
-      "stackCount": 5,
+      "stackCount": 1,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 2
     },
     "control-panel": {
       "fields": [
@@ -453,9 +454,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/Control-Panel"
       ],
-      "stackCount": 5,
+      "stackCount": 4,
       "galleryCount": 1,
-      "featureCount": 6
+      "featureCount": 4
     },
     "hospital-appointment-system": {
       "fields": [
@@ -525,7 +526,7 @@
       "linkUrls": [
         "https://github.com/UAJOP/EscapeIsland"
       ],
-      "stackCount": 4,
+      "stackCount": 3,
       "galleryCount": 1,
       "featureCount": 5
     },
@@ -560,9 +561,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/Calculator-Android-Studio"
       ],
-      "stackCount": 4,
+      "stackCount": 3,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 3
     },
     "calculator-javascript": {
       "fields": [
@@ -595,9 +596,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/Calculator-JavaScript"
       ],
-      "stackCount": 4,
+      "stackCount": 2,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 3
     },
     "warehouse-war": {
       "fields": [
@@ -630,9 +631,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/Warehouse-War"
       ],
-      "stackCount": 4,
+      "stackCount": 2,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 3
     },
     "legacy-of-the-lost": {
       "fields": [
@@ -665,9 +666,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/LegacyOfTheLost"
       ],
-      "stackCount": 4,
+      "stackCount": 1,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 4
     },
     "porto-25": {
       "fields": [
@@ -735,9 +736,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/My-java-projects"
       ],
-      "stackCount": 4,
+      "stackCount": 2,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 4
     },
     "agency-db": {
       "fields": [
@@ -770,9 +771,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/Agency-Db"
       ],
-      "stackCount": 4,
+      "stackCount": 5,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 4
     },
     "mandelas-web-site-project": {
       "fields": [
@@ -805,9 +806,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/Mandelas-Web-site-Project"
       ],
-      "stackCount": 4,
+      "stackCount": 2,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 3
     },
     "pyhton-projects": {
       "fields": [
@@ -840,9 +841,9 @@
       "linkUrls": [
         "https://github.com/UAJOP/Pyhton-Projects"
       ],
-      "stackCount": 4,
+      "stackCount": 1,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 4
     },
     "ic-supply": {
       "fields": [
@@ -870,14 +871,12 @@
         "en": "Data / Backend",
         "tr": "Veri / Backend"
       },
-      "year": "2024",
+      "year": "2023",
       "image": "assets/ic_supply_cover.webp",
-      "linkUrls": [
-        "https://github.com/UAJOP/Ic-Supply"
-      ],
+      "linkUrls": [],
       "stackCount": 4,
       "galleryCount": 1,
-      "featureCount": 5
+      "featureCount": 4
     },
     "portfolio-website": {
       "fields": [
@@ -908,11 +907,42 @@
       "year": "2026",
       "image": "assets/portfolio_website_cover.webp",
       "linkUrls": [
+        "/portfolio-case-study/",
         "https://github.com/UAJOP/portfolio"
       ],
-      "stackCount": 6,
+      "stackCount": 5,
       "galleryCount": 1,
       "featureCount": 5
     }
+  },
+  "reRecorded": {
+    "phase": "V4-E06.5",
+    "reason": "Source audit of every repository: titles, years, link targets and stack/feature counts of the audited records were changed on purpose (scripts/v4-e06-5-project-truth.mjs, docs/v4-e06-5-github-works-coverage.md). Slugs, categories, images and field sets are still the pre-migration snapshot.",
+    "slugs": [
+      "calculator-android-studio",
+      "mandelas-web-site-project",
+      "ic-supply",
+      "control-panel",
+      "portfolio-website",
+      "unity-essentials",
+      "extract-shoot-zero",
+      "tank-savage",
+      "legacy-of-the-lost",
+      "warehouse-war",
+      "escape-island",
+      "dunker-madness",
+      "drivenfinity",
+      "my-java-projects",
+      "pyhton-projects",
+      "agency-db",
+      "porto-25",
+      "my-museum",
+      "hospital-appointment-system",
+      "cars-dataset-analysis"
+    ]
+  },
+  "retired": {
+    "weather-app": "The repository holds one 241-byte HTML skeleton with an empty body. There is no project to present, so the page was retired in V4-E06.5.",
+    "calculator-javascript": "The repository holds keypad markup and CSS; script.js is 0 bytes, so there is no working calculator. The page was retired in V4-E06.5."
   }
 }

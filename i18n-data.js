@@ -88,6 +88,14 @@ window.KAAN_I18N = {
         "legacy": "merge-rush-case-study.html"
       },
       {
+        "id": "careerAdventureCaseStudy",
+        "route": "career-adventure-case-study/"
+      },
+      {
+        "id": "portfolioCaseStudy",
+        "route": "portfolio-case-study/"
+      },
+      {
         "id": "mergeRush",
         "route": "merge-rush/"
       },

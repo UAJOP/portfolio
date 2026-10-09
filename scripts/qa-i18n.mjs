@@ -804,7 +804,8 @@ for (const file of englishHtml) {
   }
 }
 assert(runtimePageCount >= 19, `expected the authored English runtime pages, got ${runtimePageCount}`);
-assert(projectHtml.length === 25, `expected 25 generated project routes, got ${projectHtml.length}`);
+/* 25 pre-migration project routes, less the two retired in V4-E06.5 (scripts/fixtures/project-catalog-baseline.json). */
+assert(projectHtml.length === 23, `expected 23 generated project routes, got ${projectHtml.length}`);
 
 /* ---------- 17. runtime load order and pack shipping ---------- */
 

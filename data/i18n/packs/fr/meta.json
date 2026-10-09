@@ -95,6 +95,18 @@
     "ogTitle": "Jouez à Merge Rush: Tiny Factory",
     "title": "Merge Rush: Tiny Factory — Jouer | Kaan Balcı"
   },
+  "portfolioCaseStudy": {
+    "description": "Comment kaanbalci.com est construit : un registre canonique de projets, du React prérendu en HTML statique en cinq langues, un assistant public, quatre jeux navigateur et des contrôles ciblés à chaque phase.",
+    "ogDescription": "Un portfolio conçu comme un système : données canoniques, prérendu React statique, cinq langues, un assistant public et quatre jeux.",
+    "ogTitle": "Étude de cas kaanbalci.com",
+    "title": "Étude de cas kaanbalci.com | Kaan Balcı"
+  },
+  "careerAdventureCaseStudy": {
+    "description": "Comment Career Adventure est devenu un vrai jeu : une simulation de physique déterministe à pas fixe, une difficulté mesurée par des parties de stratégie, une fin de partie atteignable et un mode jeu plein écran.",
+    "ogDescription": "Un jeu de carrière à fusion reconstruit autour d'une simulation déterministe, d'une difficulté mesurée et de vraies fins.",
+    "ogTitle": "Étude de cas Career Adventure",
+    "title": "Étude de cas Career Adventure | Kaan Balcı"
+  },
   "notFound": {
     "description": "Page 404 du portfolio de Kaan Balcı.",
     "ogDescription": "Page 404 du portfolio de Kaan Balcı.",

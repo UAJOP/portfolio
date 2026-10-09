@@ -1,24 +1,23 @@
 {
   "agency-db": {
     "category": "Daten / Backend",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Die Daten der Agentur so modellieren, dass Aufträge, Personen, Kunden und Ausgaben konsistent bleiben.",
     "features": [
-      "Relationale Datenmodellierung",
-      "SQL-Praxis",
-      "Struktur von Agenturdatensätzen",
-      "Konzept der Datenbanknormalisierung",
-      "Planung von Datenoperationen"
+      "11 Tabellen, 7 Fremdschlüssel",
+      "10 Stored Procedures",
+      "3 Audit-Trigger",
+      "ER-Diagramm und Demo-Abfragen"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Ein datenbankorientiertes Projekt zur Modellierung agenturtypischer Datensätze, Beziehungen und strukturierter Datenoperationen.",
+    "overview": "Das Repository enthält den SQL-Dump, lesende Demo-Abfragen und ein ER-Diagramm. Es ist eine Kursarbeit mit synthetischen Daten, kein Kundensystem.",
     "role": "Datenbankentwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Ein datenbankorientiertes Projekt zur Modellierung agenturtypischer Datensätze, Beziehungen und strukturierter Datenoperationen.",
+    "solution": "Elf Tabellen mit Primär- und Fremdschlüsseln tragen das Modell; drei Trigger kopieren Personaländerungen in Audit-Tabellen, und zehn Stored Procedures liefern Abfragen und einfache Aggregate.",
+    "status": "Akademisches Projekt",
+    "subtitle": "Eine akademische MySQL-Datenbank, die eine Eventagentur modelliert: Personal, Kunden, Aufträge, Ausgaben und Gehaltsdaten.",
     "title": "Agency DB",
     "type": "Datenbankprojekt"
   },
@@ -112,49 +111,24 @@
   },
   "calculator-android-studio": {
     "category": "Mobile-Entwicklung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Tasteneingaben und Arithmetik auf einem Android-Bildschirm verarbeiten.",
     "features": [
-      "Rechenoperationen",
-      "Android-UI-Praxis",
-      "Struktur eines Mobile-Projekts",
-      "Verarbeitung von Eingaben",
-      "Einsteigerfreundliche App-Logik"
+      "Kotlin-MainActivity",
+      "XML-Layout",
+      "Gradle-Android-Projekt"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Eine mobile Taschenrechner-App, in Android Studio gebaut, um Oberflächenstruktur und grundlegende App-Logik zu üben.",
+    "overview": "Das Projekt besteht aus einer Activity und ihrem XML-Layout. Es wurde für dieses Portfolio nicht neu gebaut; die Beschreibung stützt sich auf den Quellcode.",
     "role": "Android-Entwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Eine mobile Taschenrechner-App, in Android Studio gebaut, um Oberflächenstruktur und grundlegende App-Logik zu üben.",
+    "solution": "Die Logik liegt in einer einzigen Kotlin-MainActivity, die an das Layout gebunden ist.",
+    "status": "Lernprojekt",
+    "subtitle": "Ein Android-Taschenrechner mit einem Bildschirm, in Kotlin als Uni-Übung geschrieben.",
     "title": "Calculator Android Studio",
     "type": "Mobile App"
-  },
-  "calculator-javascript": {
-    "category": "Webentwicklung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
-    "features": [
-      "DOM-basierte Interaktionen",
-      "Rechnerlogik",
-      "Praxis mit Frontend-State",
-      "Einfache UI-Struktur",
-      "JavaScript-Grundlagen"
-    ],
-    "links": [
-      {
-        "label": "GitHub öffnen"
-      }
-    ],
-    "overview": "Ein JavaScript-Taschenrechner mit Fokus auf DOM-Interaktion, UI-Zustand und grundlegender Frontend-Logik.",
-    "role": "Frontend-Entwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Ein JavaScript-Taschenrechner mit Fokus auf DOM-Interaktion, UI-Zustand und grundlegender Frontend-Logik.",
-    "title": "Calculator JavaScript",
-    "type": "Frontend-App"
   },
   "cars-dataset-analysis": {
     "category": "Datenanalyse",
@@ -169,26 +143,27 @@
     "links": [
       {
         "label": "GitHub öffnen"
+      },
+      {
+        "label": "Walkthrough ansehen"
       }
     ],
     "overview": "Das Projekt exploriert, bereinigt und visualisiert in erster Linie Fahrzeugdaten. Ergänzend enthält es ein kleines Experiment mit linearer Regression aus scikit-learn, um die Preisschätzung in einem kontrollierten Notebook-Workflow zu untersuchen.",
     "role": "Python-Entwickler",
     "solution": "Für den explorativen Hauptteil habe ich Pandas, NumPy, Matplotlib und Seaborn eingesetzt und anschließend ein kleines Experiment mit linearer Regression aus scikit-learn als zusätzliche technische Übung ergänzt.",
-    "status": "Repository",
+    "status": "Akademisches Projekt",
     "subtitle": "Ein Python-Datenprojekt, das explorative Analyse und Visualisierung mit einem kleinen linearen Regressionsexperiment zur Fahrzeugpreisschätzung verbindet.",
     "title": "Cars Dataset Analysis",
     "type": "Datenprojekt"
   },
   "control-panel": {
     "category": "Web & Dashboard",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Mitarbeiterrollen ein Panel mit Anmeldung geben, in dem sie Benutzer und Produkte verwalten, und Kunden davon fernhalten.",
     "features": [
-      "Oberfläche im Dashboard-Stil",
-      "Struktur eines Admin-Panels",
-      "Verwaltungsmasken in PHP",
-      "Operationen auf MySQL-Basis",
-      "Wiederverwendbare UI-Abschnitte",
-      "Web-Workflow aus dem Studien- und Projektkontext"
+      "Login mit gehashten Passwörtern und Sessions",
+      "Benutzer anlegen, lesen, ändern, löschen",
+      "Produkte anlegen, lesen, ändern, löschen",
+      "Rollen-, Kategorie- und Bestelltabellen im Schema"
     ],
     "links": [
       {
@@ -197,8 +172,8 @@
     ],
     "overview": "Control Panel ist ein Administrations-Dashboard auf Basis von PHP und MySQL mit datenbankgestützten Verwaltungsmasken und operativen Abläufen.",
     "role": "Full-Stack-Entwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
+    "solution": "PHP-Endpunkte tauschen JSON mit den Seiten aus. Der Login nutzt ein Prepared Statement, prüft ein gehashtes Passwort und weist die Rollen Mitarbeiter und Kunde ab. Der Code wurde für dieses Portfolio gelesen, nicht ausgeführt.",
+    "status": "Akademisches Projekt",
     "subtitle": "Ein Administrations-Dashboard auf Basis von PHP und MySQL mit datenbankgestützten Verwaltungsmasken und operativen Steuerungsabläufen.",
     "title": "Control Panel",
     "type": "Dashboard-Projekt"
@@ -207,11 +182,11 @@
     "category": "Spieleentwicklung",
     "challenge": "Die zentrale Designaufgabe war, das Gameplay einfach genug für Hyper-Casual zu halten und die Schleife dabei reaktionsschnell und wiederspielbar zu machen.",
     "features": [
-      "3D-Fahr-Gameplay",
-      "Schleife zum Ausweichen von Hindernissen",
-      "Punktebasierte Progression",
-      "C#-Skripte in Unity",
-      "Auf Mobilgeräte zugeschnittene Spielidee"
+      "Lenkung mit stetiger Beschleunigung",
+      "Neustart bei Hinderniskollision",
+      "Zeitbasierter Punktestand mit gespeichertem Highscore",
+      "Energiezähler mit Auflade-Benachrichtigung",
+      "Prototyp-Grafikpaket eines Drittanbieters"
     ],
     "links": [
       {
@@ -220,8 +195,8 @@
     ],
     "overview": "Drivenfinity ist ein auf Mobilgeräte ausgerichtetes Fahrspiel, in dem man so lange wie möglich überlebt und die Punktzahl durch Ausweichen von Hindernissen erhöht.",
     "role": "Unity-Entwickler",
-    "solution": "Ich habe das Spiel um klare Steuerung, Hindernisnavigation, Punktevergabe und schnellen Neustart herum aufgebaut, passend zu kurzen mobilen Sessions.",
-    "status": "Repository",
+    "solution": "Vier kleine Skripte tragen es: ein Auto, das mit der Zeit schneller wird und bei einem Hindernis neu startet, ein zeitbasierter Punktestand mit gespeichertem Highscore und ein Menü mit Energiezähler und Auflade-Benachrichtigung.",
+    "status": "Prototyp",
     "subtitle": "Ein Hyper-Casual-3D-Fahrspiel für Mobilgeräte mit Fokus auf Ausweichen, Reaktionsvermögen und Punkteverbesserung.",
     "title": "Drivenfinity",
     "type": "Mobiles Spiel"
@@ -230,33 +205,32 @@
     "category": "Spieleentwicklung",
     "challenge": "Physikspiele brauchen befriedigendes Feedback, lesbare Flugbahnen und eine Balance zwischen Präzision und Spielspaß.",
     "features": [
-      "2D-Geschoss-Gameplay",
-      "Physikbasierte Interaktionen",
-      "Zerstörung gegnerischer Türme",
-      "C#-Gameplay-Skripte",
-      "Inspiriert von Angry Birds"
+      "Ziehen und Loslassen per Touch",
+      "Abschuss über ein Federgelenk",
+      "Respawn-Schleife für den Ball",
+      "Eine Szene, ein Skript"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Dunker Madness erkundet eine physikbasierte Schussmechanik, bei der Geschosse abgefeuert werden, um gegnerische Bauten zu zerstören.",
+    "overview": "Dunker Madness besteht aus einer Szene und einem Skript. Per Touch wird der Ball gezogen, ein Federgelenk schleudert ihn, und nach kurzer Verzögerung löst er sich.",
     "role": "Unity-Entwickler",
-    "solution": "Das Projekt konzentriert sich auf einfache Geschosssteuerung, Zielinteraktion und die Logik der Bauwerkszerstörung in Unity.",
-    "status": "Repository",
-    "subtitle": "Ein physikbasiertes 2D-Geschossspiel, inspiriert von Zielen, Turmzerstörung und strategischen Schüssen.",
+    "solution": "BallHandler.cs enthält die ganze Schleife: erzeugen, beim Berühren ziehen, beim Loslassen schleudern, lösen und neu erzeugen.",
+    "status": "Prototyp",
+    "subtitle": "Ein 2D-Schleuder-Prototyp in Unity: einen Ball an einer Feder ziehen, loslassen, und ein neuer erscheint.",
     "title": "Dunker Madness",
     "type": "2D-Spiel"
   },
   "escape-island": {
     "category": "Spieleentwicklung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Bewegliche Hindernisse bei jeder Bildrate gleich laufen lassen.",
     "features": [
-      "Unreal Engine 5.4.4",
-      "Integration von C++ und Blueprints",
-      "Plattforming auf Zeit",
-      "Bewegliche und rotierende Hindernisse",
+      "Unreal Engine 5.4",
+      "C++-Actor für bewegliche Plattformen",
+      "Level-Logik in Blueprints",
+      "Designdokument in drei Sprachen",
       "Solo-Prototyp"
     ],
     "links": [
@@ -264,9 +238,9 @@
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Escape Island ist ein Solo-Prototyp in Unreal Engine 5.4.4, der C++ und Blueprints in einem Third-Person-Plattforming auf Zeit verbindet.",
+    "overview": "Escape Island ist ein Solo-Prototyp in Unreal Engine 5.4, der C++ und Blueprints in einem Third-Person-Plattformer verbindet.",
     "role": "Spieleentwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
+    "solution": "Ein C++-Actor, MovingPlatform, bewegt und dreht sich per Delta Time und kehrt nach einer festgelegten Strecke um; der Rest des Levels ist Blueprint.",
     "status": "Prototyp",
     "subtitle": "Ein Solo-Prototyp für Third-Person-Plattforming und Flucht, gebaut mit Unreal Engine 5, C++ und Blueprints.",
     "title": "Escape Island",
@@ -276,22 +250,20 @@
     "category": "Spieleentwicklung",
     "challenge": "Ein Shooter-Prototyp verlangt das Zusammenspiel mehrerer Systeme: Bewegung, Gegnerverhalten, Lebenspunkte, Schaden und Kampf-Feedback.",
     "features": [
-      "Third-Person-Kampf",
-      "Logik des Gegnerverhaltens",
-      "Systeme für Lebenspunkte und Schaden",
-      "Unreal-Engine-Workflow",
-      "Einsatz von Blueprints und C++"
+      "Third-Person-Shooter-Prototyp",
+      "Screenshots und Gameplay-Clip",
+      "Quellcode nicht veröffentlicht"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Extract Shoot: Zero ist ein Third-Person-Action-Shooter-Prototyp, gebaut zum Üben von Kampfsystemen, Gegnerverhalten und Lebenspunkte-Logik.",
+    "overview": "Extract Shoot: Zero ist ein Third-Person-Shooter-Prototyp in der Unreal Engine. Das öffentliche Repository enthält nur Screenshots und einen kurzen Clip; der Projektquellcode ist nicht veröffentlicht, die Systeme werden also anhand dieser Medien beschrieben.",
     "role": "Unreal-Engine-Entwickler",
-    "solution": "Ich habe das Projekt mit Unreal Engine in C++ und Blueprints gebaut, mit Fokus auf klaren Spielzustand und Kampfinteraktion.",
-    "status": "Repository",
-    "subtitle": "Ein Third-Person-Action-Shooter-Prototyp mit Gegnerverhalten, Lebenspunkte-Verwaltung und kampforientierten Gameplay-Systemen.",
+    "solution": "Ich habe es in der Unreal Engine als Übung zur Kampfschleife gebaut: eine steuerbare Figur, Gegner und Lebenspunkte.",
+    "status": "Medienarchiv",
+    "subtitle": "Ein Third-Person-Action-Shooter-Prototyp in der Unreal Engine, dokumentiert durch Screenshots und einen Clip.",
     "title": "Extract Shoot: Zero",
     "type": "Shooter-Prototyp"
   },
@@ -333,7 +305,7 @@
     ],
     "role": "Python- / Datenbankentwickler",
     "solution": "Ich habe die Anwendung um eine patientenfreundliche Tkinter-Oberfläche, MySQL-gestützte Datenhaltung, Verwaltung der Terminfenster und getrennte Abläufe für Patienten, Ärzte und Personal herum strukturiert. PIL unterstützt die visuelle Oberfläche, die datetime-Logik von Python übernimmt die zeitlichen Operationen.",
-    "status": "Repository",
+    "status": "Akademisches Projekt",
     "subtitle": "Ein Python-basiertes Automatisierungssystem für Klinik-Termine mit Tkinter-Oberfläche und MySQL-gestützten Abläufen für Patienten, Ärzte, Personal und Termine.",
     "title": "Hospital Appointment System",
     "type": "Desktop-Automatisierungssystem"
@@ -384,93 +356,83 @@
   },
   "ic-supply": {
     "category": "Daten / Backend",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Ein Formular auf einer statischen Website für Registrierung und Anmeldung an eine Datenbank anbinden.",
     "features": [
-      "Konzept zur Lieferverfolgung",
-      "Datenstruktur im Bestandsstil",
-      "Denken in Backend-Workflows",
-      "Praxis mit operativen Daten",
-      "Strukturierte Projektlogik"
+      "PHP-Login-Skript",
+      "PHP-Registrierungsskript",
+      "MySQL-Schema mit einer Tabelle",
+      "Angepasste Fremdvorlage"
     ],
-    "links": [
-      {
-        "label": "GitHub öffnen"
-      }
-    ],
-    "overview": "Ein lieferorientiertes Projekt mit Fokus auf bestandsartiger Datenstruktur, Verfolgungslogik und Backend-Denken.",
+    "overview": "Die Shop-Seiten stammen von einer bestehenden Website, die als Vorlage diente. Mein Anteil sind die Login- und Registrierungsskripte und die Benutzerdatenbank mit einer Tabelle. Der Quellcode bleibt privat.",
     "role": "Backend / Data Developer",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Ein lieferorientiertes Projekt mit Fokus auf bestandsartiger Datenstruktur, Verfolgungslogik und Backend-Denken.",
+    "solution": "Zwei PHP-Skripte lesen das Formular und fragen MySQL über mysqli ab. Es ist eine Lernübung: Passwörter werden ungehasht gespeichert, was ein echtes System nie tun darf.",
+    "status": "Privates Archiv",
+    "subtitle": "Uni-Kursarbeit: PHP-Login und -Registrierung mit MySQL, ergänzt in einer angepassten Shop-Vorlage.",
     "title": "IC Supply",
-    "type": "Datensystem"
+    "type": "Web-Kursprojekt"
   },
   "legacy-of-the-lost": {
     "category": "Spieleentwicklung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Rätsel entwerfen, die durch Bewegen und Kombinieren von Objekten in der Umgebung gelöst werden.",
     "features": [
-      "Abenteuer-Atmosphäre",
-      "Praxis in Szenenkomposition",
-      "Prototyp-Präsentation",
-      "Auf Erkundung ausgerichtete Idee",
-      "Experimente im Game Design"
+      "Umgebungsrätsel-Prototyp",
+      "Designdokument in drei Sprachen",
+      "Screenshots und Gameplay-Clip",
+      "Quellcode nicht veröffentlicht"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Ein Spiele-Prototyp mit düsterer Abenteuer-Atmosphäre, aufgebaut um Erkundung und Szenendarstellung.",
+    "overview": "Legacy of the Lost ist ein Rätsel-Prototyp rund um Erkundung und Objektinteraktion. Das öffentliche Repository enthält Medien und ein Designdokument in drei Sprachen; der Projektquellcode ist nicht veröffentlicht.",
     "role": "Spieleentwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Ein Spiele-Prototyp mit düsterer Abenteuer-Atmosphäre, aufgebaut um Erkundung und Szenendarstellung.",
+    "solution": "Ich habe in Unreal Engine 5 ein kleines Level gebaut und sein Design niedergeschrieben; das Dokument ist die vollständigste Aufzeichnung des Projekts.",
+    "status": "Medienarchiv",
+    "subtitle": "Ein Umgebungsrätsel-Prototyp in Unreal Engine 5, dokumentiert durch Screenshots, einen Clip und ein Designdokument.",
     "title": "Legacy of the Lost",
     "type": "Spiele-Prototyp"
   },
   "mandelas-web-site-project": {
     "category": "Webentwicklung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Aus Abschnitten eine vollständige Marketingseite mit einheitlichem visuellen Rhythmus bauen.",
     "features": [
-      "Layout einer statischen Website",
-      "Inhaltsstruktur",
-      "Responsive Seitenabschnitte",
-      "Frontend-Praxis",
-      "Grundlagen der Webdarstellung"
+      "Eine statische Seite",
+      "Zwei CSS-Dateien",
+      "Inhalte aus der Kursübung"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Ein Website-Projekt mit Fokus auf Inhaltsstruktur, Frontend-Layout und statischer Seitenentwicklung.",
+    "overview": "Eine Seite mit Hero, Gerichten, Stimmen und Preisen, auf Türkisch verfasst. Die Zahlen und Presselogos darauf sind Platzhalter aus der Übung, keine echten Daten.",
     "role": "Webentwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Ein Website-Projekt mit Fokus auf Inhaltsstruktur, Frontend-Layout und statischer Seitenentwicklung.",
+    "solution": "Zwei Stylesheets, ein allgemeines und eines für die Seite, tragen das Layout. Es gibt kein eigenes JavaScript und kein Framework.",
+    "status": "Lernprojekt",
+    "subtitle": "Eine statische Restaurant-Landingpage in HTML und CSS, entstanden in einem Webdesign-Kurs an der Universität.",
     "title": "Mandelas Website Project",
     "type": "Website-Projekt"
   },
   "my-java-projects": {
     "category": "Softwareentwicklung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Objektorientierte Programmierung lernen, indem man viele kleine Programme schreibt statt eines großen.",
     "features": [
-      "Java-Grundlagen",
-      "OOP-Praxis",
-      "Algorithmus-Übungen",
-      "Struktur eines Lern-Repositorys",
-      "Grundlegende Programmierlogik"
+      "Klassen, Vererbung und Polymorphie",
+      "Interfaces und Generics",
+      "Arrays und Kontrollfluss",
+      "Kleine Konsolenprogramme"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Eine Sammlung von Java-Übungsprojekten zu objektorientierter Programmierung, Algorithmen und Sprachgrundlagen.",
+    "overview": "Die Ordner sind Wochenübungen, Laborarbeiten und Kursmitschriften: Klassen und Vererbung, Interfaces, Generics, Arrays und kleine Konsolenprogramme wie Schere-Stein-Papier und eine Geldautomaten-Übung.",
     "role": "Java-Entwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Eine Sammlung von Java-Übungsprojekten zu objektorientierter Programmierung, Algorithmen und Sprachgrundlagen.",
+    "solution": "Jede Übung ist ein eigenes IntelliJ-Projekt. Es sind unbearbeitete Kursarbeiten, keine Bibliothek und keine Anwendung.",
+    "status": "Lernprojekt",
+    "subtitle": "Rund fünfzig kleine Java-Projekte aus Uni-Wochen und Onlinekursen, als ein Lernprotokoll aufbewahrt.",
     "title": "My Java Projects",
     "type": "Lern-Repository"
   },
@@ -492,31 +454,34 @@
     "overview": "MyMuseum ist eine Android-Anwendung zum Teilen von Inhalten mit Fokus auf mobile Nutzerabläufe und Firebase-gestützte Interaktionen.",
     "role": "Android-Entwickler",
     "solution": "Ich habe die App mit Kotlin in Android Studio gebaut, mit Fokus auf den zentralen mobilen Ablauf und die Firebase-Integration.",
-    "status": "Repository",
+    "status": "Akademisches Projekt",
     "subtitle": "Eine Android-Anwendung zum Teilen von Inhalten, gebaut mit Kotlin und Firebase rund um mobile Nutzerabläufe und datenbankgestützte Interaktionen.",
     "title": "MyMuseum — Mobile Content App",
     "type": "Android-App"
   },
   "portfolio-website": {
     "category": "Webentwicklung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Eine einzige Quelle der Wahrheit für Projekte, Texte und Routen behalten, während die Website um Sprachen, Seiten und interaktive Teile wächst.",
     "features": [
-      "Architektur des produktiven Portfolios",
-      "Dynamische Projektdetailseiten",
-      "Integration des Ajoop-Assistenten",
-      "Recruiter Mode und Suchpalette",
-      "Interaktives Abenteuer-Minispiel"
+      "Kanonisches Projektregister",
+      "React-Prerendering mit Hydration",
+      "Fünf Sprachen auf sauberen Routen",
+      "Öffentlicher AJOOP-Assistent",
+      "Vier im Browser spielbare Spiele"
     ],
     "links": [
+      {
+        "label": "Case Study ansehen"
+      },
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Das Repository des produktiven persönlichen Portfolios mit Projektkatalog, AI-Assistent, Recruiter Mode, Anfrageformular und interaktiven Minispielen.",
+    "overview": "Die ganze Geschichte steht in der Case Study zu kaanbalci.com: wie aus einer statischen Website ein vorgerendertes React-System wurde, ohne statisches Hosting aufzugeben, und wie es getestet wird.",
     "role": "Webentwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Das Repository des produktiven persönlichen Portfolios mit Projektkatalog, AI-Assistent, Recruiter Mode, Anfrageformular und interaktiven Minispielen.",
+    "solution": "Kanonisches JSON speist einen Build, der jede Route zu statischem HTML vorrendert und mit React hydriert; Spiele und Assistent laden nur dort, wo sie gebraucht werden.",
+    "status": "Live",
+    "subtitle": "Diese Website: ein statisch ausgeliefertes, mit React vorgerendertes Portfolio in fünf Sprachen, mit öffentlichem Assistenten und vier spielbaren Spielen.",
     "title": "Portfolio Website",
     "type": "Produktives Portfolio"
   },
@@ -538,31 +503,30 @@
     "overview": "Porto 25 ist ein Frontend-Übungsrepository für eine klare Portfolio- und Landingpage-Oberfläche mit Tailwind CSS. Es steht für ein früheres Experiment zu persönlicher Marke und Layout, noch vor dem heutigen Portfolio-System.",
     "role": "Frontend-Entwickler",
     "solution": "Ich habe es als Tailwind-getriebene UI-Übung angelegt: wiederverwendbare Abschnitte erstellen, das Layout responsiv halten und den Inhalt auf eine persönliche Portfolio-Darstellung ausrichten.",
-    "status": "Repository",
+    "status": "Abgelöst",
     "subtitle": "Ein Portfolio- und Landingpage-Experiment mit Tailwind CSS, gebaut zum Üben von responsivem Layout, persönlicher Marke und moderner Webdarstellung.",
     "title": "Porto 25",
     "type": "Tailwind-Portfolio-UI"
   },
   "pyhton-projects": {
     "category": "Daten / Automatisierung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Sicherheit in der Sprache aufbauen, bevor sie für echte Arbeit eingesetzt wird.",
     "features": [
-      "Python-Grundlagen",
-      "Praxis mit Skripten",
-      "Automatisierungsideen",
-      "Übungen zur Datenlogik",
-      "Archiv von Lernprojekten"
+      "Sprachgrundlagen",
+      "Module und Klassen",
+      "Kleine Konsolenübungen",
+      "Erste Schritte mit NumPy"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Ein Python-Übungsrepository mit Lernprojekten zu Programmiergrundlagen, Automatisierung und datenorientierter Logik.",
+    "overview": "Die meisten Dateien folgen einem Anfängerkurs Lektion für Lektion: Variablen und Formatierung, Module, Klassen, eine Übung zur Benutzerregistrierung, eine einfache Chiffre, ein Filmkatalog und erste Schritte mit NumPy.",
     "role": "Python-Entwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
-    "subtitle": "Ein Python-Übungsrepository mit Lernprojekten zu Programmiergrundlagen, Automatisierung und datenorientierter Logik.",
+    "solution": "Die Skripte bleiben, wie sie geschrieben wurden. Spätere Python-Arbeit mit echtem Umfang steckt in SINAMA und im Hospital Appointment System.",
+    "status": "Lernprojekt",
+    "subtitle": "Python-Übungsskripte aus einem Einführungskurs und frühen Übungen, als ein Lernprotokoll aufbewahrt.",
     "title": "Python Projects",
     "type": "Lern-Repository"
   },
@@ -570,92 +534,65 @@
     "category": "Spieleentwicklung",
     "challenge": "Fahrzeugkampf braucht ein anderes Steuerungsgefühl, anderes Kollisionsverhalten und ein anderes Kampftempo als figurenbasierte Spiele.",
     "features": [
-      "Steuerungslogik für Panzer",
-      "Kampf-Prototyp",
-      "Physikbasierte Interaktion",
-      "Workflow aus Blueprints und C++",
-      "Praxis mit Unreal Engine 5"
+      "Panzerkampf-Prototyp",
+      "Designdokument in drei Sprachen",
+      "Screenshots und Gameplay-Clip",
+      "Quellcode nicht veröffentlicht"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Tank Savage konzentriert sich auf Panzerbewegung, Kampfinteraktion und Gameplay-Prototyping in der Unreal Engine.",
+    "overview": "Tank Savage erkundet Panzerbewegung und Kampf. Das öffentliche Repository enthält Medien und ein Designdokument in drei Sprachen; der Projektquellcode ist nicht veröffentlicht.",
     "role": "Unreal-Engine-Entwickler",
     "solution": "Ich habe das Projekt als Prototyp für Panzersteuerung, Umgebungsinteraktion und Kampfregeln mit Unreal-Workflows angelegt.",
-    "status": "Repository",
-    "subtitle": "Ein Third-Person-Prototyp für Panzerkämpfe, gebaut mit Unreal Engine, Blueprints, C++ und physikbasierten Gameplay-Ideen.",
+    "status": "Medienarchiv",
+    "subtitle": "Ein Third-Person-Panzerkampf-Prototyp in der Unreal Engine, dokumentiert durch Screenshots, einen Clip und ein Designdokument.",
     "title": "Tank Savage",
     "type": "Kampfspiel-Prototyp"
   },
   "unity-essentials": {
     "category": "Spieleentwicklung",
-    "challenge": "Ziel war es, die Unity-Grundlagen zu festigen, indem Mechaniken in klaren Szenen isoliert und Schritt für Schritt gebaut werden.",
+    "challenge": "Den Unity-Editor, Szenen, Physik, Audio und Scripting von Grund auf lernen.",
     "features": [
-      "Mehrere Unity-Szenen",
-      "Experimente zu Kernmechaniken",
-      "Umsetzung in C#",
-      "Lernorientierte Struktur",
-      "Gameplay-Grundlagen"
+      "Sechs Tutorial-Szenen",
+      "Kurze eigene C#-Skripte",
+      "Von Unity bereitgestellte Assets und Skripte",
+      "Unity-6-Projekt"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Unity Essentials ist ein lernorientiertes Projekt mit mehreren Szenen, von denen jede ein anderes Unity-Konzept oder eine andere Mechanik erkundet.",
+    "overview": "Der größte Teil des Projekts ist von Unity bereitgestelltes Material; einige kurze Skripte stammen von mir. Das README des Repositorys nennt das Spiel „Ajoop“. Das ist ein historischer Name und hat nichts mit AJOOP, dem Assistenten dieser Website, zu tun.",
     "role": "Unity-Entwickler",
-    "solution": "Ich habe das Projekt als praktische Lernumgebung mit szenenbasiertem Experimentieren und wiederverwendbarer Gameplay-Logik strukturiert.",
-    "status": "Repository",
-    "subtitle": "Ein Unity-Lernprojekt mit mehreren Szenen, fokussiert auf Kernmechaniken und Gameplay-Grundlagen.",
-    "title": "Unity Essentials",
+    "solution": "Ich bin dem Pfad Szene für Szene gefolgt und habe kleine C#-Skripte für eine Spielersteuerung, Sammelobjekte, eine Tür und Sound-Auslöser geschrieben.",
+    "status": "Lernprojekt",
+    "subtitle": "Mein erstes Unity-Projekt, aufgebaut auf Unitys eigenem Essentials-Lernpfad: sechs kleine Szenen, die je eine Grundlage üben.",
+    "title": "Unity Essentials — erstes Unity-Lernprojekt",
     "type": "Lernprojekt"
   },
   "warehouse-war": {
     "category": "Spieleentwicklung",
-    "challenge": "Ziel dieses Repositorys ist es, eine fokussierte Lern- oder Produktidee in ein klares, nachvollziehbares Softwareprojekt zu überführen, das sich im Portfolio zeigen lässt.",
+    "challenge": "Einen spielbaren Raum und seine Regeln im Editor aufbauen, ohne Engine-Code zu schreiben.",
     "features": [
-      "Kampfkonzept im Lagerhaus",
-      "Praxis im Umgebungsaufbau",
-      "Prototypische Gameplay-Systeme",
-      "Auf Action ausgerichtete Interaktion",
-      "Workflow eines Spieleprojekts"
+      "Projektdateien für Unreal Engine 5.4",
+      "Logik nur in Blueprints",
+      "Designdokument in drei Sprachen"
     ],
     "links": [
       {
         "label": "GitHub öffnen"
       }
     ],
-    "overview": "Ein Spiele-Prototyp im Lagerhaus-Setting, der Kampf, Umgebungsaufbau und Gameplay-Systeme erkundet.",
+    "overview": "Warehouse War ist ein Unreal-Engine-5.4-Projekt aus Blueprints und Editor-Inhalten; C++-Quellcode gibt es nicht. Das Repository enthält die Projektdateien und ein Designdokument in drei Sprachen.",
     "role": "Spieleentwickler",
-    "solution": "Ich habe das Projekt um den passenden Technologie-Stack, den zentralen Interaktionsablauf und praxisnahe Umsetzungsdetails herum aufgebaut, damit es sowohl technisches Lernen als auch Produktdenken zeigt.",
-    "status": "Repository",
+    "solution": "Das Level und seine Logik bestehen aus Blueprints und platzierten Assets. Für dieses Portfolio wurde es nicht neu gebaut.",
+    "status": "Prototyp",
     "subtitle": "Ein Spiele-Prototyp im Lagerhaus-Setting, der Kampf, Umgebungsaufbau und Gameplay-Systeme erkundet.",
     "title": "Warehouse War",
     "type": "Spiele-Prototyp"
-  },
-  "weather-app": {
-    "category": "Webentwicklung",
-    "challenge": "Die Hauptaufgabe war, die Nutzeroberfläche klar und benutzbar mit externen Wetterdaten zu verbinden.",
-    "features": [
-      "Datenabruf mit JavaScript",
-      "Anzeige von Wetterinformationen",
-      "Frontend-UI",
-      "Ortsbezogenes Konzept",
-      "API-orientierte Praxis"
-    ],
-    "links": [
-      {
-        "label": "GitHub öffnen"
-      }
-    ],
-    "overview": "Weather App ist ein Frontend-Projekt, das Wetterdaten abruft und über eine einfache Oberfläche darstellt.",
-    "role": "Frontend-Entwickler",
-    "solution": "Ich habe eine JavaScript-Oberfläche gebaut, die Wetterinformationen abruft und für die Nutzerin anzeigt.",
-    "status": "Repository",
-    "subtitle": "Eine JavaScript-Wetteranwendung, die Vorhersagedaten abruft und ortsbezogene Wetterinformationen darstellt.",
-    "title": "Weather App",
-    "type": "Web-App"
   }
 }

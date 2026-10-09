@@ -1,24 +1,23 @@
 {
   "agency-db": {
     "category": "Données / Backend",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Modéliser les données de l'agence pour que missions, personnes, clients et dépenses restent cohérents.",
     "features": [
-      "Modélisation de données relationnelles",
-      "Pratique du SQL",
-      "Structure des enregistrements d'agence",
-      "Notion de normalisation de base de données",
-      "Planification des opérations de données"
+      "11 tables, 7 clés étrangères",
+      "10 procédures stockées",
+      "3 triggers d'audit",
+      "Diagramme entité-association et requêtes de démonstration"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Un projet centré sur les bases de données pour modéliser des enregistrements de type agence, des relations et des opérations de données structurées.",
+    "overview": "Le dépôt contient le dump SQL, des requêtes de démonstration en lecture seule et un diagramme entité-association. C'est un travail de cours aux données synthétiques, pas un système client.",
     "role": "Développeur base de données",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Un projet centré sur les bases de données pour modéliser des enregistrements de type agence, des relations et des opérations de données structurées.",
+    "solution": "Onze tables à clés primaires et étrangères portent le modèle ; trois triggers copient les modifications du personnel dans des tables d'audit et dix procédures stockées fournissent des recherches et des agrégats simples.",
+    "status": "Projet académique",
+    "subtitle": "Une base de données MySQL universitaire modélisant une agence événementielle : personnel, clients, missions, dépenses et salaires.",
     "title": "Agency DB",
     "type": "Projet de base de données"
   },
@@ -112,49 +111,24 @@
   },
   "calculator-android-studio": {
     "category": "Développement mobile",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Gérer la saisie des boutons et l'arithmétique sur un seul écran Android.",
     "features": [
-      "Opérations de calculatrice",
-      "Pratique de l'interface Android",
-      "Structure d'un projet mobile",
-      "Gestion des saisies",
-      "Logique applicative accessible aux débutants"
+      "MainActivity Kotlin",
+      "Layout XML",
+      "Projet Android Gradle"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Une application de calculatrice mobile réalisée dans Android Studio pour travailler la structure d'interface et la logique applicative de base.",
+    "overview": "Le projet se compose d'une seule activity et de son layout XML. Il n'a pas été recompilé pour ce portfolio ; la description s'appuie sur le code source.",
     "role": "Développeur Android",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Une application de calculatrice mobile réalisée dans Android Studio pour travailler la structure d'interface et la logique applicative de base.",
+    "solution": "La logique tient dans une seule MainActivity Kotlin liée au layout.",
+    "status": "Projet d'apprentissage",
+    "subtitle": "Une calculatrice Android à écran unique, écrite en Kotlin comme exercice universitaire.",
     "title": "Calculator Android Studio",
     "type": "Application mobile"
-  },
-  "calculator-javascript": {
-    "category": "Développement web",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
-    "features": [
-      "Interactions basées sur le DOM",
-      "Logique de calculatrice",
-      "Pratique de l'état frontend",
-      "Structure d'interface simple",
-      "Fondamentaux de JavaScript"
-    ],
-    "links": [
-      {
-        "label": "Ouvrir GitHub"
-      }
-    ],
-    "overview": "Un projet de calculatrice en JavaScript centré sur l'interaction avec le DOM, l'état de l'interface et la logique frontend de base.",
-    "role": "Développeur frontend",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Un projet de calculatrice en JavaScript centré sur l'interaction avec le DOM, l'état de l'interface et la logique frontend de base.",
-    "title": "Calculator JavaScript",
-    "type": "Application frontend"
   },
   "cars-dataset-analysis": {
     "category": "Analyse de données",
@@ -169,26 +143,27 @@
     "links": [
       {
         "label": "Ouvrir GitHub"
+      },
+      {
+        "label": "Voir la présentation"
       }
     ],
     "overview": "Le projet explore, nettoie et visualise principalement des données automobiles. Il comprend aussi une petite expérimentation de régression linéaire avec scikit-learn pour examiner l'estimation de prix dans un notebook maîtrisé.",
     "role": "Développeur Python",
     "solution": "J'ai utilisé Pandas, NumPy, Matplotlib et Seaborn pour le travail exploratoire principal, puis ajouté une petite expérimentation de régression linéaire avec scikit-learn comme exercice technique complémentaire.",
-    "status": "Dépôt",
+    "status": "Projet académique",
     "subtitle": "Un projet de données en Python qui associe analyse exploratoire et visualisation à une petite expérimentation de régression linéaire pour estimer le prix des voitures.",
     "title": "Cars Dataset Analysis",
     "type": "Projet de données"
   },
   "control-panel": {
     "category": "Web et dashboard",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Donner aux rôles du personnel un panneau avec session pour gérer utilisateurs et produits, et en écarter les clients.",
     "features": [
-      "Interface de type dashboard",
-      "Structure de panneau d'administration",
-      "Écrans de gestion en PHP",
-      "Opérations adossées à MySQL",
-      "Sections d'interface réutilisables",
-      "Workflow web issu d'un contexte scolaire et projet"
+      "Connexion avec mots de passe hachés et sessions",
+      "Création, lecture, modification et suppression d'utilisateurs",
+      "Création, lecture, modification et suppression de produits",
+      "Tables de rôles, catégories et commandes dans le schéma"
     ],
     "links": [
       {
@@ -197,8 +172,8 @@
     ],
     "overview": "Control Panel est un dashboard d'administration en PHP et MySQL, avec des écrans de gestion adossés à une base de données et des flux opérationnels.",
     "role": "Développeur full-stack",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
+    "solution": "Les endpoints PHP échangent du JSON avec les pages. La connexion utilise une requête préparée, vérifie un mot de passe haché et refuse les rôles employé et client. Pour ce portfolio, le code a été lu, pas exécuté.",
+    "status": "Projet académique",
     "subtitle": "Un dashboard d'administration en PHP et MySQL, avec des écrans de gestion adossés à une base de données et des flux de contrôle opérationnel.",
     "title": "Control Panel",
     "type": "Projet de dashboard"
@@ -207,11 +182,11 @@
     "category": "Développement de jeux",
     "challenge": "Le principal enjeu de conception était de garder une jouabilité assez simple pour le format hyper-casual tout en rendant la boucle réactive et rejouable.",
     "features": [
-      "Jouabilité de conduite en 3D",
-      "Boucle d'évitement d'obstacles",
-      "Progression fondée sur le score",
-      "Scripts C# sous Unity",
-      "Concept de jeu pensé pour le mobile"
+      "Direction avec accélération régulière",
+      "Redémarrage à la collision avec un obstacle",
+      "Score au temps et record enregistré",
+      "Compteur d'énergie avec notification de recharge",
+      "Pack graphique de prototype tiers"
     ],
     "links": [
       {
@@ -220,8 +195,8 @@
     ],
     "overview": "Drivenfinity est un jeu de conduite pensé pour le mobile, où il s'agit de survivre le plus longtemps possible et d'augmenter son score en évitant les obstacles.",
     "role": "Développeur Unity",
-    "solution": "J'ai construit le jeu autour d'un déplacement clair, de la navigation entre obstacles, du score et d'un redémarrage rapide, adaptés à de courtes sessions mobiles.",
-    "status": "Dépôt",
+    "solution": "Quatre petits scripts le portent : une voiture qui accélère avec le temps et redémarre au contact d'un obstacle, un score au temps avec record enregistré, et un menu avec compteur d'énergie et notification de recharge.",
+    "status": "Prototype",
     "subtitle": "Un jeu de conduite hyper-casual en 3D sur mobile, centré sur l'évitement d'obstacles, les réflexes et l'amélioration du score.",
     "title": "Drivenfinity",
     "type": "Jeu mobile"
@@ -230,43 +205,42 @@
     "category": "Développement de jeux",
     "challenge": "Les jeux de physique demandent un retour satisfaisant, des trajectoires lisibles et un équilibre entre précision et plaisir.",
     "features": [
-      "Jouabilité de projectiles en 2D",
-      "Interactions fondées sur la physique",
-      "Destruction de tours ennemies",
-      "Scripts de jouabilité en C#",
-      "Inspiration Angry Birds"
+      "Glisser-relâcher au toucher",
+      "Lancer par articulation à ressort",
+      "Boucle de réapparition de la balle",
+      "Une scène, un script"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Dunker Madness explore une mécanique de tir fondée sur la physique, dans laquelle on lance des projectiles pour détruire des structures ennemies.",
+    "overview": "Dunker Madness tient en une scène et un script. Le toucher déplace la balle, une articulation à ressort la lance et elle se détache après un court délai.",
     "role": "Développeur Unity",
-    "solution": "Le projet se concentre sur un contrôle simple des projectiles, l'interaction avec les cibles et la logique de destruction des structures dans Unity.",
-    "status": "Dépôt",
-    "subtitle": "Un jeu de projectiles en 2D fondé sur la physique, inspiré par la visée précise, la destruction de tours et les tirs stratégiques.",
+    "solution": "BallHandler.cs contient toute la boucle : apparition, déplacement au toucher, lancer au relâchement, détachement et réapparition.",
+    "status": "Prototype",
+    "subtitle": "Un prototype de lance-pierre 2D sous Unity : on tire une balle retenue par un ressort, on la lâche, et une nouvelle apparaît.",
     "title": "Dunker Madness",
     "type": "Jeu 2D"
   },
   "escape-island": {
     "category": "Développement de jeux",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Faire en sorte que les obstacles mobiles se comportent de la même façon à n'importe quelle fréquence d'images.",
     "features": [
-      "Unreal Engine 5.4.4",
-      "Intégration de C++ et des Blueprints",
-      "Parcours de plateforme chronométré",
-      "Obstacles mobiles et rotatifs",
-      "Prototype solo"
+      "Unreal Engine 5.4",
+      "Acteur C++ de plateforme mobile",
+      "Logique de niveau en Blueprints",
+      "Document de conception en trois langues",
+      "Prototype en solo"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Escape Island est un prototype solo sous Unreal Engine 5.4.4 qui associe C++ et Blueprints dans un parcours de plateforme chronométré à la troisième personne.",
+    "overview": "Escape Island est un prototype réalisé en solo sous Unreal Engine 5.4, qui associe C++ et Blueprints dans un jeu de plateformes à la troisième personne.",
     "role": "Développeur de jeux",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
+    "solution": "Un acteur C++, MovingPlatform, se déplace et tourne selon le delta time et repart en sens inverse à une distance donnée ; le reste du niveau est en Blueprint.",
     "status": "Prototype",
     "subtitle": "Un prototype solo de plateforme et d'évasion à la troisième personne construit avec Unreal Engine 5, C++ et les Blueprints.",
     "title": "Escape Island",
@@ -276,22 +250,20 @@
     "category": "Développement de jeux",
     "challenge": "Un prototype de shooter exige que plusieurs systèmes fonctionnent ensemble : déplacement, comportement ennemi, santé, dégâts et retour de combat.",
     "features": [
-      "Combat à la troisième personne",
-      "Logique de comportement ennemi",
-      "Systèmes de santé et de dégâts",
-      "Workflow Unreal Engine",
-      "Usage des Blueprints et de C++"
+      "Prototype de jeu de tir à la troisième personne",
+      "Captures et extrait de jeu",
+      "Code source non publié"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Extract Shoot: Zero est un prototype de shooter d'action à la troisième personne conçu pour travailler les systèmes de combat, le comportement ennemi et la logique de santé du joueur.",
+    "overview": "Extract Shoot: Zero est un prototype de jeu de tir à la troisième personne réalisé avec Unreal Engine. Le dépôt public ne contient que des captures et un court extrait ; le code source n'est pas publié, ses systèmes sont donc décrits d'après ces médias.",
     "role": "Développeur Unreal Engine",
-    "solution": "J'ai construit le projet sous Unreal Engine avec C++ et les Blueprints, en me concentrant sur un état de jeu clair et sur la logique d'interaction de combat.",
-    "status": "Dépôt",
-    "subtitle": "Un prototype de shooter d'action à la troisième personne avec comportement ennemi, gestion de la santé et systèmes de jouabilité centrés sur le combat.",
+    "solution": "Je l'ai construit dans Unreal Engine comme exercice de boucle de combat : un personnage jouable, des ennemis et des points de vie.",
+    "status": "Archive média",
+    "subtitle": "Un prototype de jeu de tir d'action à la troisième personne réalisé avec Unreal Engine, documenté par des captures et un extrait.",
     "title": "Extract Shoot: Zero",
     "type": "Prototype de shooter"
   },
@@ -333,7 +305,7 @@
     ],
     "role": "Développeur Python / base de données",
     "solution": "J'ai structuré l'application autour d'une interface Tkinter pensée pour les patients, d'une persistance adossée à MySQL, d'une gestion des créneaux et de parcours distincts pour les patients, les médecins et le personnel. PIL soutient l'interface visuelle, tandis que la logique datetime de Python gère les opérations temporelles.",
-    "status": "Dépôt",
+    "status": "Projet académique",
     "subtitle": "Un système d'automatisation des rendez-vous hospitaliers en Python, avec interface Tkinter et parcours patient, médecin, personnel et rendez-vous adossés à MySQL.",
     "title": "Hospital Appointment System",
     "type": "Système d'automatisation bureau"
@@ -384,93 +356,83 @@
   },
   "ic-supply": {
     "category": "Données / Backend",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Relier le formulaire d'un site statique à une base de données pour l'inscription et la connexion.",
     "features": [
-      "Concept de suivi des approvisionnements",
-      "Structure de données de type inventaire",
-      "Approche des workflows backend",
-      "Pratique sur des données opérationnelles",
-      "Logique de projet structurée"
+      "Script PHP de connexion",
+      "Script PHP d'inscription",
+      "Schéma MySQL à une table",
+      "Modèle tiers adapté"
     ],
-    "links": [
-      {
-        "label": "Ouvrir GitHub"
-      }
-    ],
-    "overview": "Un projet orienté approvisionnement, centré sur une structure de données de type inventaire, la logique de suivi et l'approche backend.",
+    "overview": "Les pages de la boutique proviennent d'un site existant utilisé comme modèle. Ma part : les scripts de connexion et d'inscription et la base d'utilisateurs à une seule table. Le code source reste privé.",
     "role": "Backend / Data Developer",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Un projet orienté approvisionnement, centré sur une structure de données de type inventaire, la logique de suivi et l'approche backend.",
+    "solution": "Deux scripts PHP lisent le formulaire et interrogent MySQL via mysqli. C'est un exercice d'apprentissage : les mots de passe sont stockés sans hachage, ce qu'un vrai système ne doit jamais faire.",
+    "status": "Archive privée",
+    "subtitle": "Travail universitaire : connexion et inscription en PHP avec MySQL, ajoutées à un modèle de boutique adapté.",
     "title": "IC Supply",
-    "type": "Système de données"
+    "type": "Projet de cours web"
   },
   "legacy-of-the-lost": {
     "category": "Développement de jeux",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Concevoir des énigmes qui se résolvent en déplaçant et en combinant des objets du décor.",
     "features": [
-      "Atmosphère d'aventure",
-      "Pratique de la composition de scènes",
-      "Présentation de prototype",
-      "Idée orientée exploration",
-      "Expérimentation en game design"
+      "Prototype de puzzle environnemental",
+      "Document de conception en trois langues",
+      "Captures et extrait de jeu",
+      "Code source non publié"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Un prototype de jeu à l'atmosphère d'aventure plus sombre, construit autour de l'exploration et de la présentation des scènes.",
+    "overview": "Legacy of the Lost est un prototype de puzzle fondé sur l'exploration et l'interaction avec les objets. Le dépôt public contient des médias et un document de conception en trois langues ; le code source n'est pas publié.",
     "role": "Développeur de jeux",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Un prototype de jeu à l'atmosphère d'aventure plus sombre, construit autour de l'exploration et de la présentation des scènes.",
+    "solution": "J'ai construit un petit niveau dans Unreal Engine 5 et rédigé sa conception ; ce document est la trace la plus complète du projet.",
+    "status": "Archive média",
+    "subtitle": "Un prototype de puzzle environnemental sous Unreal Engine 5, documenté par des captures, un extrait et un document de conception.",
     "title": "Legacy of the Lost",
     "type": "Prototype de jeu"
   },
   "mandelas-web-site-project": {
     "category": "Développement web",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Construire une page marketing complète à partir de sections au rythme visuel cohérent.",
     "features": [
-      "Mise en page d'un site statique",
-      "Structure de contenu",
-      "Sections de page responsive",
-      "Pratique du frontend",
-      "Fondamentaux de la présentation web"
+      "Une seule page statique",
+      "Deux fichiers CSS",
+      "Contenu de l'exercice du cours"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Un projet de site web centré sur la structure du contenu, la mise en page frontend et le développement de pages statiques.",
+    "overview": "Une page avec des sections héro, plats, témoignages et tarifs, rédigée en turc. Les chiffres et logos de presse qui y figurent sont du contenu fictif de l'exercice, pas des données réelles.",
     "role": "Développeur web",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Un projet de site web centré sur la structure du contenu, la mise en page frontend et le développement de pages statiques.",
+    "solution": "Deux feuilles de style, l'une générale et l'autre propre à la page, portent la mise en page. Il n'y a ni JavaScript de ma main ni framework.",
+    "status": "Projet d'apprentissage",
+    "subtitle": "Une page d'accueil statique de restaurant en HTML et CSS, réalisée dans un cours universitaire de design web.",
     "title": "Mandelas Website Project",
     "type": "Projet de site web"
   },
   "my-java-projects": {
     "category": "Développement logiciel",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Apprendre la programmation orientée objet en écrivant beaucoup de petits programmes plutôt qu'un seul grand.",
     "features": [
-      "Fondamentaux de Java",
-      "Pratique de la programmation orientée objet",
-      "Exercices d'algorithmique",
-      "Structure d'un dépôt d'apprentissage",
-      "Logique de programmation essentielle"
+      "Classes, héritage et polymorphisme",
+      "Interfaces et génériques",
+      "Tableaux et structures de contrôle",
+      "Petits programmes console"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Une collection de projets d'entraînement en Java centrés sur la programmation orientée objet, les algorithmes et les fondamentaux du langage.",
+    "overview": "Les dossiers sont des exercices hebdomadaires, des travaux pratiques et des suivis de cours : classes et héritage, interfaces, génériques, tableaux et petits programmes console comme pierre-feuille-ciseaux et un exercice de distributeur.",
     "role": "Développeur Java",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Une collection de projets d'entraînement en Java centrés sur la programmation orientée objet, les algorithmes et les fondamentaux du langage.",
+    "solution": "Chaque exercice est son propre projet IntelliJ. Ce sont des travaux de cours non retouchés, ni une bibliothèque ni une application.",
+    "status": "Projet d'apprentissage",
+    "subtitle": "Une cinquantaine de petits projets Java issus de semaines de cours et de formations en ligne, conservés comme un seul journal d'apprentissage.",
     "title": "My Java Projects",
     "type": "Dépôt d'apprentissage"
   },
@@ -492,31 +454,34 @@
     "overview": "MyMuseum est une application Android de partage de contenu centrée sur les parcours utilisateur mobiles et les interactions adossées à Firebase.",
     "role": "Développeur Android",
     "solution": "J'ai construit l'application en Kotlin sous Android Studio, en me concentrant sur le parcours mobile principal et l'intégration Firebase.",
-    "status": "Dépôt",
+    "status": "Projet académique",
     "subtitle": "Une application Android de partage de contenu construite avec Kotlin et Firebase autour des parcours utilisateur mobiles et des interactions adossées à une base de données.",
     "title": "MyMuseum — Mobile Content App",
     "type": "Application Android"
   },
   "portfolio-website": {
     "category": "Développement web",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Garder une seule source de vérité pour les projets, les textes et les routes pendant que le site grandit en langues, en pages et en éléments interactifs.",
     "features": [
-      "Architecture du portfolio en production",
-      "Pages de détail de projet dynamiques",
-      "Intégration de l'assistant Ajoop",
-      "Recruiter Mode et palette de recherche",
-      "Mini-jeu d'aventure interactif"
+      "Registre canonique des projets",
+      "Prérendu React avec hydratation",
+      "Cinq langues sur des routes propres",
+      "Assistant public AJOOP",
+      "Quatre jeux jouables dans le navigateur"
     ],
     "links": [
+      {
+        "label": "Voir l'étude de cas"
+      },
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Le dépôt du portfolio personnel en production, qui réunit catalogue de projets, assistant d'AI, Recruiter Mode, formulaire de demande et mini-jeux interactifs.",
+    "overview": "Le récit complet se trouve dans l'étude de cas de kaanbalci.com : comment un site statique est devenu un système React prérendu sans renoncer à l'hébergement statique, et comment il est testé.",
     "role": "Développeur web",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Le dépôt du portfolio personnel en production, qui réunit catalogue de projets, assistant d'AI, Recruiter Mode, formulaire de demande et mini-jeux interactifs.",
+    "solution": "Un JSON canonique alimente un build qui prérend chaque route en HTML statique et l'hydrate avec React ; les jeux et l'assistant ne se chargent que là où ils servent.",
+    "status": "En ligne",
+    "subtitle": "Ce site : un portfolio déployé en statique et prérendu avec React, en cinq langues, avec un assistant public et quatre jeux jouables.",
     "title": "Portfolio Website",
     "type": "Portfolio en production"
   },
@@ -538,31 +503,30 @@
     "overview": "Porto 25 est un dépôt d'entraînement frontend centré sur la création d'une interface de portfolio et de landing page épurée avec Tailwind CSS. Il représente une expérimentation antérieure de marque personnelle et de mise en page, avant le système de portfolio actuel.",
     "role": "Développeur frontend",
     "solution": "Je l'ai abordé comme un exercice d'interface avec Tailwind : créer des sections réutilisables, garder la mise en page responsive et organiser le contenu autour d'une présentation de portfolio personnel.",
-    "status": "Dépôt",
+    "status": "Remplacé",
     "subtitle": "Une expérimentation de portfolio et de landing page avec Tailwind CSS, réalisée pour travailler la mise en page responsive, la marque personnelle et la présentation web moderne.",
     "title": "Porto 25",
     "type": "Interface de portfolio Tailwind"
   },
   "pyhton-projects": {
     "category": "Données / Automatisation",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Gagner en aisance dans le langage avant de l'utiliser pour un vrai travail.",
     "features": [
-      "Fondamentaux de Python",
-      "Pratique par les scripts",
-      "Idées d'automatisation",
-      "Exercices de logique de données",
-      "Archive de projets d'apprentissage"
+      "Fondamentaux du langage",
+      "Modules et classes",
+      "Petits exercices console",
+      "Premiers pas avec NumPy"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Un dépôt d'entraînement Python regroupant des projets d'apprentissage sur les fondamentaux de la programmation, l'automatisation et la logique orientée données.",
+    "overview": "La plupart des fichiers suivent un cours pour débutants, leçon après leçon : variables et formatage, modules, classes, un exercice d'inscription d'utilisateurs, un chiffrement simple, un catalogue de films et premiers pas avec NumPy.",
     "role": "Développeur Python",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
-    "subtitle": "Un dépôt d'entraînement Python regroupant des projets d'apprentissage sur les fondamentaux de la programmation, l'automatisation et la logique orientée données.",
+    "solution": "Les scripts sont conservés tels qu'ils ont été écrits. Le travail Python ultérieur, d'une vraie ampleur, se trouve dans SINAMA et dans le Hospital Appointment System.",
+    "status": "Projet d'apprentissage",
+    "subtitle": "Des scripts d'entraînement Python issus d'un cours d'initiation et de premiers exercices, conservés comme un seul journal d'apprentissage.",
     "title": "Python Projects",
     "type": "Dépôt d'apprentissage"
   },
@@ -570,92 +534,65 @@
     "category": "Développement de jeux",
     "challenge": "Le combat de véhicules demande un ressenti de conduite, un comportement de collision et un rythme de combat différents de ceux des jeux centrés sur un personnage.",
     "features": [
-      "Logique de contrôle du char",
-      "Prototype de combat",
-      "Interaction fondée sur la physique",
-      "Workflow Blueprints et C++",
-      "Pratique d'Unreal Engine 5"
+      "Prototype de combat de chars",
+      "Document de conception en trois langues",
+      "Captures et extrait de jeu",
+      "Code source non publié"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Tank Savage se concentre sur le déplacement du char, l'interaction de combat et le prototypage de jouabilité sous Unreal Engine.",
+    "overview": "Tank Savage explore le déplacement et le combat de chars. Le dépôt public contient des médias et un document de conception en trois langues ; le code source n'est pas publié.",
     "role": "Développeur Unreal Engine",
     "solution": "J'ai abordé le projet comme un prototype de contrôle de char, d'interaction avec l'environnement et de règles de combat en utilisant les workflows d'Unreal.",
-    "status": "Dépôt",
-    "subtitle": "Un prototype de combat de chars à la troisième personne construit avec Unreal Engine, les Blueprints, C++ et une jouabilité fondée sur la physique.",
+    "status": "Archive média",
+    "subtitle": "Un prototype de combat de chars à la troisième personne réalisé avec Unreal Engine, documenté par des captures, un extrait et un document de conception.",
     "title": "Tank Savage",
     "type": "Prototype de jeu de combat"
   },
   "unity-essentials": {
     "category": "Développement de jeux",
-    "challenge": "L'objectif était de consolider les fondamentaux d'Unity en isolant des mécaniques dans des scènes claires et en les construisant pas à pas.",
+    "challenge": "Apprendre de zéro l'éditeur Unity, les scènes, la physique, l'audio et le scripting.",
     "features": [
-      "Plusieurs scènes Unity",
-      "Expérimentations sur les mécaniques essentielles",
-      "Mise en œuvre en C#",
-      "Structure orientée apprentissage",
-      "Fondamentaux de jouabilité"
+      "Six scènes de tutoriel",
+      "Courts scripts C# personnels",
+      "Assets et scripts fournis par Unity",
+      "Projet Unity 6"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Unity Essentials est un projet orienté apprentissage comportant plusieurs scènes, chacune consacrée à un concept ou une mécanique Unity différente.",
+    "overview": "L'essentiel du projet est du matériel fourni par Unity ; quelques courts scripts sont de moi. Le README du dépôt appelle le jeu « Ajoop ». C'est un nom historique, sans rapport avec AJOOP, l'assistant de ce site.",
     "role": "Développeur Unity",
-    "solution": "J'ai structuré le projet comme un environnement d'apprentissage pratique, avec une expérimentation par scènes et une logique de jouabilité réutilisable.",
-    "status": "Dépôt",
-    "subtitle": "Un projet d'apprentissage Unity comportant plusieurs scènes, centré sur les mécaniques essentielles et les fondamentaux de jouabilité.",
-    "title": "Unity Essentials",
+    "solution": "J'ai suivi le parcours scène par scène et écrit de petits scripts C# pour un contrôleur de joueur, des objets à collecter, une porte et des déclencheurs sonores.",
+    "status": "Projet d'apprentissage",
+    "subtitle": "Mon premier projet Unity, construit sur le parcours d'apprentissage Essentials d'Unity : six petites scènes qui travaillent chacune un fondamental.",
+    "title": "Unity Essentials — premier projet Unity",
     "type": "Projet d'apprentissage"
   },
   "warehouse-war": {
     "category": "Développement de jeux",
-    "challenge": "L'objectif de ce dépôt est de transformer une idée d'apprentissage ou de produit ciblée en un projet logiciel clair et consultable, présentable dans un contexte de portfolio.",
+    "challenge": "Construire un espace jouable et ses règles dans l'éditeur, sans écrire de code moteur.",
     "features": [
-      "Concept de combat en entrepôt",
-      "Pratique de l'agencement d'environnement",
-      "Systèmes de jouabilité au stade prototype",
-      "Interaction centrée sur l'action",
-      "Workflow de projet de jeu"
+      "Fichiers de projet Unreal Engine 5.4",
+      "Logique uniquement en Blueprints",
+      "Document de conception en trois langues"
     ],
     "links": [
       {
         "label": "Ouvrir GitHub"
       }
     ],
-    "overview": "Un prototype de jeu situé dans un entrepôt, qui explore le combat, l'agencement de l'environnement et les systèmes de jouabilité.",
+    "overview": "Warehouse War est un projet Unreal Engine 5.4 construit avec des Blueprints et du contenu d'éditeur ; il n'a pas de code C++. Le dépôt contient les fichiers du projet et un document de conception en trois langues.",
     "role": "Développeur de jeux",
-    "solution": "J'ai structuré le projet autour de la stack technique concernée, du parcours d'interaction principal et des détails pratiques de mise en œuvre, afin qu'il rende compte à la fois de l'apprentissage technique et de la réflexion produit.",
-    "status": "Dépôt",
+    "solution": "Le niveau et sa logique sont assemblés à partir de Blueprints et d'assets placés. Il n'a pas été recompilé pour ce portfolio.",
+    "status": "Prototype",
     "subtitle": "Un prototype de jeu situé dans un entrepôt, qui explore le combat, l'agencement de l'environnement et les systèmes de jouabilité.",
     "title": "Warehouse War",
     "type": "Prototype de jeu"
-  },
-  "weather-app": {
-    "category": "Développement web",
-    "challenge": "L'enjeu principal était de relier l'interface utilisateur à des données météo externes de façon claire et exploitable.",
-    "features": [
-      "Récupération de données en JavaScript",
-      "Affichage des informations météo",
-      "Interface frontend",
-      "Concept fondé sur la localisation",
-      "Pratique orientée API"
-    ],
-    "links": [
-      {
-        "label": "Ouvrir GitHub"
-      }
-    ],
-    "overview": "Weather App est un projet frontend centré sur la récupération de données météo et leur présentation dans une interface simple.",
-    "role": "Développeur frontend",
-    "solution": "J'ai construit une interface en JavaScript qui récupère et affiche les informations météo.",
-    "status": "Dépôt",
-    "subtitle": "Une application météo en JavaScript qui récupère des données de prévision et présente des informations météo fondées sur la localisation.",
-    "title": "Weather App",
-    "type": "Application web"
   }
 }

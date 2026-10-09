@@ -165,8 +165,8 @@
         "id": "mergeRush",
         "name": "Merge Rush: Tiny Factory",
         "status": {
-          "en": "Active Development",
-          "tr": "Aktif Geliştirme"
+          "en": "Playable V1",
+          "tr": "Oynanabilir V1"
         },
         "category": {
           "en": "Game Product Systems Engineering",
@@ -195,8 +195,8 @@
             "tr": "4 dakikalık Factory Run hedefi"
           },
           {
-            "en": "5 restoration stages",
-            "tr": "5 fabrika onarım aşaması"
+            "en": "5 factory levels",
+            "tr": "5 fabrika seviyesi"
           },
           {
             "en": "25 progressively unlocked board cells",
@@ -207,12 +207,12 @@
             "tr": "Factory Run + Endless modları"
           },
           {
-            "en": "Footprint-aware placement, merge and deadlock logic",
-            "tr": "Footprint-aware placement, merge ve deadlock mantığı"
+            "en": "Pure rules engine with deadlock detection",
+            "tr": "Kilitlenme tespiti yapan saf kural motoru"
           },
           {
-            "en": "Platform lifecycle, save, audio and language abstractions",
-            "tr": "Platform lifecycle, save, audio ve language abstraction'ları"
+            "en": "Host lifecycle, saved profile, audio and a five-locale layer",
+            "tr": "Ortam yaşam döngüsü, kayıtlı profil, ses ve beş dilli katman"
           }
         ],
         "qaEvidence": [
@@ -238,17 +238,17 @@
             }
           },
           {
-            "viewport": "768×768",
+            "viewport": "820×1180",
             "state": {
-              "en": "Square / tablet",
-              "tr": "Square / tablet"
+              "en": "Tablet",
+              "tr": "Tablet"
             }
           },
           {
-            "viewport": "1262×624",
+            "viewport": "1440×900",
             "state": {
-              "en": "Combo x2 state",
-              "tr": "Combo x2 state"
+              "en": "Victory state",
+              "tr": "Zafer ekranı"
             }
           },
           {
@@ -261,11 +261,12 @@
         ],
         "links": {
           "caseStudy": "/merge-rush-case-study/",
+          "play": "/merge-rush/",
           "games": "/games/"
         },
         "currentFocus": {
-          "en": "Gameplay pacing, retention and production readiness",
-          "tr": "Gameplay pacing, retention ve production readiness"
+          "en": "Real-device verification and pacing for practised players",
+          "tr": "Gerçek cihazda doğrulama ve deneyimli oyuncular için tempo"
         }
       },
       "hospital": {
@@ -567,19 +568,17 @@
           "tr": "Mobil Oyun"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Prototype",
+          "tr": "Prototip"
         },
         "image": "assets/drivenfinity-cover.webp",
         "gallery": [
           "assets/drivenfinity-cover.webp"
         ],
         "stack": [
-          "Unity",
+          "Unity 2020.2",
           "C#",
-          "3D",
-          "Mobile",
-          "Gameplay Logic"
+          "Mobile"
         ],
         "links": [
           {
@@ -599,23 +598,23 @@
           "tr": "Temel tasarım zorluğu, oynanışı hyper-casual kadar basit tutarken döngüyü akıcı ve tekrar oynanabilir hissettirmekti."
         },
         "solution": {
-          "en": "I structured the game around clear movement, obstacle navigation, scoring and fast restart logic to support short mobile sessions.",
-          "tr": "Oyunu net hareket, engel navigasyonu, skor sistemi ve hızlı yeniden başlatma mantığı etrafında yapılandırdım."
+          "en": "Four small scripts carry it: a car that speeds up over time and restarts on hitting an obstacle, a time-based score with a saved high score, and a menu with an energy counter and a recharge notification.",
+          "tr": "Oyunu dört küçük betik taşır: zamanla hızlanan ve engele çarpınca yeniden başlayan bir araba, kaydedilen en yüksek skorla zamana dayalı bir skor ve enerji sayacı ile dolum bildirimi olan bir menü."
         },
         "features": {
           "en": [
-            "3D driving gameplay",
-            "Obstacle avoidance loop",
-            "Score-based progression",
-            "Unity C# scripts",
-            "Mobile-friendly gameplay idea"
+            "Steering with steady acceleration",
+            "Obstacle collision restart",
+            "Time-based score and saved high score",
+            "Energy counter with recharge notification",
+            "Third-party prototype art pack"
           ],
           "tr": [
-            "3D sürüş oynanışı",
-            "Engelden kaçınma döngüsü",
-            "Skor bazlı ilerleme",
-            "Unity C# scriptleri",
-            "Mobil dostu oyun fikri"
+            "Sabit ivmelenmeyle direksiyon",
+            "Engele çarpınca yeniden başlama",
+            "Zamana dayalı skor ve kayıtlı en yüksek skor",
+            "Dolum bildirimli enerji sayacı",
+            "Üçüncü taraf prototip görsel paketi"
           ]
         }
       },
@@ -629,8 +628,8 @@
           "tr": "Dunker Madness"
         },
         "subtitle": {
-          "en": "A 2D physics-based projectile game inspired by aiming, tower destruction and strategic shots.",
-          "tr": "Nişan alma, kule yıkımı ve stratejik atışlardan ilham alan 2D fizik tabanlı fırlatma oyunu."
+          "en": "A 2D slingshot prototype in Unity: drag a ball on a spring, release it, and a new one spawns.",
+          "tr": "Unity'de 2B bir sapan prototipi: yaya bağlı topu sürükle, bırak; yenisi belirir."
         },
         "role": {
           "en": "Unity Developer",
@@ -642,18 +641,18 @@
           "tr": "2D Oyun"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Prototype",
+          "tr": "Prototip"
         },
         "image": "assets/Ekran görüntüsü 2025-02-25 202336.png",
         "gallery": [
           "assets/Ekran görüntüsü 2025-02-25 202336.png"
         ],
         "stack": [
-          "Unity",
+          "Unity 2020.2",
           "C#",
           "2D Physics",
-          "Projectile Logic"
+          "Input System"
         ],
         "links": [
           {
@@ -665,31 +664,29 @@
           }
         ],
         "overview": {
-          "en": "Dunker Madness explores a physics-based shooting mechanic where the player launches projectiles to destroy enemy structures.",
-          "tr": "Dunker Madness, oyuncunun düşman yapılarını yıkmak için fırlatma yaptığı fizik tabanlı bir atış mekaniğini araştırır."
+          "en": "Dunker Madness is one scene and one script. Touch input drags the ball, a spring joint launches it and it detaches after a short delay.",
+          "tr": "Dunker Madness tek bir sahne ve tek bir betikten oluşur. Dokunma girdisi topu sürükler, bir yay eklemi onu fırlatır ve kısa bir gecikmeden sonra top ayrılır."
         },
         "challenge": {
           "en": "Physics games need satisfying feedback, readable trajectories and a balance between precision and fun.",
           "tr": "Fizik tabanlı oyunlarda tatmin edici geri bildirim, okunabilir atış yolları ve hassasiyet-eğlence dengesi gerekir."
         },
         "solution": {
-          "en": "The project focuses on simple projectile control, target interaction and structure destruction logic inside Unity.",
-          "tr": "Proje Unity içinde basit fırlatma kontrolü, hedef etkileşimi ve yapı yıkım mantığına odaklanır."
+          "en": "BallHandler.cs holds the whole loop: spawn, drag while touching, launch on release, detach and respawn.",
+          "tr": "Tüm döngü BallHandler.cs içindedir: oluştur, dokunurken sürükle, bırakınca fırlat, ayır ve yeniden oluştur."
         },
         "features": {
           "en": [
-            "2D projectile gameplay",
-            "Physics-based interactions",
-            "Enemy tower destruction",
-            "C# gameplay scripts",
-            "Angry Birds-style inspiration"
+            "Touch drag and release",
+            "Spring-joint launch",
+            "Ball respawn loop",
+            "One scene, one script"
           ],
           "tr": [
-            "2D fırlatma oynanışı",
-            "Fizik tabanlı etkileşimler",
-            "Düşman kulesi yıkımı",
-            "C# gameplay scriptleri",
-            "Angry Birds tarzı ilham"
+            "Dokunarak sürükle ve bırak",
+            "Yay eklemiyle fırlatma",
+            "Top yeniden oluşturma döngüsü",
+            "Tek sahne, tek betik"
           ]
         }
       },
@@ -699,12 +696,12 @@
           "tr": "Oyun Geliştirme"
         },
         "title": {
-          "en": "Unity Essentials",
-          "tr": "Unity Essentials"
+          "en": "Unity Essentials — First Unity Learning Project",
+          "tr": "Unity Essentials — İlk Unity Öğrenme Projesi"
         },
         "subtitle": {
-          "en": "A multi-scene Unity learning project focused on core mechanics and gameplay fundamentals.",
-          "tr": "Temel mekanikler ve gameplay temellerine odaklanan çok sahneli Unity öğrenme projesi."
+          "en": "My first Unity project, built on Unity's own Essentials learning pathway: six small scenes, each practising one fundamental.",
+          "tr": "İlk Unity projem; Unity'nin kendi Essentials öğrenme yolu üzerine kurulu: her biri tek bir temeli çalıştıran altı küçük sahne."
         },
         "role": {
           "en": "Unity Developer",
@@ -716,8 +713,8 @@
           "tr": "Öğrenme Projesi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Learning Project",
+          "tr": "Öğrenme Projesi"
         },
         "image": "assets/unity-essentials-cover.webp",
         "gallery": [
@@ -725,9 +722,7 @@
         ],
         "stack": [
           "Unity 6",
-          "C#",
-          "Scenes",
-          "Gameplay Fundamentals"
+          "C#"
         ],
         "links": [
           {
@@ -739,31 +734,29 @@
           }
         ],
         "overview": {
-          "en": "Unity Essentials is a learning-focused project containing multiple scenes that each explore a different Unity concept or mechanic.",
-          "tr": "Unity Essentials, her biri farklı bir Unity konseptini veya mekaniğini araştıran çok sahneli öğrenme odaklı bir projedir."
+          "en": "Most of the project is Unity's provided material; a few short scripts are mine. The repository's README calls the game \"Ajoop\". That is a historical name and has nothing to do with AJOOP, the assistant on this site.",
+          "tr": "Projenin büyük kısmı Unity'nin sağladığı materyaldir; birkaç kısa betik bana aittir. Deponun README'si oyuna \"Ajoop\" der. Bu geçmişe ait bir addır ve bu sitedeki asistan AJOOP ile hiçbir ilgisi yoktur."
         },
         "challenge": {
-          "en": "The goal was to strengthen Unity fundamentals by isolating mechanics into clear scenes and building them step by step.",
-          "tr": "Amaç mekanikleri net sahnelere ayırarak Unity temellerini adım adım güçlendirmekti."
+          "en": "Learn the Unity editor, scenes, physics, audio and scripting from scratch.",
+          "tr": "Unity editörünü, sahneleri, fiziği, sesi ve betik yazmayı sıfırdan öğrenmek."
         },
         "solution": {
-          "en": "I structured the project as a practical learning environment with scene-based experimentation and reusable gameplay logic.",
-          "tr": "Projeyi sahne bazlı denemeler ve tekrar kullanılabilir gameplay mantığıyla pratik bir öğrenme ortamı olarak yapılandırdım."
+          "en": "I followed the pathway scene by scene and wrote small C# scripts for a player controller, collectibles, a door and sound triggers.",
+          "tr": "Yolu sahne sahne izledim ve oyuncu kontrolü, toplanabilirler, bir kapı ve ses tetikleyicileri için küçük C# betikleri yazdım."
         },
         "features": {
           "en": [
-            "Multiple Unity scenes",
-            "Core mechanic experiments",
-            "C# implementation",
-            "Learning-focused structure",
-            "Gameplay fundamentals"
+            "Six tutorial scenes",
+            "Short authored C# scripts",
+            "Unity-provided assets and scripts",
+            "Unity 6 project"
           ],
           "tr": [
-            "Çoklu Unity sahneleri",
-            "Temel mekanik denemeleri",
-            "C# uygulama",
-            "Öğrenme odaklı yapı",
-            "Gameplay temelleri"
+            "Altı eğitim sahnesi",
+            "Kısa, bana ait C# betikleri",
+            "Unity'nin sağladığı varlık ve betikler",
+            "Unity 6 projesi"
           ]
         }
       },
@@ -777,8 +770,8 @@
           "tr": "Extract Shoot: Zero"
         },
         "subtitle": {
-          "en": "A third-person action shooter prototype with enemy behavior, health management and combat-focused gameplay systems.",
-          "tr": "Düşman davranışı, sağlık yönetimi ve savaş odaklı gameplay sistemleri içeren üçüncü şahıs aksiyon shooter prototipi."
+          "en": "A third-person action shooter prototype made in Unreal Engine, documented by screenshots and a clip.",
+          "tr": "Unreal Engine ile yapılmış, ekran görüntüleri ve bir kliple belgelenen üçüncü şahıs aksiyon nişancı prototipi."
         },
         "role": {
           "en": "Unreal Engine Developer",
@@ -790,19 +783,15 @@
           "tr": "Shooter Prototipi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Media Archive",
+          "tr": "Medya Arşivi"
         },
         "image": "assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg",
         "gallery": [
           "assets/9b869e78-ccdd-41a1-b9bd-e2047dc7c245.jpg"
         ],
         "stack": [
-          "Unreal Engine",
-          "C++",
-          "Blueprints",
-          "Enemy Behavior",
-          "Combat Systems"
+          "Unreal Engine"
         ],
         "links": [
           {
@@ -814,31 +803,27 @@
           }
         ],
         "overview": {
-          "en": "Extract Shoot: Zero is a third-person action shooter prototype built to practice combat systems, enemy behavior and player health logic.",
-          "tr": "Extract Shoot: Zero; savaş sistemleri, düşman davranışı ve oyuncu sağlık mantığını çalışmak için geliştirilmiş üçüncü şahıs aksiyon shooter prototipidir."
+          "en": "Extract Shoot: Zero is a third-person shooter prototype made in Unreal Engine. The public repository holds screenshots and a short clip only; the project source is not published, so its systems are described from that media.",
+          "tr": "Extract Shoot: Zero, Unreal Engine ile yapılmış üçüncü şahıs nişancı prototipidir. Herkese açık depoda yalnızca ekran görüntüleri ve kısa bir klip bulunur; proje kaynağı yayınlanmadığından sistemleri bu medyaya dayanarak anlatılır."
         },
         "challenge": {
           "en": "A shooter prototype requires multiple systems to work together: movement, enemy behavior, health, damage and combat feedback.",
           "tr": "Bir shooter prototipinde hareket, düşman davranışı, sağlık, hasar ve savaş geri bildirimi gibi birçok sistem birlikte çalışmalıdır."
         },
         "solution": {
-          "en": "I built the project using Unreal Engine with C++ and Blueprints, focusing on clear game state and combat interaction logic.",
-          "tr": "Projeyi Unreal Engine üzerinde C++ ve Blueprints ile geliştirerek net oyun durumu ve savaş etkileşimi mantığına odaklandım."
+          "en": "I built it in Unreal Engine as a combat-loop exercise: a controllable character, enemies and health.",
+          "tr": "Unreal Engine'de bir dövüş döngüsü alıştırması olarak geliştirdim: kontrol edilebilir bir karakter, düşmanlar ve can."
         },
         "features": {
           "en": [
-            "Third-person combat",
-            "Enemy behavior logic",
-            "Health and damage systems",
-            "Unreal Engine workflow",
-            "Blueprint and C++ usage"
+            "Third-person shooter prototype",
+            "Screenshots and gameplay clip",
+            "Source not published"
           ],
           "tr": [
-            "Üçüncü şahıs savaş",
-            "Düşman davranış mantığı",
-            "Sağlık ve hasar sistemleri",
-            "Unreal Engine iş akışı",
-            "Blueprint ve C++ kullanımı"
+            "Üçüncü şahıs nişancı prototipi",
+            "Ekran görüntüleri ve oynanış klibi",
+            "Kaynak yayınlanmadı"
           ]
         }
       },
@@ -852,8 +837,8 @@
           "tr": "Tank Savage"
         },
         "subtitle": {
-          "en": "A third-person tank combat prototype built with Unreal Engine, Blueprints, C++ and physics-based gameplay ideas.",
-          "tr": "Unreal Engine, Blueprints, C++ ve fizik tabanlı gameplay fikirleriyle geliştirilen üçüncü şahıs tank savaş prototipi."
+          "en": "A third-person tank combat prototype made in Unreal Engine, documented by screenshots, a clip and a design document.",
+          "tr": "Unreal Engine ile yapılmış; ekran görüntüleri, bir klip ve bir tasarım dokümanıyla belgelenen üçüncü şahıs tank savaşı prototipi."
         },
         "role": {
           "en": "Unreal Engine Developer",
@@ -865,19 +850,15 @@
           "tr": "Savaş Oyunu Prototipi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Media Archive",
+          "tr": "Medya Arşivi"
         },
         "image": "assets/maxresdefault.jpg",
         "gallery": [
           "assets/maxresdefault.jpg"
         ],
         "stack": [
-          "Unreal Engine",
-          "C++",
-          "Blueprints",
-          "Physics",
-          "Combat"
+          "Unreal Engine"
         ],
         "links": [
           {
@@ -889,8 +870,8 @@
           }
         ],
         "overview": {
-          "en": "Tank Savage focuses on tank movement, combat interaction and Unreal Engine gameplay prototyping.",
-          "tr": "Tank Savage; tank hareketi, savaş etkileşimi ve Unreal Engine gameplay prototiplemesine odaklanır."
+          "en": "Tank Savage explores tank movement and combat. The public repository holds media and a design document in three languages; the project source is not published.",
+          "tr": "Tank Savage, tank hareketini ve savaşını araştırır. Herkese açık depoda medya ve üç dilde bir tasarım dokümanı bulunur; proje kaynağı yayınlanmadı."
         },
         "challenge": {
           "en": "Vehicle-style combat requires different control feel, collision behavior and combat pacing compared to character-based games.",
@@ -902,18 +883,16 @@
         },
         "features": {
           "en": [
-            "Tank control logic",
-            "Combat prototype",
-            "Physics-based interaction",
-            "Blueprint/C++ workflow",
-            "Unreal Engine 5 practice"
+            "Tank combat prototype",
+            "Design document in three languages",
+            "Screenshots and gameplay clip",
+            "Source not published"
           ],
           "tr": [
-            "Tank kontrol mantığı",
-            "Savaş prototipi",
-            "Fizik tabanlı etkileşim",
-            "Blueprint/C++ iş akışı",
-            "Unreal Engine 5 pratiği"
+            "Tank savaşı prototipi",
+            "Üç dilde tasarım dokümanı",
+            "Ekran görüntüleri ve oynanış klibi",
+            "Kaynak yayınlanmadı"
           ]
         }
       },
@@ -1065,8 +1044,8 @@
           "tr": "Veri Projesi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Academic Project",
+          "tr": "Akademik Proje"
         },
         "image": "assets/what-is-data-analyst.jpg",
         "gallery": [
@@ -1088,6 +1067,13 @@
               "tr": "GitHub'da Aç"
             },
             "url": "https://github.com/UAJOP/Cars-Dataset-Analysis"
+          },
+          {
+            "label": {
+              "en": "Watch Walkthrough",
+              "tr": "Anlatımı İzle"
+            },
+            "url": "https://www.youtube.com/watch?v=3O3N9WXuUNw"
           }
         ],
         "overview": {
@@ -1142,8 +1128,8 @@
           "tr": "Android Uygulaması"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Academic Project",
+          "tr": "Akademik Proje"
         },
         "image": "assets/insatagram.webp",
         "gallery": [
@@ -1194,81 +1180,6 @@
           ]
         }
       },
-      "weather-app": {
-        "category": {
-          "en": "Web Development",
-          "tr": "Web Geliştirme"
-        },
-        "title": {
-          "en": "Weather App",
-          "tr": "Weather App"
-        },
-        "subtitle": {
-          "en": "A JavaScript weather application that fetches forecast data and presents location-based weather information.",
-          "tr": "Hava durumu verilerini çeken ve konuma göre hava bilgisi sunan JavaScript uygulaması."
-        },
-        "role": {
-          "en": "Frontend Developer",
-          "tr": "Frontend Developer"
-        },
-        "year": "2023",
-        "type": {
-          "en": "Web App",
-          "tr": "Web Uygulaması"
-        },
-        "status": {
-          "en": "Repository",
-          "tr": "Repository"
-        },
-        "image": "assets/7477790.png",
-        "gallery": [
-          "assets/7477790.png"
-        ],
-        "stack": [
-          "HTML",
-          "CSS",
-          "JavaScript",
-          "API",
-          "Frontend"
-        ],
-        "links": [
-          {
-            "label": {
-              "en": "Open GitHub",
-              "tr": "GitHub'da Aç"
-            },
-            "url": "https://github.com/UAJOP/Wheather-App"
-          }
-        ],
-        "overview": {
-          "en": "Weather App is a frontend project focused on retrieving weather data and presenting it through a simple user interface.",
-          "tr": "Weather App, hava durumu verilerini alıp basit bir kullanıcı arayüzü üzerinden sunmaya odaklanan frontend projesidir."
-        },
-        "challenge": {
-          "en": "The main challenge was connecting user-facing UI with external weather data in a clear and usable way.",
-          "tr": "Temel zorluk kullanıcı arayüzünü dış hava durumu verisiyle net ve kullanılabilir şekilde bağlamaktı."
-        },
-        "solution": {
-          "en": "I built a JavaScript-based interface that fetches and displays weather information for the user.",
-          "tr": "Kullanıcı için hava durumu bilgisini çeken ve gösteren JavaScript tabanlı bir arayüz geliştirdim."
-        },
-        "features": {
-          "en": [
-            "JavaScript data fetching",
-            "Weather information display",
-            "Frontend UI",
-            "Location-based concept",
-            "API-oriented practice"
-          ],
-          "tr": [
-            "JavaScript veri çekme",
-            "Hava bilgisi gösterimi",
-            "Frontend UI",
-            "Konum bazlı konsept",
-            "API odaklı pratik"
-          ]
-        }
-      },
       "control-panel": {
         "category": {
           "en": "Web & Dashboard",
@@ -1292,8 +1203,8 @@
           "tr": "Dashboard Projesi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Academic Project",
+          "tr": "Akademik Proje"
         },
         "image": "assets/control_panel_cover.webp",
         "gallery": [
@@ -1303,8 +1214,7 @@
           "PHP",
           "MySQL",
           "CSS",
-          "JavaScript",
-          "Dashboard"
+          "JavaScript"
         ],
         "links": [
           {
@@ -1320,29 +1230,25 @@
           "tr": "Control Panel, veritabanı destekli yönetim ekranları ve operasyonel akışlar içeren PHP ve MySQL tabanlı yönetim panelidir."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Give staff roles a signed-in panel for managing users and products, and keep customers out of it.",
+          "tr": "Personel rollerine kullanıcıları ve ürünleri yönetebilecekleri oturumlu bir panel vermek ve müşterileri panelin dışında tutmak."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "PHP endpoints exchange JSON with the pages. Login uses a prepared statement, verifies a hashed password and refuses the employee and customer roles. The code was read, not run, for this portfolio.",
+          "tr": "PHP uç noktaları sayfalarla JSON alışverişi yapar. Giriş, hazırlanmış sorgu kullanır, özetlenmiş parolayı doğrular ve çalışan ile müşteri rollerini reddeder. Kod bu portfolyo için okundu, çalıştırılmadı."
         },
         "features": {
           "en": [
-            "Dashboard-style interface",
-            "Admin panel structure",
-            "PHP management screens",
-            "MySQL-backed operations",
-            "Reusable UI sections",
-            "School/project-based web workflow"
+            "Login with hashed passwords and sessions",
+            "User create, read, update, delete",
+            "Product create, read, update, delete",
+            "Roles, categories and order tables in the schema"
           ],
           "tr": [
-            "Dashboard tarzı arayüz",
-            "Admin panel yapısı",
-            "PHP yönetim ekranları",
-            "MySQL destekli işlemler",
-            "Tekrar kullanılabilir UI bölümleri",
-            "Okul/proje bazlı web iş akışı"
+            "Özetlenmiş parola ve oturumla giriş",
+            "Kullanıcı ekleme, okuma, güncelleme, silme",
+            "Ürün ekleme, okuma, güncelleme, silme",
+            "Şemada rol, kategori ve sipariş tabloları"
           ]
         }
       },
@@ -1369,8 +1275,8 @@
           "tr": "Masaüstü Otomasyon Sistemi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Academic Project",
+          "tr": "Akademik Proje"
         },
         "image": "assets/hastane.jpg",
         "gallery": [
@@ -1498,10 +1404,9 @@
           "assets/escape-island-cover.webp"
         ],
         "stack": [
-          "Unreal Engine 5.4.4",
+          "Unreal Engine 5.4",
           "C++",
-          "Blueprints",
-          "Platforming"
+          "Blueprints"
         ],
         "links": [
           {
@@ -1513,31 +1418,31 @@
           }
         ],
         "overview": {
-          "en": "Escape Island is a solo Unreal Engine 5.4.4 prototype combining C++ and Blueprints in a timed third-person platforming flow.",
-          "tr": "Escape Island, zaman odaklı üçüncü şahıs platform akışında C++ ve Blueprints'i birleştiren solo Unreal Engine 5.4.4 prototipidir."
+          "en": "Escape Island is a solo Unreal Engine 5.4 prototype combining C++ and Blueprints in a third-person platforming flow.",
+          "tr": "Escape Island, üçüncü şahıs platform akışında C++ ile Blueprint'leri birleştiren tek kişilik bir Unreal Engine 5.4 prototipidir."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Make moving obstacles behave the same at any frame rate.",
+          "tr": "Hareketli engellerin her kare hızında aynı davranmasını sağlamak."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "One C++ actor, MovingPlatform, moves and rotates by delta time and reverses at a set distance; the rest of the level is Blueprint.",
+          "tr": "Tek bir C++ aktörü olan MovingPlatform, delta time ile hareket edip döner ve belirlenen mesafede yön değiştirir; bölümün geri kalanı Blueprint'tir."
         },
         "features": {
           "en": [
-            "Unreal Engine 5.4.4",
-            "C++ and Blueprints integration",
-            "Timed platforming flow",
-            "Moving and rotating obstacles",
+            "Unreal Engine 5.4",
+            "C++ moving-platform actor",
+            "Blueprint level logic",
+            "Design document in three languages",
             "Solo prototype"
           ],
           "tr": [
-            "Unreal Engine 5.4.4",
-            "C++ ve Blueprints entegrasyonu",
-            "Zaman odaklı platform akışı",
-            "Hareketli ve dönen engeller",
-            "Solo prototip"
+            "Unreal Engine 5.4",
+            "C++ hareketli platform aktörü",
+            "Blueprint bölüm mantığı",
+            "Üç dilde tasarım dokümanı",
+            "Tek kişilik prototip"
           ]
         }
       },
@@ -1551,8 +1456,8 @@
           "tr": "Calculator Android Studio"
         },
         "subtitle": {
-          "en": "A mobile calculator app built in Android Studio to practice interface structure and basic app logic.",
-          "tr": "Arayüz yapısı ve temel uygulama mantığı pratiği için Android Studio’da geliştirilen mobil hesap makinesi uygulaması."
+          "en": "A single-screen Android calculator written in Kotlin as a university exercise.",
+          "tr": "Üniversite alıştırması olarak Kotlin ile yazılmış tek ekranlı bir Android hesap makinesi."
         },
         "role": {
           "en": "Android Developer",
@@ -1564,18 +1469,17 @@
           "tr": "Mobil Uygulama"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Learning Project",
+          "tr": "Öğrenme Projesi"
         },
         "image": "assets/calculator-cartoon-illustration-png.webp",
         "gallery": [
           "assets/calculator-cartoon-illustration-png.webp"
         ],
         "stack": [
+          "Kotlin",
           "Android Studio",
-          "Mobile UI",
-          "App Logic",
-          "Input Handling"
+          "XML layouts"
         ],
         "links": [
           {
@@ -1587,105 +1491,27 @@
           }
         ],
         "overview": {
-          "en": "A mobile calculator app built in Android Studio to practice interface structure and basic app logic.",
-          "tr": "Arayüz yapısı ve temel uygulama mantığı pratiği için Android Studio’da geliştirilen mobil hesap makinesi uygulaması."
+          "en": "The project is one activity and its XML layout. It was not rebuilt for this portfolio, so the description rests on the source.",
+          "tr": "Proje tek bir activity ve onun XML yerleşiminden oluşur. Bu portfolyo için yeniden derlenmedi; açıklama kaynağa dayanır."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Handle button input and arithmetic on one Android screen.",
+          "tr": "Tek bir Android ekranında düğme girdisini ve aritmetiği yönetmek."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "The logic lives in one Kotlin MainActivity bound to the layout.",
+          "tr": "Mantık, yerleşime bağlı tek bir Kotlin MainActivity içinde yer alır."
         },
         "features": {
           "en": [
-            "Calculator operations",
-            "Android UI practice",
-            "Mobile project structure",
-            "Input handling",
-            "Beginner-friendly app logic"
+            "Kotlin MainActivity",
+            "XML layout",
+            "Gradle Android project"
           ],
           "tr": [
-            "Hesap makinesi işlemleri",
-            "Android UI pratiği",
-            "Mobil proje yapısı",
-            "Input yönetimi",
-            "Temel uygulama mantığı"
-          ]
-        }
-      },
-      "calculator-javascript": {
-        "category": {
-          "en": "Web Development",
-          "tr": "Web Geliştirme"
-        },
-        "title": {
-          "en": "Calculator JavaScript",
-          "tr": "Calculator JavaScript"
-        },
-        "subtitle": {
-          "en": "A JavaScript calculator project focused on DOM interaction, UI state and basic frontend logic.",
-          "tr": "DOM etkileşimi, UI state ve temel frontend mantığına odaklanan JavaScript hesap makinesi projesi."
-        },
-        "role": {
-          "en": "Frontend Developer",
-          "tr": "Frontend Developer"
-        },
-        "year": "2024",
-        "type": {
-          "en": "Frontend App",
-          "tr": "Frontend Uygulaması"
-        },
-        "status": {
-          "en": "Repository",
-          "tr": "Repository"
-        },
-        "image": "assets/images.png",
-        "gallery": [
-          "assets/images.png"
-        ],
-        "stack": [
-          "HTML",
-          "CSS",
-          "JavaScript",
-          "DOM"
-        ],
-        "links": [
-          {
-            "label": {
-              "en": "Open GitHub",
-              "tr": "GitHub'da Aç"
-            },
-            "url": "https://github.com/UAJOP/Calculator-JavaScript"
-          }
-        ],
-        "overview": {
-          "en": "A JavaScript calculator project focused on DOM interaction, UI state and basic frontend logic.",
-          "tr": "DOM etkileşimi, UI state ve temel frontend mantığına odaklanan JavaScript hesap makinesi projesi."
-        },
-        "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
-        },
-        "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
-        },
-        "features": {
-          "en": [
-            "DOM-based interactions",
-            "Calculator logic",
-            "Frontend state practice",
-            "Simple UI structure",
-            "JavaScript fundamentals"
-          ],
-          "tr": [
-            "DOM tabanlı etkileşim",
-            "Hesap makinesi mantığı",
-            "Frontend state pratiği",
-            "Basit UI yapısı",
-            "JavaScript temelleri"
+            "Kotlin MainActivity",
+            "XML yerleşimi",
+            "Gradle Android projesi"
           ]
         }
       },
@@ -1712,18 +1538,16 @@
           "tr": "Oyun Prototipi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Prototype",
+          "tr": "Prototip"
         },
         "image": "assets/warehouse-wreckage-cover.webp",
         "gallery": [
           "assets/warehouse-wreckage-cover.webp"
         ],
         "stack": [
-          "Unreal Engine",
-          "Game Design",
-          "Combat Logic",
-          "Environment"
+          "Unreal Engine 5.4",
+          "Blueprints"
         ],
         "links": [
           {
@@ -1735,31 +1559,27 @@
           }
         ],
         "overview": {
-          "en": "A warehouse-themed game prototype exploring combat, environment layout and gameplay systems.",
-          "tr": "Savaş, çevre yerleşimi ve gameplay sistemlerini deneyen depo temalı oyun prototipi."
+          "en": "Warehouse War is an Unreal Engine 5.4 project built with Blueprints and editor content; it has no C++ source. The repository includes the project files and a design document in three languages.",
+          "tr": "Warehouse War, Blueprint'ler ve editör içeriğiyle kurulmuş bir Unreal Engine 5.4 projesidir; C++ kaynağı yoktur. Depo, proje dosyalarını ve üç dilde bir tasarım dokümanını içerir."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Build a playable space and its rules inside the editor, without writing engine code.",
+          "tr": "Motor kodu yazmadan, editörün içinde oynanabilir bir alan ve kurallarını kurmak."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "The level and its logic are assembled from Blueprints and placed assets. It was not rebuilt for this portfolio.",
+          "tr": "Bölüm ve mantığı Blueprint'lerden ve yerleştirilmiş varlıklardan oluşturuldu. Bu portfolyo için yeniden derlenmedi."
         },
         "features": {
           "en": [
-            "Warehouse combat concept",
-            "Environment layout practice",
-            "Prototype gameplay systems",
-            "Action-focused interaction",
-            "Game project workflow"
+            "Unreal Engine 5.4 project files",
+            "Blueprint-only logic",
+            "Design document in three languages"
           ],
           "tr": [
-            "Depo savaş konsepti",
-            "Çevre yerleşimi pratiği",
-            "Prototip gameplay sistemleri",
-            "Aksiyon odaklı etkileşim",
-            "Oyun projesi iş akışı"
+            "Unreal Engine 5.4 proje dosyaları",
+            "Yalnızca Blueprint mantığı",
+            "Üç dilde tasarım dokümanı"
           ]
         }
       },
@@ -1773,8 +1593,8 @@
           "tr": "Legacy of the Lost"
         },
         "subtitle": {
-          "en": "A game prototype with a darker adventure atmosphere, built around exploration and scene presentation.",
-          "tr": "Keşif ve sahne sunumu etrafında geliştirilen, daha karanlık macera atmosferine sahip oyun prototipi."
+          "en": "An Unreal Engine 5 environmental puzzle prototype, documented by screenshots, a clip and a design document.",
+          "tr": "Ekran görüntüleri, bir klip ve bir tasarım dokümanıyla belgelenen Unreal Engine 5 çevresel bulmaca prototipi."
         },
         "role": {
           "en": "Game Developer",
@@ -1786,18 +1606,15 @@
           "tr": "Oyun Prototipi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Media Archive",
+          "tr": "Medya Arşivi"
         },
         "image": "assets/legacy-of-the-lost-cover.webp",
         "gallery": [
           "assets/legacy-of-the-lost-cover.webp"
         ],
         "stack": [
-          "Game Design",
-          "Level Design",
-          "Atmosphere",
-          "Prototype"
+          "Unreal Engine 5"
         ],
         "links": [
           {
@@ -1809,31 +1626,29 @@
           }
         ],
         "overview": {
-          "en": "A game prototype with a darker adventure atmosphere, built around exploration and scene presentation.",
-          "tr": "Keşif ve sahne sunumu etrafında geliştirilen, daha karanlık macera atmosferine sahip oyun prototipi."
+          "en": "Legacy of the Lost is an exploration and object-interaction puzzle prototype. The public repository holds media and a design document in three languages; the project source is not published.",
+          "tr": "Legacy of the Lost, keşif ve nesne etkileşimine dayalı bir bulmaca prototipidir. Herkese açık depoda medya ve üç dilde bir tasarım dokümanı bulunur; proje kaynağı yayınlanmadı."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Design puzzles that are solved by moving and combining objects in the environment.",
+          "tr": "Ortamdaki nesneleri hareket ettirip birleştirerek çözülen bulmacalar tasarlamak."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "I built a small level in Unreal Engine 5 and wrote up its design; the document is the most complete record of the project.",
+          "tr": "Unreal Engine 5'te küçük bir bölüm kurdum ve tasarımını yazıya döktüm; doküman, projenin en eksiksiz kaydıdır."
         },
         "features": {
           "en": [
-            "Adventure atmosphere",
-            "Scene composition practice",
-            "Prototype presentation",
-            "Exploration-oriented idea",
-            "Game design experimentation"
+            "Environmental puzzle prototype",
+            "Design document in three languages",
+            "Screenshots and gameplay clip",
+            "Source not published"
           ],
           "tr": [
-            "Macera atmosferi",
-            "Sahne kompozisyon pratiği",
-            "Prototip sunumu",
-            "Keşif odaklı fikir",
-            "Oyun tasarımı denemesi"
+            "Çevresel bulmaca prototipi",
+            "Üç dilde tasarım dokümanı",
+            "Ekran görüntüleri ve oynanış klibi",
+            "Kaynak yayınlanmadı"
           ]
         }
       },
@@ -1860,8 +1675,8 @@
           "tr": "Tailwind Portfolyo UI"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Superseded",
+          "tr": "Yerini Yenisi Aldı"
         },
         "image": "assets/porto_25_cover.webp",
         "gallery": [
@@ -1922,8 +1737,8 @@
           "tr": "My Java Projects"
         },
         "subtitle": {
-          "en": "A collection of Java practice projects focused on object-oriented programming, algorithms and core language fundamentals.",
-          "tr": "Nesne yönelimli programlama, algoritmalar ve temel dil yapılarına odaklanan Java pratik projeleri koleksiyonu."
+          "en": "About fifty small Java projects from university weeks and online courses, kept as one learning record.",
+          "tr": "Üniversite haftalarından ve çevrimiçi kurslardan yaklaşık elli küçük Java projesi; tek bir öğrenme kaydı olarak saklanıyor."
         },
         "role": {
           "en": "Java Developer",
@@ -1935,8 +1750,8 @@
           "tr": "Öğrenme Deposu"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Learning Project",
+          "tr": "Öğrenme Projesi"
         },
         "image": "assets/java.png",
         "gallery": [
@@ -1944,9 +1759,7 @@
         ],
         "stack": [
           "Java",
-          "OOP",
-          "Algorithms",
-          "Console Apps"
+          "IntelliJ IDEA"
         ],
         "links": [
           {
@@ -1958,31 +1771,29 @@
           }
         ],
         "overview": {
-          "en": "A collection of Java practice projects focused on object-oriented programming, algorithms and core language fundamentals.",
-          "tr": "Nesne yönelimli programlama, algoritmalar ve temel dil yapılarına odaklanan Java pratik projeleri koleksiyonu."
+          "en": "The folders are weekly exercises, lab work and course follow-alongs: classes and inheritance, interfaces, generics, arrays and small console programs such as rock-paper-scissors and an ATM exercise.",
+          "tr": "Klasörler haftalık alıştırmalar, laboratuvar çalışmaları ve kurs takipleridir: sınıflar ve kalıtım, arayüzler, generic'ler, diziler ve taş-kâğıt-makas ile ATM alıştırması gibi küçük konsol programları."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Learn object-oriented programming by writing many small programs rather than one large one.",
+          "tr": "Nesne yönelimli programlamayı tek bir büyük program yerine birçok küçük program yazarak öğrenmek."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "Each exercise is its own IntelliJ project. They are unedited coursework, not a library or an application.",
+          "tr": "Her alıştırma kendi IntelliJ projesidir. Bunlar düzenlenmemiş ders çalışmalarıdır; bir kütüphane ya da uygulama değildir."
         },
         "features": {
           "en": [
-            "Java fundamentals",
-            "OOP practice",
-            "Algorithm exercises",
-            "Learning repository structure",
-            "Core programming logic"
+            "Classes, inheritance and polymorphism",
+            "Interfaces and generics",
+            "Arrays and control flow",
+            "Small console programs"
           ],
           "tr": [
-            "Java temelleri",
-            "OOP pratiği",
-            "Algoritma egzersizleri",
-            "Öğrenme deposu yapısı",
-            "Temel programlama mantığı"
+            "Sınıflar, kalıtım ve çok biçimlilik",
+            "Arayüzler ve generic'ler",
+            "Diziler ve akış kontrolü",
+            "Küçük konsol programları"
           ]
         }
       },
@@ -1996,8 +1807,8 @@
           "tr": "Agency DB"
         },
         "subtitle": {
-          "en": "A database-focused project for modeling agency-style records, relations and structured data operations.",
-          "tr": "Ajans tarzı kayıtları, ilişkileri ve yapılandırılmış veri işlemlerini modellemeye odaklanan veritabanı projesi."
+          "en": "An academic MySQL database modelling an event agency: personnel, clients, jobs, expenses and salary records.",
+          "tr": "Bir etkinlik ajansını modelleyen akademik bir MySQL veritabanı: personel, müşteriler, işler, giderler ve maaş kayıtları."
         },
         "role": {
           "en": "Database Developer",
@@ -2009,18 +1820,19 @@
           "tr": "Veritabanı Projesi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Academic Project",
+          "tr": "Akademik Proje"
         },
         "image": "assets/agency_db_cover.webp",
         "gallery": [
           "assets/agency_db_cover.webp"
         ],
         "stack": [
+          "MySQL",
           "SQL",
-          "Database Design",
-          "Data Modeling",
-          "ER Logic"
+          "Stored procedures",
+          "Triggers",
+          "ER diagram"
         ],
         "links": [
           {
@@ -2032,31 +1844,29 @@
           }
         ],
         "overview": {
-          "en": "A database-focused project for modeling agency-style records, relations and structured data operations.",
-          "tr": "Ajans tarzı kayıtları, ilişkileri ve yapılandırılmış veri işlemlerini modellemeye odaklanan veritabanı projesi."
+          "en": "The repository holds the SQL dump, read-only demo queries and an ER diagram. It is coursework with synthetic data, not a client system.",
+          "tr": "Depo SQL dökümünü, salt okunur demo sorgularını ve bir ER diyagramını içerir. Sentetik verili bir ders çalışmasıdır; bir müşteri sistemi değildir."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Model the agency's records so that jobs, people, clients and expenses stay consistent.",
+          "tr": "Ajansın kayıtlarını; işler, kişiler, müşteriler ve giderler tutarlı kalacak şekilde modellemek."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "Eleven tables with primary and foreign keys carry the model; three triggers copy personnel changes into audit tables and ten stored procedures provide lookups and simple aggregates.",
+          "tr": "Modeli birincil ve yabancı anahtarlı on bir tablo taşır; üç tetikleyici personel değişikliklerini denetim tablolarına kopyalar, on saklı yordam ise sorgulama ve basit toplamlar sağlar."
         },
         "features": {
           "en": [
-            "Relational data modeling",
-            "SQL practice",
-            "Agency record structure",
-            "Database normalization concept",
-            "Data operation planning"
+            "11 tables, 7 foreign keys",
+            "10 stored procedures",
+            "3 audit triggers",
+            "ER diagram and demo queries"
           ],
           "tr": [
-            "İlişkisel veri modelleme",
-            "SQL pratiği",
-            "Ajans kayıt yapısı",
-            "Veritabanı normalizasyon konsepti",
-            "Veri operasyon planlama"
+            "11 tablo, 7 yabancı anahtar",
+            "10 saklı yordam",
+            "3 denetim tetikleyicisi",
+            "ER diyagramı ve demo sorguları"
           ]
         }
       },
@@ -2070,8 +1880,8 @@
           "tr": "Mandelas Website Project"
         },
         "subtitle": {
-          "en": "A website project focused on content structure, frontend layout and static page development.",
-          "tr": "İçerik yapısı, frontend layout ve statik sayfa geliştirmeye odaklanan web sitesi projesi."
+          "en": "A static restaurant landing page in HTML and CSS, built in a university web design course.",
+          "tr": "Üniversitedeki web tasarımı dersinde HTML ve CSS ile yapılmış statik bir restoran tanıtım sayfası."
         },
         "role": {
           "en": "Web Developer",
@@ -2083,8 +1893,8 @@
           "tr": "Web Sitesi Projesi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Learning Project",
+          "tr": "Öğrenme Projesi"
         },
         "image": "assets/images (1).png",
         "gallery": [
@@ -2092,9 +1902,7 @@
         ],
         "stack": [
           "HTML",
-          "CSS",
-          "JavaScript",
-          "Static Website"
+          "CSS"
         ],
         "links": [
           {
@@ -2106,31 +1914,27 @@
           }
         ],
         "overview": {
-          "en": "A website project focused on content structure, frontend layout and static page development.",
-          "tr": "İçerik yapısı, frontend layout ve statik sayfa geliştirmeye odaklanan web sitesi projesi."
+          "en": "One page with hero, meals, testimonials and pricing sections, written in Turkish. The figures and press logos on it are placeholder content from the exercise, not real data.",
+          "tr": "Türkçe yazılmış; hero, yemekler, yorumlar ve fiyat bölümlerinden oluşan tek sayfa. Üzerindeki rakamlar ve basın logoları alıştırmanın yer tutucu içeriğidir, gerçek veri değildir."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Build a complete marketing page from sections with a consistent visual rhythm.",
+          "tr": "Tutarlı bir görsel ritimle bölümlerden oluşan eksiksiz bir tanıtım sayfası kurmak."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "Two stylesheets, one general and one for the page, carry the layout. There is no JavaScript of my own and no framework.",
+          "tr": "Yerleşimi biri genel, biri sayfaya özel iki stil dosyası taşır. Kendi yazdığım JavaScript ya da bir framework yok."
         },
         "features": {
           "en": [
-            "Static website layout",
-            "Content structure",
-            "Responsive page sections",
-            "Frontend practice",
-            "Web presentation fundamentals"
+            "Single static page",
+            "Two CSS files",
+            "Course exercise content"
           ],
           "tr": [
-            "Statik web sitesi layout’u",
-            "İçerik yapısı",
-            "Responsive sayfa bölümleri",
-            "Frontend pratiği",
-            "Web sunum temelleri"
+            "Tek statik sayfa",
+            "İki CSS dosyası",
+            "Ders alıştırması içeriği"
           ]
         }
       },
@@ -2144,8 +1948,8 @@
           "tr": "Python Projects"
         },
         "subtitle": {
-          "en": "A Python practice repository containing learning projects around programming fundamentals, automation and data-oriented logic.",
-          "tr": "Programlama temelleri, otomasyon ve veri odaklı mantık etrafında öğrenme projeleri içeren Python pratik deposu."
+          "en": "Python practice scripts from an introductory course and early exercises, kept as one learning record.",
+          "tr": "Bir giriş kursundan ve ilk alıştırmalardan Python pratik betikleri; tek bir öğrenme kaydı olarak saklanıyor."
         },
         "role": {
           "en": "Python Developer",
@@ -2157,18 +1961,15 @@
           "tr": "Öğrenme Deposu"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Learning Project",
+          "tr": "Öğrenme Projesi"
         },
         "image": "assets/Python-Symbol.png",
         "gallery": [
           "assets/Python-Symbol.png"
         ],
         "stack": [
-          "Python",
-          "Automation",
-          "Data Logic",
-          "Scripts"
+          "Python"
         ],
         "links": [
           {
@@ -2180,31 +1981,29 @@
           }
         ],
         "overview": {
-          "en": "A Python practice repository containing learning projects around programming fundamentals, automation and data-oriented logic.",
-          "tr": "Programlama temelleri, otomasyon ve veri odaklı mantık etrafında öğrenme projeleri içeren Python pratik deposu."
+          "en": "Most files follow a beginner course lesson by lesson: variables and formatting, modules, classes, a user-registration exercise, a simple cipher, a film catalogue and first steps with NumPy.",
+          "tr": "Dosyaların çoğu bir başlangıç kursunu ders ders izler: değişkenler ve biçimlendirme, modüller, sınıflar, bir kullanıcı kaydı alıştırması, basit bir şifreleme, bir film kataloğu ve NumPy ile ilk adımlar."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Build fluency in the language before using it for real work.",
+          "tr": "Dili gerçek işlerde kullanmadan önce akıcılık kazanmak."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "The scripts are kept as written. Later Python work with real scope is in SINAMA and the Hospital Appointment System.",
+          "tr": "Betikler yazıldıkları gibi saklanıyor. Gerçek kapsamlı sonraki Python çalışmaları SINAMA ve Hospital Appointment System'dadır."
         },
         "features": {
           "en": [
-            "Python fundamentals",
-            "Script-based practice",
-            "Automation ideas",
-            "Data logic exercises",
-            "Learning project archive"
+            "Language fundamentals",
+            "Modules and classes",
+            "Small console exercises",
+            "First NumPy steps"
           ],
           "tr": [
-            "Python temelleri",
-            "Script tabanlı pratik",
-            "Otomasyon fikirleri",
-            "Veri mantığı egzersizleri",
-            "Öğrenme proje arşivi"
+            "Dil temelleri",
+            "Modüller ve sınıflar",
+            "Küçük konsol alıştırmaları",
+            "NumPy ile ilk adımlar"
           ]
         }
       },
@@ -2218,67 +2017,57 @@
           "tr": "IC Supply"
         },
         "subtitle": {
-          "en": "A supply-oriented project focused on inventory-style data structure, tracking logic and backend thinking.",
-          "tr": "Stok/envanter tarzı veri yapısı, takip mantığı ve backend düşüncesine odaklanan tedarik projesi."
+          "en": "University coursework: PHP login and registration backed by MySQL, added to an adapted storefront template.",
+          "tr": "Üniversite ders projesi: uyarlanmış bir mağaza şablonuna eklenen, MySQL destekli PHP giriş ve kayıt akışı."
         },
         "role": {
           "en": "Backend / Data Developer",
           "tr": "Backend / Data Developer"
         },
-        "year": "2024",
+        "year": "2023",
         "type": {
-          "en": "Data System",
-          "tr": "Veri Sistemi"
+          "en": "Web Coursework",
+          "tr": "Web Ders Projesi"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Private Archive",
+          "tr": "Özel Arşiv"
         },
         "image": "assets/ic_supply_cover.webp",
         "gallery": [
           "assets/ic_supply_cover.webp"
         ],
         "stack": [
-          "Database",
-          "Backend Logic",
-          "Inventory Flow",
-          "Data Tracking"
+          "PHP",
+          "MySQL",
+          "HTML",
+          "CSS"
         ],
-        "links": [
-          {
-            "label": {
-              "en": "Open GitHub",
-              "tr": "GitHub'da Aç"
-            },
-            "url": "https://github.com/UAJOP/Ic-Supply"
-          }
-        ],
+        "links": [],
         "overview": {
-          "en": "A supply-oriented project focused on inventory-style data structure, tracking logic and backend thinking.",
-          "tr": "Stok/envanter tarzı veri yapısı, takip mantığı ve backend düşüncesine odaklanan tedarik projesi."
+          "en": "The storefront pages come from an existing site used as a template. My part is the login and registration scripts and the one-table user database. The source is kept private.",
+          "tr": "Mağaza sayfaları, şablon olarak kullanılan mevcut bir siteden gelir. Bana ait kısım giriş ve kayıt betikleri ile tek tablolu kullanıcı veritabanıdır. Kaynak özel tutulur."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Connect a form on a static site to a database for sign-up and sign-in.",
+          "tr": "Statik bir sitedeki formu, kayıt ve giriş için bir veritabanına bağlamak."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "Two PHP scripts read the form and query MySQL through mysqli. It is a learning exercise: passwords are stored unhashed, which a real system must never do.",
+          "tr": "İki PHP betiği formu okur ve mysqli ile MySQL'i sorgular. Bu bir öğrenme alıştırmasıdır: parolalar özetlenmeden saklanır; gerçek bir sistem bunu asla yapmamalıdır."
         },
         "features": {
           "en": [
-            "Supply tracking concept",
-            "Inventory-style data structure",
-            "Backend workflow thinking",
-            "Operational data practice",
-            "Structured project logic"
+            "PHP login script",
+            "PHP registration script",
+            "One-table MySQL schema",
+            "Adapted third-party template"
           ],
           "tr": [
-            "Tedarik takip konsepti",
-            "Envanter tarzı veri yapısı",
-            "Backend iş akışı düşüncesi",
-            "Operasyonel veri pratiği",
-            "Yapılandırılmış proje mantığı"
+            "PHP giriş betiği",
+            "PHP kayıt betiği",
+            "Tek tablolu MySQL şeması",
+            "Uyarlanmış üçüncü taraf şablon"
           ]
         }
       },
@@ -2292,8 +2081,8 @@
           "tr": "Portfolio Website"
         },
         "subtitle": {
-          "en": "The live personal portfolio repository combining project catalog, AI assistant, recruiter mode, request form and interactive mini game features.",
-          "tr": "Proje kataloğu, AI asistan, İK modu, talep formu ve interaktif mini oyun özelliklerini birleştiren canlı kişisel portfolyo deposu."
+          "en": "This site: a statically deployed, React-prerendered portfolio in five languages with a public assistant and four playable games.",
+          "tr": "Bu site: statik olarak yayınlanan, React ile önceden render edilen, beş dilli; herkese açık bir asistanı ve dört oynanabilir oyunu olan bir portfolyo."
         },
         "role": {
           "en": "Web Developer",
@@ -2305,22 +2094,28 @@
           "tr": "Canlı Portfolyo"
         },
         "status": {
-          "en": "Repository",
-          "tr": "Repository"
+          "en": "Live",
+          "tr": "Canlı"
         },
         "image": "assets/portfolio_website_cover.webp",
         "gallery": [
           "assets/portfolio_website_cover.webp"
         ],
         "stack": [
-          "HTML",
-          "CSS",
+          "React",
+          "Vite",
+          "Static prerender",
           "JavaScript",
-          "Static Site",
-          "Ajoop",
-          "Mini Game"
+          "CSS"
         ],
         "links": [
+          {
+            "label": {
+              "en": "View Case Study",
+              "tr": "Vaka Çalışmasını Gör"
+            },
+            "url": "/portfolio-case-study/"
+          },
           {
             "label": {
               "en": "Open GitHub",
@@ -2330,31 +2125,31 @@
           }
         ],
         "overview": {
-          "en": "The live personal portfolio repository combining project catalog, AI assistant, recruiter mode, request form and interactive mini game features.",
-          "tr": "Proje kataloğu, AI asistan, İK modu, talep formu ve interaktif mini oyun özelliklerini birleştiren canlı kişisel portfolyo deposu."
+          "en": "The full account is the kaanbalci.com case study: how a static site became a prerendered React system without giving up static hosting, and how it is tested.",
+          "tr": "Ayrıntılı anlatım kaanbalci.com vaka çalışmasındadır: statik bir sitenin statik barındırmadan vazgeçmeden önceden render edilen bir React sistemine nasıl dönüştüğü ve nasıl test edildiği."
         },
         "challenge": {
-          "en": "The goal of this repository is to turn a focused learning or product idea into a clear, reviewable software project that can be shown in a portfolio context.",
-          "tr": "Bu repository’nin amacı, odaklı bir öğrenme veya ürün fikrini portfolyo bağlamında gösterilebilir, net ve incelenebilir bir yazılım projesine dönüştürmektir."
+          "en": "Keep one source of truth for projects, copy and routes while the site grows in languages, pages and interactive pieces.",
+          "tr": "Site dil, sayfa ve etkileşimli parça olarak büyürken projeler, metinler ve rotalar için tek bir doğruluk kaynağını korumak."
         },
         "solution": {
-          "en": "I structured the project around the relevant technology stack, core interaction flow and practical implementation details so it can demonstrate both technical learning and product thinking.",
-          "tr": "Projeyi ilgili teknoloji stack’i, temel etkileşim akışı ve pratik uygulama detayları etrafında yapılandırdım; böylece hem teknik öğrenmeyi hem de ürün düşüncesini gösterebilir."
+          "en": "Canonical JSON feeds a build that prerenders every route to static HTML and hydrates it with React; games and the assistant load only where they are used.",
+          "tr": "Kanonik JSON, her rotayı statik HTML olarak önceden render eden ve React ile hydrate eden bir derlemeyi besler; oyunlar ve asistan yalnızca kullanıldıkları yerde yüklenir."
         },
         "features": {
           "en": [
-            "Live portfolio architecture",
-            "Dynamic project detail pages",
-            "Ajoop assistant integration",
-            "Recruiter mode and search palette",
-            "Interactive adventure mini game"
+            "Canonical project registry",
+            "React prerender with hydration",
+            "Five locales on clean routes",
+            "Public AJOOP assistant",
+            "Four browser-playable games"
           ],
           "tr": [
-            "Canlı portfolyo mimarisi",
-            "Dinamik proje detay sayfaları",
-            "Ajoop asistan entegrasyonu",
-            "İK modu ve arama paleti",
-            "İnteraktif macera mini oyunu"
+            "Kanonik proje kaydı",
+            "Hydration'lı React ön render",
+            "Temiz rotalarda beş dil",
+            "Herkese açık AJOOP asistanı",
+            "Tarayıcıda oynanabilen dört oyun"
           ]
         }
       }

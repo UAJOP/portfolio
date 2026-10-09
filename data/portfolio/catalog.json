@@ -1,0 +1,982 @@
+{
+  "schemaVersion": 1,
+  "auditedAt": "2026-10-09",
+  "purpose": "Canonical coverage registry (V4-E06.5). `identities` are the standalone public projects: each has real, inspectable scope and its own page. `collections` gather learning artifacts that are shown together and are not standalone projects. `repositories` gives every UAJOP repository one disposition and says where, if anywhere, it is represented; auditing a repository does not make it a project. Private repository names appear only under `repositories`, which is never rendered.",
+  "dispositions": [
+    "featured",
+    "project",
+    "game",
+    "archive",
+    "learning",
+    "superseded",
+    "private",
+    "exclude"
+  ],
+  "groups": [
+    "current",
+    "software",
+    "nativeGames",
+    "earlier"
+  ],
+  "capabilities": [
+    "applied-ai",
+    "conversational-ai",
+    "automation",
+    "full-stack",
+    "data-sql",
+    "mobile",
+    "web-product",
+    "game-systems",
+    "interactive-ux",
+    "qa-reliability"
+  ],
+  "identities": [
+    {
+      "id": "sinama",
+      "title": "SINAMA — AI Agent Reliability Lab",
+      "group": "current",
+      "tier": "featured",
+      "kind": "product",
+      "status": "live",
+      "year": "2026",
+      "tech": "Python · FastAPI · Next.js",
+      "tags": [
+        "live",
+        "case-study"
+      ],
+      "repo": "UAJOP/sinama",
+      "links": {
+        "caseStudy": "/sinama-case-study/",
+        "live": "https://sinama.kaanbalci.com",
+        "github": "https://github.com/UAJOP/sinama"
+      },
+      "capabilities": [
+        "applied-ai",
+        "qa-reliability",
+        "full-stack"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "ajoop",
+      "title": "AJOOP",
+      "group": "current",
+      "tier": "featured",
+      "kind": "assistant",
+      "status": "live",
+      "year": "2026",
+      "tech": "Retrieval · deterministic fallback",
+      "tags": [
+        "live",
+        "case-study",
+        "portfolio-native"
+      ],
+      "repo": null,
+      "links": {
+        "caseStudy": "/ajoop-case-study/",
+        "play": "/ajoop/"
+      },
+      "capabilities": [
+        "conversational-ai",
+        "applied-ai",
+        "qa-reliability"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "portfolio-v4",
+      "title": "kaanbalci.com",
+      "group": "current",
+      "tier": "featured",
+      "kind": "portfolio",
+      "status": "live",
+      "year": "2026",
+      "tech": "React prerender · static deploy · 5 locales",
+      "tags": [
+        "live",
+        "case-study",
+        "web"
+      ],
+      "repo": "UAJOP/portfolio",
+      "detailSlug": "portfolio-website",
+      "links": {
+        "caseStudy": "/portfolio-case-study/",
+        "live": "https://kaanbalci.com/",
+        "github": "https://github.com/UAJOP/portfolio"
+      },
+      "capabilities": [
+        "web-product",
+        "qa-reliability",
+        "interactive-ux",
+        "full-stack"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "atolye-joyday",
+      "title": "Atölye Joyday",
+      "group": "current",
+      "tier": "featured",
+      "kind": "website",
+      "status": "live",
+      "year": "2026",
+      "tech": "Static site · Apps Script automation",
+      "tags": [
+        "live",
+        "case-study",
+        "business"
+      ],
+      "repo": null,
+      "detailSlug": "atolye-joyday-official-website",
+      "links": {
+        "caseStudy": "/atolye-joyday-case-study/",
+        "live": "https://atolyejoyday.com/"
+      },
+      "capabilities": [
+        "web-product",
+        "automation"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "ai-chatbot-flow-design",
+      "title": "AI Chatbot Flow Design",
+      "group": "current",
+      "tier": "featured",
+      "kind": "caseStudy",
+      "status": "caseStudy",
+      "year": "2025",
+      "tech": "Conversation design · NLU · handoff",
+      "tags": [
+        "case-study",
+        "portfolio-native"
+      ],
+      "repo": null,
+      "detailSlug": "ai-chatbot-flow-design",
+      "links": {
+        "caseStudy": "/projects/ai-chatbot-flow-design/"
+      },
+      "capabilities": [
+        "conversational-ai",
+        "automation"
+      ],
+      "evidence": "documented"
+    },
+    {
+      "id": "merge-rush",
+      "title": "Merge Rush: Tiny Factory",
+      "group": "current",
+      "tier": "selected",
+      "kind": "browserGame",
+      "status": "playable",
+      "year": "2026",
+      "tech": "Phaser 3 · TypeScript · Vitest",
+      "tags": [
+        "playable",
+        "case-study"
+      ],
+      "repo": null,
+      "links": {
+        "play": "/merge-rush/",
+        "caseStudy": "/merge-rush-case-study/"
+      },
+      "capabilities": [
+        "game-systems",
+        "qa-reliability",
+        "interactive-ux"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "ai-flow-puzzle",
+      "title": "AI Flow Puzzle",
+      "group": "current",
+      "tier": "selected",
+      "kind": "browserGame",
+      "status": "playable",
+      "year": "2026",
+      "tech": "Vanilla JavaScript · SVG wiring",
+      "tags": [
+        "playable",
+        "case-study",
+        "portfolio-native"
+      ],
+      "repo": null,
+      "links": {
+        "play": "/ai-flow-puzzle/",
+        "caseStudy": "/ai-flow-puzzle-case-study/"
+      },
+      "capabilities": [
+        "interactive-ux",
+        "conversational-ai",
+        "game-systems"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "career-adventure",
+      "title": "Career Adventure",
+      "group": "current",
+      "tier": "selected",
+      "kind": "browserGame",
+      "status": "playable",
+      "year": "2026",
+      "tech": "Vanilla JavaScript · Canvas 2D",
+      "tags": [
+        "playable",
+        "case-study",
+        "portfolio-native"
+      ],
+      "repo": null,
+      "links": {
+        "play": "/adventure/",
+        "caseStudy": "/career-adventure-case-study/"
+      },
+      "capabilities": [
+        "game-systems",
+        "interactive-ux",
+        "qa-reliability"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "joyday-action-painting",
+      "title": "Joyday Action Painting",
+      "group": "current",
+      "tier": "selected",
+      "kind": "browserGame",
+      "status": "playable",
+      "year": "2026",
+      "tech": "Vanilla JavaScript · Canvas 2D",
+      "tags": [
+        "playable",
+        "portfolio-native"
+      ],
+      "repo": null,
+      "links": {
+        "play": "/joyday-paint/",
+        "caseStudy": "/atolye-joyday-case-study/"
+      },
+      "capabilities": [
+        "interactive-ux",
+        "game-systems"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "hospital-system",
+      "title": "Hospital Form App",
+      "group": "current",
+      "tier": "selected",
+      "kind": "desktopApp",
+      "status": "sourceArchive",
+      "year": "2024",
+      "tech": "C# · Windows Forms · SQL Server",
+      "tags": [
+        "case-study",
+        "source-archive",
+        "academic"
+      ],
+      "repo": "UAJOP/Hospital-System",
+      "detailSlug": "hospital-form-app",
+      "links": {
+        "caseStudy": "/hospital-system-case-study/",
+        "github": "https://github.com/UAJOP/Hospital-System"
+      },
+      "capabilities": [
+        "full-stack",
+        "data-sql"
+      ],
+      "evidence": "source-evidenced"
+    },
+    {
+      "id": "my-museum",
+      "title": "MyMuseum",
+      "group": "software",
+      "tier": "project",
+      "kind": "mobileApp",
+      "status": "academic",
+      "year": "2024",
+      "tech": "Kotlin · Firebase",
+      "tags": [
+        "academic",
+        "mobile"
+      ],
+      "repo": "UAJOP/MyMuseum",
+      "detailSlug": "my-museum",
+      "links": {
+        "github": "https://github.com/UAJOP/MyMuseum"
+      },
+      "capabilities": [
+        "mobile",
+        "full-stack"
+      ],
+      "evidence": "build-verified"
+    },
+    {
+      "id": "hospital-appointment-system",
+      "title": "Hospital Appointment System",
+      "group": "software",
+      "tier": "project",
+      "kind": "desktopApp",
+      "status": "academic",
+      "year": "2024",
+      "tech": "Python · Tkinter · MySQL",
+      "tags": [
+        "academic"
+      ],
+      "repo": "UAJOP/Hospital-Appointment-System",
+      "detailSlug": "hospital-appointment-system",
+      "links": {
+        "github": "https://github.com/UAJOP/Hospital-Appointment-System"
+      },
+      "capabilities": [
+        "full-stack",
+        "data-sql"
+      ],
+      "evidence": "source-evidenced"
+    },
+    {
+      "id": "agency-db",
+      "title": "Agency DB",
+      "group": "software",
+      "tier": "project",
+      "kind": "database",
+      "status": "academic",
+      "year": "2024",
+      "tech": "MySQL · triggers · stored procedures",
+      "tags": [
+        "academic",
+        "data"
+      ],
+      "repo": "UAJOP/Agency-Db",
+      "detailSlug": "agency-db",
+      "links": {
+        "github": "https://github.com/UAJOP/Agency-Db"
+      },
+      "capabilities": [
+        "data-sql"
+      ],
+      "evidence": "source-evidenced"
+    },
+    {
+      "id": "cars-dataset-analysis",
+      "title": "Cars Dataset Analysis",
+      "group": "software",
+      "tier": "project",
+      "kind": "dataAnalysis",
+      "status": "academic",
+      "year": "2024",
+      "tech": "Python · pandas · scikit-learn",
+      "tags": [
+        "academic",
+        "data"
+      ],
+      "repo": "UAJOP/Cars-Dataset-Analysis",
+      "detailSlug": "cars-dataset-analysis",
+      "links": {
+        "github": "https://github.com/UAJOP/Cars-Dataset-Analysis",
+        "video": "https://www.youtube.com/watch?v=3O3N9WXuUNw"
+      },
+      "capabilities": [
+        "data-sql"
+      ],
+      "evidence": "runtime-verified"
+    },
+    {
+      "id": "control-panel",
+      "title": "Control Panel",
+      "group": "software",
+      "tier": "project",
+      "kind": "webApp",
+      "status": "academic",
+      "year": "2024",
+      "tech": "PHP · MySQL · JavaScript",
+      "tags": [
+        "academic",
+        "web"
+      ],
+      "repo": "UAJOP/Control-Panel",
+      "detailSlug": "control-panel",
+      "links": {
+        "github": "https://github.com/UAJOP/Control-Panel"
+      },
+      "capabilities": [
+        "full-stack",
+        "data-sql"
+      ],
+      "evidence": "source-evidenced"
+    },
+    {
+      "id": "escape-island",
+      "title": "Escape Island",
+      "group": "nativeGames",
+      "tier": "game",
+      "kind": "nativeGame",
+      "status": "prototype",
+      "year": "2024",
+      "tech": "Unreal Engine 5.4 · C++ · Blueprints",
+      "tags": [
+        "game-native",
+        "prototype"
+      ],
+      "repo": "UAJOP/EscapeIsland",
+      "detailSlug": "escape-island",
+      "links": {
+        "github": "https://github.com/UAJOP/EscapeIsland"
+      },
+      "capabilities": [
+        "game-systems"
+      ],
+      "evidence": "source-evidenced"
+    },
+    {
+      "id": "warehouse-war",
+      "title": "Warehouse War",
+      "group": "nativeGames",
+      "tier": "game",
+      "kind": "nativeGame",
+      "status": "prototype",
+      "year": "2024",
+      "tech": "Unreal Engine 5.4 · Blueprints",
+      "tags": [
+        "game-native",
+        "prototype"
+      ],
+      "repo": "UAJOP/Warehouse-War",
+      "detailSlug": "warehouse-war",
+      "links": {
+        "github": "https://github.com/UAJOP/Warehouse-War"
+      },
+      "capabilities": [
+        "game-systems"
+      ],
+      "evidence": "source-evidenced"
+    },
+    {
+      "id": "drivenfinity",
+      "title": "Drivenfinity",
+      "group": "nativeGames",
+      "tier": "game",
+      "kind": "nativeGame",
+      "status": "prototype",
+      "year": "2025",
+      "tech": "Unity 2020.2 · C#",
+      "tags": [
+        "game-native",
+        "prototype",
+        "mobile"
+      ],
+      "repo": "UAJOP/Drivenfinity",
+      "detailSlug": "drivenfinity",
+      "links": {
+        "github": "https://github.com/UAJOP/Drivenfinity"
+      },
+      "capabilities": [
+        "game-systems",
+        "mobile"
+      ],
+      "evidence": "source-evidenced"
+    },
+    {
+      "id": "dunker-madness",
+      "title": "Dunker Madness",
+      "group": "nativeGames",
+      "tier": "game",
+      "kind": "nativeGame",
+      "status": "prototype",
+      "year": "2025",
+      "tech": "Unity 2020.2 · C# · 2D physics",
+      "tags": [
+        "game-native",
+        "prototype",
+        "mobile"
+      ],
+      "repo": "UAJOP/DunkerMadness",
+      "detailSlug": "dunker-madness",
+      "links": {
+        "github": "https://github.com/UAJOP/DunkerMadness"
+      },
+      "capabilities": [
+        "game-systems"
+      ],
+      "evidence": "source-evidenced"
+    },
+    {
+      "id": "tank-savage",
+      "title": "Tank Savage",
+      "group": "nativeGames",
+      "tier": "game",
+      "kind": "nativeGame",
+      "status": "mediaOnly",
+      "year": "2024",
+      "tech": "Unreal Engine",
+      "tags": [
+        "game-native",
+        "prototype"
+      ],
+      "repo": "UAJOP/TankSavage",
+      "detailSlug": "tank-savage",
+      "links": {
+        "github": "https://github.com/UAJOP/TankSavage"
+      },
+      "capabilities": [
+        "game-systems"
+      ],
+      "evidence": "media-only"
+    },
+    {
+      "id": "extract-shoot-zero",
+      "title": "Extract Shoot: Zero",
+      "group": "nativeGames",
+      "tier": "game",
+      "kind": "nativeGame",
+      "status": "mediaOnly",
+      "year": "2024",
+      "tech": "Unreal Engine",
+      "tags": [
+        "game-native",
+        "prototype"
+      ],
+      "repo": "UAJOP/ExtractShoot-Zero",
+      "detailSlug": "extract-shoot-zero",
+      "links": {
+        "github": "https://github.com/UAJOP/ExtractShoot-Zero"
+      },
+      "capabilities": [
+        "game-systems"
+      ],
+      "evidence": "media-only"
+    },
+    {
+      "id": "legacy-of-the-lost",
+      "title": "Legacy of the Lost",
+      "group": "nativeGames",
+      "tier": "game",
+      "kind": "nativeGame",
+      "status": "mediaOnly",
+      "year": "2025",
+      "tech": "Unreal Engine 5",
+      "tags": [
+        "game-native",
+        "prototype"
+      ],
+      "repo": "UAJOP/LegacyOfTheLost",
+      "detailSlug": "legacy-of-the-lost",
+      "links": {
+        "github": "https://github.com/UAJOP/LegacyOfTheLost"
+      },
+      "capabilities": [
+        "game-systems"
+      ],
+      "evidence": "media-only"
+    }
+  ],
+  "relations": [
+    {
+      "from": "portfolio-v4",
+      "type": "hosts",
+      "to": "ajoop"
+    },
+    {
+      "from": "portfolio-v4",
+      "type": "hosts",
+      "to": "ai-flow-puzzle"
+    },
+    {
+      "from": "portfolio-v4",
+      "type": "hosts",
+      "to": "career-adventure"
+    },
+    {
+      "from": "portfolio-v4",
+      "type": "hosts",
+      "to": "joyday-action-painting"
+    },
+    {
+      "from": "portfolio-v4",
+      "type": "hostsBuild",
+      "to": "merge-rush"
+    },
+    {
+      "from": "joyday-action-painting",
+      "type": "sameBrand",
+      "to": "atolye-joyday"
+    },
+    {
+      "from": "hospital-system",
+      "type": "sameDomain",
+      "to": "hospital-appointment-system"
+    },
+    {
+      "from": "ai-flow-puzzle",
+      "type": "teaches",
+      "to": "ai-chatbot-flow-design"
+    }
+  ],
+  "repositories": [
+    {
+      "repo": "UAJOP/UAJOP",
+      "visibility": "public",
+      "disposition": "exclude",
+      "identity": null,
+      "reason": "GitHub profile README; not a project."
+    },
+    {
+      "repo": "UAJOP/desktop-tutorial",
+      "visibility": "private",
+      "disposition": "exclude",
+      "identity": null,
+      "reason": "GitHub Desktop tutorial repository; one README."
+    },
+    {
+      "repo": "UAJOP/MyMuseum",
+      "visibility": "public",
+      "disposition": "project",
+      "identity": "my-museum",
+      "reason": "Kotlin/Firebase app; debug build verified in the repository's own audit (2026-07-29)."
+    },
+    {
+      "repo": "UAJOP/Hospital-Appointment-System",
+      "visibility": "public",
+      "disposition": "project",
+      "identity": "hospital-appointment-system",
+      "reason": "Python/Tkinter/MySQL coursework; compiles, end-to-end flows not run against a database."
+    },
+    {
+      "repo": "UAJOP/Agency-Db",
+      "visibility": "public",
+      "disposition": "project",
+      "identity": "agency-db",
+      "reason": "MySQL schema, triggers, procedures, seed data and ER diagram."
+    },
+    {
+      "repo": "UAJOP/Cars-Dataset-Analysis",
+      "visibility": "public",
+      "disposition": "project",
+      "identity": "cars-dataset-analysis",
+      "reason": "Notebook runs top to bottom; small educational dataset."
+    },
+    {
+      "repo": "UAJOP/My-java-projects",
+      "visibility": "public",
+      "disposition": "learning",
+      "identity": null,
+      "reason": "About fifty small IntelliJ course and practice projects. A collection, not a project: one line in the earlier-learning collection.",
+      "collection": "earlier-learning"
+    },
+    {
+      "repo": "UAJOP/Calculator-Android-Studio",
+      "visibility": "public",
+      "disposition": "learning",
+      "identity": null,
+      "reason": "Single-activity Kotlin exercise (README says Java; the source is Kotlin). A learning artifact in the earlier-learning collection.",
+      "collection": "earlier-learning"
+    },
+    {
+      "repo": "UAJOP/Calculator-JavaScript",
+      "visibility": "public",
+      "disposition": "learning",
+      "identity": null,
+      "reason": "Keypad markup and CSS only; script.js is 0 bytes, so nothing calculates. An incomplete learning artifact: listed in the earlier-learning collection, with no page of its own.",
+      "collection": "earlier-learning"
+    },
+    {
+      "repo": "UAJOP/Dashboard",
+      "visibility": "public",
+      "disposition": "exclude",
+      "identity": null,
+      "reason": "Unmodified AdminLTE 3.0.5 (Colorlib, MIT): package.json, docs and plugins are the template's; no authored PHP, data or pages were found. Not presented as original work."
+    },
+    {
+      "repo": "UAJOP/Weather-App",
+      "visibility": "public",
+      "disposition": "learning",
+      "identity": null,
+      "reason": "One 241-byte HTML skeleton with an empty body; no weather feature exists. An incomplete learning artifact: listed in the earlier-learning collection, with no page of its own.",
+      "collection": "earlier-learning"
+    },
+    {
+      "repo": "UAJOP/Porto-25",
+      "visibility": "public",
+      "disposition": "superseded",
+      "identity": null,
+      "reason": "Single Tailwind page; an earlier portfolio iteration superseded by kaanbalci.com. Listed in the earlier-learning collection, not as a project.",
+      "collection": "earlier-learning",
+      "supersededBy": "portfolio-v4"
+    },
+    {
+      "repo": "UAJOP/Ic-Supply",
+      "visibility": "private",
+      "disposition": "private",
+      "identity": null,
+      "reason": "A saved copy of a third-party storefront rebranded for coursework, plus authored PHP login and registration against one MySQL table. Private; listed in the earlier-learning collection with that authored scope only and no repository link.",
+      "collection": "earlier-learning"
+    },
+    {
+      "repo": "UAJOP/portfolio",
+      "visibility": "public",
+      "disposition": "featured",
+      "identity": "portfolio-v4",
+      "reason": "This site. Also the home of the portfolio-native products."
+    },
+    {
+      "repo": "UAJOP/Control-Panel",
+      "visibility": "public",
+      "disposition": "project",
+      "identity": "control-panel",
+      "reason": "PHP JSON endpoints for login, users, products, categories and roles over MySQL; README is generic, the source is the evidence."
+    },
+    {
+      "repo": "UAJOP/Pyhton-Projects",
+      "visibility": "public",
+      "disposition": "learning",
+      "identity": null,
+      "reason": "Course follow-along scripts and exercises. A collection, not a project: one line in the earlier-learning collection.",
+      "collection": "earlier-learning"
+    },
+    {
+      "repo": "UAJOP/Mandelas-Web-site-Project",
+      "visibility": "public",
+      "disposition": "learning",
+      "identity": null,
+      "reason": "Static HTML/CSS restaurant landing page from a web design course; no JavaScript or Bootstrap despite the README. A learning artifact in the earlier-learning collection.",
+      "collection": "earlier-learning"
+    },
+    {
+      "repo": "UAJOP/Porto9",
+      "visibility": "private",
+      "disposition": "superseded",
+      "identity": null,
+      "reason": "Single Tailwind page; an older portfolio iteration. Not published.",
+      "supersededBy": "portfolio-v4"
+    },
+    {
+      "repo": "UAJOP/Hospital-System",
+      "visibility": "public",
+      "disposition": "archive",
+      "identity": "hospital-system",
+      "reason": "Archived C# Windows Forms / SQL Server coursework with a dedicated case study."
+    },
+    {
+      "repo": "UAJOP/Warehouse-War",
+      "visibility": "public",
+      "disposition": "game",
+      "identity": "warehouse-war",
+      "reason": "Unreal Engine 5.4 project, Blueprint and content only (no C++ source)."
+    },
+    {
+      "repo": "UAJOP/EscapeIsland",
+      "visibility": "public",
+      "disposition": "game",
+      "identity": "escape-island",
+      "reason": "Unreal Engine 5.4 project; one C++ actor (MovingPlatform) plus Blueprints."
+    },
+    {
+      "repo": "UAJOP/UnityEssentials",
+      "visibility": "public",
+      "disposition": "learning",
+      "identity": null,
+      "reason": "Built on Unity's own Unity Essentials learning project; a handful of small authored scripts. A learning artifact in the earlier-learning collection. Its README calls the game Ajoop, which is unrelated to the AJOOP assistant.",
+      "collection": "earlier-learning"
+    },
+    {
+      "repo": "UAJOP/ExtractShoot-Zero",
+      "visibility": "public",
+      "disposition": "game",
+      "identity": "extract-shoot-zero",
+      "reason": "Repository holds screenshots, a clip and a README; no project source."
+    },
+    {
+      "repo": "UAJOP/LegacyOfTheLost",
+      "visibility": "public",
+      "disposition": "game",
+      "identity": "legacy-of-the-lost",
+      "reason": "Repository holds screenshots, a clip and design documents; no project source."
+    },
+    {
+      "repo": "UAJOP/TankSavage",
+      "visibility": "public",
+      "disposition": "game",
+      "identity": "tank-savage",
+      "reason": "Repository holds screenshots, a clip and design documents; no project source."
+    },
+    {
+      "repo": "UAJOP/DunkerMadness",
+      "visibility": "public",
+      "disposition": "game",
+      "identity": "dunker-madness",
+      "reason": "Unity 2020.2 project; one authored script (slingshot ball launch) and one scene."
+    },
+    {
+      "repo": "UAJOP/Drivenfinity",
+      "visibility": "public",
+      "disposition": "game",
+      "identity": "drivenfinity",
+      "reason": "Unity 2020.2 project; four authored scripts (car, score, menu with energy, notifications) on a third-party prototype art pack."
+    },
+    {
+      "repo": "UAJOP/ActionPainting",
+      "visibility": "private",
+      "disposition": "private",
+      "identity": null,
+      "reason": "A saved mirror of a third-party Shopify site kept as reference material. Not authored work; unrelated to the Joyday Action Painting browser game. Not published."
+    },
+    {
+      "repo": "UAJOP/Joyday",
+      "visibility": "private",
+      "disposition": "superseded",
+      "identity": null,
+      "reason": "Byte-identical copy of Mandelas-Web-site-Project (45 of 46 files; only LICENSE differs). Despite its name it is not an earlier Joyday site. A duplicate: not represented.",
+      "duplicateOf": "UAJOP/Mandelas-Web-site-Project"
+    },
+    {
+      "repo": "UAJOP/Joydayv2",
+      "visibility": "private",
+      "disposition": "private",
+      "identity": "atolye-joyday",
+      "reason": "Private source of the live Atölye Joyday site; represented by the live product and its case study."
+    },
+    {
+      "repo": "UAJOP/sinama",
+      "visibility": "public",
+      "disposition": "featured",
+      "identity": "sinama",
+      "reason": "Flagship live product with case study."
+    },
+    {
+      "repo": "UAJOP/merge-rush-tiny-factory",
+      "visibility": "private",
+      "disposition": "featured",
+      "identity": "merge-rush",
+      "reason": "Private source of the playable game; the site ships its production build. No repository link."
+    }
+  ],
+  "collections": [
+    {
+      "id": "earlier-learning",
+      "group": "earlier",
+      "members": [
+        {
+          "id": "my-java-projects",
+          "title": "My Java Projects",
+          "kind": "collection",
+          "status": "learning",
+          "year": "2024",
+          "tech": "Java",
+          "repo": "UAJOP/My-java-projects",
+          "detailSlug": "my-java-projects",
+          "links": {
+            "github": "https://github.com/UAJOP/My-java-projects"
+          }
+        },
+        {
+          "id": "pyhton-projects",
+          "title": "Python Projects",
+          "kind": "collection",
+          "status": "learning",
+          "year": "2024",
+          "tech": "Python",
+          "repo": "UAJOP/Pyhton-Projects",
+          "detailSlug": "pyhton-projects",
+          "links": {
+            "github": "https://github.com/UAJOP/Pyhton-Projects"
+          }
+        },
+        {
+          "id": "calculator-android-studio",
+          "title": "Calculator Android Studio",
+          "kind": "mobileApp",
+          "status": "learning",
+          "year": "2024",
+          "tech": "Kotlin · Android",
+          "repo": "UAJOP/Calculator-Android-Studio",
+          "detailSlug": "calculator-android-studio",
+          "links": {
+            "github": "https://github.com/UAJOP/Calculator-Android-Studio"
+          }
+        },
+        {
+          "id": "mandelas-web-site-project",
+          "title": "Mandelas Website Project",
+          "kind": "webPage",
+          "status": "learning",
+          "year": "2024",
+          "tech": "HTML · CSS",
+          "repo": "UAJOP/Mandelas-Web-site-Project",
+          "detailSlug": "mandelas-web-site-project",
+          "links": {
+            "github": "https://github.com/UAJOP/Mandelas-Web-site-Project"
+          }
+        },
+        {
+          "id": "porto-25",
+          "title": "Porto 25",
+          "kind": "webPage",
+          "status": "superseded",
+          "year": "2024",
+          "tech": "HTML · Tailwind CSS",
+          "repo": "UAJOP/Porto-25",
+          "detailSlug": "porto-25",
+          "links": {
+            "github": "https://github.com/UAJOP/Porto-25"
+          },
+          "supersededBy": "portfolio-v4"
+        },
+        {
+          "id": "unity-essentials",
+          "title": "Unity Essentials",
+          "kind": "nativeGame",
+          "status": "learning",
+          "year": "2025",
+          "tech": "Unity 6 · C#",
+          "repo": "UAJOP/UnityEssentials",
+          "detailSlug": "unity-essentials",
+          "links": {
+            "github": "https://github.com/UAJOP/UnityEssentials"
+          },
+          "historicalName": "Ajoop"
+        },
+        {
+          "id": "ic-supply",
+          "title": "IC Supply",
+          "kind": "webApp",
+          "status": "privateArchive",
+          "year": "2023",
+          "tech": "PHP · MySQL",
+          "repo": null,
+          "detailSlug": "ic-supply",
+          "links": {}
+        },
+        {
+          "id": "calculator-javascript",
+          "title": "Calculator JavaScript",
+          "kind": "webPage",
+          "status": "unfinished",
+          "year": "2024",
+          "tech": "HTML · CSS",
+          "repo": "UAJOP/Calculator-JavaScript",
+          "detailSlug": null,
+          "links": {
+            "github": "https://github.com/UAJOP/Calculator-JavaScript"
+          },
+          "incomplete": true
+        },
+        {
+          "id": "weather-app",
+          "title": "Weather App",
+          "kind": "webPage",
+          "status": "unfinished",
+          "year": "2023",
+          "tech": "HTML",
+          "repo": "UAJOP/Weather-App",
+          "detailSlug": null,
+          "links": {
+            "github": "https://github.com/UAJOP/Weather-App"
+          },
+          "incomplete": true
+        }
+      ]
+    }
+  ]
+}

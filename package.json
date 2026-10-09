@@ -90,6 +90,7 @@
     "qa:production:sources": "node scripts/verify-production-generated.mjs",
     "preview:react": "vite preview",
     "qa:react": "node qa-react-foundation.js && node scripts/qa-m3-foundation.mjs && node scripts/qa-m3-hermetic-checkout.mjs && npm run qa:m3:parity && npm run qa:m3:cutover && npm run qa:m3:case-project-routes && npm run qa:m3:case-project-hydration && npm run qa:m3:labs-games && npm run qa:m3:remaining-routes && npm run qa:m3:icons && npm run qa:m3:final-hardening",
+    "qa:v4:works-coverage": "node scripts/qa-v4-works-coverage.mjs",
     "qa:m3:foundation": "node scripts/qa-m3-foundation.mjs",
     "qa:m3:parity": "node scripts/qa-m3-artifact-parity.mjs",
     "qa:m3:home-about:parity": "node scripts/qa-m3-home-about-parity.mjs",

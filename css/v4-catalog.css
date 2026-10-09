@@ -1,0 +1,226 @@
+/* The complete catalog (V4-E06.5) ---------------------------------------------
+ *
+ * Linked by the React production documents of /works/ and /games/. The
+ * curated cards above it stay the page's first read; this is the index behind
+ * them: four collapsed groups of compact rows on Works (plus the factual
+ * relations and the capability evidence), and the native archive on Games.
+ *
+ * Every group is a <details>, so the catalog is complete without JavaScript
+ * and keyboard-operable as the browser gives it. Nothing animates. */
+
+.v4-catalog {
+  scroll-margin-top: 96px;
+}
+
+.v4-catalog__groups {
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-catalog__group {
+  border-bottom: 1px solid var(--v4-rule);
+}
+
+.v4-catalog__group > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 18px 4px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--v4-ink);
+}
+
+.v4-catalog__group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.v4-catalog__group > summary::after {
+  content: "+";
+  margin-left: auto;
+  color: var(--v4-accent);
+  font: 500 1.1rem / 1 var(--v4-mono);
+}
+
+.v4-catalog__group[open] > summary::after {
+  content: "−";
+}
+
+.v4-catalog__group > summary:focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 2px;
+}
+
+.v4-catalog__label {
+  font: 700 clamp(1.05rem, 0.98rem + 0.3vw, 1.25rem) / 1.25 var(--v4-display);
+}
+
+.v4-catalog__count {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: 0.1em;
+}
+
+.v4-catalog__note {
+  max-width: 46rem;
+  margin: 0 4px 14px;
+  color: var(--v4-ink-secondary);
+  font: 400 0.95rem / 1.6 Inter, "Segoe UI", sans-serif;
+}
+
+.v4-catalog__list,
+.v4-catalog__relations {
+  margin: 0;
+  padding: 0 0 18px;
+  list-style: none;
+}
+
+.v4-catalog__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr) minmax(0, 1.3fr) 3.2rem minmax(0, 0.8fr) minmax(0, 1.5fr);
+  gap: 6px 18px;
+  align-items: baseline;
+  padding: 11px 4px;
+  border-top: 1px solid var(--v4-rule);
+  font: 400 0.92rem / 1.45 Inter, "Segoe UI", sans-serif;
+  color: var(--v4-ink-secondary);
+}
+
+.v4-catalog__title {
+  color: var(--v4-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+span.v4-catalog__title {
+  color: var(--v4-ink-secondary);
+}
+
+a.v4-catalog__title:hover,
+.v4-catalog__links a:hover,
+.v4-catalog__relations a:hover,
+.v4-catalog__clusters a:hover {
+  color: var(--v4-accent);
+  text-decoration: underline;
+}
+
+.v4-catalog :is(a):focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 2px;
+}
+
+.v4-catalog__kind,
+.v4-catalog__year {
+  font: var(--v4-type-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.v4-catalog__status {
+  justify-self: start;
+  padding: 2px 8px;
+  border: 1px solid var(--v4-rule);
+  border-radius: 999px;
+  color: var(--v4-ink);
+  font: var(--v4-type-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.v4-catalog__status:is([data-catalog-status="live"], [data-catalog-status="playable"]) {
+  border-color: var(--v4-accent);
+  color: var(--v4-accent);
+}
+
+.v4-catalog__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  justify-content: flex-end;
+}
+
+.v4-catalog__links a,
+.v4-catalog__relations a,
+.v4-catalog__clusters a {
+  color: var(--v4-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--v4-rule);
+  text-underline-offset: 3px;
+}
+
+.v4-catalog__relations li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  padding: 10px 4px;
+  border-top: 1px solid var(--v4-rule);
+  color: var(--v4-ink-secondary);
+  font: 400 0.94rem / 1.5 Inter, "Segoe UI", sans-serif;
+}
+
+.v4-catalog__relations a {
+  font-weight: 600;
+}
+
+.v4-catalog__clusters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 32px;
+  margin: 0;
+  padding: 0 0 18px;
+}
+
+.v4-catalog__clusters > div {
+  padding: 12px 4px;
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-catalog__clusters dt {
+  color: var(--v4-ink);
+  font: 700 0.98rem / 1.3 var(--v4-display);
+}
+
+.v4-catalog__clusters dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 6px 0 0;
+  font: 400 0.92rem / 1.5 Inter, "Segoe UI", sans-serif;
+}
+
+@media (max-width: 980px) {
+  .v4-catalog__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .v4-catalog__title {
+    grid-column: 1;
+  }
+
+  .v4-catalog__status {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .v4-catalog__kind,
+  .v4-catalog__tech,
+  .v4-catalog__year {
+    grid-column: 1 / -1;
+  }
+
+  .v4-catalog__kind,
+  .v4-catalog__year {
+    display: inline;
+  }
+
+  .v4-catalog__links {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .v4-catalog__clusters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

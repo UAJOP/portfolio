@@ -46,11 +46,6 @@
       "repository": "UAJOP/MyMuseum",
       "enabled": true
     },
-    "weather-app": {
-      "provider": "github",
-      "repository": "UAJOP/Wheather-App",
-      "enabled": true
-    },
     "control-panel": {
       "provider": "github",
       "repository": "UAJOP/Control-Panel",
@@ -69,11 +64,6 @@
     "calculator-android-studio": {
       "provider": "github",
       "repository": "UAJOP/Calculator-Android-Studio",
-      "enabled": true
-    },
-    "calculator-javascript": {
-      "provider": "github",
-      "repository": "UAJOP/Calculator-JavaScript",
       "enabled": true
     },
     "warehouse-war": {

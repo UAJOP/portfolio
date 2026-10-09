@@ -550,7 +550,7 @@
         "conflict_note": "Older web crawl mentions 5 scenarios; current repository data says 14. Use current repository data."
       },
       "Merge Rush: Tiny Factory": {
-        "status": "Active Development",
+        "status": "Playable V1 (playable on the portfolio at /merge-rush/)",
         "role": "Game Developer & Product Designer",
         "summary": "Phaser 3 + TypeScript merge-game product demonstrating stateful systems, timed workflows, progressive unlocks, responsive delivery and platform-aware architecture.",
         "stack": [
@@ -564,11 +564,11 @@
         ],
         "proof": [
           "4-minute Factory Run target",
-          "5 restoration stages",
+          "5 factory levels",
           "25 progressively unlocked board cells",
           "Factory Run + Endless modes",
-          "Footprint-aware placement/merge/deadlock logic",
-          "Platform lifecycle/save/audio/language abstractions"
+          "Pure rules engine with deadlock detection",
+          "Host lifecycle, saved profile, audio and five-locale layer"
         ],
         "repo_visibility": "private; do not expose private repo URL"
       },
@@ -660,12 +660,10 @@
       },
       {
         "name": "Legacy of the Lost",
-        "category": "Games",
+        "category": "Games / Archive (media only)",
         "stack": [
           "Unreal Engine 5",
-          "Puzzle Design",
-          "Object Interaction",
-          "Modular Level Design"
+          "Puzzle Design"
         ]
       },
       {
@@ -682,9 +680,9 @@
         "name": "Drivenfinity",
         "category": "Games",
         "stack": [
-          "Unity",
+          "Unity 2020.2",
           "C#",
-          "3D"
+          "Mobile"
         ]
       },
       {
@@ -709,18 +707,16 @@
       },
       {
         "name": "Extract Shoot: Zero",
-        "category": "Games",
+        "category": "Games / Archive (media only)",
         "stack": [
-          "Unreal Engine",
-          "C++",
-          "Blueprints"
+          "Unreal Engine"
         ]
       },
       {
         "name": "Escape Island",
         "category": "Games",
         "stack": [
-          "Unreal Engine 5.4.4",
+          "Unreal Engine 5.4",
           "C++",
           "Blueprints"
         ]
@@ -729,35 +725,33 @@
         "name": "Portfolio Website",
         "category": "Web & Product",
         "stack": [
+          "React",
+          "Static prerender",
           "JavaScript",
-          "Static Site",
-          "Recruiter Mode",
-          "Ajoop",
-          "Interactive Features"
+          "Five locales",
+          "AJOOP",
+          "Browser games"
         ]
       },
       {
         "name": "Tank Savage",
-        "category": "Games",
+        "category": "Games / Archive (media only)",
         "stack": [
-          "Unreal Engine",
-          "C++",
-          "Blueprints",
-          "Physics"
+          "Unreal Engine"
         ]
       },
       {
         "name": "Dunker Madness",
         "category": "Games / Learning",
         "stack": [
-          "Unity",
+          "Unity 2020.2",
           "C#",
-          "Physics"
+          "2D Physics"
         ]
       },
       {
         "name": "Unity Essentials",
-        "category": "Games / Learning",
+        "category": "Games / Learning (historical name \"Ajoop\"; unrelated to the AJOOP assistant)",
         "stack": [
           "Unity 6",
           "C#"
@@ -765,38 +759,33 @@
       },
       {
         "name": "Weather App",
-        "category": "Web / Learning",
+        "category": "Learning artifact (incomplete; no standalone page)",
         "stack": [
-          "HTML",
-          "CSS",
-          "JavaScript",
-          "Weather API"
+          "HTML"
         ]
       },
       {
         "name": "Calculator Android Studio",
         "category": "Mobile / Learning",
         "stack": [
-          "Android Studio",
-          "Mobile UI"
+          "Kotlin",
+          "Android Studio"
         ]
       },
       {
         "name": "Calculator JavaScript",
-        "category": "Web / Learning",
+        "category": "Learning artifact (incomplete; no standalone page)",
         "stack": [
           "HTML",
-          "CSS",
-          "JavaScript",
-          "DOM"
+          "CSS"
         ]
       },
       {
         "name": "Warehouse War",
         "category": "Games / Archive",
         "stack": [
-          "Unreal Engine",
-          "Combat"
+          "Unreal Engine 5.4",
+          "Blueprints"
         ]
       },
       {
@@ -834,10 +823,10 @@
       },
       {
         "name": "IC Supply",
-        "category": "Software / Archive",
+        "category": "Web / Learning (private archive)",
         "stack": [
-          "Database",
-          "Inventory Flow"
+          "PHP",
+          "MySQL"
         ]
       },
       {
@@ -854,6 +843,8 @@
         "category": "Web Game",
         "stack": [
           "JavaScript",
+          "Canvas 2D",
+          "Fixed-step physics",
           "Merge / Career Journey"
         ]
       },

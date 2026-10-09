@@ -95,6 +95,18 @@
     "ogTitle": "Merge Rush: Tiny Factory'yi oyna",
     "title": "Merge Rush: Tiny Factory — Oyna | Kaan Balcı"
   },
+  "portfolioCaseStudy": {
+    "description": "kaanbalci.com nasıl kuruldu: tek bir kanonik proje kaydı, beş dilde statik HTML'e önceden render edilen React, herkese açık bir asistan, dört tarayıcı oyunu ve her fazda odaklı denetimler.",
+    "ogDescription": "Sistem olarak kurulmuş bir portfolyo: kanonik veri, statik React ön render, beş dil, herkese açık bir asistan ve dört oyun.",
+    "ogTitle": "kaanbalci.com Vaka Çalışması",
+    "title": "kaanbalci.com Vaka Çalışması | Kaan Balcı"
+  },
+  "careerAdventureCaseStudy": {
+    "description": "Career Adventure'ın nasıl gerçek bir oyuna dönüştüğü: deterministik sabit adımlı fizik simülasyonu, strateji turlarıyla ölçülen zorluk, ulaşılabilir bir oyun sonu ve tam ekran oyun modu.",
+    "ogDescription": "Deterministik bir simülasyon, ölçülen zorluk ve gerçek bitişler etrafında yeniden kurulan bir bırak-birleştir kariyer oyunu.",
+    "ogTitle": "Career Adventure Vaka Çalışması",
+    "title": "Career Adventure Vaka Çalışması | Kaan Balcı"
+  },
   "notFound": {
     "description": "Kaan Balcı portfolyosu için 404 sayfası.",
     "ogDescription": "Kaan Balcı portfolyosu için 404 sayfası.",

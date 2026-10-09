@@ -158,15 +158,15 @@ const MIGRATION = [
 const PROJECT_SLUGS = [
   "ai-chatbot-flow-design", "atolye-joyday-official-website", "drivenfinity", "dunker-madness",
   "unity-essentials", "extract-shoot-zero", "tank-savage", "hospital-form-app", "cars-dataset-analysis",
-  "my-museum", "weather-app", "control-panel", "hospital-appointment-system", "escape-island",
-  "calculator-android-studio", "calculator-javascript", "warehouse-war", "legacy-of-the-lost", "porto-25",
+  "my-museum", "control-panel", "hospital-appointment-system", "escape-island",
+  "calculator-android-studio", "warehouse-war", "legacy-of-the-lost", "porto-25",
   "my-java-projects", "agency-db", "mandelas-web-site-project", "pyhton-projects", "ic-supply",
   "portfolio-website",
 ];
 
 /* V4-E04: routes born clean have no pre-migration URL and so no legacy stub;
  * they are named here so a page cannot join the registry unnoticed. */
-const NATIVE_ROUTES = ["ajoop/", "ajoop-case-study/", "merge-rush/"];
+const NATIVE_ROUTES = ["ajoop/", "ajoop-case-study/", "merge-rush/", "career-adventure-case-study/", "portfolio-case-study/"];
 equal(STATIC_ROUTES.filter((page) => page.legacy).length, MIGRATION.length, "the registry declares exactly the migrated static pages");
 equal(STATIC_ROUTES.filter((page) => !page.legacy).map((page) => page.page).sort().join(), [...NATIVE_ROUTES].sort().join(), "pages without a legacy path are exactly the declared native routes");
 for (const [legacy, route] of MIGRATION) {

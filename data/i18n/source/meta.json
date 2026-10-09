@@ -29,6 +29,18 @@
     "ogTitle": "Play Merge Rush: Tiny Factory",
     "ogDescription": "A compact factory merge puzzle: place parts, merge them up the tier ladder and deliver timed orders before the run ends."
   },
+  "portfolioCaseStudy": {
+    "title": "kaanbalci.com Case Study | Kaan Balcı",
+    "description": "How kaanbalci.com is built: one canonical project registry, React rendered to static HTML at build time in five languages, a public assistant, four browser games and focused gates on every phase.",
+    "ogTitle": "kaanbalci.com Case Study",
+    "ogDescription": "A portfolio built as a system: canonical data, static React prerendering, five locales, a public assistant and four games."
+  },
+  "careerAdventureCaseStudy": {
+    "title": "Career Adventure Case Study | Kaan Balcı",
+    "description": "How Career Adventure became a real game: a deterministic fixed-step physics simulation, difficulty measured with strategy runs, a reachable game over and a full-viewport play mode.",
+    "ogTitle": "Career Adventure Case Study",
+    "ogDescription": "A drop-and-merge career game rebuilt around a deterministic simulation, measured difficulty and real endings."
+  },
   "ajoop": {
     "title": "AJOOP Hub | Kaan Balcı",
     "description": "Talk to AJOOP, the public assistant built into Kaan Balcı's portfolio. It answers from the published portfolio and shows the evidence it used.",
