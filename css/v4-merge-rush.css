@@ -1,0 +1,410 @@
+/* Merge Rush: Tiny Factory — the playable page (V4-E06.4) ---------------------
+ *
+ * Linked only by the React production document of /merge-rush/. Two states:
+ *
+ *   1. The page: who the game is, what a run is, Play, the case study.
+ *   2. Entered (html[data-mr-state], set by js/pages/merge-rush-game.js): the
+ *      stage becomes the whole viewport and the portfolio steps out. The game
+ *      draws everything inside its canvas; the only chrome here is the
+ *      loading and failure panels.
+ *
+ * The page follows the site's theme. The stage does not: the factory is dark
+ * in both, like the game's own art. Nothing animates at rest. */
+
+:root {
+  --mr-ink: #07111c;
+  --mr-panel: #0b1a28;
+  --mr-rule: rgba(99, 245, 232, 0.34);
+  --mr-text: #f4fbff;
+  --mr-dim: #9bc0d0;
+  --mr-accent: #63f5e8;
+}
+
+/* 1. The page ----------------------------------------------------------------- */
+
+.mr-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(28px, 4vw, 64px);
+  align-items: center;
+  padding-block: clamp(40px, 7vw, 96px) clamp(28px, 4vw, 56px);
+}
+
+.mr-hero h1 {
+  margin: 14px 0 0;
+  color: var(--v4-ink);
+  font: var(--v4-type-display);
+  font-size: clamp(2.4rem, 4.4vw, 4.1rem);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.mr-hero__lead {
+  max-width: 34rem;
+  margin: 20px 0 0;
+  color: var(--v4-ink-secondary);
+  font: var(--v4-type-lead);
+}
+
+.mr-hero__actions {
+  margin-top: 30px;
+}
+
+/* Play needs the controller; until it has run, the page offers only what works. */
+html:not([data-mr-ready]) .mr-enter {
+  display: none;
+}
+
+.mr-noscript {
+  margin-top: 26px;
+  padding: 16px 18px;
+  border: 1px solid var(--v4-rule);
+  border-radius: var(--v4-radius);
+  background: var(--v4-surface);
+  color: var(--v4-ink-secondary);
+}
+
+.mr-noscript p {
+  margin: 0;
+}
+
+.mr-noscript__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px !important;
+}
+
+.mr-poster {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--v4-rule);
+  border-radius: 14px;
+  background: var(--mr-ink);
+  cursor: pointer;
+  box-shadow: 0 30px 70px rgba(2, 8, 18, 0.45);
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.mr-poster img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1200 / 750;
+  object-fit: cover;
+}
+
+.mr-poster__play {
+  position: absolute;
+  inset: auto 16px 16px auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgba(6, 19, 32, 0.9);
+  border: 1px solid var(--mr-rule);
+  color: var(--mr-text);
+  font: 600 0.92rem / 1 Inter, "Segoe UI", sans-serif;
+}
+
+.mr-poster__play::before {
+  content: "";
+  border-style: solid;
+  border-width: 6px 0 6px 10px;
+  border-color: transparent transparent transparent var(--mr-accent);
+}
+
+html:not([data-mr-ready]) .mr-poster {
+  cursor: default;
+}
+
+html:not([data-mr-ready]) .mr-poster__play {
+  display: none;
+}
+
+@media (hover: hover) {
+  html[data-mr-ready] .mr-poster:hover {
+    transform: translateY(-3px);
+    border-color: var(--mr-rule);
+  }
+}
+
+.mr-poster:focus-visible,
+.mr-enter:focus-visible {
+  outline: 3px solid var(--v4-focus);
+  outline-offset: 3px;
+}
+
+.mr-about {
+  padding-block: clamp(20px, 3vw, 40px) clamp(56px, 8vw, 110px);
+}
+
+.mr-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-block: 1px solid var(--v4-rule);
+}
+
+.mr-fact {
+  padding: 18px 20px 18px 0;
+}
+
+.mr-fact + .mr-fact {
+  padding-left: 20px;
+  border-left: 1px solid var(--v4-rule);
+}
+
+.mr-fact dt {
+  color: var(--v4-ink-muted, var(--v4-ink-secondary));
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mr-fact dd {
+  margin: 8px 0 0;
+  color: var(--v4-ink);
+  font: 600 1rem / 1.4 Inter, "Segoe UI", sans-serif;
+}
+
+.mr-about__heading {
+  margin: clamp(36px, 5vw, 64px) 0 0;
+  color: var(--v4-ink);
+  font: var(--v4-type-heading);
+}
+
+.mr-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(18px, 2.4vw, 32px);
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mr-step {
+  padding: 22px 22px 24px;
+  border: 1px solid var(--v4-rule);
+  border-radius: var(--v4-radius);
+  background: var(--v4-surface);
+}
+
+.mr-step__index {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: 0.1em;
+}
+
+.mr-step h3 {
+  margin: 12px 0 0;
+  color: var(--v4-ink);
+  font: 700 1.08rem / 1.3 var(--v4-display);
+}
+
+.mr-step p {
+  margin: 10px 0 0;
+  color: var(--v4-ink-secondary);
+  font: 400 0.96rem / 1.65 Inter, "Segoe UI", sans-serif;
+}
+
+.mr-ladder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 2.2vw, 30px);
+  margin-top: clamp(28px, 4vw, 48px);
+  padding: 18px clamp(12px, 3vw, 32px);
+  border-radius: 14px;
+  background: var(--mr-ink);
+}
+
+.mr-ladder img {
+  width: clamp(40px, 7.4vw, 84px);
+  height: auto;
+}
+
+.mr-ladder img + img {
+  margin-left: clamp(8px, 2.2vw, 30px);
+}
+
+/* The stage has nothing to show until Play. */
+.mr-stage {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mr-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mr-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mr-fact:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .mr-fact:nth-child(n + 3) {
+    border-top: 1px solid var(--v4-rule);
+  }
+
+  .mr-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .mr-hero__actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mr-ladder img + img {
+    margin-left: 0;
+  }
+}
+
+/* 2. Entered: the portfolio steps out ----------------------------------------- */
+
+html[data-mr-state] {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html[data-mr-state] body {
+  background: var(--mr-ink);
+}
+
+html[data-mr-state] body > :not(main, script),
+html[data-mr-state] main > :not(#merge-rush-game) {
+  display: none !important;
+}
+
+html[data-mr-state] #merge-rush-game {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: block;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  /* The factory fills the area the device leaves free of notches and bars. */
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  overflow: hidden;
+  background: var(--mr-ink);
+  color: var(--mr-text);
+  color-scheme: dark;
+}
+
+.mr-stage__canvas {
+  width: 100%;
+  height: 100%;
+  outline: 0;
+}
+
+.mr-stage__canvas canvas {
+  display: block;
+}
+
+html[data-mr-state="loading"] .mr-stage__canvas,
+html[data-mr-state="error"] .mr-stage__canvas {
+  visibility: hidden;
+}
+
+.mr-stage__panel {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+  background: var(--mr-ink);
+}
+
+html[data-mr-state="loading"] .mr-stage__loading,
+html[data-mr-state="error"] .mr-stage__error {
+  display: flex;
+}
+
+.mr-stage__panel h2 {
+  margin: 0;
+  color: var(--mr-text);
+  font: 700 clamp(1.3rem, 3.4vw, 1.9rem) / 1.2 var(--v4-display);
+}
+
+.mr-stage__panel p {
+  max-width: 30rem;
+  margin: 0;
+  color: var(--mr-dim);
+  font: 400 1rem / 1.6 Inter, "Segoe UI", sans-serif;
+}
+
+.mr-stage__loading p {
+  font: 600 0.82rem / 1.3 var(--v4-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mr-stage__spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(99, 245, 232, 0.22);
+  border-top-color: var(--mr-accent);
+  border-radius: 50%;
+  animation: mr-spin 0.9s linear infinite;
+}
+
+.mr-stage__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* The stage keeps its own dark controls in the light theme. */
+.mr-stage__panel .btn {
+  min-height: 46px;
+  border: 1px solid var(--mr-rule);
+  background: transparent;
+  color: var(--mr-text);
+}
+
+.mr-stage__panel .btn.primary {
+  border-color: transparent;
+  background: var(--mr-accent);
+  color: #06202a;
+}
+
+.mr-stage__panel :is(button, a):focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+@keyframes mr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mr-poster {
+    transition: none;
+  }
+
+  .mr-stage__spinner {
+    animation-duration: 2.4s;
+  }
+}

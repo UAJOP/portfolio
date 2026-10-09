@@ -89,6 +89,12 @@
     "ogTitle": "Merge Rush: Tiny Factory Vaka Çalışması",
     "title": "Merge Rush: Tiny Factory Vaka Çalışması | Kaan Balcı"
   },
+  "mergeRush": {
+    "description": "Merge Rush: Tiny Factory'yi tarayıcıda oyna: süreli siparişler, kademeli açılan alanlar, son Fabrika Çekirdeği siparişi ve Sonsuz Mod içeren bir Phaser 3 ve TypeScript fabrika birleştirme bulmacası.",
+    "ogDescription": "Kompakt bir fabrika birleştirme bulmacası: parçaları yerleştir, kademe kademe birleştir ve tur bitmeden süreli siparişleri teslim et.",
+    "ogTitle": "Merge Rush: Tiny Factory'yi oyna",
+    "title": "Merge Rush: Tiny Factory — Oyna | Kaan Balcı"
+  },
   "notFound": {
     "description": "Kaan Balcı portfolyosu için 404 sayfası.",
     "ogDescription": "Kaan Balcı portfolyosu için 404 sayfası.",

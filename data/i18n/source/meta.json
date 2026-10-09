@@ -23,6 +23,12 @@
     "ogTitle": "Merge Rush: Tiny Factory Case Study",
     "ogDescription": "Phaser 3 + TypeScript merge-game development focused on product loop, progression, responsive gameplay and platform architecture."
   },
+  "mergeRush": {
+    "title": "Merge Rush: Tiny Factory — Play | Kaan Balcı",
+    "description": "Play Merge Rush: Tiny Factory in the browser: a Phaser 3 and TypeScript factory merge puzzle with timed orders, progressive unlocks, a final Factory Core order and an Endless Mode.",
+    "ogTitle": "Play Merge Rush: Tiny Factory",
+    "ogDescription": "A compact factory merge puzzle: place parts, merge them up the tier ladder and deliver timed orders before the run ends."
+  },
   "ajoop": {
     "title": "AJOOP Hub | Kaan Balcı",
     "description": "Talk to AJOOP, the public assistant built into Kaan Balcı's portfolio. It answers from the published portfolio and shows the evidence it used.",

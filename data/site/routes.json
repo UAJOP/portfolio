@@ -6,6 +6,7 @@
     { "id": "works", "route": "works/", "renderer": "react", "legacy": "works.html", "changefreq": "monthly", "priority": "0.9" },
     { "id": "sinamaCaseStudy", "route": "sinama-case-study/", "renderer": "react", "legacy": "sinama-case-study.html", "changefreq": "monthly", "priority": "0.9" },
     { "id": "mergeRushCaseStudy", "route": "merge-rush-case-study/", "renderer": "react", "legacy": "merge-rush-case-study.html", "changefreq": "monthly", "priority": "0.9" },
+    { "id": "mergeRush", "route": "merge-rush/", "renderer": "react", "changefreq": "monthly", "priority": "0.8" },
     { "id": "ajoop", "route": "ajoop/", "renderer": "react", "changefreq": "monthly", "priority": "0.8" },
     { "id": "ajoopCaseStudy", "route": "ajoop-case-study/", "renderer": "react", "changefreq": "monthly", "priority": "0.8" },
     { "id": "now", "route": "now/", "renderer": "react", "legacy": "now.html", "changefreq": "weekly", "priority": "0.8" },

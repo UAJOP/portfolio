@@ -6,7 +6,7 @@ import CommandPalette from "./CommandPalette.jsx";
 /* Routes that consume V4 primitives, by page type, and the composition
  * stylesheet each one loads with the motion runtime. Every other route ships
  * neither. */
-const V4_ROUTES = new Map([["home", "home"], ["works", "works"], ["caseStudy", "detail"], ["blog", "experience"], ["certificates", "certificates"], ["about", "about"], ["ajoop", "ajoop"]]);
+const V4_ROUTES = new Map([["home", "home"], ["works", "works"], ["caseStudy", "detail"], ["blog", "experience"], ["certificates", "certificates"], ["about", "about"], ["ajoop", "ajoop"], ["mergeRush", "merge-rush"]]);
 
 const V4_REVEAL = 'addEventListener("pagereveal",function(e){var t=e.viewTransition;t&&[t.ready,t.finished,t.updateCallbackDone].forEach(function(p){p&&p.catch&&p.catch(function(){})})});';
 

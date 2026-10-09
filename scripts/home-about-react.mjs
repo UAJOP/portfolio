@@ -10,10 +10,14 @@ import { catalogSearchCopy, defaultCatalogSources, defaultRoleSources, projectRo
 import { ajoopShellModel, commandPaletteModel, runtimeCollection } from "./m3-28-overlay-copy.mjs";
 import { v4AboutModel, v4CertificatesModel, v4ExperienceModel } from "./v4-inner-pages.mjs";
 import { ajoopCaseStudyStructure, ajoopHubModel, ajoopHubStructure, ajoopSystemModel } from "./v4-ajoop-pages.mjs";
+import { withMergeRushPlayable } from "./v4-e06-4-merge-rush-edits.mjs";
+import { MERGE_RUSH_CASE_ROUTE, MERGE_RUSH_ROUTE, MERGE_RUSH_SCRIPT, mergeRushCaseStudyStructure, mergeRushHead, mergeRushStructure } from "./v4-merge-rush-page.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
 const worksGamesStructure = readJson("data/site/m3-26-works-games-structure.json");
+/* V4-E06.4: Merge Rush is playable; its two catalog cards say so (scripts/v4-e06-4-merge-rush-edits.mjs). */
+for (const pageId of ["games", "works"]) worksGamesStructure.pages[pageId].children = withMergeRushPlayable(pageId, worksGamesStructure.pages[pageId].children);
 const caseStudyStructure = readJson("data/site/m3-29-case-studies-structure.json");
 const labsGamesStructure = readJson("data/site/m3-30-labs-games-structure.json");
 const remainingRoutesStructure = readJson("data/site/m3-30-5-remaining-routes-structure.json");
@@ -718,6 +722,36 @@ function v4CareerAdventureModel(locale, localization) {
   };
 }
 
+/* V4-E06.4: the playable Merge Rush route (scripts/v4-merge-rush-page.mjs). */
+function v4MergeRushMainProps(route, loadLocalization) {
+  const localization = loadLocalization(route.locale);
+  const message = (key) => {
+    const value = localization.message(key);
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+    return value;
+  };
+  const href = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+  return { kind: "v4Page", page: MERGE_RUSH_ROUTE, locale: route.locale, structure: mergeRushStructure({ message, locale: route.locale, caseStudyHref: href("/merge-rush-case-study/"), gamesHref: href("/games/") }) };
+}
+
+function v4MergeRushHead(route, localization) {
+  const headRenderer = createSiteHeadRenderer({
+    registry,
+    indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
+    absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
+  });
+  return mergeRushHead({
+    meta: route.locale === registry.defaultLocale ? sourceMeta[route.routeId] : localization.packs.meta?.[route.routeId],
+    canonical: `${site.origin}${route.pathname}`,
+    origin: site.origin,
+    alternates: headRenderer.alternateLinkRecords(route.route, true),
+    htmlLang: localization.definition.htmlLang || route.locale,
+    ogLocale: localization.definition.ogLocale || localization.definition.htmlLang,
+    authorName: profile.name,
+    themeBootstrap: THEME_BOOTSTRAP,
+  });
+}
+
 const SHELL_MESSAGE_KEYS = [
   "language.selectorAria",
   "nav.open",
@@ -856,6 +890,7 @@ export function productionMainProps(route, {
   roleSources = defaultRoleSources(),
 } = {}) {
   if (AJOOP_ROUTES.has(route.routeId)) return v4AjoopMainProps(route, loadLocalization);
+  if (route.routeId === MERGE_RUSH_ROUTE) return v4MergeRushMainProps(route, loadLocalization);
   if (CASE_STUDY_IDS.has(route.routeId)) {
     if (caseStudyStructure.acceptedRef !== "6650aacd844cde957888d296f086c1eb21992991") throw new Error("Case-study React contract is not tied to the #29 base ref");
     const page = caseStudyStructure.pages[route.routeId];
@@ -867,7 +902,12 @@ export function productionMainProps(route, {
       if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
       return value;
     };
-    return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure: localized.children, data: localizedCanonicalData(route.locale), v4: v4DetailModel(route, localized.children, caseMessage) };
+    /* V4-E06.4: the Merge Rush case study is rebuilt from the playable game (scripts/v4-merge-rush-page.mjs). */
+    const caseHref = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+    const structure = route.routeId === MERGE_RUSH_CASE_ROUTE
+      ? mergeRushCaseStudyStructure({ message: caseMessage, playHref: caseHref("/merge-rush/"), gamesHref: caseHref("/games/"), recruiterHref: caseHref("/?role=game"), buildLogHref: caseHref("/now/") })
+      : localized.children;
+    return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure, data: localizedCanonicalData(route.locale), v4: v4DetailModel(route, structure, caseMessage) };
   }
   const engineShell = labsGamesPage(route);
   if (engineShell) {
@@ -1020,7 +1060,8 @@ export function productionDocumentProps(route, clientEntry) {
       hub: hubRoute,
       v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : route.routeId === CAREER_ADVENTURE_ROUTE ? ["career-adventure"] : [],
       page: casePage || ajoopCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
-      navPage: casePage || projectRoute ? "works" : route.routeId,
+      /* The playable Merge Rush page belongs to Games. */
+      navPage: casePage || projectRoute ? "works" : route.routeId === MERGE_RUSH_ROUTE ? "games" : route.routeId,
       bodyClass: caseLocale?.bodyClass || (ajoopCaseRoute ? "case-study-page" : null),
       /* Accepted project pages declare their slug on <body>; the retained
        * runtime (project routing, AJOOP page context) reads it from there. */
@@ -1030,10 +1071,10 @@ export function productionDocumentProps(route, clientEntry) {
       /* Scripts the accepted document ran before the runtime loader. */
       leadScripts: captured?.page.leadScripts || [],
       /* The engine host stays the document's last classic script. */
-      scripts: engineShell ? [...engineShell.page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : route.routeId === FLOW_PUZZLE_ROUTE ? [FLOW_PUZZLE_SCRIPT] : route.routeId === CAREER_ADVENTURE_ROUTE ? [CAREER_ADVENTURE_SCRIPT] : []), ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
+      scripts: engineShell ? [...engineShell.page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : route.routeId === FLOW_PUZZLE_ROUTE ? [FLOW_PUZZLE_SCRIPT] : route.routeId === CAREER_ADVENTURE_ROUTE ? [CAREER_ADVENTURE_SCRIPT] : []), ENGINE_HOST_SCRIPT] : route.routeId === MERGE_RUSH_ROUTE ? [MERGE_RUSH_SCRIPT] : casePage?.scripts || [],
       clientEntry,
     },
-    head: caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
+    head: caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : route.routeId === MERGE_RUSH_ROUTE ? v4MergeRushHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
       route,
       registry,
       routeRuntime,

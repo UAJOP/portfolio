@@ -89,6 +89,12 @@
     "ogTitle": "Merge Rush: Tiny Factory Case Study",
     "title": "Merge Rush: Tiny Factory Case Study | Kaan Balcı"
   },
+  "mergeRush": {
+    "description": "Merge Rush: Tiny Factory im Browser spielen: ein Fabrik-Merge-Puzzle mit Phaser 3 und TypeScript, mit Aufträgen auf Zeit, schrittweisen Freischaltungen, einem letzten Fabrikkern-Auftrag und einem Endlosmodus.",
+    "ogDescription": "Ein kompaktes Fabrik-Merge-Puzzle: Teile platzieren, stufenweise verschmelzen und Aufträge auf Zeit liefern, bevor der Lauf endet.",
+    "ogTitle": "Merge Rush: Tiny Factory spielen",
+    "title": "Merge Rush: Tiny Factory – Spielen | Kaan Balcı"
+  },
   "notFound": {
     "description": "404-Seite des Portfolios von Kaan Balcı.",
     "ogDescription": "404-Seite des Portfolios von Kaan Balcı.",
