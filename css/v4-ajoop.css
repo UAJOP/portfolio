@@ -1165,10 +1165,5 @@ body.case-study-page .v4-ajoop-live {
 /* 7. Between the two AJOOP routes ------------------------------------------ */
 
 /* The case study and the Hub hand over to each other as one system: an
- * ordinary link, with the browser's own cross-document transition where it
- * exists. */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-}
+ * ordinary link, with the site-wide cross-document transition
+ * (css/v4-system.css, 24) where the browser has one. */

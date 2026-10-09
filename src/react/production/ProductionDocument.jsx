@@ -8,13 +8,20 @@ import CommandPalette from "./CommandPalette.jsx";
  * neither. */
 const V4_ROUTES = new Map([["home", "home"], ["works", "works"], ["caseStudy", "detail"], ["blog", "experience"], ["certificates", "certificates"], ["about", "about"], ["ajoop", "ajoop"], ["mergeRush", "merge-rush"]]);
 
-const V4_REVEAL = 'addEventListener("pagereveal",function(e){var t=e.viewTransition;t&&[t.ready,t.finished,t.updateCallbackDone].forEach(function(p){p&&p.catch&&p.catch(function(){})})});';
+/* Every route takes part in cross-document view transitions (css/v4-system.css,
+ * 24). One the browser skips rejects its promises on the page being left and
+ * on the page arriving, before any deferred script runs; that is the fallback
+ * working, so both ends are answered here, in the head of every document. */
+/* The opt-in, inline and first, so it is known before the page is revealed. */
+const V4_TRANSITION = "@media (prefers-reduced-motion: no-preference){@view-transition{navigation:auto}}";
+const V4_REVEAL = '["pageswap","pagereveal"].forEach(function(n){addEventListener(n,function(e){var t=e.viewTransition;t&&[t.ready,t.finished,t.updateCallbackDone].forEach(function(p){p&&p.catch&&p.catch(function(){})})})});';
 
 function ProductionHead({ head, page, v4Styles = [] }) {
   return (
     <head>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <style>{V4_TRANSITION}</style>
       <meta name="description" content={head.description} />
       {head.keywords ? <meta name="keywords" content={head.keywords} /> : null}
       <meta name="author" content="Kaan Balcı" />
@@ -52,9 +59,7 @@ function ProductionHead({ head, page, v4Styles = [] }) {
       <link rel="stylesheet" href="/css/v4-system.css" />
       {V4_ROUTES.has(page) ? <link rel="stylesheet" href={`/css/v4-${V4_ROUTES.get(page)}.css`} /> : null}
       {v4Styles.map((name) => <link key={name} rel="stylesheet" href={`/css/v4-${name}.css`} />)}
-      {/* An incoming cross-document view transition the browser skips rejects its
-          promises before any deferred script runs; that is the fallback working. */}
-      {V4_ROUTES.has(page) ? <script>{V4_REVEAL}</script> : null}
+      <script>{V4_REVEAL}</script>
       <link rel="icon" type="image/x-icon" href="/assets/KAAN BALCI-KÜÇÜK LOGO PNG.ico" />
       {head.jsonLd ? <script type="application/ld+json">{JSON.stringify(head.jsonLd)}</script> : null}
     </head>

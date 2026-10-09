@@ -148,6 +148,20 @@ function home(v4, node, classes, attributes, key) {
       ...(signature ? [] : [<span key={`${key}.v4-support`} className="v4-support-label">{v4.supportLabel}</span>]),
     ];
   }
+  /* A project with no authentic image shows its identity plate (the one its
+   * Works card shows) where a cover would stand. */
+  if (classes.has("evidence-card-media")) {
+    const plate = v4.plates?.[v4.flow.evidence[Number(path[path.length - 2])]];
+    if (!plate) return null;
+    return {
+      arrange: () => [
+        <div key={`${key}.v4-plate`} className="v4-pcard__media v4-pcard__media--plate v4-curated-plate" aria-hidden="true" data-plate-kind={plate.kind}>
+          <span className="v4-pcard__monogram">{plate.first}</span>
+          {plate.rest ? <span className="v4-pcard__plate-tech">{plate.rest}</span> : null}
+        </div>,
+      ],
+    };
+  }
   if (classes.has("evidence-card-content")) {
     const position = Number(path[path.length - 2]);
     const signature = v4.signatures[v4.flow.evidence[position]];

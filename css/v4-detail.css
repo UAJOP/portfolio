@@ -13,22 +13,8 @@ body[data-page="caseStudy"] main {
 /* Arriving from Works: the visual you chose becomes this page's. Progressive
  * enhancement only; without it this is an ordinary navigation. */
 @media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-
   body[data-page="caseStudy"] [data-v4-anchor] {
     view-transition-name: v4-project-visual;
-  }
-
-  ::view-transition-group(v4-project-visual) {
-    animation-duration: 460ms;
-    animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
-  }
-
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 260ms;
   }
 }
 

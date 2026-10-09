@@ -220,7 +220,8 @@ export default function ProductionMain(props) {
    * work before the closing section. */
   if (props.v4?.consumer === "detail") {
     if (props.v4.related) sections.splice(sections.length - 1, 0, <RelatedWork key={`${props.page}.v4-related`} model={props.v4.related} />);
-    sections.splice(1, 0, <SectionTracker key={`${props.page}.v4-tracker`} model={props.v4.tracker} />);
+    /* After the hero itself: a captured page's first child can be whitespace. */
+    sections.splice(Math.max(topLevelIndex(page.children, "case-hero"), 0) + 1, 0, <SectionTracker key={`${props.page}.v4-tracker`} model={props.v4.tracker} />);
   }
   /* V4 inner pages. Experience gains its career chart under the hero and the
    * way on to About before its closing section. */

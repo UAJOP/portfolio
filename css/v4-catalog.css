@@ -199,45 +199,8 @@
   object-fit: contain;
 }
 
-/* A project without an authentic image: its real stack, set in type on the
- * V4 grid. Typographic on purpose, so it cannot be read as a screenshot. */
-.v4-pcard__media--plate {
-  display: grid;
-  align-content: center;
-  justify-items: start;
-  gap: 10px;
-  padding: 0 22px;
-  background:
-    radial-gradient(120% 90% at 100% 0%, var(--v4-ambient-light) 0%, transparent 62%),
-    linear-gradient(var(--v4-grid) 1px, transparent 1px) 0 0 / 100% 28px,
-    linear-gradient(90deg, var(--v4-grid) 1px, transparent 1px) 0 0 / 28px 100%,
-    var(--v4-canvas-raised);
-}
-
-.v4-pcard__media--plate::after {
-  content: "";
-  position: absolute;
-  right: 22px;
-  bottom: 20px;
-  width: 38%;
-  height: 34%;
-  border-right: 1px solid var(--v4-trace);
-  border-bottom: 1px solid var(--v4-trace);
-  border-bottom-right-radius: 12px;
-}
-
-.v4-pcard__monogram {
-  color: var(--v4-ink);
-  font: 800 clamp(2rem, 1.5rem + 1.6vw, 3rem) / 1 var(--v4-display);
-  letter-spacing: -0.04em;
-}
-
-.v4-pcard__plate-tech {
-  color: var(--v4-accent-strong);
-  font: var(--v4-type-label);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
+/* The identity plate a card shows without an authentic image is a system
+ * primitive: css/v4-system.css, 27. */
 
 /* The four browser games share one mark: they can be played here. */
 .v4-pcard[data-card-playable] .v4-pcard__media::after {

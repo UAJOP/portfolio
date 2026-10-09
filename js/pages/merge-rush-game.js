@@ -152,7 +152,11 @@
     window.scrollTo(0, restore);
     window.requestAnimationFrame(function () { if (!active()) window.scrollTo(0, restore); });
     if (returnFocus && document.contains(returnFocus)) returnFocus.focus({ preventScroll: true });
-    else focusFirst("[data-mr-enter]");
+    else {
+      /* Play is on the page, outside the stage. */
+      var play = document.querySelector("[data-mr-enter]");
+      if (play) play.focus({ preventScroll: true });
+    }
     returnFocus = null;
     /* The entry this game added to the history goes with it. */
     if (back && pushed) {

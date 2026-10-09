@@ -569,6 +569,12 @@ function v4HomeModel(locale, message) {
     },
     signatures: Object.fromEntries(Object.entries(signatures).map(([id, pageId]) => [id, v4FlagshipSignature(locale, pageId)])),
     supportLabel: message("portfolio.label.supportingEvidence"),
+    /* V4-E07: an evidence card whose project has no authentic image shows the
+     * identity plate its catalog card shows, never a retired cover. */
+    plates: Object.fromEntries(cardEntries(loadCatalog()).filter((entry) => flow.evidence.includes(entry.id) && entry.card.plate).map((entry) => {
+      const [first, ...rest] = entry.tech.split(" · ");
+      return [entry.id, { kind: entry.kind, first, rest: rest.join(" · ") }];
+    })),
     /* The way on from the experience summary: the two pages it does not
      * already link, each under its own title. */
     bridge: [

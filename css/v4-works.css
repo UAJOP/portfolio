@@ -334,12 +334,6 @@ body[data-page="works"] .project-card .project-content > a {
  * ([data-v4-view], React state); the catalog's own filter and search decide
  * what is showing in all three. Without JavaScript the mode switch is absent
  * and this is the project grid. */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-}
-
 body[data-page="works"] [data-v4-explorer] {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

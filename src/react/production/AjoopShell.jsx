@@ -161,6 +161,21 @@ export default function AjoopShell({ model }) {
     };
   }, []);
 
+  /* V4-E07: a page restored from the back/forward cache comes back as the page.
+   * Whatever was open over it when it was left (this panel, the palette,
+   * Recruiter Mode, the mobile menu) is closed, so nothing stale covers it. */
+  useEffect(() => {
+    const restored = (event) => {
+      if (!event.persisted) return;
+      shell.closeMobileNavigation();
+      handlersRef.current.closePanel({ restoreFocus: false });
+      overlays.setCommandPaletteOpen(false, { restoreFocus: false });
+      overlays.setRecruiterMode(false, { restoreFocus: false });
+    };
+    window.addEventListener("pageshow", restored);
+    return () => window.removeEventListener("pageshow", restored);
+  }, []);
+
   /* Keyboard inside the open panel: Escape closes it, Tab stays inside it.
    * On a touch-first device the dialog itself holds focus on open, so Tab
    * from the container goes to the first control and Shift+Tab to the last. */

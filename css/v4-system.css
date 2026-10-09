@@ -18,6 +18,8 @@
  *  15. Section handoff · 16. their reduced-motion and forced-colours states
  *  17. Mode switch · 18. Section tracker · 19. Process
  *  20. Inner-page entry · 21. Onward · 22. AJOOP panel link
+ *  23. AJOOP brand · 24. Route transitions · 25. Floating controls
+ *  26. Page grammar (every route) · 27. Identity plate
  *
  * Primitives are opted into by attribute or class and stay inert until then.
  * Route compositions live in css/v4-<route>.css; js/v4/runtime.js adds pointer
@@ -229,11 +231,30 @@ html[data-theme="light"] .site-header {
   letter-spacing: -0.03em;
 }
 
+/* The mark stands by itself beside the name: no tile, border or ground behind
+ * it. Its artwork is round and drawn on transparency, so nothing is cropped. */
 .brand img,
 .footer-brand img {
-  border: 1px solid var(--v4-rule-strong);
-  border-radius: 3px;
-  background: var(--v4-surface-strong);
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  object-fit: contain;
+  transition: filter var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.brand:is(:hover, :focus-visible) img,
+.footer-brand:is(:hover, :focus-visible) img {
+  filter: drop-shadow(0 0 0.5rem var(--v4-current-glow));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand img,
+  .footer-brand img {
+    transition: none;
+  }
 }
 
 .nav-links a {
@@ -993,6 +1014,11 @@ html[data-theme="light"] .footer-socials a:hover {
  * region, and the runtime may run one light sweep through it after first
  * paint; the sweep's attribute is removed when it ends. */
 [data-v4-kinetic] {
+  /* The sweep paints the text through its own box, and a display heading is
+   * set tighter than its descenders: room for them, taken back in the margin
+   * wherever the heading's own margin rule does not say otherwise. */
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
   translate:
     calc(var(--v4-px) * var(--v4-amp-kinetic))
     calc(var(--v4-py) * var(--v4-amp-kinetic) * 0.75);
@@ -2529,4 +2555,342 @@ body .chatbot-launcher .chatbot-launcher-icon i {
 .chatbot-launcher [data-chatbot-launcher-text] {
   font-size: 0.86em;
   letter-spacing: 0.05em;
+}
+
+/* 24. Route transitions ---------------------------------------------------- */
+
+/* Every document opts in, so no navigation pairs a page that offers a
+ * transition with one that does not (the browser skips those, and reports
+ * it). The opt-in itself is one inline rule in each document head
+ * (ProductionDocument.jsx, 404.html): read from a stylesheet it can arrive
+ * after the browser has decided how to reveal the page, which is what made
+ * the transition intermittent. Here is what the transition looks like: one
+ * quiet cross-fade for the page; the header is one object across documents
+ * and does not fade; a chosen project visual travels to its own page
+ * (css/v4-detail.css). Where the API is missing, or motion is reduced, this
+ * is an ordinary navigation. */
+@media (prefers-reduced-motion: no-preference) {
+  .site-header {
+    view-transition-name: v4-header;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--v4-motion-ui);
+    animation-timing-function: var(--v4-ease-out);
+  }
+
+  ::view-transition-group(v4-header) {
+    animation-duration: var(--v4-motion-ui);
+  }
+
+  ::view-transition-group(v4-project-visual) {
+    animation-duration: 460ms;
+    animation-timing-function: var(--v4-ease-in-out);
+  }
+}
+
+/* 25. Floating controls ---------------------------------------------------- */
+
+/* The two fixed controls are one family on every route: the AJOOP port on the
+ * right, the easter-egg trigger on the left, on one baseline, drawn as system
+ * surfaces. Presentation only: behaviour and state stay with their owners. */
+body .chatbot-launcher,
+html[data-theme="light"] body .chatbot-launcher {
+  gap: 0.65rem;
+  min-height: 3.5rem;
+  padding: 0 1.1rem 0 0.9rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 3px;
+  background: var(--v4-living-surface);
+  box-shadow: 0 14px 44px var(--v4-ambient-shadow);
+  color: var(--v4-ink-secondary);
+  font-family: var(--v4-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  backdrop-filter: blur(16px);
+  transition:
+    border-color var(--v4-motion-ui) var(--v4-ease-out),
+    color var(--v4-motion-ui) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+html[data-theme="light"] body .chatbot-launcher {
+  box-shadow: 0 14px 40px rgba(16, 21, 28, 0.14);
+}
+
+body .chatbot-launcher:is(:hover, :focus-visible) {
+  border-color: var(--v4-current);
+  color: var(--v4-ink);
+  transform: none;
+}
+
+body .chatbot-launcher:focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 3px;
+}
+
+/* The port's state light. */
+body .chatbot-launcher::before {
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--v4-state-idle);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--v4-state-idle) 14%, transparent);
+  content: "";
+}
+
+/* A quiet chip carries the mark itself rather than the app icon. */
+body .chatbot-launcher .chatbot-launcher-icon,
+html[data-theme="light"] body .chatbot-launcher .chatbot-launcher-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--ajoop-mark) center / contain no-repeat;
+}
+
+body .easter-trigger,
+html[data-theme="light"] body .easter-trigger {
+  border-color: var(--v4-rule-strong);
+  border-radius: 3px;
+  background: var(--v4-living-surface);
+  box-shadow: 0 14px 44px var(--v4-ambient-shadow);
+  color: var(--v4-ink-secondary);
+  transition:
+    border-color var(--v4-motion-ui) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+html[data-theme="light"] body .easter-trigger {
+  box-shadow: 0 14px 40px rgba(16, 21, 28, 0.14);
+}
+
+body .easter-trigger:is(:hover, :focus-visible) {
+  border-color: var(--v4-current);
+  transform: none;
+}
+
+body .easter-trigger i {
+  color: var(--v4-accent);
+  font-size: 1.25rem;
+}
+
+/* Where its label would cost the page room (a narrow screen, or a phone on
+ * its side) the port is a square the size of the trigger opposite, so the two
+ * corners match. */
+@media (max-width: 820px), (max-height: 480px) {
+  body .chatbot-launcher {
+    position: relative;
+    justify-content: center;
+    width: 2.875rem;
+    min-width: 2.875rem;
+    height: 2.875rem;
+    min-height: 2.875rem;
+    padding: 0;
+    font-size: 0;
+  }
+
+  body .chatbot-launcher::before {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    width: 0.32rem;
+    height: 0.32rem;
+    box-shadow: none;
+  }
+
+  body .easter-trigger {
+    width: 2.875rem;
+    height: 2.875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body .chatbot-launcher,
+  body .easter-trigger {
+    transition: none;
+  }
+}
+
+/* 26. Page grammar --------------------------------------------------------- */
+
+/* The parts every page is written in (labels, headings, actions, closing
+ * bands) take the V4 registers wherever they appear, so a route without its
+ * own composition is still a page of this system. The older layer's tokens
+ * are pointed at the V4 ones, then the few parts whose shape differs are set.
+ * Route compositions (css/v4-<route>.css) are more specific and keep the last
+ * word. The three game shells keep their own art direction. */
+body:not([data-page="game"]) {
+  --color-canvas: var(--v4-canvas);
+  --color-canvas-raised: var(--v4-canvas-raised);
+  --color-surface: var(--v4-surface);
+  --color-surface-raised: var(--v4-surface-strong);
+  --color-surface-inset: var(--v4-evidence);
+  --color-text: var(--v4-ink);
+  --color-text-secondary: var(--v4-ink-secondary);
+  --color-text-muted: var(--v4-ink-muted);
+  --color-accent: var(--v4-accent);
+  --color-accent-strong: var(--v4-accent);
+  --color-action: var(--v4-accent-fill);
+  --color-action-hover: var(--v4-accent);
+  --color-on-action: var(--v4-on-accent);
+  --color-border-subtle: var(--v4-rule);
+  --color-border: var(--v4-rule);
+  --color-border-strong: var(--v4-rule-strong);
+  --color-header: var(--v4-header);
+  --font-mono: var(--v4-mono);
+  --bg: var(--v4-canvas);
+  --bg-2: var(--v4-canvas-raised);
+  --surface: var(--v4-surface);
+  --surface-solid: var(--v4-surface);
+  --surface-2: var(--v4-surface-strong);
+  --line: var(--v4-rule);
+  --line-strong: var(--v4-rule-strong);
+  --text: var(--v4-ink);
+  --muted: var(--v4-ink-secondary);
+  --muted-2: var(--v4-ink-muted);
+  --brand: var(--v4-accent);
+  --brand-2: var(--v4-accent);
+  --accent: var(--v4-accent);
+}
+
+body:not([data-page="game"]) main :is(h1, h2, h3, h4) {
+  font-family: var(--v4-display);
+}
+
+body:not([data-page="game"]) main :is(h1, h2) {
+  font-weight: 700;
+}
+
+body:not([data-page="game"]) main .eyebrow {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+  text-transform: uppercase;
+}
+
+body:not([data-page="game"]) main .eyebrow::before {
+  width: 2rem;
+  height: 1px;
+  border-radius: 0;
+  background: var(--v4-current);
+  box-shadow: none;
+  opacity: 1;
+}
+
+body:not([data-page="game"]) .page-hero h1 {
+  color: var(--v4-ink);
+  font: var(--v4-type-display);
+  font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+  letter-spacing: var(--v4-track-heading-lg);
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  text-wrap: balance;
+}
+
+body:not([data-page="game"]) .page-hero > p:not(.eyebrow) {
+  color: var(--v4-ink-secondary);
+  font: var(--v4-type-lead);
+}
+
+body:not([data-page="game"]) main :is(.section-heading, .case-section-heading, .project-tier-heading, .contact-hub, .cta-panel) h2 {
+  color: var(--v4-ink);
+  font: var(--v4-type-heading-lg);
+  letter-spacing: var(--v4-track-heading-lg);
+  text-wrap: balance;
+}
+
+body:not([data-page="game"]) main .btn {
+  min-height: 46px;
+  border-radius: var(--v4-radius);
+  font-family: var(--v4-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+body:not([data-page="game"]) main .btn.primary,
+html[data-theme="light"] body:not([data-page="game"]) main .btn.primary {
+  border-color: var(--v4-accent-fill);
+  background: var(--v4-accent-fill);
+  box-shadow: none;
+  color: var(--v4-on-accent);
+}
+
+body:not([data-page="game"]) main .btn.primary:is(:hover, :focus-visible) {
+  border-color: var(--v4-accent);
+  background: var(--v4-accent);
+  color: #09111a;
+}
+
+html[data-theme="light"] body:not([data-page="game"]) main .btn.primary:is(:hover, :focus-visible) {
+  border-color: var(--v4-accent-strong);
+  background: var(--v4-accent-strong);
+  color: var(--v4-on-accent);
+}
+
+body:not([data-page="game"]) main .btn.ghost,
+html[data-theme="light"] body:not([data-page="game"]) main .btn.ghost {
+  border-color: var(--v4-rule-strong);
+  background: transparent;
+  color: var(--v4-ink);
+}
+
+body:not([data-page="game"]) main .btn.ghost:is(:hover, :focus-visible) {
+  border-color: var(--v4-current);
+  background: transparent;
+}
+
+@media (max-width: 900px) {
+  body:not([data-page="game"]) .page-hero h1 {
+    font-size: clamp(1.9rem, 7.4vw, 2.6rem);
+  }
+}
+
+/* 27. Identity plate -------------------------------------------------------- */
+
+/* A project without an authentic image: its real stack, set in type on the
+ * V4 grid. Typographic on purpose, so it cannot be read as a screenshot. */
+.v4-pcard__media.v4-pcard__media--plate {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 10px;
+  padding: 0 22px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--v4-ambient-light) 0%, transparent 62%),
+    linear-gradient(var(--v4-grid) 1px, transparent 1px) 0 0 / 100% 28px,
+    linear-gradient(90deg, var(--v4-grid) 1px, transparent 1px) 0 0 / 28px 100%,
+    var(--v4-canvas-raised);
+}
+
+.v4-pcard__media.v4-pcard__media--plate::after {
+  content: "";
+  position: absolute;
+  right: 22px;
+  bottom: 20px;
+  width: 38%;
+  height: 34%;
+  border-right: 1px solid var(--v4-trace);
+  border-bottom: 1px solid var(--v4-trace);
+  border-bottom-right-radius: 12px;
+}
+
+.v4-pcard__monogram {
+  color: var(--v4-ink);
+  font: 800 clamp(2rem, 1.5rem + 1.6vw, 3rem) / 1 var(--v4-display);
+  letter-spacing: -0.04em;
+}
+
+.v4-pcard__plate-tech {
+  color: var(--v4-accent-strong);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

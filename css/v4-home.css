@@ -382,42 +382,7 @@ html[data-theme="light"] body[data-page="home"] .contact-hub {
 
 /* 5. AJOOP as a system port ------------------------------------------------ */
 
-/* Presentation only: the launcher's behaviour and state are untouched. */
-body[data-page="home"] .chatbot-launcher {
-  gap: 0.65rem;
-  border: 1px solid var(--v4-rule-strong);
-  border-radius: 3px;
-  background: var(--v4-living-surface);
-  box-shadow: 0 14px 44px var(--v4-ambient-shadow);
-  color: var(--v4-ink-secondary);
-  font-family: var(--v4-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  backdrop-filter: blur(16px);
-}
-
-html[data-theme="light"] body[data-page="home"] .chatbot-launcher {
-  box-shadow: 0 14px 40px rgba(16, 21, 28, 0.14);
-}
-
-body[data-page="home"] .chatbot-launcher::before {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 50%;
-  background: var(--v4-state-idle);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--v4-state-idle) 14%, transparent);
-  content: "";
-}
-
-/* The port's launcher is a quiet chip, so it carries the mark itself rather
- * than the app icon. */
-body[data-page="home"] .chatbot-launcher .chatbot-launcher-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  border: 0;
-  background: var(--ajoop-mark) center / contain no-repeat;
-}
+/* The launcher is the same port on every route: css/v4-system.css, 25. */
 
 /* 6. Responsive ------------------------------------------------------------ */
 
@@ -581,22 +546,6 @@ body[data-page="home"] .chatbot-launcher .chatbot-launcher-icon {
 
   body[data-page="home"] .contact-hub {
     padding: 1.5rem;
-  }
-
-  body[data-page="home"] .chatbot-launcher {
-    width: 3.25rem;
-    min-width: 3.25rem;
-    height: 3.25rem;
-    padding: 0;
-    font-size: 0;
-  }
-
-  body[data-page="home"] .chatbot-launcher::before {
-    position: absolute;
-    top: 0.45rem;
-    right: 0.45rem;
-    width: 0.32rem;
-    height: 0.32rem;
   }
 }
 
@@ -1240,9 +1189,36 @@ body[data-page="home"] .selected-work-grid > [data-v4-support] h3 {
   font-size: 1.15rem;
 }
 
-/* Its cover is lettered on the left; the strip shows the flow it draws. */
-body[data-page="home"] .selected-work-grid > [data-v4-support] .evidence-card-media img {
-  object-position: 100% 50%;
+/* No publishable screen exists for this work: the strip is its identity plate
+ * (css/v4-system.css, 27), the same one its Works card shows. */
+body[data-page="home"] .evidence-card-media > .v4-curated-plate {
+  align-content: end;
+  gap: 0.45rem;
+  width: 100%;
+  height: 100%;
+  padding: 2.9rem 1.1rem 1.1rem;
+}
+
+/* Set at the strip's size, with the whole name on it. */
+body[data-page="home"] .evidence-card-media > .v4-curated-plate .v4-pcard__monogram {
+  font-size: 1.2rem;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+body[data-page="home"] .evidence-card-media > .v4-curated-plate::after {
+  content: none;
+}
+
+@media (max-width: 760px) {
+  body[data-page="home"] .selected-work-grid > [data-v4-support] .evidence-card-media:has(> .v4-curated-plate) {
+    aspect-ratio: auto;
+  }
+
+  body[data-page="home"] .evidence-card-media > .v4-curated-plate {
+    padding: 3.1rem 1.25rem 1rem;
+  }
 }
 
 body[data-page="home"] .selected-work-grid > [data-v4-support] > .v4-ports {
