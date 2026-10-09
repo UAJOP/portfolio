@@ -691,6 +691,33 @@ function v4FlowPuzzleModel(locale, localization) {
   };
 }
 
+/* V4-E06.3: Career Adventure as an entered game. The accepted page markup
+ * stays; the route's consumer adds the game's shell around it — the way in
+ * from the hero, then menu, HUD, tools, pause, result and failure as a
+ * full-viewport play mode (src/react/v4/consumers.jsx,
+ * js/pages/career-adventure-game.js, css/v4-career-adventure.css). The rules
+ * are the engine's (adventure-game.js); this is the copy of the shell, and
+ * the names of the thirteen objects in the visitor's language. */
+const CAREER_ADVENTURE_ROUTE = "adventure";
+const CAREER_ADVENTURE_SCRIPT = "/js/pages/career-adventure-game.js";
+const CAREER_ADVENTURE_KEYS = ["aria", "title", "tagline", "enter", "noscript", "noscriptGames", "noscriptWorks", "menu.play", "menu.how", "menu.settings", "menu.progress", "menu.exit", "menu.best", "menu.furthest", "hud.score", "hud.best", "hud.next", "hud.pause", "hud.stage", "hud.tools", "hud.path", "hud.fullscreen", "hud.fullscreenExit", "hud.sound", "tool.swap", "tool.swapHint", "tool.debug", "tool.debugHint", "how.title", "how.one", "how.two", "how.three", "how.four", "how.tools", "how.keys", "settings.title", "settings.sound", "settings.volume", "settings.reduced", "settings.guide", "settings.haptics", "settings.theme", "settings.language", "settings.locked", "theme.study", "theme.city", "theme.lab", "progress.title", "progress.runs", "progress.wins", "progress.best", "progress.furthest", "progress.milestones", "milestone.title", "milestone.refill", "milestone.theme", "chain.two", "chain.combo", "nice", "careful", "noRoom", "pause.title", "pause.resume", "pause.restart", "over.title", "over.text", "over.summary", "over.retry", "win.title", "win.text", "win.again", "win.newBest", "stat.score", "stat.best", "stat.chain", "stat.time", "close", "back", "mainMenu", "error.title", "error.text", "error.reload", "obj.book", "obj.keyboard", "obj.mouse", "obj.monitor", "obj.htmlcss", "obj.javascript", "obj.python", "obj.csharp", "obj.database", "obj.aiflow", "obj.portfolio", "obj.interview", "obj.joboffer"];
+function v4CareerAdventureModel(locale, localization) {
+  const labels = Object.fromEntries(CAREER_ADVENTURE_KEYS.map((key) => {
+    const value = localization.message(`adventure.play.${key}`);
+    if (typeof value !== "string" || !value) throw new Error(`${locale}/${CAREER_ADVENTURE_ROUTE}: missing adventure.play.${key}`);
+    /* menu.play → menuPlay: the consumer, the controller and the engine read plain property names. */
+    return [key.replace(/\.(\w)/g, (match, letter) => letter.toUpperCase()), decodeHtml(value)];
+  }));
+  return {
+    consumer: "careerAdventure",
+    labels,
+    gamesHref: routeRuntime.localizedInternalHref("/games/", locale),
+    worksHref: routeRuntime.localizedInternalHref("/works/", locale),
+    /* The game in each language is its own page; the link opens it at the menu. */
+    locales: registry.locales.filter((item) => item.active).map((item) => ({ id: item.id, label: item.nativeLabel, current: item.id === locale, href: `${routeRuntime.localizedInternalHref("/adventure/", item.id)}#career-merge-game` })),
+  };
+}
+
 const SHELL_MESSAGE_KEYS = [
   "language.selectorAria",
   "nav.open",
@@ -848,7 +875,8 @@ export function productionMainProps(route, {
       ? withLabCards(engineShell.localized.children, labCardNodes(route.locale, loadLocalization(route.locale)))
       : engineShell.localized.children;
     const studio = route.routeId === JOYDAY_STUDIO_ROUTE ? { v4: v4JoydayStudioModel(route.locale, loadLocalization(route.locale)) }
-      : route.routeId === FLOW_PUZZLE_ROUTE ? { v4: v4FlowPuzzleModel(route.locale, loadLocalization(route.locale)) } : {};
+      : route.routeId === FLOW_PUZZLE_ROUTE ? { v4: v4FlowPuzzleModel(route.locale, loadLocalization(route.locale)) }
+      : route.routeId === CAREER_ADVENTURE_ROUTE ? { v4: v4CareerAdventureModel(route.locale, loadLocalization(route.locale)) } : {};
     return { kind: "engineShell", page: route.routeId, locale: route.locale, structure, ...studio };
   }
   const captured = remainingRoutePage(route);
@@ -990,7 +1018,7 @@ export function productionDocumentProps(route, clientEntry) {
        * script.js load that page’s runtime modules. */
       /* The AJOOP case study is a case study; the Hub is its own page type. */
       hub: hubRoute,
-      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : [],
+      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : route.routeId === CAREER_ADVENTURE_ROUTE ? ["career-adventure"] : [],
       page: casePage || ajoopCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
       navPage: casePage || projectRoute ? "works" : route.routeId,
       bodyClass: caseLocale?.bodyClass || (ajoopCaseRoute ? "case-study-page" : null),
@@ -1002,7 +1030,7 @@ export function productionDocumentProps(route, clientEntry) {
       /* Scripts the accepted document ran before the runtime loader. */
       leadScripts: captured?.page.leadScripts || [],
       /* The engine host stays the document's last classic script. */
-      scripts: engineShell ? [...engineShell.page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : route.routeId === FLOW_PUZZLE_ROUTE ? [FLOW_PUZZLE_SCRIPT] : []), ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
+      scripts: engineShell ? [...engineShell.page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : route.routeId === FLOW_PUZZLE_ROUTE ? [FLOW_PUZZLE_SCRIPT] : route.routeId === CAREER_ADVENTURE_ROUTE ? [CAREER_ADVENTURE_SCRIPT] : []), ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
       clientEntry,
     },
     head: caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({

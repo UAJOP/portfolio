@@ -16,6 +16,7 @@
     "dev:v4": "node scripts/v4-preview-server.mjs",
     "v4:capture": "node scripts/capture-v4-review.mjs",
     "v4:review-pack": "npm run build:site && node scripts/capture-v4-review.mjs",
+    "v4:adventure:sim": "node scripts/v4-e06-3-career-adventure-sim.mjs",
     "qa:foundation": "node scripts/qa-site-foundation.mjs",
     "qa:site:artifact": "node scripts/qa-site-foundation.mjs --artifact dist-site",
     "qa:audit": "node scripts/site-audit.mjs",

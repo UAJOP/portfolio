@@ -530,7 +530,225 @@ function flowPuzzle(v4, node, classes, attributes, key) {
   return null;
 }
 
-const CONSUMERS = { home, works, detail, experience, certificates, about, hub, joydayStudio, flowPuzzle };
+/* Career Adventure (V4-E06.3): the page is the way in, and the game is an
+ * entered play mode. The accepted structure is not edited: the hero gains its
+ * Play action, the board a poster that starts the game, and the game section
+ * the shell around the canvas — HUD, tools, a milestone toast, and the menu,
+ * how-to, settings, career-path, pause, result and failure layers. What those
+ * show of a run is written by js/pages/career-adventure-game.js from the
+ * engine's own state, so no score or rule is stated twice. Every part carries
+ * data-ca-part, which is how scripts/v4-e06-3-career-adventure-edits.mjs sets
+ * the delta aside. */
+const ADVENTURE_ICONS = {
+  play: "M8 5l11 7-11 7z",
+  pause: "M8 5v14M16 5v14",
+  sound: "M4 10v4h4l5 4V6L8 10zM16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11",
+  fullscreen: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
+  swap: "M7 7h11l-3-3M17 17H6l3 3",
+  debug: "M9 8a3 3 0 0 1 6 0M7 11h10v4a5 5 0 0 1-10 0zM4 13h3M17 13h3M5 8l3 3M19 8l-3 3M5 19l3-3M19 19l-3-3",
+  back: "M15 6l-6 6 6 6M9 12h11",
+};
+
+function AdventureIcon({ name }) {
+  return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={ADVENTURE_ICONS[name]} /></svg>;
+}
+
+function careerAdventure(v4, node, classes, attributes, key) {
+  const { labels } = v4;
+  const part = (name) => `${key}.ca-${name}`;
+  if (classes.has("adventure-hero")) attributes["data-ca-hero"] = "";
+  /* The hero's action enters the game. Without JavaScript there is no game
+   * to enter: the action gives way to a plain notice and two ways on. */
+  if (classes.has("adventure-hero-copy")) {
+    return [
+      <p key={part("enter")} className="ca-enter" data-ca-part="enter">
+        <button type="button" className="ca-cta" data-ca-enter=""><AdventureIcon name="play" /><span>{labels.enter}</span></button>
+        <span className="ca-enter__record" data-ca-record="" />
+      </p>,
+      <noscript key={part("noscript")} data-ca-part="noscript">
+        <style>{"[data-ca-enter],.ca-poster,.adventure-canvas-wrap,.adventure-side .detail-panel:last-child{display:none!important}"}</style>
+        <p className="ca-noscript">{labels.noscript} <a href={v4.gamesHref}>{labels.noscriptGames}</a> · <a href={v4.worksHref}>{labels.noscriptWorks}</a></p>
+      </noscript>,
+    ];
+  }
+  /* On the page the board is a poster of the game; pressing it plays. */
+  if (classes.has("adventure-canvas-wrap")) {
+    return [<button key={part("poster")} type="button" className="ca-poster" data-ca-part="poster" data-ca-enter="" aria-label={labels.enter}><span><AdventureIcon name="play" />{labels.menuPlay}</span></button>];
+  }
+  if (attributes.id !== "career-merge-game") return null;
+  attributes["data-ca-root"] = "";
+  attributes["data-ca-labels"] = JSON.stringify(labels);
+  attributes["aria-label"] = labels.aria;
+  const back = <button type="button" className="ca-btn ca-btn--quiet" data-ca-back=""><AdventureIcon name="back" /><span>{labels.back}</span></button>;
+  const toggle = (name, text) => (
+    <label className="ca-row">
+      <span>{text}</span>
+      <input type="checkbox" role="switch" data-ca-set={name} />
+    </label>
+  );
+  return {
+    arrange: (own) => [
+      ...own,
+      <div key={part("hud")} className="ca-hud" data-ca-part="hud">
+        {/* How much of the canvas the bars cover at this size; the engine
+            stands the chamber in what is left. */}
+        <i className="ca-inset ca-inset--top" data-ca-inset="top" aria-hidden="true" />
+        <i className="ca-inset ca-inset--bottom" data-ca-inset="bottom" aria-hidden="true" />
+        <i className="ca-heat" aria-hidden="true" />
+        <div className="ca-card ca-brand">
+          <strong aria-hidden="true">Career Adventure</strong>
+          <div role="group" aria-label={labels.title}>
+            <button type="button" className="ca-icon" data-ca-pause="" aria-label={labels.hudPause} title={labels.hudPause}><AdventureIcon name="pause" /></button>
+            <button type="button" className="ca-icon" data-ca-sound="" aria-pressed="true" aria-label={labels.hudSound} title={labels.hudSound}><AdventureIcon name="sound" /></button>
+            {/* Offered only where the browser can do it (the controller shows it). */}
+            <button type="button" className="ca-icon" data-ca-fullscreen="" data-ca-label-on={labels.hudFullscreenExit} data-ca-label-off={labels.hudFullscreen} aria-pressed="false" aria-label={labels.hudFullscreen} title={labels.hudFullscreen} hidden><AdventureIcon name="fullscreen" /></button>
+          </div>
+        </div>
+        <dl className="ca-card ca-score">
+          <div><dt>{labels.hudScore}</dt><dd data-ca-score="">0</dd></div>
+          <div><dt>{labels.hudBest}</dt><dd data-ca-best="">0</dd></div>
+        </dl>
+        <div className="ca-card ca-next">
+          <span>{labels.hudNext}</span>
+          <canvas data-ca-next="" width="144" height="144" aria-hidden="true" />
+          <b data-ca-next-name="" />
+        </div>
+        <div className="ca-card ca-tools" role="group" aria-label={labels.hudTools}>
+          <strong>{labels.hudTools}</strong>
+          <button type="button" data-ca-tool="swap" title={labels.toolSwapHint}><AdventureIcon name="swap" /><span>{labels.toolSwap}</span><b data-ca-count="swap">0</b></button>
+          <button type="button" data-ca-tool="debug" title={labels.toolDebugHint}><AdventureIcon name="debug" /><span>{labels.toolDebug}</span><b data-ca-count="debug">0</b></button>
+        </div>
+        <div className="ca-card ca-stage">
+          <canvas data-ca-stage-icon="" width="112" height="112" aria-hidden="true" />
+          <div>
+            <strong data-ca-stage-name="" />
+            <span data-ca-stage="" />
+            <i className="ca-meter"><b data-ca-meter="" /></i>
+          </div>
+        </div>
+        <div className="ca-card ca-path">
+          <strong>{labels.hudPath}</strong>
+          <ol data-ca-path="" />
+        </div>
+      </div>,
+      <p key={part("toast")} className="ca-toast" data-ca-part="toast" data-ca-toast="" role="status" hidden />,
+      <div key={part("layers")} className="ca-layers" data-ca-part="layers">
+        <section className="ca-layer ca-layer--menu" data-ca-layer="menu" role="dialog" aria-modal="true" aria-labelledby="ca-menu-title" hidden>
+          <div className="ca-panel">
+            <h2 id="ca-menu-title" className="ca-logo"><span>Career</span><span>Adventure</span></h2>
+            <p className="ca-tagline">{labels.tagline}</p>
+            <p className="ca-record" data-ca-record="" />
+            <div className="ca-list">
+              <button type="button" className="ca-btn ca-btn--go" data-ca-play=""><AdventureIcon name="play" /><span>{labels.menuPlay}</span></button>
+              <button type="button" className="ca-btn" data-ca-open="how">{labels.menuHow}</button>
+              <button type="button" className="ca-btn" data-ca-open="settings">{labels.menuSettings}</button>
+              <button type="button" className="ca-btn" data-ca-open="progress">{labels.menuProgress}</button>
+              <button type="button" className="ca-btn ca-btn--quiet" data-ca-exit="">{labels.menuExit}</button>
+            </div>
+          </div>
+        </section>
+        <section className="ca-layer" data-ca-layer="how" role="dialog" aria-modal="true" aria-labelledby="ca-how-title" hidden>
+          <div className="ca-panel ca-panel--wide">
+            <h2 id="ca-how-title">{labels.howTitle}</h2>
+            <ol className="ca-steps">
+              <li>{labels.howOne}</li>
+              <li>{labels.howTwo}</li>
+              <li>{labels.howThree}</li>
+              <li>{labels.howFour}</li>
+            </ol>
+            <ol className="ca-ladder ca-ladder--strip" data-ca-ladder="how" aria-label={labels.hudPath} />
+            <p className="ca-note">{labels.howTools}</p>
+            <p className="ca-note ca-note--keys">{labels.howKeys}</p>
+            <div className="ca-actions">{back}</div>
+          </div>
+        </section>
+        <section className="ca-layer" data-ca-layer="settings" role="dialog" aria-modal="true" aria-labelledby="ca-settings-title" hidden>
+          <div className="ca-panel">
+            <h2 id="ca-settings-title">{labels.settingsTitle}</h2>
+            <div className="ca-rows">
+              {toggle("sound", labels.settingsSound)}
+              <label className="ca-row">
+                <span>{labels.settingsVolume}</span>
+                <input type="range" min="0" max="100" step="5" data-ca-set="volume" />
+              </label>
+              {toggle("reduced", labels.settingsReduced)}
+              {toggle("guide", labels.settingsGuide)}
+              {/* Shown only on a device that can vibrate (the controller decides). */}
+              <label className="ca-row" data-ca-haptics="" hidden>
+                <span>{labels.settingsHaptics}</span>
+                <input type="checkbox" role="switch" data-ca-set="haptics" />
+              </label>
+            </div>
+            <h3>{labels.settingsTheme}</h3>
+            <div className="ca-themes" data-ca-themes="" />
+            <h3>{labels.settingsLanguage}</h3>
+            <p className="ca-langs">
+              {v4.locales.map((locale) => <a key={locale.id} href={locale.href} lang={locale.id} hrefLang={locale.id} aria-current={locale.current ? "true" : undefined}>{locale.label}</a>)}
+            </p>
+            <div className="ca-actions">{back}</div>
+          </div>
+        </section>
+        <section className="ca-layer" data-ca-layer="progress" role="dialog" aria-modal="true" aria-labelledby="ca-progress-title" hidden>
+          <div className="ca-panel ca-panel--wide">
+            <h2 id="ca-progress-title">{labels.progressTitle}</h2>
+            <dl className="ca-stats" data-ca-stats="" />
+            <ol className="ca-ladder" data-ca-ladder="progress" />
+            <div className="ca-actions">{back}</div>
+          </div>
+        </section>
+        <section className="ca-layer" data-ca-layer="pause" role="dialog" aria-modal="true" aria-labelledby="ca-pause-title" hidden>
+          <div className="ca-panel">
+            <h2 id="ca-pause-title">{labels.pauseTitle}</h2>
+            <div className="ca-list">
+              <button type="button" className="ca-btn ca-btn--go" data-ca-resume="">{labels.pauseResume}</button>
+              <button type="button" className="ca-btn" data-ca-play="">{labels.pauseRestart}</button>
+              <button type="button" className="ca-btn" data-ca-open="how">{labels.menuHow}</button>
+              <button type="button" className="ca-btn" data-ca-open="settings">{labels.menuSettings}</button>
+              <button type="button" className="ca-btn ca-btn--quiet" data-ca-menu="">{labels.mainMenu}</button>
+            </div>
+          </div>
+        </section>
+        <section className="ca-layer ca-layer--over" data-ca-layer="over" role="dialog" aria-modal="true" aria-labelledby="ca-over-title" hidden>
+          <div className="ca-panel">
+            <h2 id="ca-over-title">{labels.overTitle}</h2>
+            <p>{labels.overText}</p>
+            <div data-ca-result="over" />
+            <div className="ca-list">
+              <button type="button" className="ca-btn ca-btn--hot" data-ca-play="">{labels.overRetry}</button>
+              <button type="button" className="ca-btn" data-ca-menu="">{labels.mainMenu}</button>
+              <button type="button" className="ca-btn ca-btn--quiet" data-ca-exit="">{labels.menuExit}</button>
+            </div>
+          </div>
+        </section>
+        <section className="ca-layer ca-layer--win" data-ca-layer="win" role="dialog" aria-modal="true" aria-labelledby="ca-win-title" hidden>
+          <div className="ca-panel">
+            <canvas className="ca-trophy" data-ca-trophy="" width="240" height="240" aria-hidden="true" />
+            <h2 id="ca-win-title">{labels.winTitle}</h2>
+            <p>{labels.winText}</p>
+            <div data-ca-result="win" />
+            <div className="ca-list">
+              <button type="button" className="ca-btn ca-btn--go" data-ca-play="">{labels.winAgain}</button>
+              <button type="button" className="ca-btn" data-ca-menu="">{labels.mainMenu}</button>
+              <button type="button" className="ca-btn ca-btn--quiet" data-ca-exit="">{labels.menuExit}</button>
+            </div>
+          </div>
+        </section>
+        <div className="ca-layer ca-layer--error" data-ca-layer="error" role="alert" hidden>
+          <div className="ca-panel">
+            <strong>{labels.errorTitle}</strong>
+            <p>{labels.errorText}</p>
+            <div className="ca-list">
+              <button type="button" className="ca-btn ca-btn--go" data-ca-reload="">{labels.errorReload}</button>
+              <button type="button" className="ca-btn ca-btn--quiet" data-ca-exit="">{labels.menuExit}</button>
+            </div>
+          </div>
+        </div>
+      </div>,
+    ],
+  };
+}
+
+const CONSUMERS = { home, works, detail, experience, certificates, about, hub, joydayStudio, flowPuzzle, careerAdventure };
 
 export function applyV4(page, v4, node, classes, attributes, key) {
   const consumer = CONSUMERS[v4.consumer || page];

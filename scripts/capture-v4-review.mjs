@@ -14,6 +14,11 @@
  * motion script and the smoke section; the capture machinery around them does
  * not change between phases.
  *
+ * This phase's own part starts at “the game, driven and read”: Career
+ * Adventure (V4-E06.3). Its rules are checked on the simulation the page
+ * shipped, and its winning run is a recording replayed through the page's own
+ * clock (scripts/v4-e06-3-career-adventure-sim.mjs writes it).
+ *
  * AJOOP's AI edge is stubbed for the whole run, by the mechanism the project
  * already accepts for UI QA (scripts/qa-m3-ajoop-command-palette.mjs): requests
  * to the public edge are intercepted in the browser and answered 503, as they
@@ -32,9 +37,9 @@ import { gzipSync } from "node:zlib";
 import puppeteer from "puppeteer";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const PHASE = "v4-e06-2-ai-flow-puzzle";
-const PACK = "V4-E06-2-review-pack.zip";
-const TITLE = "V4-E06.2 · AI Flow Puzzle — a mission-based visual puzzle game";
+const PHASE = "v4-e06-3-career-adventure";
+const PACK = "V4-E06-3-review-pack.zip";
+const TITLE = "V4-E06.3 · Career Adventure — the career merge, as a game";
 const OUTPUT = process.env.V4_CAPTURE_DIR || `C:\\PC-Audit\\v4-review\\${PHASE}`;
 const FRAMES = join(OUTPUT, "motion-frames");
 /* Its own port: 4174/4175 may be held by a long-running `npm run dev:v4`. */
@@ -50,9 +55,9 @@ const MOBILE = { width: 390, height: 844 };
 const LANDSCAPE = { width: 844, height: 390 };
 const LOCALES = ["en", "tr", "de", "es", "fr"];
 const localized = (locale, path) => (locale === "en" ? path : `/${locale}${path}`);
-const GAME = "/ai-flow-puzzle/";
+const GAME = "/adventure/";
 /* The one failure a visitor can really meet: the engine's script never arrives. */
-const ENGINE_SCRIPT = "/ai-flow-puzzle.js";
+const ENGINE_SCRIPT = "/adventure-game.js";
 const blockEngine = async (page) => { page.blocked = ENGINE_SCRIPT; };
 
 const wait = (ms) => new Promise((done) => setTimeout(done, ms));
@@ -262,242 +267,332 @@ async function sheet(browser, file, title, note, panels, width) {
 
 /* ---------- the game, driven and read ---------- */
 
-/* The three authored levels, stated here independently of the engine: what
- * each needs added to its starter board, and the connections its rules ask for. */
-const NODE_ORDER = ["trigger", "intent", "router", "condition", "kb", "llm", "response", "fallback", "sheet", "crm", "email", "handoff", "end"];
-const LEVELS = [
-  { id: "joyday", add: ["intent", "condition", "sheet", "response", "fallback"], edges: [["trigger", "intent"], ["intent", "condition"], ["condition", "sheet"], ["sheet", "response"], ["response", "end"], ["condition", "fallback"], ["fallback", "end"]], outcomes: ["response", "fallback"] },
-  { id: "support", add: ["intent", "router", "kb", "llm", "response", "fallback", "handoff"], edges: [["trigger", "intent"], ["intent", "router"], ["router", "kb"], ["kb", "llm"], ["llm", "response"], ["response", "end"], ["router", "handoff"], ["handoff", "end"], ["router", "fallback"], ["fallback", "end"]], outcomes: ["response", "handoff", "fallback"] },
-  { id: "lead", add: ["intent", "crm", "email", "response", "fallback"], edges: [["trigger", "intent"], ["intent", "crm"], ["crm", "email"], ["email", "response"], ["response", "end"], ["intent", "fallback"], ["fallback", "end"]], outcomes: ["response", "fallback"] },
-];
-/* The order a flow executes in, worked out here from its connections alone:
- * depth first from the trigger, branches in the engine's stated node order. */
-function executionOrder(edges) {
-  const seen = new Set();
-  const order = [];
-  const walk = (type) => {
-    if (seen.has(type)) return;
-    seen.add(type); order.push(type);
-    edges.filter(([from]) => from === type).map(([, to]) => to).sort((a, b) => NODE_ORDER.indexOf(a) - NODE_ORDER.indexOf(b)).forEach(walk);
-  };
-  walk("trigger");
-  return order;
-}
+/* One winning run, written down by scripts/v4-e06-3-career-adventure-sim.mjs:
+ * a seed and every drop as [step, x]. Replayed through the page's own clock
+ * it must reach the same Job Offer with the same score. */
+const RECORDING = JSON.parse(await readFile(join(ROOT, "scripts", "fixtures", "v4-e06-3-winning-run.json"), "utf8"));
+const STORE = "kaan-career-adventure-v2";
+const LEGACY_STORE = "kaan-career-merge-best";
+/* The ladder, stated here independently of the engine. */
+const LADDER = ["Book", "Keyboard", "Mouse", "Monitor", "HTML / CSS", "JavaScript", "Python", "C# / .NET", "Database", "AI Flow", "Portfolio", "Interview", "Job Offer"];
+const LADDER_IDS = ["book", "keyboard", "mouse", "monitor", "htmlcss", "javascript", "python", "csharp", "database", "aiflow", "portfolio", "interview", "joboffer"];
+const HZ = [30, 60, 90, 120, 144, 240];
 
-const node = (type) => `[data-ai-board] .ai-flow-node[data-type="${type}"]`;
-const body = (type) => `${node(type)} [data-ai-node-body]`;
-const outPort = (type) => `${node(type)} [data-ai-port="out"]`;
-const inPort = (type) => `${node(type)} [data-ai-port="in"]`;
 const press = async (page, selector) => { await page.evaluate((target) => document.querySelector(target).click(), selector); await wait(170); };
-const phaseIs = (page, name, timeout = 20000) => page.waitForFunction((wanted) => document.documentElement.getAttribute("data-afp-state") === wanted, { timeout }, name);
+const stateIs = (page, name, timeout = 20000) => page.waitForFunction((wanted) => document.documentElement.getAttribute("data-ca-state") === wanted, { timeout }, name);
 const at = (page, selector) => page.evaluate((target) => { const rect = document.querySelector(target).getBoundingClientRect(); return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height }; }, selector);
+const stored = (value) => { try { return JSON.parse(value); } catch { return null; } };
 
-/* A real drag, by mouse or by finger. */
-async function dragBetween(page, from, to, touch, { release = true, steps = 10 } = {}) {
-  if (touch) {
-    await page.touchscreen.touchStart(from.x, from.y);
-    for (let step = 1; step <= steps; step += 1) await page.touchscreen.touchMove(from.x + ((to.x - from.x) * step) / steps, from.y + ((to.y - from.y) * step) / steps);
-    if (release) await page.touchscreen.touchEnd();
-  } else {
-    await page.mouse.move(from.x, from.y);
-    await page.mouse.down();
-    await page.mouse.move(to.x, to.y, { steps });
-    if (release) await page.mouse.up();
-  }
-  await wait(190);
-}
-/* Connect two nodes the way a visitor does: with a mouse, drag the output
- * port onto the target; with a finger, tap the port and then the target. */
-async function connect(page, from, to, touch) {
-  if (touch) {
-    const port = await at(page, outPort(from));
-    await page.touchscreen.tap(port.x, port.y); await wait(140);
-    const target = await at(page, body(to));
-    await page.touchscreen.tap(target.x, target.y); await wait(190);
-    return;
-  }
-  await dragBetween(page, await at(page, outPort(from)), await at(page, body(to)), false);
-}
-async function addNode(page, type, touch) {
-  /* A phone keeps the library in a sheet; a tablet shows it as a rail. */
-  const inReach = await page.evaluate(() => Boolean(document.querySelector("[data-ai-add-node]")?.getClientRects().length));
-  if (touch && !inReach) { await press(page, '[data-afp-sheet="library"]'); await wait(260); }
-  if (touch) {
-    /* The sheet scrolls: bring the entry under the finger first. */
-    await page.evaluate((target) => document.querySelector(target).scrollIntoView({ block: "center", behavior: "instant" }), `[data-ai-add-node="${type}"]`); await wait(120);
-    const button = await at(page, `[data-ai-add-node="${type}"]`); await page.touchscreen.tap(button.x, button.y); await wait(240);
-  } else await press(page, `[data-ai-add-node="${type}"]`);
-}
-/* On a small screen, zoom out until the whole flow is under the finger. */
-async function reach(page) {
-  await press(page, '[data-afp-zoom="out"]'); await press(page, '[data-afp-zoom="out"]'); await press(page, '[data-afp-zoom="out"]');
-  await page.evaluate(() => { const api = window.KaanFlowPuzzle; const middle = document.querySelector('.ai-flow-node[data-type="condition"], .ai-flow-node[data-type="router"], .ai-flow-node[data-type="crm"]'); if (middle) api.focusNode(middle.dataset.nodeId); document.activeElement?.blur(); });
-  await wait(220);
-}
-/* Lay the flow out and bring all of it into reach of the pointer. */
-async function tidy(page, touch) {
-  await press(page, "[data-ai-arrange]");
-  if (touch) await reach(page);
-  await wait(260);
-}
-/* Build a level's whole flow by hand. `skip` leaves connections out. */
-async function buildLevel(page, level, touch, skip = []) {
-  for (const type of level.add) await addNode(page, type, touch);
-  await tidy(page, touch);
-  for (const [from, to] of level.edges) if (!skip.some(([a, b]) => a === from && b === to)) await connect(page, from, to, touch);
-  await press(page, '[data-afp-zoom="fit"]');
-  await wait(200);
-}
-async function runFlow(page, touch) {
-  await press(page, touch ? "[data-afp-run]" : "[data-ai-run]");
-}
+/* Test-browser preparation, run before the page's own scripts. The engine's
+ * own events are recorded. The display's frames can be held, so that for a
+ * while the test is the game's only clock (window.KaanCareerAdventure.tick is
+ * the very function a frame calls); released, the game runs on the browser's
+ * frames as it does for a visitor. Nothing in the page is replaced. */
+const instrument = (page) => page.evaluateOnNewDocument(() => {
+  const qa = (window.__qa = { merges: [], ends: [], milestones: [], states: [], frames: 0, held: false, waiting: [], cursor: 0, long: 0 });
+  document.addEventListener("adventure:merge", (event) => qa.merges.push({ ...event.detail, step: window.KaanCareerAdventure.run()?.steps }));
+  document.addEventListener("adventure:end", (event) => qa.ends.push(JSON.parse(JSON.stringify(event.detail))));
+  document.addEventListener("adventure:milestone", (event) => qa.milestones.push({ ...event.detail }));
+  document.addEventListener("adventure:state", (event) => qa.states.push(event.detail.phase));
+  const frame = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = (callback) => {
+    if (qa.held) { qa.waiting.push(callback); return -1; }
+    return frame((now) => { qa.frames += 1; callback(now); });
+  };
+  const api = () => window.KaanCareerAdventure;
+  const STEP = 1000 / 120;
+  qa.hold = (on) => { qa.held = on; if (!on) qa.waiting.splice(0).forEach((callback) => frame(callback)); };
+  /* The next run starts from this seed: the engine draws it from Math.random once. */
+  qa.seed = (seed) => { const random = Math.random; Math.random = () => { Math.random = random; return (seed + 0.5) / 0xffffffff; }; };
+  qa.frame = (count = 1, ms = 1000 / 60) => { for (let i = 0; i < count; i += 1) api().tick(ms); return api().state(); };
+  /* Replays the recorded run, one step of the simulation at a time, up to
+   * `upTo` drops; it can stop early on the first merge that asks for it. */
+  qa.replay = (recording, upTo, stop = {}) => {
+    const game = api();
+    while (qa.cursor < Math.min(upTo, recording.drops.length)) {
+      const [step, x] = recording.drops[qa.cursor];
+      while (game.run().steps < step) {
+        const seen = qa.merges.length;
+        game.tick(STEP);
+        const made = qa.merges.slice(seen);
+        if (stop.chain && made.some((merge) => merge.chain >= stop.chain)) return { stopped: "chain", drop: qa.cursor, merge: made.find((merge) => merge.chain >= stop.chain) };
+        if (stop.single && made.some((merge) => merge.chain === 1 && merge.level >= stop.single) && made.length === 1) return { stopped: "merge", drop: qa.cursor, merge: made[0] };
+        if (stop.pressure && game.state().pressure >= stop.pressure) return { stopped: "pressure", drop: qa.cursor, pressure: game.state().pressure };
+        if (game.state().phase !== "playing") return { stopped: game.state().phase, drop: qa.cursor };
+      }
+      game.aim(x);
+      if (!game.drop()) return { stopped: "refused", drop: qa.cursor, steps: game.run().steps, wanted: step };
+      qa.cursor += 1;
+    }
+    return { stopped: null, drop: qa.cursor, state: game.state() };
+  };
+  /* Every drop into one place, as fast as the dropper allows, until the run ends. */
+  qa.spam = (x, limit = 400, until = null) => {
+    const game = api();
+    let firstAbove = null, recovered = 0, above = false;
+    while (game.state().phase === "playing" && game.run().drops < limit) {
+      game.aim(typeof x === "function" ? x(game.run().drops) : x);
+      game.drop();
+      game.tick(STEP);
+      const now = game.run().dangerTimer > 0;
+      if (now && firstAbove === null) firstAbove = game.run().steps;
+      if (above && !now) recovered += 1;
+      above = now;
+      if (until && until(game)) break;
+    }
+    return { state: game.state(), firstAbove, recovered, steps: game.run().steps };
+  };
+  /* The strategies that never look at the board, played on the simulation the
+   * page shipped, with the rules checked at every step:
+   *   - a dropped object never appears inside another
+   *   - two of the same object in contact have merged by the next step
+   *   - an object merges once, and the score is exactly the merges' points
+   *   - nothing leaves the chamber
+   *   - a run ends only after the full grace above the line */
+  qa.strategies = (name, games) => {
+    const S = api().Sim, CFG = S.CFG, LEVELS = S.LEVELS, LAST = S.LAST;
+    const pickers = {
+      centre: () => () => CFG.W / 2,
+      left: () => () => 0,
+      alternate: () => { let n = 0; return () => (n++ % 2 ? CFG.W : 0); },
+      random: (seed) => { let a = seed * 7919 + 13; const next = () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; }; return () => next() * CFG.W; },
+      bad: () => (sim) => {
+        const same = sim.bodies.filter((body) => body.level === sim.held);
+        if (!same.length) return sim.drops % 2 ? CFG.W : 0;
+        let best = 0, far = -1;
+        for (let x = 0; x <= CFG.W; x += 20) { const distance = Math.min(...same.map((body) => Math.abs(body.x - x))); if (distance > far) { far = distance; best = x; } }
+        return best;
+      },
+    };
+    const out = { runs: games, won: 0, over: 0, drops: [], scores: [], highest: [], maxBodies: 0, recoveries: 0, violations: { spawnOverlap: 0, lingeringTwins: 0, mergedTwice: 0, scoreMismatch: 0, countMismatch: 0, outside: 0, earlyOver: 0, notANumber: 0 } };
+    for (let game = 0; game < games; game += 1) {
+      const sim = S.create(1000 + game * 37);
+      const choose = pickers[name](1000 + game * 37);
+      const merged = new Set();
+      let points = 0, above = false, touching = new Set();
+      const step = () => {
+        S.step(sim);
+        for (const event of sim.events) if (event.type === "merge") { points += event.points; for (const source of event.from) { if (merged.has(source.id)) out.violations.mergedTwice += 1; merged.add(source.id); } }
+        sim.events.length = 0;
+        const now = sim.dangerTimer > 0;
+        if (above && !now && !sim.over) out.recoveries += 1;
+        above = now;
+        if (sim.over || sim.won) return;
+        const list = sim.bodies;
+        if (list.length > out.maxBodies) out.maxBodies = list.length;
+        /* An object made by a merge may be born touching its twin; they merge on the next step. A pair still in contact a step later has lingered. */
+        const now2 = new Set();
+        for (let i = 0; i < list.length; i += 1) {
+          const p = list[i];
+          if (!(p.x === p.x && p.y === p.y)) out.violations.notANumber += 1;
+          if (p.x < p.r - 0.5 || p.x > CFG.W - p.r + 0.5 || p.y > CFG.H - p.r + 0.5) out.violations.outside += 1;
+          if (p.level >= LAST) continue;
+          for (let j = i + 1; j < list.length; j += 1) {
+            const q = list[j];
+            if (q.level !== p.level || Math.hypot(p.x - q.x, p.y - q.y) > p.r + q.r) continue;
+            const pair = p.id < q.id ? p.id * 65536 + q.id : q.id * 65536 + p.id;
+            if (touching.has(pair)) out.violations.lingeringTwins += 1;
+            now2.add(pair);
+          }
+        }
+        touching = now2;
+      };
+      let waited = 0;
+      while (!sim.over && !sim.won && sim.drops < 700 && waited < 400) {
+        if (S.drop(sim, choose(sim))) {
+          waited = 0;
+          const fresh = sim.bodies[sim.bodies.length - 1];
+          for (const other of sim.bodies) if (other !== fresh && Math.hypot(other.x - fresh.x, other.y - fresh.y) < other.r + fresh.r - 1e-6) out.violations.spawnOverlap += 1;
+          for (let i = 0; i < CFG.COOLDOWN + 6 && !sim.over && !sim.won; i += 1) step();
+        } else { for (let i = 0; i < 6; i += 1) step(); waited += 1; }
+      }
+      if (sim.over) { out.over += 1; out.drops.push(sim.drops); }
+      if (sim.won) out.won += 1;
+      if (points !== sim.score) out.violations.scoreMismatch += 1;
+      if (sim.bodies.length !== sim.drops - sim.merges) out.violations.countMismatch += 1;
+      out.scores.push(sim.score);
+      out.highest.push(sim.highest);
+    }
+    const middle = (list) => { const sorted = [...list].sort((a, b) => a - b); return sorted.length ? sorted[Math.floor(sorted.length / 2)] : null; };
+    return { strategy: name, runs: out.runs, won: out.won, over: out.over, medianDropsToOver: middle(out.drops), fewestDropsToOver: out.drops.length ? Math.min(...out.drops) : null, medianScore: middle(out.scores), medianFurthest: LEVELS[middle(out.highest)].id, bestFurthest: LEVELS[Math.max(...out.highest)].id, maxBodies: out.maxBodies, recoveries: out.recoveries, violations: out.violations };
+  };
+  /* A crowd: `count` small objects let go at once. How long does a step take,
+   * and does everything stay inside the glass? */
+  qa.crowd = (count) => {
+    const S = api().Sim, CFG = S.CFG;
+    const sim = S.create(99);
+    S.drop(sim, 40);
+    const seedBody = sim.bodies[0];
+    sim.bodies.length = 0;
+    for (let i = 0; i < count; i += 1) {
+      const level = i % 4, r = S.LEVELS[level].r, mass = (r * r) / 400;
+      sim.bodies.push({ ...seedBody, id: 1000 + i, level, r, R: r, im: 1 / mass, ii: 2 / (mass * r * r), x: 30 + (i % 9) * 47 + ((i / 9) | 0) % 2 * 20, y: -60 - ((i / 9) | 0) * 62, px: 0, py: 0, vx: 0, vy: 0, w: 0, a: 0, landed: 0, held: 0, grow: 0, merged: false });
+    }
+    sim.nextId = 5000;
+    let worst = 0, total = 0, peak = sim.bodies.length, merges = 0, outside = 0, burst = 0;
+    const steps = 720;
+    for (let i = 0; i < steps; i += 1) {
+      const before = performance.now();
+      S.step(sim);
+      const took = performance.now() - before;
+      total += took; if (took > worst) worst = took;
+      const made = sim.events.filter((event) => event.type === "merge").length;
+      if (made > burst) burst = made;
+      merges += made; sim.events.length = 0;
+      /* this crowd is poured in from above the line on purpose: only the physics is under test */
+      sim.over = false; sim.dangerTimer = 0;
+    }
+    for (const body of sim.bodies) if (!(body.x === body.x) || body.x < body.r - 0.5 || body.x > CFG.W - body.r + 0.5 || body.y > CFG.H - body.r + 0.5) outside += 1;
+    return { started: peak, left: sim.bodies.length, merges, mostMergesInOneStep: burst, meanStepMs: Math.round((total / steps) * 1000) / 1000, worstStepMs: Math.round(worst * 100) / 100, outside };
+  };
+  new PerformanceObserver((list) => { qa.long += list.getEntries().length; }).observe({ type: "longtask" });
+});
 
-const PROGRESS_KEY = "kaan-ai-flow-puzzle-progress-v3";
-const game = (page) => page.evaluate((key) => {
+/* Everything a check may want to know about the game's shell, as it is shown. */
+const game = (page) => page.evaluate((key, legacy) => {
   const html = document.documentElement;
-  const root = document.querySelector("[data-afp-root]");
+  const root = document.querySelector("[data-ca-root]");
   const shown = (entry) => Boolean(entry && entry.getClientRects().length && getComputedStyle(entry).visibility !== "hidden");
   const box = (entry) => { const rect = entry.getBoundingClientRect(); return { left: Math.round(rect.left), top: Math.round(rect.top), right: Math.round(rect.right), bottom: Math.round(rect.bottom), width: Math.round(rect.width), height: Math.round(rect.height) }; };
   const text = (entry) => entry?.textContent.replace(/\s+/g, " ").trim() || "";
-  const api = window.KaanFlowPuzzle;
-  const board = document.querySelector("[data-ai-board]");
-  const typeOf = Object.fromEntries([...board.querySelectorAll(".ai-flow-node")].map((entry) => [entry.dataset.nodeId, entry.dataset.type]));
-  const live = (entry) => !entry.closest("[inert]");
-  const fixed = [...root.querySelectorAll(".afp-bar button, .afp-dock button, .afp-zoom button, .ai-puzzle-actions .btn, .afp-actions button, .afp-tabs button, .afp-selbar button, .afp-menu button, .afp-menu a")].filter(shown).filter(live);
+  const api = window.KaanCareerAdventure || null;
+  const view = api ? api.view() : null;
+  const layer = [...document.querySelectorAll("[data-ca-layer]")].find((entry) => !entry.hidden) || null;
+  const cards = [...root.querySelectorAll(".ca-hud .ca-card")].filter(shown);
+  /* The column the engine drew the chamber in, from the rim's headroom down to the plinth. */
+  const column = view ? { left: view.x - 6, right: view.x + view.width + 6, top: view.y - 160 * view.scale, bottom: view.y + view.height + 30 * view.scale } : null;
+  const hits = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
   const inView = (entry) => { const rect = entry.getBoundingClientRect(); return rect.left >= -1 && rect.top >= -1 && rect.right <= innerWidth + 1 && rect.bottom <= innerHeight + 1; };
-  const bar = [...root.querySelectorAll(".afp-bar > *, .ai-puzzle-topbar h2, .ai-puzzle-stats, .ai-puzzle-actions .btn")].filter(shown).map(box);
-  const mission = root.querySelector(".afp-mission");
-  const result = root.querySelector(".afp-result");
-  const note = root.querySelector("[data-afp-note]");
-  const world = board.querySelector("[data-ai-world]");
-  const port = board.querySelector(".ai-flow-port-out");
+  const controls = [...root.querySelectorAll(".ca-hud button")].filter(shown);
+  const layerControls = layer ? [...layer.querySelectorAll("button, a, input")].filter(shown) : [];
+  const cardBoxes = cards.map(box);
+  const focus = document.activeElement;
   return {
-    phase: html.getAttribute("data-afp-state"),
-    sheet: html.getAttribute("data-afp-sheet"),
-    tab: html.getAttribute("data-afp-tab"),
-    rootShown: shown(root),
+    state: html.getAttribute("data-ca-state"),
+    layer: layer ? layer.getAttribute("data-ca-layer") : null,
+    engine: api ? api.state() : null,
+    view,
     rootBox: shown(root) ? box(root) : null,
-    overflow: html.scrollWidth - html.clientWidth,
-    pageScrolls: getComputedStyle(html).overflowY !== "hidden",
-    scrollY: Math.round(scrollY),
+    canvasBox: box(document.getElementById("career-merge-canvas")),
+    board: view ? { width: Math.round(view.width), height: Math.round(view.height), share: Math.round((view.width * view.height) / (innerWidth * innerHeight) * 100), widthShare: Math.round(view.width / innerWidth * 100) } : null,
+    hudShown: shown(root.querySelector(".ca-hud .ca-score")),
+    cardsOverBoard: column ? cards.filter((card) => hits(card.getBoundingClientRect(), column)).map((card) => card.className) : [],
+    cardsOverlap: cardBoxes.some((a, i) => cardBoxes.some((b, j) => j > i && hits(a, b))),
+    outOfView: [...cards, ...layerControls].filter((entry) => !inView(entry)).length,
+    smallTargets: controls.map(box).filter((item) => item.width < 44 || item.height < 44).length,
+    smallest: controls.length ? Math.min(...controls.map(box).map((item) => Math.min(item.width, item.height))) : null,
+    hud: {
+      score: text(root.querySelector("[data-ca-score]")), best: text(root.querySelector("[data-ca-best]")),
+      next: text(root.querySelector("[data-ca-next-name]")), nextLabel: text(root.querySelector(".ca-next > span")), nextDrawn: root.querySelector("[data-ca-next]").getAttribute("data-level"),
+      stage: text(root.querySelector("[data-ca-stage]")), stageName: text(root.querySelector("[data-ca-stage-name]")),
+      tools: Object.fromEntries([...root.querySelectorAll("[data-ca-tool]")].map((button) => [button.getAttribute("data-ca-tool"), { left: Number(text(button.querySelector("[data-ca-count]"))), disabled: button.disabled, label: text(button.querySelector("span")) }])),
+      path: [...root.querySelectorAll("[data-ca-path] li")].map((item) => ({ name: text(item), reached: item.classList.contains("is-reached"), current: item.classList.contains("is-current") })),
+      heat: Number(root.style.getPropertyValue("--ca-heat") || 0),
+      sound: root.querySelector("[data-ca-sound]").getAttribute("aria-pressed"),
+    },
+    panel: layer ? {
+      title: text(layer.querySelector("h2, strong")),
+      buttons: [...layer.querySelectorAll(".ca-list button, .ca-actions button")].filter(shown).map(text),
+      text: [...layer.querySelectorAll(".ca-panel p")].filter(shown).map(text),
+      stats: Object.fromEntries([...layer.querySelectorAll(".ca-stats div")].map((cell) => [text(cell.querySelector("dt")), text(cell.querySelector("dd"))])),
+      steps: [...layer.querySelectorAll(".ca-steps li")].map(text),
+      ladder: [...layer.querySelectorAll(".ca-ladder li")].map((item) => ({ name: text(item.querySelector("strong")), reached: item.classList.contains("is-reached"), milestone: item.classList.contains("is-milestone"), drawn: item.querySelector("canvas").getContext("2d").getImageData(56, 56, 1, 1).data[3] > 0 })),
+      settings: [...layer.querySelectorAll(".ca-row")].filter(shown).map((row) => ({ label: text(row.querySelector("span")), value: row.querySelector("input").type === "range" ? row.querySelector("input").value : row.querySelector("input").checked })),
+      themes: [...layer.querySelectorAll("[data-ca-theme]")].map((button) => ({ id: button.getAttribute("data-ca-theme"), name: text(button.querySelector("strong")), locked: button.disabled, active: button.getAttribute("aria-pressed") === "true", note: text(button.querySelector("small")) })),
+      languages: [...layer.querySelectorAll(".ca-langs a")].map((link) => ({ name: text(link), href: link.getAttribute("href"), current: link.getAttribute("aria-current") === "true" })),
+      fits: inView(layer.querySelector(".ca-panel")),
+      controlsInView: layerControls.every(inView),
+    } : null,
+    toast: shown(root.querySelector("[data-ca-toast]")) ? [...root.querySelectorAll("[data-ca-toast] > *")].map(text) : null,
+    focus: focus === root ? "board" : focus && focus !== document.body ? `${focus.tagName.toLowerCase()}${[...focus.attributes].filter((attribute) => /^data-ca-(play|resume|enter|reload|back|open|menu|exit|pause)$/.test(attribute.name)).map((attribute) => `[${attribute.name}${attribute.value ? `=${attribute.value}` : ""}]`).join("")}` : null,
+    focusInGame: Boolean(focus && root.contains(focus)),
     header: shown(document.querySelector(".site-header")),
     footer: shown(document.querySelector(".site-footer")),
     launcher: shown(document.querySelector(".chatbot-launcher")),
-    floats: [...document.querySelectorAll("body > :not(main):not(script)")].filter(shown).length,
-    inertOutside: [...document.body.children].filter((entry) => entry.tagName !== "MAIN" && entry.tagName !== "SCRIPT").every((entry) => entry.inert),
-    board: shown(board) ? { ...box(board), share: Math.round((board.getBoundingClientRect().width * board.getBoundingClientRect().height * 100) / (innerWidth * innerHeight)) } : null,
-    engine: api ? api.state() : null,
-    transform: world ? world.style.transform : null,
-    nodes: [...board.querySelectorAll(".ai-flow-node")].map((entry) => ({ type: entry.dataset.type, left: entry.style.left, top: entry.style.top, flagged: entry.classList.contains("is-flagged"), visited: entry.classList.contains("is-visited"), running: entry.classList.contains("is-running"), selected: entry.classList.contains("is-selected"), source: entry.classList.contains("is-source"), width: Math.round(entry.getBoundingClientRect().width) })),
-    links: [...document.querySelectorAll("[data-ai-lines] .ai-flow-link")].map((entry) => { const [from, to] = entry.getAttribute("data-link-key").split("->"); return { edge: `${typeOf[from]}>${typeOf[to]}`, live: entry.classList.contains("is-live"), done: entry.classList.contains("is-done"), selected: entry.classList.contains("is-selected") }; }),
-    status: { text: text(root.querySelector("[data-ai-flow-status] span")), tone: root.querySelector("[data-ai-flow-status]").dataset.tone || null },
-    score: Number(text(root.querySelector("[data-ai-score]"))),
-    hints: Number(text(root.querySelector("[data-afp-hints]"))),
-    level: text(root.querySelector("[data-afp-level]")),
-    title: text(root.querySelector("[data-ai-scenario-title]")),
-    note: shown(note) ? text(note) : null,
-    hinted: [...root.querySelectorAll(".ai-palette-node.is-hinted")].map((entry) => entry.getAttribute("data-ai-add-node")),
-    library: { shown: shown(root.querySelector("[data-ai-palette]")), groups: [...root.querySelectorAll(".ai-palette-group")].map((entry) => text(entry.querySelector(".ai-palette-group-title"))), nodes: root.querySelectorAll("[data-ai-add-node]").length },
-    panel: shown(root.querySelector(".ai-puzzle-side")) ? [...root.querySelectorAll(".ai-side-card")].filter(shown).length : 0,
-    dock: shown(root.querySelector(".afp-dock")),
-    selbar: shown(root.querySelector("[data-afp-selbar]")) ? [...root.querySelectorAll("[data-afp-selbar] button")].map(text) : null,
-    mission: shown(mission) ? { title: text(mission.querySelector("h2")), kicker: text(mission.querySelector(".afp-kicker")), scenario: text(mission.querySelector(".afp-brief section p")), input: text(mission.querySelector("blockquote")), expected: [...mission.querySelectorAll(".afp-expect li")].map(text), constraints: [...mission.querySelectorAll(".afp-chips li")].map(text), tip: text(mission.querySelector(".afp-sticky")), progress: text(mission.querySelector(".afp-card__count")), levels: [...mission.querySelectorAll(".afp-progress li")].map((entry) => ({ solved: entry.classList.contains("is-solved"), current: entry.classList.contains("is-current"), text: text(entry) })), start: text(mission.querySelector("[data-afp-start]")), back: text(mission.querySelector("[data-afp-leave]")), startInView: inView(mission.querySelector("[data-afp-start]")) } : null,
-    result: shown(result) ? { title: text(result.querySelector("h2")), lead: text(result.querySelector(".afp-verdict p")), issues: [...result.querySelectorAll(".afp-issues button")].map(text), outcomes: [...result.querySelectorAll(".afp-outcomes li")].map((entry) => ({ text: text(entry), reached: entry.classList.contains("is-ok") })), stats: [...result.querySelectorAll(".afp-stats div")].map((entry) => `${text(entry.querySelector("dt"))}: ${text(entry.querySelector("dd"))}`), meters: [...result.querySelectorAll(".afp-meters li")].map(text), total: text(result.querySelector(".afp-total")), assisted: text(result.querySelector(".afp-assisted")) || null, actions: [...result.querySelectorAll(".afp-actions button")].map(text), fits: (() => { const sheet = result.querySelector(".afp-sheet").getBoundingClientRect(); return sheet.left >= 0 && sheet.right <= innerWidth + 1; })(), actionsInView: [...result.querySelectorAll(".afp-actions button")].every(inView) } : null,
-    error: shown(root.querySelector("[data-afp-error]")) ? text(root.querySelector("[data-afp-error]")) : null,
-    smallest: fixed.length ? Math.round(Math.min(...fixed.map((entry) => Math.min(entry.getBoundingClientRect().width, entry.getBoundingClientRect().height)))) : null,
-    smallTargets: fixed.filter((entry) => Math.min(entry.getBoundingClientRect().width, entry.getBoundingClientRect().height) < 40).map((entry) => `${entry.tagName.toLowerCase()}${[...entry.attributes].filter((a) => a.name.startsWith("data-")).map((a) => `[${a.name}${a.value ? `=${a.value}` : ""}]`).join("")} ${Math.round(entry.getBoundingClientRect().width)}×${Math.round(entry.getBoundingClientRect().height)}`),
-    /* A port's touch area: its dot plus the invisible margin around it, at the board's zoom. */
-    portTarget: port ? (() => { const area = getComputedStyle(port, "::before"); const side = (name) => Math.abs(parseFloat(area[name])) || 0; return Math.round(Math.min(port.offsetWidth + side("left") + side("right"), port.offsetHeight + side("top") + side("bottom")) * (api ? api.state().zoom : 1)); })() : null,
-    portOverBody: port ? (() => { const bodyBox = port.parentElement.querySelector("[data-ai-node-body]").getBoundingClientRect(); const hit = document.elementFromPoint(bodyBox.left + bodyBox.width / 2, bodyBox.top + bodyBox.height / 2); return Boolean(hit && hit.closest(".ai-flow-port")); })() : null,
-    outOfView: fixed.filter((entry) => !inView(entry)).length,
-    barOverlap: bar.some((a, i) => bar.some((b, j) => j > i && a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1)),
-    focus: document.activeElement ? `${document.activeElement.tagName.toLowerCase()}${[...document.activeElement.attributes].filter((a) => /^data-a(fp|i)-/.test(a.name)).map((a) => `[${a.name}${a.value ? `=${a.value}` : ""}]`).join("")}` : null,
-    progress: localStorage.getItem(key),
-    legacyScore: localStorage.getItem("kaan-ai-flow-puzzle-score-v2"),
+    floats: [...document.body.children].filter((item) => item.tagName !== "MAIN" && item.tagName !== "SCRIPT" && shown(item)).length,
+    inertOutside: [...document.body.children].filter((item) => item.tagName !== "MAIN" && item.tagName !== "SCRIPT" && item.id !== "react-command-root").every((item) => item.inert),
+    pageScrolls: (() => { const before = scrollY; window.scrollBy(0, 200); const moved = scrollY !== before; window.scrollTo(0, before); return moved; })(),
+    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    scroll: Math.round(scrollY),
+    touchAction: getComputedStyle(document.getElementById("career-merge-canvas")).touchAction,
+    profile: localStorage.getItem(key),
+    legacyBest: localStorage.getItem(legacy),
   };
-}, PROGRESS_KEY);
+}, STORE, LEGACY_STORE);
 
-/* The portfolio page: the hub. */
-const hub = (page) => page.evaluate(() => {
-  const shown = (target) => Boolean(target && target.getClientRects().length);
+/* The portfolio page: the way in. */
+const intro = (page) => page.evaluate(() => {
+  const shown = (target) => Boolean(target && target.getClientRects().length && getComputedStyle(target).visibility !== "hidden");
   const text = (entry) => entry?.textContent.replace(/\s+/g, " ").trim() || "";
+  const canvas = document.getElementById("career-merge-canvas");
+  const painted = (() => { try { const g = canvas.getContext("2d"); const data = g.getImageData(0, 0, canvas.width, canvas.height).data; let ink = 0; for (let i = 3; i < data.length; i += 4 * 97) if (data[i] > 0) ink += 1; return ink; } catch (error) { return -1; } })();
   return {
     heading: text(document.querySelector("h1")),
-    by: text(document.querySelector(".afp-by span")),
-    play: shown(document.querySelector("[data-afp-play]")) ? text(document.querySelector("[data-afp-play]")) : null,
-    missions: text(document.querySelector(".afp-hub__head strong")),
-    progress: text(document.querySelector("[data-afp-progress]")),
-    cards: [...document.querySelectorAll("[data-afp-levels] .afp-level")].filter(shown).map((entry) => ({ title: text(entry.querySelector("strong")), difficulty: text(entry.querySelector(".afp-level__meta em")), size: text(entry.querySelector(".afp-level__meta span")), state: text(entry.querySelector(".afp-level__state")), solved: entry.classList.contains("is-solved"), height: Math.round(entry.getBoundingClientRect().height) })),
-    how: [...document.querySelectorAll(".afp-how li")].filter(shown).length,
-    workspaceInPage: shown(document.querySelector("[data-afp-root]")),
-    notice: shown(document.querySelector(".afp-noscript")) ? text(document.querySelector(".afp-noscript")) : null,
-    noticeLink: document.querySelector(".afp-noscript a")?.getAttribute("href") || null,
-    back: [...document.querySelectorAll(".ai-puzzle-hero a[href]")].filter(shown).map((link) => link.getAttribute("href")),
+    play: shown(document.querySelector(".ca-enter [data-ca-enter]")) ? text(document.querySelector(".ca-enter [data-ca-enter]")) : null,
+    poster: shown(document.querySelector(".ca-poster")),
+    record: shown(document.querySelector(".ca-enter [data-ca-record]")) ? text(document.querySelector(".ca-enter [data-ca-record]")) : null,
+    board: shown(canvas),
+    boardPainted: painted,
+    boardBackdrop: shown(document.querySelector(".adventure-canvas-wrap")) ? getComputedStyle(document.querySelector(".adventure-canvas-wrap")).backgroundImage !== "none" : null,
+    hud: shown(document.querySelector(".ca-hud")),
+    layers: shown(document.querySelector(".ca-layers")),
+    oldControls: shown(document.querySelector("[data-adventure-drop]")) || shown(document.querySelector(".adventure-stats")),
+    ladder: [...document.querySelectorAll("[data-merge-ladder] article")].filter(shown).map((item) => text(item.querySelector("strong"))),
+    notice: shown(document.querySelector(".ca-noscript")) ? text(document.querySelector(".ca-noscript")) : null,
+    noticeLinks: [...document.querySelectorAll(".ca-noscript a")].map((link) => link.getAttribute("href")),
     header: shown(document.querySelector(".site-header")),
+    footer: shown(document.querySelector(".site-footer")),
     launcher: shown(document.querySelector(".chatbot-launcher")),
-    phase: document.documentElement.getAttribute("data-afp-state"),
+    state: document.documentElement.getAttribute("data-ca-state"),
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    focus: document.activeElement?.getAttribute("data-afp-open") ?? (document.activeElement?.hasAttribute("data-afp-play") ? "play" : null),
+    focus: document.activeElement?.hasAttribute("data-ca-enter") ? "play" : null,
+    engineRunning: window.KaanCareerAdventure ? window.KaanCareerAdventure.view().running : null,
   };
 });
 
-/* Test-browser preparation, run before the page's own scripts: the engine's
- * own events are recorded, and downloads are kept instead of written to disk. */
-const instrument = (page) => page.evaluateOnNewDocument(() => {
-  window.__steps = [];
-  window.__results = [];
-  document.addEventListener("aiflow:run-step", (event) => window.__steps.push({ type: event.detail.type, via: event.detail.via }));
-  document.addEventListener("aiflow:result", (event) => window.__results.push(JSON.parse(JSON.stringify(event.detail))));
-  window.__exports = [];
-  URL.revokeObjectURL = () => {};
-  const click = HTMLAnchorElement.prototype.click;
-  HTMLAnchorElement.prototype.click = function (...args) { if (this.download) { window.__exports.push({ name: this.download, href: this.href }); return undefined; } return click.apply(this, args); };
-});
-const lastResult = (page) => page.evaluate(() => window.__results.at(-1) || null);
-const stored = (value) => { try { return JSON.parse(value); } catch { return null; } };
+const enter = async (page) => { await press(page, ".ca-enter [data-ca-enter]"); await stateIs(page, "menu"); await wait(350); };
+/* Play from the menu, on the browser's frames or with them held. */
+const start = async (page, { seed = null, hold = false } = {}) => {
+  await page.evaluate((seed, hold) => { window.__qa.cursor = 0; window.__qa.merges.length = 0; window.__qa.ends.length = 0; window.__qa.milestones.length = 0; if (hold) window.__qa.hold(true); if (seed !== null) window.__qa.seed(seed); }, seed, hold);
+  await press(page, ".ca-layer:not([hidden]) [data-ca-play]");
+  await stateIs(page, "playing");
+};
+const replay = (page, upTo = RECORDING.drops.length, stop = {}) => page.evaluate((recording, upTo, stop) => window.__qa.replay(recording, upTo, stop), RECORDING, upTo, stop);
+const frames = (page, count, ms) => page.evaluate((count, ms) => window.__qa.frame(count, ms), count, ms);
+const release = (page) => page.evaluate(() => window.__qa.hold(false));
+/* Runs the game's own clock until the run has ended and its result is up. */
+const toEnd = async (page, limit = 600) => { await page.evaluate((limit) => { const api = window.KaanCareerAdventure; for (let i = 0; i < limit && !["won", "over"].includes(api.state().phase); i += 1) api.tick(1000 / 60); }, limit); await wait(300); };
+/* One place, every drop: the run this loses is the game's real game over. */
+const lose = (page, x = 220) => page.evaluate((x) => window.__qa.spam(x), x);
 
-/* In contact-sheet order. `play` is a script of steps, run in order. */
+/* In contact-sheet order. Each `play` takes the page from the portfolio page to what the shot shows. */
 const shots = [
-  { name: "01-level-select.png", label: "Level select · 1440 × 900 · the page is the hub: the game's name, three missions with their size and state, how to play, Play", viewport: DESKTOP, theme: "dark", play: [] },
-  { name: "02-mission-briefing.png", label: "Mission briefing · scenario, the input message, what must reach End, the level's real constraints, one action", viewport: DESKTOP, theme: "dark", play: ["open"] },
-  { name: "03-workspace-empty.png", label: "Workspace, empty · the portfolio is gone: bar, node library by role, the board with the starter nodes, the panel on Mission", viewport: DESKTOP, theme: "dark", play: ["open", "start"] },
-  { name: "04-workspace-built.png", label: "Workspace, flow built · seven nodes wired port to port; wires take the colour of the node they leave", viewport: DESKTOP, theme: "dark", play: ["open", "start", "build"] },
-  { name: "05-run-flow.png", label: "Run flow, in progress · the signal crosses a wire into the next node; passed nodes and wires stay lit; the log fills", viewport: DESKTOP, theme: "dark", play: ["open", "start", "build", "run-mid"] },
-  { name: "06-failure.png", label: "Failure · a flow with its fallback branch left open: what went wrong (each line jumps to the node), expected vs. actual", viewport: DESKTOP, theme: "dark", play: ["open", "start", "build-open", "run-end"] },
-  { name: "07-failure-on-board.png", label: "Back on the board · the nodes the verdict named are flagged, and a hint is pinned as a note", viewport: DESKTOP, theme: "dark", play: ["open", "start", "build-open", "run-end", "resume", "hint"] },
-  { name: "08-success.png", label: "Success · the level's real quality score and its five parts, hints used, nodes used, total score", viewport: DESKTOP, theme: "dark", play: ["open", "start", "build", "run-end"] },
-  { name: "09-progression.png", label: "Progression · Next mission opens level 02's briefing with one of three solved and the best score kept", viewport: DESKTOP, theme: "dark", play: ["open", "start", "build", "run-end", "next"] },
-  { name: "10-mobile-workspace.png", label: "Mobile · 390 × 844 · the board is the screen: the flow runs top to bottom, ports sit on top and bottom, Run in the dock", viewport: MOBILE, theme: "dark", touch: true, play: ["open", "start", "build"] },
-  { name: "11-mobile-library.png", label: "Mobile · node library as a bottom sheet, grouped by role", viewport: MOBILE, theme: "dark", touch: true, play: ["open", "start", "library"] },
-  { name: "12-mobile-result.png", label: "Mobile · result", viewport: MOBILE, theme: "dark", touch: true, play: ["open", "start", "build", "run-end"] },
-  { name: "13-mobile-mission.png", label: "Mobile · mission briefing, Start mission kept in reach", viewport: MOBILE, theme: "dark", touch: true, play: ["open"] },
-  { name: "14-mobile-selection.png", label: "Mobile · a selected node: connect, inspect or remove without opening a panel", viewport: MOBILE, theme: "dark", touch: true, play: ["open", "start", "build", "select"] },
-  { name: "15-tablet-workspace.png", label: "Tablet · 820 × 1180 · library as an icon rail, panel as a drawer, dock", viewport: TABLET, theme: "dark", touch: true, play: ["open", "start", "build", "panel"] },
-  { name: "16-light-level-select.png", label: "Light theme · the hub is the same paper in either site theme", viewport: DESKTOP, theme: "light", play: [] },
-  { name: "17-mobile-level-select.png", label: "Mobile · level select", viewport: MOBILE, theme: "dark", touch: true, play: [] },
-  { name: "18-no-js.png", label: "Without JavaScript · a plain notice and the way to the case study; no Play, no empty board", viewport: DESKTOP, theme: "dark", noJs: true, play: [] },
-  { name: "19-engine-failure.png", label: "Engine failed to load (forced for this capture) · a recoverable state: Reload or Level select", viewport: DESKTOP, theme: "dark", fail: true, play: ["play"] },
+  { name: "01-main-menu.png", label: "Main menu · 1440 × 900 · the portfolio has stepped out: the room, the chamber with a still pile, Play, How to Play, Settings, Career Path, Exit", viewport: DESKTOP, play: async (page) => { await enter(page); } },
+  { name: "02-desktop-early-run.png", label: "Early run · the chamber is the hero; score and career path to its left, next object, tools and stage to its right; guide line and landing ring under the object in hand", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 9); await frames(page, 50); } },
+  { name: "03-desktop-mid-stack.png", label: "Mid-stack · the recorded run at drop 70: larger objects now, the dropper hands out HTML / CSS to Database", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 70); await frames(page, 50); } },
+  { name: "04-danger.png", label: "Danger · a stack that has stayed above the line: the line turns red and runs out as the grace does, the room warms at its edges, “Careful”", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: 3, hold: true }); await page.evaluate(() => window.__qa.spam(220, 400, (game) => game.run().dangerTimer > 110)); await frames(page, 2); } },
+  { name: "05-merge.png", label: "A merge · the two sources fold into the centre, a ring opens, the new object swells in, fragments in its colour, the points it earned", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 40); await replay(page, RECORDING.drops.length, { single: 5 }); await frames(page, 5); } },
+  { name: "06-chain-merge.png", label: "A chain · one merge sets off the next: “3× Career Combo”, each link worth a quarter more", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 30); await replay(page, RECORDING.drops.length, { chain: 3 }); await frames(page, 5); } },
+  { name: "07-job-offer.png", label: "Job Offer · two Interviews merge: the offer lit from behind, confetti, the run's last chain", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page); await page.evaluate(() => { const api = window.KaanCareerAdventure; for (let i = 0; i < 4000 && api.state().phase === "playing"; i += 1) api.tick(1000 / 120); }); await frames(page, 34); } },
+  { name: "08-victory.png", label: "Victory · score, best, furthest object, best chain, time; Play Again, Main Menu, Exit to Portfolio", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page); await toEnd(page, 4000); } },
+  { name: "09-game-over.png", label: "Game over · reached by dropping everything in one place: what the run came to, and no automatic restart", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: 3, hold: true }); await lose(page); await toEnd(page); } },
+  { name: "10-mobile-early-run.png", label: "Mobile · 390 × 844 · the chamber is the screen: pause and sound, score, next object above; tools and stage below", viewport: MOBILE, touch: true, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 9); await frames(page, 50); } },
+  { name: "11-mobile-high-stack.png", label: "Mobile · a high stack, the line close", viewport: MOBILE, touch: true, play: async (page) => { await enter(page); await start(page, { seed: 3, hold: true }); await page.evaluate(() => window.__qa.spam(220, 400, (game) => game.run().pressure > 0.5)); await frames(page, 30); } },
+  { name: "12-settings.png", label: "Settings · sound, volume, reduced effects, drop guide; environments with what unlocks them; the five languages", viewport: DESKTOP, play: async (page) => { await enter(page); await press(page, '[data-ca-layer="menu"] [data-ca-open="settings"]'); await wait(350); } },
+  { name: "13-career-path.png", label: "Career path · the merge ladder, all thirteen objects in order, milestones marked, how far this profile has come", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 70); await page.evaluate(() => window.KaanCareerAdventure.pause()); await wait(200); await press(page, '[data-ca-layer="pause"] [data-ca-menu]'); await wait(200); await press(page, '[data-ca-layer="menu"] [data-ca-open="progress"]'); await wait(350); } },
+  { name: "14-how-to-play.png", label: "How to play · four steps, the ladder as a strip, the two tools, the keys", viewport: DESKTOP, play: async (page) => { await enter(page); await press(page, '[data-ca-layer="menu"] [data-ca-open="how"]'); await wait(350); } },
+  { name: "15-pause.png", label: "Paused · Resume, Restart run, How to Play, Settings, Main Menu", viewport: DESKTOP, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 30); await frames(page, 40); await page.evaluate(() => window.KaanCareerAdventure.pause()); await wait(300); } },
+  { name: "16-city-night.png", label: "Environment: City Night · unlocked by reaching Python; only the room changes, never the physics", viewport: DESKTOP, profile: { highest: 9, theme: "city" }, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 46); await frames(page, 50); } },
+  { name: "17-ai-lab.png", label: "Environment: AI Lab · unlocked by reaching AI Flow", viewport: DESKTOP, profile: { highest: 9, theme: "lab" }, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 46); await frames(page, 50); } },
+  { name: "18-mobile-menu.png", label: "Mobile · main menu", viewport: MOBILE, touch: true, play: async (page) => { await enter(page); } },
+  { name: "19-mobile-game-over.png", label: "Mobile · game over", viewport: MOBILE, touch: true, play: async (page) => { await enter(page); await start(page, { seed: 3, hold: true }); await lose(page); await toEnd(page); } },
+  { name: "20-tablet.png", label: "Tablet · 820 × 1180", viewport: TABLET, touch: true, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 60); await frames(page, 50); } },
+  { name: "21-landscape-phone.png", label: "Phone on its side · 844 × 390 · the reduced layout: the chamber keeps its shape, the HUD keeps to the corners", viewport: LANDSCAPE, touch: true, play: async (page) => { await enter(page); await start(page, { seed: RECORDING.seed, hold: true }); await replay(page, 30); await frames(page, 50); } },
+  { name: "22-portfolio-page.png", label: "The portfolio page · the hero's Play action; nothing of the game is running", viewport: DESKTOP, play: async () => {} },
+  { name: "23-portfolio-page-board.png", label: "The portfolio page, further down · the board is a poster of the game; the merge ladder beside it", viewport: DESKTOP, play: async (page) => { await page.evaluate(() => { document.querySelector("#career-merge-game").scrollIntoView({ block: "start", behavior: "instant" }); window.scrollBy({ top: -90, behavior: "instant" }); }); await wait(900); } },
+  { name: "24-no-js.png", label: "Without JavaScript · a plain notice with the way to Games and Works; no Play, no empty board", viewport: DESKTOP, noJs: true, play: async () => {} },
+  { name: "25-engine-failure.png", label: "Engine failed to load (forced for this capture) · a recoverable state: Reload or Exit to Portfolio", viewport: DESKTOP, fail: true, play: async (page) => { await press(page, ".ca-enter [data-ca-enter]"); await wait(600); } },
 ];
-
-/* The steps a shot or a check can ask for. */
-async function play(page, steps, touch = false) {
-  const level = LEVELS[0];
-  for (const step of steps) {
-    if (step === "open") { await press(page, '[data-afp-open="0"]'); await wait(520); }
-    if (step === "play") { await press(page, "[data-afp-play]"); await wait(520); }
-    if (step === "start") { await press(page, "[data-afp-start]"); await wait(520); }
-    if (step === "build") await buildLevel(page, level, touch);
-    if (step === "build-open") await buildLevel(page, level, touch, [["condition", "fallback"], ["fallback", "end"]]);
-    if (step === "run-mid") { await runFlow(page, touch); await wait(1560); }
-    if (step === "run-end") { await runFlow(page, touch); await page.waitForFunction(() => ["success", "failure"].includes(document.documentElement.getAttribute("data-afp-state")), { timeout: 20000 }); await wait(650); }
-    if (step === "resume") { await press(page, "[data-afp-resume]"); await wait(300); }
-    if (step === "hint") { await press(page, touch ? '[data-afp-press="[data-ai-hint]"]' : "[data-ai-hint]"); await wait(420); }
-    if (step === "next") { await press(page, "[data-afp-next]"); await wait(520); }
-    if (step === "library") { await press(page, '[data-afp-sheet="library"]'); await wait(420); }
-    if (step === "panel") { await press(page, '[data-afp-sheet="side"]'); await wait(420); }
-    if (step === "select") { const target = await at(page, body("condition")); if (touch) await page.touchscreen.tap(target.x, target.y); else await page.mouse.click(target.x, target.y); await wait(320); }
-  }
-}
 
 let server = null;
 let browser = null;
@@ -515,16 +610,22 @@ try {
     }
   }
 
-  browser = await puppeteer.launch({ headless: true });
+  browser = await puppeteer.launch({ headless: true, protocolTimeout: 600_000 });
   const problems = [];
   const failures = [];
-  const expect = (label, condition) => { if (!condition) failures.push(label); };
+  const expect = (label, condition) => { if (!condition) { failures.push(label); console.log(`[v4:capture] FAILED · ${label}`); } };
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   /* Every page gets its own context, and so its own storage: no progress leaks between checks. */
   const fresh = async (options) => {
     const context = await browser.createBrowserContext();
-    const page = await open(context, { path: GAME, settle: 700, ...options, prepare: async (target) => { if (!options.noJs) await instrument(target); if (options.fail) await blockEngine(target); if (options.prepare) await options.prepare(target); } }, options.noJs || options.fail ? [] : problems);
-    if (!options.noJs && !options.fail) await page.waitForFunction(() => window.KaanFlowPuzzle && document.querySelector("[data-afp-levels] .afp-level"), { timeout: 20000 });
+    const page = await open(context, { path: GAME, settle: 700, theme: "dark", ...options, prepare: async (target) => {
+      if (!options.noJs) await instrument(target);
+      if (options.fail) await blockEngine(target);
+      /* A profile that has already come some way, for what only such a profile can show. */
+      if (options.profile) await target.evaluateOnNewDocument((key, profile) => localStorage.setItem(key, JSON.stringify({ v: 2, best: 0, highest: profile.highest, wins: 0, runs: 3, settings: { theme: profile.theme } })), STORE, options.profile);
+      if (options.prepare) await options.prepare(target);
+    } }, options.noJs || options.fail ? [] : problems);
+    if (!options.noJs && !options.fail) await page.waitForFunction(() => window.KaanCareerAdventure && document.querySelectorAll("[data-merge-ladder] article").length === 13, { timeout: 20000 });
     page.done = () => context.close();
     return page;
   };
@@ -532,7 +633,7 @@ try {
   /* ---------- screenshots ---------- */
   for (const shot of shots) {
     const page = await fresh(shot);
-    await play(page, shot.play, Boolean(shot.touch));
+    await shot.play(page);
     expect(`${shot.name}: no horizontal overflow`, (await overflow(page)) === 0);
     await page.screenshot({ path: join(OUTPUT, shot.name), type: "png" });
     console.log(`[v4:capture] ${shot.name}`);
@@ -540,435 +641,527 @@ try {
   }
 
   /* ---------- motion frames: one continuous session, one tab ---------- */
-  const frames = [];
-  const film = await fresh({ viewport: DESKTOP, theme: "dark" });
+  const filmFrames = [];
+  const film = await fresh({ viewport: DESKTOP });
   const frame = async (label) => {
-    const file = join(FRAMES, `${String(frames.length + 1).padStart(2, "0")}-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}.png`);
+    const file = join(FRAMES, `${String(filmFrames.length + 1).padStart(2, "0")}-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}.png`);
     await film.screenshot({ path: file, type: "png" });
-    frames.push({ file, label, width: 960 });
+    filmFrames.push({ file, label, width: 960 });
   };
-  { const card = await at(film, '[data-afp-open="0"]'); await film.mouse.move(card.x, card.y); await wait(260); }
-  await frame("Choose a level: the first mission lifts under the pointer");
-  await film.mouse.down(); await film.mouse.up(); await wait(120);
-  await frame("The briefing arrives: the portfolio steps out, the paper sheet rises");
-  await wait(520);
-  await frame("Briefing: scenario, input, expected output, constraints");
-  await press(film, "[data-afp-start]"); await wait(110);
-  await frame("Start mission: the workspace comes forward with the starter board");
+  { const cta = await at(film, ".ca-enter [data-ca-enter]"); await film.mouse.move(cta.x, cta.y); await wait(260); }
+  await frame("The portfolio page: Play Career Adventure under the pointer");
+  await film.mouse.down(); await film.mouse.up(); await wait(140);
+  await frame("Entering: the portfolio steps out and the menu arrives over the room");
   await wait(420);
-  for (const type of LEVELS[0].add) await addNode(film, type, false);
-  await tidy(film, false);
-  await connect(film, "trigger", "intent", false);
-  await dragBetween(film, await at(film, outPort("intent")), await at(film, body("condition")), false, { release: false });
-  await frame("Connect: a wire drawn from Intent Detector's port; the node under it takes the ring");
-  await film.mouse.up(); await wait(200);
-  for (const [from, to] of LEVELS[0].edges.slice(2, 5)) await connect(film, from, to, false);
-  await press(film, '[data-afp-zoom="fit"]'); await wait(200);
-  await frame("The main branch is wired; the fallback branch is still open");
-  await runFlow(film, false); await wait(820);
-  await frame("Run flow: the signal has left the trigger and is crossing the second wire");
-  await wait(1250);
-  await frame("Run flow: three steps on — passed wires and nodes stay lit, the log follows");
-  await phaseIs(film, "failure"); await wait(520);
-  await frame("Failure: the branch that never reached End, named and compared");
-  await press(film, "[data-afp-resume]"); await wait(350);
-  await frame("Retry: back on the board with the two nodes to connect flagged");
-  await connect(film, "condition", "fallback", false); await connect(film, "fallback", "end", false);
-  await runFlow(film, false); await phaseIs(film, "success"); await wait(560);
-  await frame("Success: the level's score, and the way to the next mission");
-  await press(film, "[data-afp-next]"); await wait(520);
-  await frame("Next: level 02's briefing, one of three solved");
+  await frame("Main menu");
+  await start(film, { seed: RECORDING.seed, hold: true });
+  await frames(film, 2);
+  await frame("Play: the HUD comes in around the chamber, a Book in hand");
+  { const box = (await game(film)).view; await film.mouse.move(box.x + RECORDING.drops[0][1] * box.scale, box.y + box.height * 0.5); await frames(film, 2); }
+  await frame("Aim: the object follows the pointer; a guide line and a ring show where it will land");
+  await replay(film, 1); await frames(film, 14);
+  await frame("Drop: the Book falls, the next object is already arriving in hand");
+  await frames(film, 30);
+  await frame("Landed");
+  await replay(film, RECORDING.drops.length, { single: 1 });
+  await frame("A merge, at contact: two of the same object fold together, a ring opens, the next object flashes in");
+  await frames(film, 5);
+  await frame("…five frames on: the new object swells, fragments fly, the points rise");
+  await frames(film, 30);
+  await frame("…and settles");
+  const chained = await replay(film, RECORDING.drops.length, { chain: 3 });
+  await frames(film, 5);
+  await frame("A chain: one merge sets off the next");
+  /* The same tab starts over and drops everything in one place. */
+  await film.evaluate(() => window.KaanCareerAdventure.pause()); await stateIs(film, "paused"); await wait(250);
+  await frame("Paused");
+  await film.evaluate((seed) => { window.__qa.cursor = 0; window.__qa.merges.length = 0; window.__qa.ends.length = 0; window.__qa.seed(seed); }, 3);
+  await press(film, '[data-ca-layer="pause"] [data-ca-play]'); await stateIs(film, "playing");
+  await film.evaluate(() => window.__qa.spam(220, 400, (game) => game.run().pressure > 0.45));
+  await frames(film, 20);
+  await frame("Restart, and everything into one place: the stack climbs toward the line");
+  await film.evaluate(() => window.__qa.spam(220, 400, (game) => game.run().dangerTimer > 130));
+  await frames(film, 2);
+  await frame("Danger: something has stayed above the line; the line runs out as the grace does");
+  await lose(film);
+  await frames(film, 20);
+  await frame("The run ends: the board dims");
+  await toEnd(film);
+  await frame("Game over: what the run came to; nothing restarts by itself");
+  const filmedOver = await game(film);
+  /* …and plays on, this time the recorded run, to the Job Offer. */
+  await film.evaluate((seed) => { window.__qa.cursor = 0; window.__qa.merges.length = 0; window.__qa.ends.length = 0; window.__qa.seed(seed); }, RECORDING.seed);
+  await press(film, '[data-ca-layer="over"] [data-ca-play]'); await stateIs(film, "playing");
+  await replay(film, 80); await frames(film, 40);
+  await frame("Try Again: a new run, played with care this time (the recorded run, at drop 80)");
+  await replay(film);
+  await film.evaluate(() => { const api = window.KaanCareerAdventure; for (let i = 0; i < 4000 && api.state().phase === "playing"; i += 1) api.tick(1000 / 120); });
+  await frames(film, 6);
+  await frame("Two Interviews touch: the Job Offer");
+  await frames(film, 40);
+  await frame("…lit from behind, confetti over the chamber");
+  await toEnd(film, 4000);
+  await frame("Victory");
   const filmed = await game(film);
-  expect("Motion session: fail, retry, solve and Next mission lead to level 02's briefing with level 01 solved", filmed.phase === "mission" && filmed.mission.levels[0].solved && filmed.mission.levels[1].current);
+  expect("Motion session: one tab plays into a chain, restarts, loses a run by dropping everything in one place, tries again, and reaches the Job Offer with the recorded run", chained.stopped === "chain" && filmedOver.state === "over" && filmed.state === "won" && filmed.engine.score === RECORDING.expect.score);
   await film.done();
 
-  /* ---------- hub, entering, mission ---------- */
+  /* ---------- the page, entering, the menu ---------- */
   const q = {};
   const en = JSON.parse(await readFile(join(ROOT, "data", "i18n", "messages", "en", "common.json"), "utf8"));
-  const desk = await fresh({ viewport: DESKTOP, theme: "dark" });
-  q.hub = await hub(desk);
-  expect("Hub: the page is the level select — the game's name and by-line, three missions each stating its size, progress at 0 of 3, how to play in three steps, and the workspace not in the page", q.hub.heading === "AI Flow Puzzle" && q.hub.by === en["aiFlow.game.by"] && q.hub.cards.length === 3 && q.hub.cards.every((card) => /^\d+ Nodes · \d+ Links$/.test(card.size) && !card.solved) && q.hub.progress.startsWith("0 of 3 solved") && q.hub.how === 3 && !q.hub.workspaceInPage && q.hub.header && q.hub.launcher && q.hub.back.includes("/games/"));
-  expect("Hub: difficulty is the level's stated size and nothing is locked — Standard, Advanced, Standard; all three open", same(q.hub.cards.map((card) => card.difficulty), ["Standard", "Advanced", "Standard"]));
+  const copy = (key) => en[`adventure.play.${key}`];
+  const desk = await fresh({ viewport: DESKTOP });
+  q.page = await intro(desk);
+  expect("Page: the portfolio-facing intro — the game's name, Play Career Adventure, the board as a painted poster with its own Play, the thirteen-rung ladder; no HUD, no layer, none of the old in-page controls; header, footer and AJOOP launcher present; the engine is not running", q.page.heading === "Kaan's Career Adventure" && q.page.play === copy("enter") && q.page.poster && q.page.board && q.page.boardPainted > 100 && !q.page.hud && !q.page.layers && !q.page.oldControls && same(q.page.ladder, LADDER) && q.page.header && q.page.footer && q.page.launcher && q.page.state === null && q.page.engineRunning === false && q.page.record === null);
   await desk.evaluate(() => window.scrollTo({ top: 60, behavior: "instant" })); await wait(250);
   q.scrollBefore = await desk.evaluate(() => Math.round(scrollY));
-  await desk.focus('[data-afp-open="0"]'); await desk.keyboard.press("Enter"); await wait(600);
-  q.mission = await game(desk);
-  expect("Entered by keyboard: the briefing fills the viewport, focus is on Start mission, and the page behind cannot scroll", q.mission.phase === "mission" && q.mission.rootBox.width === DESKTOP.width && q.mission.rootBox.height === DESKTOP.height && q.mission.focus === "button[data-afp-start]" && !q.mission.pageScrolls);
-  expect("Entered: the portfolio's header, footer, AJOOP launcher and floating controls are gone and inert", !q.mission.header && !q.mission.footer && !q.mission.launcher && q.mission.floats === 0 && q.mission.inertOutside);
-  expect("Briefing: level 01's title, its scenario, the test message as input, the two branches that must reach End, and its real constraints (7 nodes, 7 connections, hints counted)", q.mission.mission.title === "Joyday Reservation Bot" && q.mission.mission.kicker.startsWith("Level 01") && q.mission.mission.scenario.length > 40 && q.mission.mission.input.length > 10 && same(q.mission.mission.expected, ["Response reaches End", "Fallback reaches End"]) && same(q.mission.mission.constraints, ["7 required nodes", "7 required connections", en["aiFlow.game.mission.hints"]]) && q.mission.mission.start === en["aiFlow.game.mission.start"] && q.mission.mission.startInView);
-  await desk.keyboard.press("Enter"); await wait(600);
-  q.empty = await game(desk);
-  expect("Workspace: the board takes at least half the screen with the library and panel docked beside it; nothing scrolls the page; no bar control overlaps another", q.empty.phase === "building" && q.empty.board.share >= 50 && q.empty.board.width >= 800 && q.empty.overflow === 0 && !q.empty.pageScrolls && !q.empty.barOverlap && q.empty.outOfView === 0);
-  expect("Workspace: the starter board (trigger and end), the library's thirteen nodes in their seven existing roles, the panel on Mission, score 0, no hints used", same(q.empty.nodes.map((item) => item.type), ["trigger", "end"]) && q.empty.library.nodes === 13 && same(q.empty.library.groups, ["Input", "AI Logic", "Logic", "Data", "Output", "Safety", "Automation"]) && q.empty.tab === "mission" && q.empty.panel === 1 && q.empty.score === 0 && q.empty.hints === 0 && q.empty.level === "Level 01");
+  await desk.focus(".ca-enter [data-ca-enter]"); await desk.keyboard.press("Enter"); await stateIs(desk, "menu"); await wait(450);
+  q.menu = await game(desk);
+  expect("Entered by keyboard: the menu fills the viewport, focus is on Play, and the page behind cannot scroll", q.menu.state === "menu" && q.menu.layer === "menu" && q.menu.rootBox.width === DESKTOP.width && q.menu.rootBox.height === DESKTOP.height && q.menu.canvasBox.width === DESKTOP.width && q.menu.focus === "button[data-ca-play]" && !q.menu.pageScrolls);
+  expect("Entered: the portfolio's header, footer, AJOOP launcher and floating controls are gone and inert", !q.menu.header && !q.menu.footer && !q.menu.launcher && q.menu.floats === 0 && q.menu.inertOutside);
+  expect("Menu: the title, then Play, How to Play, Settings, Career Path and Exit to Portfolio — and nothing else; no HUD yet; the engine is at rest", q.menu.panel.title === "CareerAdventure" && same(q.menu.panel.buttons, [copy("menu.play"), copy("menu.how"), copy("menu.settings"), copy("menu.progress"), copy("menu.exit")]) && !q.menu.hudShown && q.menu.engine.phase === "idle" && q.menu.view.running === false);
+  q.menuIdle = await idleWork(desk, 3000);
+  q.menuFrames = await desk.evaluate(async () => { const before = window.__qa.frames; await new Promise((done) => setTimeout(done, 1500)); return window.__qa.frames - before; });
+  expect("Menu, idle: no animation frame is asked for and the main thread is quiet", q.menuFrames === 0 && q.menuIdle.longTasks === 0 && q.menuIdle.scriptMs <= 5);
 
-  /* ---------- add, drag, connect, reconnect, delete ---------- */
-  await addNode(desk, "intent", false);
-  { const from = await at(desk, '[data-ai-add-node="fallback"]'); const boardBox = q.empty.board; const drop = { x: boardBox.left + boardBox.width * 0.62, y: boardBox.top + boardBox.height * 0.72 }; await dragBetween(desk, from, drop, false, { steps: 14 }); q.dropped = { drop, landed: await at(desk, node("fallback")) }; }
-  q.added = await game(desk);
-  expect("Add: a library node is added with a click, and another carried onto the board lands under the pointer", same(q.added.nodes.map((item) => item.type), ["trigger", "end", "intent", "fallback"]) && Math.abs(q.dropped.landed.x - q.dropped.drop.x) < 6 && Math.abs(q.dropped.landed.y - q.dropped.drop.y) < 6);
-  { const from = await at(desk, body("intent")); await dragBetween(desk, from, { x: from.x - 90, y: from.y - 120 }, false); }
-  q.moved = await game(desk);
-  expect("Drag: a node follows the pointer", q.moved.nodes.find((item) => item.type === "intent").left !== q.added.nodes.find((item) => item.type === "intent").left && q.moved.nodes.find((item) => item.type === "intent").top !== q.added.nodes.find((item) => item.type === "intent").top);
-  await desk.mouse.click((await at(desk, body("intent"))).x, (await at(desk, body("intent"))).y); await wait(200);
-  q.selected = await game(desk);
-  expect("Select: clicking a node selects it and opens its inspector — it no longer arms a connection", q.selected.nodes.find((item) => item.type === "intent").selected && !q.selected.nodes.some((item) => item.source) && q.selected.tab === "node" && q.selected.links.length === 0);
-  await connect(desk, "trigger", "intent", false);
-  q.linked = await game(desk);
-  expect("Connect: dragging an output port onto a node makes the connection", same(q.linked.links.map((item) => item.edge), ["trigger>intent"]) && q.linked.status.tone === "success");
-  await connect(desk, "trigger", "intent", false);
-  q.duplicate = await game(desk);
-  await connect(desk, "intent", "trigger", false);
-  q.intoTrigger = await game(desk);
-  expect("Invalid connections are refused and said: a duplicate, and a wire into the trigger", q.duplicate.links.length === 1 && q.duplicate.status.tone === "warning" && q.intoTrigger.links.length === 1 && q.intoTrigger.status.tone === "warning" && q.intoTrigger.status.text === en["aiFlow.game.triggerInput"]);
-  q.endHasNoOutput = await desk.evaluate((selector) => document.querySelector(selector) === null, outPort("end"));
-  expect("Ports state the rule: the trigger has no input port and End has no output port", q.endHasNoOutput && (await desk.evaluate((selector) => document.querySelector(selector) === null, inPort("trigger"))));
-  await addNode(desk, "condition", false);
-  await connect(desk, "intent", "fallback", false);
-  await dragBetween(desk, await at(desk, inPort("fallback")), await at(desk, body("condition")), false);
-  q.rewired = await game(desk);
-  expect("Reconnect: a wire picked up at its target end and dropped on another node is rewired there", same(q.rewired.links.map((item) => item.edge).sort(), ["intent>condition", "trigger>intent"]));
-  { const from = await at(desk, inPort("condition")); await dragBetween(desk, from, { x: from.x - 40, y: from.y + 170 }, false); }
-  q.dropped2 = await game(desk);
-  expect("Delete by gesture: a wire picked up and let go over the empty board is removed", same(q.dropped2.links.map((item) => item.edge), ["trigger>intent"]));
-  await connect(desk, "intent", "condition", false);
-  { const label = await desk.evaluate(() => { const rect = document.querySelectorAll("[data-ai-lines] .ai-flow-link")[1].querySelector(".ai-flow-label rect").getBoundingClientRect(); return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }; }); await desk.mouse.click(label.x, label.y); await wait(200); }
-  q.wireSelected = await game(desk);
-  await desk.keyboard.press("Delete"); await wait(200);
-  q.wireDeleted = await game(desk);
-  expect("Delete by key: a wire is selected by clicking it and removed with Delete", q.wireSelected.links[1].selected && q.wireSelected.tab === "node" && same(q.wireDeleted.links.map((item) => item.edge), ["trigger>intent"]));
-  await desk.mouse.click((await at(desk, body("fallback"))).x, (await at(desk, body("fallback"))).y); await wait(160);
-  await desk.keyboard.press("Delete"); await wait(200);
-  q.nodeDeleted = await game(desk);
-  expect("Delete by key: the selected node goes, with focus still on the board", !q.nodeDeleted.nodes.some((item) => item.type === "fallback") && q.nodeDeleted.nodes.length === 4);
+  await press(desk, '[data-ca-layer="menu"] [data-ca-open="how"]'); await wait(300);
+  q.how = await game(desk);
+  expect("How to Play: four steps, the ladder as a strip of thirteen drawn objects, the tools, the keys; Back returns to the menu", q.how.layer === "how" && q.how.panel.steps.length === 4 && q.how.panel.steps[1] === copy("how.two") && q.how.panel.ladder.length === 13 && q.how.panel.ladder.every((rung) => rung.drawn) && q.how.panel.text.includes(copy("how.tools")) && q.how.panel.text.includes(copy("how.keys")) && q.how.panel.fits);
+  await desk.keyboard.press("Escape"); await wait(250);
+  q.howBack = (await game(desk)).layer;
+  await press(desk, '[data-ca-layer="menu"] [data-ca-open="progress"]'); await wait(300);
+  q.progress = await game(desk);
+  expect("Career Path: the thirteen objects in the ladder's order with their names, five milestones (HTML / CSS, Python, AI Flow, Portfolio, Interview), only the Book reached on a new profile, and the profile's numbers", q.progress.layer === "progress" && same(q.progress.panel.ladder.map((rung) => rung.name), LADDER) && same(q.progress.panel.ladder.filter((rung) => rung.milestone).map((rung) => rung.name), ["HTML / CSS", "Python", "AI Flow", "Portfolio", "Interview"]) && same(q.progress.panel.ladder.filter((rung) => rung.reached).map((rung) => rung.name), ["Book"]) && q.progress.panel.ladder.every((rung) => rung.drawn) && q.progress.panel.stats[copy("progress.best")] === "0" && q.progress.panel.stats[copy("progress.wins")] === "0");
+  await press(desk, ".ca-layer:not([hidden]) [data-ca-back]"); await wait(250);
+  await press(desk, '[data-ca-layer="menu"] [data-ca-open="settings"]'); await wait(300);
+  q.settings = await game(desk);
+  expect("Settings: only real ones — sound, volume, reduced effects, drop guide (vibration only on a device that can); three environments, two locked with what unlocks them; the five languages as links to the game in each", same(q.settings.panel.settings.map((row) => row.label), [copy("settings.sound"), copy("settings.volume"), copy("settings.reduced"), copy("settings.guide")]) && same(q.settings.panel.themes.map((theme) => [theme.id, theme.locked, theme.active]), [["study", false, true], ["city", true, false], ["lab", true, false]]) && q.settings.panel.themes[1].note === copy("settings.locked").replace("{object}", "Python") && q.settings.panel.themes[2].note === copy("settings.locked").replace("{object}", "AI Flow") && same(q.settings.panel.languages.map((item) => item.href), ["/adventure/#career-merge-game", "/tr/adventure/#career-merge-game", "/de/adventure/#career-merge-game", "/es/adventure/#career-merge-game", "/fr/adventure/#career-merge-game"]) && q.settings.panel.languages[0].current);
+  await desk.click('[data-ca-set="guide"]'); await wait(150);
+  await desk.evaluate(() => { const input = document.querySelector('[data-ca-set="volume"]'); input.value = "35"; input.dispatchEvent(new Event("input", { bubbles: true })); }); await wait(150);
+  q.settingsChanged = stored((await game(desk)).profile)?.settings;
+  expect("Settings: a switch and the volume are applied by the engine and kept", q.settingsChanged && q.settingsChanged.guide === false && q.settingsChanged.volume === 0.35 && q.settingsChanged.sound === true);
+  await desk.click('[data-ca-set="guide"]'); await wait(150);
+  await press(desk, ".ca-layer:not([hidden]) [data-ca-back]"); await wait(250);
+  expect("Layers: Escape and Back both return to the menu", q.howBack === "menu" && (await game(desk)).layer === "menu");
 
-  /* ---------- keyboard on the board ---------- */
-  await desk.focus(body("condition"));
-  const beforeKeys = (await game(desk)).nodes.find((item) => item.type === "condition");
-  await desk.keyboard.press("ArrowRight"); await desk.keyboard.press("ArrowDown"); await wait(120);
-  const afterKeys = (await game(desk)).nodes.find((item) => item.type === "condition");
-  await desk.focus(outPort("intent")); await desk.keyboard.press("Enter"); await wait(160);
-  q.armed = (await game(desk)).nodes.find((item) => item.type === "intent").source;
-  await desk.focus(body("condition")); await desk.keyboard.press("Enter"); await wait(200);
-  q.keyboard = { moved: beforeKeys.left !== afterKeys.left && beforeKeys.top !== afterKeys.top, armed: q.armed, links: (await game(desk)).links.map((item) => item.edge), focus: (await game(desk)).focus };
-  expect("Keyboard: arrow keys move the focused node; Enter on an output port arms it and Enter on a node connects — focus stays on the board throughout", q.keyboard.moved && q.keyboard.armed && same(q.keyboard.links.sort(), ["intent>condition", "trigger>intent"]) && q.keyboard.focus.startsWith("button[data-ai-node-body"));
-
-  /* ---------- pan, zoom, fit ---------- */
-  const viewOf = async () => { const state = await game(desk); return { transform: state.transform, zoom: Math.round(state.engine.zoom * 1000) / 1000, scrollY: state.scrollY }; };
-  q.view = { start: await viewOf() };
-  { const boardBox = q.empty.board; const from = { x: boardBox.left + boardBox.width * 0.5, y: boardBox.top + 60 }; await dragBetween(desk, from, { x: from.x + 140, y: from.y + 90 }, false); }
-  q.view.panned = await viewOf();
-  { const boardBox = q.empty.board; await desk.mouse.move(boardBox.left + boardBox.width / 2, boardBox.top + boardBox.height / 2); await desk.mouse.wheel({ deltaY: -360 }); await wait(200); }
-  q.view.wheeled = await viewOf();
-  await press(desk, '[data-afp-zoom="out"]'); q.view.out = await viewOf();
-  await press(desk, '[data-afp-zoom="in"]'); q.view.in = await viewOf();
-  await press(desk, '[data-afp-zoom="fit"]'); q.view.fit = await viewOf();
-  q.view.nodesInView = await desk.evaluate(() => { const board = document.querySelector("[data-ai-board]").getBoundingClientRect(); return [...document.querySelectorAll(".ai-flow-node")].every((entry) => { const rect = entry.getBoundingClientRect(); return rect.left >= board.left && rect.right <= board.right && rect.top >= board.top && rect.bottom <= board.bottom; }); });
-  expect("Pan and zoom: dragging the empty board pans it, the wheel and the buttons zoom, Fit brings every node back into view — and the page never scrolls", q.view.panned.transform !== q.view.start.transform && q.view.panned.zoom === q.view.start.zoom && q.view.wheeled.zoom > q.view.panned.zoom && q.view.out.zoom < q.view.wheeled.zoom && q.view.in.zoom > q.view.out.zoom && q.view.nodesInView && [q.view.panned, q.view.wheeled, q.view.fit].every((item) => item.scrollY === q.empty.scrollY));
-
-  /* ---------- Run flow on an unfinished board: failure that teaches ---------- */
-  await desk.evaluate(() => { window.__steps.length = 0; });
-  await runFlow(desk, false);
-  await wait(520);
-  q.runningPartial = await game(desk);
-  await phaseIs(desk, "failure"); await wait(300);
-  q.failure = { state: await game(desk), detail: await lastResult(desk), steps: await desk.evaluate(() => window.__steps.map((step) => step.type)) };
-  expect("Run flow on an unfinished board: the signal still travels the flow as built — trigger, Intent Detector, Condition — and stops where the connections stop", q.runningPartial.phase === "running" && same(q.failure.steps, ["trigger", "intent", "condition"]));
-  expect("Failure names what is really wrong with this board: the three nodes not added, End unreachable from the trigger, the flow stopping at Condition — and both closing branches shown as not reaching End", q.failure.state.phase === "failure" && !q.failure.detail.valid && same(q.failure.detail.issues.map((issue) => issue.kind), ["missingNode", "missingNode", "missingNode", "unreachable", "deadEnd"]) && same(q.failure.detail.issues.slice(0, 3).map((issue) => issue.type), ["sheet", "response", "fallback"]) && q.failure.state.result.issues.length === 5 && q.failure.state.result.issues[3].includes("End") && q.failure.state.result.issues[4].includes("Condition") && same(q.failure.state.result.outcomes.map((item) => item.reached), [false, false]) && q.failure.state.result.title === en["aiFlow.game.fail.title"]);
-  expect("Failure scores nothing: score 0 and no progress stored", q.failure.state.score === 0 && q.failure.state.progress === null && q.failure.detail.completion === null);
-  await press(desk, '[data-afp-issue="3"]'); await wait(300);
-  q.afterFailure = await game(desk);
-  expect("An issue line returns to the board with the nodes it names flagged, and focus on the first of them", q.afterFailure.phase === "building" && q.afterFailure.nodes.filter((item) => item.flagged).map((item) => item.type).sort().join() === "condition,end" && q.afterFailure.focus.startsWith("button[data-ai-node-body"));
-
-  /* ---------- hints ---------- */
-  await press(desk, "[data-ai-hint]"); await wait(300);
-  q.hint = await game(desk);
-  expect("Hint: names the next missing piece on a note, points at it in the library, and is counted", q.hint.hints === 1 && q.hint.engine.hints === 1 && same(q.hint.hinted, ["sheet"]) && q.hint.note.includes("Google Sheets"));
-  await addNode(desk, "sheet", false);
-  q.hintCleared = await game(desk);
-  expect("A hint that has been acted on leaves the board", q.hintCleared.note === null && q.hintCleared.hinted.length === 0);
-
-  /* ---------- finish level 01 by hand: run order, success, score ---------- */
-  await addNode(desk, "response", false); await addNode(desk, "fallback", false);
-  await tidy(desk, false);
-  for (const [from, to] of LEVELS[0].edges.slice(2)) await connect(desk, from, to, false);
-  await press(desk, '[data-afp-zoom="fit"]');
-  q.built = await game(desk);
-  expect("Level 01 built by hand: seven nodes and exactly the seven required connections", q.built.nodes.length === 7 && same(q.built.links.map((item) => item.edge).sort(), LEVELS[0].edges.map(([from, to]) => `${from}>${to}`).sort()));
-  await desk.evaluate(() => { window.__steps.length = 0; });
-  await runFlow(desk, false);
-  q.runSamples = [];
-  for (let index = 0; index < 9; index += 1) { await wait(330); const state = await game(desk); q.runSamples.push({ phase: state.phase, live: state.links.filter((item) => item.live).length, done: state.links.filter((item) => item.done).length, running: state.nodes.filter((item) => item.running).map((item) => item.type).join(), visited: state.nodes.filter((item) => item.visited).length }); }
-  await phaseIs(desk, "success"); await wait(300);
-  q.success = { state: await game(desk), detail: await lastResult(desk), steps: await desk.evaluate(() => window.__steps) };
-  const edgeOf = (key, state) => state.links.length && key;
-  expect("Run flow follows the real execution order: the steps are exactly the flow's depth-first order from the trigger, worked out independently from its connections", same(q.success.steps.map((step) => step.type), executionOrder(LEVELS[0].edges)) && q.success.steps[0].via === null && q.success.steps.slice(1).every((step) => typeof step.via === "string" && Boolean(edgeOf(step.via, q.success.state))));
-  expect("Run flow is visible while it happens: one wire or node lit at a time, passed ones staying lit and only ever growing", q.runSamples.filter((sample) => sample.phase === "running").length >= 5 && q.runSamples.some((sample) => sample.live === 1) && q.runSamples.some((sample) => sample.running) && q.runSamples.every((sample) => sample.live <= 1) && q.runSamples.every((sample, index) => index === 0 || sample.visited >= q.runSamples[index - 1].visited));
-  const award = (total) => Math.max(120, total * 4);
-  expect("Success shows the engine's own numbers: quality total out of 100 with its five parts, hints used, nodes used of required, and the award stored as the level's progress", q.success.state.phase === "success" && q.success.detail.valid && q.success.state.result.stats[0] === `Score: ${q.success.detail.quality.total}/100` && q.success.state.result.stats[1] === "Hints used: 1" && q.success.state.result.stats[2] === "Nodes: 7/7" && q.success.state.result.meters.length === 5 && q.success.detail.completion.award === award(q.success.detail.quality.total) && q.success.state.score === q.success.detail.completion.award && same(stored(q.success.state.progress), { levels: { joyday: { best: q.success.detail.quality.total, award: q.success.detail.completion.award } } }) && q.success.state.legacyScore === null && q.success.state.result.assisted === null);
-  expect("Success offers the next mission and a way back to the flow", same(q.success.state.result.actions, [en["aiFlow.game.win.next"], en["aiFlow.game.win.inspect"]]) && q.success.state.result.actionsInView);
-
-  /* ---------- negative control: repeated validation cannot inflate the score ---------- */
-  await press(desk, "[data-afp-resume]"); await wait(250);
-  q.repeat = { before: { score: q.success.state.score, progress: q.success.state.progress }, rounds: [] };
-  for (let round = 0; round < 3; round += 1) {
-    await press(desk, "[data-ai-validate]"); await phaseIs(desk, "success"); await wait(120);
-    const state = await game(desk); const detail = await lastResult(desk);
-    q.repeat.rounds.push({ how: "validate", score: state.score, progress: state.progress, improved: detail.completion.improved, shown: state.result.total });
-    await press(desk, "[data-afp-resume]"); await wait(160);
+  /* ---------- a run on the browser's own frames: pointer, keyboard, tools ---------- */
+  await start(desk, { seed: 11 });
+  await wait(250);
+  q.started = await game(desk);
+  expect("Play: the chamber is the hero of the screen and the HUD stands around it — no card over the chamber's column, none overlapping another, all in view; score 0, a Book in hand, stage 1 of 13, two Re-scopes and one Debug", q.started.state === "playing" && q.started.layer === null && q.started.hudShown && q.started.board.share >= 18 && q.started.board.height >= 600 && q.started.cardsOverBoard.length === 0 && !q.started.cardsOverlap && q.started.outOfView === 0 && q.started.overflow === 0 && q.started.hud.score === "0" && q.started.engine.held === 0 && q.started.hud.stage === copy("hud.stage").replace("{n}", "1").replace("{total}", "13") && q.started.hud.stageName === "Book" && q.started.hud.tools.swap.left === 2 && q.started.hud.tools.debug.left === 1 && q.started.focus === "board");
+  expect("HUD: the next object is named and drawn, the career path lists the thirteen objects with the Book current", q.started.hud.next === LADDER[q.started.engine.next] && q.started.hud.nextDrawn === String(q.started.engine.next) && same(q.started.hud.path.map((rung) => rung.name), LADDER) && q.started.hud.path[0].current && q.started.hud.path.filter((rung) => rung.reached).length === 1);
+  {
+    const box = q.started.view;
+    const targetX = box.x + box.width * 0.25;
+    await desk.mouse.move(targetX, box.y + box.height * 0.5); await wait(120);
+    q.pointerAim = (await game(desk)).view.aim;
+    await desk.mouse.down(); await desk.mouse.up(); await wait(900);
+    const after = await desk.evaluate(() => ({ drops: window.KaanCareerAdventure.run().drops, bodies: window.KaanCareerAdventure.run().bodies.map((body) => ({ x: body.x, y: body.y, landed: body.landed })) }));
+    q.pointer = { wanted: Math.round((targetX - box.x) / box.scale), aim: Math.round(q.pointerAim), drops: after.drops, landedAt: Math.round(after.bodies[0].x), rested: after.bodies[0].landed > 0 };
+    expect("Pointer: the object in hand follows the mouse; a click drops it, and it lands where it was aimed", Math.abs(q.pointer.aim - q.pointer.wanted) <= 1 && q.pointer.drops === 1 && Math.abs(q.pointer.landedAt - q.pointer.wanted) <= 6 && q.pointer.rested);
   }
-  await runFlow(desk, false); await phaseIs(desk, "success"); await wait(200);
-  { const state = await game(desk); const detail = await lastResult(desk); q.repeat.rounds.push({ how: "run", score: state.score, progress: state.progress, improved: detail.completion.improved, shown: state.result.total }); }
-  await press(desk, "[data-afp-resume]"); await wait(200);
-  /* A worse but still valid flow: three nodes it does not need cost efficiency. */
-  await addNode(desk, "llm", false); await addNode(desk, "kb", false); await addNode(desk, "router", false);
-  await press(desk, "[data-ai-validate]"); await phaseIs(desk, "success"); await wait(150);
-  { const state = await game(desk); const detail = await lastResult(desk); q.repeat.worse = { total: detail.quality.total, score: state.score, progress: state.progress, improved: detail.completion.improved }; }
-  await press(desk, "[data-afp-resume]"); await wait(200);
-  q.repeat.oldModelWouldBe = q.repeat.before.score + q.repeat.rounds.length * q.success.detail.completion.award + award(q.repeat.worse.total);
-  expect("Negative control: validating a finished level three more times, running it again, and validating a weaker version of it leave the score and the stored progress exactly as they were (the old running total would have reached " + q.repeat.oldModelWouldBe + ")", q.repeat.rounds.length === 4 && q.repeat.rounds.every((round) => round.score === q.repeat.before.score && round.progress === q.repeat.before.progress && round.improved === false) && q.repeat.worse.total < q.success.detail.quality.total && q.repeat.worse.score === q.repeat.before.score && q.repeat.worse.progress === q.repeat.before.progress && q.repeat.worse.improved === false && q.repeat.oldModelWouldBe > q.repeat.before.score);
-
-  /* ---------- export and import (kept engine features) ---------- */
-  await press(desk, '[data-afp-tab="tools"]');
-  await press(desk, "[data-ai-export]");
-  q.exported = await desk.evaluate(async () => { const item = window.__exports.at(-1); const flow = JSON.parse(await (await fetch(item.href)).text()); return { name: item.name, nodes: flow.nodes.length, links: flow.connections.length, scenario: flow.scenario, body: JSON.stringify(flow) }; });
-  await press(desk, "[data-ai-reset]"); await wait(200);
-  q.afterReset = (await game(desk)).nodes.length;
-  const importFile = join(OUTPUT, "flow-import.tmp.json");
-  await writeFile(importFile, q.exported.body, "utf8");
-  await (await desk.$("[data-ai-import-input]")).uploadFile(importFile);
-  await desk.waitForFunction(() => document.querySelectorAll(".ai-flow-node").length === 10, { timeout: 8000 }); await wait(250);
-  await rm(importFile);
-  q.imported = await game(desk);
-  delete q.exported.body;
-  expect("Export and import still work: the flow downloads as JSON, Reset restores the starter board, and the file imports back node for node", q.exported.name.endsWith(".json") && q.exported.nodes === 10 && q.exported.links === 7 && q.exported.scenario === "joyday" && q.afterReset === 2 && q.imported.nodes.length === 10 && q.imported.links.length === 7 && q.imported.score === q.repeat.before.score);
-
-  /* ---------- progression: levels 02 and 03, by hand ---------- */
-  await press(desk, "[data-ai-validate]"); await phaseIs(desk, "success"); await wait(150);
-  await press(desk, "[data-afp-next]"); await wait(520);
-  q.progression = await game(desk);
-  expect("Next mission: level 02's briefing, with level 01 shown solved at its best score and the count at 1 of 3", q.progression.phase === "mission" && q.progression.mission.title === "Enterprise Support Bot" && q.progression.mission.progress === "1 of 3 solved" && q.progression.mission.levels[0].solved && q.progression.mission.levels[0].text.includes(`Best ${q.success.detail.quality.total}/100`) && q.progression.mission.levels[1].current && same(q.progression.mission.constraints.slice(0, 2), ["9 required nodes", "10 required connections"]) && q.progression.mission.expected.length === 3);
-  q.levels = [{ id: "joyday", total: q.success.detail.quality.total, award: q.success.detail.completion.award, order: q.success.steps.map((step) => step.type) }];
-  for (const index of [1, 2]) {
-    const level = LEVELS[index];
-    await press(desk, "[data-afp-start]"); await wait(450);
-    const opened = await game(desk);
-    await buildLevel(desk, level, false);
-    await desk.evaluate(() => { window.__steps.length = 0; });
-    await runFlow(desk, false); await phaseIs(desk, "success", 30000); await wait(250);
-    const state = await game(desk); const detail = await lastResult(desk);
-    const steps = await desk.evaluate(() => window.__steps.map((step) => step.type));
-    q.levels.push({ id: level.id, starter: opened.nodes.map((item) => item.type), hintsAtStart: opened.hints, total: detail.quality.total, award: detail.completion.award, order: steps, outcomes: detail.outcomes, score: state.score, actions: state.result.actions });
-    expect(`Level 0${index + 1} (${level.id}): starts from a clean board with hints at 0, is solved by hand, runs in its own depth-first order, every closing branch reaches End, and adds its award once`, same(opened.nodes.map((item) => item.type), ["trigger", "end"]) && opened.hints === 0 && detail.valid && same(steps, executionOrder(level.edges)) && same(detail.outcomes.map((item) => [item.type, item.reached]), level.outcomes.map((type) => [type, true])) && detail.completion.award === award(detail.quality.total) && state.score === q.levels.reduce((sum, item) => sum + item.award, 0));
-    if (index === 1) { await press(desk, "[data-afp-next]"); await wait(450); }
+  {
+    const before = (await game(desk)).view.aim;
+    await desk.keyboard.down("ArrowRight"); await wait(320); await desk.keyboard.up("ArrowRight"); await wait(60);
+    const right = (await game(desk)).view.aim;
+    await desk.keyboard.down("a"); await wait(200); await desk.keyboard.up("a"); await wait(60);
+    const left = (await game(desk)).view.aim;
+    await desk.keyboard.press("Space"); await wait(700);
+    const afterSpace = await desk.evaluate(() => window.KaanCareerAdventure.run().drops);
+    await desk.keyboard.press("Enter"); await wait(700);
+    const afterEnter = await desk.evaluate(() => window.KaanCareerAdventure.run().drops);
+    q.keyboard = { aim: [Math.round(before), Math.round(right), Math.round(left)], drops: [afterSpace, afterEnter] };
+    expect("Keyboard: → and A move the aim while held, Space drops, Enter drops", right > before + 60 && left < right - 40 && afterSpace === 2 && afterEnter === 3);
   }
-  q.final = await game(desk);
-  expect("After the last level: all three are stored, the score is the sum of the three awards, and the result offers Level select instead of a next mission", Object.keys(stored(q.final.progress).levels).length === 3 && q.final.score === q.levels.reduce((sum, item) => sum + item.award, 0) && q.final.result.actions[0] === en["aiFlow.game.levels"] && q.final.result.total.includes(en["aiFlow.game.win.allDone"]));
+  {
+    /* the tools: by key, then by their buttons */
+    await desk.evaluate(() => { const api = window.KaanCareerAdventure; let guard = 0; while (api.state().held === api.state().next && guard < 40) { api.aim(40 + guard * 9); api.drop(); for (let i = 0; i < 70; i += 1) api.tick(1000 / 120); guard += 1; } });
+    await desk.evaluate(() => { for (let i = 0; i < 240; i += 1) window.KaanCareerAdventure.tick(1000 / 120); window.__qa.hold(true); });
+    const before = (await game(desk)).engine;
+    await desk.keyboard.press("1"); await wait(120);
+    const swapped = (await game(desk));
+    const bodiesBefore = await desk.evaluate(() => window.KaanCareerAdventure.run().bodies.length);
+    const smallest = await desk.evaluate(() => { const target = window.KaanCareerAdventure.Sim.debugTarget(window.KaanCareerAdventure.run()); return target ? target.level : null; });
+    await desk.keyboard.press("2"); await wait(150);
+    const debugged = await game(desk);
+    const bodiesAfter = await desk.evaluate(() => ({ count: window.KaanCareerAdventure.run().bodies.length, levels: window.KaanCareerAdventure.run().bodies.map((body) => body.level) }));
+    q.tools = { before: [before.held, before.next, before.tools], swapped: [swapped.engine.held, swapped.engine.next, swapped.engine.tools], hudAfterSwap: swapped.hud.tools.swap.left, removed: bodiesBefore - bodiesAfter.count, removedLevel: smallest, debugLeft: debugged.engine.tools.debug, debugButtonDisabled: debugged.hud.tools.debug.disabled, score: [before.score, debugged.engine.score] };
+    expect("Re-scope (key 1): the object in hand and the next one change places, one use is spent, and the HUD says so", swapped.engine.held === before.next && swapped.engine.next === before.held && swapped.engine.tools.swap === before.tools.swap - 1 && swapped.hud.tools.swap.left === before.tools.swap - 1 && swapped.hud.next === LADDER[before.held]);
+    expect("Debug (key 2): exactly the smallest object in the chamber is taken out, one use is spent, it adds no points, and with none left its button is off", q.tools.removed === 1 && debugged.engine.tools.debug === before.tools.debug - 1 && debugged.engine.score === swapped.engine.score && (debugged.engine.tools.debug > 0 || debugged.hud.tools.debug.disabled));
+    const swapsLeft = debugged.engine.tools.swap;
+    if (swapsLeft > 0 && debugged.engine.held !== debugged.engine.next) {
+      const button = await at(desk, '[data-ca-tool="swap"]');
+      await desk.mouse.click(button.x, button.y); await wait(150);
+      const clicked = await game(desk);
+      q.tools.button = { swap: clicked.engine.tools.swap, focus: clicked.focus };
+      expect("Tools by their buttons: the Re-scope button does what its key does, and the board keeps the keyboard afterwards", clicked.engine.tools.swap === swapsLeft - 1 && clicked.engine.held === debugged.engine.next && clicked.focus === "board");
+    }
+    await release(desk);
+  }
+  {
+    /* pause: by key, by the tab going out of sight, by the button */
+    await desk.keyboard.press("p"); await stateIs(desk, "paused"); await wait(250);
+    q.paused = await game(desk);
+    const stepsAt = await desk.evaluate(() => window.KaanCareerAdventure.run().steps);
+    q.pausedFrames = await desk.evaluate(async () => { const before = window.__qa.frames; await new Promise((done) => setTimeout(done, 1200)); return window.__qa.frames - before; });
+    const stepsLater = await desk.evaluate(() => window.KaanCareerAdventure.run().steps);
+    expect("Pause (P): the pause layer with Resume, Restart run, How to Play, Settings and Main Menu, focus on Resume; the simulation does not advance and no frame is asked for", q.paused.state === "paused" && q.paused.layer === "pause" && same(q.paused.panel.buttons, [copy("pause.resume"), copy("pause.restart"), copy("menu.how"), copy("menu.settings"), copy("mainMenu")]) && q.paused.focus === "button[data-ca-resume]" && stepsLater === stepsAt && q.pausedFrames === 0);
+    await press(desk, '[data-ca-layer="pause"] [data-ca-open="how"]'); await wait(200);
+    await desk.keyboard.press("Escape"); await wait(200);
+    q.pauseSub = (await game(desk)).layer;
+    await desk.keyboard.press("Escape"); await stateIs(desk, "playing"); await wait(200);
+    q.resumed = await game(desk);
+    await desk.evaluate(() => { Object.defineProperty(document, "hidden", { configurable: true, get: () => true }); document.dispatchEvent(new Event("visibilitychange")); });
+    await stateIs(desk, "paused"); await wait(150);
+    q.hiddenPause = (await game(desk)).engine.phase;
+    await desk.evaluate(() => { delete document.hidden; });
+    await press(desk, '[data-ca-layer="pause"] [data-ca-resume]'); await stateIs(desk, "playing"); await wait(150);
+    expect("Pause: a layer opened from it returns to it; Escape resumes; a tab that goes out of sight pauses the run", q.pauseSub === "pause" && q.resumed.state === "playing" && q.resumed.layer === null && q.hiddenPause === "paused");
+    /* restart */
+    await desk.evaluate(() => window.KaanCareerAdventure.pause()); await stateIs(desk, "paused"); await wait(150);
+    await press(desk, '[data-ca-layer="pause"] [data-ca-play]'); await stateIs(desk, "playing"); await wait(250);
+    q.restarted = await desk.evaluate(() => ({ ...window.KaanCareerAdventure.state(), bodies: window.KaanCareerAdventure.run().bodies.length }));
+    expect("Restart run: score 0, nothing dropped, an empty chamber, a Book in hand, the tools back to two and one", q.restarted.phase === "playing" && q.restarted.score === 0 && q.restarted.drops === 0 && q.restarted.bodies === 0 && q.restarted.held === 0 && q.restarted.tools.swap === 2 && q.restarted.tools.debug === 1);
+  }
+  {
+    /* sound: the switch in the HUD, and that it only speaks after the visitor has acted */
+    const button = await at(desk, "[data-ca-sound]");
+    await desk.mouse.click(button.x, button.y); await wait(120);
+    const off = await game(desk);
+    await desk.mouse.click(button.x, button.y); await wait(120);
+    const on = await game(desk);
+    q.sound = { off: [off.hud.sound, stored(off.profile).settings.sound], on: [on.hud.sound, stored(on.profile).settings.sound] };
+    expect("Sound: the HUD switch turns it off and on, and the choice is kept", same(q.sound.off, ["false", false]) && same(q.sound.on, ["true", true]));
+  }
 
-  /* ---------- idle and active cost ---------- */
-  await press(desk, "[data-afp-resume]"); await wait(300);
-  await desk.evaluate(() => document.activeElement?.blur()); await wait(1500);
-  q.atRest = await motionState(desk);
-  q.idle = await idleWork(desk);
-  expect("Idle in the workspace: nothing animates and the main thread is quiet", q.atRest.running === 0 && q.atRest.endless === 0 && q.idle.longTasks === 0 && q.idle.scriptMs <= 5);
+  /* ---------- active cost, on the browser's frames ---------- */
   {
     const session = await desk.createCDPSession();
     await session.send("Performance.enable");
     const read = async () => Object.fromEntries((await session.send("Performance.getMetrics")).metrics.map((metric) => [metric.name, metric.value]));
-    await desk.evaluate(() => { window.__long = 0; window.__gaps = []; let last = performance.now(); const tick = (now) => { window.__gaps.push(now - last); last = now; if (window.__sampling) requestAnimationFrame(tick); }; window.__sampling = true; requestAnimationFrame(tick); new PerformanceObserver((list) => { window.__long += list.getEntries().length; }).observe({ type: "longtask" }); });
-    let before = await read();
+    await desk.evaluate(() => { window.__qa.long = 0; window.__gaps = []; let last = performance.now(); const tick = (now) => { window.__gaps.push(now - last); last = now; if (window.__sampling) requestAnimationFrame(tick); }; window.__sampling = true; requestAnimationFrame(tick); });
+    const before = await read();
     const started = Date.now();
-    await runFlow(desk, false); await phaseIs(desk, "success", 30000);
-    let after = await read();
-    q.runCost = { ms: Date.now() - started, scriptMs: Math.round((after.ScriptDuration - before.ScriptDuration) * 1000), taskMs: Math.round((after.TaskDuration - before.TaskDuration) * 1000), layouts: after.LayoutCount - before.LayoutCount, longTasks: await desk.evaluate(() => window.__long), worstFrameMs: Math.round(await desk.evaluate(() => Math.max(...window.__gaps.slice(2)))) };
-    await press(desk, "[data-afp-resume]"); await wait(300);
-    await desk.evaluate(() => { window.__long = 0; window.__gaps = []; });
-    before = await read();
-    { const from = await at(desk, body("crm")); await dragBetween(desk, from, { x: from.x + 220, y: from.y + 140 }, false, { steps: 60 }); }
-    after = await read();
-    q.dragCost = { moves: 60, scriptMs: Math.round((after.ScriptDuration - before.ScriptDuration) * 1000), layouts: after.LayoutCount - before.LayoutCount, longTasks: await desk.evaluate(() => window.__long), worstFrameMs: Math.round(await desk.evaluate(() => Math.max(...window.__gaps.slice(2)))) };
-    await desk.evaluate(() => { window.__sampling = false; });
+    /* twenty seconds of play: a drop every 450 ms across the chamber */
+    await desk.evaluate(async () => { const api = window.KaanCareerAdventure; for (let i = 0; i < 44 && api.state().phase === "playing"; i += 1) { api.aim(40 + ((i * 131) % 360)); api.drop(); await new Promise((done) => setTimeout(done, 450)); } });
+    const after = await read();
+    const gaps = await desk.evaluate(() => { window.__sampling = false; return window.__gaps.slice(2).sort((a, b) => a - b); });
+    q.playCost = { ms: Date.now() - started, scriptMs: Math.round((after.ScriptDuration - before.ScriptDuration) * 1000), taskMs: Math.round((after.TaskDuration - before.TaskDuration) * 1000), layouts: after.LayoutCount - before.LayoutCount, longTasks: await desk.evaluate(() => window.__qa.long), frames: gaps.length, medianFrameMs: Math.round(gaps[Math.floor(gaps.length / 2)] * 10) / 10, p95FrameMs: Math.round(gaps[Math.floor(gaps.length * 0.95)] * 10) / 10, worstFrameMs: Math.round(gaps.at(-1) * 10) / 10, merges: await desk.evaluate(() => window.__qa.merges.length), bodies: await desk.evaluate(() => window.KaanCareerAdventure.run().bodies.length) };
     await session.detach();
+    expect("Active cost: twenty seconds of ordinary play (a drop every 450 ms, merges and their effects) raise no long task", q.playCost.longTasks === 0 && q.playCost.merges > 10);
   }
-  expect("Active cost: a full Run flow and a 60-step node drag raise no long task", q.runCost.longTasks === 0 && q.dragCost.longTasks === 0);
-  await wait(900);
-  q.afterRun = await motionState(desk);
-  expect("After a run nothing is left animating", q.afterRun.running === 0 && q.afterRun.endless === 0);
 
-  /* ---------- leaving: level select, Back, exit, persistence ---------- */
-  await press(desk, "[data-afp-menu]"); await wait(200);
-  q.menu = await desk.evaluate(() => ({ items: [...document.querySelectorAll("[data-afp-menu-list] > *")].map((entry) => entry.textContent.trim()), exit: document.querySelector("[data-afp-menu-list] a").getAttribute("href"), expanded: document.querySelector("[data-afp-menu]").getAttribute("aria-expanded") }));
-  expect("Menu: Level select, the engine's arrange / reset / validate, and Exit to portfolio as a link to Games", q.menu.items.length === 5 && q.menu.items[0] === en["aiFlow.game.levels"] && q.menu.items[4] === en["aiFlow.game.exit"] && q.menu.exit === "/games/" && q.menu.expanded === "true");
-  await desk.keyboard.press("Escape"); await wait(150);
-  await press(desk, ".afp-bar [data-afp-leave]"); await wait(700);
-  q.left = { ...(await hub(desk)), scroll: await desk.evaluate(() => Math.round(scrollY)), inert: await desk.evaluate(() => [...document.body.children].filter((item) => item.inert && item.id !== "react-command-root").length) };
-  expect("Level select: the page is back as it was left — header, launcher, scroll position, focus on the mission card that was opened — with all three missions solved and the score shown", q.left.phase === null && q.left.header && q.left.launcher && q.left.scroll === q.scrollBefore && q.left.focus === "0" && q.left.cards.every((card) => card.solved && /Best \d+\/100/.test(card.state)) && q.left.progress.startsWith("3 of 3 solved") && q.left.progress.endsWith(String(q.final.score)) && q.left.inert === 0);
-  await press(desk, '[data-afp-open="2"]'); await wait(450); await press(desk, "[data-afp-start]"); await wait(400);
+  /* ---------- game over: reachable, real, and not restarted ---------- */
+  await desk.evaluate(() => window.KaanCareerAdventure.pause()); await stateIs(desk, "paused"); await wait(150);
+  await desk.evaluate((seed) => { window.__qa.hold(true); window.__qa.seed(seed); window.__qa.merges.length = 0; window.__qa.ends.length = 0; }, 3);
+  await press(desk, '[data-ca-layer="pause"] [data-ca-play]'); await stateIs(desk, "playing");
+  q.lost = await lose(desk);
+  const endingAt = await desk.evaluate(() => ({ phase: window.KaanCareerAdventure.state().phase, over: window.KaanCareerAdventure.run().over, steps: window.KaanCareerAdventure.run().steps, grace: window.KaanCareerAdventure.Sim.CFG.GRACE }));
+  await toEnd(desk);
+  q.over = await game(desk);
+  q.overEvent = await desk.evaluate(() => window.__qa.ends.at(-1));
+  expect("Game over is reachable: every drop into one place ends the run, and only after something has stayed above the line for the whole grace (2.2 s)", endingAt.over && q.lost.firstAbove !== null && endingAt.steps - q.lost.firstAbove >= endingAt.grace && q.overEvent && q.overEvent.won === false);
+  expect("Game over: the layer states score, best, furthest object, best chain and time, sums the run up in a sentence, and offers Try Again, Main Menu and Exit to Portfolio, with focus on Try Again", q.over.state === "over" && q.over.layer === "over" && q.over.panel.title === copy("over.title") && q.over.panel.stats[copy("stat.score")].startsWith(q.overEvent.score.toLocaleString("en")) && q.over.panel.stats[copy("progress.furthest")] === LADDER[q.overEvent.highest] && q.over.panel.stats[copy("stat.chain")] === `${q.overEvent.bestChain}×` && q.over.panel.text.some((line) => line === copy("over.summary").replace("{object}", LADDER[q.overEvent.highest]).replace("{merges}", String(q.overEvent.merges)).replace("{drops}", String(q.overEvent.drops))) && same(q.over.panel.buttons, [copy("over.retry"), copy("mainMenu"), copy("menu.exit")]) && q.over.focus === "button[data-ca-play]" && q.over.panel.fits);
+  await release(desk);
+  await wait(2600);
+  q.overLater = await game(desk);
+  q.overFrames = await desk.evaluate(async () => { const before = window.__qa.frames; await new Promise((done) => setTimeout(done, 1000)); return window.__qa.frames - before; });
+  expect("Game over stays: 2.6 s later it is the same screen with the same score — nothing restarts by itself — and the engine has stopped asking for frames", q.overLater.state === "over" && q.overLater.engine.score === q.over.engine.score && q.overLater.engine.phase === "over" && q.overFrames === 0);
+  q.afterOver = stored(q.overLater.profile);
+  expect("Persistence: the best score and the furthest object are kept under a versioned key, and the old key is neither read nor written", q.afterOver && q.afterOver.v === 2 && q.afterOver.best >= q.overEvent.score && q.afterOver.highest >= q.overEvent.highest && q.afterOver.wins === 0 && q.overLater.legacyBest === null);
+
+  /* ---------- victory: the recorded run, through the page's own clock ---------- */
+  await desk.evaluate((seed) => { window.__qa.hold(true); window.__qa.cursor = 0; window.__qa.merges.length = 0; window.__qa.ends.length = 0; window.__qa.milestones.length = 0; window.__qa.seed(seed); }, RECORDING.seed);
+  await press(desk, '[data-ca-layer="over"] [data-ca-play]'); await stateIs(desk, "playing");
+  q.replay = await replay(desk);
+  await desk.evaluate(() => { const api = window.KaanCareerAdventure; for (let i = 0; i < 4000 && api.state().phase === "playing"; i += 1) api.tick(1000 / 120); });
+  q.wonAt = await desk.evaluate(() => ({ phase: window.KaanCareerAdventure.state().phase, steps: window.KaanCareerAdventure.run().endedAt, score: window.KaanCareerAdventure.run().score, merges: window.KaanCareerAdventure.run().merges, drops: window.KaanCareerAdventure.run().drops, bestChain: window.KaanCareerAdventure.run().bestChain, effects: window.KaanCareerAdventure.view().effects }));
+  expect("Victory: the recorded run, replayed step for step through the page, creates the Job Offer at the same step with the same score, merges and best chain as the simulation run outside the browser — the game is one deterministic simulation", q.replay.stopped === null && q.wonAt.phase === "ending" && same([q.wonAt.steps, q.wonAt.score, q.wonAt.merges, q.wonAt.drops, q.wonAt.bestChain], [RECORDING.expect.steps, RECORDING.expect.score, RECORDING.expect.merges, RECORDING.expect.drops, RECORDING.expect.bestChain]));
+  q.milestones = await desk.evaluate(() => window.__qa.milestones.map((item) => [item.name, item.theme]));
+  expect("Milestones: HTML / CSS, Python, AI Flow, Portfolio and Interview are each announced once, in order; Python opens City Night and AI Flow opens AI Lab", same(q.milestones, [["HTML / CSS", null], ["Python", "city"], ["AI Flow", "lab"], ["Portfolio", null], ["Interview", null]]));
+  await frames(desk, 30);
+  q.celebration = await desk.evaluate(() => ({ phase: window.KaanCareerAdventure.state().phase, layer: [...document.querySelectorAll("[data-ca-layer]")].find((entry) => !entry.hidden)?.getAttribute("data-ca-layer") || null, effects: window.KaanCareerAdventure.view().effects }));
+  expect("Victory: the board keeps the moment first — half a second in, the offer is being celebrated on the canvas and no layer has covered it", q.celebration.phase === "ending" && q.celebration.layer === null && q.celebration.effects > 20);
+  await toEnd(desk, 4000);
+  q.won = await game(desk);
+  q.wonEvent = await desk.evaluate(() => window.__qa.ends.at(-1));
+  expect("Victory: the layer names the Job Offer, shows the run's score as a new best, the furthest object, best chain and time, and offers Play Again, Main Menu and Exit to Portfolio", q.won.state === "won" && q.won.layer === "win" && q.won.panel.title === copy("win.title") && q.won.panel.stats[copy("stat.score")].startsWith(RECORDING.expect.score.toLocaleString("en")) && q.won.panel.stats[copy("stat.score")].endsWith(copy("win.newBest")) && q.won.panel.stats[copy("progress.furthest")] === "Job Offer" && same(q.won.panel.buttons, [copy("win.again"), copy("mainMenu"), copy("menu.exit")]) && q.won.focus === "button[data-ca-play]" && q.won.panel.fits && q.wonEvent.won === true && q.wonEvent.newBest === true);
+  await release(desk);
+  await wait(2600);
+  q.wonLater = await game(desk);
+  expect("Victory stays: nothing restarts by itself; one win, the best score and the Job Offer are in the profile", q.wonLater.state === "won" && stored(q.wonLater.profile).wins === 1 && stored(q.wonLater.profile).best === RECORDING.expect.score && stored(q.wonLater.profile).highest === 12);
+  await press(desk, '[data-ca-layer="win"] [data-ca-play]'); await stateIs(desk, "playing"); await wait(250);
+  q.again = await game(desk);
+  expect("Play Again: a new run from zero that keeps the best score in sight", q.again.engine.score === 0 && q.again.engine.drops === 0 && q.again.hud.best === RECORDING.expect.score.toLocaleString("en") && q.again.hud.score === "0");
+  await desk.evaluate(() => window.KaanCareerAdventure.pause()); await stateIs(desk, "paused"); await wait(150);
+  await press(desk, '[data-ca-layer="pause"] [data-ca-menu]'); await stateIs(desk, "menu"); await wait(250);
+  q.menuAfter = await game(desk);
+  expect("Main Menu from a run: the run is given up, the menu shows the profile's record, and every environment is now open", q.menuAfter.state === "menu" && q.menuAfter.engine.phase === "idle" && q.menuAfter.panel.text.some((line) => line.includes(RECORDING.expect.score.toLocaleString("en")) && line.includes("Job Offer")));
+  await press(desk, '[data-ca-layer="menu"] [data-ca-open="settings"]'); await wait(250);
+  await press(desk, '[data-ca-theme="city"]'); await wait(250);
+  q.theme = await game(desk);
+  expect("Environments: with Python and AI Flow reached both are unlocked; choosing City Night repaints the room and is kept", q.theme.panel.themes.every((theme) => !theme.locked) && q.theme.panel.themes.find((theme) => theme.id === "city").active && stored(q.theme.profile).settings.theme === "city");
+  await press(desk, ".ca-layer:not([hidden]) [data-ca-back]"); await wait(200);
+
+  /* ---------- leaving: Exit, Back, Forward, a reload ---------- */
+  await press(desk, '[data-ca-layer="menu"] [data-ca-exit]'); await wait(700);
+  q.left = { ...(await intro(desk)), scroll: await desk.evaluate(() => Math.round(scrollY)), inert: await desk.evaluate(() => [...document.body.children].filter((item) => item.inert && item.id !== "react-command-root").length) };
+  expect("Exit to Portfolio: the page is back as it was left — header, footer, launcher, scroll position, focus on Play Career Adventure, nothing inert — with the profile's record beside the button and the engine at rest", q.left.state === null && q.left.header && q.left.footer && q.left.launcher && q.left.scroll === q.scrollBefore && q.left.focus === "play" && q.left.inert === 0 && q.left.record.includes(RECORDING.expect.score.toLocaleString("en")) && q.left.engineRunning === false && !q.left.hud);
+  await press(desk, ".ca-enter [data-ca-enter]"); await stateIs(desk, "menu"); await wait(300);
   await desk.goBack(); await wait(700);
-  q.backButton = await desk.evaluate(() => ({ phase: document.documentElement.getAttribute("data-afp-state"), path: location.pathname, header: Boolean(document.querySelector(".site-header").getClientRects().length) }));
-  expect("Browser Back leaves the game for the level select, not the page", q.backButton.phase === null && q.backButton.path === GAME && q.backButton.header);
+  q.backButton = await desk.evaluate(() => ({ state: document.documentElement.getAttribute("data-ca-state"), path: location.pathname, header: Boolean(document.querySelector(".site-header").getClientRects().length) }));
+  expect("Browser Back leaves the game for its page, not the site", q.backButton.state === null && q.backButton.path === GAME && q.backButton.header);
   await desk.goForward(); await wait(700);
-  q.forward = (await game(desk)).phase;
+  q.forward = (await game(desk)).state;
   await desk.goBack(); await wait(500);
-  expect("Browser Forward returns to the game's briefing", q.forward === "mission");
-  await visit(desk, GAME); await desk.waitForFunction(() => document.querySelector("[data-afp-levels] .afp-level"), { timeout: 20000 }); await wait(400);
-  q.reloaded = await hub(desk);
-  expect("After a reload: the three solved missions, their best scores and the total are still there", q.reloaded.cards.every((card) => card.solved) && q.reloaded.progress === q.left.progress && q.reloaded.play === en["aiFlow.game.play"]);
+  expect("Browser Forward returns to the game's menu", q.forward === "menu");
+  await visit(desk, GAME); await desk.waitForFunction(() => window.KaanCareerAdventure && document.querySelectorAll("[data-merge-ladder] article").length === 13, { timeout: 20000 }); await wait(400);
+  q.reloaded = await intro(desk);
+  q.reloadedProfile = await desk.evaluate(() => ({ ...window.KaanCareerAdventure.state(), settings: window.KaanCareerAdventure.settings(), themes: window.KaanCareerAdventure.themes(), unlocked: document.querySelectorAll("[data-merge-ladder] article.is-unlocked").length }));
+  expect("After a reload: best score, furthest object, the win, the unlocked environments, the chosen one and the changed volume are all still there", q.reloaded.record === q.left.record && q.reloadedProfile.best === RECORDING.expect.score && q.reloadedProfile.furthest === 12 && q.reloadedProfile.wins === 1 && q.reloadedProfile.settings.theme === "city" && q.reloadedProfile.settings.volume === 0.35 && q.reloadedProfile.themes.every((theme) => theme.unlocked) && q.reloadedProfile.unlocked === 13);
   expect("Desktop: no horizontal overflow", (await overflow(desk)) === 0);
   await desk.done();
 
-  /* ---------- an assisted solve is said to be one ---------- */
-  const helped = await fresh({ viewport: DESKTOP, theme: "dark" });
-  await play(helped, ["open", "start"]);
-  await press(helped, '[data-ai-template="happy"]'); await runFlow(helped, false); await phaseIs(helped, "failure"); await wait(200);
-  q.happy = { detail: await lastResult(helped), state: await game(helped) };
-  expect("The happy-path template alone fails, and the failure says exactly why: Fallback missing, Response reached End, Fallback did not", same(q.happy.detail.issues.map((issue) => `${issue.kind}:${issue.type || ""}`), ["missingNode:fallback"]) && same(q.happy.state.result.outcomes.map((item) => item.reached), [true, false]));
-  await press(helped, "[data-afp-resume]");
-  await press(helped, '[data-ai-template="solution"]'); await runFlow(helped, false); await phaseIs(helped, "success"); await wait(200);
-  q.assisted = (await game(helped)).result.assisted;
-  expect("A flow loaded from the full-solution template is reported as such on its result", q.assisted === en["aiFlow.game.win.assisted"]);
-  await helped.done();
+  /* ---------- a link straight to the game ---------- */
+  const linked = await fresh({ viewport: DESKTOP, path: `${GAME}#career-merge-game` });
+  await stateIs(linked, "menu"); await wait(300);
+  q.linked = (await game(linked)).layer;
+  expect("A link to the game (the language links are): the page opens at the menu", q.linked === "menu");
+  await linked.done();
+
+  /* ---------- the rules, held on the simulation the page shipped ---------- */
+  const lab = await fresh({ viewport: DESKTOP });
+  q.strategies = [];
+  for (const name of ["centre", "left", "alternate", "random", "bad"]) {
+    q.strategies.push(await lab.evaluate((name) => window.__qa.strategies(name, 100), name));
+    console.log(`[v4:capture] strategy · ${name}`);
+  }
+  const strategy = (name) => q.strategies.find((row) => row.strategy === name);
+  const clean = (row) => Object.values(row.violations).every((count) => count === 0);
+  expect(`Negative control, one position: 100 runs each of every drop in the centre and every drop against the left wall do not reach the Job Offer (${strategy("centre").won} and ${strategy("left").won} wins)`, strategy("centre").won <= 5 && strategy("left").won <= 5);
+  expect(`Negative control, alternating edges: 100 runs of left, right, left, right do not solve the game (${strategy("alternate").won} wins)`, strategy("alternate").won <= 5);
+  expect(`Negative control, random: 100 runs of random drops fail at a meaningful rate (${strategy("random").over} game overs)`, strategy("random").over >= 80);
+  expect(`Game over is reachable in a reasonable number of drops: a deliberately bad strategy (always as far as possible from a match) ends in a median of ${strategy("bad").medianDropsToOver} drops, never surviving 700`, strategy("bad").over === 100 && strategy("bad").medianDropsToOver <= 140);
+  expect("Rules, checked at every step of those 500 runs: a dropped object never appears inside another; two of the same object in contact have merged by the next step; no object merges twice; the score is exactly the points of the merges; the chamber holds exactly drops − merges objects; nothing leaves the glass; no run ends before the full grace", q.strategies.every(clean));
+  expect("The grace is real: in those runs a stack went above the line and came back under it without ending the run", q.strategies.reduce((sum, row) => sum + row.recoveries, 0) > 0);
+
+  /* ---------- the same game at every refresh rate ---------- */
+  await lab.evaluate(() => { document.querySelector(".ca-enter [data-ca-enter]").click(); });
+  await stateIs(lab, "menu"); await wait(250);
+  await lab.evaluate(() => window.__qa.hold(true));
+  q.refresh = { fall: [], scripted: [] };
+  for (const hz of HZ) {
+    /* one Book, let go at the same place: when does it land? */
+    await lab.evaluate((seed) => window.__qa.seed(seed), 7);
+    await press(lab, ".ca-layer:not([hidden]) [data-ca-play]"); await stateIs(lab, "playing");
+    q.refresh.fall.push(await lab.evaluate((hz) => {
+      const api = window.KaanCareerAdventure;
+      api.aim(220); api.drop();
+      let shown = 0;
+      while (!api.run().bodies[0].landed && shown < 2000) { api.tick(1000 / hz); shown += 1; }
+      return { hz, framesShown: shown, landedAtStep: api.run().bodies[0].landed, simulatedMs: Math.round(shown * 1000 / hz) };
+    }, hz));
+    /* forty drops, one every 900 ms of play, at fixed places */
+    await lab.evaluate(() => window.KaanCareerAdventure.pause()); await stateIs(lab, "paused");
+    await lab.evaluate((seed) => window.__qa.seed(seed), 21);
+    await press(lab, '[data-ca-layer="pause"] [data-ca-play]'); await stateIs(lab, "playing");
+    q.refresh.scripted.push(await lab.evaluate((hz) => {
+      const api = window.KaanCareerAdventure;
+      let clock = 0, next = 0, dropped = 0;
+      while (dropped < 40 && api.state().phase === "playing") {
+        if (clock >= next) { api.aim(30 + ((dropped * 157) % 380)); if (api.drop()) { dropped += 1; next += 900; } }
+        api.tick(1000 / hz); clock += 1000 / hz;
+      }
+      for (let extra = 0; extra * (1000 / hz) < 1500; extra += 1) api.tick(1000 / hz);
+      const run = api.run();
+      return { hz, drops: run.drops, steps: run.steps, score: run.score, merges: run.merges, furthest: run.highest, bodies: run.bodies.length, playedMs: Math.round(clock + 1500) };
+    }, hz));
+    await lab.evaluate(() => window.KaanCareerAdventure.pause()); await stateIs(lab, "paused");
+    await press(lab, '[data-ca-layer="pause"] [data-ca-menu]'); await stateIs(lab, "menu");
+  }
+  /* and on frames of no fixed length at all: 4 to 40 ms, as a busy phone gives them */
+  await lab.evaluate((seed) => window.__qa.seed(seed), 21);
+  await press(lab, ".ca-layer:not([hidden]) [data-ca-play]"); await stateIs(lab, "playing");
+  q.refresh.irregular = await lab.evaluate(() => {
+    const api = window.KaanCareerAdventure;
+    let a = 12345, clock = 0, next = 0, dropped = 0;
+    const length = () => { a = (a * 1664525 + 1013904223) >>> 0; return 4 + (a / 4294967296) * 36; };
+    while (dropped < 40 && api.state().phase === "playing") {
+      if (clock >= next) { api.aim(30 + ((dropped * 157) % 380)); if (api.drop()) { dropped += 1; next += 900; } }
+      const ms = length(); api.tick(ms); clock += ms;
+    }
+    for (let extra = 0; extra < 100; extra += 1) api.tick(15);
+    const run = api.run();
+    return { drops: run.drops, score: run.score, merges: run.merges, furthest: run.highest, bodies: run.bodies.length };
+  });
+  {
+    const fall = q.refresh.fall;
+    const runs = [...q.refresh.scripted, q.refresh.irregular];
+    const scores = runs.map((row) => row.score);
+    q.refresh.scoreSpreadPercent = Math.round(((Math.max(...scores) - Math.min(...scores)) / Math.max(...scores)) * 1000) / 10;
+    expect(`Refresh rate, physics: a Book let go from the same place lands at the same step of the simulation at ${HZ.join(", ")} Hz (step ${fall[0].landedAtStep}), so in the same time on every display — within one frame of ${Math.round(fall[0].landedAtStep * 1000 / 120)} ms`, fall.every((row) => row.landedAtStep === fall[0].landedAtStep && Math.abs(row.simulatedMs - row.landedAtStep * 1000 / 120) <= 1000 / row.hz + 1));
+    expect(`Refresh rate, play: the same forty drops on a 900 ms beat reach the same furthest object with the same number of merges and objects left at every rate and on irregular frames; scores within ${q.refresh.scoreSpreadPercent} %`, runs.every((row) => row.drops === 40 && row.furthest === runs[0].furthest && Math.abs(row.merges - runs[0].merges) <= 2 && Math.abs(row.bodies - runs[0].bodies) <= 2) && q.refresh.scoreSpreadPercent <= 10);
+  }
+  /* a crowd far beyond anything play produces */
+  q.crowd = await lab.evaluate(() => window.__qa.crowd(180));
+  q.maxBodies = Math.max(...q.strategies.map((row) => row.maxBodies));
+  expect(`Extreme object counts: 180 objects poured in at once (play never held more than ${q.maxBodies}) are simulated without anything leaving the glass, a step never costing more than a frame can give`, q.crowd.outside === 0 && q.crowd.left < q.crowd.started && q.crowd.worstStepMs < 12);
+  /* a slow frame cannot make the game run away */
+  await lab.evaluate(() => window.KaanCareerAdventure.pause()); await stateIs(lab, "paused");
+  await lab.evaluate((seed) => window.__qa.seed(seed), 5);
+  await press(lab, '[data-ca-layer="pause"] [data-ca-play]'); await stateIs(lab, "playing");
+  q.slowFrame = await lab.evaluate(() => { const api = window.KaanCareerAdventure; api.aim(200); api.drop(); const before = api.run().steps; api.tick(5000); return api.run().steps - before; });
+  expect("A stalled frame: five seconds arriving as one frame advance the simulation by at most twelve steps (0.1 s), never by five seconds", q.slowFrame <= 12);
+  await lab.done();
 
   /* ---------- touch: phone ---------- */
-  const phone = await fresh({ viewport: MOBILE, theme: "dark", touch: true });
-  q.phoneHub = await hub(phone);
-  await phone.evaluate(() => document.querySelector('[data-afp-open="0"]').scrollIntoView({ block: "center", behavior: "instant" })); await wait(250);
-  { const card = await at(phone, '[data-afp-open="0"]'); await phone.touchscreen.tap(card.x, card.y); await wait(600); }
-  q.phoneMission = await game(phone);
-  { const start = await at(phone, "[data-afp-start]"); await phone.touchscreen.tap(start.x, start.y); await wait(600); }
-  q.phoneEmpty = await game(phone);
-  expect("Phone hub and briefing: three mission cards at least 44 px tall, no overflow; in the briefing Start mission is on screen without scrolling", q.phoneHub.cards.length === 3 && q.phoneHub.cards.every((card) => card.height >= 44) && q.phoneHub.overflow === 0 && q.phoneMission.phase === "mission" && q.phoneMission.mission.startInView && q.phoneMission.overflow === 0);
-  expect("Phone workspace: the board is the full width and most of the screen; no permanent sidebars — library and panel are closed sheets behind a dock with Run in it; every bar and dock control at least 44 px; nothing overflows", q.phoneEmpty.phase === "building" && q.phoneEmpty.board.width === MOBILE.width && q.phoneEmpty.board.share >= 85 && !q.phoneEmpty.library.shown && q.phoneEmpty.panel === 0 && q.phoneEmpty.dock && q.phoneEmpty.smallTargets.length === 0 && q.phoneEmpty.smallest >= 44 && q.phoneEmpty.overflow === 0 && !q.phoneEmpty.barOverlap && q.phoneEmpty.outOfView === 0 && !q.phoneEmpty.launcher);
-  expect("Phone board is tall, not a shrunk desktop: the flow starts at the top and ends at the bottom; a port's touch area is at least 44 px and does not cover the middle of its node", q.phoneEmpty.engine.portrait && parseFloat(q.phoneEmpty.nodes[0].top) < parseFloat(q.phoneEmpty.nodes[1].top) && q.phoneEmpty.nodes[0].left === q.phoneEmpty.nodes[1].left && q.phoneEmpty.portTarget >= 44 && q.phoneEmpty.portOverBody === false);
-  await press(phone, '[data-afp-sheet="library"]'); await wait(350);
-  q.phoneLibrary = await game(phone);
-  await addNode(phone, "intent", true);
-  q.phoneAdded = await game(phone);
-  expect("Phone library: a bottom sheet with all thirteen nodes by role; choosing one adds it to the board and puts the sheet away", q.phoneLibrary.sheet === "library" && q.phoneLibrary.library.shown && q.phoneLibrary.library.nodes === 13 && q.phoneAdded.sheet === null && q.phoneAdded.nodes.length === 3);
-  { const target = await at(phone, body("intent")); await phone.touchscreen.tap(target.x, target.y); await wait(300); }
-  q.phoneSelected = await game(phone);
-  expect("Phone selection: a tapped node offers connect, inspect and remove in a bar above the dock; the inspector stays a sheet until asked for", q.phoneSelected.selbar && q.phoneSelected.selbar.length === 3 && q.phoneSelected.sheet === null);
-  await press(phone, '[data-afp-sel="inspect"]'); await wait(350);
-  q.phoneInspector = await game(phone);
-  expect("Phone inspector: the selected node's sheet, on the Inspector tab", q.phoneInspector.sheet === "side" && q.phoneInspector.tab === "node" && q.phoneInspector.panel === 1);
-  await press(phone, "[data-afp-close]"); await wait(250);
-  /* one-finger pan and two-finger pinch, as real touch input */
-  const phoneView = async () => { const state = await game(phone); return { transform: state.transform, zoom: Math.round(state.engine.zoom * 1000) / 1000, scrollY: state.scrollY }; };
-  q.phoneView = { start: await phoneView() };
-  await dragBetween(phone, { x: 60, y: 560 }, { x: 150, y: 470 }, true);
-  q.phoneView.panned = await phoneView();
+  const phone = await fresh({ viewport: MOBILE, touch: true });
+  q.phonePage = await intro(phone);
+  await phone.touchscreen.tap((await at(phone, ".ca-enter [data-ca-enter]")).x, (await at(phone, ".ca-enter [data-ca-enter]")).y); await stateIs(phone, "menu"); await wait(400);
+  q.phoneMenu = await game(phone);
+  { const button = await at(phone, '[data-ca-layer="menu"] [data-ca-play]'); await phone.evaluate((seed) => window.__qa.seed(seed), 11); await phone.touchscreen.tap(button.x, button.y); await stateIs(phone, "playing"); await wait(350); }
+  q.phoneStart = await game(phone);
+  expect("Phone: the chamber takes most of the screen — at least 85 % of its width — with the controls in bars above and below; no side panel, no card over the chamber, every control at least 44 px, nothing scrolls sideways", q.phonePage.overflow === 0 && q.phoneMenu.overflow === 0 && q.phoneStart.board.widthShare >= 85 && q.phoneStart.board.share >= 45 && q.phoneStart.cardsOverBoard.length === 0 && !q.phoneStart.cardsOverlap && q.phoneStart.outOfView === 0 && q.phoneStart.smallTargets === 0 && q.phoneStart.overflow === 0 && q.phoneStart.hudShown);
+  expect("Phone: the next object is always in sight, the score is compact, and the AJOOP launcher is not on the screen", q.phoneStart.hud.nextDrawn === String(q.phoneStart.engine.next) && q.phoneStart.hud.nextLabel === copy("hud.next") && !q.phoneStart.launcher && q.phoneStart.touchAction === "none");
   {
-    const session = await phone.createCDPSession();
-    const points = (spread) => [{ x: 195 - spread, y: 420, id: 1 }, { x: 195 + spread, y: 420, id: 2 }];
-    await phone.evaluate(() => { window.__long = 0; new PerformanceObserver((list) => { window.__long += list.getEntries().length; }).observe({ type: "longtask" }); });
-    await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: points(40) });
-    for (let spread = 50; spread <= 130; spread += 10) await session.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: points(spread) });
-    await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await wait(200);
-    q.phoneView.pinchedOut = await phoneView();
-    await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: points(130) });
-    for (let spread = 120; spread >= 50; spread -= 10) await session.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: points(spread) });
-    await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await wait(200);
-    q.phoneView.pinchedIn = await phoneView();
-    q.phoneView.longTasks = await phone.evaluate(() => window.__long);
-    await session.detach();
+    const box = q.phoneStart.view;
+    const from = { x: box.x + box.width * 0.2, y: box.y + box.height * 0.55 };
+    const to = { x: box.x + box.width * 0.72, y: box.y + box.height * 0.3 };
+    await phone.touchscreen.touchStart(from.x, from.y); await wait(80);
+    const down = await phone.evaluate(() => ({ aim: window.KaanCareerAdventure.view().aim, drops: window.KaanCareerAdventure.run().drops }));
+    for (let step = 1; step <= 8; step += 1) await phone.touchscreen.touchMove(from.x + ((to.x - from.x) * step) / 8, from.y + ((to.y - from.y) * step) / 8);
+    await wait(80);
+    const dragged = await phone.evaluate(() => ({ aim: window.KaanCareerAdventure.view().aim, drops: window.KaanCareerAdventure.run().drops, scroll: scrollY }));
+    await phone.touchscreen.touchEnd(); await wait(900);
+    const lifted = await phone.evaluate(() => ({ drops: window.KaanCareerAdventure.run().drops, x: window.KaanCareerAdventure.run().bodies[0]?.x, scroll: scrollY }));
+    q.touch = { downAim: Math.round(down.aim), dragAim: Math.round(dragged.aim), wanted: Math.round((to.x - box.x) / box.scale), dropsWhileDown: dragged.drops, dropsAfterLift: lifted.drops, landedAt: Math.round(lifted.x), scroll: lifted.scroll };
+    expect("Touch: a finger down aims and nothing drops; dragging moves the object with it; lifting drops it there — one deliberate drop — and the page never scrolls", Math.abs(q.touch.downAim - Math.round((from.x - box.x) / box.scale)) <= 1 && q.touch.dropsWhileDown === 0 && Math.abs(q.touch.dragAim - q.touch.wanted) <= 1 && q.touch.dropsAfterLift === 1 && Math.abs(q.touch.landedAt - q.touch.wanted) <= 6 && q.touch.scroll === 0);
+    await phone.touchscreen.tap(box.x + box.width * 0.2, box.y + box.height * 0.6); await wait(800);
+    q.touch.tap = await phone.evaluate(() => window.KaanCareerAdventure.run().drops);
+    const swap = await at(phone, '[data-ca-tool="swap"]');
+    const before = await phone.evaluate(() => window.KaanCareerAdventure.state());
+    await phone.touchscreen.tap(swap.x, swap.y); await wait(200);
+    const after = await phone.evaluate(() => window.KaanCareerAdventure.state());
+    q.touch.tool = before.held === before.next ? "same objects" : after.tools.swap === before.tools.swap - 1;
+    const pause = await at(phone, "[data-ca-pause]");
+    await phone.touchscreen.tap(pause.x, pause.y); await stateIs(phone, "paused"); await wait(250);
+    q.phonePause = await game(phone);
+    expect("Touch: a tap drops; the tools and pause answer a finger; the pause layer fits the phone", q.touch.tap === 2 && q.touch.tool !== false && q.phonePause.layer === "pause" && q.phonePause.panel.fits && q.phonePause.panel.controlsInView && q.phonePause.overflow === 0);
+    await phone.touchscreen.tap((await at(phone, '[data-ca-layer="pause"] [data-ca-resume]')).x, (await at(phone, '[data-ca-layer="pause"] [data-ca-resume]')).y); await stateIs(phone, "playing"); await wait(200);
   }
-  expect("Touch on the board: one finger pans it, two fingers pinch it larger and smaller, no long task is raised, and the page never moves under the finger", q.phoneView.panned.transform !== q.phoneView.start.transform && q.phoneView.panned.zoom === q.phoneView.start.zoom && q.phoneView.pinchedOut.zoom > q.phoneView.panned.zoom && q.phoneView.pinchedIn.zoom < q.phoneView.pinchedOut.zoom && q.phoneView.longTasks === 0 && [q.phoneView.panned, q.phoneView.pinchedOut, q.phoneView.pinchedIn].every((item) => item.scrollY === 0));
-  /* a node dragged by finger */
-  await press(phone, '[data-afp-zoom="fit"]'); await wait(250);
-  { const before = (await game(phone)).nodes.find((item) => item.type === "intent"); const from = await at(phone, body("intent")); await dragBetween(phone, from, { x: from.x + 70, y: from.y + 50 }, true); const after = (await game(phone)).nodes.find((item) => item.type === "intent"); q.phoneDrag = before.left !== after.left && before.top !== after.top; }
-  expect("Touch: a node is dragged by finger", q.phoneDrag);
-  /* the rest of level 01, by tap-to-connect, then Run from the dock */
-  for (const type of LEVELS[0].add.slice(1)) await addNode(phone, type, true);
-  await tidy(phone, true);
-  for (const [from, to] of LEVELS[0].edges) await connect(phone, from, to, true);
-  q.phoneBuilt = await game(phone);
-  expect("Touch: level 01 is wired by tapping a port and then its target", same(q.phoneBuilt.links.map((item) => item.edge).sort(), LEVELS[0].edges.map(([from, to]) => `${from}>${to}`).sort()));
-  await press(phone, '[data-afp-zoom="fit"]'); await wait(200);
-  { const run = await at(phone, "[data-afp-run]"); await phone.touchscreen.tap(run.x, run.y); await wait(700); }
-  q.phoneRunning = await game(phone);
-  q.phoneRunLabel = await phone.evaluate(() => document.querySelector("[data-afp-run] span").textContent);
-  await phaseIs(phone, "success"); await wait(350);
-  q.phoneResult = await game(phone);
-  expect("Phone Run flow: started from the dock, which becomes Stop while it runs; the result sheet fits the screen with its actions in reach", q.phoneRunning.phase === "running" && q.phoneRunLabel === en["aiFlow.game.stop"] && q.phoneResult.phase === "success" && q.phoneResult.result.fits && q.phoneResult.overflow === 0 && q.phoneResult.smallTargets.length === 0);
+  {
+    /* a phone four times slower than this machine */
+    const session = await phone.createCDPSession();
+    await session.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    await phone.evaluate(() => { window.__qa.long = 0; window.__gaps = []; let last = performance.now(); const tick = (now) => { window.__gaps.push(now - last); last = now; if (window.__sampling) requestAnimationFrame(tick); }; window.__sampling = true; requestAnimationFrame(tick); });
+    await phone.evaluate(async () => { const api = window.KaanCareerAdventure; for (let i = 0; i < 26 && api.state().phase === "playing"; i += 1) { api.aim(40 + ((i * 131) % 360)); api.drop(); await new Promise((done) => setTimeout(done, 450)); } });
+    const gaps = await phone.evaluate(() => { window.__sampling = false; return window.__gaps.slice(2).sort((a, b) => a - b); });
+    q.phoneCost = { frames: gaps.length, medianFrameMs: Math.round(gaps[Math.floor(gaps.length / 2)] * 10) / 10, p95FrameMs: Math.round(gaps[Math.floor(gaps.length * 0.95)] * 10) / 10, worstFrameMs: Math.round(gaps.at(-1) * 10) / 10, longTasks: await phone.evaluate(() => window.__qa.long), bodies: await phone.evaluate(() => window.KaanCareerAdventure.run().bodies.length) };
+    await session.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+    await session.detach();
+    expect("Phone, 4× slower CPU: twelve seconds of play keep their frames — 95 % of them inside 34 ms — with no long task", q.phoneCost.p95FrameMs <= 34 && q.phoneCost.longTasks === 0);
+  }
+  await phone.evaluate(() => { window.KaanCareerAdventure.pause(); }); await stateIs(phone, "paused"); await wait(150);
+  await phone.evaluate((seed) => { window.__qa.hold(true); window.__qa.seed(seed); window.__qa.ends.length = 0; }, 3);
+  await press(phone, '[data-ca-layer="pause"] [data-ca-play]'); await stateIs(phone, "playing");
+  await lose(phone); await toEnd(phone);
+  q.phoneOver = await game(phone);
+  expect("Phone: game over fits, with its three actions in view", q.phoneOver.state === "over" && q.phoneOver.panel.fits && q.phoneOver.panel.controlsInView && q.phoneOver.overflow === 0);
+  await press(phone, '[data-ca-layer="over"] [data-ca-menu]'); await stateIs(phone, "menu"); await wait(200);
+  for (const name of ["how", "settings", "progress"]) {
+    await press(phone, `[data-ca-layer="menu"] [data-ca-open="${name}"]`); await wait(300);
+    const sheetState = await game(phone);
+    expect(`Phone: ${name} can be read and left — no sideways overflow, and Back in reach by scrolling its own panel`, sheetState.layer === name && sheetState.overflow === 0 && sheetState.panel.buttons.includes(copy("back")));
+    await press(phone, ".ca-layer:not([hidden]) [data-ca-back]"); await wait(200);
+  }
   await phone.done();
 
-  /* ---------- other sizes and themes ---------- */
+  /* ---------- other sizes ---------- */
   q.sizes = {};
-  /* [name, viewport, theme, touch input, built by hand]. A phone on its side
-   * is checked for layout only: its board is too short to wire by scripted taps. */
-  for (const [name, viewport, theme, touch, byHand] of [["tablet", TABLET, "dark", true, true], ["tablet landscape", { width: 1180, height: 820 }, "dark", true, true], ["small laptop", { width: 1100, height: 720 }, "dark", false, true], ["desktop 1280", { width: 1280, height: 800 }, "dark", false, true], ["desktop light", DESKTOP, "light", false, true], ["mobile light", MOBILE, "light", true, true], ["landscape phone", LANDSCAPE, "dark", true, false]]) {
-    const page = await fresh({ viewport, theme, touch });
-    const before = await hub(page);
-    await play(page, ["open"], touch);
-    const briefing = await game(page);
-    await play(page, ["start"], touch);
-    const empty = await game(page);
-    if (byHand) await buildLevel(page, LEVELS[0], touch); else { await press(page, '[data-ai-template="solution"]'); await wait(300); }
-    await runFlow(page, empty.dock); await phaseIs(page, "success"); await wait(300);
-    const result = await game(page);
-    q.sizes[name] = { hubOverflow: before.overflow, briefingOverflow: briefing.overflow, board: `${empty.board.width} × ${empty.board.height}`, share: empty.board.share, dock: empty.dock, libraryShown: empty.library.shown, panel: empty.panel, overflow: empty.overflow + result.overflow, barOverlap: empty.barOverlap, outOfView: empty.outOfView, smallTargets: empty.smallTargets, solved: result.phase === "success", resultFits: result.result.fits, builtByHand: byHand };
-    expect(`${name}: hub, briefing, workspace and result fit without overflow or overlapping bar controls, and level 01 is ${byHand ? "built by hand and solved" : "run to its result"}`, before.overflow === 0 && briefing.overflow === 0 && q.sizes[name].overflow === 0 && !empty.barOverlap && empty.outOfView === 0 && q.sizes[name].solved && result.result.fits && empty.board.share >= 45);
+  for (const [name, viewport, touch, minimumWidthShare] of [["tablet 820 × 1180", TABLET, true, 60], ["tablet landscape 1180 × 820", { width: 1180, height: 820 }, true, 25], ["small laptop 1100 × 720", { width: 1100, height: 720 }, false, 25], ["desktop 1280 × 800", { width: 1280, height: 800 }, false, 25], ["wide 1920 × 1080", { width: 1920, height: 1080 }, false, 25], ["landscape phone 844 × 390", LANDSCAPE, true, 15]]) {
+    const page = await fresh({ viewport, touch });
+    const before = await intro(page);
+    await enter(page);
+    const menu = await game(page);
+    await start(page, { seed: RECORDING.seed, hold: true });
+    await replay(page, 40); await frames(page, 40);
+    const playing = await game(page);
+    await page.evaluate(() => window.KaanCareerAdventure.pause()); await stateIs(page, "paused"); await wait(150);
+    const paused = await game(page);
+    await page.evaluate((seed) => { window.__qa.seed(seed); }, 3);
+    await press(page, '[data-ca-layer="pause"] [data-ca-play]'); await stateIs(page, "playing");
+    await lose(page); await toEnd(page);
+    const over = await game(page);
+    q.sizes[name] = { board: `${playing.board.width} × ${playing.board.height}`, widthShare: playing.board.widthShare, share: playing.board.share, overflow: before.overflow + menu.overflow + playing.overflow + paused.overflow + over.overflow, cardsOverBoard: playing.cardsOverBoard, cardsOverlap: playing.cardsOverlap, outOfView: playing.outOfView + menu.outOfView, smallTargets: playing.smallTargets, smallest: playing.smallest, menuFits: menu.panel.controlsInView, pauseFits: paused.panel.controlsInView, overReachable: over.state === "over" };
+    const row = q.sizes[name];
+    expect(`${name}: page, menu, play, pause and game over have no overflow; no HUD card covers the chamber or another card; every HUD control is in view${touch ? " and at least 44 px" : ""}; the run can be lost and its result shown`, row.overflow === 0 && row.cardsOverBoard.length === 0 && !row.cardsOverlap && row.outOfView === 0 && (!touch || row.smallTargets === 0) && row.overReachable && row.widthShare >= minimumWidthShare);
     await page.done();
   }
-  expect("Tablet and small laptop: the library is an icon rail beside the board and the panel a closed drawer, with the dock for Run; every bar and dock control at least 40 px", ["tablet", "tablet landscape", "small laptop"].every((name) => q.sizes[name].libraryShown && q.sizes[name].panel === 0 && q.sizes[name].dock && q.sizes[name].smallTargets.length === 0));
-  expect("Desktop from 1280 px: library, board and panel side by side with the engine's actions in the bar", ["desktop 1280", "desktop light"].every((name) => q.sizes[name].libraryShown && q.sizes[name].panel === 1 && !q.sizes[name].dock && q.sizes[name].smallTargets.length === 0));
 
   /* ---------- reduced motion, no JavaScript, engine failure ---------- */
-  const still = await fresh({ viewport: DESKTOP, theme: "dark", reducedMotion: true });
-  await play(still, ["open", "start", "build"]);
-  await still.evaluate(() => { window.__steps.length = 0; });
-  await runFlow(still, false);
-  q.reducedMotion = { during: await motionState(still) };
-  await phaseIs(still, "success"); await wait(250);
-  q.reducedMotion.after = await motionState(still);
-  q.reducedMotion.steps = await still.evaluate(() => window.__steps.length);
-  q.reducedMotion.phase = (await game(still)).phase;
-  expect("Reduced motion: the game enters, builds, runs all seven steps and reaches the result with no animation running", q.reducedMotion.during.running === 0 && q.reducedMotion.after.running === 0 && q.reducedMotion.steps === 7 && q.reducedMotion.phase === "success");
+  const still = await fresh({ viewport: DESKTOP, reducedMotion: true });
+  await enter(still);
+  q.reducedMotion = { setting: await still.evaluate(() => window.KaanCareerAdventure.settings().reduced) };
+  await start(still, { seed: RECORDING.seed, hold: true });
+  await replay(still, 30);
+  await replay(still, RECORDING.drops.length, { chain: 2 });
+  await frames(still, 3);
+  q.reducedMotion.afterChain = await still.evaluate(() => ({ shake: window.KaanCareerAdventure.view().shake, merges: window.__qa.merges.length, score: window.KaanCareerAdventure.state().score }));
+  q.reducedMotion.css = await motionState(still);
+  await replay(still); await toEnd(still, 4000);
+  q.reducedMotion.end = (await game(still)).state;
+  q.reducedMotion.score = (await game(still)).engine.score;
+  expect("Reduced motion: the game starts with reduced effects on; a chain shakes nothing; no CSS animation runs; and the same recorded run still reaches the same Job Offer with the same score — the effects are only ever pictures", q.reducedMotion.setting === true && q.reducedMotion.afterChain.shake === 0 && q.reducedMotion.css.running === 0 && q.reducedMotion.end === "won" && q.reducedMotion.score === RECORDING.expect.score);
   await still.done();
 
-  const plain = await fresh({ viewport: DESKTOP, theme: "dark", noJs: true, settle: 500 });
-  q.noJs = await hub(plain);
-  expect("Without JavaScript: the game's name, a plain notice that it needs JavaScript with a link to its case study, the way back to Games — and no Play button, empty mission list or blank board", q.noJs.heading === "AI Flow Puzzle" && q.noJs.notice === `${en["aiFlow.game.noscript"]} ${en["aiFlow.game.caseStudy"]}` && q.noJs.noticeLink === "/ai-flow-puzzle-case-study/" && q.noJs.play === null && q.noJs.cards.length === 0 && !q.noJs.workspaceInPage && q.noJs.back.includes("/games/"));
+  const plain = await fresh({ viewport: DESKTOP, noJs: true, settle: 500 });
+  q.noJs = await intro(plain);
+  expect("Without JavaScript: the game's name, a plain notice that it needs JavaScript with links to Games and Works — and no Play button, no poster and no empty board", q.noJs.heading === "Kaan's Career Adventure" && q.noJs.notice === `${copy("noscript")} ${copy("noscriptGames")} · ${copy("noscriptWorks")}` && same(q.noJs.noticeLinks, ["/games/", "/works/"]) && q.noJs.play === null && !q.noJs.poster && !q.noJs.board && q.noJs.header);
   await plain.done();
 
-  const broken = await fresh({ viewport: DESKTOP, theme: "dark", fail: true });
-  await press(broken, "[data-afp-play]"); await wait(600);
-  q.failureState = await broken.evaluate(() => ({ phase: document.documentElement.getAttribute("data-afp-state"), error: document.querySelector("[data-afp-error]").hidden ? null : document.querySelector("[data-afp-error]").textContent.replace(/\s+/g, " ").trim(), focus: document.activeElement?.hasAttribute("data-afp-reload"), header: Boolean(document.querySelector(".site-header").getClientRects().length) }));
-  await press(broken, "[data-afp-error] [data-afp-leave]"); await wait(500);
-  q.failureExit = await broken.evaluate(() => ({ phase: document.documentElement.getAttribute("data-afp-state"), header: Boolean(document.querySelector(".site-header").getClientRects().length) }));
-  expect("Engine failure (forced): a small recoverable state — what happened, Reload, Level select — instead of an empty workspace; leaving works", q.failureState.phase === "error" && q.failureState.error.startsWith(en["aiFlow.game.error.title"]) && q.failureState.focus && !q.failureState.header && q.failureExit.phase === null && q.failureExit.header);
+  const broken = await fresh({ viewport: DESKTOP, fail: true });
+  q.failurePage = await intro(broken);
+  await press(broken, ".ca-enter [data-ca-enter]"); await wait(600);
+  q.failureState = await broken.evaluate(() => ({ state: document.documentElement.getAttribute("data-ca-state"), error: document.querySelector('[data-ca-layer="error"]').hidden ? null : document.querySelector('[data-ca-layer="error"]').textContent.replace(/\s+/g, " ").trim(), focus: document.activeElement?.hasAttribute("data-ca-reload"), header: Boolean(document.querySelector(".site-header").getClientRects().length), buttons: [...document.querySelectorAll('[data-ca-layer="error"] button')].map((button) => button.textContent.trim()) }));
+  await press(broken, '[data-ca-layer="error"] [data-ca-exit]'); await wait(500);
+  q.failureExit = await broken.evaluate(() => ({ state: document.documentElement.getAttribute("data-ca-state"), header: Boolean(document.querySelector(".site-header").getClientRects().length) }));
+  expect("Engine failure (forced): on the page the board's frame is not empty; pressing Play opens a small recoverable state — what happened, Reload, Exit to Portfolio — instead of a blank canvas; leaving works", q.failurePage.boardBackdrop === true && q.failureState.state === "error" && q.failureState.error.startsWith(copy("error.title")) && same(q.failureState.buttons, [copy("error.reload"), copy("menu.exit")]) && q.failureState.focus && !q.failureState.header && q.failureExit.state === null && q.failureExit.header);
   await broken.done();
 
   /* ---------- every locale ---------- */
   const locales = {};
   for (const locale of LOCALES) {
     const catalog = JSON.parse(await readFile(join(ROOT, "data", "i18n", "messages", locale, "common.json"), "utf8"));
+    const local = (key) => catalog[`adventure.play.${key}`];
+    const names = LADDER_IDS.map((id) => local(`obj.${id}`));
     locales[locale] = {};
     for (const [name, viewport] of [["desktop", DESKTOP], ["mobile", MOBILE]]) {
       const touch = viewport === MOBILE;
-      const page = await fresh({ viewport, theme: "dark", path: localized(locale, GAME), touch });
-      const before = await hub(page);
-      await play(page, ["open"], touch);
-      const briefing = await game(page);
-      await play(page, ["start"], touch);
-      const empty = await game(page);
-      await buildLevel(page, LEVELS[0], touch, [["fallback", "end"]]);
-      await runFlow(page, touch); await phaseIs(page, "failure"); await wait(300);
-      const failed = await game(page);
-      await press(page, "[data-afp-resume]"); await wait(200);
-      if (touch) await reach(page);
-      await connect(page, "fallback", "end", touch);
-      await runFlow(page, touch); await phaseIs(page, "success"); await wait(300);
-      const won = await game(page);
-      locales[locale][name] = { lang: await page.evaluate(() => document.documentElement.lang), hubOverflow: before.overflow, missions: before.missions, by: before.by, exitHref: before.back[0], start: briefing.mission.start, constraints: briefing.mission.constraints[0], briefingOverflow: briefing.overflow, startInView: briefing.mission.startInView, overflow: empty.overflow + failed.overflow + won.overflow, barOverlap: empty.barOverlap, outOfView: empty.outOfView, failTitle: failed.result.title, failIssue: failed.result.issues[0], failFits: failed.result.fits, winActions: won.result.actions, winFits: won.result.fits && won.result.actionsInView, title: empty.title };
+      const page = await fresh({ viewport, path: localized(locale, GAME), touch });
+      const before = await intro(page);
+      await enter(page);
+      const menu = await game(page);
+      await press(page, '[data-ca-layer="menu"] [data-ca-open="how"]'); await wait(250);
+      const how = await game(page);
+      await press(page, ".ca-layer:not([hidden]) [data-ca-back]"); await wait(200);
+      await press(page, '[data-ca-layer="menu"] [data-ca-open="settings"]'); await wait(250);
+      const settings = await game(page);
+      await press(page, ".ca-layer:not([hidden]) [data-ca-back]"); await wait(200);
+      await start(page, { seed: 3, hold: true });
+      await frames(page, 4);
+      const playing = await game(page);
+      await lose(page); await toEnd(page);
+      const over = await game(page);
+      const event = await page.evaluate(() => window.__qa.ends.at(-1));
+      locales[locale][name] = { touch, lang: await page.evaluate(() => document.documentElement.lang), play: before.play, ladder: before.ladder, menu: menu.panel.buttons, how: how.panel.steps[0], settings: settings.panel.settings.map((row) => row.label), currentLanguage: settings.panel.languages.find((item) => item.current)?.href, stage: playing.hud.stage, next: playing.hud.next, nextLabel: playing.hud.nextLabel, tools: [playing.hud.tools.swap.label, playing.hud.tools.debug.label], path: playing.hud.path.map((rung) => rung.name), overTitle: over.panel.title, overButtons: over.panel.buttons, overSummary: over.panel.text.at(-1), overflow: before.overflow + menu.overflow + how.overflow + settings.overflow + playing.overflow + over.overflow, cardsOverBoard: playing.cardsOverBoard.length, cardsOverlap: playing.cardsOverlap, outOfView: playing.outOfView, fits: menu.panel.controlsInView && over.panel.controlsInView, furthest: names[event.highest] };
       const row = locales[locale][name];
-      expect(`${locale} ${name}: served in its locale; hub, briefing, workspace, failure and success fit with no overflow or bar overlap; the level is solved`, row.lang.startsWith(locale) && row.hubOverflow === 0 && row.briefingOverflow === 0 && row.overflow === 0 && !row.barOverlap && row.outOfView === 0 && row.failFits && row.winFits && row.startInView);
-      expect(`${locale} ${name}: the game's own copy is this locale's catalog — hub, briefing, failure and success`, row.missions === catalog["aiFlow.game.missions"] && row.by === catalog["aiFlow.game.by"] && row.start === catalog["aiFlow.game.mission.start"] && row.constraints === catalog["aiFlow.game.mission.nodes"].replace("{n}", "7") && row.failTitle === catalog["aiFlow.game.fail.title"] && same(row.winActions, [catalog["aiFlow.game.win.next"], catalog["aiFlow.game.win.inspect"]]));
+      expect(`${locale} ${name}: served in its locale; page, menu, how to play, settings, play and game over fit with no overflow, no card over the chamber and none overlapping`, row.lang.startsWith(locale) && row.overflow === 0 && row.cardsOverBoard === 0 && !row.cardsOverlap && row.outOfView === 0 && row.fits);
+      expect(`${locale} ${name}: the game's own copy is this locale's catalog — the way in, menu, how to play, settings, HUD and game over — and the thirteen objects carry this locale's names on the ladder, in the HUD and in the summary`, row.play === local("enter") && same(row.menu, [local("menu.play"), local("menu.how"), local("menu.settings"), local("menu.progress"), local("menu.exit")]) && row.how === local("how.one") && same(row.settings, [local("settings.sound"), local("settings.volume"), local("settings.reduced"), local("settings.guide"), ...(touch ? [local("settings.haptics")] : [])]) && row.stage === local("hud.stage").replace("{n}", "1").replace("{total}", "13") && row.nextLabel === local("hud.next") && same(row.path, names) && same(row.ladder, names) && names.includes(row.next) && row.overTitle === local("over.title") && same(row.overButtons, [local("over.retry"), local("mainMenu"), local("menu.exit")]) && row.overSummary.includes(row.furthest) && row.currentLanguage === `${localized(locale, GAME)}#career-merge-game`);
       await page.done();
     }
+    expect(`${locale}: the ladder keeps its technical names — HTML / CSS, JavaScript, Python, C# / .NET, AI Flow — and Job Offer, in every language`, same([4, 5, 6, 7, 9, 12].map((index) => names[index]), ["HTML / CSS", "JavaScript", "Python", "C# / .NET", "AI Flow", "Job Offer"]));
   }
-  for (const key of ["start", "constraints", "failTitle", "failIssue"]) expect(`Locales: “${key}” is translated in each of the five`, new Set(LOCALES.map((locale) => locales[locale].desktop[key])).size === LOCALES.length);
+  for (const key of ["play", "how", "stage", "overSummary"]) expect(`Locales: “${key}” is translated in each of the five`, new Set(LOCALES.map((locale) => locales[locale].desktop[key])).size === LOCALES.length);
 
   /* ---------- measurements + pack ---------- */
   const lcp = await lcpCompare(browser, GAME);
@@ -986,38 +1179,39 @@ try {
     transfers[build] = await page.evaluate((site) => { const entries = performance.getEntriesByType("resource").filter((item) => item.name.startsWith(site)); return { requests: entries.length, bytes: entries.reduce((sum, item) => sum + (item.encodedBodySize || 0), 0) + (performance.getEntriesByType("navigation")[0]?.encodedBodySize || 0), images: entries.filter((item) => /\.(webp|png|jpe?g|svg|ico)(\?|$)/.test(item.name)).length }; }, builds[build]);
     await context.close();
   }
-  const reactEntry = async (root) => (await readFile(join(root, "dist-site", "ai-flow-puzzle", "index.html"), "utf8")).match(/assets-react\/[^"]+\.js/)[0];
+  const reactEntry = async (root) => (await readFile(join(root, "dist-site", "adventure", "index.html"), "utf8")).match(/assets-react\/[^"]+\.js/)[0];
   const sizeOf = async (root, file) => {
     try { const bytes = await readFile(join(root, "dist-site", file)); return { raw: bytes.length, gzip: gzipSync(bytes).length }; } catch { return null; }
   };
   const sizes = [];
-  for (const file of ["ai-flow-puzzle/index.html", "ai-flow-puzzle.js", "js/pages/flow-puzzle-game.js", "css/v4-flow-puzzle.css", "css/games/ai-flow-puzzle.css", "react"]) {
+  for (const file of ["adventure/index.html", "adventure-game.js", "js/pages/career-adventure-game.js", "css/v4-career-adventure.css", "css/games/adventure.css", "react"]) {
     const after = await sizeOf(ROOT, file === "react" ? await reactEntry(ROOT) : file);
     const before = BASELINE_ROOT ? await sizeOf(BASELINE_ROOT, file === "react" ? await reactEntry(BASELINE_ROOT) : file) : undefined;
     sizes.push({ file: file === "react" ? "assets-react/production-main-*.js" : file, before, after });
   }
-  expect("The page's accepted stylesheet ships byte for byte as before", !BASELINE_ROOT || sizes.filter((size) => size.file === "css/games/ai-flow-puzzle.css").every((size) => size.before && size.before.raw === size.after.raw));
+  expect("The page's accepted stylesheet ships byte for byte as before", !BASELINE_ROOT || sizes.filter((size) => size.file === "css/games/adventure.css").every((size) => size.before && size.before.raw === size.after.raw));
 
-  await sheet(browser, "00-contact-sheet.png", TITLE, "Contact sheet · every panel is a production-build capture; full-size files sit beside this sheet", shots.map((shot) => ({ file: join(OUTPUT, shot.name), label: shot.label, width: shot.viewport.width === MOBILE.width ? 390 : shot.viewport === TABLET ? 620 : 1080 })), 4680);
-  await sheet(browser, "00-motion-frames.png", `${TITLE} · motion`, "Motion frames, in order, from one continuous session in one tab", frames, 4100);
+  await sheet(browser, "00-contact-sheet.png", TITLE, "Contact sheet · every panel is a production-build capture; full-size files sit beside this sheet", shots.map((shot) => ({ file: join(OUTPUT, shot.name), label: shot.label, width: shot.viewport.width === MOBILE.width ? 390 : shot.viewport === TABLET ? 620 : shot.viewport === LANDSCAPE ? 844 : 1080 })), 4680);
+  await sheet(browser, "00-motion-frames.png", `${TITLE} · motion`, "Motion frames, in order, from one continuous session in one tab", filmFrames, 4100);
 
-  const summary = { phase: PHASE, capturedAt: new Date().toISOString(), origin: ORIGIN, baselineOrigin: BASELINE, aiEdge: "stubbed: “down” (503)", game: q, locales, lcpEntry: lcp, transfers, sizes, motionFrames: frames.map((item) => item.label), consoleProblems: problems, failures };
+  const summary = { phase: PHASE, capturedAt: new Date().toISOString(), origin: ORIGIN, baselineOrigin: BASELINE, aiEdge: "stubbed: “down” (503)", recording: { seed: RECORDING.seed, drops: RECORDING.drops.length, expect: RECORDING.expect }, game: q, locales, lcpEntry: lcp, transfers, sizes, motionFrames: filmFrames.map((item) => item.label), consoleProblems: problems, failures };
   await writeFile(join(OUTPUT, "qa-summary.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
 
   const kb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`;
   const sizeCell = (size, key) => (!size.after ? "—" : `${kb(size.after[key])}${size.before === undefined ? "" : size.before === null ? " (new)" : ` (${size.after[key] - size.before[key] >= 0 ? "+" : "−"}${kb(Math.abs(size.after[key] - size.before[key]))})`}`);
   const lcpCell = (cell) => (cell ? `${cell.medianMs} ms on <${cell.element}>${cell.file ? ` (${cell.file})` : ""} · CLS ≤ ${cell.clsMax}` : "not measured");
+  const violations = (row) => Object.entries(row.violations).filter(([, count]) => count > 0).map(([name, count]) => `${name} ${count}`).join(", ") || "none";
   const readme = `# ${TITLE} · review pack
 
 Generated by \`npm run v4:review-pack\` on ${summary.capturedAt} from the production build in \`dist-site/\`.
 Nothing in this folder is in Git.
 
 - **\`00-contact-sheet.png\`** — all ${shots.length} still panels, labelled.
-- **\`00-motion-frames.png\`** — ${frames.length} frames from one continuous session in one tab, in order; the individual frames are in \`motion-frames/\`.
+- **\`00-motion-frames.png\`** — ${filmFrames.length} frames from one continuous session in one tab, in order; the individual frames are in \`motion-frames/\`.
 - **\`qa-summary.json\`** — everything measured in this run.
 - **\`${PACK}\`** — everything here.
 
-AJOOP's public AI edge (\`${EDGE}\`) was stubbed (503) for every capture and check. Every flow in these captures was built with real pointer or touch input: nodes added from the library, wires dragged port to node (tapped port then node on touch). Only the engine's own events were recorded and downloads kept in the test browser; the engine-failure state was forced by refusing the engine's script.
+AJOOP's public AI edge (\`${EDGE}\`) was stubbed (503) for every capture and check. Nothing in the page was replaced. The test browser recorded the engine's own events and, where a capture or a check needed an exact moment, held the display's frames and drove the game's own frame function instead (\`KaanCareerAdventure.tick\`, the function every frame calls). The winning run is one recorded run (seed ${RECORDING.seed}, ${RECORDING.drops.length} drops) from \`scripts/v4-e06-3-career-adventure-sim.mjs --record\`; the losing runs drop everything in one place. The engine-failure state was forced by refusing the engine's script.
 
 ## Still panels
 
@@ -1027,53 +1221,76 @@ ${shots.map((shot, index) => `| ${index + 1} | ${shot.name} | ${shot.label} |`).
 
 ## Motion frames
 
-${frames.map((item, index) => `${index + 1}. ${item.label}`).join("\n")}
+${filmFrames.map((item, index) => `${index + 1}. ${item.label}`).join("\n")}
 
-## The board, measured
+## The chamber, measured
 
-| | Board | Share of viewport |
-| --- | --- | --- |
-| Desktop 1440 × 900 | ${q.empty.board.width} × ${q.empty.board.height} | ${q.empty.board.share} % |
-| Phone 390 × 844 | ${q.phoneEmpty.board.width} × ${q.phoneEmpty.board.height} | ${q.phoneEmpty.board.share} % |
-${Object.entries(q.sizes).map(([name, row]) => `| ${name} | ${row.board} | ${row.share} % |`).join("\n")}
+| | Chamber | Share of viewport width | Share of viewport |
+| --- | --- | --- | --- |
+| Desktop 1440 × 900 | ${q.started.board.width} × ${q.started.board.height} | ${q.started.board.widthShare} % | ${q.started.board.share} % |
+| Phone 390 × 844 | ${q.phoneStart.board.width} × ${q.phoneStart.board.height} | ${q.phoneStart.board.widthShare} % | ${q.phoneStart.board.share} % |
+${Object.entries(q.sizes).map(([name, row]) => `| ${name} | ${row.board} | ${row.widthShare} % | ${row.share} % |`).join("\n")}
 
-Before (E06.0 audit): 49 % on desktop 1.5 screens down an article page; a 322 × 578 board 4.4 screens down on a phone.
+## Strategy negative controls (100 runs each, on the simulation the page shipped)
+
+| Strategy | Job Offer | Game over | Drops to game over (median / fewest) | Furthest object (median / best) | Score (median) | Rule violations |
+| --- | --- | --- | --- | --- | --- | --- |
+${q.strategies.map((row) => `| ${({ centre: "One position: centre", left: "One position: left wall", alternate: "Alternating edges", random: "Random", bad: "Deliberately bad" })[row.strategy]} | ${row.won} | ${row.over} | ${row.medianDropsToOver} / ${row.fewestDropsToOver} | ${row.medianFurthest} / ${row.bestFurthest} | ${row.medianScore} | ${violations(row)} |`).join("\n")}
+
+The recorded winning run reaches the Job Offer in ${RECORDING.expect.drops} drops with ${RECORDING.expect.merges} merges, score ${RECORDING.expect.score}, best chain ${RECORDING.expect.bestChain}×. How often strategies that plan ahead win is measured by \`scripts/v4-e06-3-career-adventure-sim.mjs\` and recorded in \`docs/v4-e06-3-career-adventure.md\`.
+
+Stacks that went above the line and came back under it without ending the run, in those 500 runs: ${q.strategies.reduce((sum, row) => sum + row.recoveries, 0)}. Most objects in the chamber at once: ${q.maxBodies}.
+
+## Refresh-rate stability
+
+A Book let go from the same place:
+
+| Display | Frames shown | Landed at simulation step | Time |
+| --- | --- | --- | --- |
+${q.refresh.fall.map((row) => `| ${row.hz} Hz | ${row.framesShown} | ${row.landedAtStep} | ${row.simulatedMs} ms |`).join("\n")}
+
+The same forty drops, one every 900 ms of play:
+
+| Display | Drops | Merges | Furthest object | Objects left | Score |
+| --- | --- | --- | --- | --- | --- |
+${q.refresh.scripted.map((row) => `| ${row.hz} Hz | ${row.drops} | ${row.merges} | ${LADDER[row.furthest]} | ${row.bodies} | ${row.score} |`).join("\n")}
+| Irregular frames, 4–40 ms | ${q.refresh.irregular.drops} | ${q.refresh.irregular.merges} | ${LADDER[q.refresh.irregular.furthest]} | ${q.refresh.irregular.bodies} | ${q.refresh.irregular.score} |
+
+Score spread across all of them: ${q.refresh.scoreSpreadPercent} %. A drop takes effect on the frame it is asked for, so two displays can differ by one frame in when an object is let go; the simulation itself advances only in whole steps of 1/120 s. Before E06.3 the physics advanced once per frame: the E06.0 audit measured it at about 145 frames a second, where the game ran about 2.4 times as fast as on a 60 Hz display.
+
+A stalled frame of 5 s advanced the simulation by ${q.slowFrame} steps.
 
 ## Focused QA (this run)
 
 - Failures: ${failures.length ? failures.map((failure) => `\n  - ${failure}`).join("") : "none"}
 - Console warnings/errors (including React hydration reports; the stubbed edge's own network messages and the forced-failure page excluded): ${problems.length ? problems.map((problem) => `\n  - ${problem}`).join("") : "none"}
-- Hub: ${q.hub.cards.map((card) => `${card.title} (${card.difficulty}, ${card.size})`).join(" · ")}; workspace in the page: ${q.hub.workspaceInPage}.
-- Entered by keyboard into “${q.mission.phase}”, focus on ${q.mission.focus}; header ${q.mission.header}, footer ${q.mission.footer}, AJOOP launcher ${q.mission.launcher}, other floats ${q.mission.floats}.
-- Briefing: “${q.mission.mission.input}” → ${q.mission.mission.expected.join(" · ")}; ${q.mission.mission.constraints.join(" · ")}.
-- Board interaction (mouse): library click and library drag add nodes; node drag ${q.moved ? "moves" : "FAILS"}; port drag connects (${q.linked.links.map((item) => item.edge).join()}); duplicate and into-trigger refused (“${q.intoTrigger.status.text}”); reconnect → ${q.rewired.links.map((item) => item.edge).join(", ")}; drop on empty board removes; wire selected and deleted by key; node deleted by key.
-- Keyboard: arrows move ${q.keyboard.moved}; port armed by Enter ${q.keyboard.armed}; connected by Enter → ${q.keyboard.links.join(", ")}.
-- Pan / zoom / fit: zoom ${q.view.start.zoom} → wheel ${q.view.wheeled.zoom} → out ${q.view.out.zoom} → in ${q.view.in.zoom} → fit ${q.view.fit.zoom}; all nodes in view after Fit: ${q.view.nodesInView}.
-- Run flow on an unfinished board: steps ${q.failure.steps.join(" → ")}; issues ${q.failure.detail.issues.map((issue) => issue.kind).join(", ")}; shown as: ${q.failure.state.result.issues.map((line) => `“${line}”`).join(" ")}.
-- Hint: “${q.hint.note}”; library entry flagged: ${q.hint.hinted.join()}; hints used ${q.hint.hints}.
-- Execution order per level (recorded from the run, equal to the order worked out from the connections):
-${q.levels.map((item) => `  - ${item.id}: ${item.order.join(" → ")} — quality ${item.total}/100, award ${item.award}`).join("\n")}
-- Score: ${q.levels.map((item) => item.award).join(" + ")} = ${q.final.score}; stored as \`${PROGRESS_KEY}\` = \`${q.final.progress}\`; the old \`-score-v2\` key is ${q.final.legacyScore === null ? "not written" : "WRITTEN"}.
-- **Repeated-validation negative control:** score ${q.repeat.before.score} before; after ${q.repeat.rounds.map((round) => round.how).join(", ")}: ${q.repeat.rounds.map((round) => round.score).join(", ")}; after validating a weaker valid flow (quality ${q.repeat.worse.total}): ${q.repeat.worse.score}. Stored progress unchanged throughout: ${q.repeat.rounds.every((round) => round.progress === q.repeat.before.progress) && q.repeat.worse.progress === q.repeat.before.progress}. The pre-E06.2 running total would have reached ${q.repeat.oldModelWouldBe}.
-- Templates: happy path alone → ${q.happy.detail.issues.map((issue) => `${issue.kind} ${issue.type || ""}`).join()}; full solution → “${q.assisted}”.
-- Export / import: ${q.exported.name}, ${q.exported.nodes} nodes, ${q.exported.links} connections; reset to ${q.afterReset} nodes; imported back ${q.imported.nodes.length} nodes, ${q.imported.links.length} connections.
-- Touch (390 × 844): pan ${q.phoneView.panned.transform !== q.phoneView.start.transform}; pinch ${q.phoneView.panned.zoom} → ${q.phoneView.pinchedOut.zoom} → ${q.phoneView.pinchedIn.zoom}, long tasks ${q.phoneView.longTasks}; node dragged ${q.phoneDrag}; tap-to-connect built ${q.phoneBuilt.links.length} connections; smallest bar/dock control ${q.phoneEmpty.smallest} px; port touch area ${q.phoneEmpty.portTarget} px; page scroll ${q.phoneView.pinchedIn.scrollY}.
-- Leaving: Level select restores scroll ${q.left.scroll} (was ${q.scrollBefore}) and focus on the mission card (${q.left.focus === "0"}); browser Back leaves the game (${q.backButton.phase === null}), Forward returns to “${q.forward}”; after a reload: ${q.reloaded.progress}.
-- Without JavaScript: “${q.noJs.notice}” → ${q.noJs.noticeLink}; Play shown: ${q.noJs.play !== null}.
+- Page: Play “${q.page.play}”; poster ${q.page.poster}; board painted ${q.page.boardPainted > 100}; ladder ${q.page.ladder.length} rungs; HUD in the page: ${q.page.hud}; engine running: ${q.page.engineRunning}.
+- Entered by keyboard into “${q.menu.state}”, focus on ${q.menu.focus}; header ${q.menu.header}, footer ${q.menu.footer}, AJOOP launcher ${q.menu.launcher}, other floats ${q.menu.floats}.
+- Menu: ${q.menu.panel.buttons.join(" · ")}. Idle: ${q.menuFrames} frames asked for in 1.5 s; over ${q.menuIdle.windowMs} ms: ${q.menuIdle.taskMs} ms of main-thread tasks, ${q.menuIdle.scriptMs} ms script, ${q.menuIdle.longTasks} long tasks.
+- Settings: ${q.settings.panel.settings.map((row) => row.label).join(" · ")}; environments ${q.settings.panel.themes.map((theme) => `${theme.name}${theme.locked ? ` (locked: ${theme.note})` : ""}`).join(" · ")}.
+- Pointer: aimed ${q.pointer.wanted}, object at ${q.pointer.aim}, landed at ${q.pointer.landedAt}. Keyboard: aim ${q.keyboard.aim.join(" → ")}; drops after Space and Enter: ${q.keyboard.drops.join(", ")}.
+- Tools: Re-scope ${JSON.stringify(q.tools.before.slice(0, 2))} → ${JSON.stringify(q.tools.swapped.slice(0, 2))}; Debug removed ${q.tools.removed} object (level ${q.tools.removedLevel + 1}), score ${q.tools.score.join(" → ")}.
+- Pause: ${q.paused.panel.buttons.join(" · ")}; frames asked for while paused: ${q.pausedFrames}; hidden tab → “${q.hiddenPause}”. Restart: score ${q.restarted.score}, ${q.restarted.bodies} objects.
+- Game over (every drop at x = 220, seed 3): first above the line at step ${q.lost.firstAbove}, over ${Math.round((endingAt.steps - q.lost.firstAbove) / 120 * 10) / 10} s later after ${q.overEvent.drops} drops; “${q.over.panel.text.at(-1)}”; ${q.over.panel.buttons.join(" · ")}; still the same screen 2.6 s later: ${q.overLater.state === "over"}.
+- Victory (recorded run): step ${q.wonAt.steps}, score ${q.wonAt.score}, ${q.wonAt.merges} merges, ${q.wonAt.drops} drops, best chain ${q.wonAt.bestChain}× — expected ${RECORDING.expect.steps}, ${RECORDING.expect.score}, ${RECORDING.expect.merges}, ${RECORDING.expect.drops}, ${RECORDING.expect.bestChain}×. Milestones: ${q.milestones.map(([name, theme]) => `${name}${theme ? ` (opens ${theme})` : ""}`).join(" → ")}. Layer: ${q.won.panel.buttons.join(" · ")}.
+- Persistence: \`${STORE}\` = \`${q.wonLater.profile}\`; old \`${LEGACY_STORE}\` key: ${q.wonLater.legacyBest === null ? "not written" : "WRITTEN"}. After a reload: best ${q.reloadedProfile.best}, furthest ${LADDER[q.reloadedProfile.furthest]}, wins ${q.reloadedProfile.wins}, environment “${q.reloadedProfile.settings.theme}”.
+- Leaving: Exit restores scroll ${q.left.scroll} (was ${q.scrollBefore}) and focus on Play (${q.left.focus === "play"}); browser Back leaves the game (${q.backButton.state === null}), Forward returns to “${q.forward}”; a link with #career-merge-game opens “${q.linked}”.
+- Touch (390 × 844): finger down at ${q.touch.downAim}, dragged to ${q.touch.dragAim} (wanted ${q.touch.wanted}), drops while down ${q.touch.dropsWhileDown}, after lifting ${q.touch.dropsAfterLift}, landed at ${q.touch.landedAt}; page scroll ${q.touch.scroll}; smallest HUD control ${q.phoneStart.smallest} px.
+- Active play, desktop (${q.playCost.ms} ms, ${q.playCost.merges} merges, ${q.playCost.bodies} objects at the end): ${q.playCost.scriptMs} ms script, ${q.playCost.taskMs} ms tasks, ${q.playCost.layouts} layouts, ${q.playCost.longTasks} long tasks; frames: median ${q.playCost.medianFrameMs} ms, 95 % within ${q.playCost.p95FrameMs} ms, worst ${q.playCost.worstFrameMs} ms.
+- Active play, phone with 4× CPU throttling: frames median ${q.phoneCost.medianFrameMs} ms, 95 % within ${q.phoneCost.p95FrameMs} ms, worst ${q.phoneCost.worstFrameMs} ms; ${q.phoneCost.longTasks} long tasks.
+- Crowd of ${q.crowd.started} objects at once: ${q.crowd.merges} merges (up to ${q.crowd.mostMergesInOneStep} in one step), ${q.crowd.left} left; a step took ${q.crowd.meanStepMs} ms on average, ${q.crowd.worstStepMs} ms at worst; outside the glass: ${q.crowd.outside}.
+- Without JavaScript: “${q.noJs.notice}” → ${q.noJs.noticeLinks.join(", ")}; Play shown: ${q.noJs.play !== null}; board shown: ${q.noJs.board}.
 - Forced engine failure: “${q.failureState.error}”.
-- Reduced motion: ${q.reducedMotion.during.running} animations during the run, ${q.reducedMotion.after.running} after; ${q.reducedMotion.steps} steps; ended in “${q.reducedMotion.phase}”.
-- Idle in the workspace: ${q.atRest.running} animations running, ${q.atRest.endless} endless; over ${q.idle.windowMs} ms: ${q.idle.taskMs} ms of main-thread tasks, ${q.idle.scriptMs} ms script, ${q.idle.layouts} layouts, ${q.idle.longTasks} long tasks.
-- Run flow, active (level 03, ${q.runCost.ms} ms): ${q.runCost.scriptMs} ms script, ${q.runCost.taskMs} ms tasks, ${q.runCost.layouts} layouts, ${q.runCost.longTasks} long tasks, worst frame ${q.runCost.worstFrameMs} ms.
-- Node drag, ${q.dragCost.moves} pointer moves: ${q.dragCost.scriptMs} ms script, ${q.dragCost.layouts} layouts, ${q.dragCost.longTasks} long tasks, worst frame ${q.dragCost.worstFrameMs} ms.
-- Locales (EN/TR/DE/ES/FR, desktop and phone): overflow ${LOCALES.map((locale) => `${locales[locale].desktop.overflow}/${locales[locale].mobile.overflow}`).join(" · ")}; Start mission: ${LOCALES.map((locale) => locales[locale].desktop.start).join(" · ")}; failure title: ${LOCALES.map((locale) => locales[locale].desktop.failTitle).join(" · ")}.
+- Reduced motion: effects reduced by default ${q.reducedMotion.setting}; shake after a chain ${q.reducedMotion.afterChain.shake}; CSS animations running ${q.reducedMotion.css.running}; the recorded run ended “${q.reducedMotion.end}” with score ${q.reducedMotion.score}.
+- Locales (EN/TR/DE/ES/FR, desktop and phone): overflow ${LOCALES.map((locale) => `${locales[locale].desktop.overflow}/${locales[locale].mobile.overflow}`).join(" · ")}; Play: ${LOCALES.map((locale) => locales[locale].desktop.play).join(" · ")}; game over: ${LOCALES.map((locale) => locales[locale].desktop.overTitle).join(" · ")}.
 
-## Entry page LCP (headless Chromium, ${BASELINE ? "E06.1 and E06.2 measured in turn, " : ""}5 cold loads each, median)
+## Entry page LCP (headless Chromium, ${BASELINE ? "E06.2 and E06.3 measured in turn, " : ""}5 cold loads each, median)
 
-| Viewport | Conditions | ${BASELINE ? "E06.1 (before) | " : ""}E06.2 (after) |
+| Viewport | Conditions | ${BASELINE ? "E06.2 (before) | " : ""}E06.3 (after) |
 | --- | --- | ${BASELINE ? "--- | " : ""}--- |
 ${lcp.map((row) => `| ${row.viewport} | ${row.conditions} | ${BASELINE ? `${lcpCell(row.before)} | ` : ""}${lcpCell(row.after)} |`).join("\n")}
 
-Cold-load transfer of the page at 1440 × 900 (same-origin, encoded, document included): ${Object.entries(transfers).map(([build, row]) => `${build === "before" ? "E06.1" : "E06.2"} ${kb(row.bytes)} in ${row.requests} requests`).join(" · ")}.
+Cold-load transfer of the page at 1440 × 900 (same-origin, encoded, document included): ${Object.entries(transfers).map(([build, row]) => `${build === "before" ? "E06.2" : "E06.3"} ${kb(row.bytes)} in ${row.requests} requests (${row.images} images)`).join(" · ")}.
 
 ## Sizes
 
