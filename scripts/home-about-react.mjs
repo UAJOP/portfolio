@@ -667,6 +667,30 @@ function v4JoydayStudioModel(locale, localization) {
   return { consumer: "joydayStudio", labels, moodLabel: moodCopy("label"), moods, caseStudyHref: routeRuntime.localizedInternalHref("/atolye-joyday-case-study/", locale) };
 }
 
+/* V4-E06.2: AI Flow Puzzle as an entered game. The accepted page markup stays;
+ * the route's consumer adds the game's shell around it — level select in the
+ * page, then mission briefing, workspace chrome and result as a full-viewport
+ * play mode (src/react/v4/consumers.jsx, js/pages/flow-puzzle-game.js,
+ * css/v4-flow-puzzle.css). The puzzle's own words (levels, nodes, verdicts)
+ * still come from the engine's catalog; this is the copy of the shell. */
+const FLOW_PUZZLE_ROUTE = "aiFlowPuzzle";
+const FLOW_PUZZLE_SCRIPT = "/js/pages/flow-puzzle-game.js";
+const FLOW_PUZZLE_KEYS = ["aria", "by", "tagline", "premise", "play", "continue", "missions", "progress", "solved", "unsolved", "best", "difficulty.standard", "difficulty.advanced", "how.title", "how.one", "how.two", "how.three", "noscript", "caseStudy", "mission.label", "mission.scenario", "mission.input", "mission.expected", "mission.reaches", "mission.constraints", "mission.nodes", "mission.links", "mission.hints", "mission.tip", "mission.start", "mission.progress", "levels", "exit", "menu", "close", "library", "panel", "tab.mission", "tab.node", "tab.run", "tab.tools", "hintsUsed", "zoomIn", "zoomOut", "fit", "running", "stop", "triggerInput", "endOutput", "fail.title", "fail.wentWrong", "fail.compare", "fail.reached", "fail.notReached", "fail.unreachable", "fail.deadEnd", "fail.retry", "fail.hint", "fail.note", "win.note", "win.quality", "win.total", "win.newBest", "win.assisted", "win.next", "win.inspect", "win.allDone", "error.title", "error.text", "error.reload"];
+function v4FlowPuzzleModel(locale, localization) {
+  const labels = Object.fromEntries(FLOW_PUZZLE_KEYS.map((key) => {
+    const value = localization.message(`aiFlow.game.${key}`);
+    if (typeof value !== "string" || !value) throw new Error(`${locale}/${FLOW_PUZZLE_ROUTE}: missing aiFlow.game.${key}`);
+    /* mission.start → missionStart: the consumer and the controller read plain property names. */
+    return [key.replace(/\.(\w)/g, (match, letter) => letter.toUpperCase()), decodeHtml(value)];
+  }));
+  return {
+    consumer: "flowPuzzle",
+    labels,
+    gamesHref: routeRuntime.localizedInternalHref("/games/", locale),
+    caseStudyHref: routeRuntime.localizedInternalHref("/ai-flow-puzzle-case-study/", locale),
+  };
+}
+
 const SHELL_MESSAGE_KEYS = [
   "language.selectorAria",
   "nav.open",
@@ -823,7 +847,8 @@ export function productionMainProps(route, {
     const structure = route.routeId === "labs"
       ? withLabCards(engineShell.localized.children, labCardNodes(route.locale, loadLocalization(route.locale)))
       : engineShell.localized.children;
-    const studio = route.routeId === JOYDAY_STUDIO_ROUTE ? { v4: v4JoydayStudioModel(route.locale, loadLocalization(route.locale)) } : {};
+    const studio = route.routeId === JOYDAY_STUDIO_ROUTE ? { v4: v4JoydayStudioModel(route.locale, loadLocalization(route.locale)) }
+      : route.routeId === FLOW_PUZZLE_ROUTE ? { v4: v4FlowPuzzleModel(route.locale, loadLocalization(route.locale)) } : {};
     return { kind: "engineShell", page: route.routeId, locale: route.locale, structure, ...studio };
   }
   const captured = remainingRoutePage(route);
@@ -965,7 +990,7 @@ export function productionDocumentProps(route, clientEntry) {
        * script.js load that page’s runtime modules. */
       /* The AJOOP case study is a case study; the Hub is its own page type. */
       hub: hubRoute,
-      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : [],
+      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : [],
       page: casePage || ajoopCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
       navPage: casePage || projectRoute ? "works" : route.routeId,
       bodyClass: caseLocale?.bodyClass || (ajoopCaseRoute ? "case-study-page" : null),
@@ -977,7 +1002,7 @@ export function productionDocumentProps(route, clientEntry) {
       /* Scripts the accepted document ran before the runtime loader. */
       leadScripts: captured?.page.leadScripts || [],
       /* The engine host stays the document's last classic script. */
-      scripts: engineShell ? [...engineShell.page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : []), ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
+      scripts: engineShell ? [...engineShell.page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : route.routeId === FLOW_PUZZLE_ROUTE ? [FLOW_PUZZLE_SCRIPT] : []), ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
       clientEntry,
     },
     head: caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({

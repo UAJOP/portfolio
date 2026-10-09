@@ -578,6 +578,7 @@ function startAiFlowPuzzle(lifecycle) {
     state.running = false;
     state.runningNodeId = null;
     state.liveLinkKey = null;
+    board.classList.remove("is-following");
   }
   function clearMarks() {
     state.visited.clear();
@@ -591,6 +592,7 @@ function startAiFlowPuzzle(lifecycle) {
     clearMarks();
     state.lastValidation = null;
     state.lastQuality = null;
+    emit("touched");
   }
 
   function worldSize() { return { w: world.clientWidth || board.clientWidth || 1, h: world.clientHeight || board.clientHeight || 1 }; }
@@ -820,19 +822,53 @@ function startAiFlowPuzzle(lifecycle) {
     const right = Math.max(...boxes.map((box) => box.cx + box.w / 2));
     const top = Math.min(...boxes.map((box) => box.cy - box.h / 2));
     const bottom = Math.max(...boxes.map((box) => box.cy + box.h / 2));
-    const pad = Math.min(72, rect.width * 0.08);
-    view.k = Math.max(MIN_ZOOM, Math.min(1, (rect.width - pad * 2) / Math.max(1, right - left), (rect.height - pad * 2) / Math.max(1, bottom - top)));
+    const pad = Math.min(44, rect.width * 0.06);
+    /* The shell says how much of the board its own controls cover. */
+    const style = getComputedStyle(board);
+    const insetTop = parseFloat(style.getPropertyValue("--ai-fit-top")) || 0;
+    const insetBottom = parseFloat(style.getPropertyValue("--ai-fit-bottom")) || 0;
+    const height = Math.max(120, rect.height - insetTop - insetBottom);
+    view.k = Math.max(MIN_ZOOM, Math.min(1, (rect.width - pad * 2) / Math.max(1, right - left), (height - pad * 2) / Math.max(1, bottom - top)));
     view.x = rect.width / 2 - ((left + right) / 2) * view.k;
-    view.y = rect.height / 2 - ((top + bottom) / 2) * view.k;
+    view.y = insetTop + height / 2 - ((top + bottom) / 2) * view.k;
+    /* A tall board is read at a legible size from its start; the rest is a pan away. */
+    if (portrait() && view.k < 0.8) {
+      view.k = 0.8;
+      view.x = rect.width / 2 - ((left + right) / 2) * view.k;
+      view.y = insetTop + pad - top * view.k;
+    }
     applyView();
   }
+  /* During a run the view follows the signal when it leaves what is shown. */
+  function followNode(node) {
+    if (!gameRoot || !interactive()) return;
+    const rect = board.getBoundingClientRect();
+    const style = getComputedStyle(board);
+    const insetTop = parseFloat(style.getPropertyValue("--ai-fit-top")) || 0;
+    const insetBottom = parseFloat(style.getPropertyValue("--ai-fit-bottom")) || 0;
+    const box = nodeBox(node);
+    const x = view.x + box.cx * view.k;
+    const y = view.y + box.cy * view.k;
+    const halfW = (box.w / 2) * view.k;
+    const halfH = (box.h / 2) * view.k;
+    if (x - halfW >= 8 && x + halfW <= rect.width - 8 && y - halfH >= insetTop && y + halfH <= rect.height - insetBottom) return;
+    view.x = rect.width / 2 - box.cx * view.k;
+    view.y = insetTop + (rect.height - insetTop - insetBottom) / 2 - box.cy * view.k;
+    boundView();
+    applyView();
+  }
+
   function focusNode(id) {
     const node = nodeById(id);
     if (!node || !gameRoot) return;
     const rect = board.getBoundingClientRect();
     const box = nodeBox(node);
+    /* Centred in the part of the board the shell's controls leave clear. */
+    const style = getComputedStyle(board);
+    const insetTop = parseFloat(style.getPropertyValue("--ai-fit-top")) || 0;
+    const insetBottom = parseFloat(style.getPropertyValue("--ai-fit-bottom")) || 0;
     view.x = rect.width / 2 - box.cx * view.k;
-    view.y = rect.height / 2 - box.cy * view.k;
+    view.y = insetTop + (rect.height - insetTop - insetBottom) / 2 - box.cy * view.k;
     boundView();
     applyView();
   }
@@ -1418,7 +1454,9 @@ function startAiFlowPuzzle(lifecycle) {
   /* Where the nth step of a flow sits: left to right on a wide board, top to
    * bottom in two staggered columns on a tall one. */
   function slot(index, columns) {
-    if (portrait()) return { x: index % 2 === 0 ? 30 : 70, y: 7 + (index / columns) * 86 };
+    if (portrait()) return { x: index % 2 === 0 ? 30 : 70, y: 6 + index * 8.6 };
+    /* In the workspace the steps sit close enough to read without zooming out. */
+    if (gameRoot) return { x: 14 + index * 8.25, y: index % 2 === 0 ? 36 : 60 };
     return { x: 7 + (index / columns) * 78, y: index % 2 === 0 ? 34 : 58 };
   }
 
@@ -1548,6 +1586,7 @@ function startAiFlowPuzzle(lifecycle) {
     renderAll(false);
     emit("run-start", { steps: steps.length, message });
     const still = reducedMotion();
+    if (!still) board.classList.add("is-following");
     const travel = still ? 60 : 340;
     const dwell = still ? 90 : 300;
     for (let index = 0; index < steps.length; index += 1) {
@@ -1563,6 +1602,7 @@ function startAiFlowPuzzle(lifecycle) {
       }
       state.runningNodeId = step.node.id;
       state.visited.add(step.node.id);
+      followNode(step.node);
       renderBoard();
       appendRunLog(runLabelForType(step.node.type), `${tNode(step.node.type).title}: ${step.node.config?.name || tNode(step.node.type).title}`, step.node.type === "fallback" || step.node.type === "handoff" ? "warning" : "success");
       emit("run-step", { index, total: steps.length, node: step.node.id, type: step.node.type, via: step.via ? linkKey(step.via) : null });
@@ -1571,13 +1611,16 @@ function startAiFlowPuzzle(lifecycle) {
     }
     state.runningNodeId = null;
     state.running = false;
+    board.classList.remove("is-following");
     const validation = validateCurrentFlow(true, "run");
     if (validation.valid) {
       appendRunLog(t("runCompleted"), makeSummary(), "success");
       setStatus(t("runCompleted"), "success");
     } else {
-      appendRunLog(t("runInvalid"), validation.missingEdges[0] ? `${t("missingEdge")} ${tNode(validation.missingEdges[0][0]).title} → ${tNode(validation.missingEdges[0][1]).title}` : t("missingTitle"), "warning");
-      setStatus(t("runInvalid"), "warning");
+      /* The flow did run, as far as it goes; what it lacks is the verdict. */
+      const first = validation.missingNodes[0] ? `${t("missingNode")} ${tNode(validation.missingNodes[0]).title}` : validation.missingEdges[0] ? `${t("missingEdge")} ${tNode(validation.missingEdges[0][0]).title} → ${tNode(validation.missingEdges[0][1]).title}` : "";
+      appendRunLog(t("missingTitle"), first, "warning");
+      setStatus(t("missingTitle"), "warning");
     }
     emit("run-end", { valid: validation.valid });
   }
@@ -1726,7 +1769,10 @@ function startAiFlowPuzzle(lifecycle) {
       if (board.closest("[inert]")) return;
       /* Board keys answer on the board (or with nothing focused), never while
        * the visitor is typing in a field. */
-      const onBoard = event.target === document.body || board.contains(event.target);
+      const target = event.target;
+      const typing = Boolean(target.closest?.("input, textarea, select, [contenteditable]"));
+      /* Clicking a wire leaves focus on the page around the board, not on it. */
+      const onBoard = !typing && (target === document.body || board.contains(target) || target.contains?.(board));
       if (!onBoard || state.running) return;
       if (event.key === "Delete" || event.key === "Backspace") {
         const link = state.selectedLinkKey ? state.links.find((entry) => linkKey(entry) === state.selectedLinkKey) : null;

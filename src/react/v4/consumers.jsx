@@ -396,7 +396,141 @@ function joydayStudio(v4, node, classes, attributes, key) {
   return null;
 }
 
-const CONSUMERS = { home, works, detail, experience, certificates, about, hub, joydayStudio };
+/* AI Flow Puzzle (V4-E06.2): the page becomes the game's level select, and a
+ * mission is an entered play mode. The accepted structure is not edited: the
+ * hero gains the hub (missions, progress, how to play), and the game section
+ * gains the shell around its own panels — the workspace bar, the panel tabs,
+ * the canvas controls, a phone dock, and the mission, result and failure
+ * layers. Those layers are empty here and written by
+ * js/pages/flow-puzzle-game.js from the engine's own data, so nothing about a
+ * level is stated twice. Every part carries data-afp-part, which is how
+ * scripts/v4-e06-2-flow-puzzle-edits.mjs sets the delta aside. */
+const GAME_ICONS = {
+  back: "M15 6l-6 6 6 6M9 12h11",
+  menu: "M5 7h14M5 12h14M5 17h14",
+  plus: "M12 5v14M5 12h14",
+  minus: "M5 12h14",
+  fit: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
+  nodes: "M4 6h6v5H4zM14 13h6v5h-6zM10 8.5h3a2 2 0 0 1 2 2V13",
+  panel: "M4 5h16v14H4zM14 5v14",
+  play: "M8 5l11 7-11 7z",
+  hint: "M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z",
+  close: "M6 6l12 12M18 6L6 18",
+  stop: "M7 7h10v10H7z",
+};
+
+function GameIcon({ name }) {
+  return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={GAME_ICONS[name]} /></svg>;
+}
+
+function flowPuzzle(v4, node, classes, attributes, key) {
+  const { labels } = v4;
+  const part = (name) => `${key}.afp-${name}`;
+  /* The hero is the hub: the game's name, the way in, and the missions. */
+  if (classes.has("ai-puzzle-hero")) {
+    attributes["data-afp-hub"] = "";
+    return [
+      <div key={part("hub")} className="afp-hub" data-afp-part="hub">
+        <div className="afp-hub__head">
+          <strong>{labels.missions}</strong>
+          <span data-afp-progress="" role="status" />
+        </div>
+        <ol className="afp-levels" data-afp-levels="" />
+        <div className="afp-how">
+          <strong>{labels.howTitle}</strong>
+          <ol>
+            <li>{labels.howOne}</li>
+            <li>{labels.howTwo}</li>
+            <li>{labels.howThree}</li>
+          </ol>
+        </div>
+      </div>,
+    ];
+  }
+  if (classes.has("ai-puzzle-hero-copy")) {
+    return [
+      <p key={part("by")} className="afp-by" data-afp-part="by"><span>{labels.by}</span><b>{labels.tagline}</b><i>{labels.premise}</i></p>,
+      <noscript key={part("noscript")} data-afp-part="noscript">
+        <style>{"[data-afp-play],.afp-hub{display:none!important}"}</style>
+        <p className="afp-noscript">{labels.noscript} <a href={v4.caseStudyHref}>{labels.caseStudy}</a></p>
+      </noscript>,
+    ];
+  }
+  /* The hero's own action plays the next unsolved mission. */
+  if (node.tag === "button" && "data-ai-scroll-game" in attributes) attributes["data-afp-play"] = "";
+  if (attributes.id === "ai-flow-puzzle-game") {
+    attributes["data-afp-root"] = "";
+    attributes["data-afp-labels"] = JSON.stringify(labels);
+    attributes["aria-label"] = labels.aria;
+    return {
+      arrange: (own) => [
+        <div key={part("bar-start")} className="afp-bar afp-bar--start" data-afp-part="bar-start">
+          <button type="button" className="afp-btn" data-afp-leave="" aria-label={labels.levels} title={labels.levels}><GameIcon name="back" /><span>{labels.levels}</span></button>
+          <strong className="afp-brand" aria-hidden="true">AI Flow Puzzle</strong>
+          <span className="afp-level-chip" data-afp-level="" />
+        </div>,
+        <div key={part("bar-end")} className="afp-bar afp-bar--end" data-afp-part="bar-end">
+          <span className="afp-hints"><GameIcon name="hint" /><span>{labels.hintsUsed}</span><b data-afp-hints="">0</b></span>
+          <button type="button" className="afp-btn afp-btn--icon" data-afp-menu="" aria-expanded="false" aria-label={labels.menu} title={labels.menu}><GameIcon name="menu" /></button>
+        </div>,
+        ...own,
+        <div key={part("tabs")} className="afp-tabs" data-afp-part="tabs" role="group" aria-label={labels.panel}>
+          <button type="button" data-afp-tab="mission" aria-pressed="true">{labels.tabMission}</button>
+          <button type="button" data-afp-tab="node" aria-pressed="false">{labels.tabNode}</button>
+          <button type="button" data-afp-tab="run" aria-pressed="false">{labels.tabRun}</button>
+          <button type="button" data-afp-tab="tools" aria-pressed="false">{labels.tabTools}</button>
+          <button type="button" className="afp-tabs__close" data-afp-close="" aria-label={labels.close} title={labels.close}><GameIcon name="close" /></button>
+        </div>,
+        <div key={part("zoom")} className="afp-zoom" data-afp-part="zoom" role="group" aria-label={labels.fit}>
+          <button type="button" data-afp-zoom="out" aria-label={labels.zoomOut} title={labels.zoomOut}><GameIcon name="minus" /></button>
+          <button type="button" data-afp-zoom="fit" aria-label={labels.fit} title={labels.fit}><GameIcon name="fit" /></button>
+          <button type="button" data-afp-zoom="in" aria-label={labels.zoomIn} title={labels.zoomIn}><GameIcon name="plus" /></button>
+        </div>,
+        /* A hint, pinned to the board as a note until it is acted on. */
+        <p key={part("note")} className="afp-note" data-afp-part="note" data-afp-note="" role="status" hidden />,
+        /* What a touch selection can do, without opening the inspector. */
+        <div key={part("selbar")} className="afp-selbar" data-afp-part="selbar" data-afp-selbar="" hidden />,
+        <div key={part("dock")} className="afp-dock" data-afp-part="dock">
+          <button type="button" data-afp-sheet="library"><GameIcon name="nodes" /><span>{labels.library}</span></button>
+          <button type="button" data-afp-press="[data-ai-hint]"><GameIcon name="hint" /><span data-afp-text="hintButton" /></button>
+          <button type="button" className="afp-dock__run" data-afp-run=""><GameIcon name="play" /><span data-afp-text="runFlow" /></button>
+          <button type="button" data-afp-sheet="side"><GameIcon name="panel" /><span>{labels.panel}</span></button>
+        </div>,
+        <button key={part("scrim")} type="button" className="afp-scrim" data-afp-part="scrim" data-afp-close="" aria-label={labels.close} tabIndex={-1} />,
+        <div key={part("menu")} className="afp-menu" data-afp-part="menu" data-afp-menu-list="" hidden>
+          <button type="button" data-afp-leave="">{labels.levels}</button>
+          <button type="button" data-afp-press="[data-ai-arrange]" data-afp-text="arrangeButton" />
+          <button type="button" data-afp-press="[data-ai-reset]" data-afp-text="resetButton" />
+          <button type="button" data-afp-press="[data-ai-validate]" data-afp-text="validateFlow" />
+          <a href={v4.gamesHref}>{labels.exit}</a>
+        </div>,
+        <section key={part("mission")} className="afp-mission" data-afp-part="mission" role="dialog" aria-modal="true" aria-labelledby="afp-mission-title">
+          <div className="afp-sheet">
+            <div className="afp-mission__body" data-afp-mission="" />
+            <div className="afp-actions">
+              <button type="button" className="afp-cta" data-afp-start="">{labels.missionStart}</button>
+              <button type="button" className="afp-ghost" data-afp-leave="">{labels.levels}</button>
+            </div>
+          </div>
+        </section>,
+        <section key={part("result")} className="afp-result" data-afp-part="result" role="dialog" aria-modal="true" aria-labelledby="afp-result-title">
+          <div className="afp-sheet" data-afp-result="" />
+        </section>,
+        <div key={part("error")} className="afp-error" data-afp-part="error" role="alert" data-afp-error="" hidden>
+          <strong>{labels.errorTitle}</strong>
+          <p>{labels.errorText}</p>
+          <div className="afp-actions">
+            <button type="button" className="afp-cta" data-afp-reload="">{labels.errorReload}</button>
+            <button type="button" className="afp-ghost" data-afp-leave="">{labels.levels}</button>
+          </div>
+        </div>,
+      ],
+    };
+  }
+  return null;
+}
+
+const CONSUMERS = { home, works, detail, experience, certificates, about, hub, joydayStudio, flowPuzzle };
 
 export function applyV4(page, v4, node, classes, attributes, key) {
   const consumer = CONSUMERS[v4.consumer || page];
