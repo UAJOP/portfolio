@@ -39,34 +39,47 @@ jobs:
       # GitHub Pages-shaped server, foundation, projects, SEO, runtime,
       # performance, CSS, Master 2 design + token parity, static a11y,
       # recruiter UX, analytics, automation, JS, portfolio/AJOOP guards, assets,
-      # links, HTML and spelling). CI runs the chain itself instead of restating
-      # its members, so a gate added to package.json can never be skipped here.
+      # links, HTML, spelling and the Master 3 foundation, `qa:m3:foundation`).
+      # CI runs the chain itself instead of restating its members, so a gate
+      # added to package.json can never be skipped here.
       # Pa11y and Lighthouse below are the separate browser/runtime layer.
+      #
+      # RELEASE AUTHORITY SINCE V4: the emitted artifact is held to the current
+      # contracts, `qa:site:artifact` (bounded Pages artifact) and `qa:v4:e08`
+      # (the V4 release check). The Master 3 parity chain (`npm run qa:react`,
+      # `npm run qa:m3:artifact`) compares the artifact with snapshots taken
+      # before V4 changed it on purpose; its scripts stay in the repository,
+      # unchanged, as diagnostics and are not run here.
       - name: Repository QA contract (npm run qa)
         shell: bash
         run: |
           set -o pipefail
           npm run qa 2>&1 | tee qa-results/qa.txt
 
+      # Still built: the React preview accessibility audit below serves it.
       - name: Build React migration foundation
         run: |
           set -o pipefail
           npm run build:react 2>&1 | tee qa-results/react-build.txt
-
-      - name: Check React foundation
-        run: |
-          set -o pipefail
-          npm run qa:react 2>&1 | tee qa-results/react-foundation.txt
 
       - name: Build mixed production artifact
         run: |
           set -o pipefail
           npm run build:site 2>&1 | tee qa-results/site-build.txt
 
-      - name: Audit emitted production artifact
+      - name: Verify emitted production artifact (npm run qa:site:artifact)
         run: |
           set -o pipefail
-          npm run qa:m3:artifact 2>&1 | tee qa-results/emitted-artifact.txt
+          npm run qa:site:artifact 2>&1 | tee qa-results/emitted-artifact.txt
+
+      # The V4 release check, on the artifact just built. Its screenshots,
+      # sheets and summary go to the reports directory uploaded below.
+      - name: V4 release check (npm run qa:v4:e08)
+        env:
+          V4_CAPTURE_DIR: qa-results/v4-e08
+        run: |
+          set -o pipefail
+          npm run qa:v4:e08 2>&1 | tee qa-results/v4-release-check.txt
 
       - name: Start local site
         run: |
@@ -224,10 +237,10 @@ jobs:
       - name: Build bounded Pages artifact
         run: npm run build:site
 
-      - name: Audit exact deploy artifact with the complete Master 3 gate
-        run: npm run qa:m3:artifact
-
-      - name: Verify bounded Pages artifact
+      # The exact artifact about to be uploaded is held to the current artifact
+      # contract. The Master 3 artifact gate that stood here compared it with
+      # pre-V4 snapshots; it remains available as `npm run qa:m3:artifact`.
+      - name: Verify bounded Pages artifact (npm run qa:site:artifact)
         run: npm run qa:site:artifact
 
       - name: Configure GitHub Pages

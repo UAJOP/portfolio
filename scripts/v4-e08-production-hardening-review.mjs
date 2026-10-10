@@ -6,7 +6,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import puppeteer from "puppeteer";
 
 const ROOT = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
-const OUT = "C:\\PC-Audit\\v4-review\\v4-e08-production-hardening";
+/* The review pack is written outside the repository by default (V4 rule). CI
+ * runs this script as the blocking V4 release check and points it at its
+ * reports directory instead. */
+const OUT = process.env.V4_CAPTURE_DIR ? path.resolve(process.env.V4_CAPTURE_DIR) : "C:\\PC-Audit\\v4-review\\v4-e08-production-hardening";
 const PORT = process.env.V4_CAPTURE_PORT || "4188";
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 const EDGE = "https://ajoop.kaanbalci.com/";
@@ -101,7 +104,10 @@ const issues = [];
 const screenshots = [];
 const socials = [];
 await ensureServer();
-const browser = await puppeteer.launch({ headless: true });
+/* As every browser gate of this repository launches on the GitHub runner. */
+const browser = await puppeteer.launch(process.env.GITHUB_ACTIONS === "true"
+  ? { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] }
+  : { headless: true });
 try {
   for (let index = 0; index < captures.length; index += 1) {
     const [label, route, viewport, theme] = captures[index];

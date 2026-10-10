@@ -168,7 +168,7 @@ npm run preview:react
 npm run qa:react
 ```
 
-`npm run build:react`, `npm run qa:react` and `npm run qa:a11y:react` are **blocking** in CI. The React build doubles as the JSX syntax gate, because `qa:js` parses root files as classic scripts and cannot represent JSX.
+`npm run build:react` and `npm run qa:a11y:react` are **blocking** in CI. `npm run qa:react` is the Master 3 parity chain: it compares the artifact with snapshots taken before V4 and is kept as a diagnostic, not run in CI; the release is held to `npm run qa` (which includes `qa:m3:foundation`), `npm run qa:site:artifact` and `npm run qa:v4:e08`. The React build doubles as the JSX syntax gate, because `qa:js` parses root files as classic scripts and cannot represent JSX.
 
 See [`REACT_MIGRATION_PLAN.md`](REACT_MIGRATION_PLAN.md) for the phase plan, the parity rules and the static/pre-render policy, and [`V3_DESIGN_SYSTEM.md`](V3_DESIGN_SYSTEM.md) for the design system the shared shell is built from.
 
