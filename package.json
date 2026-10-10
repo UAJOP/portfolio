@@ -3,7 +3,7 @@
   "private": true,
   "description": "Automated preflight checks for kaanbalci.com",
   "scripts": {
-    "qa": "npm run qa:data && npm run qa:i18n && npm run qa:routes && npm run qa:routes:http && npm run qa:foundation && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:performance && npm run qa:css && npm run qa:icons && npm run qa:design && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling && npm run qa:m3:foundation",
+    "qa": "npm run qa:data && npm run qa:i18n && npm run qa:routes && npm run qa:routes:http && npm run qa:foundation && npm run qa:projects && npm run qa:seo && npm run qa:runtime && npm run qa:performance && npm run qa:css && npm run qa:icons && npm run qa:design && npm run qa:a11y:static && npm run qa:recruiter && npm run qa:analytics && npm run qa:automation && npm run qa:js && npm run qa:joyday:export && npm run qa:portfolio && npm run qa:assets && npm run qa:links && npm run qa:html && npm run qa:spelling && npm run qa:m3:foundation",
     "qa:js": "node qa-js-syntax.js",
     "qa:portfolio": "node qa-portfolio-consistency.js && node scripts/qa-ajoop-sinama.mjs && node scripts/qa-ajoop-discourse.mjs && node scripts/qa-ajoop-tools.mjs && node scripts/qa-ajoop-agent.mjs && node scripts/qa-ajoop-telemetry.mjs && node scripts/qa-ajoop-memory.mjs && node scripts/qa-ajoop-memory-store.mjs && node scripts/qa-ajoop-memory-retrieval.mjs && node scripts/qa-ajoop-memory-context.mjs && node scripts/qa-ajoop-owner-generation.mjs && node scripts/qa-ajoop-memory-correction.mjs && node scripts/qa-ajoop-read-connectors.mjs && node scripts/qa-ajoop-gmail-read-adapter.mjs && node scripts/qa-ajoop-calendar-read-adapter.mjs && node scripts/qa-ajoop-github-read-adapter.mjs && node scripts/qa-ajoop-drive-read-adapter.mjs && node scripts/qa-ajoop-owner-connected-workflows.mjs && node scripts/qa-ajoop-action-safety.mjs && node scripts/qa-ajoop-a4-golden.mjs && node scripts/qa-ajoop-golden.mjs && node scripts/qa-ajoop-turn-feedback.mjs",
     "qa:assets": "node qa-assets.js",
@@ -93,6 +93,8 @@
     "qa:v4:works-coverage": "node scripts/qa-v4-works-coverage.mjs",
     "qa:v4:works-presentation": "node scripts/qa-v4-works-presentation.mjs",
     "qa:v4:e08": "node scripts/v4-e08-production-hardening-review.mjs",
+    "qa:joyday:export": "node scripts/qa-joyday-export.mjs",
+    "qa:joyday:export:browser": "node scripts/j01-joyday-export-review.mjs",
     "qa:m3:foundation": "node scripts/qa-m3-foundation.mjs",
     "qa:m3:parity": "node scripts/qa-m3-artifact-parity.mjs",
     "qa:m3:home-about:parity": "node scripts/qa-m3-home-about-parity.mjs",

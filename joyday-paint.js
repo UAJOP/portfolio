@@ -1,3 +1,64 @@
+/* J01 — wallpaper-ready export. The sizes on offer, the validation of a custom
+ * size, the Fit / Fill geometry and the file name are plain functions of their
+ * arguments: no canvas and no DOM. The engine below composes with them, and
+ * scripts/qa-joyday-export.mjs holds them to their rules. */
+const JoydayExport = (() => {
+  /* 4096 px a side is also the largest canvas every current phone can encode. */
+  const LIMITS = Object.freeze({ min: 320, max: 4096 });
+  const PREVIEW_MAX = 720;
+  const PRESETS = Object.freeze([
+    ["desktop", 1920, 1080], ["desktop", 2560, 1440], ["desktop", 3840, 2160],
+    ["mobile", 1080, 1920], ["mobile", 1170, 2532], ["mobile", 1290, 2796], ["mobile", 1440, 3200],
+    ["social", 1080, 1080], ["social", 1080, 1350]
+  ].map(([group, width, height]) => Object.freeze({ id: `${group}-${width}x${height}`, group, width, height })));
+
+  function preset(id) { return PRESETS.find((item) => item.id === id) || null; }
+
+  /* Whole pixels inside the limits on both sides, or nothing. */
+  function customSize(width, height) {
+    const sides = [width, height].map((value) => (typeof value === "string" && value.trim() === "" ? NaN : Number(value)));
+    return sides.every((side) => Number.isInteger(side) && side >= LIMITS.min && side <= LIMITS.max) ? { width: sides[0], height: sides[1] } : null;
+  }
+
+  function unit(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? Math.max(0, Math.min(1, number)) : 0.5;
+  }
+
+  /* Where the artwork lands in a width × height frame. Both axes always share
+   * one scale, so nothing is ever stretched.
+   *   fit   the whole artwork, centred; the frame shows around it
+   *   fill  the frame is covered; the focal point (0–1 on each axis) chooses
+   *         which part of the overflow stays, clamped to the artwork's edges
+   * sx, sy, sw, sh is the part of the artwork drawn; dx, dy, dw, dh is where. */
+  function geometry({ sourceWidth, sourceHeight, width, height, mode = "fill", focalX = 0.5, focalY = 0.5 }) {
+    if (mode === "fit") {
+      const scale = Math.min(width / sourceWidth, height / sourceHeight);
+      const dw = sourceWidth * scale;
+      const dh = sourceHeight * scale;
+      return { mode: "fit", scale, sx: 0, sy: 0, sw: sourceWidth, sh: sourceHeight, dx: (width - dw) / 2, dy: (height - dh) / 2, dw, dh, slackX: 0, slackY: 0 };
+    }
+    const scale = Math.max(width / sourceWidth, height / sourceHeight);
+    const sw = Math.min(sourceWidth, width / scale);
+    const sh = Math.min(sourceHeight, height / scale);
+    const slackX = sourceWidth - sw;
+    const slackY = sourceHeight - sh;
+    return { mode: "fill", scale, sx: slackX * unit(focalX), sy: slackY * unit(focalY), sw, sh, dx: 0, dy: 0, dw: width, dh: height, slackX, slackY };
+  }
+
+  /* The preview is the same frame, drawn smaller. */
+  function previewSize(width, height, max = PREVIEW_MAX) {
+    const ratio = Math.min(1, max / Math.max(width, height));
+    return { width: Math.max(1, Math.round(width * ratio)), height: Math.max(1, Math.round(height * ratio)) };
+  }
+
+  function filename({ base, name, label, width, height }) {
+    return `${base}-${name}-${label}-${width}x${height}.png`;
+  }
+
+  return Object.freeze({ LIMITS, PREVIEW_MAX, PRESETS, preset, customSize, geometry, previewSize, filename });
+})();
+
 function startJoydayPaint(lifecycle) {
   const canvas = document.getElementById("joyday-art-canvas");
   if (!canvas) return;
@@ -48,6 +109,8 @@ function startJoydayPaint(lifecycle) {
   const signatureInput = document.querySelector("[data-joyday-signature]");
   const exportButtons = document.querySelectorAll("[data-joyday-export-mode]");
   if (modal) modal.inert = true;
+  /* The signature is the visitor's choice: nothing is branded unless asked. */
+  if (signatureInput) signatureInput.checked = false;
 
   const palettePool = [
     { key: "joydayBright", colors: ["#ffffff", "#101827", "#ff3b6b", "#ff7a1a", "#ffd23f", "#20c997", "#22d3ee", "#2563eb", "#8b5cf6", "#ec4899", "#9b5c2e", "#f5efe6"] },
@@ -116,6 +179,19 @@ function startJoydayPaint(lifecycle) {
         cleanExport: "Clean canvas", brandedExport: "Joyday card", downloadPng: "Download PNG", realCanvasCta: "Make it on a real canvas", newArtwork: "New artwork"
       },
       actions: { undo: "Undo", redo: "Redo", remix: "Remix", clear: "Clear", finish: "Finish Artwork" },
+      export: {
+        size: "Export size", original: "Original canvas", desktop: "Desktop wallpaper", mobile: "Mobile wallpaper", social: "Social and general", custom: "Custom size",
+        width: "Width in pixels", height: "Height in pixels", pixels: "{width} by {height} pixels",
+        composition: "Composition", fill: "Fill the frame", fit: "Fit whole artwork",
+        background: "Background", paper: "Paper", dark: "Dark",
+        focalX: "Horizontal position", focalY: "Vertical position",
+        focalHint: "Drag the preview or move the sliders to choose what stays in the frame.",
+        output: "Output: {width} × {height} px, PNG", enlarged: "enlarged {factor}× from the canvas",
+        cardNote: "The Joyday card has one fixed size.",
+        range: "Enter whole numbers from {min} to {max} pixels for both sides.",
+        preparing: "Preparing {width} × {height} PNG…", saved: "Download started: {file}", shared: "Shared: {file}",
+        failed: "The image could not be created. Try a smaller size.", share: "Share or save image"
+      },
       soundOn: "Sound On", soundOff: "Sound Off", completed: "Completed!", missionNext: "Next mission unlocked"
     },
     tr: {
@@ -142,6 +218,19 @@ function startJoydayPaint(lifecycle) {
         cleanExport: "Temiz tuval", brandedExport: "Joyday kartı", downloadPng: "PNG indir", realCanvasCta: "Gerçek tuvalde yap", newArtwork: "Yeni eser"
       },
       actions: { undo: "Geri al", redo: "İleri al", remix: "Remix", clear: "Temizle", finish: "Eseri bitir" },
+      export: {
+        size: "Çıktı boyutu", original: "Orijinal tuval", desktop: "Masaüstü duvar kâğıdı", mobile: "Telefon duvar kâğıdı", social: "Sosyal ve genel", custom: "Özel boyut",
+        width: "Genişlik (piksel)", height: "Yükseklik (piksel)", pixels: "{width} x {height} piksel",
+        composition: "Kompozisyon", fill: "Çerçeveyi doldur", fit: "Eserin tamamını sığdır",
+        background: "Arka plan", paper: "Kâğıt", dark: "Koyu",
+        focalX: "Yatay konum", focalY: "Dikey konum",
+        focalHint: "Çerçevede neyin kalacağını seçmek için önizlemeyi sürükle veya kaydırıcıları kullan.",
+        output: "Çıktı: {width} × {height} px, PNG", enlarged: "tuvalden {factor} kat büyütüldü",
+        cardNote: "Joyday kartının tek bir sabit boyutu var.",
+        range: "Her iki kenar için {min} ile {max} piksel arasında tam sayı gir.",
+        preparing: "{width} × {height} PNG hazırlanıyor…", saved: "İndirme başladı: {file}", shared: "Paylaşıldı: {file}",
+        failed: "Görsel oluşturulamadı. Daha küçük bir boyut dene.", share: "Paylaş veya görseli kaydet"
+      },
       soundOn: "Ses Açık", soundOff: "Ses Kapalı", completed: "Tamamlandı!", missionNext: "Yeni görev açıldı"
     }
   };
@@ -168,8 +257,27 @@ function startJoydayPaint(lifecycle) {
     missionLocked: false,
     sound: false,
     audio: null,
-    exportMode: "clean"
+    exportMode: "clean",
+    exportSize: "original",
+    exportFit: "fill",
+    exportBackground: "paper",
+    focalX: 0.5,
+    focalY: 0.5,
+    exporting: false
   };
+
+  let modalReturnFocus = null;
+  let exportStatusState = null;
+  let previewTimer = 0;
+  let focalDrag = null;
+  const exportPanel = buildExportPanel();
+  const exportSizeSelect = exportPanel?.querySelector("[data-joyday-export-size]");
+  const exportWidth = exportPanel?.querySelector("[data-joyday-export-width]");
+  const exportHeight = exportPanel?.querySelector("[data-joyday-export-height]");
+  const exportError = exportPanel?.querySelector("[data-joyday-export-error]");
+  const exportOutput = exportPanel?.querySelector("[data-joyday-export-output]");
+  const exportStatus = exportPanel?.querySelector("[data-joyday-export-status]");
+  const shareButton = buildShareButton();
 
   function lang() { return typeof getCurrentLocale === "function" ? getCurrentLocale() : (document.documentElement.lang || "en"); }
   /* The shipped locale pack supplies any language beyond the inline EN/TR pair,
@@ -258,6 +366,8 @@ function startJoydayPaint(lifecycle) {
     state.remixCount = 0;
     state.missionIndex = 0;
     state.missionLocked = false;
+    state.focalX = 0.5;
+    state.focalY = 0.5;
   }
 
   function saveSnapshot() {
@@ -601,7 +711,30 @@ function startJoydayPaint(lifecycle) {
     }
   }
 
-  function makeExportCanvas(mode = state.exportMode) {
+  function fillText(template, values = {}) {
+    return String(template || "").replace(/\{(\w+)\}/g, (match, key) => (key in values ? values[key] : match));
+  }
+
+  /* What the next PNG is: the Joyday card, the canvas as painted, or a frame
+   * of a chosen size. A custom size outside the limits is no export at all. */
+  function exportSpec(mode = state.exportMode) {
+    if (mode === "branded") return { kind: "card", width: 1400, height: 1700, label: "joyday-card" };
+    const preset = JoydayExport.preset(state.exportSize);
+    if (preset) return { kind: "frame", width: preset.width, height: preset.height, label: preset.group };
+    if (state.exportSize === "custom") {
+      const size = JoydayExport.customSize(exportWidth?.value, exportHeight?.value);
+      return size ? { kind: "frame", width: size.width, height: size.height, label: "custom" } : { kind: "invalid" };
+    }
+    return { kind: "original", width: canvas.width, height: canvas.height, label: state.canvasType };
+  }
+
+  function exportGeometry(spec) {
+    return JoydayExport.geometry({ sourceWidth: canvas.width, sourceHeight: canvas.height, width: spec.width, height: spec.height, mode: state.exportFit, focalX: state.focalX, focalY: state.focalY });
+  }
+
+  /* The artwork alone, in its own shape, copied off the painting canvas. The
+   * painting canvas is only ever read here. */
+  function makeArtworkCanvas() {
     const clean = document.createElement("canvas");
     clean.width = canvas.width;
     clean.height = canvas.height;
@@ -612,7 +745,44 @@ function startJoydayPaint(lifecycle) {
       cleanCtx.fillRect(0, 0, clean.width, clean.height);
       cleanCtx.drawImage(canvas, 0, 0);
     }, cleanCtx, clean.width, clean.height);
-    if (signatureInput?.checked) addSignature(cleanCtx, clean.width, clean.height, "#0f172a", 0.78);
+    return clean;
+  }
+
+  /* A frame of exactly the size asked for, on its own offscreen canvas. The
+   * preview is the same frame drawn smaller, so what is seen is what is saved. */
+  function makeFrameCanvas(artwork, spec, preview) {
+    const size = preview ? JoydayExport.previewSize(spec.width, spec.height) : spec;
+    const target = document.createElement("canvas");
+    target.width = size.width;
+    target.height = size.height;
+    const targetCtx = target.getContext("2d");
+    const dark = state.exportBackground === "dark";
+    targetCtx.fillStyle = dark ? "#0f172a" : "#fffaf1";
+    targetCtx.fillRect(0, 0, target.width, target.height);
+    const placed = JoydayExport.geometry({ sourceWidth: artwork.width, sourceHeight: artwork.height, width: target.width, height: target.height, mode: state.exportFit, focalX: state.focalX, focalY: state.focalY });
+    /* Where the background shows around the artwork — a fitted canvas, or the
+     * round one — the artwork hangs on it with a soft shadow. */
+    const hung = placed.mode === "fit" || state.canvasType === "circle";
+    targetCtx.save();
+    targetCtx.imageSmoothingEnabled = true;
+    targetCtx.imageSmoothingQuality = "high";
+    if (hung) {
+      const edge = Math.min(target.width, target.height);
+      targetCtx.shadowColor = dark ? "rgba(0, 0, 0, 0.55)" : "rgba(15, 23, 42, 0.2)";
+      targetCtx.shadowBlur = edge * 0.035;
+      targetCtx.shadowOffsetY = edge * 0.012;
+    }
+    targetCtx.drawImage(artwork, placed.sx, placed.sy, placed.sw, placed.sh, placed.dx, placed.dy, placed.dw, placed.dh);
+    targetCtx.restore();
+    if (signatureInput?.checked) addSignature(targetCtx, target.width, target.height, hung && dark ? "#fffaf1" : "#0f172a", 0.78);
+    return target;
+  }
+
+  function makeExportCanvas(mode = state.exportMode, preview = false) {
+    const spec = exportSpec(mode);
+    const clean = makeArtworkCanvas();
+    if (spec.kind === "frame") return makeFrameCanvas(clean, spec, preview);
+    if (signatureInput?.checked) addSignature(clean.getContext("2d"), clean.width, clean.height, "#0f172a", 0.78);
     if (mode !== "branded") return clean;
 
     const card = document.createElement("canvas");
@@ -690,36 +860,267 @@ function startJoydayPaint(lifecycle) {
   }
 
   function openFinishModal() {
+    setExportStatus("");
     updatePreview();
     if (!modal) return;
+    modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     modal.hidden = false;
     modal.inert = false;
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("joyday-modal-open");
+    modalClose?.focus({ preventScroll: true });
   }
 
   function closeFinishModal() {
     if (!modal) return;
+    const wasOpen = !modal.hidden;
     modal.hidden = true;
     modal.setAttribute("aria-hidden", "true");
     modal.inert = true;
     document.body.classList.remove("joyday-modal-open");
+    /* Focus goes back to the control that opened the dialog. */
+    if (wasOpen && modalReturnFocus && document.contains(modalReturnFocus)) modalReturnFocus.focus({ preventScroll: true });
+    modalReturnFocus = null;
+  }
+
+  /* Tab stays inside the open dialog. */
+  function keepFocusInModal(event) {
+    if (event.key !== "Tab" || !modal || modal.hidden) return;
+    const stops = Array.from(modal.querySelectorAll("a[href], button, input, select")).filter((node) => !node.disabled && node.getClientRects().length);
+    if (!stops.length) return;
+    const first = stops[0];
+    const last = stops[stops.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+
+  /* The export panel (J01). The page's markup is an accepted contract, so the
+   * engine builds these controls itself, as it does the palette. */
+  function buildExportPanel() {
+    const anchor = exportButtons[0]?.parentElement;
+    if (!anchor) return null;
+    const { min, max } = JoydayExport.LIMITS;
+    const sizes = (group) => JoydayExport.PRESETS.filter((item) => item.group === group).map((item) => `<option value="${item.id}">${item.width} × ${item.height}</option>`).join("");
+    const choice = (attribute, value) => `<button type="button" ${attribute}="${value}"><span data-joyday-export-copy="${value}"></span></button>`;
+    const panel = document.createElement("div");
+    panel.className = "joyday-export-panel";
+    panel.setAttribute("data-joyday-export-panel", "");
+    panel.innerHTML = `
+      <label class="joyday-art-name"><span data-joyday-export-copy="size"></span>
+        <select data-joyday-export-size>
+          <option value="original"></option>
+          ${["desktop", "mobile", "social"].map((group) => `<optgroup data-joyday-export-group="${group}">${sizes(group)}</optgroup>`).join("")}
+          <option value="custom"></option>
+        </select>
+      </label>
+      <div class="joyday-export-custom" data-joyday-export-custom hidden>
+        <label class="joyday-art-name"><span data-joyday-export-copy="width"></span><input type="number" inputmode="numeric" min="${min}" max="${max}" step="1" value="1920" data-joyday-export-width /></label>
+        <label class="joyday-art-name"><span data-joyday-export-copy="height"></span><input type="number" inputmode="numeric" min="${min}" max="${max}" step="1" value="1080" data-joyday-export-height /></label>
+        <p class="joyday-export-error" data-joyday-export-error role="alert" hidden></p>
+      </div>
+      <div class="joyday-export-frame" data-joyday-export-frame hidden>
+        <div class="joyday-export-group" role="group" data-joyday-export-aria="composition">
+          <span class="joyday-export-label" aria-hidden="true" data-joyday-export-copy="composition"></span>
+          <div class="joyday-export-switch">${choice("data-joyday-export-fit", "fill")}${choice("data-joyday-export-fit", "fit")}</div>
+        </div>
+        <div class="joyday-export-group" role="group" data-joyday-export-aria="background">
+          <span class="joyday-export-label" aria-hidden="true" data-joyday-export-copy="background"></span>
+          <div class="joyday-export-switch">${choice("data-joyday-export-background", "paper")}${choice("data-joyday-export-background", "dark")}</div>
+        </div>
+        <div class="joyday-export-focal" data-joyday-export-focal>
+          <label class="joyday-export-range"><span data-joyday-export-copy="focalX"></span><input type="range" min="0" max="100" step="1" value="50" data-joyday-export-focal-axis="x" /></label>
+          <label class="joyday-export-range"><span data-joyday-export-copy="focalY"></span><input type="range" min="0" max="100" step="1" value="50" data-joyday-export-focal-axis="y" /></label>
+          <p class="joyday-export-hint" data-joyday-export-copy="focalHint"></p>
+        </div>
+      </div>
+      <p class="joyday-export-output" data-joyday-export-output role="status"></p>
+      <p class="joyday-export-status" data-joyday-export-status role="status"></p>
+    `;
+    anchor.after(panel);
+    return panel;
+  }
+
+  /* Where a browser can hand a file to the phone's share sheet, that is the way
+   * into Photos; a plain download lands in Files. */
+  function buildShareButton() {
+    if (!downloadButton || typeof navigator.canShare !== "function" || typeof File !== "function" || !window.matchMedia?.("(pointer: coarse)").matches) return null;
+    try {
+      if (!navigator.canShare({ files: [new File([""], "joyday.png", { type: "image/png" })] })) return null;
+    } catch (error) { return null; }
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn ghost";
+    button.setAttribute("data-joyday-share", "");
+    button.append(document.createElement("span"));
+    downloadButton.after(button);
+    return button;
+  }
+
+  function exportCopy() { return t().export || copy.en.export; }
+
+  function setExportStatus(key, values) {
+    exportStatusState = key ? [key, values] : null;
+    if (exportStatus) exportStatus.textContent = key ? fillText(exportCopy()[key], values) : "";
+  }
+
+  function updateExportPanel() {
+    if (!exportPanel) return;
+    const text = exportCopy();
+    const spec = exportSpec();
+    const card = state.exportMode === "branded";
+    const framed = !card && state.exportSize !== "original";
+    const placed = spec.kind === "frame" ? exportGeometry(spec) : null;
+    const movableX = Boolean(placed && placed.slackX > 0.5);
+    const movableY = Boolean(placed && placed.slackY > 0.5);
+    const invalid = spec.kind === "invalid";
+    /* A background is a choice only where it shows around the artwork. */
+    const backed = Boolean(placed && (state.canvasType === "circle" || placed.dw < spec.width - 0.5 || placed.dh < spec.height - 0.5));
+
+    exportPanel.querySelectorAll("[data-joyday-export-copy]").forEach((node) => { node.textContent = text[node.dataset.joydayExportCopy] || ""; });
+    exportPanel.querySelectorAll("[data-joyday-export-aria]").forEach((node) => node.setAttribute("aria-label", text[node.dataset.joydayExportAria] || ""));
+    exportPanel.querySelectorAll("[data-joyday-export-group]").forEach((node) => { node.label = text[node.dataset.joydayExportGroup] || ""; });
+    exportPanel.querySelectorAll("optgroup option").forEach((node) => {
+      const item = JoydayExport.preset(node.value);
+      if (item) node.setAttribute("aria-label", fillText(text.pixels, item));
+    });
+    exportSizeSelect.querySelector('[value="original"]').textContent = `${text.original} · ${canvas.width} × ${canvas.height}`;
+    exportSizeSelect.querySelector('[value="custom"]').textContent = text.custom;
+    if (shareButton) shareButton.firstElementChild.textContent = text.share;
+
+    exportSizeSelect.value = state.exportSize;
+    exportSizeSelect.disabled = card;
+    exportPanel.querySelector("[data-joyday-export-custom]").hidden = !(framed && state.exportSize === "custom");
+    exportPanel.querySelector("[data-joyday-export-frame]").hidden = !framed;
+    exportPanel.querySelector('[data-joyday-export-aria="background"]').hidden = !backed;
+    exportPanel.querySelector("[data-joyday-export-focal]").hidden = state.exportFit !== "fill" || !(movableX || movableY);
+    const rangeError = fillText(text.range, JoydayExport.LIMITS);
+    if (exportError.textContent !== rangeError) exportError.textContent = rangeError;
+    exportError.hidden = !(framed && invalid);
+    [exportWidth, exportHeight].forEach((input) => input.setAttribute("aria-invalid", String(framed && invalid)));
+    exportPanel.querySelectorAll("[data-joyday-export-fit]").forEach((button) => {
+      const on = button.dataset.joydayExportFit === state.exportFit;
+      button.classList.toggle("is-active", on);
+      button.setAttribute("aria-pressed", String(on));
+    });
+    exportPanel.querySelectorAll("[data-joyday-export-background]").forEach((button) => {
+      const on = button.dataset.joydayExportBackground === state.exportBackground;
+      button.classList.toggle("is-active", on);
+      button.setAttribute("aria-pressed", String(on));
+    });
+    exportPanel.querySelectorAll("[data-joyday-export-focal-axis]").forEach((input) => {
+      const horizontal = input.dataset.joydayExportFocalAxis === "x";
+      input.disabled = !(horizontal ? movableX : movableY);
+      input.value = String(Math.round((horizontal ? state.focalX : state.focalY) * 100));
+    });
+    /* The preview can be dragged wherever Fill leaves something to choose. */
+    previewImg?.toggleAttribute("data-joyday-export-drag", Boolean(placed && state.exportFit === "fill" && (movableX || movableY)));
+
+    /* The exact size of the next PNG, and whether it is larger than what was
+     * painted: an enlargement is said, never passed off as native detail. */
+    let output = invalid ? "" : fillText(text.output, spec);
+    if (placed && placed.scale >= 1.25) output += ` · ${fillText(text.enlarged, { factor: placed.scale.toFixed(1) })}`;
+    if (card) output += ` · ${text.cardNote}`;
+    if (exportOutput.textContent !== output) exportOutput.textContent = output;
+    if (exportStatusState) exportStatus.textContent = fillText(text[exportStatusState[0]], exportStatusState[1]);
+    [downloadButton, shareButton].forEach((button) => {
+      if (!button) return;
+      button.disabled = state.exporting || invalid;
+      button.setAttribute("aria-busy", String(state.exporting));
+    });
   }
 
   function updatePreview() {
-    if (!previewImg) return;
-    previewImg.src = makeExportCanvas(state.exportMode).toDataURL("image/png");
+    /* A status line is about the file just made, not the one now being set up. */
+    if (!state.exporting) setExportStatus("");
+    updateExportPanel();
+    if (!previewImg || exportSpec().kind === "invalid") return;
+    previewImg.src = makeExportCanvas(state.exportMode, true).toDataURL("image/png");
   }
 
-  function downloadPNG() {
-    const exportCanvas = makeExportCanvas(state.exportMode);
-    const link = document.createElement("a");
-    const stamp = new Date().toISOString().slice(0, 10);
-    const mode = state.exportMode === "branded" ? "joyday-card" : state.canvasType;
-    link.download = `${t().filename}-${slugify(safeArtworkName())}-${mode}-${stamp}.png`;
-    link.href = exportCanvas.toDataURL("image/png");
-    link.click();
+  /* Dragging and sliding redraw the preview at most once per frame's worth of
+   * time. A timer, so a tab that is not being painted still settles. */
+  function queuePreview() {
+    if (previewTimer) return;
+    previewTimer = window.setTimeout(() => {
+      previewTimer = 0;
+      if (!lifecycle.aborted) updatePreview();
+    }, 16);
   }
+
+  function beginFocalDrag(event) {
+    if (!previewImg.hasAttribute("data-joyday-export-drag")) return;
+    const spec = exportSpec();
+    if (spec.kind !== "frame") return;
+    event.preventDefault();
+    const placed = exportGeometry(spec);
+    /* How far the artwork can travel under the frame, in pixels on screen. */
+    const shown = previewImg.getBoundingClientRect().width / spec.width;
+    focalDrag = { pointer: event.pointerId, x: event.clientX, y: event.clientY, focalX: state.focalX, focalY: state.focalY, travelX: placed.slackX * placed.scale * shown, travelY: placed.slackY * placed.scale * shown };
+    previewImg.setPointerCapture?.(event.pointerId);
+    previewImg.classList.add("is-dragging");
+  }
+
+  function moveFocalDrag(event) {
+    if (!focalDrag || event.pointerId !== focalDrag.pointer) return;
+    /* The artwork follows the pointer, so the focal point moves against it. */
+    if (focalDrag.travelX > 0) state.focalX = clamp(focalDrag.focalX - (event.clientX - focalDrag.x) / focalDrag.travelX, 0, 1);
+    if (focalDrag.travelY > 0) state.focalY = clamp(focalDrag.focalY - (event.clientY - focalDrag.y) / focalDrag.travelY, 0, 1);
+    queuePreview();
+  }
+
+  function endFocalDrag(event) {
+    if (!focalDrag || event.pointerId !== focalDrag.pointer) return;
+    focalDrag = null;
+    previewImg.classList.remove("is-dragging");
+  }
+
+  function exportBlob(exportCanvas) {
+    return new Promise((resolve, reject) => {
+      exportCanvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("The export canvas could not be encoded"))), "image/png");
+    });
+  }
+
+  function deliverDownload(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = name;
+    link.href = url;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    return "saved";
+  }
+
+  /* A share sheet the visitor closes is not a failure; one the browser refuses
+   * falls back to the download. */
+  function deliverShare(blob, name) {
+    const file = new File([blob], name, { type: "image/png" });
+    if (!navigator.canShare?.({ files: [file] })) return deliverDownload(blob, name);
+    return navigator.share({ files: [file], title: safeArtworkName() }).then(() => "shared", (error) => (error?.name === "AbortError" ? "" : deliverDownload(blob, name)));
+  }
+
+  function exportPNG(deliver) {
+    const spec = exportSpec();
+    if (spec.kind === "invalid") { exportWidth?.focus(); return; }
+    if (state.exporting) return;
+    const name = JoydayExport.filename({ base: t().filename, name: slugify(safeArtworkName()), label: spec.label, width: spec.width, height: spec.height });
+    state.exporting = true;
+    setExportStatus("preparing", spec);
+    updateExportPanel();
+    /* A beat first, so the status is on screen before a large frame is drawn
+     * and encoded. */
+    window.setTimeout(() => {
+      new Promise((resolve) => resolve(makeExportCanvas(state.exportMode)))
+        .then(exportBlob)
+        .then((blob) => deliver(blob, name))
+        .then((outcome) => setExportStatus(outcome, { file: name }), () => setExportStatus("failed"))
+        .finally(() => {
+          state.exporting = false;
+          if (!lifecycle.aborted) updateExportPanel();
+        });
+    }, 30);
+  }
+
+  function downloadPNG() { exportPNG(deliverDownload); }
 
   function slugify(value) {
     return value.toLowerCase().replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s").replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "artwork";
@@ -804,6 +1205,7 @@ function startJoydayPaint(lifecycle) {
     }
     buildPalette();
     updateMission();
+    updateExportPanel();
   }
 
   buildPalette();
@@ -855,6 +1257,30 @@ function startJoydayPaint(lifecycle) {
       updatePreview();
     }, { signal: lifecycle });
   });
+  exportSizeSelect?.addEventListener("change", () => { state.exportSize = exportSizeSelect.value; updatePreview(); }, { signal: lifecycle });
+  [exportWidth, exportHeight].forEach((input) => input?.addEventListener("input", queuePreview, { signal: lifecycle }));
+  exportPanel?.querySelectorAll("[data-joyday-export-fit]").forEach((button) => {
+    button.addEventListener("click", () => { state.exportFit = button.dataset.joydayExportFit; updatePreview(); }, { signal: lifecycle });
+  });
+  exportPanel?.querySelectorAll("[data-joyday-export-background]").forEach((button) => {
+    button.addEventListener("click", () => { state.exportBackground = button.dataset.joydayExportBackground; updatePreview(); }, { signal: lifecycle });
+  });
+  exportPanel?.querySelectorAll("[data-joyday-export-focal-axis]").forEach((input) => {
+    input.addEventListener("input", () => {
+      const value = clamp(Number(input.value) / 100, 0, 1);
+      if (input.dataset.joydayExportFocalAxis === "x") state.focalX = value; else state.focalY = value;
+      queuePreview();
+    }, { signal: lifecycle });
+  });
+  if (previewImg) {
+    previewImg.draggable = false;
+    previewImg.addEventListener("pointerdown", beginFocalDrag, { signal: lifecycle });
+    previewImg.addEventListener("pointermove", moveFocalDrag, { signal: lifecycle });
+    previewImg.addEventListener("pointerup", endFocalDrag, { signal: lifecycle });
+    previewImg.addEventListener("pointercancel", endFocalDrag, { signal: lifecycle });
+  }
+  shareButton?.addEventListener("click", () => exportPNG(deliverShare), { signal: lifecycle });
+  modal?.addEventListener("keydown", keepFocusInModal, { signal: lifecycle });
 
   canvas.addEventListener("pointerdown", beginPaint, { signal: lifecycle });
   canvas.addEventListener("pointermove", movePaint, { signal: lifecycle });
@@ -876,6 +1302,11 @@ function startJoydayPaint(lifecycle) {
     state.audio?.close?.();
     state.audio = null;
     delete window.updateJoydayPaintLanguage;
+    /* The controls this engine built go with it, so a remount builds them once. */
+    window.clearTimeout(previewTimer);
+    previewImg?.removeAttribute("data-joyday-export-drag");
+    exportPanel?.remove();
+    shareButton?.remove();
   }, { once: true });
 }
 /* Master 3 #30: a React-owned document hosts this engine through
