@@ -1,0 +1,792 @@
+/* V4 Experience composition ------------------------------------------------
+ *
+ * Experience reads as a career current. From 1100px a chart
+ * (src/react/v4/CareerCurrent.jsx) places every role on one time axis: where
+ * it started, how long it ran, what it overlapped, and the evidence its own
+ * entry links to. Below it, and on its own at every narrower width, the
+ * chronology is the current itself: a vertical line the entries hang from.
+ * Presentation only; every word is the page's own. */
+
+body[data-page="blog"] main {
+  overflow: clip;
+}
+
+/* 1. Career chart ---------------------------------------------------------- */
+
+.v4-career-section {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .v4-career-section {
+    display: block;
+    padding-top: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .v4-career-section > .eyebrow {
+    margin: 0;
+    color: var(--v4-accent);
+    font: var(--v4-type-label);
+    letter-spacing: var(--v4-track-label);
+  }
+
+  .v4-career {
+    position: relative;
+    aspect-ratio: var(--v4-career-aspect);
+    margin-top: 0.25rem;
+  }
+
+  /* The field the current runs through. */
+  .v4-career::before {
+    position: absolute;
+    z-index: -1;
+    inset: -6% 0 8% 38%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--v4-ambient-light), transparent);
+    content: "";
+    pointer-events: none;
+  }
+
+  .v4-career__field {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    fill: none;
+    pointer-events: none;
+  }
+
+  .v4-career__grid path {
+    stroke: var(--v4-rule);
+    stroke-dasharray: 2 7;
+    stroke-width: 1;
+  }
+
+  .v4-career__glow {
+    stroke: var(--v4-current-glow);
+    stroke-linecap: round;
+    stroke-width: 22;
+    filter: blur(14px);
+    opacity: 0.45;
+    animation: v4-current-rise 2200ms var(--v4-ease-out) both;
+  }
+
+  .v4-career__current {
+    stroke: var(--v4-trace);
+    stroke-dasharray: 1;
+    stroke-linecap: round;
+    stroke-width: 1.6;
+    animation: v4-current-draw 1900ms var(--v4-ease-in-out) both;
+  }
+
+  /* Past now there are no dates: the direction, not a schedule. */
+  .v4-career__onward {
+    stroke: var(--v4-current-2);
+    stroke-dasharray: 2 8;
+    stroke-linecap: round;
+    stroke-width: 2;
+    animation: v4-current-rise 900ms var(--v4-ease-out) 2100ms both;
+  }
+
+  /* A role's run along the current, drawn as the current reaches it. */
+  .v4-career__lane {
+    stroke: var(--v4-current);
+    stroke-dasharray: 1;
+    stroke-linecap: round;
+    stroke-width: 3;
+    transition: stroke-width var(--v4-motion-ui) var(--v4-ease-out);
+    animation: v4-current-draw 900ms var(--v4-ease-in-out) calc(350ms + var(--v4-seq) * 240ms) both;
+  }
+
+  .v4-career__lane-glow {
+    stroke: var(--v4-current-glow);
+    stroke-linecap: round;
+    stroke-width: 14;
+    filter: blur(6px);
+    opacity: 0;
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-career__span[data-v4-live] .v4-career__lane {
+    stroke: var(--v4-current-2);
+  }
+
+  .v4-career__span:is([data-v4-live], [data-v4-state]) .v4-career__lane-glow {
+    opacity: 0.85;
+  }
+
+  .v4-career__span[data-v4-state] .v4-career__lane {
+    stroke-width: 5;
+  }
+
+  .v4-career__span,
+  .v4-career__branch,
+  .v4-career__thread {
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-career[data-v4-eco-active] :is(.v4-career__span, .v4-career__branch, .v4-career__thread):not([data-v4-state]) {
+    opacity: 0.16;
+  }
+
+  /* Evidence leaves the role that links to it. */
+  .v4-career__wire {
+    stroke: var(--v4-trace);
+    stroke-dasharray: 1;
+    stroke-linecap: round;
+    stroke-width: 1.2;
+    transition: stroke var(--v4-motion-ui) var(--v4-ease-out), stroke-width var(--v4-motion-ui) var(--v4-ease-out);
+    animation: v4-current-draw 800ms var(--v4-ease-in-out) calc(900ms + var(--v4-seq) * 240ms) both;
+  }
+
+  .v4-career__branch[data-v4-state] .v4-career__wire {
+    stroke: var(--v4-current);
+    stroke-width: 2.2;
+  }
+
+  .v4-career__branch[data-v4-state] .v4-eco__pulse {
+    animation: v4-edge-pulse 900ms var(--v4-ease-in-out);
+  }
+
+  /* A capability two roles share. */
+  .v4-career__thread path {
+    stroke: var(--v4-violet);
+    stroke-dasharray: 3 6;
+    stroke-linecap: round;
+    stroke-width: 1.2;
+    opacity: 0.7;
+  }
+
+  .v4-career__thread[data-v4-state] path {
+    stroke-width: 1.8;
+    opacity: 1;
+  }
+
+  .v4-career :is(ol, ul) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .v4-career__years li {
+    position: absolute;
+    bottom: 0.2rem;
+    left: var(--v4-x);
+    color: var(--v4-ink-muted);
+    font: var(--v4-type-status);
+    letter-spacing: var(--v4-track-status);
+    translate: -50% 0;
+  }
+
+  /* A node sits exactly on its date; its label runs away from its neighbour. */
+  .v4-career :is(.v4-career__roles, .v4-career__evidence) li {
+    position: absolute;
+    top: var(--v4-y);
+    left: var(--v4-x);
+    width: 0;
+    height: 0;
+  }
+
+  .v4-career :is(.v4-career__role, .v4-career__project) {
+    position: absolute;
+    top: -0.9rem;
+    left: calc(-0.9rem + var(--v4-clear, 0rem));
+    display: block;
+    width: max-content;
+    max-width: 13.5rem;
+    padding: 2.05rem 0.4rem 0.3rem;
+    text-align: left;
+  }
+
+  .v4-career :is(.v4-career__role, .v4-career__project) .v4-node__dot {
+    position: absolute;
+    top: 0.9rem;
+    left: calc(0.9rem - var(--v4-clear, 0rem));
+    translate: -50% -50%;
+  }
+
+  /* A role with a branch keeps its label clear of the wire that leaves it. */
+  .v4-career [data-v4-branch] {
+    --v4-clear: 1rem;
+  }
+
+  .v4-career [data-v4-align="end"] > a {
+    right: calc(-0.9rem + var(--v4-clear, 0rem));
+    left: auto;
+    text-align: right;
+  }
+
+  .v4-career [data-v4-align="end"] > a .v4-node__dot {
+    right: calc(0.9rem - var(--v4-clear, 0rem));
+    left: auto;
+    translate: 50% -50%;
+  }
+
+  .v4-career [data-v4-side="above"] > a {
+    top: auto;
+    bottom: -0.9rem;
+    padding: 0.3rem 0.4rem 2.05rem;
+  }
+
+  .v4-career [data-v4-side="above"] > a .v4-node__dot {
+    top: auto;
+    bottom: 0.9rem;
+    translate: -50% 50%;
+  }
+
+  .v4-career [data-v4-side="above"][data-v4-align="end"] > a .v4-node__dot {
+    translate: 50% 50%;
+  }
+
+  .v4-career__role .v4-node__dot {
+    width: 0.86rem;
+    height: 0.86rem;
+    border: 2px solid var(--v4-current);
+    background: var(--v4-canvas);
+  }
+
+  .v4-career__role .v4-eco__title {
+    display: block;
+    font-size: 0.92rem;
+    white-space: nowrap;
+  }
+
+  .v4-career :is(.v4-career__role, .v4-career__project) small {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--v4-ink-muted);
+    font: var(--v4-type-status);
+    letter-spacing: var(--v4-track-status);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* The role that is still running. */
+  .v4-career__role[data-v4-live] .v4-node__dot {
+    width: 1.15rem;
+    height: 1.15rem;
+    border-color: var(--v4-current-2);
+    background: var(--v4-current-2);
+    box-shadow:
+      0 0 0 5px color-mix(in srgb, var(--v4-current-2) 22%, transparent),
+      0 0 26px 6px var(--v4-current-glow);
+    animation: v4-career-live 2200ms var(--v4-ease-out) 2400ms 3 backwards;
+  }
+
+  .v4-career__role[data-v4-live] .v4-eco__title {
+    font-size: 1.05rem;
+  }
+
+  .v4-career__roles li {
+    animation: v4-career-wake 700ms var(--v4-ease-out) calc(350ms + var(--v4-seq) * 240ms) both;
+  }
+
+  /* Linked evidence: a project, so a square node. */
+  .v4-career__project .v4-node__dot {
+    border-radius: 2px;
+    rotate: 45deg;
+  }
+
+  .v4-career__project .v4-eco__title {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--v4-ink-secondary);
+  }
+
+  .v4-career__project:is(:hover, :focus-visible, [data-v4-state]) .v4-eco__title {
+    color: var(--v4-ink);
+  }
+
+  .v4-career__evidence li {
+    animation: v4-career-wake 700ms var(--v4-ease-out) 1500ms both;
+  }
+
+  .v4-career__tag,
+  .v4-career__now,
+  .v4-career__direction {
+    position: absolute;
+    top: var(--v4-y);
+    left: var(--v4-x);
+    margin: 0;
+  }
+
+  .v4-career__tag {
+    padding: 0.2rem 0.55rem;
+    border: 1px dashed color-mix(in srgb, var(--v4-violet) 60%, transparent);
+    border-radius: 999px;
+    background: var(--v4-canvas);
+    color: var(--v4-ink-muted);
+    font: var(--v4-type-status);
+    letter-spacing: var(--v4-track-status);
+    text-transform: uppercase;
+    translate: -50% -50%;
+  }
+
+  .v4-career__tag[data-v4-state] {
+    border-style: solid;
+    color: var(--v4-ink);
+  }
+
+  .v4-career__now {
+    padding-bottom: 1.5rem;
+    color: var(--v4-current-2);
+    font: var(--v4-type-status);
+    letter-spacing: var(--v4-track-status);
+    text-transform: uppercase;
+    translate: -50% -100%;
+  }
+
+  .v4-career__now::after {
+    position: absolute;
+    bottom: 0.2rem;
+    left: 50%;
+    width: 1px;
+    height: 1.05rem;
+    background: var(--v4-current-2);
+    content: "";
+  }
+
+  .v4-career__direction {
+    gap: 0.6rem;
+    padding: 0.5rem 0.9rem 0.5rem 0.75rem;
+    border: 1px solid var(--v4-current-2);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--v4-current-2) 10%, var(--v4-canvas-raised));
+    box-shadow: 0 0 2.75rem -0.5rem var(--v4-current-glow);
+    color: var(--v4-ink);
+    font-size: 0.66rem;
+    line-height: 1.35;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    max-width: 10.5rem;
+    border-radius: 0.9rem;
+    translate: -1.05rem -50%;
+  }
+
+  .v4-career__direction .v4-node__dot {
+    border-color: var(--v4-current-2);
+    background: var(--v4-current-2);
+  }
+
+  .v4-career[data-v4-eco-active] .v4-node:not([data-v4-state], :hover, :focus-visible) {
+    opacity: 0.26;
+  }
+
+  .v4-career .v4-node[data-v4-state] .v4-node__dot::after {
+    opacity: 1;
+  }
+
+  /* Held until the chart is first seen; then the current draws once. */
+  .v4-career[data-v4-await] :is(.v4-career__current, .v4-career__lane, .v4-career__wire) {
+    stroke-dashoffset: 1;
+    animation: none;
+  }
+
+  .v4-career[data-v4-await] :is(.v4-career__glow, .v4-career__onward, .v4-career__roles li, .v4-career__evidence li) {
+    opacity: 0;
+    animation: none;
+  }
+
+  /* What is lit, in the page's own words. */
+  .v4-career__readout {
+    min-height: 4.6rem;
+    margin-top: 0.75rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--v4-rule);
+  }
+
+  .v4-career__entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 0.4rem 2rem;
+    align-items: start;
+    margin: 0;
+    color: var(--v4-ink-secondary);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .v4-career__entry[hidden] {
+    display: none;
+  }
+
+  .v4-career__entry p {
+    margin: 0;
+  }
+
+  .v4-career__entry strong {
+    display: block;
+    color: var(--v4-ink);
+    font: 600 1rem / 1.3 var(--v4-display);
+  }
+
+  .v4-career__entry span,
+  p.v4-career__entry {
+    color: var(--v4-ink-muted);
+    font: var(--v4-type-label);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .v4-career__entry p > span {
+    display: block;
+  }
+
+  .v4-career__entry p > span + span {
+    margin-top: 0.3rem;
+    color: var(--v4-ink-secondary);
+  }
+
+  p.v4-career__entry {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .v4-career__entry .v4-ports {
+    justify-content: flex-end;
+  }
+}
+
+@keyframes v4-career-wake {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+}
+
+@keyframes v4-career-live {
+  0% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--v4-current-2) 60%, transparent),
+      0 0 26px 6px var(--v4-current-glow);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 18px transparent,
+      0 0 26px 6px var(--v4-current-glow);
+  }
+}
+
+/* 2. The chronology as the current ----------------------------------------- */
+
+body[data-page="blog"] .experience-layout {
+  padding-top: clamp(3rem, 6vw, 5rem);
+}
+
+/* Where the current leads. */
+body[data-page="blog"] .experience-summary {
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--v4-current-2) 9%, transparent), transparent 46%),
+    var(--v4-surface);
+  scroll-margin-top: 6.5rem;
+}
+
+html[data-theme="light"] body[data-page="blog"] .experience-summary {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--v4-current-2) 9%, transparent), transparent 46%),
+    var(--v4-surface);
+}
+
+body[data-page="blog"] .experience-summary h2 {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  margin-top: 0;
+  color: var(--v4-current-2);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+  text-transform: uppercase;
+}
+
+body[data-page="blog"] .experience-summary h2::before {
+  flex: none;
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 50%;
+  background: var(--v4-current-2);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--v4-current-2) 22%, transparent);
+  content: "";
+}
+
+body[data-page="blog"] .experience-summary p:not(.eyebrow) {
+  color: var(--v4-ink);
+  font: 500 1.02rem / 1.6 Inter, "Segoe UI", sans-serif;
+}
+
+body[data-page="blog"] .experience-summary:target {
+  border-color: var(--v4-current-2);
+}
+
+body[data-page="blog"] .experience-timeline {
+  --v4-rail: 0.55rem;
+  padding-left: 2.6rem;
+  view-timeline-name: --v4-chronology;
+}
+
+/* The line: a track, and the current filling it as the page is read. */
+body[data-page="blog"] .experience-timeline::before,
+body[data-page="blog"] .experience-timeline::after {
+  position: absolute;
+  top: 0.9rem;
+  bottom: 0;
+  left: var(--v4-rail);
+  display: block;
+  width: 2px;
+  background: var(--v4-trace-muted);
+  content: "";
+}
+
+body[data-page="blog"] .experience-timeline::after {
+  background: linear-gradient(180deg, var(--v4-current-2), var(--v4-current) 30%, var(--v4-current));
+  box-shadow: 0 0 14px var(--v4-current-glow);
+  transform-origin: 50% 0;
+}
+
+@supports (animation-timeline: view()) {
+  body[data-page="blog"] .experience-timeline::after {
+    animation: v4-handoff-fill linear both;
+    animation-timeline: --v4-chronology;
+    animation-range: entry 20% exit 70%;
+  }
+}
+
+body[data-page="blog"] .experience-item {
+  position: relative;
+  scroll-margin-top: 6rem;
+}
+
+/* The milestone's anchor on the line. */
+body[data-page="blog"] .timeline-dot {
+  position: absolute;
+  z-index: 1;
+  top: 1.95rem;
+  left: calc(-2.6rem + var(--v4-rail) + 1px);
+  display: block;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  border: 2px solid var(--v4-current);
+  border-radius: 50%;
+  background: var(--v4-canvas);
+  box-shadow: 0 0 0 4px var(--v4-canvas);
+  translate: -50% 0;
+  transition:
+    background-color var(--v4-motion-ui) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+body[data-page="blog"] .experience-item:first-child .timeline-dot {
+  top: 0.55rem;
+}
+
+body[data-page="blog"] .experience-item:is(:hover, :focus-within, :target) .timeline-dot {
+  background: var(--v4-current);
+  box-shadow:
+    0 0 0 4px var(--v4-canvas),
+    0 0 1.6rem 0.3rem var(--v4-current-glow);
+}
+
+body[data-page="blog"] .experience-item[data-v4-live] .timeline-dot {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-color: var(--v4-current-2);
+  background: var(--v4-current-2);
+  box-shadow:
+    0 0 0 4px var(--v4-canvas),
+    0 0 0 9px color-mix(in srgb, var(--v4-current-2) 22%, transparent),
+    0 0 1.8rem 0.4rem var(--v4-current-glow);
+}
+
+body[data-page="blog"] .experience-card {
+  position: relative;
+  border-top-color: var(--v4-rule);
+}
+
+body[data-page="blog"] .experience-card .time {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+body[data-page="blog"] .experience-item[data-v4-live] .time {
+  color: var(--v4-current-2);
+}
+
+body[data-page="blog"] .experience-card h3 {
+  color: var(--v4-ink);
+  font: var(--v4-type-heading);
+  font-size: clamp(1.15rem, 1.02rem + 0.5vw, 1.45rem);
+  letter-spacing: var(--v4-track-heading);
+  text-wrap: balance;
+}
+
+body[data-page="blog"] .experience-card p {
+  color: var(--v4-ink-secondary);
+}
+
+/* Reached from the chart: the entry says so. */
+body[data-page="blog"] .experience-item:target .experience-card h3 {
+  color: var(--v4-accent-strong);
+}
+
+/* The evidence branch: the entry's own link, leaving the line. */
+body[data-page="blog"] .experience-card > a {
+  position: relative;
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1rem 0 0.85rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 999px;
+  background: var(--v4-living-surface);
+  color: var(--v4-ink);
+  font: 500 0.7rem / 1 var(--v4-mono);
+  letter-spacing: 0.07em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    border-color var(--v4-motion-feedback) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+body[data-page="blog"] .experience-card > a::before {
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--v4-current);
+  border-radius: 2px;
+  background: var(--v4-current);
+  content: "";
+  rotate: 45deg;
+}
+
+body[data-page="blog"] .experience-card > a:is(:hover, :focus-visible) {
+  border-color: var(--v4-current);
+  box-shadow: 0 0 2.25rem -0.5rem var(--v4-current-glow);
+}
+
+body[data-page="blog"] .experience-card > .v4-ports {
+  margin-top: 0.15rem;
+}
+
+.v4-milestone__toggle {
+  display: none;
+}
+
+/* 3. Activities ------------------------------------------------------------ */
+
+body[data-page="blog"] .capability-card {
+  border-top-color: var(--v4-rule-strong);
+}
+
+body[data-page="blog"] .capability-card h3 {
+  font-family: var(--v4-display);
+  letter-spacing: var(--v4-track-heading);
+}
+
+/* 4. Phone: focused milestones --------------------------------------------- */
+
+@media (max-width: 760px) {
+  body[data-page="blog"] .experience-timeline {
+    --v4-rail: 0.45rem;
+    padding-left: 1.9rem;
+  }
+
+  body[data-page="blog"] .timeline-dot {
+    left: calc(-1.9rem + var(--v4-rail) + 1px);
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  body[data-page="blog"] .experience-card {
+    padding-block: 1.6rem;
+  }
+
+  body[data-page="blog"] .experience-card h3 {
+    font-size: 1.22rem;
+  }
+
+  /* Offered only where the runtime folds entries. */
+  [data-v4-foldable] .v4-milestone__toggle {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-self: start;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--v4-accent-strong);
+    font: 500 0.68rem / 1 var(--v4-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  [data-v4-foldable] .v4-milestone__toggle::after {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    content: "";
+    rotate: 45deg;
+    translate: 0 -0.15rem;
+    transition: rotate var(--v4-motion-ui) var(--v4-ease-out), translate var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  [data-v4-foldable] .v4-milestone__toggle[aria-expanded="true"]::after {
+    rotate: 225deg;
+    translate: 0 0.15rem;
+  }
+
+  .v4-milestone__toggle:focus-visible {
+    outline: 2px solid var(--v4-focus);
+    outline-offset: 3px;
+  }
+
+  .v4-milestone__toggle[aria-expanded="true"] [data-v4-when="closed"],
+  .v4-milestone__toggle[aria-expanded="false"] [data-v4-when="open"] {
+    display: none;
+  }
+
+  /* Folded: the heading and its evidence stay; the account waits. */
+  [data-v4-folded] .experience-card > :is(p, .project-tags) {
+    display: none;
+  }
+}
+
+/* 5. Discipline ------------------------------------------------------------ */
+
+@media (forced-colors: active) {
+  .v4-career::before,
+  .v4-career__glow,
+  .v4-career__lane-glow {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-career *,
+  body[data-page="blog"] .experience-timeline::after,
+  body[data-page="blog"] .timeline-dot,
+  body[data-page="blog"] .experience-card > a,
+  .v4-milestone__toggle::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .v4-career[data-v4-await] :is(.v4-career__current, .v4-career__lane, .v4-career__wire) {
+    stroke-dashoffset: 0;
+  }
+
+  .v4-career[data-v4-await] :is(.v4-career__glow, .v4-career__onward, .v4-career__roles li, .v4-career__evidence li) {
+    opacity: 1;
+  }
+}

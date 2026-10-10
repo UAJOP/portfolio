@@ -88,6 +88,26 @@ window.KAAN_I18N = {
         "legacy": "merge-rush-case-study.html"
       },
       {
+        "id": "careerAdventureCaseStudy",
+        "route": "career-adventure-case-study/"
+      },
+      {
+        "id": "portfolioCaseStudy",
+        "route": "portfolio-case-study/"
+      },
+      {
+        "id": "mergeRush",
+        "route": "merge-rush/"
+      },
+      {
+        "id": "ajoop",
+        "route": "ajoop/"
+      },
+      {
+        "id": "ajoopCaseStudy",
+        "route": "ajoop-case-study/"
+      },
+      {
         "id": "now",
         "route": "now/",
         "legacy": "now.html"
@@ -251,10 +271,12 @@ window.KAAN_I18N = {
       "WhatsApp"
     ],
     "projectNames": [
+      "AJOOP",
       "AI Chatbot Flow Design",
       "AI Flow Puzzle",
       "Atölye Joyday",
       "Atölye Joyday Official Website",
+      "Career Adventure",
       "Hospital Appointment System",
       "Hospital Form App",
       "Hospital System",

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { ajoopEngine, overlays, shell } from "./commonRuntime.js";
+import AjoopHub from "../v4/AjoopHub.jsx";
 
 /* Master 3 #28: the public Ajoop panel shell on React production documents.
  *
@@ -18,7 +19,14 @@ import { ajoopEngine, overlays, shell } from "./commonRuntime.js";
  * Presentation port: on takeover React calls connectAjoopPresentation() and
  * receives the engine's recorded mascot, service line, action row, busy state
  * and chrome copy, then every later change. React never reads engine
- * internals and the engine never reads React state. */
+ * internals and the engine never reads React state.
+ *
+ * V4-E04: the same shell has a second presentation. On /ajoop/ (`model.hub`)
+ * it renders the Living AJOOP Hub — the same engine, the same transcript
+ * island, the same port — as a page surface instead of a dialog: no launcher,
+ * no overlay claim, no focus trap. Everywhere else the panel gains one link
+ * into the Hub. The conversation is the engine's, so it is one conversation
+ * in both. */
 const OWNER = '[data-react-ajoop-shell="react"]';
 const REQUEST_EVENT = "portfolio:react-ajoop-request";
 const TRANSCRIPT_ISLAND = Object.freeze({ __html: "" });
@@ -56,6 +64,9 @@ export default function AjoopShell({ model }) {
    * as the classic renderer rebuilt them, never reused for other actions. */
   const [actionRow, setActionRow] = useState({ model: null, generation: 0 });
   const actions = actionRow.model;
+  /* Where the turn in flight is, or how the last one settled (Hub only). */
+  const [turn, setTurn] = useState(null);
+  const hub = Boolean(model.hub);
   const openRef = useRef(initiallyOpen);
   const widgetRef = useRef(null);
   const panelRef = useRef(null);
@@ -64,6 +75,13 @@ export default function AjoopShell({ model }) {
   const handlersRef = useRef(null);
 
   const openPanel = (trigger) => {
+    /* The Hub is already the open conversation: a request to open AJOOP
+     * brings the visitor to its composer. */
+    if (hub) {
+      panelRef.current?.scrollIntoView({ block: "nearest" });
+      window.setTimeout(() => ajoopEngine.focusEntry(), 80);
+      return;
+    }
     shell.closeMobileNavigation();
     overlays.setCommandPaletteOpen(false, { restoreFocus: false });
     overlays.setRecruiterMode(false, { restoreFocus: false });
@@ -78,6 +96,7 @@ export default function AjoopShell({ model }) {
   };
 
   const closePanel = ({ restoreFocus = true } = {}) => {
+    if (hub) return;
     const wasOpen = openRef.current;
     openRef.current = false;
     if (wasOpen) setOpen(false);
@@ -103,6 +122,7 @@ export default function AjoopShell({ model }) {
       mascot: (value) => setMascot(value),
       service: (value) => setService(value),
       copy: (value) => setCopy(value),
+      turn: (value) => setTurn(value),
       busy: (value) => sync(() => setBusy(value)),
       actions: (value) => sync(() => {
         setActionRow((row) => ({ model: value, generation: row.generation + 1 }));
@@ -115,6 +135,7 @@ export default function AjoopShell({ model }) {
       if (snapshot.mascot) setMascot(snapshot.mascot);
       setService(snapshot.service || { state: null, label: "" });
       setBusy(Boolean(snapshot.busy));
+      setTurn(snapshot.turn || null);
       if (snapshot.actions) setActionRow((row) => ({ model: snapshot.actions, generation: row.generation + 1 }));
     }
     const handleRequest = (event) => {
@@ -130,12 +151,29 @@ export default function AjoopShell({ model }) {
     owner.setAttribute("data-ajoop-interactive", "");
     delete owner.__portfolioReactAjoopRequest;
     ajoopEngine.panelState(openRef.current);
+    /* One probe for the Hub, as one per open for the panel. */
+    if (hub) ajoopEngine.initializeAi();
     inTakeover = false;
     return () => {
       connection?.disconnect?.();
       owner.removeEventListener(REQUEST_EVENT, handleRequest);
       delete owner.__portfolioReactAjoopReady;
     };
+  }, []);
+
+  /* V4-E07: a page restored from the back/forward cache comes back as the page.
+   * Whatever was open over it when it was left (this panel, the palette,
+   * Recruiter Mode, the mobile menu) is closed, so nothing stale covers it. */
+  useEffect(() => {
+    const restored = (event) => {
+      if (!event.persisted) return;
+      shell.closeMobileNavigation();
+      handlersRef.current.closePanel({ restoreFocus: false });
+      overlays.setCommandPaletteOpen(false, { restoreFocus: false });
+      overlays.setRecruiterMode(false, { restoreFocus: false });
+    };
+    window.addEventListener("pageshow", restored);
+    return () => window.removeEventListener("pageshow", restored);
   }, []);
 
   /* Keyboard inside the open panel: Escape closes it, Tab stays inside it.
@@ -168,6 +206,63 @@ export default function AjoopShell({ model }) {
 
   const quicksClass = ["chatbot-quicks", actions?.mode === "followups" ? "is-followups" : null, busy ? "is-busy" : null].filter(Boolean).join(" ");
   const keyFor = (index) => `${actionRow.generation}:${index}`;
+  const transcript = <div className="chatbot-messages" data-chatbot-messages="" aria-live="polite" dangerouslySetInnerHTML={TRANSCRIPT_ISLAND} suppressHydrationWarning />;
+  const actionRowNode = (
+    <div className={quicksClass} data-chatbot-quicks="" aria-busy={String(busy)}>
+      {actions ? (
+        <>
+          <p className="chatbot-actions-label">{actions.heading}</p>
+          <div className="chatbot-actions-list" role="group" aria-label={actions.heading}>
+            {actions.actions.map((action, index) => <ActionButton key={keyFor(index)} action={action} busy={busy} />)}
+          </div>
+          {actions.secondary.length ? (
+            <div className="chatbot-actions-secondary">
+              {actions.secondary.map((action, index) => <ActionButton key={keyFor(`s${index}`)} action={action} busy={busy} />)}
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </div>
+  );
+  const composer = (
+    <form className="chatbot-form" data-chatbot-form="" onSubmit={(event) => {
+      event.preventDefault();
+      ajoopEngine.submit(inputRef.current);
+    }}>
+      <input
+        type="text"
+        data-chatbot-input=""
+        {...COMPOSER_ATTRIBUTES}
+        aria-label={copy.inputPlaceholder}
+        placeholder={copy.inputPlaceholder}
+        ref={inputRef}
+        onFocus={() => ajoopEngine.composerActivity("focus")}
+        onInput={() => ajoopEngine.composerActivity("input")}
+        onBlur={() => ajoopEngine.composerActivity("blur")}
+      />
+      <button type="submit" data-chatbot-send="" aria-label={copy.sendLabel}>
+        <i className="bx bx-send" aria-hidden="true" />
+      </button>
+    </form>
+  );
+
+  if (hub) {
+    return (
+      <AjoopHub
+        model={model.hub}
+        copy={copy}
+        mascotState={mascot}
+        service={service}
+        turn={turn}
+        busy={busy}
+        widgetRef={widgetRef}
+        panelRef={panelRef}
+        transcript={transcript}
+        actionRow={actionRowNode}
+        composer={composer}
+      />
+    );
+  }
 
   return (
     <aside className={open ? "portfolio-chatbot is-open" : "portfolio-chatbot"} data-portfolio-chatbot="" aria-label={model.a ? copy.title : null} ref={widgetRef}>
@@ -181,47 +276,16 @@ export default function AjoopShell({ model }) {
               <span className="chatbot-service-dot" aria-hidden="true" />
               <span data-chatbot-bridge-text="">{service.label}</span>
             </p>
+            {model.hubLink ? <a className="chatbot-hub-link" href={model.hubLink.href}>{model.hubLink.label}</a> : null}
           </div>
           <span className="ajoop-mascot-state" data-ajoop-mascot-label="">{mascot.label}</span>
           <button className="chatbot-close" type="button" data-chatbot-close="" aria-label={copy.closeLabel} onClick={() => closePanel()}>
             <i className="bx bx-x" aria-hidden="true" />
           </button>
         </div>
-        <div className="chatbot-messages" data-chatbot-messages="" aria-live="polite" dangerouslySetInnerHTML={TRANSCRIPT_ISLAND} suppressHydrationWarning />
-        <div className={quicksClass} data-chatbot-quicks="" aria-busy={String(busy)}>
-          {actions ? (
-            <>
-              <p className="chatbot-actions-label">{actions.heading}</p>
-              <div className="chatbot-actions-list" role="group" aria-label={actions.heading}>
-                {actions.actions.map((action, index) => <ActionButton key={keyFor(index)} action={action} busy={busy} />)}
-              </div>
-              {actions.secondary.length ? (
-                <div className="chatbot-actions-secondary">
-                  {actions.secondary.map((action, index) => <ActionButton key={keyFor(`s${index}`)} action={action} busy={busy} />)}
-                </div>
-              ) : null}
-            </>
-          ) : null}
-        </div>
-        <form className="chatbot-form" data-chatbot-form="" onSubmit={(event) => {
-          event.preventDefault();
-          ajoopEngine.submit(inputRef.current);
-        }}>
-          <input
-            type="text"
-            data-chatbot-input=""
-            {...COMPOSER_ATTRIBUTES}
-            aria-label={copy.inputPlaceholder}
-            placeholder={copy.inputPlaceholder}
-            ref={inputRef}
-            onFocus={() => ajoopEngine.composerActivity("focus")}
-            onInput={() => ajoopEngine.composerActivity("input")}
-            onBlur={() => ajoopEngine.composerActivity("blur")}
-          />
-          <button type="submit" data-chatbot-send="" aria-label={copy.sendLabel}>
-            <i className="bx bx-send" aria-hidden="true" />
-          </button>
-        </form>
+        {transcript}
+        {actionRowNode}
+        {composer}
       </div>
       <button
         className="chatbot-launcher"

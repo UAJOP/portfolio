@@ -153,7 +153,11 @@ ok(
 /* ---------- canonical project identity ---------- */
 
 const catalog = core.buildAnalyticsProjectCatalog(registry);
-check("all 25 canonical detail slugs remain analytics identifiers", Object.keys(registry.projectDetails).filter((slug) => catalog.slugs.has(slug)).length, 25);
+/* The 25 pre-migration slugs, less the ones retired with a stated reason (V4-E06.5). */
+const slugBaseline = JSON.parse(read("scripts/fixtures/project-catalog-baseline.json"));
+const expectedDetailSlugs = slugBaseline.slugOrder.length - Object.keys(slugBaseline.retired || {}).length;
+check("every canonical detail slug remains an analytics identifier", Object.keys(registry.projectDetails).filter((slug) => catalog.slugs.has(slug)).length, expectedDetailSlugs);
+check("the catalog has exactly the non-retired pre-migration slugs", Object.keys(registry.projectDetails).length, expectedDetailSlugs);
 /* The route contract folds every spelling of one destination onto one key:
  * the clean route, its localized forms and the pre-migration `.html` URL.
  * The real route module is installed for these checks, exactly as the browser

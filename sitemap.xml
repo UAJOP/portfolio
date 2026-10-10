@@ -20,6 +20,31 @@
   <url><loc>https://kaanbalci.com/de/merge-rush-case-study/</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://kaanbalci.com/es/merge-rush-case-study/</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://kaanbalci.com/fr/merge-rush-case-study/</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kaanbalci.com/career-adventure-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/tr/career-adventure-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/de/career-adventure-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/es/career-adventure-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/fr/career-adventure-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/portfolio-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/tr/portfolio-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/de/portfolio-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/es/portfolio-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/fr/portfolio-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/merge-rush/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/tr/merge-rush/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/de/merge-rush/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/es/merge-rush/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/fr/merge-rush/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/ajoop/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/tr/ajoop/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/de/ajoop/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/es/ajoop/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/fr/ajoop/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/ajoop-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/tr/ajoop-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/de/ajoop-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/es/ajoop-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kaanbalci.com/fr/ajoop-case-study/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://kaanbalci.com/now/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://kaanbalci.com/tr/now/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://kaanbalci.com/de/now/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
@@ -140,11 +165,6 @@
   <url><loc>https://kaanbalci.com/de/projects/my-museum/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/es/projects/my-museum/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/fr/projects/my-museum/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/tr/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/de/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/es/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/fr/projects/weather-app/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/control-panel/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/tr/projects/control-panel/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/de/projects/control-panel/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
@@ -165,11 +185,6 @@
   <url><loc>https://kaanbalci.com/de/projects/calculator-android-studio/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/es/projects/calculator-android-studio/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/fr/projects/calculator-android-studio/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/tr/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/de/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/es/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://kaanbalci.com/fr/projects/calculator-javascript/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/projects/warehouse-war/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/tr/projects/warehouse-war/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kaanbalci.com/de/projects/warehouse-war/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>

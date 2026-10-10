@@ -23,6 +23,18 @@
     "ogTitle": "AI Flow Puzzle Vaka Çalışması | Kaan Balcı",
     "title": "AI Flow Puzzle Vaka Çalışması | Kaan Balcı"
   },
+  "ajoop": {
+    "description": "Kaan Balcı'nın portfolyosuna yerleşik herkese açık asistan AJOOP ile konuşun. Yayımlanmış portfolyodan yanıt verir ve kullandığı kanıtı gösterir.",
+    "ogDescription": "Kaan Balcı'nın portfolyosuna yerleşik herkese açık asistan AJOOP ile konuşun. Yayımlanmış portfolyodan yanıt verir ve kullandığı kanıtı gösterir.",
+    "ogTitle": "AJOOP Hub — Portfolyo Asistanı | Kaan Balcı",
+    "title": "AJOOP Hub — Portfolyo Asistanı | Kaan Balcı"
+  },
+  "ajoopCaseStudy": {
+    "description": "AJOOP nasıl çalışır: retrieval, deterministik fallback, her portfolyo yanıtında kanıt ve katı bir public/private sınırı olan local-first bir portfolyo asistanı.",
+    "ogDescription": "AJOOP nasıl çalışır: retrieval, deterministik fallback, her portfolyo yanıtında kanıt ve katı bir public/private sınırı olan local-first bir portfolyo asistanı.",
+    "ogTitle": "AJOOP Vaka Çalışması | Kaan Balcı",
+    "title": "AJOOP Vaka Çalışması | Kaan Balcı"
+  },
   "blog": {
     "description": "Conversational AI, LLM değerlendirme, workflow otomasyonu, yazılım geliştirme ve gerçek işletme dijital ürünleri alanlarında profesyonel deneyim.",
     "ogDescription": "Kurumsal conversational AI, yazılım ve dijital ürün çalışmalarını kapsayan profesyonel deneyim.",
@@ -76,6 +88,24 @@
     "ogDescription": "Ürün döngüsü, ilerleme, duyarlı oynanış ve platform mimarisine odaklanan Phaser 3 + TypeScript merge oyunu geliştirmesi.",
     "ogTitle": "Merge Rush: Tiny Factory Vaka Çalışması",
     "title": "Merge Rush: Tiny Factory Vaka Çalışması | Kaan Balcı"
+  },
+  "mergeRush": {
+    "description": "Merge Rush: Tiny Factory'yi tarayıcıda oyna: süreli siparişler, kademeli açılan alanlar, son Fabrika Çekirdeği siparişi ve Sonsuz Mod içeren bir Phaser 3 ve TypeScript fabrika birleştirme bulmacası.",
+    "ogDescription": "Kompakt bir fabrika birleştirme bulmacası: parçaları yerleştir, kademe kademe birleştir ve tur bitmeden süreli siparişleri teslim et.",
+    "ogTitle": "Merge Rush: Tiny Factory'yi oyna",
+    "title": "Merge Rush: Tiny Factory — Oyna | Kaan Balcı"
+  },
+  "portfolioCaseStudy": {
+    "description": "kaanbalci.com nasıl kuruldu: tek bir kanonik proje kaydı, beş dilde statik HTML'e önceden render edilen React, herkese açık bir asistan, dört tarayıcı oyunu ve her fazda odaklı denetimler.",
+    "ogDescription": "Sistem olarak kurulmuş bir portfolyo: kanonik veri, statik React ön render, beş dil, herkese açık bir asistan ve dört oyun.",
+    "ogTitle": "kaanbalci.com Vaka Çalışması",
+    "title": "kaanbalci.com Vaka Çalışması | Kaan Balcı"
+  },
+  "careerAdventureCaseStudy": {
+    "description": "Career Adventure'ın nasıl gerçek bir oyuna dönüştüğü: deterministik sabit adımlı fizik simülasyonu, strateji turlarıyla ölçülen zorluk, ulaşılabilir bir oyun sonu ve tam ekran oyun modu.",
+    "ogDescription": "Deterministik bir simülasyon, ölçülen zorluk ve gerçek bitişler etrafında yeniden kurulan bir bırak-birleştir kariyer oyunu.",
+    "ogTitle": "Career Adventure Vaka Çalışması",
+    "title": "Career Adventure Vaka Çalışması | Kaan Balcı"
   },
   "notFound": {
     "description": "Kaan Balcı portfolyosu için 404 sayfası.",

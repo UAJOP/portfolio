@@ -7,11 +7,28 @@ import { loadRouteRuntime, loadSiteRoutes } from "./site-routes.mjs";
 import { decodeHtml } from "./localized-html.mjs";
 import { createHomeAboutHeadModel, createSiteHeadRenderer } from "./site-head.mjs";
 import { catalogSearchCopy, defaultCatalogSources, defaultRoleSources, projectRole } from "./m3-works-games-catalog-copy.mjs";
-import { ajoopShellModel, commandPaletteModel } from "./m3-28-overlay-copy.mjs";
+import { ajoopShellModel, commandPaletteModel, runtimeCollection } from "./m3-28-overlay-copy.mjs";
+import { v4AboutModel, v4CertificatesModel, v4ExperienceModel } from "./v4-inner-pages.mjs";
+import { ajoopCaseStudyStructure, ajoopHubModel, ajoopHubStructure, ajoopSystemModel } from "./v4-ajoop-pages.mjs";
+import { withMergeRushPlayable } from "./v4-e06-4-merge-rush-edits.mjs";
+import { CATALOG_STYLE, cardEntries, loadCatalog, withGamesCatalog, withWorksCatalog } from "./v4-e06-5-catalog.mjs";
+/* V4-E06.6: a project page's hero is what its catalog card shows: an authentic image, or the identity plate. */
+const catalogCards = loadCatalog();
+const cardBySlug = new Map(cardEntries(catalogCards).filter((entry) => entry.detailSlug).map((entry) => [entry.detailSlug, entry]));
+const RETIRED_COVERS = new Set(catalogCards.cards.retiredCovers);
+const isRetiredCover = (value) => RETIRED_COVERS.has(decodeURIComponent(String(value).split("/").pop()));
+import { REQUEST_STYLE, withRequestSurface } from "./v4-e06-6-request.mjs";
+import { CAREER_CASE_ROUTE, V4_NATIVE_CASE_ROUTES, aiFlowV4Section, careerAdventureCaseStructure, joydayPaintSection, nativeCaseHead, portfolioCaseStructure, withAddedSection } from "./v4-e06-5-case-studies.mjs";
+import { MERGE_RUSH_CASE_ROUTE, MERGE_RUSH_ROUTE, MERGE_RUSH_SCRIPT, mergeRushCaseStudyStructure, mergeRushHead, mergeRushStructure } from "./v4-merge-rush-page.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
 const worksGamesStructure = readJson("data/site/m3-26-works-games-structure.json");
+/* V4-E06.4: Merge Rush is playable; its two catalog cards say so (scripts/v4-e06-4-merge-rush-edits.mjs). */
+for (const pageId of ["games", "works"]) worksGamesStructure.pages[pageId].children = withMergeRushPlayable(pageId, worksGamesStructure.pages[pageId].children);
+/* V4-E06.5: the complete catalog follows the curated Works explorer; Games gains the native archive (scripts/v4-e06-5-catalog.mjs). */
+worksGamesStructure.pages.works.children = withWorksCatalog(worksGamesStructure.pages.works.children);
+worksGamesStructure.pages.games.children = withGamesCatalog(worksGamesStructure.pages.games.children);
 const caseStudyStructure = readJson("data/site/m3-29-case-studies-structure.json");
 const labsGamesStructure = readJson("data/site/m3-30-labs-games-structure.json");
 const remainingRoutesStructure = readJson("data/site/m3-30-5-remaining-routes-structure.json");
@@ -74,16 +91,47 @@ const PROJECT_LABELS = {
   allWorks: "All Works",
   nextProject: "Next Project",
 };
-const PROJECT_FALLBACKS = {
-  impact: "This project represents my ability to combine technical practice, user needs and product-oriented thinking.",
-  process: [
-    ["Analysis", "Clarified the project goal, user need and core flow."],
-    ["Design", "Planned the system logic, screens or gameplay structure."],
-    ["Development", "Built the technical implementation and made the core features work."],
-    ["Iteration", "Refined the result through testing, cleanup and portfolio presentation."],
-  ],
-};
 
+const NOT_FOUND_COPY = {
+  title: "This route is not deployed yet.",
+  lead: "The page you are looking for may have moved, but the portfolio is still online. Use the shortcuts below or ask Ajoop.",
+  home: "Go Home",
+  works: "View Works",
+  request: "Send Request",
+  ajoop: "Ask Ajoop",
+};
+const notFoundTextNode = (value) => ({ type: "text", value });
+const notFoundElementNode = (tag, attributes, children = []) => ({
+  type: "element",
+  tag,
+  attributes: Object.entries(attributes).map(([name, value]) => ({ name, value })),
+  children,
+});
+function notFoundMainProps(route) {
+  const href = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+  const localizedCopy = Object.fromEntries(registry.activeLocales.map((definition) => {
+    if (definition.id === registry.defaultLocale) return [definition.id, Object.fromEntries(Object.values(NOT_FOUND_COPY).map((value) => [value, value]))];
+    const pages = readJson(`data/i18n/packs/${definition.id}/pages.json`).text || {};
+    return [definition.id, Object.fromEntries(Object.values(NOT_FOUND_COPY).map((value) => [value, decodeHtml(pages[value] || value)]))];
+  }));
+  return {
+    kind: "notFound",
+    page: "notFound",
+    locale: route.locale,
+    localizedCopy,
+    structure: [notFoundElementNode("section", { class: "page-hero section-shell error-hero reveal" }, [
+      notFoundElementNode("p", { class: "eyebrow" }, [notFoundTextNode("404")]),
+      notFoundElementNode("h1", {}, [notFoundTextNode(NOT_FOUND_COPY.title)]),
+      notFoundElementNode("p", {}, [notFoundTextNode(NOT_FOUND_COPY.lead)]),
+      notFoundElementNode("div", { class: "hero-actions left" }, [
+        notFoundElementNode("a", { class: "btn primary", href: href("/") }, [notFoundTextNode(NOT_FOUND_COPY.home)]),
+        notFoundElementNode("a", { class: "btn ghost", href: href("/works/") }, [notFoundTextNode(NOT_FOUND_COPY.works)]),
+        notFoundElementNode("a", { class: "btn ghost", href: href("/request/") }, [notFoundTextNode(NOT_FOUND_COPY.request)]),
+        notFoundElementNode("button", { class: "btn ghost", type: "button", "data-open-chatbot": true }, [notFoundTextNode(NOT_FOUND_COPY.ajoop)]),
+      ]),
+    ])],
+  };
+}
 function projectPhrase(locale, phrase, pages) {
   if (locale === registry.defaultLocale) return phrase;
   const value = pages.text?.[phrase];
@@ -98,6 +146,41 @@ const projectSchemaType = (project) => {
   if (/software|application|app\b|desktop|database|automation|python|c#|java|kotlin|android/.test(haystack)) return "SoftwareApplication";
   return "CreativeWork";
 };
+
+/* The hero and the gallery never show a retired cover. With an authentic
+ * image the record's own gallery follows; with a plate there is no gallery. */
+function projectVisual(slug, canonical, asset) {
+  const entry = cardBySlug.get(slug);
+  const card = entry?.card;
+  if (card?.plate) {
+    const [first, ...rest] = entry.tech.split(" · ");
+    return { image: null, plate: { first, rest: rest.join(" · ") }, gallery: [], fit: null, backdrop: null };
+  }
+  const image = card?.image ? card.image.source : canonical.image;
+  const gallery = (canonical.gallery?.length ? canonical.gallery : [image]).filter((file) => !isRetiredCover(file));
+  if (isRetiredCover(image)) throw new Error(`project ${slug}: its hero is a retired cover`);
+  return { image: asset(image), plate: null, gallery: (gallery.length ? gallery : [image]).map(asset), fit: card?.image?.fit || null, backdrop: card?.image?.backdrop || null };
+}
+
+/* A captured case study whose hero was a retired cover shows the project's own screenshot instead. */
+const CASE_COVER = { "hospital_form_app_cover.webp": { src: "/assets/hospital-system-patient-workflow.webp", width: "1557", height: "905" } };
+function withAuthenticCaseCovers(nodes, route) {
+  const next = structuredClone(nodes);
+  const walk = (node) => {
+    if (node.type !== "element") return;
+    if (node.tag === "img") {
+      const src = node.attributes.find((entry) => entry.name === "src");
+      if (src && isRetiredCover(src.value)) {
+        const replacement = CASE_COVER[decodeURIComponent(String(src.value).split("/").pop())];
+        if (!replacement) throw new Error(`${route.routeId}: a retired cover has no authentic replacement`);
+        node.attributes = [...node.attributes.filter((entry) => !["src", "width", "height"].includes(entry.name)), ...Object.entries(replacement).map(([name, value]) => ({ name, value }))];
+      }
+    }
+    node.children.forEach(walk);
+  };
+  next.forEach(walk);
+  return next;
+}
 
 function projectRouteModel(route, localization) {
   const canonical = projectDetails[route.slug];
@@ -119,9 +202,10 @@ function projectRouteModel(route, localization) {
     category: field("category"), title: field("title"), subtitle: field("subtitle"), role: field("role"),
     year: String(canonical.year), type: field("type"), status: field("status"), overview: field("overview"),
     challenge: field("challenge"), solution: field("solution"),
-    impact: impact ? decodeHtml(impact) : phrase(PROJECT_FALLBACKS.impact),
-    process: process ? process.map((step) => ({ title: decodeHtml(step.title), text: decodeHtml(step.text) })) : PROJECT_FALLBACKS.process.map(([title, text]) => ({ title: phrase(title), text: phrase(text) })),
-    image: asset(canonical.image), gallery: (canonical.gallery?.length ? canonical.gallery : [canonical.image]).map(asset),
+    /* V4-E06.5: a record without an impact or a process says nothing there; the generic fallbacks are gone. */
+    impact: impact ? decodeHtml(impact) : null,
+    process: process ? process.map((step) => ({ title: decodeHtml(step.title), text: decodeHtml(step.text) })) : null,
+    ...projectVisual(route.slug, canonical, asset),
     stack,
     features: localization.canonicalData({ canonical, overlay, path: "features" }).map(decodeHtml),
     links: (canonical.links || []).map((link, linkIndex) => ({
@@ -149,7 +233,7 @@ function createProjectHeadModel(route, model, localization) {
     indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
     absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
   });
-  const image = `${site.origin}${model.project.image}`;
+  const image = `${site.origin}${model.project.image || "/assets/portfolio_website_cover.webp"}`;
   const jsonLd = {
     "@context": "https://schema.org", "@type": projectSchemaType(model.project), name: model.project.title,
     description: truncateDescription(model.project.overview || model.project.subtitle, 300), url: model.project.canonical, image, dateCreated: model.project.year,
@@ -193,7 +277,9 @@ function projectDetailStructure({ project, labels, projectLinks }) {
           elementNode("button", { class: "btn ghost", type: "button", "data-copy-project-link": true }, [labels.copyProjectLink]),
         ]),
       ]),
-      elementNode("div", { class: "project-detail-visual reveal delay-1" }, [elementNode("img", { src: project.image, alt: `${project.title} ${labels.preview}`, decoding: "async", fetchpriority: "high" })]),
+      project.plate
+        ? elementNode("div", { class: "project-detail-visual v4-detail-plate reveal delay-1", "aria-hidden": "true" }, [elementNode("span", { class: "v4-detail-plate__name" }, [project.plate.first]), ...(project.plate.rest ? [elementNode("span", { class: "v4-detail-plate__tech" }, [project.plate.rest])] : [])])
+        : elementNode("div", { class: "project-detail-visual reveal delay-1" }, [elementNode("img", { src: project.image, alt: `${project.title} ${labels.preview}`, decoding: "async", fetchpriority: "high", ...(project.fit ? { "data-fit": project.fit } : {}), ...(project.backdrop ? { "data-backdrop": project.backdrop } : {}) })]),
     ]),
     elementNode("section", { class: "section-shell project-detail-meta reveal delay-2" }, [
       [[labels.role, project.role], [labels.year, project.year], [labels.projectType, project.type], [labels.status, project.status]].map(([label, value]) => elementNode("article", {}, [elementNode("span", {}, [label]), elementNode("strong", {}, [value])])),
@@ -201,23 +287,23 @@ function projectDetailStructure({ project, labels, projectLinks }) {
     elementNode("section", { class: "section-shell section-block project-detail-grid" }, [
       elementNode("div", { class: "project-detail-main" }, [
         panel(labels.overview, labels.projectOverview, project.overview), panel(labels.challenge, labels.challengeTitle, project.challenge, " delay-1"),
-        panel(labels.solution, labels.solutionTitle, project.solution, " delay-2"), panel(labels.impact, labels.impactTitle, project.impact),
-        elementNode("article", { class: "detail-panel reveal delay-1" }, [
+        panel(labels.solution, labels.solutionTitle, project.solution, " delay-2"), ...(project.impact ? [panel(labels.impact, labels.impactTitle, project.impact)] : []),
+        ...(project.process ? [elementNode("article", { class: "detail-panel reveal delay-1" }, [
           elementNode("p", { class: "eyebrow" }, [labels.process]), elementNode("h2", {}, [labels.processTitle]),
           elementNode("div", { class: "process-steps" }, project.process.map((step, index) => elementNode("article", {}, [
             elementNode("span", {}, [String(index + 1).padStart(2, "0")]), elementNode("div", {}, [elementNode("h3", {}, [step.title]), elementNode("p", {}, [step.text])]),
           ]))),
-        ]),
+        ])] : []),
       ]),
       elementNode("aside", { class: "project-detail-side reveal delay-1", "aria-label": labels.projectOverview }, [
         elementNode("div", { class: "detail-panel compact-panel" }, [elementNode("h3", {}, [labels.techStack]), elementNode("div", { class: "project-tags detail-tags" }, project.stack.map((item) => elementNode("span", {}, [item])))]),
         elementNode("div", { class: "detail-panel compact-panel" }, [elementNode("h3", {}, [labels.highlights]), elementNode("ul", { class: "detail-list" }, project.features.map((item) => elementNode("li", {}, [item])))]),
       ]),
     ]),
-    elementNode("section", { class: "section-shell section-block" }, [
+    ...(project.gallery.length ? [elementNode("section", { class: "section-shell section-block" }, [
       elementNode("div", { class: "section-heading reveal" }, [elementNode("p", { class: "eyebrow" }, [labels.gallery]), elementNode("h2", {}, [labels.galleryTitle]), elementNode("p", {}, [labels.galleryBody])]),
-      elementNode("div", { class: "detail-gallery" }, project.gallery.map((image) => elementNode("img", { class: "reveal", src: image, alt: `${project.title} ${labels.galleryImage}`, loading: "lazy", decoding: "async" }))),
-    ]),
+      elementNode("div", { class: "detail-gallery" }, project.gallery.map((image) => elementNode("img", { class: "reveal", src: image, alt: `${project.title} ${labels.galleryImage}`, loading: "lazy", decoding: "async", ...(project.fit ? { "data-fit": project.fit } : {}), ...(project.backdrop ? { "data-backdrop": project.backdrop } : {}) }))),
+    ])] : []),
     elementNode("section", { class: "section-shell detail-navigation reveal" }, [
       elementNode("a", { class: "btn ghost", href: projectLinks.previous }, [icon("bx bx-left-arrow-alt"), labels.previousProject]),
       elementNode("a", { class: "btn primary", href: projectLinks.works }, [labels.allWorks]),
@@ -329,6 +415,19 @@ function labsGamesHead(route, localized, localization) {
     if (!meta?.ogTitle || !meta?.ogDescription) throw new Error(`${route.locale}/${route.routeId}: missing canonical meta`);
     og = { ...og, title: og.title || meta.ogTitle, description: og.description || meta.ogDescription, image: og.image || `${site.origin}/assets/portfolio_website_cover.webp` };
   }
+  /* V4-E08: a playable page previews as the game itself: the authentic frame
+   * its catalog card shows, not the general portfolio cover or a logo. The
+   * catalog entry is the one source; a page with no such entry is unchanged. */
+  const playable = cardEntries(catalogCards).find((entry) => entry.links?.play === `/${route.route}` && entry.card?.image?.source);
+  let twitter = localized.head.twitter;
+  if (playable) {
+    const image = `${site.origin}/${playable.card.image.source}`;
+    /* An alt written for this page stays; one that described the general cover goes
+     * with it, and the document names the preview after the page instead. */
+    const ownAlt = (alt, was) => (/portfolio_website_cover.webp$/.test(String(was || "")) ? undefined : alt);
+    og = { ...og, imageAlt: ownAlt(og.imageAlt, og.image), image, imageWidth: undefined, imageHeight: undefined };
+    twitter = { ...twitter, imageAlt: ownAlt(twitter?.imageAlt, twitter?.image), image };
+  }
   /* The accepted documents carried no structured data. This states only what
    * the head already states — the page, its language, the site it belongs to
    * and its author — and claims nothing about the game itself. */
@@ -344,7 +443,449 @@ function labsGamesHead(route, localized, localization) {
     author: { "@type": "Person", name: profile.name, url: `${site.origin}/` },
   };
   if (localized.head.canonical !== jsonLd.url) throw new Error(`${route.locale}/${route.routeId}: accepted canonical does not match the route`);
-  return { ...localized.head, og, jsonLd };
+  return { ...localized.head, og, twitter, jsonLd };
+}
+
+/* V4: the Home hero's delivery flow. Geometry is authored in
+ * data/site/v4-home-flow.json; every label resolves through the canonical
+ * message catalog like the rest of the page. */
+const v4HomeFlow = readJson("data/site/v4-home-flow.json");
+/* V4: the project ecosystem. Capabilities are the Works catalog's filter
+ * categories and projects are its cards; a wire exists only where a card is
+ * filed under a category. Read from the same structure the Works page
+ * renders, so the map cannot drift from the catalog or claim a relationship
+ * the catalog does not make. */
+function v4EcosystemModel(locale, message) {
+  const canonical = localizedCanonicalData(locale);
+  const attribute = (node, name) => node.attributes.find((entry) => entry.name === name)?.value;
+  const hasClass = (node, name) => String(attribute(node, "class") || "").split(/\s+/).includes(name);
+  const text = (node) => {
+    if (node.type === "message") return message(node.key);
+    if (node.type === "data") return String(node.path).split(".").reduce((value, segment) => value?.[segment], canonical);
+    if (node.type === "text") return node.value;
+    return node.type === "element" ? node.children.map(text).join("") : "";
+  };
+  const find = (node, test) => {
+    if (node.type !== "element") return null;
+    if (test(node)) return node;
+    for (const child of node.children) {
+      const hit = find(child, test);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const capabilities = [];
+  const projects = [];
+  let tier = -1;
+  const walk = (node) => {
+    if (node.type !== "element") return;
+    const filter = attribute(node, "data-filter-btn");
+    if (filter !== undefined && filter !== "all") capabilities.push({ id: filter, label: text(node) });
+    if (attribute(node, "data-project-section") !== undefined) tier += 1;
+    if (hasClass(node, "project-card")) {
+      const link = find(find(node, (entry) => entry.tag === "h3"), (entry) => entry.tag === "a");
+      const target = attribute(link, "href");
+      const href = target?.type === "internal" ? routeRuntime.localizedInternalHref(target.path, locale) : target?.type === "data" ? text(target) : target;
+      const status = find(node, (entry) => hasClass(entry, "project-status"));
+      const id = String(attribute(node, "data-project-link") || attribute(node, "data-game-link")).split("/").filter(Boolean).pop();
+      if (!id || typeof href !== "string" || !href) throw new Error(`${locale}: Works catalog card without a canonical destination`);
+      projects.push({
+        id,
+        title: text(link),
+        href,
+        categories: String(attribute(node, "data-category")).split(/\s+/).filter(Boolean),
+        tier: hasClass(node, "is-archive") ? "archive" : tier === 0 ? "primary" : "supporting",
+        ...(status ? { status: text(status) } : {}),
+      });
+      return;
+    }
+    node.children.forEach(walk);
+  };
+  worksGamesStructure.pages.works.children.forEach(walk);
+  const known = new Set(capabilities.map((capability) => capability.id));
+  for (const project of projects) {
+    if (!project.title || !project.categories.length || project.categories.some((id) => !known.has(id))) {
+      throw new Error(`${locale}: Works catalog card ${project.id} is not filed under a known catalog category`);
+    }
+  }
+  return {
+    eyebrow: message("home.ecosystem.eyebrow"),
+    title: message("home.ecosystem.title"),
+    lead: message("home.ecosystem.lead"),
+    capabilitiesLabel: message("home.ecosystem.capabilities"),
+    projectsLabel: message("home.ecosystem.projects"),
+    viewAll: { label: message("home.hero.viewWork"), href: routeRuntime.localizedInternalHref("/works/", locale) },
+    capabilities,
+    projects,
+  };
+}
+
+/* V4 Works: the same catalog map, with the labels for its three views. */
+function v4WorksModel(locale, message) {
+  const { capabilities, projects, capabilitiesLabel, projectsLabel } = v4EcosystemModel(locale, message);
+  return {
+    ecosystem: { capabilities, projects, capabilitiesLabel, projectsLabel },
+    labels: { viewAria: message("works.view.aria"), grid: message("works.view.grid"), map: message("works.view.map"), capability: message("works.view.capability") },
+  };
+}
+
+/* V4 project detail: what the shell adds to a page that already has its
+ * content. The tracker lists the page's own sections under their own labels;
+ * related work is every other catalog project filed under a capability this
+ * one is filed under, in catalog order. A page the catalog does not know gets
+ * a tracker and nothing else. */
+function v4DetailModel(route, children, message) {
+  const attribute = (node, name) => node.attributes.find((entry) => entry.name === name)?.value;
+  const hasClass = (node, name) => node.type === "element" && String(attribute(node, "class") || "").split(/\s+/).includes(name);
+  const text = (node) => (node.type === "text" ? node.value : node.type === "message" ? message(node.key) : node.type === "element" ? node.children.map(text).join("") : "");
+  const find = (node, test) => {
+    if (node.type !== "element") return null;
+    if (test(node)) return node;
+    for (const child of node.children) {
+      const hit = find(child, test);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const items = children.flatMap((node, index) => {
+    if (!hasClass(node, "case-section")) return [];
+    const label = find(node, (entry) => hasClass(entry, "eyebrow")) || find(node, (entry) => entry.tag === "h2");
+    const value = label ? text(label).replace(/\s+/g, " ").trim() : "";
+    return value ? [{ id: `v4-s-${index}`, label: value }] : [];
+  });
+  const ecosystem = v4EcosystemModel(route.locale, message);
+  const id = route.route.split("/").filter(Boolean).pop();
+  const self = ecosystem.projects.find((project) => project.id === id);
+  const ports = self ? ecosystem.capabilities.filter((capability) => self.categories.includes(capability.id)) : [];
+  const groups = ports.map((capability) => ({
+    id: capability.id,
+    label: capability.label,
+    projects: ecosystem.projects.filter((project) => project.id !== id && project.categories.includes(capability.id)).map(({ id: projectId, title, href, status }) => ({ id: projectId, title, href, ...(status ? { status } : {}) })),
+  })).filter((group) => group.projects.length);
+  return {
+    consumer: "detail",
+    ports,
+    tracker: { aria: message("project.tracker.aria"), items },
+    related: self && groups.length ? { eyebrow: message("project.related.eyebrow"), title: message("project.related.title"), self: self.title, groups } : null,
+  };
+}
+
+/* V4-E05: what a flagship's Home card shows of its system, read from that
+ * project's own case study in the visitor's language: the journey it
+ * documents (with the heading it documents it under) and its proof strip.
+ * Nothing is authored for Home; a case study that stops carrying either
+ * fails the build. */
+function v4FlagshipSignature(locale, pageId) {
+  const children = caseStudyStructure.pages[pageId]?.locales?.[locale]?.children;
+  if (!children) throw new Error(`${locale}: flagship case study ${pageId} is missing`);
+  const classOf = (node) => String(node.attributes.find((entry) => entry.name === "class")?.value || "").split(/\s+/);
+  const all = (node, test, hits = []) => {
+    if (node.type !== "element") return hits;
+    if (test(node)) hits.push(node);
+    node.children.forEach((child) => all(child, test, hits));
+    return hits;
+  };
+  const clean = (node) => plainText(node).replace(/\s+/g, " ").trim();
+  const parts = (node) => node.children.filter((child) => child.type === "element").map(clean);
+  const section = children.find((node) => all(node, (entry) => classOf(entry).includes("case-journey")).length);
+  const steps = section ? all(section, (entry) => classOf(entry).includes("case-journey"))[0].children.filter((child) => child.type === "element").map((step) => parts(step)[1]) : [];
+  const caption = section ? clean(all(section, (entry) => entry.tag === "h2")[0]) : "";
+  const proof = children.flatMap((node) => all(node, (entry) => classOf(entry).includes("case-proof"))).map((entry) => { const [value, label] = parts(entry); return { value, label }; });
+  if (steps.length < 3 || steps.some((step) => !step) || !caption || !proof.length || proof.some((entry) => !entry.value || !entry.label)) throw new Error(`${locale}: flagship case study ${pageId} no longer documents a journey and a proof strip`);
+  return { caption, steps, proof };
+}
+
+function v4HomeModel(locale, message) {
+  const { schemaVersion, signatures, ...flow } = v4HomeFlow;
+  /* AJOOP's flagship port speaks only in the assistant's own shipped copy:
+   * its shell strings and the first of its own quick questions. */
+  const ajoop = ajoopShellModel(locale);
+  const quicks = (runtimeCollection("ajoop", locale).quicks || []).slice(0, 4).map((quick) => quick.label).filter(Boolean);
+  if (quicks.length !== 4) throw new Error(`${locale}: AJOOP quick questions are missing from its shipped copy`);
+  const ecosystem = v4EcosystemModel(locale, message);
+  for (const id of [...flow.evidence, ...flow.flagship]) {
+    if (!ecosystem.projects.some((project) => project.id === id)) throw new Error(`${locale}: flagship ${id} is not a Works catalog project`);
+  }
+  const href = (target) => routeRuntime.localizedInternalHref(target, locale);
+  const hub = { href: href("/ajoop/"), label: message("ajoop.hub.open") };
+  const firstHeading = (node) => (node.type !== "element" ? null : node.tag === "h1" ? node : node.children.map(firstHeading).find(Boolean) || null);
+  const certificatesTitle = plainText(remainingRoutesStructure.pages.certificates.locales[locale].children.map(firstHeading).find(Boolean)).replace(/\s+/g, " ").trim();
+  if (!certificatesTitle) throw new Error(`${locale}: Certificates page title is missing`);
+  return {
+    /* The catalog map, with what Home adds to it: which projects are the
+     * flagships, and AJOOP — not a catalog project, so it is wired to no
+     * capability — as the system that answers over all of it, in its Hub's
+     * own words. */
+    ecosystem: {
+      ...ecosystem,
+      flagship: flow.flagship,
+      ajoop: { title: ajoop.copy.title, heading: message("ajoop.hub.scope.heading"), scope: ["projects", "experience", "skills", "certificates"].map((key) => message(`ajoop.hub.scope.${key}`)), link: hub },
+    },
+    signatures: Object.fromEntries(Object.entries(signatures).map(([id, pageId]) => [id, v4FlagshipSignature(locale, pageId)])),
+    supportLabel: message("portfolio.label.supportingEvidence"),
+    /* V4-E07: an evidence card whose project has no authentic image shows the
+     * identity plate its catalog card shows, never a retired cover. */
+    plates: Object.fromEntries(cardEntries(loadCatalog()).filter((entry) => flow.evidence.includes(entry.id) && entry.card.plate).map((entry) => {
+      const [first, ...rest] = entry.tech.split(" · ");
+      return [entry.id, { kind: entry.kind, first, rest: rest.join(" · ") }];
+    })),
+    /* The way on from the experience summary: the two pages it does not
+     * already link, each under its own title. */
+    bridge: [
+      { label: message("shell.nav.certificates"), title: certificatesTitle, href: href("/certificates/") },
+      { label: message("shell.nav.about"), title: message("about.hero.title"), href: href("/about/") },
+    ],
+    closing: [{ href: href("/works/"), label: message("home.hero.viewWork") }, hub],
+    ajoop: { title: ajoop.copy.title, subtitle: ajoop.copy.subtitle, lead: message("ajoop.hub.lead"), launcher: ajoop.copy.launcher, prompt: ajoop.copy.inputPlaceholder, state: ajoop.mascot.label, quicks, links: [hub, { href: href("/ajoop-case-study/"), label: message("ajoop.hub.how") }] },
+    flow: {
+      ...flow,
+      aria: message(flow.aria),
+      handoff: message(flow.handoff),
+      hub: { ...flow.hub, label: message(flow.hub.label), value: message(flow.hub.value) },
+      stages: flow.stages.map((stage) => ({ ...stage, label: message(stage.label) })),
+    },
+  };
+}
+
+/* V4 inner pages (scripts/v4-inner-pages.mjs): Experience and Certificates
+ * are captured documents, so their models are read from the localized
+ * structure itself, with the English contract supplying what must not depend
+ * on a language (month names, provider identity). */
+const plainText = (node) => (!node ? "" : node.type === "text" ? node.value : node.type === "element" ? node.children.map(plainText).join("") : "");
+const experienceTitle = (locale) => plainText(remainingRoutesStructure.pages.blog.locales[locale].children.find((node) => node.type === "element").children.find((node) => node.tag === "h1")).replace(/\s+/g, " ").trim();
+function v4CapturedModel(route, captured, structure, message) {
+  const english = captured.page.locales[registry.defaultLocale].children;
+  if (route.routeId === "blog") {
+    return v4ExperienceModel({
+      locale: route.locale, children: structure, english, text: plainText, message,
+      ecosystem: v4EcosystemModel(route.locale, message),
+      asOf: meta.updatedAt,
+      about: { label: message("shell.nav.about"), title: message("about.hero.title"), href: routeRuntime.localizedInternalHref("/about/", route.locale) },
+    });
+  }
+  if (route.routeId === "certificates") return v4CertificatesModel({ locale: route.locale, children: structure, english, text: plainText, message });
+  return null;
+}
+
+function v4AboutPageModel(route, children, localization, message) {
+  const text = (node) => (!node ? "" : node.type === "message" ? message(node.key) : node.type === "text" ? node.value : node.type === "element" ? node.children.map(text).join("") : "");
+  const value = (entry) => (entry?.type === "message" ? message(entry.key) : entry?.type === "internal" ? routeRuntime.localizedInternalHref(entry.path, route.locale) : entry);
+  return v4AboutModel({
+    locale: route.locale, children, text, value, message,
+    recruiter: recruiterModel(route.locale, localization),
+    experience: { label: message("shell.nav.blog"), title: experienceTitle(route.locale), href: routeRuntime.localizedInternalHref("/blog/", route.locale) },
+  });
+}
+
+/* V4-E04: the two AJOOP routes (scripts/v4-ajoop-pages.mjs). */
+const AJOOP_ROUTES = new Set(["ajoop", "ajoopCaseStudy"]);
+const ajoopKnowledge = readJson("data/portfolio/ajoop-master-knowledge.json").projects.flagship["Ajoop Portfolio Copilot"];
+const THEME_BOOTSTRAP = '(function(){try{var t=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();';
+
+function v4AjoopMainProps(route, loadLocalization) {
+  const localization = loadLocalization(route.locale);
+  const message = (key) => {
+    const value = localization.message(key);
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+    return value;
+  };
+  const href = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+  if (route.routeId === "ajoop") {
+    const links = [["/works/", "shell.nav.works"], ["/blog/", "shell.nav.blog"], ["/about/", "shell.nav.about"], ["/certificates/", "shell.nav.certificates"], ["/ajoop-case-study/", "ajoop.hub.how"]].map(([target, key]) => ({ href: href(target), label: message(key) }));
+    return { kind: "v4Page", page: "ajoop", locale: route.locale, structure: ajoopHubStructure({ message, links }), v4: { consumer: "hub" } };
+  }
+  if (!Array.isArray(ajoopKnowledge?.architecture_public_safe) || !ajoopKnowledge.architecture_public_safe.length) throw new Error("AJOOP public-safe architecture record is missing");
+  const structure = ajoopCaseStudyStructure({
+    message,
+    hubHref: href("/ajoop/"),
+    worksHref: { href: href("/works/"), label: message("home.hero.viewWork") },
+    stack: ajoopKnowledge.architecture_public_safe.map((item) => item === "Evidence cards and deterministic fallback"
+      ? message("ajoop.case.stack.evidenceFallback")
+      : item),
+  });
+  /* The shipped quick questions, as the way into the live assistant. */
+  const shell = ajoopShellModel(route.locale);
+  const quicks = (runtimeCollection("ajoop", route.locale).quicks || []).slice(0, 4).map((quick) => quick.label).filter(Boolean);
+  return {
+    kind: "caseStudy", page: route.routeId, locale: route.locale, structure, data: localizedCanonicalData(route.locale),
+    v4: {
+      ...v4DetailModel(route, structure, message),
+      system: ajoopSystemModel({ message }),
+      entry: { href: href("/ajoop/"), state: shell.mascot.label, ask: message("ajoop.case.hero.askLabel"), quicks, cta: message("ajoop.case.cta.try") },
+    },
+  };
+}
+
+/* The head of an AJOOP route, from its canonical per-locale meta. */
+function v4AjoopHead(route, localization) {
+  const meta = route.locale === registry.defaultLocale ? sourceMeta[route.routeId] : localization.packs.meta?.[route.routeId];
+  if (!meta?.title || !meta?.description) throw new Error(`${route.locale}/${route.routeId}: missing canonical meta`);
+  const headRenderer = createSiteHeadRenderer({
+    registry,
+    indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
+    absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
+  });
+  const canonical = `${site.origin}${route.pathname}`;
+  /* V4-E08: AJOOP previews as itself, with its approved Living Hub artwork. */
+  const image = `${site.origin}/assets/ajoop-living-hub-1600.webp`;
+  const caseStudy = route.routeId === "ajoopCaseStudy";
+  return {
+    title: meta.title, description: meta.description, keywords: null, canonical, robots: "index, follow",
+    alternates: headRenderer.alternateLinkRecords(route.route, true),
+    og: { siteName: "Kaan Balcı Portfolio", locale: localization.definition.ogLocale || localization.definition.htmlLang, title: meta.ogTitle || meta.title, description: meta.ogDescription || meta.description, type: caseStudy ? "article" : "website", url: canonical, image },
+    twitter: { card: "summary_large_image", title: meta.ogTitle || meta.title, description: meta.ogDescription || meta.description, image },
+    themeBootstrap: THEME_BOOTSTRAP,
+    /* States what the head states and nothing about the system itself. */
+    jsonLd: {
+      "@context": "https://schema.org", "@type": "WebPage", name: meta.title, description: meta.description, url: canonical,
+      inLanguage: localization.definition.htmlLang || route.locale, image,
+      isPartOf: { "@type": "WebSite", name: "Kaan Balcı Portfolio", url: `${site.origin}/` },
+      author: { "@type": "Person", name: profile.name, url: `${site.origin}/` },
+    },
+    ...(caseStudy ? { extraStyles: ["/case-study.css"] } : {}),
+  };
+}
+
+/* V4-E06.1: Joyday Action Painting's entered play mode. The accepted page
+ * markup and the painting engine are untouched; the route's consumer adds the
+ * studio's own controls around them (src/react/v4/consumers.jsx), and
+ * js/pages/joyday-studio.js and css/v4-joyday-studio.css run it. This is the
+ * copy those controls carry, from the canonical message catalog. */
+const JOYDAY_STUDIO_ROUTE = "joydayPaint";
+const JOYDAY_STUDIO_SCRIPT = "/js/pages/joyday-studio.js";
+const JOYDAY_STUDIO_MOODS = ["pop", "soft", "sunset", "blue", "electric", "morning"];
+const JOYDAY_STUDIO_KEYS = ["aria", "exit", "fullscreen", "fullscreenExit", "newCanvas", "extras", "start.title", "start.cta", "keepPainting", "noscript", "caseStudy", "error.title", "error.text", "error.reload"];
+function v4JoydayStudioModel(locale, localization) {
+  const labels = Object.fromEntries(JOYDAY_STUDIO_KEYS.map((key) => {
+    const value = localization.message(`joyday.studio.${key}`);
+    if (typeof value !== "string" || !value) throw new Error(`${locale}/${JOYDAY_STUDIO_ROUTE}: missing joyday.studio.${key}`);
+    /* start.title → startTitle: the consumer reads plain property names. */
+    return [key.replace(/\.(\w)/g, (match, letter) => letter.toUpperCase()), decodeHtml(value)];
+  }));
+  /* V4-E06.1B: the studio's moods, named in the visitor's language. Which
+   * mood a palette belongs to is decided in the browser from its colours. */
+  const moodCopy = (key) => {
+    const value = localization.message(`joyday.studio.mood.${key}`);
+    if (typeof value !== "string" || !value) throw new Error(`${locale}/${JOYDAY_STUDIO_ROUTE}: missing joyday.studio.mood.${key}`);
+    return decodeHtml(value);
+  };
+  const moods = Object.fromEntries(JOYDAY_STUDIO_MOODS.map((id) => [id, { name: moodCopy(`${id}.name`), note: moodCopy(`${id}.note`) }]));
+  return { consumer: "joydayStudio", labels, moodLabel: moodCopy("label"), moods, caseStudyHref: routeRuntime.localizedInternalHref("/atolye-joyday-case-study/", locale) };
+}
+
+/* V4-E06.2: AI Flow Puzzle as an entered game. The accepted page markup stays;
+ * the route's consumer adds the game's shell around it — level select in the
+ * page, then mission briefing, workspace chrome and result as a full-viewport
+ * play mode (src/react/v4/consumers.jsx, js/pages/flow-puzzle-game.js,
+ * css/v4-flow-puzzle.css). The puzzle's own words (levels, nodes, verdicts)
+ * still come from the engine's catalog; this is the copy of the shell. */
+const FLOW_PUZZLE_ROUTE = "aiFlowPuzzle";
+const FLOW_PUZZLE_SCRIPT = "/js/pages/flow-puzzle-game.js";
+const FLOW_PUZZLE_KEYS = ["aria", "by", "tagline", "premise", "play", "continue", "missions", "progress", "solved", "unsolved", "best", "difficulty.standard", "difficulty.advanced", "how.title", "how.one", "how.two", "how.three", "noscript", "caseStudy", "mission.label", "mission.scenario", "mission.input", "mission.expected", "mission.reaches", "mission.constraints", "mission.nodes", "mission.links", "mission.hints", "mission.tip", "mission.start", "mission.progress", "levels", "exit", "menu", "close", "library", "panel", "tab.mission", "tab.node", "tab.run", "tab.tools", "hintsUsed", "zoomIn", "zoomOut", "fit", "running", "stop", "triggerInput", "endOutput", "fail.title", "fail.wentWrong", "fail.compare", "fail.reached", "fail.notReached", "fail.unreachable", "fail.deadEnd", "fail.retry", "fail.hint", "fail.note", "win.note", "win.quality", "win.total", "win.newBest", "win.assisted", "win.next", "win.inspect", "win.allDone", "error.title", "error.text", "error.reload"];
+function v4FlowPuzzleModel(locale, localization) {
+  const labels = Object.fromEntries(FLOW_PUZZLE_KEYS.map((key) => {
+    const value = localization.message(`aiFlow.game.${key}`);
+    if (typeof value !== "string" || !value) throw new Error(`${locale}/${FLOW_PUZZLE_ROUTE}: missing aiFlow.game.${key}`);
+    /* mission.start → missionStart: the consumer and the controller read plain property names. */
+    return [key.replace(/\.(\w)/g, (match, letter) => letter.toUpperCase()), decodeHtml(value)];
+  }));
+  return {
+    consumer: "flowPuzzle",
+    labels,
+    gamesHref: routeRuntime.localizedInternalHref("/games/", locale),
+    caseStudyHref: routeRuntime.localizedInternalHref("/ai-flow-puzzle-case-study/", locale),
+  };
+}
+
+/* V4-E06.3: Career Adventure as an entered game. The accepted page markup
+ * stays; the route's consumer adds the game's shell around it — the way in
+ * from the hero, then menu, HUD, tools, pause, result and failure as a
+ * full-viewport play mode (src/react/v4/consumers.jsx,
+ * js/pages/career-adventure-game.js, css/v4-career-adventure.css). The rules
+ * are the engine's (adventure-game.js); this is the copy of the shell, and
+ * the names of the thirteen objects in the visitor's language. */
+const CAREER_ADVENTURE_ROUTE = "adventure";
+const CAREER_ADVENTURE_SCRIPT = "/js/pages/career-adventure-game.js";
+const CAREER_ADVENTURE_KEYS = ["aria", "title", "tagline", "enter", "noscript", "noscriptGames", "noscriptWorks", "menu.play", "menu.how", "menu.settings", "menu.progress", "menu.exit", "menu.best", "menu.furthest", "hud.score", "hud.best", "hud.next", "hud.pause", "hud.stage", "hud.tools", "hud.path", "hud.fullscreen", "hud.fullscreenExit", "hud.sound", "tool.swap", "tool.swapHint", "tool.debug", "tool.debugHint", "how.title", "how.one", "how.two", "how.three", "how.four", "how.tools", "how.keys", "settings.title", "settings.sound", "settings.volume", "settings.reduced", "settings.guide", "settings.haptics", "settings.theme", "settings.language", "settings.locked", "theme.study", "theme.city", "theme.lab", "progress.title", "progress.runs", "progress.wins", "progress.best", "progress.furthest", "progress.milestones", "milestone.title", "milestone.refill", "milestone.theme", "chain.two", "chain.combo", "nice", "careful", "noRoom", "pause.title", "pause.resume", "pause.restart", "over.title", "over.text", "over.summary", "over.retry", "win.title", "win.text", "win.again", "win.newBest", "stat.score", "stat.best", "stat.chain", "stat.time", "close", "back", "mainMenu", "error.title", "error.text", "error.reload", "obj.book", "obj.keyboard", "obj.mouse", "obj.monitor", "obj.htmlcss", "obj.javascript", "obj.python", "obj.csharp", "obj.database", "obj.aiflow", "obj.portfolio", "obj.interview", "obj.joboffer"];
+function v4CareerAdventureModel(locale, localization) {
+  const labels = Object.fromEntries(CAREER_ADVENTURE_KEYS.map((key) => {
+    const value = localization.message(`adventure.play.${key}`);
+    if (typeof value !== "string" || !value) throw new Error(`${locale}/${CAREER_ADVENTURE_ROUTE}: missing adventure.play.${key}`);
+    /* menu.play → menuPlay: the consumer, the controller and the engine read plain property names. */
+    return [key.replace(/\.(\w)/g, (match, letter) => letter.toUpperCase()), decodeHtml(value)];
+  }));
+  return {
+    consumer: "careerAdventure",
+    labels,
+    gamesHref: routeRuntime.localizedInternalHref("/games/", locale),
+    worksHref: routeRuntime.localizedInternalHref("/works/", locale),
+    /* The game in each language is its own page; the link opens it at the menu. */
+    locales: registry.locales.filter((item) => item.active).map((item) => ({ id: item.id, label: item.nativeLabel, current: item.id === locale, href: `${routeRuntime.localizedInternalHref("/adventure/", item.id)}#career-merge-game` })),
+  };
+}
+
+/* V4-E06.4: the playable Merge Rush route (scripts/v4-merge-rush-page.mjs). */
+function v4MergeRushMainProps(route, loadLocalization) {
+  const localization = loadLocalization(route.locale);
+  const message = (key) => {
+    const value = localization.message(key);
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+    return value;
+  };
+  const href = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+  return { kind: "v4Page", page: MERGE_RUSH_ROUTE, locale: route.locale, structure: mergeRushStructure({ message, locale: route.locale, caseStudyHref: href("/merge-rush-case-study/"), gamesHref: href("/games/") }) };
+}
+
+function v4MergeRushHead(route, localization) {
+  const headRenderer = createSiteHeadRenderer({
+    registry,
+    indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
+    absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
+  });
+  return mergeRushHead({
+    meta: route.locale === registry.defaultLocale ? sourceMeta[route.routeId] : localization.packs.meta?.[route.routeId],
+    canonical: `${site.origin}${route.pathname}`,
+    origin: site.origin,
+    alternates: headRenderer.alternateLinkRecords(route.route, true),
+    htmlLang: localization.definition.htmlLang || route.locale,
+    ogLocale: localization.definition.ogLocale || localization.definition.htmlLang,
+    authorName: profile.name,
+    themeBootstrap: THEME_BOOTSTRAP,
+  });
+}
+
+/* V4-E06.5: the two case studies born in V4 (scripts/v4-e06-5-case-studies.mjs). */
+function v4NativeCaseMainProps(route, loadLocalization) {
+  const localization = loadLocalization(route.locale);
+  const message = (key) => {
+    const value = localization.message(key);
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+    return value;
+  };
+  const href = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+  const structure = route.routeId === CAREER_CASE_ROUTE
+    ? careerAdventureCaseStructure({ message, href })
+    : portfolioCaseStructure({ message, href, repositoryCount: loadCatalog().repositories.length });
+  return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure, data: localizedCanonicalData(route.locale), v4: v4DetailModel(route, structure, message) };
+}
+
+function v4NativeCaseHead(route, localization) {
+  const headRenderer = createSiteHeadRenderer({
+    registry,
+    indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
+    absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
+  });
+  return nativeCaseHead({
+    meta: route.locale === registry.defaultLocale ? sourceMeta[route.routeId] : localization.packs.meta?.[route.routeId],
+    canonical: `${site.origin}${route.pathname}`,
+    origin: site.origin,
+    alternates: headRenderer.alternateLinkRecords(route.route, true),
+    htmlLang: localization.definition.htmlLang || route.locale,
+    ogLocale: localization.definition.ogLocale || localization.definition.htmlLang,
+    authorName: profile.name,
+    themeBootstrap: THEME_BOOTSTRAP,
+    image: `${site.origin}${route.routeId === CAREER_CASE_ROUTE ? "/assets/catalog/source/career-adventure.webp" : "/assets/portfolio_website_cover.webp"}`,
+  });
 }
 
 const SHELL_MESSAGE_KEYS = [
@@ -358,6 +899,7 @@ const SHELL_MESSAGE_KEYS = [
   "shell.footer.rights",
   "shell.footer.socialAria",
   "shell.footer.tagline",
+  "shell.nav.aria",
   "shell.nav.about",
   "shell.nav.blog",
   "shell.nav.certificates",
@@ -484,27 +1026,58 @@ export function productionMainProps(route, {
   catalogSources = defaultCatalogSources(),
   roleSources = defaultRoleSources(),
 } = {}) {
+  if (route.routeId === "notFound") return notFoundMainProps(route);
+  if (AJOOP_ROUTES.has(route.routeId)) return v4AjoopMainProps(route, loadLocalization);
+  if (route.routeId === MERGE_RUSH_ROUTE) return v4MergeRushMainProps(route, loadLocalization);
+  if (V4_NATIVE_CASE_ROUTES.has(route.routeId)) return v4NativeCaseMainProps(route, loadLocalization);
   if (CASE_STUDY_IDS.has(route.routeId)) {
     if (caseStudyStructure.acceptedRef !== "6650aacd844cde957888d296f086c1eb21992991") throw new Error("Case-study React contract is not tied to the #29 base ref");
     const page = caseStudyStructure.pages[route.routeId];
     const localized = page.locales[route.locale];
     if (!localized) throw new Error(`${route.locale}/${route.routeId}: missing accepted case-study contract`);
-    return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure: localized.children, data: localizedCanonicalData(route.locale) };
+    const caseLocalization = loadLocalization(route.locale);
+    const caseMessage = (key) => {
+      const value = caseLocalization.message(key);
+      if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+      return value;
+    };
+    /* V4-E06.4: the Merge Rush case study is rebuilt from the playable game (scripts/v4-merge-rush-page.mjs). */
+    const caseHref = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+    const structure = route.routeId === MERGE_RUSH_CASE_ROUTE
+      ? mergeRushCaseStudyStructure({ message: caseMessage, playHref: caseHref("/merge-rush/"), gamesHref: caseHref("/games/"), recruiterHref: caseHref("/?role=game"), buildLogHref: caseHref("/now/") })
+      : route.routeId === "aiFlowPuzzleCaseStudy"
+        ? withAddedSection(localized.children, aiFlowV4Section({ message: caseMessage }))
+        : route.routeId === "joydayCaseStudy"
+          ? withAddedSection(localized.children, joydayPaintSection({ message: caseMessage, href: caseHref }))
+          : withAuthenticCaseCovers(localized.children, route);
+    return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure, data: localizedCanonicalData(route.locale), v4: v4DetailModel(route, structure, caseMessage) };
   }
   const engineShell = labsGamesPage(route);
   if (engineShell) {
     const structure = route.routeId === "labs"
       ? withLabCards(engineShell.localized.children, labCardNodes(route.locale, loadLocalization(route.locale)))
       : engineShell.localized.children;
-    return { kind: "engineShell", page: route.routeId, locale: route.locale, structure };
+    const studio = route.routeId === JOYDAY_STUDIO_ROUTE ? { v4: v4JoydayStudioModel(route.locale, loadLocalization(route.locale)) }
+      : route.routeId === FLOW_PUZZLE_ROUTE ? { v4: v4FlowPuzzleModel(route.locale, loadLocalization(route.locale)) }
+      : route.routeId === CAREER_ADVENTURE_ROUTE ? { v4: v4CareerAdventureModel(route.locale, loadLocalization(route.locale)) } : {};
+    return { kind: "engineShell", page: route.routeId, locale: route.locale, structure, ...studio };
   }
   const captured = remainingRoutePage(route);
   if (captured) {
+    const capturedLocalization = loadLocalization(route.locale);
+    const capturedMessage = (key) => {
+      const value = capturedLocalization.message(key);
+      if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+      return value;
+    };
     const structure = route.routeId === "now"
       ? withFilledContainer(captured.localized.children, "data-build-log", buildLogNodes(route.locale, loadLocalization(route.locale)), "Now page must contain exactly one Build Log")
       : route.routeId === "certificates" ? withTrainingLabel(captured.localized.children, route.locale)
-        : captured.localized.children;
-    return { kind: "capturedPage", page: route.routeId, locale: route.locale, structure };
+        /* V4-E06.6: the Request page's collaboration surface (scripts/v4-e06-6-request.mjs). */
+        : route.routeId === "request" ? withRequestSurface(captured.localized.children, capturedMessage)
+          : captured.localized.children;
+    const v4 = v4CapturedModel(route, captured, structure, capturedMessage);
+    return { kind: "capturedPage", page: route.routeId, locale: route.locale, structure, ...(v4 ? { v4 } : {}) };
   }
   if (route.kind === "project") {
     const localization = loadLocalization(route.locale);
@@ -543,8 +1116,11 @@ export function productionMainProps(route, {
     data: localizedCanonicalData(route.locale),
     buildLog: localizedBuildLog,
   };
+  if (route.routeId === "home") props.v4 = v4HomeModel(route.locale, (key) => required(localization.message(key), key));
+  if (route.routeId === "works") props.v4 = v4WorksModel(route.locale, (key) => required(localization.message(key), key));
+  if (route.routeId === "about") props.v4 = v4AboutPageModel(route, page.children, localization, (key) => required(localization.message(key), key));
   if (!catalogPage) return props;
-  /* Catalog-only props; Home/About keep exactly their accepted payload. */
+  /* Catalog-only props; Home and About add only their V4 models above. */
   const fixedLocalization = Object.fromEntries(["en", "tr"].map((locale) => [locale, loadLocalization(locale)]));
   const roleLine = (ref, locale, labelSource) => `${required(labelSource.message(worksGamesStructure.roleLabel), worksGamesStructure.roleLabel)} ${required(projectRole(ref, locale, roleSources), `${ref} role`)}`;
   const search = catalogSearchCopy(route.routeId, route.locale, catalogSources);
@@ -607,20 +1183,35 @@ export function productionDocumentProps(route, clientEntry) {
   const engineShell = labsGamesPage(route);
   const captured = remainingRoutePage(route);
   const capturedShell = engineShell || captured;
+  const ajoopRoute = AJOOP_ROUTES.has(route.routeId);
+  const hubRoute = route.routeId === "ajoop";
+  const ajoopCaseRoute = route.routeId === "ajoopCaseStudy";
+  const nativeCaseRoute = V4_NATIVE_CASE_ROUTES.has(route.routeId);
+  const notFoundRoute = route.routeId === "notFound";
+  /* One conversation, two presentations: the Hub route renders the shell as
+   * the Hub; every other route's panel links to it. */
+  const ajoopPresentation = hubRoute
+    ? { hub: ajoopHubModel({ message: (key) => localization.message(key), caseStudyHref: href("/ajoop-case-study/") }) }
+    : { hubLink: { href: href("/ajoop/"), label: localization.message("ajoop.hub.open") } };
   return {
     main,
     recruiter: recruiterModel(route.locale, localization),
-    ajoop: { ...ajoopShellModel(route.locale), ...((casePage || projectRoute || (capturedShell && hasAside(capturedShell.localized.children))) ? { a: true } : {}) },
+    ajoop: { ...ajoopShellModel(route.locale), ...ajoopPresentation, ...((casePage || ajoopCaseRoute || nativeCaseRoute || projectRoute || (capturedShell && hasAside(capturedShell.localized.children))) ? { a: true } : {}) },
     commandPalette: commandPaletteModel(route.locale),
     document: {
       locale: route.locale,
       htmlLang: localization.definition.htmlLang || route.locale,
       dir: localization.definition.dir || "ltr",
+      routeLocaleFromPath: notFoundRoute,
       /* A Labs/mini-game shell keeps the accepted page type: it is what makes
        * script.js load that page’s runtime modules. */
-      page: casePage ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
-      navPage: casePage || projectRoute ? "works" : route.routeId,
-      bodyClass: caseLocale?.bodyClass || null,
+      /* The AJOOP case study is a case study; the Hub is its own page type. */
+      hub: hubRoute,
+      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : route.routeId === CAREER_ADVENTURE_ROUTE ? ["career-adventure"] : ["works", "games"].includes(route.routeId) ? [CATALOG_STYLE] : route.routeId === "request" ? [REQUEST_STYLE] : projectRoute ? ["project"] : [],
+      page: notFoundRoute ? "error" : casePage || ajoopCaseRoute || nativeCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
+      /* The playable Merge Rush page belongs to Games. */
+      navPage: casePage || projectRoute || nativeCaseRoute ? "works" : route.routeId === MERGE_RUSH_ROUTE ? "games" : route.routeId,
+      bodyClass: caseLocale?.bodyClass || (ajoopCaseRoute || nativeCaseRoute ? "case-study-page" : null),
       /* Accepted project pages declare their slug on <body>; the retained
        * runtime (project routing, AJOOP page context) reads it from there. */
       projectSlug: projectRoute ? route.slug : null,
@@ -628,10 +1219,20 @@ export function productionDocumentProps(route, clientEntry) {
       afterMain: caseLocale?.afterMain || [],
       /* Scripts the accepted document ran before the runtime loader. */
       leadScripts: captured?.page.leadScripts || [],
-      scripts: engineShell ? [...engineShell.page.scripts, ENGINE_HOST_SCRIPT] : casePage?.scripts || [],
+      /* The engine host stays the document's last classic script. */
+      scripts: engineShell ? [...engineShell.page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : route.routeId === FLOW_PUZZLE_ROUTE ? [FLOW_PUZZLE_SCRIPT] : route.routeId === CAREER_ADVENTURE_ROUTE ? [CAREER_ADVENTURE_SCRIPT] : []), ENGINE_HOST_SCRIPT] : route.routeId === MERGE_RUSH_ROUTE ? [MERGE_RUSH_SCRIPT] : casePage?.scripts || [],
       clientEntry,
     },
-    head: caseLocale?.head || (capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
+    head: notFoundRoute ? {
+      title: sourceMeta.notFound.title,
+      description: sourceMeta.notFound.description,
+      canonical: null,
+      alternates: [],
+      robots: "noindex, follow",
+      og: {},
+      twitter: {},
+      themeBootstrap: `(function(){try{var t=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark")}catch(e){document.documentElement.setAttribute("data-theme","dark")}})();`,
+    } : caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : route.routeId === MERGE_RUSH_ROUTE ? v4MergeRushHead(route, localization) : nativeCaseRoute ? v4NativeCaseHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
       route,
       registry,
       routeRuntime,
@@ -648,6 +1249,7 @@ export function productionDocumentProps(route, clientEntry) {
       },
       text: {
         skipToContent: copy["shell.skipToContent"],
+        primaryNavAria: copy["shell.nav.aria"],
         brandHomeAria: copy["shell.brand.homeAria"],
         brandLogoAlt: copy["shell.brand.logoAlt"],
         availabilityAria: copy["shell.availabilityAria"],

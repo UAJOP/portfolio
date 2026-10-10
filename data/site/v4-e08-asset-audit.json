@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "phase": "V4-E08",
+  "removed": {
+    "assets/agency_db_cover.webp": "Superseded by the repository ER diagram. Its only remaining reference was the immutable M3 #25A historical snapshot, which is evidence of the old artifact rather than production inclusion authority."
+  },
+  "retained": {
+    "assets/control_panel_cover.webp": "Canonical archive project source record; the V4 visible surface uses a deliberate identity plate and social fallback.",
+    "assets/ic_supply_cover.webp": "Canonical private-archive project source record; the V4 visible surface uses a deliberate identity plate.",
+    "assets/porto_25_cover.webp": "Canonical archive project source record; the V4 visible surface uses a deliberate identity plate.",
+    "assets/hospital_form_app_cover.webp": "Retained source compatibility; visible V4 project and case-study surfaces replace it with authentic application evidence.",
+    "assets/ai_flow_chatbot_design_cover.webp": "Still used as authentic Home evidence and by the pre-V4 source contract; V4 Works/detail surfaces use an identity plate.",
+    "assets/ai_flow_puzzle_cover.webp": "Retained pre-V4 source compatibility; visible V4 surfaces use a running-game capture.",
+    "assets/kaanin_kariyer_cover.webp": "Retained pre-V4 source compatibility; visible V4 surfaces use a running-game capture.",
+    "assets/insatagram.webp": "Still used by the authored Works source; V4 uses the repository login screenshot.",
+    "assets/hastane.jpg": "Still used by the canonical Hospital Appointment archive record.",
+    "assets/what-is-data-analyst.jpg": "Still used by the authored Works source; V4 uses authentic analysis output.",
+    "assets/calculator-cartoon-illustration-png.webp": "Still used by the canonical Android calculator archive record.",
+    "assets/java.png": "Still used by the canonical Java learning collection record.",
+    "assets/Python-Symbol.png": "Still used by the canonical Python learning collection record.",
+    "assets/images (1).png": "Still used by the canonical web-learning collection record."
+  }
+}

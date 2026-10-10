@@ -954,6 +954,10 @@ const ajoopPresentation = {
   busy: false,
   actions: null,
   copy: null,
+  /* V4-E04: where the turn in flight is, or how the last one settled. Bounded
+   * presentation metadata, the same vocabulary the transcript already states
+   * in words; null when no turn has run. Only a React shell draws it. */
+  turn: null,
 };
 let ajoopShellOwner = "dom";
 let ajoopPresentationPort = null;
@@ -1038,6 +1042,8 @@ const ajoopDomShell = {
     if (toggle) toggle.setAttribute("aria-label", copy.openLabel);
     if (close) close.setAttribute("aria-label", copy.closeLabel);
   },
+  /* The classic panel states a turn in its transcript only. */
+  turn() {},
 };
 
 /** Records one presentation value and hands it to the current shell owner. */
@@ -1075,6 +1081,7 @@ function connectAjoopPresentation(port) {
       busy: ajoopPresentation.busy,
       actions: ajoopPresentation.actions,
       copy: ajoopPresentation.copy,
+      turn: ajoopPresentation.turn,
     },
     disconnect() {
       if (ajoopPresentationPort === port) ajoopPresentationPort = null;
@@ -1082,6 +1089,276 @@ function connectAjoopPresentation(port) {
   };
 }
 /* ajoop-presentation-port:end */
+
+/* ajoop-turn-presentation:start
+ * V4-E04: the turn, as state a shell can draw.
+ *
+ * The Hub shows where a turn is and how it settled. It may only show what is
+ * true, so the engine reports it from the two places a turn's state is already
+ * decided — renderAjoopTurnActivity for a turn in flight and finishAjoopTurn
+ * for its outcome — and reports nothing else. The value is an allowlisted
+ * summary: a phase, three booleans, a provenance kind and the titles and
+ * public links of the evidence already rendered in the answer. It carries no
+ * prose, no reason and nothing the transcript does not already show. */
+const AJOOP_TURN_EVIDENCE_LIMIT = 4;
+
+function ajoopTurnEvidenceSummary(cards, options) {
+  /* A link is resolved exactly as the card's own link is (ajoopCardLink); a
+   * summary being resumed from the session copy was resolved when it was made. */
+  const resolve = !(options && options.resolved === true) && typeof siteUrl === "function";
+  return (Array.isArray(cards) ? cards : []).slice(0, AJOOP_TURN_EVIDENCE_LIMIT).map((card) => {
+    const link = (Array.isArray(card && card.links) ? card.links : [])
+      .map((entry) => (entry && typeof ajoopSafeUrl === "function" ? ajoopSafeUrl(entry.url) : null))
+      .find(Boolean);
+    return { title: String((card && card.title) || "").slice(0, 180), url: link ? (resolve ? siteUrl(link) : link) : null };
+  }).filter((entry) => entry.title);
+}
+
+function presentAjoopTurn(value) {
+  presentAjoop("turn", value);
+}
+/* ajoop-turn-presentation:end */
+
+/* ajoop-session:start
+ * V4-E04: one public conversation across the launcher and the Hub.
+ *
+ * The launcher panel and the Hub at /ajoop/ are two presentations of this one
+ * engine, but every page of the site is its own document, so the conversation
+ * has to survive a page load to be the same conversation. This block is the
+ * only thing that makes it survive, and it is deliberately narrow:
+ *
+ *   WHERE   this tab's sessionStorage, under one key. Never localStorage, a
+ *           cookie, the server, analytics or anything owner/private.
+ *   WHAT    the messages the visitor was shown, as the specs the transcript
+ *           renderer already takes, plus the server's referent hint (canonical
+ *           ids). The bridge's memory is rebuilt from those messages, not
+ *           stored a second time.
+ *   BOUNDS  at most AJOOP_SESSION_MESSAGE_LIMIT messages and
+ *           AJOOP_SESSION_BYTES bytes; oldest dropped first.
+ *   EXPIRY  every message leaves the copy AJOOP_SESSION_TTL_MS after it was
+ *           shown — pruned on every read and write, and by one timer while a
+ *           page is open, so an idle tab does not keep it either.
+ *   CLEARED by Start over, by a site-language change (in place or by
+ *           navigating to another locale), and with the tab.
+ *
+ * A stored record is untrusted input: it is read through explicit shape
+ * checks and rendered only by the transcript's own builders, which never
+ * interpret a value as markup. */
+const AJOOP_SESSION_KEY = "ajoop-session-v1";
+const AJOOP_SESSION_VERSION = 1;
+const AJOOP_SESSION_TTL_MS = 15 * 60 * 1000;
+const AJOOP_SESSION_MESSAGE_LIMIT = 24;
+const AJOOP_SESSION_BYTES = 120000;
+
+let ajoopSessionMessages = [];
+let ajoopSessionTimer = null;
+let ajoopSessionReplaying = false;
+/* False until this document has looked for a conversation to resume. */
+let ajoopSessionResolved = false;
+
+function ajoopSessionStore() {
+  try {
+    return typeof sessionStorage === "undefined" ? null : sessionStorage;
+  } catch (error) {
+    return null;
+  }
+}
+
+function ajoopSessionFresh(messages, now) {
+  return messages.filter((entry) => now - entry.at < AJOOP_SESSION_TTL_MS);
+}
+
+function scheduleAjoopSessionExpiry() {
+  if (ajoopSessionTimer) {
+    clearTimeout(ajoopSessionTimer);
+    ajoopSessionTimer = null;
+  }
+  if (!ajoopSessionMessages.length || typeof window === "undefined" || typeof window.setTimeout !== "function") return;
+  const due = ajoopSessionMessages[0].at + AJOOP_SESSION_TTL_MS - Date.now();
+  ajoopSessionTimer = window.setTimeout(() => {
+    ajoopSessionTimer = null;
+    writeAjoopSession();
+  }, Math.max(due, 0) + 50);
+}
+
+function clearAjoopSession() {
+  ajoopSessionMessages = [];
+  if (ajoopSessionTimer) {
+    clearTimeout(ajoopSessionTimer);
+    ajoopSessionTimer = null;
+  }
+  const store = ajoopSessionStore();
+  try {
+    if (store) store.removeItem(AJOOP_SESSION_KEY);
+  } catch (error) {
+    /* Storage can be blocked; there is then nothing to clear. */
+  }
+}
+
+/** Writes the bounded, unexpired copy, or removes it when nothing is left. */
+function writeAjoopSession() {
+  const store = ajoopSessionStore();
+  ajoopSessionMessages = ajoopSessionFresh(ajoopSessionMessages, Date.now()).slice(-AJOOP_SESSION_MESSAGE_LIMIT);
+  if (!store) return;
+  if (!ajoopSessionMessages.length) {
+    clearAjoopSession();
+    return;
+  }
+  const record = () => JSON.stringify({
+    version: AJOOP_SESSION_VERSION,
+    language: portfolioChatbotState.language,
+    replyLanguage: portfolioChatbotState.replyLanguage,
+    messages: ajoopSessionMessages,
+    conversationState:
+      typeof snapshotAjoopRagConversationState === "function" ? snapshotAjoopRagConversationState() : null,
+    actions: ajoopPresentation.actions,
+    /* How the last turn settled: titles and public links already on screen. */
+    turn:
+      ajoopPresentation.turn && ajoopPresentation.turn.phase === AJOOP_TURN_STATE.COMPLETED
+        ? ajoopPresentation.turn
+        : null,
+  });
+  try {
+    let raw = record();
+    while (raw.length > AJOOP_SESSION_BYTES && ajoopSessionMessages.length > 2) {
+      ajoopSessionMessages.shift();
+      raw = record();
+    }
+    store.setItem(AJOOP_SESSION_KEY, raw);
+  } catch (error) {
+    /* A full or blocked store costs continuity, never the conversation. */
+  }
+  scheduleAjoopSessionExpiry();
+}
+
+/** Notes one message the visitor has just been shown. */
+function noteAjoopSessionMessage(spec) {
+  if (ajoopSessionReplaying || !spec) return;
+  try {
+    ajoopSessionMessages.push({ at: Date.now(), spec: JSON.parse(JSON.stringify(spec)) });
+  } catch (error) {
+    /* A spec that cannot be copied is simply not carried across. */
+  }
+}
+
+/** A stored spec, reduced to the shape the transcript renderer takes. */
+function ajoopSessionSpec(raw) {
+  if (!raw || typeof raw !== "object" || typeof raw.text !== "string") return null;
+  if (raw.type !== "user" && raw.type !== "bot") return null;
+  if (raw.type === "user") return { type: "user", text: raw.text.slice(0, 2000) };
+  const list = (value) => (Array.isArray(value) ? value : []);
+  const cards = list(raw.cards)
+    .filter((card) => card && typeof card === "object" && typeof card.title === "string")
+    .map((card) => Object.assign({}, card, {
+      meta: list(card.meta),
+      tags: list(card.tags),
+      proof: list(card.proof),
+      links: list(card.links),
+    }));
+  return Object.assign({}, raw, { type: "bot", cards, links: list(raw.links) });
+}
+
+/**
+ * Resumes the conversation this tab was having, once per document.
+ *
+ * Returns true when a conversation was restored. Anything else — no record, a
+ * record in another site language, an expired or malformed one — leaves the
+ * fresh greeting in place and removes the record.
+ */
+function restoreAjoopSession(siteLanguage) {
+  const store = ajoopSessionStore();
+  let record = null;
+  try {
+    record = store ? JSON.parse(store.getItem(AJOOP_SESSION_KEY) || "null") : null;
+  } catch (error) {
+    record = null;
+  }
+  const valid =
+    record &&
+    record.version === AJOOP_SESSION_VERSION &&
+    record.language === siteLanguage &&
+    Array.isArray(record.messages);
+  let messages = valid
+    ? ajoopSessionFresh(
+        record.messages
+          .filter((entry) => entry && typeof entry.at === "number")
+          .map((entry) => ({ at: entry.at, spec: ajoopSessionSpec(entry.spec) }))
+          .filter((entry) => entry.spec),
+        Date.now(),
+      ).slice(-AJOOP_SESSION_MESSAGE_LIMIT)
+    : [];
+  /* A question whose answer never arrived was not part of the conversation. */
+  while (messages.length && messages[messages.length - 1].spec.type === "user") messages = messages.slice(0, -1);
+  if (!messages.length) {
+    clearAjoopSession();
+    return false;
+  }
+
+  if (typeof record.replyLanguage === "string" && /^[a-z]{2}$/.test(record.replyLanguage)) {
+    portfolioChatbotState.replyLanguage = record.replyLanguage;
+  }
+  ajoopSessionReplaying = true;
+  try {
+    messages.forEach((entry) => {
+      try {
+        renderAjoopMessage(entry.spec);
+      } catch (error) {
+        /* One unreadable message is skipped; the rest still resume. */
+      }
+    });
+  } finally {
+    ajoopSessionReplaying = false;
+  }
+  ajoopSessionMessages = messages;
+  portfolioChatbotState.conversationStarted = true;
+
+  /* The bridge's memory, rebuilt from the exchanges on screen exactly as a
+   * live turn records them: a failed turn was never remembered, so it is not
+   * remembered here either. */
+  if (typeof restoreAjoopRagMemory === "function") {
+    const history = [];
+    messages.forEach((entry, index) => {
+      const next = messages[index + 1];
+      const failed = (spec) => Boolean(spec.status && spec.status.safeCode === AJOOP_TURN_SAFE_CODE.TURN_FAILED);
+      if (entry.spec.type !== "user" || !next || next.spec.type !== "bot" || failed(next.spec)) return;
+      history.push({ role: "user", content: entry.spec.text }, { role: "assistant", content: next.spec.text });
+    });
+    restoreAjoopRagMemory({ history, conversationState: record.conversationState });
+  }
+
+  const row = record.actions;
+  const buttons = (value) =>
+    Array.isArray(value) && value.every((action) => action && typeof action.label === "string" && typeof action.action === "string");
+  if (row && typeof row.heading === "string" && buttons(row.actions) && row.actions.length && buttons(row.secondary)) {
+    presentAjoop("actions", { mode: row.mode === "followups" ? "followups" : "initial", heading: row.heading, actions: row.actions, secondary: row.secondary });
+  }
+  /* The settled turn the visitor left, through the same allowlist a live one
+   * passes: a phase, booleans, a provenance kind, titles and safe links. */
+  const settled = record.turn;
+  if (settled && typeof settled === "object" && settled.phase === AJOOP_TURN_STATE.COMPLETED) {
+    presentAjoopTurn({
+      phase: AJOOP_TURN_STATE.COMPLETED,
+      assisted: settled.assisted === true,
+      assistFailed: settled.assistFailed === true,
+      general: settled.general === true,
+      clarifying: settled.clarifying === true,
+      provenance:
+        settled.provenance === AJOOP_PROVENANCE_EVIDENCE || settled.provenance === AJOOP_PROVENANCE_AI
+          ? settled.provenance
+          : null,
+      evidence: ajoopTurnEvidenceSummary(
+        (Array.isArray(settled.evidence) ? settled.evidence : []).map((item) => ({
+          title: item && item.title,
+          links: [{ url: item && item.url }],
+        })),
+        { resolved: true },
+      ),
+    });
+  }
+  writeAjoopSession();
+  return true;
+}
+/* ajoop-session:end */
 
 /* ---------- Ajoop 4.4 unified message rendering ---------- */
 
@@ -1680,6 +1957,11 @@ function renderAjoopMessage(spec) {
 
   messageList.appendChild(message);
   if (followScroll) scrollAjoopToBottom(messageList);
+  /* V4-E04: the visitor's own message joins the session copy as it is shown. */
+  if (isUser && !ajoopSessionReplaying) {
+    noteAjoopSessionMessage(spec);
+    writeAjoopSession();
+  }
   return message;
 }
 
@@ -2127,6 +2409,7 @@ function renderAjoopTurnActivity(node, status, language) {
   node.setAttribute("data-ajoop-turn-state", normalized.state);
   /* Rewriting identical text would make the live region announce it again. */
   if (label.textContent !== text) label.textContent = text;
+  presentAjoopTurn({ phase: normalized.state });
   return true;
 }
 
@@ -2272,6 +2555,7 @@ function ajoopModelEvidenceCards(model, plan, language) {
  * ever end one way on screen.
  */
 function commitAjoopTurnNode(node, spec) {
+  noteAjoopSessionMessage(spec);
   if (node && node.isConnected) {
     node.classList.remove("is-pending");
     node.removeAttribute("data-ajoop-turn");
@@ -2313,10 +2597,12 @@ function finishAjoopTurn(context) {
       text: ajoopTurnOutcomeLabel(outcome, language),
       status: outcome,
     });
+    presentAjoopTurn({ phase: AJOOP_TURN_STATE.UNAVAILABLE });
     setAjoopTurnBusy(false);
     renderAjoopBridgeStatus();
     setAjoopMascotState(ajoopRestingMascotState());
     if (follow) scrollAjoopToBottom(list);
+    writeAjoopSession();
     return;
   }
 
@@ -2341,6 +2627,16 @@ function finishAjoopTurn(context) {
   };
 
   commitAjoopTurnNode(node, spec);
+  /* V4-E04: how the turn settled, as the answer itself already shows it. */
+  presentAjoopTurn({
+    phase: AJOOP_TURN_STATE.COMPLETED,
+    assisted: Boolean(model),
+    assistFailed: Boolean(outcome && outcome.safeCode === AJOOP_TURN_SAFE_CODE.ASSIST_UNAVAILABLE),
+    general,
+    clarifying: Boolean(!model && plan && plan.type === "clarify"),
+    provenance: spec.provenance || null,
+    evidence: ajoopTurnEvidenceSummary(spec.cards),
+  });
 
   /* The model's conversation memory is written HERE, at the one point a turn
    * becomes something the visitor has read — not inside the transport, which
@@ -2385,6 +2681,8 @@ function finishAjoopTurn(context) {
   );
 
   if (follow) scrollAjoopToBottom(list);
+  /* V4-E04: the settled exchange, its follow-ups and the referent hint. */
+  writeAjoopSession();
 }
 
 /**
@@ -3174,6 +3472,8 @@ function endAjoopConversationTurn() {
 }
 
 function resetAjoopConversation() {
+  /* V4-E04: Start over ends the conversation everywhere it could resume. */
+  clearAjoopSession();
   if (typeof resetAjoopContext === "function") resetAjoopContext();
   portfolioChatbotState.lastRoute = null;
   portfolioChatbotState.lastPlan = null;
@@ -3261,6 +3561,7 @@ function resetChatbotMessages() {
    * here so nothing later tries to commit an answer into it. */
   ajoopPendingTurn = null;
   portfolioChatbotState.conversationStarted = false;
+  presentAjoopTurn(null);
   messageList.textContent = "";
   /* The greeting introduces the assistant; it is not an evidence claim, so it
    * carries no provenance line. */
@@ -3314,6 +3615,12 @@ function updatePortfolioChatbotLanguage(
   if (!keepConversation) {
     renderChatbotQuickActions();
     resetChatbotMessages();
+    /* V4-E04: the first time this document starts the engine it resumes the
+     * conversation this tab was already having in this site language. Any
+     * later pass through here is a site-language change, which ends it. */
+    if (ajoopSessionResolved) clearAjoopSession();
+    else restoreAjoopSession(siteLanguage);
+    ajoopSessionResolved = true;
   }
   renderAjoopBridgeStatus();
 }

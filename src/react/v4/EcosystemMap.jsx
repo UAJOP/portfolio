@@ -1,0 +1,165 @@
+import { ecosystemGeometry } from "./flowGeometry.js";
+
+const two = (value) => String(value).padStart(2, "0");
+
+/* V4 project ecosystem.
+ *
+ * A map of what the portfolio actually contains: every project on the Works
+ * catalog, wired to the catalog categories it is filed under. Both sets and
+ * every wire come from that catalog (scripts/home-about-react.mjs); nothing
+ * here is authored by hand, and the layout is derived from the same data.
+ *
+ * Complete without JavaScript: capabilities are buttons, projects are links to
+ * their pages, the wires are inline SVG. js/v4/runtime.js adds activation —
+ * pointing at, focusing or pressing a node lights what it is really connected
+ * to, lets the rest recede, and says so in the readout. Below 1100px the map
+ * becomes a capability rail over a project list; the wires are not squeezed
+ * onto a phone.
+ *
+ * `control` hands the pressed capability to a host instead of the runtime:
+ * { category, setCategory, out } — the Works catalog's own filter state, and
+ * the ids of the projects its filter and search currently exclude. */
+export function EcosystemField({ model, control = null }) {
+  const geometry = ecosystemGeometry(model);
+  const projectsOf = (capability) => model.projects.filter((project) => project.categories.includes(capability.id));
+  const out = (id) => (control?.out.has(id) ? "" : undefined);
+  return (
+    <>
+      <div className="v4-eco" data-v4-eco="" data-v4-eco-controlled={control ? "" : undefined} style={{ "--v4-eco-aspect": geometry.aspect }}>
+        <svg className="v4-eco__field" viewBox={geometry.viewBox} aria-hidden="true" focusable="false">
+          <path className="v4-eco__loop-glow" d={geometry.loop} />
+          <path className="v4-eco__loop" d={geometry.loop} pathLength="1" />
+          {geometry.edges.map((edge) => (
+            <g key={`${edge.project}:${edge.capability}`} className="v4-eco__edge" data-v4-edge={`${edge.project} ${edge.capability}`} data-v4-out={out(edge.project)}>
+              <path className="v4-eco__wire-glow" d={edge.d} />
+              <path className="v4-eco__wire" d={edge.d} pathLength="1" />
+              <path className="v4-eco__pulse" d={edge.d} pathLength="100" />
+            </g>
+          ))}
+        </svg>
+        <div className="v4-eco__capabilities" role="group" aria-label={model.capabilitiesLabel}>
+          {model.capabilities.map((capability) => {
+            const at = geometry.capability(capability);
+            return (
+              <button
+                key={capability.id}
+                type="button"
+                className="v4-node v4-eco__capability"
+                data-v4-eco-node={capability.id}
+                data-v4-eco-kind="capability"
+                data-v4-eco-tier={at.tier}
+                data-v4-eco-links={projectsOf(capability).map((project) => project.id).join(" ")}
+                aria-pressed={control ? String(control.category === capability.id) : "false"}
+                onClick={control ? () => control.setCategory(control.category === capability.id ? "all" : capability.id) : undefined}
+                style={{ "--v4-x": at.x, "--v4-y": at.y, "--v4-degree": at.degree }}
+              >
+                <i className="v4-node__dot" aria-hidden="true" />
+                <span>{capability.label}</span>
+                <small aria-hidden="true">{two(at.degree)}</small>
+              </button>
+            );
+          })}
+        </div>
+        <ul className="v4-eco__projects" aria-label={model.projectsLabel}>
+          {model.projects.map((project) => {
+            const at = geometry.project(project.id);
+            return (
+              <li key={project.id} data-v4-eco-side={at.side} data-v4-out={out(project.id)} style={{ "--v4-x": at.x, "--v4-y": at.y }}>
+                <a
+                  className="v4-node v4-eco__project"
+                  href={project.href}
+                  data-v4-eco-node={project.id}
+                  data-v4-eco-kind="project"
+                  data-v4-eco-links={project.categories.join(" ")}
+                  data-v4-eco-tier={project.tier}
+                >
+                  <i className="v4-node__dot" aria-hidden="true" />
+                  <span className="v4-eco__title">{project.title}</span>
+                  {project.status ? <small>{project.status}</small> : null}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+      {/* What the map is showing, in words: the runtime rewrites it from the
+          lit nodes' own labels. Its resting text is the map's real totals. */}
+      <p className="v4-eco__readout" data-v4-eco-readout="" aria-live="polite">
+        <span>{model.capabilitiesLabel} {two(model.capabilities.length)}</span>
+        <span>{model.projectsLabel} {two(model.projects.length)}</span>
+        {model.viewAll ? <a href={model.viewAll.href}>{model.viewAll.label}</a> : null}
+      </p>
+    </>
+  );
+}
+
+/* The ecosystem as Home tells it: the same catalog read by capability. Each
+ * capability is a lane and the projects filed under it sit on it — a project
+ * filed under two capabilities sits on both, and taking it in hand lights
+ * both. Flagships are set largest and their lanes come first; the rest keep
+ * the catalog's own order and tier. The spatial map of the same data is the
+ * Works page's; this is the short version, and it is a list at every width.
+ *
+ * AJOOP is not a catalog project, so it has no lane and no wire. It closes
+ * the section as what it is: the assistant that answers over all of this. */
+function EcosystemLanes({ model }) {
+  const flagship = (project) => model.flagship.includes(project.id);
+  const lanes = model.capabilities
+    .map((capability, order) => ({ ...capability, order, projects: model.projects.filter((project) => project.categories.includes(capability.id)) }))
+    .sort((a, b) => Number(b.projects.some(flagship)) - Number(a.projects.some(flagship)) || b.projects.length - a.projects.length || a.order - b.order);
+  return (
+    <>
+      <div className="v4-lanes" data-v4-eco="">
+        {lanes.map((lane) => {
+          const ids = lane.projects.map((project) => project.id);
+          return (
+            <div key={lane.id} className="v4-lane" data-v4-edge={[lane.id, ...ids].join(" ")}>
+              <button type="button" className="v4-node v4-lane__capability" data-v4-eco-node={lane.id} data-v4-eco-kind="capability" data-v4-eco-links={ids.join(" ")} aria-pressed="false">
+                <i className="v4-node__dot" aria-hidden="true" />
+                <span>{lane.label}</span>
+                <small aria-hidden="true">{two(ids.length)}</small>
+              </button>
+              <ul className="v4-lane__projects" aria-label={lane.label}>
+                {lane.projects.map((project) => (
+                  <li key={project.id}>
+                    <a className="v4-node v4-lane__project" href={project.href} data-v4-eco-node={project.id} data-v4-eco-kind="project" data-v4-eco-links={project.categories.join(" ")} data-v4-eco-tier={flagship(project) ? "flagship" : project.tier}>
+                      <i className="v4-node__dot" aria-hidden="true" />
+                      <span className="v4-eco__title">{project.title}</span>
+                      {project.status ? <small>{project.status}</small> : null}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+      <p className="v4-eco__readout" data-v4-eco-readout="" aria-live="polite">
+        <span>{model.capabilitiesLabel} {two(model.capabilities.length)}</span>
+        <span>{model.projectsLabel} {two(model.projects.length)}</span>
+        <a href={model.viewAll.href}>{model.viewAll.label}</a>
+      </p>
+      <p className="v4-eco__ajoop">
+        <i className="ajoop-mark" aria-hidden="true" />
+        <strong>{model.ajoop.title}</strong>
+        <span>{model.ajoop.heading}: {model.ajoop.scope.join(" · ")}</span>
+        <a href={model.ajoop.link.href}>{model.ajoop.link.label}</a>
+      </p>
+    </>
+  );
+}
+
+/* The ecosystem as a section of its own (Home). */
+export default function EcosystemMap({ model }) {
+  return (
+    <section className="section-shell section-block v4-eco-section" aria-labelledby="v4-eco-title" data-v4-ambient="">
+      <div className="section-heading">
+        <p className="eyebrow">{model.eyebrow}</p>
+        <h2 id="v4-eco-title">{model.title}</h2>
+        <p>{model.lead}</p>
+      </div>
+      <EcosystemLanes model={model} />
+      <i className="v4-handoff" aria-hidden="true" />
+    </section>
+  );
+}

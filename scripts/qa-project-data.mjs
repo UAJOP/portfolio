@@ -101,9 +101,17 @@ for (const [slug, project] of Object.entries(details)) {
 /* ---------- 4. every pre-migration slug is preserved ---------- */
 
 const baseline = readJson("scripts/fixtures/project-catalog-baseline.json");
-const baselineSlugs = baseline.slugOrder;
+/* V4-E06.5: a slug may leave the catalog only by being named here with its
+ * reason. A retired slug must be gone; every other pre-migration slug stays. */
+const retiredSlugs = Object.keys(baseline.retired || {});
+const baselineSlugs = baseline.slugOrder.filter((slug) => !retiredSlugs.includes(slug));
 
-check("4. baseline fixture slug count", baselineSlugs.length, 25);
+check("4. baseline fixture slug count", baseline.slugOrder.length, 25);
+for (const slug of retiredSlugs) {
+  ok(`4. retired slug was a pre-migration slug: ${slug}`, baseline.slugOrder.includes(slug));
+  ok(`4. retired slug states its reason: ${slug}`, String(baseline.retired[slug]).length > 40);
+  ok(`4. retired slug is gone from the catalog: ${slug}`, !Object.prototype.hasOwnProperty.call(details, slug));
+}
 for (const slug of baselineSlugs) {
   ok(`4. legacy slug preserved: ${slug}`, Object.prototype.hasOwnProperty.call(details, slug));
 }

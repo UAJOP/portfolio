@@ -1,0 +1,1609 @@
+/* Career Adventure — the game around the board (V4-E06.3) --------------------
+ *
+ * Linked only by the React production document of /adventure/. The page's
+ * markup (data/site/m3-30-labs-games-structure.json) is unchanged and
+ * css/games/adventure.css still styles it. This sheet does three things:
+ *
+ *   1. On the page, the hero gets its Play action and the board is a poster
+ *      of the game; the old in-page controls step out.
+ *   2. Entered (html[data-ca-state], set by js/pages/career-adventure-game.js),
+ *      the game section becomes the whole viewport: the canvas fills it, and
+ *      the HUD is laid over the room around the chamber the engine draws.
+ *   3. Menu, how-to, settings, career path, pause and the two endings are
+ *      layers over that.
+ *
+ * The room, the chamber and the objects are drawn by the engine on the
+ * canvas. Everything here is the chrome over it: dark navy panels, one cyan
+ * accent, a green way forward. It is the same in the site's dark and light
+ * themes. Nothing animates at rest. */
+
+:root {
+  --ca-ink: #070b18;
+  --ca-panel: rgba(13, 20, 40, 0.86);
+  --ca-panel-solid: #0e1630;
+  --ca-rule: rgba(255, 255, 255, 0.12);
+  --ca-text: #f2f6ff;
+  --ca-dim: #a3b0cc;
+  --ca-cyan: #3fd0ff;
+  --ca-go: #7ee04a;
+  --ca-go-deep: #2f9e2a;
+  --ca-hot: #ff6b6b;
+  --ca-gold: #ffd24a;
+  --ca-top: 18px;
+  --ca-bottom: 18px;
+  --ca-safe-top: env(safe-area-inset-top, 0px);
+  --ca-safe-right: env(safe-area-inset-right, 0px);
+  --ca-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ca-safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* 1. On the page -------------------------------------------------------------- */
+
+.ca-enter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  margin-top: 30px;
+}
+
+.ca-cta,
+.ca-poster span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 28px 0 22px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #9cf05f, var(--ca-go) 45%, var(--ca-go-deep));
+  box-shadow: 0 5px 0 #1f6f1c, 0 18px 40px rgba(60, 190, 70, 0.28);
+  color: #0a2208;
+  font: 900 18px/1 Inter, "Segoe UI", sans-serif;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.ca-cta svg,
+.ca-poster svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+.ca-cta:hover,
+.ca-poster:hover span {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #1f6f1c, 0 22px 46px rgba(60, 190, 70, 0.36);
+}
+
+.ca-cta:active,
+.ca-poster:active span {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #1f6f1c, 0 10px 24px rgba(60, 190, 70, 0.24);
+}
+
+.ca-enter__record {
+  color: var(--muted, #a3b0cc);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ca-noscript {
+  max-width: 560px;
+  margin-top: 26px;
+  padding: 14px 18px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  border-radius: 14px;
+  color: var(--muted, #a3b0cc);
+  font-size: 15px;
+}
+
+.ca-noscript a {
+  color: var(--brand, #38bdf8);
+  font-weight: 800;
+}
+
+/* The board is a picture of the game until it is entered. */
+#career-merge-game[data-ca-root] .adventure-stats,
+#career-merge-game[data-ca-root] .adventure-controls,
+#career-merge-game[data-ca-root] > .ca-hud,
+#career-merge-game[data-ca-root] > .ca-layers,
+#career-merge-game[data-ca-root] > .ca-toast {
+  display: none;
+}
+
+/* The evening the room looks out on, so the frame is never empty while the
+ * engine is still arriving. */
+#career-merge-game[data-ca-root] .adventure-canvas-wrap {
+  display: block;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(180deg, #141c44, #5a2f6e 46%, #b85a3c 82%, #2a1c33 82%);
+}
+
+#career-merge-game[data-ca-root] #career-merge-canvas {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  /* The page scrolls past the poster; only the entered game takes the finger. */
+  touch-action: auto;
+  cursor: pointer;
+}
+
+.ca-poster {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: radial-gradient(circle at 50% 55%, rgba(7, 11, 24, 0.1), rgba(7, 11, 24, 0.55));
+  cursor: pointer;
+}
+
+.ca-poster span {
+  min-height: 64px;
+  padding: 0 36px 0 28px;
+  font-size: 21px;
+}
+
+#career-merge-game[data-ca-root] .merge-ladder article {
+  grid-template-columns: 48px 1fr;
+}
+
+#career-merge-game[data-ca-root] .merge-ladder article > span {
+  width: 48px;
+  height: 48px;
+  background: none;
+}
+
+#career-merge-game[data-ca-root] .merge-ladder canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media screen and (max-width: 640px) {
+  #career-merge-game[data-ca-root] .adventure-canvas-wrap {
+    aspect-ratio: 4 / 5;
+  }
+
+  .ca-cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 2. Entered: the portfolio steps out ----------------------------------------- */
+
+html[data-ca-state] {
+  overflow: hidden;
+}
+
+html[data-ca-state] body > :not(main, script),
+html[data-ca-state] main > :not(#career-merge-game) {
+  display: none !important;
+}
+
+html[data-ca-state] #career-merge-game {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  outline: none;
+  background: var(--ca-ink);
+  color: var(--ca-text);
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  content-visibility: visible;
+}
+
+/* If the engine never arrived there is no room to draw: the evening stands in. */
+html[data-ca-state="error"] #career-merge-game {
+  background: linear-gradient(180deg, #141c44, #5a2f6e 46%, #b85a3c 78%, #2a1c33 78%);
+}
+
+/* The canvas is the game's whole surface; its wrappers stop being boxes. */
+html[data-ca-state] #career-merge-game :is(.adventure-game-shell, .adventure-canvas-wrap) {
+  display: contents;
+}
+
+html[data-ca-state] #career-merge-game :is(.adventure-game-topbar, .adventure-controls, .adventure-side, .adventure-win, .ca-poster) {
+  display: none !important;
+}
+
+html[data-ca-state] #career-merge-game[data-ca-root] #career-merge-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  cursor: default;
+  /* A finger on the board aims; it never scrolls or zooms the page. */
+  touch-action: none;
+}
+
+html[data-ca-state="playing"] #career-merge-game[data-ca-root] #career-merge-canvas {
+  cursor: pointer;
+}
+
+/* The HUD ---------------------------------------------------------------------- */
+
+html[data-ca-state] #career-merge-game > .ca-hud {
+  --ca-board: calc((100vh - var(--ca-top) - var(--ca-bottom) - 16px) * 0.5877);
+  --ca-board: calc((100dvh - var(--ca-top) - var(--ca-bottom) - 16px) * 0.5877);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--ca-board) minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-areas: "brand . next" "score . tools" "path . stage" "path . .";
+  align-items: start;
+  gap: 14px 22px;
+  padding: calc(22px + var(--ca-safe-top)) calc(22px + var(--ca-safe-right)) calc(22px + var(--ca-safe-bottom)) calc(22px + var(--ca-safe-left));
+  pointer-events: none;
+}
+
+/* The menu is the room and the menu, nothing else; the bars keep their place
+ * so the chamber does not move when the run starts. */
+html:is([data-ca-state="menu"], [data-ca-state="error"]) #career-merge-game > .ca-hud {
+  visibility: hidden;
+}
+
+.ca-inset {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  pointer-events: none;
+}
+
+.ca-inset--top {
+  top: 0;
+  height: calc(var(--ca-top) + var(--ca-safe-top));
+}
+
+.ca-inset--bottom {
+  bottom: 0;
+  height: calc(var(--ca-bottom) + var(--ca-safe-bottom));
+}
+
+/* The room warms at its edges as the stack nears the line. */
+.ca-heat {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 140px 20px rgba(255, 64, 54, 0.55);
+  opacity: var(--ca-heat, 0);
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.ca-card {
+  width: min(248px, 100%);
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--ca-rule);
+  border-radius: 18px;
+  background: var(--ca-panel);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+}
+
+.ca-card > strong,
+.ca-card > span,
+.ca-score dt {
+  display: block;
+  color: var(--ca-dim);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ca-brand,
+.ca-score,
+.ca-path {
+  justify-self: end;
+}
+
+.ca-brand {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px 10px 16px;
+}
+
+.ca-brand > strong {
+  color: var(--ca-text);
+  font-size: 15px;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.ca-brand > div {
+  display: flex;
+  gap: 6px;
+}
+
+.ca-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--ca-rule);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ca-text);
+  cursor: pointer;
+}
+
+.ca-icon:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.ca-icon[data-ca-pause] {
+  border-color: transparent;
+  background: linear-gradient(180deg, #ffc45c, #f59e0b);
+  color: #2a1a02;
+}
+
+.ca-icon[aria-pressed="false"][data-ca-sound] {
+  color: var(--ca-dim);
+  background: none;
+}
+
+.ca-icon[aria-pressed="false"][data-ca-sound] svg {
+  opacity: 0.45;
+}
+
+.ca-score {
+  grid-area: score;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ca-score dd {
+  margin: 4px 0 0;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ca-score div + div dd {
+  color: var(--ca-gold);
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+.ca-next {
+  grid-area: next;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "label label" "icon name";
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.ca-next > span {
+  grid-area: label;
+}
+
+.ca-next canvas {
+  grid-area: icon;
+  width: 72px;
+  height: 72px;
+}
+
+.ca-next b {
+  grid-area: name;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.ca-tools {
+  grid-area: tools;
+  display: grid;
+  gap: 8px;
+}
+
+.ca-tools button {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--ca-rule);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ca-text);
+  font: 800 14px/1 inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ca-tools button svg {
+  color: var(--ca-cyan);
+}
+
+.ca-tools button b {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ca-cyan);
+  color: #04202c;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ca-tools button:hover:not(:disabled) {
+  background: rgba(63, 208, 255, 0.16);
+  border-color: rgba(63, 208, 255, 0.5);
+}
+
+.ca-tools button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.ca-tools button:disabled b {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--ca-text);
+}
+
+.ca-stage {
+  grid-area: stage;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.ca-stage canvas {
+  width: 56px;
+  height: 56px;
+}
+
+.ca-stage strong {
+  display: block;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ca-stage span {
+  display: block;
+  margin-top: 2px;
+  color: var(--ca-dim);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ca-meter {
+  display: block;
+  height: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ca-meter b {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ca-cyan), #7ee0ff);
+  transition: width 0.4s ease;
+}
+
+.ca-path {
+  grid-area: path;
+  align-self: start;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.ca-path ol {
+  display: grid;
+  gap: 1px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ca-path li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 2px 6px;
+  border-radius: 9px;
+  color: var(--ca-dim);
+  font-size: 12.5px;
+  font-weight: 700;
+  opacity: 0.45;
+}
+
+.ca-path li canvas {
+  width: 24px;
+  height: 24px;
+  filter: grayscale(0.9);
+}
+
+.ca-path li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ca-path li.is-reached {
+  color: var(--ca-text);
+  opacity: 1;
+}
+
+.ca-path li.is-reached canvas {
+  filter: none;
+}
+
+.ca-path li.is-current {
+  background: rgba(63, 208, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(63, 208, 255, 0.4);
+}
+
+/* A milestone, said once. */
+.ca-toast {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--ca-top) + var(--ca-safe-top) + 18px);
+  left: 50%;
+  display: grid;
+  gap: 3px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  margin: 0;
+  padding: 12px 20px;
+  border: 1px solid rgba(255, 210, 74, 0.6);
+  border-radius: 16px;
+  background: rgba(20, 16, 6, 0.92);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 210, 74, 0.18);
+  color: var(--ca-text);
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.ca-toast[hidden] {
+  display: none;
+}
+
+.ca-toast strong {
+  color: var(--ca-gold);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.ca-toast span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ca-toast--in {
+  animation: ca-toast 0.36s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+
+@keyframes ca-toast {
+  from { opacity: 0; transform: translate(-50%, -14px) scale(0.94); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+/* 3. Layers ------------------------------------------------------------------- */
+
+html[data-ca-state] #career-merge-game > .ca-layers {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.ca-layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: calc(18px + var(--ca-safe-top)) calc(16px + var(--ca-safe-right)) calc(18px + var(--ca-safe-bottom)) calc(16px + var(--ca-safe-left));
+  overflow: auto;
+  background: rgba(5, 8, 18, 0.66);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  pointer-events: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.ca-layer[hidden] {
+  display: none;
+}
+
+/* The menu lets the room show. */
+.ca-layer--menu {
+  background: radial-gradient(ellipse at 50% 50%, rgba(5, 8, 18, 0.5), rgba(5, 8, 18, 0.2) 70%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.ca-panel {
+  width: min(100%, 400px);
+  padding: 28px 26px 24px;
+  border: 1px solid var(--ca-rule);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(20, 29, 56, 0.96), rgba(9, 14, 30, 0.97));
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: var(--ca-text);
+  text-align: center;
+  animation: ca-panel 0.24s ease-out;
+}
+
+.ca-panel--wide {
+  width: min(100%, 680px);
+  text-align: left;
+}
+
+@keyframes ca-panel {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.ca-panel h2 {
+  margin: 0;
+  color: var(--ca-text);
+  font-size: clamp(26px, 5vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.ca-panel h3 {
+  margin: 22px 0 10px;
+  color: var(--ca-dim);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.ca-panel p {
+  margin: 10px 0 0;
+  color: var(--ca-dim);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.ca-logo {
+  display: grid;
+  justify-items: center;
+  font-style: italic;
+  transform: rotate(-3deg);
+}
+
+.ca-panel .ca-logo {
+  font-size: clamp(40px, 11vw, 56px);
+  line-height: 0.9;
+  text-shadow: 0 4px 0 rgba(4, 8, 20, 0.7);
+}
+
+.ca-logo span + span {
+  color: var(--ca-cyan);
+}
+
+.ca-panel .ca-tagline {
+  margin-top: 16px;
+  color: var(--ca-text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ca-panel .ca-record {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 210, 74, 0.12);
+  color: var(--ca-gold);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ca-panel .ca-record[hidden] {
+  display: none;
+}
+
+.ca-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.ca-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 22px;
+}
+
+.ca-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 0 20px;
+  border: 1px solid var(--ca-rule);
+  border-radius: 15px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+  color: var(--ca-text);
+  font: 800 16px/1 Inter, "Segoe UI", sans-serif;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.ca-btn:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+}
+
+.ca-btn:active {
+  transform: translateY(2px);
+}
+
+.ca-btn--go {
+  min-height: 58px;
+  border: 0;
+  background: linear-gradient(180deg, #9cf05f, var(--ca-go) 45%, var(--ca-go-deep));
+  box-shadow: 0 4px 0 #1f6f1c;
+  color: #0a2208;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.ca-btn--go:hover {
+  background: linear-gradient(180deg, #b4f77e, #8be85a 45%, #37ad31);
+}
+
+.ca-btn--go svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+.ca-btn--hot {
+  min-height: 58px;
+  border: 0;
+  background: linear-gradient(180deg, #ff8f8f, var(--ca-hot) 45%, #d93a4a);
+  box-shadow: 0 4px 0 #8f1f2c;
+  color: #2a0509;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.ca-btn--hot:hover {
+  background: linear-gradient(180deg, #ffa5a5, #ff7d7d 45%, #e2485a);
+}
+
+.ca-btn--quiet {
+  border-color: transparent;
+  background: none;
+  color: var(--ca-dim);
+  font-size: 15px;
+}
+
+.ca-btn--quiet:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--ca-text);
+}
+
+.ca-layer--over h2 {
+  color: #ff8a8a;
+}
+
+.ca-layer--win .ca-panel {
+  border-color: rgba(255, 210, 74, 0.5);
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.6), 0 0 90px rgba(255, 210, 74, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.ca-layer--win {
+  background: rgba(5, 8, 18, 0.4);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.ca-layer--win h2 {
+  color: var(--ca-gold);
+  font-size: clamp(34px, 8vw, 46px);
+}
+
+.ca-trophy {
+  width: 120px;
+  height: 120px;
+  margin: -6px auto 6px;
+  display: block;
+  filter: drop-shadow(0 10px 26px rgba(255, 210, 74, 0.45));
+}
+
+.ca-layer--error strong {
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.ca-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+  margin: 18px 0 0;
+  text-align: left;
+}
+
+.ca-stats div {
+  padding: 10px 12px;
+  border: 1px solid var(--ca-rule);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ca-stats dt {
+  color: var(--ca-dim);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ca-stats dd {
+  margin: 3px 0 0;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ca-stats .is-new {
+  border-color: rgba(255, 210, 74, 0.55);
+  background: rgba(255, 210, 74, 0.1);
+}
+
+.ca-stats em {
+  display: block;
+  color: var(--ca-gold);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.ca-panel .ca-summary {
+  font-size: 14px;
+}
+
+.ca-steps {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  counter-reset: ca-step;
+  list-style: none;
+}
+
+.ca-steps li {
+  position: relative;
+  padding-left: 42px;
+  color: var(--ca-text);
+  font-size: 15px;
+  line-height: 1.45;
+  counter-increment: ca-step;
+}
+
+.ca-steps li::before {
+  content: counter(ca-step);
+  position: absolute;
+  top: -2px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--ca-cyan);
+  color: #04202c;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.ca-panel .ca-note {
+  font-size: 14px;
+}
+
+.ca-panel .ca-note--keys {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* The ladder: every rung, in order. */
+.ca-ladder {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ca-ladder li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--ca-rule);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  opacity: 0.5;
+}
+
+.ca-ladder li canvas {
+  width: 44px;
+  height: 44px;
+  filter: grayscale(0.85);
+}
+
+.ca-ladder li.is-reached {
+  border-color: rgba(63, 208, 255, 0.36);
+  background: rgba(63, 208, 255, 0.08);
+  opacity: 1;
+}
+
+.ca-ladder li.is-reached canvas {
+  filter: none;
+}
+
+.ca-ladder small,
+.ca-ladder strong,
+.ca-ladder em {
+  display: block;
+}
+
+.ca-ladder small {
+  color: var(--ca-dim);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.ca-ladder strong {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ca-ladder em {
+  color: var(--ca-gold);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* In How to play the ladder is a strip: the objects, in the order they become each other. */
+.ca-ladder--strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 4px;
+}
+
+.ca-ladder--strip li {
+  display: flex;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  opacity: 1;
+}
+
+.ca-ladder--strip li canvas {
+  width: 38px;
+  height: 38px;
+  filter: none;
+}
+
+.ca-ladder--strip li span {
+  display: none;
+}
+
+.ca-ladder--strip li + li::before {
+  content: "›";
+  align-self: center;
+  color: var(--ca-dim);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.ca-rows {
+  display: grid;
+  gap: 4px;
+  margin-top: 18px;
+}
+
+.ca-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 50px;
+  padding: 0 14px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ca-row[hidden] {
+  display: none;
+}
+
+.ca-row input[type="checkbox"] {
+  position: relative;
+  box-sizing: border-box;
+  flex: none;
+  width: 48px;
+  min-width: 48px;
+  height: 28px;
+  min-height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ca-row input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.ca-row input[type="checkbox"]:checked {
+  background: var(--ca-go);
+}
+
+.ca-row input[type="checkbox"]:checked::after {
+  transform: translateX(20px);
+}
+
+.ca-row input[type="range"] {
+  flex: 0 1 180px;
+  min-width: 0;
+  height: 28px;
+  accent-color: var(--ca-cyan);
+  cursor: pointer;
+}
+
+.ca-themes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ca-theme {
+  display: grid;
+  gap: 6px;
+  padding: 8px 8px 10px;
+  border: 2px solid var(--ca-rule);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ca-text);
+  font: 800 12.5px/1.2 inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ca-theme i {
+  display: block;
+  height: 46px;
+  border-radius: 9px;
+}
+
+.ca-theme--study i { background: linear-gradient(180deg, #141c44, #5a2f6e 45%, #e2703a 80%, #ffc46b); }
+.ca-theme--city i { background: linear-gradient(180deg, #050818, #101c4a 45%, #2a2f7a 80%, #6a4aa8); }
+.ca-theme--lab i { background: linear-gradient(180deg, #04161a, #07262a 45%, #0b3a3a 80%, #34d399); }
+
+.ca-theme[aria-pressed="true"] {
+  border-color: var(--ca-cyan);
+  background: rgba(63, 208, 255, 0.1);
+}
+
+.ca-theme small {
+  display: flex;
+  gap: 4px;
+  color: var(--ca-dim);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.ca-theme small svg {
+  flex: none;
+}
+
+.ca-theme:disabled {
+  cursor: default;
+}
+
+.ca-theme:disabled i {
+  filter: grayscale(0.8) brightness(0.6);
+}
+
+.ca-panel .ca-langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.ca-langs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--ca-rule);
+  border-radius: 999px;
+  color: var(--ca-text);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ca-langs a[aria-current="true"] {
+  border-color: var(--ca-cyan);
+  background: rgba(63, 208, 255, 0.14);
+}
+
+.ca-langs a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+html[data-ca-state] #career-merge-game :is(button, a, input):focus-visible,
+.ca-cta:focus-visible,
+.ca-poster:focus-visible {
+  outline: 3px solid var(--ca-cyan);
+  outline-offset: 3px;
+}
+
+.ca-poster:focus-visible {
+  outline-offset: -6px;
+}
+
+/* A short window: the path gives its names up and keeps its pictures. */
+@media screen and (max-height: 760px) {
+  .ca-path ol {
+    grid-template-columns: repeat(5, 30px);
+    gap: 6px;
+  }
+
+  .ca-path li {
+    grid-template-columns: 30px;
+    padding: 0;
+  }
+
+  .ca-path li canvas {
+    width: 30px;
+    height: 30px;
+  }
+
+  .ca-path li span {
+    display: none;
+  }
+
+  .ca-path li.is-current {
+    border-radius: 50%;
+  }
+}
+
+/* A phone or a tablet held upright: bars above and below the board, no side panels. */
+@media screen and (max-width: 959px), screen and (max-aspect-ratio: 11/10) {
+  :root {
+    --ca-top: 68px;
+    --ca-bottom: 78px;
+  }
+
+  html[data-ca-state] #career-merge-game > .ca-hud {
+    display: block;
+    padding: 0;
+  }
+
+  .ca-card {
+    position: absolute;
+    width: auto;
+    padding: 8px 10px;
+    border-radius: 15px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+  }
+
+  .ca-brand {
+    top: calc(var(--ca-safe-top) + 10px);
+    left: calc(var(--ca-safe-left) + 10px);
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .ca-brand > strong,
+  .ca-path {
+    display: none;
+  }
+
+  .ca-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+    background: var(--ca-panel);
+  }
+
+  /* A phone's top bar has room for two controls beside the score. */
+  .ca-icon[data-ca-fullscreen] {
+    display: none;
+  }
+
+  /* Beside the two controls, not centred: on a phone the centre belongs to
+   * whatever is widest, and the next object must never be covered. */
+  .ca-score {
+    top: calc(var(--ca-safe-top) + 10px);
+    left: calc(var(--ca-safe-left) + 118px);
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    min-height: 48px;
+    padding: 6px 12px;
+  }
+
+  .ca-score dt {
+    font-size: 9px;
+  }
+
+  .ca-score dd {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .ca-score div + div dd {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .ca-next {
+    top: calc(var(--ca-safe-top) + 10px);
+    right: calc(var(--ca-safe-right) + 10px);
+    grid-template-columns: auto;
+    grid-template-areas: "label" "icon";
+    justify-items: center;
+    gap: 1px;
+    min-height: 48px;
+    padding: 5px 8px 4px;
+  }
+
+  .ca-next > span {
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .ca-next canvas {
+    width: 36px;
+    height: 36px;
+  }
+
+  .ca-next b {
+    display: none;
+  }
+
+  .ca-tools {
+    bottom: calc(var(--ca-safe-bottom) + 10px);
+    left: calc(var(--ca-safe-left) + 10px);
+    display: flex;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .ca-tools > strong {
+    display: none;
+  }
+
+  .ca-tools button {
+    grid-template-columns: auto auto;
+    justify-content: center;
+    gap: 6px;
+    width: 68px;
+    min-height: 56px;
+    padding: 0;
+    border-radius: 15px;
+    background: var(--ca-panel);
+  }
+
+  .ca-tools button span {
+    display: none;
+  }
+
+  .ca-stage {
+    right: calc(var(--ca-safe-right) + 10px);
+    bottom: calc(var(--ca-safe-bottom) + 10px);
+    left: calc(var(--ca-safe-left) + 160px);
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 10px;
+    min-height: 56px;
+  }
+
+  .ca-stage canvas {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ca-stage strong {
+    font-size: 14px;
+  }
+
+  .ca-stage span {
+    display: none;
+  }
+
+  .ca-meter {
+    margin-top: 6px;
+  }
+
+  .ca-panel {
+    padding: 24px 20px 20px;
+  }
+
+  .ca-themes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media screen and (min-width: 600px) and (max-aspect-ratio: 11/10) {
+  :root {
+    --ca-top: 84px;
+    --ca-bottom: 92px;
+  }
+
+  .ca-score {
+    left: 50%;
+    gap: 16px;
+    padding: 6px 16px;
+    transform: translateX(-50%);
+  }
+
+  .ca-score dd {
+    font-size: 26px;
+  }
+
+  .ca-next {
+    grid-template-columns: auto auto;
+    grid-template-areas: "label icon";
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px 4px 14px;
+  }
+
+  .ca-next > span {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+
+  .ca-next canvas {
+    width: 56px;
+    height: 56px;
+  }
+
+  .ca-tools button {
+    grid-template-columns: auto auto auto;
+    width: 150px;
+  }
+
+  .ca-tools button span {
+    display: inline;
+  }
+
+  .ca-icon[data-ca-fullscreen]:not([hidden]) {
+    display: grid;
+  }
+
+  .ca-stage {
+    left: calc(var(--ca-safe-left) + 326px);
+  }
+
+  .ca-stage span {
+    display: block;
+  }
+}
+
+/* A phone on its side: the board is small, so the HUD keeps to the corners. */
+@media screen and (max-height: 559px) and (min-aspect-ratio: 11/10) {
+  :root {
+    --ca-top: 6px;
+    --ca-bottom: 6px;
+  }
+
+  html[data-ca-state] #career-merge-game > .ca-hud {
+    display: block;
+    padding: 0;
+  }
+
+  .ca-card {
+    position: absolute;
+    width: auto;
+    padding: 8px 10px;
+    border-radius: 14px;
+  }
+
+  .ca-brand {
+    top: calc(var(--ca-safe-top) + 8px);
+    left: calc(var(--ca-safe-left) + 8px);
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .ca-brand > strong,
+  .ca-path,
+  .ca-stage,
+  .ca-tools > strong,
+  .ca-next b {
+    display: none;
+  }
+
+  .ca-icon {
+    background: var(--ca-panel);
+  }
+
+  .ca-score {
+    top: calc(var(--ca-safe-top) + 62px);
+    left: calc(var(--ca-safe-left) + 8px);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    transform: none;
+  }
+
+  .ca-score dd {
+    font-size: 20px;
+  }
+
+  .ca-next {
+    top: calc(var(--ca-safe-top) + 8px);
+    right: calc(var(--ca-safe-right) + 8px);
+    grid-template-columns: auto;
+    grid-template-areas: "label" "icon";
+    gap: 4px;
+  }
+
+  .ca-next canvas {
+    width: 52px;
+    height: 52px;
+  }
+
+  .ca-tools {
+    right: calc(var(--ca-safe-right) + 8px);
+    bottom: calc(var(--ca-safe-bottom) + 8px);
+    left: auto;
+    display: grid;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .ca-tools button {
+    grid-template-columns: auto auto;
+    min-height: 44px;
+    background: var(--ca-panel);
+  }
+
+  .ca-tools button span {
+    display: none;
+  }
+
+  .ca-layer {
+    place-items: start center;
+  }
+
+  .ca-panel {
+    padding: 16px 18px;
+  }
+
+  .ca-panel .ca-logo {
+    font-size: 30px;
+  }
+
+  .ca-list {
+    grid-template-columns: 1fr 1fr;
+    margin-top: 12px;
+  }
+
+  .ca-trophy {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Nothing in the game eases or fades, including what the site's own sheet
+   * would ease on any element. */
+  html[data-ca-state] #career-merge-game *,
+  html[data-ca-state] #career-merge-game *::before,
+  html[data-ca-state] #career-merge-game *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .ca-panel,
+  .ca-toast--in {
+    animation: none;
+  }
+
+  .ca-cta,
+  .ca-poster span,
+  .ca-btn,
+  .ca-meter b,
+  .ca-heat {
+    transition: none;
+  }
+}

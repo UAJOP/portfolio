@@ -1,0 +1,523 @@
+/* V4 Works composition -----------------------------------------------------
+ *
+ * Works consumes css/v4-system.css as the portfolio's evidence system: an
+ * atmospheric entry, the catalog's categories as a rail of system nodes, and
+ * every project as a connected card. Presentation only: the catalog's
+ * filtering, search and navigation are untouched. */
+
+body[data-page="works"] main {
+  overflow: clip;
+}
+
+/* 1. Entry ----------------------------------------------------------------- */
+
+body[data-page="works"] .page-hero {
+  --v4-ambient-inset: -72px calc(50% - 50vw) -45%;
+  --v4-ambient-x: 70%;
+  --v4-ambient-y: 34%;
+  padding-block: clamp(3.5rem, 7vw, 6rem) clamp(2.5rem, 4vw, 3.5rem);
+  border-bottom-color: transparent;
+}
+
+body[data-page="works"] .page-hero > .eyebrow,
+body[data-page="works"] .project-tier-heading .eyebrow {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+}
+
+body[data-page="works"] .page-hero > .eyebrow::before,
+body[data-page="works"] .project-tier-heading .eyebrow::before {
+  width: 2rem;
+  height: 1px;
+  border-radius: 0;
+  background: var(--v4-current);
+  box-shadow: none;
+}
+
+body[data-page="works"] .page-hero h1 {
+  max-width: 15ch;
+  color: var(--v4-ink);
+  font: var(--v4-type-display);
+  font-size: clamp(2.5rem, 4.3vw, 4.25rem);
+  letter-spacing: var(--v4-track-display);
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  text-wrap: balance;
+}
+
+body[data-page="works"] .page-hero > p:not(.eyebrow) {
+  color: var(--v4-ink-secondary);
+  font: var(--v4-type-lead);
+}
+
+body[data-page="works"] .page-hero .btn {
+  min-height: 46px;
+  border-radius: var(--v4-radius);
+  font-family: var(--v4-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+body[data-page="works"] .page-hero .btn.primary {
+  border-color: var(--v4-accent-fill);
+  background: var(--v4-accent-fill);
+  color: var(--v4-on-accent);
+}
+
+body[data-page="works"] .page-hero .btn.ghost {
+  border-color: var(--v4-rule-strong);
+  background: transparent;
+  color: var(--v4-ink);
+}
+
+/* The hero's current runs on into the catalog. */
+body[data-page="works"] .page-hero + .section-shell {
+  position: relative;
+  padding-top: clamp(2rem, 4vw, 3rem);
+}
+
+body[data-page="works"] .page-hero + .section-shell::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--v4-current), var(--v4-current-2) 38%, var(--v4-rule) 70%, transparent);
+  content: "";
+}
+
+/* 2. Categories as a node rail --------------------------------------------- */
+
+body[data-page="works"] [data-v4-rail] {
+  position: relative;
+  isolation: isolate;
+  gap: 0.5rem;
+}
+
+body[data-page="works"] [data-v4-rail]::before {
+  position: absolute;
+  z-index: -1;
+  top: 22px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--v4-trace), var(--v4-trace-muted) 70%, transparent);
+  content: "";
+}
+
+body[data-page="works"] .filter-btn,
+html[data-theme="light"] body[data-page="works"] .filter-btn {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1rem;
+  border-color: var(--v4-rule-strong);
+  background: var(--v4-canvas-raised);
+  color: var(--v4-ink-secondary);
+  font: 500 0.72rem / 1 var(--v4-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition:
+    border-color var(--v4-motion-feedback) var(--v4-ease-out),
+    color var(--v4-motion-feedback) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+body[data-page="works"] .filter-btn::before {
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 50%;
+  background: var(--v4-canvas);
+  content: "";
+  transition: background-color var(--v4-motion-feedback) var(--v4-ease-out), border-color var(--v4-motion-feedback) var(--v4-ease-out);
+}
+
+body[data-page="works"] .filter-btn:hover,
+html[data-theme="light"] body[data-page="works"] .filter-btn:hover {
+  border-color: var(--v4-current);
+  color: var(--v4-ink);
+}
+
+body[data-page="works"] .filter-btn.active,
+html[data-theme="light"] body[data-page="works"] .filter-btn.active {
+  border-color: var(--v4-current);
+  background: var(--v4-canvas-raised);
+  box-shadow:
+    inset 0 0 0 1px var(--v4-current),
+    0 0 2.5rem -0.6rem var(--v4-current-glow);
+  color: var(--v4-ink);
+}
+
+body[data-page="works"] .filter-btn.active::before {
+  border-color: var(--v4-current);
+  background: var(--v4-current);
+  box-shadow: 0 0 0.9rem var(--v4-current-glow);
+}
+
+body[data-page="works"] .project-search-wrap label {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+  text-transform: uppercase;
+}
+
+body[data-page="works"] .project-search-wrap > div,
+html[data-theme="light"] body[data-page="works"] .project-search-wrap > div {
+  border-color: var(--v4-rule-strong);
+  border-radius: 0.6rem;
+  background: var(--v4-living-surface);
+  transition: border-color var(--v4-motion-feedback) var(--v4-ease-out), box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+body[data-page="works"] .project-search-wrap > div:focus-within {
+  border-color: var(--v4-current);
+  box-shadow: 0 0 2.5rem -0.8rem var(--v4-current-glow);
+}
+
+body[data-page="works"] .project-search-wrap input {
+  color: var(--v4-ink);
+  font-family: var(--v4-mono);
+  font-size: 0.82rem;
+}
+
+/* The rail's own count of what is showing, written by the runtime from the
+ * cards themselves. */
+body[data-page="works"] [data-v4-rail]::after {
+  align-self: center;
+  margin-left: auto;
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: 0.1em;
+  content: attr(data-v4-count);
+}
+
+/* A category waking as it is chosen. */
+body[data-page="works"] .filter-btn.active {
+  animation: v4-works-node-wake 520ms var(--v4-ease-out);
+}
+
+@keyframes v4-works-node-wake {
+  from {
+    box-shadow:
+      inset 0 0 0 1px var(--v4-current),
+      0 0 0 0.7rem var(--v4-signal-glow),
+      0 0 3.5rem 0 var(--v4-current-glow);
+  }
+}
+
+/* 3. Projects as connected cards ------------------------------------------- */
+
+body[data-page="works"] .project-tier-heading h2 {
+  color: var(--v4-ink);
+  font: var(--v4-type-heading-lg);
+  font-size: clamp(1.6rem, 1.3rem + 1.1vw, 2.4rem);
+  letter-spacing: var(--v4-track-heading-lg);
+}
+
+body[data-page="works"] .project-card,
+html[data-theme="light"] body[data-page="works"] .project-card {
+  border-color: var(--v4-rule);
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, var(--v4-surface), var(--v4-canvas-raised));
+}
+
+/* Reconfiguration: a card that no longer belongs recedes and then leaves;
+ * one that now belongs arrives. The catalog's own filter and search decide
+ * which is which; this only gives the change a shape. */
+body[data-page="works"] .project-card {
+  transition:
+    opacity 340ms var(--v4-ease-out),
+    scale 340ms var(--v4-ease-out),
+    display 340ms allow-discrete,
+    border-color var(--v4-motion-ui) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+/* display: none is restated here because the archive-card layout rule would
+ * otherwise keep a filtered-out archive card in the grid as an empty slot. */
+body[data-page="works"] .project-card.is-hidden {
+  display: none;
+  opacity: 0;
+  scale: 0.94;
+}
+
+@starting-style {
+  body[data-page="works"] .project-card:not(.is-hidden) {
+    opacity: 0;
+    scale: 0.94;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="works"] .project-card,
+  body[data-page="works"] .filter-btn.active {
+    animation: none;
+    transition: none;
+  }
+}
+
+body[data-page="works"] .project-card:is(:hover, :focus-within),
+html[data-theme="light"] body[data-page="works"] .project-card:is(:hover, :focus-within) {
+  border-color: var(--v4-rule-strong);
+}
+
+body[data-page="works"] .project-card img {
+  border-bottom-color: var(--v4-rule);
+  background: var(--v4-canvas);
+}
+
+body[data-page="works"] .project-card .project-meta {
+  color: var(--v4-ink-muted);
+  font-family: var(--v4-mono);
+}
+
+body[data-page="works"] .project-card h3 {
+  color: var(--v4-ink);
+  font-family: var(--v4-display);
+  font-weight: 700;
+  letter-spacing: -0.028em;
+}
+
+body[data-page="works"] .project-card p {
+  color: var(--v4-ink-secondary);
+}
+
+body[data-page="works"] .project-card .project-tags span {
+  border-color: var(--v4-rule);
+  background: transparent;
+  color: var(--v4-ink-muted);
+  font-family: var(--v4-mono);
+}
+
+body[data-page="works"] .project-card .project-actions a,
+body[data-page="works"] .project-card .project-content > a {
+  color: var(--v4-accent-strong);
+  font-family: var(--v4-mono);
+  font-size: 0.76rem;
+}
+
+@media (max-width: 560px) {
+  body[data-page="works"] .page-hero h1 {
+    font-size: clamp(2.2rem, 10.4vw, 2.8rem);
+  }
+
+  /* On a phone the rail scrolls sideways instead of stacking four rows deep. */
+  body[data-page="works"] [data-v4-rail] {
+    flex-wrap: nowrap;
+    margin-inline: calc(var(--page-gutter) * -1);
+    padding: 0 var(--page-gutter) 0.75rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--page-gutter);
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  body[data-page="works"] [data-v4-rail]::after {
+    flex: none;
+    padding-left: 0.5rem;
+  }
+
+  body[data-page="works"] [data-v4-rail] .filter-btn {
+    flex: none;
+    scroll-snap-align: start;
+  }
+}
+
+/* 4. Three-mode evidence explorer (V4-E02) --------------------------------- */
+
+/* One catalog, three readings. The catalog section carries the view
+ * ([data-v4-view], React state); the catalog's own filter and search decide
+ * what is showing in all three. Without JavaScript the mode switch is absent
+ * and this is the project grid. */
+body[data-page="works"] [data-v4-explorer] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Anything else the catalog section carries follows the explorer. */
+body[data-page="works"] [data-v4-explorer] > * {
+  order: 6;
+}
+
+body[data-page="works"] [data-v4-explorer] > [data-v4-rail] {
+  order: 1;
+}
+
+body[data-page="works"] [data-v4-explorer] > .v4-modes {
+  order: 2;
+  justify-self: start;
+  margin-block: 1.1rem 1.4rem;
+}
+
+body[data-page="works"] [data-v4-explorer] > .project-search-wrap {
+  order: 3;
+}
+
+body[data-page="works"] [data-v4-explorer] > .v4-explorer__map {
+  order: 4;
+}
+
+body[data-page="works"] [data-v4-explorer] > .project-tier {
+  order: 5;
+}
+
+body[data-page="works"] .project-card > .v4-ports {
+  position: absolute;
+  z-index: 3;
+  top: 0.7rem;
+  left: 0.75rem;
+}
+
+/* Map: the cards step back and the same catalog is drawn as its relationships.
+ * Each time the map is shown its currents draw once. */
+.v4-explorer__map {
+  display: none;
+  padding-top: 1.5rem;
+}
+
+body[data-page="works"] [data-v4-view="map"] > .v4-explorer__map {
+  display: block;
+}
+
+body[data-page="works"] [data-v4-view="map"] > .project-tier {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v4-explorer__map {
+    transition:
+      opacity 420ms var(--v4-ease-out),
+      display 420ms allow-discrete;
+  }
+
+  @starting-style {
+    body[data-page="works"] [data-v4-view="map"] > .v4-explorer__map {
+      opacity: 0;
+    }
+  }
+
+  body[data-page="works"] [data-v4-view="map"] :is(.v4-eco__wire, .v4-eco__loop) {
+    animation: v4-current-draw 1200ms var(--v4-ease-in-out) both;
+  }
+}
+
+/* Below the spatial map's width the catalog rail above is already the
+ * capability rail, so the map does not repeat it: it is the project list,
+ * receding with the filter. */
+@media (max-width: 1099px) {
+  .v4-explorer__map .v4-eco__capabilities {
+    display: none;
+  }
+
+  .v4-explorer__map .v4-eco__projects {
+    margin-top: 0;
+  }
+}
+
+/* Capability view: the rail becomes the index and every project a row of
+ * evidence beside it. */
+@media (min-width: 901px) {
+  body[data-page="works"] [data-v4-view="capability"] {
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    column-gap: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  body[data-page="works"] [data-v4-view="capability"] > * {
+    grid-column: 2;
+  }
+
+  body[data-page="works"] [data-v4-view="capability"] > [data-v4-rail] {
+    position: sticky;
+    top: 6.5rem;
+    flex-direction: column;
+    grid-row: 1 / span 24;
+    grid-column: 1;
+    align-items: stretch;
+    align-self: start;
+  }
+
+  body[data-page="works"] [data-v4-view="capability"] > [data-v4-rail]::before {
+    top: 0;
+    right: auto;
+    bottom: 2rem;
+    left: 1.25rem;
+    width: 1px;
+    height: auto;
+    background: linear-gradient(180deg, var(--v4-trace), var(--v4-trace-muted));
+  }
+
+  body[data-page="works"] [data-v4-view="capability"] > [data-v4-rail]::after {
+    margin: 0.6rem 0 0 0.25rem;
+  }
+
+  body[data-page="works"] [data-v4-view="capability"] > .v4-modes {
+    margin-top: 0;
+  }
+}
+
+body[data-page="works"] [data-v4-view="capability"] .catalog-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+/* Every project is the same kind of row here, the featured one included. */
+body[data-page="works"] [data-v4-view="capability"] .catalog-grid > .project-card:not(.is-hidden) {
+  display: flex;
+  flex-direction: row;
+  grid-column: auto;
+}
+
+body[data-page="works"] [data-v4-view="capability"] .catalog-grid > .project-card img {
+  flex: none;
+  align-self: stretch;
+  width: clamp(6.5rem, 22vw, 15rem);
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 4 / 3;
+  background: var(--v4-canvas);
+  object-fit: contain;
+  border-right: 1px solid var(--v4-rule);
+  border-bottom: 0;
+}
+
+body[data-page="works"] [data-v4-view="capability"] .catalog-grid > .project-card .project-content {
+  justify-content: flex-start;
+  padding: 1rem 1.25rem;
+}
+
+body[data-page="works"] [data-v4-view="capability"] .catalog-grid > .project-card h3 {
+  margin-top: 0.6rem;
+  font-size: clamp(1.1rem, 1rem + 0.4vw, 1.35rem);
+}
+
+body[data-page="works"] [data-v4-view="capability"] .project-tier-heading h2 {
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.6rem);
+}
+
+@media (max-width: 560px) {
+  body[data-page="works"] [data-v4-explorer] > .v4-modes {
+    justify-self: stretch;
+  }
+
+  body[data-page="works"] .v4-modes__mode {
+    flex: 1;
+    justify-content: center;
+    padding: 0 0.4rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+    white-space: normal;
+  }
+
+  body[data-page="works"] .v4-modes__mode i {
+    display: none;
+  }
+
+  body[data-page="works"] [data-v4-view="capability"] .project-card .v4-ports {
+    display: none;
+  }
+}

@@ -22,7 +22,7 @@
  * assistant.js (for example `git show origin/main:js/ajoop/assistant.js`) and
  * requires byte-identical DOM, which is the strongest form of "unchanged".
  */
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
@@ -1275,21 +1275,93 @@ const NEW_COPY = [
       return entry.name.endsWith(".js") ? [next] : [];
     });
   const browserFiles = [...walk("js"), "script.js", "ajoop-ai-config.js", "portfolio-v2.js", "portfolio-data.js"];
-  const FORBIDDEN = [
-    ["an ES import", /^\s*import\s[\s\S]*?from\s*["']/m],
-    ["a dynamic import", /\bimport\s*\(/],
-    ["require()", /\brequire\s*\(/],
+  /* What makes a browser module an owner connector is what it references or
+   * can load, not the syntax it loads with. */
+  const OWNER_REFERENCES = [
     ["googleapis", /googleapis/i],
     ["an owner module", /ajoop-owner|owner-connected|provider-client|read-adapter|read-connectors/i],
     ["local runtime state", /\.ajoop-runtime/],
     ["the GitHub API", /api\.github\.com/i],
     ["an OAuth token field", /access_token|refresh_token|client_secret/i],
   ];
+  /* Node-style loading has no place in a classic browser script. */
+  const SERVER_LOADING = [
+    ["an ES import", /^\s*import\s[\s\S]*?from\s*["']/m],
+    ["require()", /\brequire\s*\(/],
+  ];
+  const ownerHits = (source) => OWNER_REFERENCES.filter(([, pattern]) => pattern.test(source)).map(([name]) => name);
+
+  /* A lazy import is ordinary client code when everything it can load is a
+   * published, owner-free browser module of this site. It is a finding when
+   * its target cannot be established, leaves the site, leaves the published
+   * artifact, or is itself an owner connector.
+   *
+   *   import("/assets/x.js")            the literal is the target
+   *   import(address)                   `address` must come from a data-*
+   *                                     attribute of the document; the targets
+   *                                     are then the module paths declared by
+   *                                     the build sources that set that
+   *                                     attribute */
+  const artifact = JSON.parse(read("data/site/public-artifact.json"));
+  const isPublished = (file) => !artifact.forbiddenPrefixes.some((prefix) => file.startsWith(prefix))
+    && (artifact.browserDirectories.some((directory) => file.startsWith(`${directory}/`)) || artifact.rootRuntimeFiles.includes(file));
+  const buildSources = readdirSync(path.join(ROOT, "scripts")).filter((name) => name.endsWith(".mjs") && !name.startsWith("qa-")).map((name) => `scripts/${name}`);
+  const modulePathLiterals = (source) => [...source.matchAll(/["'`](\/[\w./-]+\.m?js)["'`]/g)].map((match) => match[1]);
+
+  function lazyImportFindings(file, source) {
+    const findings = [];
+    const targets = [];
+    for (const match of source.matchAll(/\bimport\s*\(\s*([^)]*?)\s*\)/g)) {
+      const argument = match[1];
+      const literal = /^(["'`])([^"'`$]+)\1$/.exec(argument);
+      if (literal) {
+        targets.push(literal[2]);
+        continue;
+      }
+      if (!/^[A-Za-z_$][\w$]*$/.test(argument)) {
+        findings.push(`a lazy import whose target cannot be established (${argument})`);
+        continue;
+      }
+      const declared = new RegExp(`\\b${argument.replace(/\$/g, "\\$")}\\s*=[^;]*?getAttribute\\(\\s*["'](data-[\\w-]+)["']\\s*\\)`).exec(source);
+      if (!declared) {
+        findings.push(`a lazy import of "${argument}", which is not a literal or a document-declared address`);
+        continue;
+      }
+      const attribute = declared[1];
+      const declaring = buildSources.filter((candidate) => read(candidate).includes(`"${attribute}"`));
+      const declaredTargets = declaring.flatMap((candidate) => modulePathLiterals(read(candidate)));
+      if (!declaredTargets.length) findings.push(`a lazy import from ${attribute}, which no build source declares a module for`);
+      targets.push(...declaredTargets);
+    }
+    for (const target of new Set(targets)) {
+      if (/^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(target)) { findings.push(`a lazy import that leaves the site (${target})`); continue; }
+      const resolved = target.startsWith("/") ? target.slice(1) : path.posix.join(path.posix.dirname(file), target);
+      if (!isPublished(resolved)) { findings.push(`a lazy import outside the published artifact (${target})`); continue; }
+      if (!existsSync(path.join(ROOT, resolved))) { findings.push(`a lazy import of a module that does not exist (${target})`); continue; }
+      const inside = ownerHits(read(resolved));
+      if (inside.length) findings.push(`a lazy import of an owner connector (${target}: ${inside.join(", ")})`);
+    }
+    return findings;
+  }
+
   for (const file of browserFiles) {
     const source = read(file);
-    const hits = FORBIDDEN.filter(([, pattern]) => pattern.test(source)).map(([name]) => name);
+    const hits = [
+      ...ownerHits(source),
+      ...SERVER_LOADING.filter(([, pattern]) => pattern.test(source)).map(([name]) => name),
+      ...lazyImportFindings(file, source),
+    ];
     check(`${file} references no owner connector${hits.length ? ` (${hits.join(", ")})` : ""}`, hits.length, 0);
   }
+
+  /* The classifier is only worth trusting if it still catches the real thing. */
+  const probe = (source) => lazyImportFindings("js/pages/probe.js", source);
+  ok("lazy-import control: a published, owner-free module is ordinary", probe('import("/js/core/locale-bootstrap.js");').length === 0);
+  ok("lazy-import control: a server module is a finding", probe('import("/server/ajoop-bridge.mjs");').some((finding) => finding.includes("outside the published artifact")));
+  ok("lazy-import control: another origin is a finding", probe('import("https://example.com/x.js");').some((finding) => finding.includes("leaves the site")));
+  ok("lazy-import control: a computed target is a finding", probe('import(base + name);').some((finding) => finding.includes("cannot be established")));
+  ok("lazy-import control: an undeclared variable is a finding", probe('var where = window.location.hash; import(where);').some((finding) => finding.includes("not a literal or a document-declared address")));
+  ok("lazy-import control: an attribute nothing declares is a finding", probe('var where = el.getAttribute("data-not-declared-anywhere"); import(where);').some((finding) => finding.includes("no build source declares")));
   const loader = read("script.js");
   ok("the runtime manifest ships nothing from server/", !/["']\.?\/?server\//.test(loader));
   ok("the public AI endpoint is not an owner endpoint", !/owner/i.test(read("ajoop-ai-config.js")));

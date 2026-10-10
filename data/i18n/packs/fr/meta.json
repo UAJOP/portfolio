@@ -23,6 +23,18 @@
     "ogTitle": "Étude de cas AI Flow Puzzle | Kaan Balcı",
     "title": "Étude de cas AI Flow Puzzle | Kaan Balcı"
   },
+  "ajoop": {
+    "description": "Échangez avec AJOOP, l'assistant public intégré au portfolio de Kaan Balcı. Il répond à partir du portfolio publié et montre les preuves utilisées.",
+    "ogDescription": "Échangez avec AJOOP, l'assistant public intégré au portfolio de Kaan Balcı. Il répond à partir du portfolio publié et montre les preuves utilisées.",
+    "ogTitle": "AJOOP Hub : assistant du portfolio | Kaan Balcı",
+    "title": "AJOOP Hub : assistant du portfolio | Kaan Balcı"
+  },
+  "ajoopCaseStudy": {
+    "description": "Comment fonctionne AJOOP : un assistant de portfolio local-first avec récupération, repli déterministe, preuves sur chaque réponse du portfolio et frontière stricte entre public et privé.",
+    "ogDescription": "Comment fonctionne AJOOP : un assistant de portfolio local-first avec récupération, repli déterministe, preuves sur chaque réponse du portfolio et frontière stricte entre public et privé.",
+    "ogTitle": "Étude de cas AJOOP | Kaan Balcı",
+    "title": "Étude de cas AJOOP | Kaan Balcı"
+  },
   "blog": {
     "description": "L'expérience de Kaan Balcı en livraison technique au contact du client : Conversational AI en entreprise, évaluation de LLM, logiciel full-stack et un produit d'entreprise en production.",
     "ogDescription": "Un fil traverse chaque poste : la livraison technique au contact du client, des workflows d'AI en entreprise à un produit d'entreprise en production.",
@@ -76,6 +88,24 @@
     "ogDescription": "Développement d'un jeu de fusion avec Phaser 3 et TypeScript, centré sur la boucle produit, la progression, une jouabilité responsive et l'architecture de plateforme.",
     "ogTitle": "Étude de cas Merge Rush: Tiny Factory",
     "title": "Étude de cas Merge Rush: Tiny Factory | Kaan Balcı"
+  },
+  "mergeRush": {
+    "description": "Jouez à Merge Rush: Tiny Factory dans le navigateur : un puzzle de fusion d’usine en Phaser 3 et TypeScript, avec des commandes minutées, des déblocages progressifs, une commande finale du Cœur d’usine et un Mode sans fin.",
+    "ogDescription": "Un puzzle de fusion d’usine compact : placez les pièces, fusionnez-les palier par palier et livrez les commandes minutées avant la fin du service.",
+    "ogTitle": "Jouez à Merge Rush: Tiny Factory",
+    "title": "Merge Rush: Tiny Factory — Jouer | Kaan Balcı"
+  },
+  "portfolioCaseStudy": {
+    "description": "Comment kaanbalci.com est construit : un registre canonique de projets, du React prérendu en HTML statique en cinq langues, un assistant public, quatre jeux navigateur et des contrôles ciblés à chaque phase.",
+    "ogDescription": "Un portfolio conçu comme un système : données canoniques, prérendu React statique, cinq langues, un assistant public et quatre jeux.",
+    "ogTitle": "Étude de cas kaanbalci.com",
+    "title": "Étude de cas kaanbalci.com | Kaan Balcı"
+  },
+  "careerAdventureCaseStudy": {
+    "description": "Comment Career Adventure est devenu un vrai jeu : une simulation de physique déterministe à pas fixe, une difficulté mesurée par des parties de stratégie, une fin de partie atteignable et un mode jeu plein écran.",
+    "ogDescription": "Un jeu de carrière à fusion reconstruit autour d'une simulation déterministe, d'une difficulté mesurée et de vraies fins.",
+    "ogTitle": "Étude de cas Career Adventure",
+    "title": "Étude de cas Career Adventure | Kaan Balcı"
   },
   "notFound": {
     "description": "Page 404 du portfolio de Kaan Balcı.",

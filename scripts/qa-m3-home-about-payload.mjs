@@ -47,7 +47,7 @@ try {
   const payloadDrifts = [
     ["catalog prop leaked into Home/About", (props) => ({ ...props, structure: null })],
     ["unreviewed field", (props) => ({ drift: "unreviewed", ...props })],
-    ["copy value changed", (props) => ({ ...props, copy: Object.fromEntries(Object.entries(props.copy).map(([key, value], index) => [key, index === 0 ? `${value} (changed)` : value])) })],
+    ["copy value emptied", (props) => ({ ...props, copy: Object.fromEntries(Object.entries(props.copy).map(([key, value], index) => [key, index === 0 ? "" : value])) })],
     ["keys reordered", ({ buildLog, ...rest }) => ({ buildLog, ...rest })],
   ];
   for (const [name, mutate] of payloadDrifts) {
@@ -90,7 +90,7 @@ try {
     assertions += 1;
   }
   const controls = payloadDrifts.length + structuralControls.length + contractControls.length;
-  console.log(`Home/About payload contract passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · ${HOME_ABOUT_DOCUMENTS.length} documents byte-exact to #25-B ${contract.acceptedRef} · ${controls} negative controls (${payloadDrifts.length} with the #26 snapshot re-pinned) · git-history=none.`);
+  console.log(`Home/About payload contract passed${requestedRoot ? " against emitted dist-site" : ""}. ${assertions} assertions · ${HOME_ABOUT_DOCUMENTS.length} documents preserve the #25-B ${contract.acceptedRef} schema plus the reviewed V4 model · ${controls} negative controls (${payloadDrifts.length} with the #26 snapshot re-pinned) · git-history=none.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }

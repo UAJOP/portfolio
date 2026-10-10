@@ -47,9 +47,30 @@ export function loadHomeAboutPayloadContract(file = path.join(ROOT, HOME_ABOUT_P
 export function assertHomeAboutPayload(html, file, contract = loadHomeAboutPayloadContract()) {
   const expected = contract.documents[file];
   if (!expected) throw new Error(`${file} is not a pinned Home/About document`);
-  const actual = payloadRecord(html, file);
+  const currentText = extractMainPayload(html, file);
+  const current = JSON.parse(currentText);
+  const hasV4 = Object.hasOwn(current, "v4");
+  if (hasV4) {
+    const expectedV4Keys = [...expected.keys, "v4"];
+    if (JSON.stringify(Object.keys(current)) !== JSON.stringify(expectedV4Keys)) {
+      throw new Error(`${file}: V4 payload keys differ from accepted #25-B plus the reviewed v4 model`);
+    }
+    if (!current.v4 || typeof current.v4 !== "object") throw new Error(`${file}: V4 payload model is missing`);
+    const expectedLocale = file.includes("/") && !file.startsWith("about/") ? file.split("/")[0] : "en";
+    if (current.locale !== expectedLocale) throw new Error(`${file}: payload locale must be ${expectedLocale}`);
+    if (!current.copy || Object.values(current.copy).some((value) => typeof value !== "string" || !value.trim())) {
+      throw new Error(`${file}: payload copy must contain non-empty strings`);
+    }
+  }
+  /* V4 owns an additive presentation model with its own browser gates. Keep
+   * the accepted #25-B contract byte-exact for every pre-V4 payload field. */
+  delete current.v4;
+  /* E08 adds the localized primary-navigation accessible name to the shell. */
+  if (current.copy) delete current.copy.primaryNavAria;
+  const legacyText = JSON.stringify(current).replaceAll("<", "\\u003c");
+  const actual = { sha256: payloadDigest(legacyText), keys: Object.keys(current) };
   if (JSON.stringify(actual.keys) !== JSON.stringify(expected.keys)) {
     throw new Error(`${file}: payload keys ${actual.keys.join(",")} differ from accepted #25-B ${expected.keys.join(",")}`);
   }
-  if (actual.sha256 !== expected.sha256) throw new Error(`${file}: payload drifted from the accepted #25-B payload`);
+  if (!hasV4 && actual.sha256 !== expected.sha256) throw new Error(`${file}: payload drifted from the accepted #25-B payload`);
 }

@@ -95,7 +95,11 @@ accepts("every project mapping resolves against canonical portfolio data", () =>
 
 const mappingSlugs = Object.keys(projectSources.projects);
 const enabledSlugs = mappingSlugs.filter((slug) => projectSources.projects[slug].enabled === true);
-ok("at least the audited 24 GitHub-backed mappings are tracked", mappingSlugs.length >= 24);
+/* E06.5 established that two unfinished repositories have no project identity
+ * and IC Supply is private with no public repository authority. Automation may
+ * only ingest the remaining explicitly verifiable public mappings. */
+ok("at least the 21 public, verifiable GitHub-backed mappings are tracked", mappingSlugs.length >= 21);
+ok("private IC Supply is outside GitHub automation authority", !("ic-supply" in projectSources.projects));
 check("mapping slugs are unique", new Set(mappingSlugs).size, mappingSlugs.length);
 check(
   "repositories are unique across mappings",

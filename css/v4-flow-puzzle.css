@@ -1,0 +1,2875 @@
+/* AI Flow Puzzle — the game around the puzzle (V4-E06.2) ---------------------
+ *
+ * Linked only by the React production document of /ai-flow-puzzle/. The
+ * page's markup (data/site/m3-30-labs-games-structure.json) is unchanged and
+ * css/games/ai-flow-puzzle.css still styles it. This sheet does three things:
+ *
+ *   1. The page is the game's hub: the hero becomes a paper level-select and
+ *      the workspace is out of the page until a mission is entered.
+ *   2. Entered (html[data-afp-state], set by js/pages/flow-puzzle-game.js),
+ *      the same markup is laid out as a full-viewport workspace: the stage's
+ *      wrapper becomes display: contents so the bar, the library, the board
+ *      and the panel are items of one grid, docked differently at each size.
+ *   3. The mission briefing and the result are layers over that workspace.
+ *
+ * Two looks, on purpose: menus, briefing and results are warm paper with
+ * hard-edged stickers; the workspace is a dark technical board where colour
+ * belongs to nodes and wires. Both are the same in the site's dark and light
+ * themes. Nothing animates at rest: every keyframe answers something the
+ * visitor or the running flow just did. */
+
+:root {
+  --afp-paper: #f4eee2;
+  --afp-card: #fffdf7;
+  --afp-ink: #1b1d22;
+  --afp-ink-soft: #55534d;
+  --afp-lime: #b9f03c;
+  --afp-pink: #ff4f8b;
+  --afp-cyan: #35d0e6;
+  --afp-orange: #ff9a3d;
+  --afp-sticky: #ffe26a;
+  --afp-bg: #0c0f15;
+  --afp-panel: #131821;
+  --afp-raise: #1a202c;
+  --afp-rule: #272e3b;
+  --afp-text: #e9edf5;
+  --afp-dim: #8f99ab;
+  --afp-hand: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive;
+  --afp-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --afp-display: Manrope, Inter, "Segoe UI", sans-serif;
+}
+
+/* 1. The hub: the page itself ------------------------------------------------ */
+
+#ai-flow-puzzle-game {
+  display: none;
+}
+
+.ai-puzzle-hero[data-afp-hub] {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  grid-template-areas: "copy hub" "card hub";
+  align-items: start;
+  gap: 28px 44px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  padding: 44px 44px 40px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(27, 29, 34, 0.09) 1px, transparent 1.6px) 0 0 / 22px 22px,
+    var(--afp-paper);
+  box-shadow: 10px 10px 0 var(--afp-lime), 10px 10px 0 2px var(--afp-ink);
+  color: var(--afp-ink);
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-hero-copy {
+  grid-area: copy;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* The by-line sits under the name; the page's own lead and actions follow. */
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-hero-copy > :is(p:not(.eyebrow, .afp-by), .ai-puzzle-stack, .hero-actions, noscript) {
+  order: 2;
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-hero-copy > .afp-by {
+  order: 1;
+}
+
+.ai-puzzle-hero[data-afp-hub] .eyebrow {
+  color: var(--afp-ink-soft);
+  font: 600 0.74rem / 1.2 var(--afp-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ai-puzzle-hero[data-afp-hub] h1 {
+  max-width: none;
+  margin: 10px 0 0;
+  color: var(--afp-ink);
+  font: 800 clamp(2.6rem, 1.6rem + 3.4vw, 4.4rem) / 0.96 var(--afp-display);
+  letter-spacing: -0.03em;
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-hero-copy > p:not(.eyebrow) {
+  max-width: 34rem;
+  margin-top: 12px;
+  color: var(--afp-ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.ai-puzzle-hero[data-afp-hub] .afp-by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-top: 12px;
+}
+
+.afp-by span {
+  color: var(--afp-ink);
+  font: 700 1rem / 1.2 var(--afp-display);
+}
+
+.afp-by b {
+  padding: 2px 8px;
+  background: var(--afp-ink);
+  color: var(--afp-lime);
+  font: 600 0.74rem / 1.5 var(--afp-mono);
+  letter-spacing: 0.04em;
+}
+
+.afp-by i {
+  flex-basis: 100%;
+  margin-top: 10px;
+  color: var(--afp-ink);
+  font-size: 1.05rem;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-stack {
+  margin-top: 18px;
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-stack span {
+  border: 1.5px solid var(--afp-ink);
+  border-radius: 3px;
+  background: var(--afp-card);
+  color: var(--afp-ink);
+  font: 600 0.7rem / 1.2 var(--afp-mono);
+}
+
+.ai-puzzle-hero[data-afp-hub] .hero-actions {
+  justify-content: flex-start;
+  margin-top: 26px;
+}
+
+.ai-puzzle-hero[data-afp-hub] .hero-actions .btn.primary {
+  order: -1;
+}
+
+.ai-puzzle-hero[data-afp-hub] .hero-actions .btn,
+#ai-flow-puzzle-game :is(.afp-cta, .afp-ghost) {
+  min-height: 48px;
+  padding: 0 22px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 4px;
+  background: var(--afp-card);
+  box-shadow: 4px 4px 0 var(--afp-ink);
+  color: var(--afp-ink);
+  font: 800 0.86rem / 1 var(--afp-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: translate 120ms ease, box-shadow 120ms ease;
+}
+
+.ai-puzzle-hero[data-afp-hub] .hero-actions .btn.primary,
+#ai-flow-puzzle-game .afp-cta {
+  background: var(--afp-lime);
+}
+
+#ai-flow-puzzle-game .afp-cta--hot {
+  background: var(--afp-pink);
+}
+
+.ai-puzzle-hero[data-afp-hub] .hero-actions .btn:hover,
+#ai-flow-puzzle-game :is(.afp-cta, .afp-ghost):hover {
+  translate: -1px -1px;
+  box-shadow: 6px 6px 0 var(--afp-ink);
+}
+
+.ai-puzzle-hero[data-afp-hub] .hero-actions .btn:active,
+#ai-flow-puzzle-game :is(.afp-cta, .afp-ghost):active {
+  translate: 3px 3px;
+  box-shadow: 1px 1px 0 var(--afp-ink);
+}
+
+.ai-puzzle-hero[data-afp-hub] .hero-actions .btn i {
+  color: inherit;
+}
+
+/* The accepted hero card, kept as a note taped to the board. */
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-hero-card {
+  grid-area: card;
+  justify-self: start;
+  width: min(100%, 21rem);
+  min-height: 0;
+  padding: 18px 20px 20px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--afp-sticky);
+  box-shadow: 3px 5px 0 rgba(27, 29, 34, 0.18);
+  color: var(--afp-ink);
+  rotate: -1.6deg;
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-hero-card::before {
+  content: "";
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 78px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 1px 0 rgba(27, 29, 34, 0.12);
+  translate: -50% 0;
+  rotate: 2deg;
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-node-mini-map {
+  display: none;
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-hero-card strong {
+  color: var(--afp-ink);
+  font: 700 1.2rem / 1.25 var(--afp-hand);
+}
+
+.ai-puzzle-hero[data-afp-hub] .ai-puzzle-hero-card p {
+  margin-top: 6px;
+  color: var(--afp-ink);
+  font: 400 0.92rem / 1.5 var(--afp-hand);
+}
+
+.afp-hub {
+  grid-area: hub;
+  display: grid;
+  gap: 16px;
+}
+
+.afp-hub__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--afp-ink);
+}
+
+.afp-hub__head strong {
+  font: 800 1.15rem / 1.2 var(--afp-display);
+}
+
+.afp-hub__head span {
+  color: var(--afp-ink-soft);
+  font: 600 0.76rem / 1.3 var(--afp-mono);
+}
+
+.afp-levels {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Three cards' worth of room before the engine fills it in. */
+  min-height: 17.6rem;
+}
+
+.afp-level {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 5.2rem;
+  padding: 14px 18px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 4px;
+  background: var(--afp-card);
+  box-shadow: 4px 4px 0 var(--afp-ink);
+  color: var(--afp-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: translate 120ms ease, box-shadow 120ms ease;
+}
+
+.afp-level:hover {
+  translate: -2px -2px;
+  box-shadow: 7px 7px 0 var(--afp-cyan), 7px 7px 0 2px var(--afp-ink);
+}
+
+.afp-level:active {
+  translate: 2px 2px;
+  box-shadow: 1px 1px 0 var(--afp-ink);
+}
+
+.afp-level__no {
+  color: transparent;
+  font: 800 2.4rem / 1 var(--afp-display);
+  -webkit-text-stroke: 1.5px var(--afp-ink);
+}
+
+.afp-level.is-solved .afp-level__no {
+  color: var(--afp-lime);
+}
+
+.afp-level__body {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.afp-level__body strong {
+  font: 800 1.05rem / 1.25 var(--afp-display);
+}
+
+.afp-level__body small {
+  color: var(--afp-ink-soft);
+  font-size: 0.86rem;
+}
+
+.afp-level__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 4px;
+  color: var(--afp-ink-soft);
+  font: 600 0.7rem / 1.3 var(--afp-mono);
+}
+
+.afp-level__meta em {
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: var(--afp-orange);
+  color: var(--afp-ink);
+  font-style: normal;
+  text-transform: uppercase;
+}
+
+.afp-level__state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 9.5rem;
+  color: var(--afp-ink-soft);
+  font: 600 0.72rem / 1.3 var(--afp-mono);
+  text-align: right;
+}
+
+.afp-level__state svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--afp-ink);
+  color: var(--afp-lime);
+}
+
+.afp-how {
+  padding: 14px 18px;
+  border: 2px dashed rgba(27, 29, 34, 0.5);
+  border-radius: 4px;
+}
+
+.afp-how strong {
+  font: 800 0.8rem / 1.2 var(--afp-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.afp-how ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: afp-how;
+}
+
+.afp-how li {
+  counter-increment: afp-how;
+  color: var(--afp-ink-soft);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.afp-how li::before {
+  content: counter(afp-how);
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--afp-ink);
+  color: var(--afp-card);
+  font: 700 0.72rem / 1 var(--afp-mono);
+}
+
+.afp-noscript {
+  max-width: 34rem;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 4px;
+  background: var(--afp-card);
+  color: var(--afp-ink);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.afp-noscript a {
+  color: var(--afp-ink);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.ai-puzzle-hero[data-afp-hub] :is(.btn, .afp-level):focus-visible,
+#ai-flow-puzzle-game :is(button, a, select, input, textarea):focus-visible {
+  outline: 3px solid var(--afp-pink);
+  outline-offset: 3px;
+}
+
+@media (max-width: 980px) {
+  .ai-puzzle-hero[data-afp-hub] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "copy" "hub" "card";
+    padding: 28px 20px 28px;
+    box-shadow: 6px 6px 0 var(--afp-lime), 6px 6px 0 2px var(--afp-ink);
+  }
+}
+
+@media (max-width: 560px) {
+  .afp-level {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 12px;
+    padding: 12px 14px;
+  }
+
+  .afp-level__state {
+    grid-column: 2;
+    max-width: none;
+    text-align: left;
+  }
+
+  .afp-how ol {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .afp-how li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  .afp-how li::before {
+    margin: 0;
+  }
+}
+
+/* 2. Entering: the portfolio steps out ---------------------------------------- */
+
+html[data-afp-state] {
+  overflow: hidden;
+}
+
+html[data-afp-state] body > :not(main, script),
+html[data-afp-state] main > :not(#ai-flow-puzzle-game) {
+  display: none !important;
+}
+
+html[data-afp-state] #ai-flow-puzzle-game {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr) auto 304px;
+  grid-template-rows: 56px 44px minmax(0, 1fr);
+  grid-template-areas: "start center actions end" "lib canvas canvas tabs" "lib canvas canvas side";
+  gap: 0;
+  align-items: stretch;
+  justify-items: stretch;
+  align-content: stretch;
+  width: auto;
+  height: auto;
+  max-width: none;
+  margin: 0;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overflow: hidden;
+  background: var(--afp-bg);
+  color: var(--afp-text);
+  font-family: Inter, "Segoe UI", sans-serif;
+  /* A phone must not inflate the board's own text: wire labels are placed by coordinate. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+  animation: afp-enter 260ms cubic-bezier(0.2, 0, 0, 1) backwards;
+}
+
+@keyframes afp-enter {
+  from {
+    opacity: 0;
+    scale: 1.02;
+  }
+}
+
+/* The article's reveal-on-scroll does not apply to a workspace. */
+#ai-flow-puzzle-game .reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-stage {
+  display: contents;
+}
+
+/* 3. Workspace bar ------------------------------------------------------------ */
+
+#ai-flow-puzzle-game .afp-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--afp-rule);
+  background: var(--afp-panel);
+}
+
+#ai-flow-puzzle-game .afp-bar--start {
+  grid-area: start;
+}
+
+#ai-flow-puzzle-game .afp-bar--end {
+  grid-area: end;
+  justify-content: flex-end;
+}
+
+#ai-flow-puzzle-game .afp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 8px;
+  background: var(--afp-raise);
+  color: var(--afp-text);
+  font: 600 0.78rem / 1 Inter, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game .afp-btn:hover {
+  border-color: var(--afp-dim);
+}
+
+#ai-flow-puzzle-game .afp-btn span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#ai-flow-puzzle-game .afp-brand {
+  overflow: hidden;
+  color: var(--afp-text);
+  font: 800 0.84rem / 1 var(--afp-display);
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#ai-flow-puzzle-game .afp-level-chip {
+  flex: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--afp-lime);
+  color: var(--afp-ink);
+  font: 700 0.68rem / 1.2 var(--afp-mono);
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .afp-hints {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--afp-dim);
+  font: 600 0.72rem / 1 var(--afp-mono);
+  white-space: nowrap;
+}
+
+#ai-flow-puzzle-game .afp-hints svg {
+  width: 16px;
+  height: 16px;
+  color: var(--afp-sticky);
+}
+
+#ai-flow-puzzle-game .afp-hints b {
+  color: var(--afp-text);
+  font-size: 0.86rem;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-topbar,
+#ai-flow-puzzle-game .ai-puzzle-actions {
+  grid-area: center;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 14px;
+  border: 0;
+  border-bottom: 1px solid var(--afp-rule);
+  border-radius: 0;
+  background: var(--afp-panel);
+}
+
+#ai-flow-puzzle-game .ai-puzzle-topbar > div:first-child {
+  min-width: 0;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-topbar > div:first-child :is(span, p) {
+  display: none;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-topbar h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--afp-text);
+  font: 700 0.98rem / 1.2 var(--afp-display);
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-stats {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  width: auto;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-stats article {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 6px;
+  background: transparent;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-stats span {
+  color: var(--afp-dim);
+  font: 600 0.62rem / 1 var(--afp-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-stats strong {
+  color: var(--afp-text);
+  font: 700 0.82rem / 1 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .ai-puzzle-topbar {
+  overflow: hidden;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-actions {
+  grid-area: actions;
+  gap: 8px;
+  padding-left: 0;
+  flex-wrap: nowrap;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-actions .btn {
+  flex: none;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 8px;
+  background: var(--afp-raise);
+  box-shadow: none;
+  color: var(--afp-text);
+  font: 600 0.8rem / 1 Inter, "Segoe UI", sans-serif;
+  transform: none;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-actions .btn:hover {
+  border-color: var(--afp-dim);
+}
+
+#ai-flow-puzzle-game .ai-puzzle-actions .btn.primary {
+  padding: 0 16px;
+  border-color: var(--afp-lime);
+  background: var(--afp-lime);
+  color: var(--afp-ink);
+  font-weight: 800;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-actions .btn i {
+  color: inherit;
+  font-size: 1.05rem;
+}
+
+/* Arrange and reset: icons, with their words kept for assistive technology. */
+#ai-flow-puzzle-game .ai-puzzle-actions :is([data-ai-arrange], [data-ai-reset]) span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+html[data-afp-state="running"] #ai-flow-puzzle-game .ai-puzzle-actions .btn {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* 4. Node library ------------------------------------------------------------- */
+
+#ai-flow-puzzle-game > .ai-puzzle-panel {
+  position: static;
+  max-height: none;
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: var(--afp-panel);
+  box-shadow: none;
+  backdrop-filter: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--afp-rule) transparent;
+}
+
+#ai-flow-puzzle-game > .ai-puzzle-panel:first-of-type {
+  grid-area: lib;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-right: 1px solid var(--afp-rule);
+}
+
+#ai-flow-puzzle-game :is(.ai-puzzle-panel-head, .ai-scenario-list, .ai-palette-note) {
+  display: none;
+}
+
+#ai-flow-puzzle-game .ai-palette-wrap {
+  order: 1;
+}
+
+#ai-flow-puzzle-game .ai-template-wrap {
+  order: 2;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--afp-rule);
+}
+
+#ai-flow-puzzle-game .ai-puzzle-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-section-title span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--afp-lime);
+  box-shadow: none;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-section-title strong {
+  color: var(--afp-dim);
+  font: 600 0.68rem / 1 var(--afp-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .ai-node-palette {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  max-height: none;
+  overflow: visible;
+}
+
+#ai-flow-puzzle-game .ai-palette-group {
+  display: grid;
+  gap: 6px;
+}
+
+#ai-flow-puzzle-game .ai-palette-group-title {
+  color: var(--afp-dim);
+  font: 600 0.64rem / 1 var(--afp-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .ai-palette-node {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 8px;
+  background: var(--afp-raise);
+  box-shadow: none;
+  color: var(--afp-text);
+  text-align: left;
+  cursor: pointer;
+  transform: none;
+}
+
+#ai-flow-puzzle-game .ai-palette-node:hover {
+  border-color: var(--node-color);
+  background: color-mix(in srgb, var(--node-color) 12%, var(--afp-raise));
+}
+
+#ai-flow-puzzle-game .ai-palette-node i {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--node-color) 20%, transparent);
+  color: var(--node-color);
+  font-size: 1.05rem;
+}
+
+#ai-flow-puzzle-game .ai-palette-node strong {
+  display: block;
+  overflow: hidden;
+  color: var(--afp-text);
+  font: 600 0.82rem / 1.2 Inter, "Segoe UI", sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#ai-flow-puzzle-game .ai-palette-node small {
+  display: none;
+}
+
+#ai-flow-puzzle-game .ai-palette-node.is-hinted {
+  border-color: var(--afp-sticky);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--afp-sticky) 40%, transparent);
+  animation: afp-nudge 520ms ease 2;
+}
+
+@keyframes afp-nudge {
+  50% {
+    translate: 5px 0;
+  }
+}
+
+#ai-flow-puzzle-game .ai-palette-ghost {
+  position: fixed;
+  z-index: 40;
+  padding: 8px 12px;
+  border: 1.5px solid var(--node-color);
+  border-radius: 10px;
+  background: var(--afp-raise);
+  color: var(--afp-text);
+  font: 600 0.82rem / 1 Inter, "Segoe UI", sans-serif;
+  pointer-events: none;
+  translate: -50% -50%;
+}
+
+#ai-flow-puzzle-game .ai-template-list {
+  display: grid;
+  gap: 6px;
+}
+
+#ai-flow-puzzle-game .ai-template-card {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px dashed var(--afp-rule);
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--afp-text);
+  text-align: left;
+  cursor: pointer;
+  transform: none;
+}
+
+#ai-flow-puzzle-game .ai-template-card:hover {
+  border-color: var(--afp-dim);
+}
+
+#ai-flow-puzzle-game .ai-template-card strong {
+  font: 600 0.8rem / 1.2 Inter, "Segoe UI", sans-serif;
+}
+
+#ai-flow-puzzle-game .ai-template-card small {
+  color: var(--afp-dim);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+/* 5. The board ---------------------------------------------------------------- */
+
+#ai-flow-puzzle-game .ai-flow-board-wrap {
+  grid-area: canvas;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: var(--afp-bg);
+}
+
+#ai-flow-puzzle-game .ai-flow-board {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--afp-bg);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: calc(32px * var(--ai-zoom, 1)) calc(32px * var(--ai-zoom, 1));
+  /* Room the engine leaves clear when it fits the flow to the view. */
+  --ai-fit-top: 0px;
+  --ai-fit-bottom: 56px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+#ai-flow-puzzle-game .ai-flow-board.is-panning {
+  cursor: grabbing;
+}
+
+#ai-flow-puzzle-game .ai-flow-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1600px;
+  height: 900px;
+  transform-origin: 0 0;
+}
+
+#ai-flow-puzzle-game .ai-flow-board.is-following .ai-flow-world {
+  transition: transform 280ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+#ai-flow-puzzle-game .ai-flow-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+#ai-flow-puzzle-game .ai-flow-node {
+  position: absolute;
+  z-index: 2;
+  display: block;
+  width: 184px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  box-shadow: none;
+  cursor: default;
+  transform: translate(-50%, -50%);
+  transition: none;
+}
+
+#ai-flow-puzzle-game .ai-flow-node::after {
+  display: none;
+}
+
+#ai-flow-puzzle-game .ai-flow-node-body {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 16px 10px 10px;
+  border: 1.5px solid color-mix(in srgb, var(--node-color) 70%, var(--afp-rule));
+  border-radius: 12px;
+  background: #161c27;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+  color: var(--afp-text);
+  font: inherit;
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+
+#ai-flow-puzzle-game .ai-flow-node-body:hover {
+  border-color: var(--node-color);
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-dragging {
+  z-index: 5;
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-dragging .ai-flow-node-body {
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
+  cursor: grabbing;
+}
+
+#ai-flow-puzzle-game .ai-flow-node-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--node-color) 22%, transparent);
+  color: var(--node-color);
+  font-size: 1.2rem;
+}
+
+#ai-flow-puzzle-game .ai-flow-node-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+#ai-flow-puzzle-game .ai-flow-node-copy strong {
+  overflow: hidden;
+  color: var(--afp-text);
+  font: 700 0.84rem / 1.2 Inter, "Segoe UI", sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#ai-flow-puzzle-game .ai-flow-node-copy small {
+  color: var(--afp-dim);
+  font: 600 0.62rem / 1 var(--afp-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-selected .ai-flow-node-body {
+  border-color: var(--node-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--node-color) 34%, transparent), 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-visited .ai-flow-node-body {
+  border-color: var(--node-color);
+  background: color-mix(in srgb, var(--node-color) 14%, #161c27);
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-running .ai-flow-node-body {
+  border-color: #fff;
+  background: color-mix(in srgb, var(--node-color) 30%, #161c27);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--node-color) 55%, transparent), 0 0 34px color-mix(in srgb, var(--node-color) 60%, transparent);
+  animation: afp-arrive 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes afp-arrive {
+  from {
+    scale: 0.94;
+  }
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-flagged .ai-flow-node-body {
+  border-color: var(--afp-pink);
+  border-style: dashed;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--afp-pink) 28%, transparent);
+  animation: afp-flag 620ms ease 2;
+}
+
+@keyframes afp-flag {
+  50% {
+    box-shadow: 0 0 0 9px color-mix(in srgb, var(--afp-pink) 10%, transparent);
+  }
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-target .ai-flow-node-body {
+  border-color: var(--afp-lime);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--afp-lime) 40%, transparent);
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-blocked .ai-flow-node-body {
+  border-color: var(--afp-pink);
+  opacity: 0.6;
+}
+
+#ai-flow-puzzle-game .ai-flow-node.is-rejected {
+  animation: afp-shake 420ms ease;
+}
+
+@keyframes afp-shake {
+  20%, 60% {
+    translate: -6px 0;
+  }
+
+  40%, 80% {
+    translate: 6px 0;
+  }
+}
+
+/* Ports: where a wire leaves (filled) and where it arrives (hollow). The
+ * visible dot is small; the area that takes the pointer is 44 px. */
+#ai-flow-puzzle-game .ai-flow-port {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 2px solid var(--node-color);
+  border-radius: 50%;
+  background: var(--afp-bg);
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+
+#ai-flow-puzzle-game .ai-flow-port::before {
+  content: "";
+  position: absolute;
+  border-radius: 12px;
+}
+
+/* The touch area reaches away from the node, so it never covers the node's
+ * own body. */
+#ai-flow-puzzle-game .ai-flow-port-in {
+  left: 0;
+}
+
+#ai-flow-puzzle-game .ai-flow-port-in::before {
+  inset: -14px -4px -14px -24px;
+}
+
+#ai-flow-puzzle-game .ai-flow-port-out::before {
+  inset: -14px -24px -14px -4px;
+}
+
+#ai-flow-puzzle-game .ai-flow-port-out {
+  left: 100%;
+  background: var(--node-color);
+  cursor: crosshair;
+  transition: scale 120ms ease;
+}
+
+#ai-flow-puzzle-game .ai-flow-port-out:hover,
+#ai-flow-puzzle-game .ai-flow-node.is-source .ai-flow-port-out {
+  scale: 1.45;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--node-color) 36%, transparent);
+}
+
+#ai-flow-puzzle-game .ai-flow-board.is-wiring .ai-flow-port-in {
+  scale: 1.35;
+  border-color: var(--afp-lime);
+}
+
+#ai-flow-puzzle-game .ai-flow-link {
+  pointer-events: none;
+}
+
+#ai-flow-puzzle-game .ai-flow-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 20px;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game .ai-flow-path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--link-color, #38bdf8) 62%, #2a3140);
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  filter: none;
+  marker-end: none;
+  transition: stroke 200ms ease, stroke-width 200ms ease;
+}
+
+#ai-flow-puzzle-game .ai-flow-arrow {
+  fill: color-mix(in srgb, var(--link-color, #38bdf8) 80%, #2a3140);
+}
+
+#ai-flow-puzzle-game .ai-flow-link:hover .ai-flow-path,
+#ai-flow-puzzle-game .ai-flow-path.is-selected {
+  stroke: #fff;
+  stroke-width: 3.5px;
+}
+
+#ai-flow-puzzle-game .ai-flow-link.is-done .ai-flow-path {
+  stroke: var(--link-color);
+  stroke-width: 3.5px;
+}
+
+#ai-flow-puzzle-game .ai-flow-link.is-done .ai-flow-arrow {
+  fill: var(--link-color);
+}
+
+/* The signal: one bright segment that travels the wire it is crossing. */
+#ai-flow-puzzle-game .ai-flow-pulse {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 6px;
+  stroke-linecap: round;
+  stroke-dasharray: 0.2 1;
+  stroke-dashoffset: 0.2;
+  opacity: 0;
+}
+
+#ai-flow-puzzle-game .ai-flow-link.is-live .ai-flow-path {
+  stroke: var(--link-color);
+  stroke-width: 3.5px;
+}
+
+#ai-flow-puzzle-game .ai-flow-link.is-live .ai-flow-pulse {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px var(--link-color));
+  animation: afp-signal 340ms linear forwards;
+}
+
+@keyframes afp-signal {
+  to {
+    stroke-dashoffset: -0.82;
+  }
+}
+
+#ai-flow-puzzle-game .ai-flow-label {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game .ai-flow-label rect {
+  fill: var(--afp-bg);
+  stroke: var(--afp-rule);
+  stroke-width: 1px;
+}
+
+#ai-flow-puzzle-game .ai-flow-label.is-selected rect {
+  stroke: #fff;
+}
+
+#ai-flow-puzzle-game .ai-flow-label text {
+  fill: var(--afp-dim);
+  font: 600 10.5px / 1 "IBM Plex Mono", Consolas, monospace;
+  text-anchor: middle;
+}
+
+#ai-flow-puzzle-game .ai-flow-wire {
+  stroke: var(--link-color, var(--afp-lime));
+  stroke-dasharray: 7 6;
+  pointer-events: none;
+}
+
+/* Status and the test message, laid over the board's lower edge. */
+#ai-flow-puzzle-game .ai-flow-workbench-bar {
+  grid-area: canvas;
+  align-self: end;
+  z-index: 3;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 12px;
+  border: 0;
+  background: none;
+  pointer-events: none;
+}
+
+#ai-flow-puzzle-game .ai-flow-tip,
+#ai-flow-puzzle-game .ai-test-message-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 38px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--afp-panel) 92%, transparent);
+  box-shadow: none;
+  color: var(--afp-dim);
+  font-size: 0.8rem;
+  pointer-events: auto;
+}
+
+#ai-flow-puzzle-game .ai-flow-tip {
+  max-width: min(30rem, 56%);
+}
+
+#ai-flow-puzzle-game .ai-flow-tip span {
+  overflow: hidden;
+  color: inherit;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#ai-flow-puzzle-game .ai-flow-tip[data-tone="success"] {
+  border-color: color-mix(in srgb, var(--afp-lime) 60%, var(--afp-rule));
+  color: var(--afp-lime);
+}
+
+#ai-flow-puzzle-game .ai-flow-tip[data-tone="warning"] {
+  border-color: color-mix(in srgb, var(--afp-pink) 60%, var(--afp-rule));
+  color: #ff9dbd;
+}
+
+#ai-flow-puzzle-game .ai-flow-tip[data-tone="active"] {
+  border-color: var(--afp-cyan);
+  color: var(--afp-cyan);
+}
+
+#ai-flow-puzzle-game .ai-test-message-select {
+  flex: 0 1 22rem;
+}
+
+#ai-flow-puzzle-game .ai-test-message-select span {
+  flex: none;
+  color: var(--afp-dim);
+  font: 600 0.62rem / 1 var(--afp-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .ai-test-message-select select {
+  min-width: 0;
+  width: 100%;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--afp-text);
+  font: 500 0.8rem / 1.2 Inter, "Segoe UI", sans-serif;
+  text-overflow: ellipsis;
+}
+
+#ai-flow-puzzle-game .ai-test-message-select option {
+  background: var(--afp-panel);
+  color: var(--afp-text);
+}
+
+#ai-flow-puzzle-game .afp-zoom {
+  grid-area: canvas;
+  align-self: start;
+  justify-self: end;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+  margin: 12px;
+  padding: 4px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--afp-panel) 92%, transparent);
+}
+
+#ai-flow-puzzle-game .afp-zoom button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--afp-text);
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game .afp-zoom button:hover {
+  background: var(--afp-raise);
+}
+
+/* A hint, as a note stuck to the board. */
+#ai-flow-puzzle-game .afp-note {
+  grid-area: canvas;
+  align-self: start;
+  justify-self: start;
+  z-index: 3;
+  max-width: min(21rem, calc(100% - 180px));
+  margin: 14px;
+  padding: 12px 14px;
+  background: var(--afp-sticky);
+  box-shadow: 3px 4px 0 rgba(0, 0, 0, 0.4);
+  color: var(--afp-ink);
+  font: 400 0.9rem / 1.45 var(--afp-hand);
+  rotate: -1.2deg;
+  animation: afp-stick 240ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes afp-stick {
+  from {
+    opacity: 0;
+    translate: 0 -10px;
+    rotate: -5deg;
+  }
+}
+
+#ai-flow-puzzle-game :is(.afp-note, .afp-selbar, .afp-menu, .afp-error)[hidden] {
+  display: none;
+}
+
+/* 6. The panel: one tab at a time --------------------------------------------- */
+
+#ai-flow-puzzle-game .afp-tabs {
+  grid-area: tabs;
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--afp-rule);
+  border-left: 1px solid var(--afp-rule);
+  background: var(--afp-panel);
+}
+
+#ai-flow-puzzle-game .afp-tabs button {
+  flex: 1;
+  min-width: 0;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--afp-dim);
+  font: 600 0.74rem / 1 Inter, "Segoe UI", sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game .afp-tabs button:hover {
+  color: var(--afp-text);
+}
+
+#ai-flow-puzzle-game .afp-tabs button[aria-pressed="true"] {
+  border-bottom-color: var(--afp-lime);
+  color: var(--afp-text);
+}
+
+#ai-flow-puzzle-game .afp-tabs .afp-tabs__close {
+  display: none;
+  flex: none;
+  width: 44px;
+}
+
+#ai-flow-puzzle-game > .ai-puzzle-side {
+  grid-area: side;
+  display: block;
+  border-left: 1px solid var(--afp-rule);
+}
+
+#ai-flow-puzzle-game .ai-side-card {
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+html[data-afp-tab="mission"] #ai-flow-puzzle-game .ai-side-card:not(:nth-of-type(1)),
+html[data-afp-tab="node"] #ai-flow-puzzle-game .ai-side-card:not(:nth-of-type(2)),
+html[data-afp-tab="run"] #ai-flow-puzzle-game .ai-side-card:not(:nth-of-type(3), :nth-of-type(4)),
+html[data-afp-tab="tools"] #ai-flow-puzzle-game .ai-side-card:not(:nth-of-type(5)) {
+  display: none;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-side :is(p, li, span, label, summary) {
+  color: var(--afp-dim);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-side strong {
+  color: var(--afp-text);
+}
+
+#ai-flow-puzzle-game .ai-objective-brief {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 0;
+  border-left: 3px solid var(--afp-lime);
+  border-radius: 0 6px 6px 0;
+  background: var(--afp-raise);
+}
+
+#ai-flow-puzzle-game .ai-objective-brief strong {
+  font: 600 0.86rem / 1.45 Inter, "Segoe UI", sans-serif;
+}
+
+#ai-flow-puzzle-game .ai-objective-list details {
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+#ai-flow-puzzle-game .ai-objective-list summary {
+  padding: 4px 0;
+  color: var(--afp-dim);
+  font: 600 0.66rem / 1.4 var(--afp-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game .ai-objective-list ul {
+  display: grid;
+  gap: 2px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+#ai-flow-puzzle-game .ai-objective-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+#ai-flow-puzzle-game .ai-objective-list li i {
+  color: var(--afp-rule);
+  font-size: 1rem;
+}
+
+#ai-flow-puzzle-game .ai-objective-list li.is-done {
+  color: var(--afp-text);
+}
+
+#ai-flow-puzzle-game .ai-objective-list li.is-done i {
+  color: var(--afp-lime);
+}
+
+#ai-flow-puzzle-game .ai-inspector {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+#ai-flow-puzzle-game .ai-inspector-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+#ai-flow-puzzle-game .ai-inspector-head i {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--node-color) 22%, transparent);
+  color: var(--node-color);
+  font-size: 1.2rem;
+}
+
+#ai-flow-puzzle-game .ai-inspector-head span {
+  display: block;
+  font: 600 0.62rem / 1.3 var(--afp-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .ai-node-config {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+#ai-flow-puzzle-game .ai-node-config label {
+  display: grid;
+  gap: 4px;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-side :is(input[type="text"], textarea) {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 6px;
+  background: var(--afp-bg);
+  color: var(--afp-text);
+  font: 500 0.82rem / 1.4 Inter, "Segoe UI", sans-serif;
+}
+
+#ai-flow-puzzle-game .ai-puzzle-side input[type="range"] {
+  width: 100%;
+  accent-color: var(--afp-lime);
+}
+
+#ai-flow-puzzle-game :is(.ai-inspector-actions, .ai-mini-actions) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+#ai-flow-puzzle-game :is(.ai-inspector-actions, .ai-mini-actions, .ai-connection-list) button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 8px;
+  background: var(--afp-raise);
+  box-shadow: none;
+  color: var(--afp-text);
+  font: 600 0.76rem / 1.2 Inter, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game :is(.ai-inspector-actions, .ai-mini-actions, .ai-connection-list) button:hover {
+  border-color: var(--afp-dim);
+}
+
+#ai-flow-puzzle-game .ai-mini-actions button span,
+#ai-flow-puzzle-game .ai-connection-list button span {
+  color: inherit;
+  font: inherit;
+}
+
+#ai-flow-puzzle-game .ai-connection-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+#ai-flow-puzzle-game .ai-connection-list button {
+  justify-content: space-between;
+  text-align: left;
+}
+
+#ai-flow-puzzle-game .ai-run-log {
+  display: grid;
+  gap: 6px;
+  max-height: none;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: none;
+}
+
+#ai-flow-puzzle-game .ai-run-log article {
+  padding: 8px 10px;
+  border: 0;
+  border-left: 3px solid var(--afp-lime);
+  border-radius: 0 6px 6px 0;
+  background: var(--afp-raise);
+  animation: afp-log 200ms ease backwards;
+}
+
+@keyframes afp-log {
+  from {
+    opacity: 0;
+    translate: 8px 0;
+  }
+}
+
+#ai-flow-puzzle-game .ai-run-log article[data-tone="info"] {
+  border-left-color: var(--afp-cyan);
+}
+
+#ai-flow-puzzle-game .ai-run-log article[data-tone="warning"] {
+  border-left-color: var(--afp-orange);
+}
+
+#ai-flow-puzzle-game .ai-run-log article strong {
+  display: block;
+  font: 600 0.8rem / 1.3 Inter, "Segoe UI", sans-serif;
+}
+
+#ai-flow-puzzle-game .ai-run-log article p {
+  margin: 2px 0 0;
+  font-size: 0.76rem;
+}
+
+#ai-flow-puzzle-game .ai-score-breakdown {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+#ai-flow-puzzle-game .ai-score-row {
+  display: grid;
+  grid-template-columns: 5.6rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: 8px;
+}
+
+#ai-flow-puzzle-game .ai-score-row meter {
+  width: 100%;
+  height: 8px;
+}
+
+#ai-flow-puzzle-game .ai-score-row b {
+  color: var(--afp-text);
+  font: 600 0.76rem / 1 var(--afp-mono);
+  text-align: right;
+}
+
+#ai-flow-puzzle-game .ai-result-box {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 8px;
+  background: var(--afp-raise);
+}
+
+#ai-flow-puzzle-game .ai-result-box[data-tone="success"] {
+  border-color: color-mix(in srgb, var(--afp-lime) 60%, var(--afp-rule));
+}
+
+#ai-flow-puzzle-game .ai-result-box[data-tone="warning"] {
+  border-color: color-mix(in srgb, var(--afp-pink) 60%, var(--afp-rule));
+}
+
+#ai-flow-puzzle-game .ai-result-box ul {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+
+/* 7. Menu, selection bar, dock ------------------------------------------------ */
+
+#ai-flow-puzzle-game .afp-menu {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 52px);
+  right: calc(env(safe-area-inset-right) + 10px);
+  z-index: 12;
+  display: grid;
+  min-width: 14rem;
+  padding: 6px;
+  border: 1px solid var(--afp-rule);
+  border-radius: 10px;
+  background: var(--afp-raise);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+#ai-flow-puzzle-game .afp-menu :is(button, a) {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--afp-text);
+  font: 500 0.86rem / 1.2 Inter, "Segoe UI", sans-serif;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game .afp-menu :is(button, a):hover {
+  background: var(--afp-panel);
+}
+
+#ai-flow-puzzle-game .afp-menu a {
+  margin-top: 4px;
+  border-top: 1px solid var(--afp-rule);
+  border-radius: 0 0 6px 6px;
+  color: var(--afp-dim);
+}
+
+#ai-flow-puzzle-game :is(.afp-dock, .afp-scrim, .afp-selbar) {
+  display: none;
+}
+
+/* 8. Layers: mission briefing, result, failure -------------------------------- */
+
+#ai-flow-puzzle-game :is(.afp-mission, .afp-result) {
+  grid-area: 1 / 1 / -1 / -1;
+  z-index: 20;
+  display: none;
+  overflow: auto;
+  padding: clamp(16px, 4vh, 48px) clamp(14px, 4vw, 48px);
+  color: var(--afp-ink);
+}
+
+html[data-afp-state="mission"] #ai-flow-puzzle-game .afp-mission,
+html[data-afp-state="success"] #ai-flow-puzzle-game .afp-result,
+html[data-afp-state="failure"] #ai-flow-puzzle-game .afp-result {
+  display: grid;
+  place-items: center;
+}
+
+#ai-flow-puzzle-game .afp-mission {
+  background:
+    radial-gradient(circle at 1px 1px, rgba(27, 29, 34, 0.09) 1px, transparent 1.6px) 0 0 / 22px 22px,
+    var(--afp-paper);
+}
+
+#ai-flow-puzzle-game .afp-result {
+  background: rgba(8, 10, 14, 0.74);
+}
+
+#ai-flow-puzzle-game .afp-sheet {
+  position: relative;
+  width: min(100%, 60rem);
+  padding: clamp(20px, 3.4vw, 40px);
+  border: 2px solid var(--afp-ink);
+  border-radius: 6px;
+  background: var(--afp-card);
+  box-shadow: 10px 10px 0 var(--afp-ink);
+  animation: afp-sheet 280ms cubic-bezier(0.2, 0, 0, 1) backwards;
+}
+
+#ai-flow-puzzle-game .afp-result .afp-sheet {
+  width: min(100%, 46rem);
+  box-shadow: 10px 10px 0 var(--afp-lime);
+}
+
+html[data-afp-state="failure"] #ai-flow-puzzle-game .afp-result .afp-sheet {
+  box-shadow: 10px 10px 0 var(--afp-pink);
+}
+
+@keyframes afp-sheet {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+}
+
+#ai-flow-puzzle-game .afp-mission__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 28px 36px;
+  align-items: start;
+}
+
+#ai-flow-puzzle-game .afp-kicker {
+  margin: 0;
+  color: var(--afp-ink-soft);
+  font: 600 0.74rem / 1.2 var(--afp-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game :is(.afp-mission, .afp-result) h2 {
+  margin: 8px 0 0;
+  color: var(--afp-ink);
+  font: 800 clamp(1.7rem, 1.2rem + 2vw, 2.6rem) / 1.04 var(--afp-display);
+  letter-spacing: -0.02em;
+}
+
+#ai-flow-puzzle-game :is(.afp-mission, .afp-result) h3 {
+  margin: 0 0 6px;
+  color: var(--afp-ink-soft);
+  font: 600 0.68rem / 1.2 var(--afp-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game :is(.afp-mission, .afp-result) p {
+  margin: 0;
+  color: var(--afp-ink);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+#ai-flow-puzzle-game .afp-brief section {
+  margin-top: 20px;
+}
+
+#ai-flow-puzzle-game .afp-io {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+}
+
+#ai-flow-puzzle-game .afp-io > div {
+  padding: 12px 14px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 4px;
+  background: var(--afp-paper);
+}
+
+#ai-flow-puzzle-game .afp-io > i {
+  align-self: center;
+  height: 2px;
+  background: var(--afp-ink);
+}
+
+#ai-flow-puzzle-game .afp-io > i::after {
+  content: "";
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 auto;
+  border-top: 2px solid var(--afp-ink);
+  border-right: 2px solid var(--afp-ink);
+  rotate: 45deg;
+}
+
+#ai-flow-puzzle-game .afp-io blockquote {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px 10px 10px 2px;
+  background: var(--afp-card);
+  color: var(--afp-ink);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+#ai-flow-puzzle-game :is(.afp-expect, .afp-chips, .afp-progress, .afp-issues, .afp-outcomes, .afp-meters, .afp-notes) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#ai-flow-puzzle-game .afp-expect {
+  display: grid;
+  gap: 6px;
+}
+
+#ai-flow-puzzle-game .afp-expect li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+#ai-flow-puzzle-game .afp-expect li::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 50%;
+  background: var(--afp-lime);
+}
+
+#ai-flow-puzzle-game .afp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#ai-flow-puzzle-game .afp-chips li {
+  padding: 6px 10px;
+  border: 1.5px solid var(--afp-ink);
+  border-radius: 3px;
+  background: var(--afp-card);
+  font: 600 0.74rem / 1.2 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .afp-side {
+  display: grid;
+  gap: 22px;
+}
+
+#ai-flow-puzzle-game .afp-sticky {
+  justify-self: start;
+  max-width: 17rem;
+  padding: 14px 16px 16px;
+  background: var(--afp-sticky);
+  box-shadow: 3px 5px 0 rgba(27, 29, 34, 0.2);
+  color: var(--afp-ink);
+  font: 400 0.98rem / 1.45 var(--afp-hand);
+  rotate: 1.8deg;
+}
+
+#ai-flow-puzzle-game .afp-sticky b {
+  display: block;
+  margin-bottom: 4px;
+  font: 700 0.66rem / 1.2 var(--afp-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .afp-sticky--result {
+  position: absolute;
+  top: -18px;
+  right: 22px;
+  padding: 10px 14px;
+  rotate: 4deg;
+}
+
+#ai-flow-puzzle-game .afp-card {
+  padding: 14px 16px;
+  border: 2px dashed rgba(27, 29, 34, 0.5);
+  border-radius: 4px;
+}
+
+#ai-flow-puzzle-game .afp-card__count {
+  color: var(--afp-ink-soft);
+  font: 600 0.76rem / 1.3 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .afp-progress {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#ai-flow-puzzle-game .afp-progress li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: center;
+}
+
+#ai-flow-puzzle-game .afp-progress li > span {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 50%;
+  font: 700 0.72rem / 1 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .afp-progress li.is-solved > span {
+  background: var(--afp-lime);
+}
+
+#ai-flow-puzzle-game .afp-progress li.is-current > span {
+  box-shadow: 0 0 0 3px var(--afp-cyan);
+}
+
+#ai-flow-puzzle-game .afp-progress svg {
+  width: 14px;
+  height: 14px;
+}
+
+#ai-flow-puzzle-game .afp-progress strong {
+  overflow: hidden;
+  font: 700 0.86rem / 1.3 var(--afp-display);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#ai-flow-puzzle-game .afp-progress small {
+  color: var(--afp-ink-soft);
+  font: 600 0.68rem / 1.3 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .afp-card__total {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 2px solid var(--afp-ink);
+  font: 600 0.76rem / 1.3 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .afp-card__total b {
+  font-size: 1.1rem;
+}
+
+#ai-flow-puzzle-game .afp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+#ai-flow-puzzle-game .afp-verdict {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 16px;
+  align-items: center;
+}
+
+#ai-flow-puzzle-game .afp-verdict h2 {
+  margin: 0;
+}
+
+#ai-flow-puzzle-game .afp-verdict p {
+  grid-column: 2;
+  color: var(--afp-ink-soft);
+}
+
+#ai-flow-puzzle-game .afp-mark {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 50%;
+  background: var(--afp-lime);
+  color: var(--afp-ink);
+  animation: afp-mark 360ms cubic-bezier(0.3, 1.5, 0.5, 1) 120ms backwards;
+}
+
+#ai-flow-puzzle-game .afp-verdict--fail .afp-mark {
+  background: var(--afp-pink);
+}
+
+@keyframes afp-mark {
+  from {
+    scale: 0.4;
+    rotate: -30deg;
+  }
+}
+
+#ai-flow-puzzle-game .afp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 24px 0 0;
+}
+
+#ai-flow-puzzle-game .afp-stats div {
+  padding: 12px 14px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 4px;
+  background: var(--afp-paper);
+}
+
+#ai-flow-puzzle-game .afp-stats dt {
+  color: var(--afp-ink-soft);
+  font: 600 0.64rem / 1.2 var(--afp-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#ai-flow-puzzle-game .afp-stats dd {
+  margin: 6px 0 0;
+  font: 800 1.7rem / 1 var(--afp-display);
+}
+
+#ai-flow-puzzle-game .afp-stats small {
+  color: var(--afp-ink-soft);
+  font: 600 0.8rem / 1 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .afp-quality {
+  margin-top: 22px;
+}
+
+#ai-flow-puzzle-game .afp-meters {
+  display: grid;
+  gap: 6px;
+}
+
+#ai-flow-puzzle-game .afp-meters li {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) 2.2rem;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.84rem;
+}
+
+#ai-flow-puzzle-game .afp-meters i {
+  height: 10px;
+  border: 1.5px solid var(--afp-ink);
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--afp-cyan) var(--afp-fill), transparent var(--afp-fill));
+}
+
+#ai-flow-puzzle-game .afp-meters b {
+  font: 700 0.8rem / 1 var(--afp-mono);
+  text-align: right;
+}
+
+#ai-flow-puzzle-game .afp-total {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 2px solid var(--afp-ink);
+  font: 600 0.8rem / 1.5 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .afp-total b {
+  font-size: 1.15rem;
+}
+
+#ai-flow-puzzle-game .afp-assisted {
+  margin-top: 6px;
+  color: var(--afp-ink-soft);
+  font: 500 0.78rem / 1.4 var(--afp-mono);
+}
+
+#ai-flow-puzzle-game .afp-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 22px 28px;
+  margin-top: 24px;
+}
+
+#ai-flow-puzzle-game .afp-issues {
+  display: grid;
+  gap: 8px;
+}
+
+#ai-flow-puzzle-game .afp-issues button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 4px;
+  background: var(--afp-paper);
+  color: var(--afp-ink);
+  font: 600 0.88rem / 1.35 Inter, "Segoe UI", sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+#ai-flow-puzzle-game .afp-issues button::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--afp-pink);
+}
+
+#ai-flow-puzzle-game .afp-issues button:hover {
+  background: var(--afp-sticky);
+}
+
+#ai-flow-puzzle-game .afp-notes {
+  margin-top: 10px;
+  color: var(--afp-ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+#ai-flow-puzzle-game .afp-outcomes {
+  display: grid;
+  gap: 8px;
+}
+
+#ai-flow-puzzle-game .afp-outcomes li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 8px 12px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 4px;
+  font-size: 0.88rem;
+}
+
+#ai-flow-puzzle-game .afp-outcomes li > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--afp-lime);
+}
+
+#ai-flow-puzzle-game .afp-outcomes li.is-miss > span {
+  background: var(--afp-pink);
+}
+
+#ai-flow-puzzle-game .afp-outcomes svg {
+  width: 14px;
+  height: 14px;
+}
+
+#ai-flow-puzzle-game .afp-error {
+  grid-area: 1 / 1 / -1 / -1;
+  z-index: 30;
+  place-self: center;
+  width: min(calc(100% - 32px), 30rem);
+  padding: 24px;
+  border: 2px solid var(--afp-ink);
+  border-radius: 6px;
+  background: var(--afp-card);
+  box-shadow: 8px 8px 0 var(--afp-pink);
+  color: var(--afp-ink);
+}
+
+#ai-flow-puzzle-game .afp-error strong {
+  font: 800 1.3rem / 1.2 var(--afp-display);
+}
+
+#ai-flow-puzzle-game .afp-error p {
+  margin: 8px 0 0;
+  color: var(--afp-ink-soft);
+  line-height: 1.55;
+}
+
+html[data-afp-state="error"] #ai-flow-puzzle-game > :not(.afp-error) {
+  visibility: hidden;
+}
+
+/* Between the compact layout and a wide desktop the bar keeps the score and
+ * lets the node and link counts go. */
+@media (max-width: 1519px) {
+  #ai-flow-puzzle-game .ai-puzzle-stats article:not(:first-child) {
+    display: none;
+  }
+}
+
+/* 9. Compact: small laptop, tablet and phone ---------------------------------- */
+
+@media (max-width: 1279px) {
+  html[data-afp-state] #ai-flow-puzzle-game {
+    grid-template-columns: 76px auto minmax(0, 1fr) auto;
+    grid-template-rows: 56px minmax(0, 1fr);
+    grid-template-areas: "start start center end" "lib canvas canvas canvas";
+  }
+
+  #ai-flow-puzzle-game .ai-flow-board {
+    --ai-fit-top: 64px;
+    --ai-fit-bottom: 140px;
+  }
+
+  #ai-flow-puzzle-game .ai-puzzle-actions,
+  #ai-flow-puzzle-game .ai-puzzle-stats article:not(:first-child),
+  #ai-flow-puzzle-game .afp-brand {
+    display: none;
+  }
+
+  #ai-flow-puzzle-game .ai-puzzle-topbar {
+    justify-content: space-between;
+  }
+
+  /* The library as an icon rail. */
+  #ai-flow-puzzle-game > .ai-puzzle-panel:first-of-type {
+    padding: 8px;
+  }
+
+  #ai-flow-puzzle-game .ai-palette-wrap .ai-puzzle-section-title,
+  #ai-flow-puzzle-game .ai-palette-group-title,
+  #ai-flow-puzzle-game .ai-template-wrap {
+    display: none;
+  }
+
+  #ai-flow-puzzle-game .ai-node-palette {
+    gap: 6px;
+  }
+
+  #ai-flow-puzzle-game .ai-palette-node {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 4px;
+    min-height: 56px;
+    padding: 6px 2px;
+  }
+
+  #ai-flow-puzzle-game .ai-palette-node strong {
+    display: -webkit-box;
+    max-width: 60px;
+    font-size: 0.58rem;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* The panel as a drawer, opened from its tabs. */
+  #ai-flow-puzzle-game .afp-tabs {
+    grid-area: canvas;
+    align-self: start;
+    justify-self: end;
+    z-index: 9;
+    width: min(360px, 100%);
+    height: 44px;
+    margin: 0;
+    display: none;
+  }
+
+  #ai-flow-puzzle-game > .ai-puzzle-side {
+    grid-area: canvas;
+    justify-self: end;
+    z-index: 8;
+    width: min(360px, 100%);
+    margin-top: 44px;
+    display: none;
+    box-shadow: -18px 0 40px rgba(0, 0, 0, 0.45);
+  }
+
+  html[data-afp-sheet="side"] #ai-flow-puzzle-game .afp-tabs {
+    display: flex;
+  }
+
+  html[data-afp-sheet="side"] #ai-flow-puzzle-game > .ai-puzzle-side {
+    display: block;
+    animation: afp-drawer 220ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  @keyframes afp-drawer {
+    from {
+      translate: 40px 0;
+      opacity: 0;
+    }
+  }
+
+  #ai-flow-puzzle-game .afp-tabs .afp-tabs__close {
+    display: grid;
+    place-items: center;
+  }
+
+  #ai-flow-puzzle-game .afp-zoom {
+    align-self: start;
+    justify-self: start;
+  }
+
+  #ai-flow-puzzle-game .afp-zoom button {
+    width: 44px;
+    height: 44px;
+  }
+
+  #ai-flow-puzzle-game .afp-note {
+    margin-top: 72px;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-workbench-bar {
+    padding-bottom: 86px;
+  }
+
+  #ai-flow-puzzle-game .afp-scrim {
+    grid-area: 2 / 1 / 3 / -1;
+    z-index: 7;
+    border: 0;
+    background: rgba(8, 10, 14, 0.5);
+  }
+
+  html[data-afp-sheet] #ai-flow-puzzle-game .afp-scrim {
+    display: block;
+  }
+
+  #ai-flow-puzzle-game .afp-dock {
+    grid-area: canvas;
+    align-self: end;
+    justify-self: center;
+    z-index: 6;
+    display: flex;
+    gap: 6px;
+    margin: 0 12px 14px;
+    padding: 6px;
+    border: 1px solid var(--afp-rule);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--afp-raise) 96%, transparent);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  }
+
+  #ai-flow-puzzle-game .afp-dock button {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    min-width: 68px;
+    min-height: 54px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: var(--afp-text);
+    font: 600 0.64rem / 1.1 Inter, "Segoe UI", sans-serif;
+    cursor: pointer;
+  }
+
+  #ai-flow-puzzle-game .afp-dock button span {
+    max-width: 84px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #ai-flow-puzzle-game .afp-dock button[aria-pressed="true"] {
+    background: var(--afp-panel);
+    color: var(--afp-lime);
+  }
+
+  #ai-flow-puzzle-game .afp-dock .afp-dock__run {
+    min-width: 92px;
+    background: var(--afp-lime);
+    color: var(--afp-ink);
+    font-weight: 800;
+  }
+
+  html[data-afp-state="running"] #ai-flow-puzzle-game .afp-dock button:not(.afp-dock__run) {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  html[data-afp-state="running"] #ai-flow-puzzle-game .afp-dock__run {
+    background: var(--afp-pink);
+  }
+
+  #ai-flow-puzzle-game .afp-selbar:not([hidden]) {
+    grid-area: canvas;
+    align-self: end;
+    justify-self: center;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100% - 24px);
+    margin-bottom: 92px;
+    padding: 5px 5px 5px 12px;
+    border: 1px solid var(--afp-rule);
+    border-radius: 12px;
+    background: var(--afp-raise);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  }
+
+  #ai-flow-puzzle-game .afp-selbar strong {
+    max-width: 8rem;
+    overflow: hidden;
+    color: var(--afp-text);
+    font: 700 0.76rem / 1.2 Inter, "Segoe UI", sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #ai-flow-puzzle-game .afp-selbar button {
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--afp-rule);
+    border-radius: 8px;
+    background: var(--afp-panel);
+    color: var(--afp-text);
+    font: 600 0.72rem / 1.15 Inter, "Segoe UI", sans-serif;
+    cursor: pointer;
+  }
+
+  html[data-afp-sheet] #ai-flow-puzzle-game :is(.afp-selbar, .afp-note),
+  html[data-afp-state="running"] #ai-flow-puzzle-game .afp-selbar {
+    display: none;
+  }
+
+  /* The test message stays chosen from the briefing's default on small screens. */
+  #ai-flow-puzzle-game .ai-test-message-select {
+    display: none;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-tip {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}
+
+/* Tablet: the dock's library button opens the rail out into a full drawer,
+ * with names, roles and templates. */
+@media (min-width: 721px) and (max-width: 1279px) {
+  html[data-afp-sheet="library"] #ai-flow-puzzle-game > .ai-puzzle-panel:first-of-type {
+    grid-area: 2 / 1 / 3 / -1;
+    justify-self: start;
+    z-index: 8;
+    width: 272px;
+    padding: 12px;
+    box-shadow: 18px 0 40px rgba(0, 0, 0, 0.45);
+  }
+
+  html[data-afp-sheet="library"] #ai-flow-puzzle-game .ai-palette-wrap .ai-puzzle-section-title,
+  html[data-afp-sheet="library"] #ai-flow-puzzle-game .ai-palette-group-title {
+    display: flex;
+  }
+
+  html[data-afp-sheet="library"] #ai-flow-puzzle-game .ai-template-wrap {
+    display: block;
+  }
+
+  html[data-afp-sheet="library"] #ai-flow-puzzle-game .ai-palette-node {
+    grid-template-columns: 30px minmax(0, 1fr);
+    justify-items: stretch;
+    gap: 10px;
+    min-height: 48px;
+    padding: 6px 10px 6px 6px;
+  }
+
+  html[data-afp-sheet="library"] #ai-flow-puzzle-game .ai-palette-node strong {
+    display: block;
+    max-width: none;
+    font-size: 0.82rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 720px) {
+  html[data-afp-state] #ai-flow-puzzle-game {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "start center end" "canvas canvas canvas";
+  }
+
+  #ai-flow-puzzle-game .ai-flow-board {
+    --ai-fit-top: 60px;
+    --ai-fit-bottom: 150px;
+  }
+
+  /* A tall board: the flow runs top to bottom, wires leave from the bottom. */
+  #ai-flow-puzzle-game .ai-flow-world {
+    width: 420px;
+    height: 1180px;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-node {
+    width: 156px;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-node-body {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 8px;
+    min-height: 56px;
+    padding: 8px 10px 8px 8px;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-node-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-port {
+    left: 50%;
+    width: 20px;
+    height: 20px;
+  }
+
+  /* At the phone's reading zoom the touch area is still over 44 px. */
+  #ai-flow-puzzle-game .ai-flow-port-in::before {
+    inset: -30px -18px -6px;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-port-out::before {
+    inset: -6px -18px -30px;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-port-in {
+    top: 0;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-port-out {
+    top: 100%;
+  }
+
+  #ai-flow-puzzle-game .afp-bar {
+    padding: 0 8px;
+    gap: 8px;
+  }
+
+  #ai-flow-puzzle-game .ai-puzzle-topbar {
+    padding: 0 6px;
+  }
+
+  #ai-flow-puzzle-game .ai-puzzle-stats,
+  #ai-flow-puzzle-game .afp-hints > span {
+    display: none;
+  }
+
+  #ai-flow-puzzle-game .ai-puzzle-topbar h2 {
+    font-size: 0.86rem;
+  }
+
+  #ai-flow-puzzle-game .afp-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Library and panel as bottom sheets. */
+  #ai-flow-puzzle-game > .ai-puzzle-panel:first-of-type {
+    grid-area: canvas;
+    align-self: end;
+    z-index: 8;
+    display: none;
+    max-height: 62%;
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+    border: 0;
+    border-top: 1px solid var(--afp-rule);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  html[data-afp-sheet="library"] #ai-flow-puzzle-game > .ai-puzzle-panel:first-of-type {
+    display: flex;
+    animation: afp-rise 220ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  @keyframes afp-rise {
+    from {
+      translate: 0 40px;
+      opacity: 0;
+    }
+  }
+
+  #ai-flow-puzzle-game .ai-palette-wrap .ai-puzzle-section-title,
+  #ai-flow-puzzle-game .ai-palette-group-title {
+    display: flex;
+  }
+
+  #ai-flow-puzzle-game .ai-template-wrap {
+    display: block;
+  }
+
+  #ai-flow-puzzle-game .ai-palette-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #ai-flow-puzzle-game .ai-palette-group-title {
+    grid-column: 1 / -1;
+  }
+
+  #ai-flow-puzzle-game .ai-palette-node {
+    grid-template-columns: 30px minmax(0, 1fr);
+    justify-items: stretch;
+    gap: 8px;
+    min-height: 48px;
+    padding: 6px 8px 6px 6px;
+  }
+
+  #ai-flow-puzzle-game .ai-palette-node strong {
+    max-width: none;
+    font-size: 0.78rem;
+    text-align: left;
+  }
+
+  #ai-flow-puzzle-game > .ai-puzzle-side {
+    align-self: end;
+    justify-self: stretch;
+    width: auto;
+    height: 62%;
+    margin: 0;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    border-left: 0;
+    box-shadow: none;
+  }
+
+  #ai-flow-puzzle-game .afp-tabs {
+    align-self: end;
+    justify-self: stretch;
+    width: auto;
+    height: 48px;
+    margin-bottom: 62vh;
+    margin-bottom: calc((100dvh - 56px) * 0.62);
+    border-left: 0;
+    border-top: 1px solid var(--afp-rule);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  html[data-afp-sheet="side"] #ai-flow-puzzle-game > .ai-puzzle-side {
+    animation-name: afp-rise;
+  }
+
+  #ai-flow-puzzle-game .afp-dock {
+    justify-self: stretch;
+    justify-content: space-between;
+    margin: 0 10px calc(10px + env(safe-area-inset-bottom));
+  }
+
+  #ai-flow-puzzle-game .afp-dock button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  #ai-flow-puzzle-game .afp-dock .afp-dock__run {
+    flex: 1.5;
+  }
+
+  #ai-flow-puzzle-game .afp-zoom {
+    justify-self: end;
+    margin: 8px;
+  }
+
+  /* A hint sits above the dock, clear of the flow's start. */
+  #ai-flow-puzzle-game .afp-note {
+    align-self: end;
+    max-width: calc(100% - 28px);
+    margin: 0 14px 136px;
+  }
+
+  html[data-afp-state] #ai-flow-puzzle-game .afp-note:not([hidden]) ~ .ai-puzzle-stage .ai-flow-workbench-bar,
+  #ai-flow-puzzle-game:has(.afp-note:not([hidden])) .ai-flow-tip {
+    visibility: hidden;
+  }
+
+  #ai-flow-puzzle-game .afp-mission__body,
+  #ai-flow-puzzle-game .afp-columns,
+  #ai-flow-puzzle-game .afp-io {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #ai-flow-puzzle-game .afp-io > i {
+    justify-self: center;
+    width: 2px;
+    height: 18px;
+  }
+
+  #ai-flow-puzzle-game .afp-io > i::after {
+    margin: 10px 0 0 -3.5px;
+    rotate: 135deg;
+  }
+
+  #ai-flow-puzzle-game .afp-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #ai-flow-puzzle-game .afp-sheet {
+    box-shadow: 6px 6px 0 var(--afp-ink);
+  }
+
+  #ai-flow-puzzle-game .afp-sticky--result {
+    position: static;
+    margin-top: 14px;
+    rotate: -1.5deg;
+  }
+
+  #ai-flow-puzzle-game .afp-actions {
+    margin-top: 22px;
+  }
+
+  #ai-flow-puzzle-game .afp-actions > * {
+    flex: 1 1 100%;
+  }
+
+  /* The way into the mission stays in reach while the briefing scrolls. */
+  #ai-flow-puzzle-game :is(.afp-mission, .afp-result) .afp-actions {
+    position: sticky;
+    bottom: -1px;
+    z-index: 2;
+    margin: 18px -8px 0;
+    padding: 12px 8px 10px;
+    background: var(--afp-card);
+    border-top: 2px solid var(--afp-ink);
+  }
+}
+
+/* 10. Reduced motion ---------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-afp-state] #ai-flow-puzzle-game,
+  #ai-flow-puzzle-game *,
+  .ai-puzzle-hero[data-afp-hub] * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  #ai-flow-puzzle-game .ai-flow-link.is-live .ai-flow-pulse {
+    opacity: 0;
+  }
+}

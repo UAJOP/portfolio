@@ -31,12 +31,16 @@ const reorderedBuildLog = [...buildLog].reverse();
 const reorderedIndex = reorderedBuildLog.findIndex((entry) => entry.id === buildLog[0].id);
 check(contentRegistryPath("data/portfolio/build-log.json", `[${reorderedIndex}].title`, reorderedBuildLog) === stableBuildLogPath, "build-log reordering preserves translation authority");
 
-for (const page of site.pages) {
-  const expected = new Set(["home", "about", "works", "games", "sinamaCaseStudy", "mergeRushCaseStudy", "joydayCaseStudy", "hospitalCaseStudy", "aiFlowPuzzleCaseStudy", "labs", "adventure", "joydayPaint", "aiFlowPuzzle", "now", "blog", "certificates", "request", "privacy"]).has(page.id) ? "react" : "legacy";
-  check(page.renderer === expected, `${page.id} must have the approved #30.5 renderer`);
-}
+/* The canonical public topology is now fully React-owned. Keep this contract
+ * structural so a valid later route does not require another historical id
+ * whitelist, while still failing if any public document falls back to the
+ * legacy renderer. */
+for (const page of site.pages) check(page.renderer === "react", `${page.id} canonical page must be React-owned`);
 check(site.projects.renderer === "react", "project route family must be React-owned in #29");
-for (const companion of site.companions) check(companion.renderer === "legacy", `${companion.id} must remain legacy-owned in #25-A`);
+for (const companion of site.companions) {
+  const expected = companion.id === "notFound" ? "react" : "legacy";
+  check(companion.renderer === expected, `${companion.id} companion renderer must match current production ownership`);
+}
 
 const fixture = JSON.parse(fs.readFileSync(path.join(ROOT, "data/site/routes.json"), "utf8"));
 fixture.pages[0].renderer = "unknown";
@@ -46,7 +50,8 @@ assert.throws(() => validateSiteRoutes(fixture), /renderer must be one of legacy
 const routes = canonicalReactRoutes({ site, locales, projects });
 const activeLocaleCount = locales.activeLocales.length;
 const expectedReactRouteCount = (site.pages.filter((page) => page.renderer === "react").length
-  + (site.projects.renderer === "react" ? Object.keys(projects.projectDetails).length : 0)) * activeLocaleCount;
+  + (site.projects.renderer === "react" ? Object.keys(projects.projectDetails).length : 0)
+  + site.companions.filter((companion) => companion.renderer === "react").length) * activeLocaleCount;
 const runtime = loadRouteRuntime(locales, site);
 const expectedLocales = ["en", "tr", "de", "es", "fr"];
 for (const locale of expectedLocales) {

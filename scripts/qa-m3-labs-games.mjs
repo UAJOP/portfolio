@@ -28,6 +28,9 @@ import { LABS_GAMES_REVIEWED_EDITS, labsGamesAcceptedBase } from "./m3-30-public
 import { ENGINE_HOST_REVIEWED_EDITS, engineHostAcceptedBase } from "./m3-30-1-public-edits.mjs";
 import { servesUpstreamIcons, withIconSubset } from "./m3-32a-public-edits.mjs";
 import { beforeFinalHardening } from "./m3-33-public-edits.mjs";
+import { JOYDAY_STUDIO_ROUTE, JOYDAY_STUDIO_SCRIPT, withoutJoydayStudio } from "./v4-e06-1-joyday-studio-edits.mjs";
+import { FLOW_PUZZLE_ROUTE, FLOW_PUZZLE_SCRIPT, withoutFlowPuzzleGame } from "./v4-e06-2-flow-puzzle-edits.mjs";
+import { CAREER_ADVENTURE_ROUTE, CAREER_ADVENTURE_SCRIPT, withoutCareerAdventureGame } from "./v4-e06-3-career-adventure-edits.mjs";
 
 /* The approved #30 scope, stated here independently of the route registry. */
 const PAGES = Object.freeze({
@@ -106,7 +109,9 @@ function validateMetadata(route, html, accepted) {
 }
 
 function validateCopy(route, html, accepted) {
-  const reactMain = route.routeId === "labs" ? withoutLabCards(html) : mainOf(html);
+  /* V4-E06.1: Joyday carries its studio shell on top of the accepted page; the
+   * declared additions are set aside and everything else is held as before. */
+  const reactMain = route.routeId === "labs" ? withoutLabCards(html) : route.routeId === JOYDAY_STUDIO_ROUTE ? withoutJoydayStudio(mainOf(html)) : route.routeId === FLOW_PUZZLE_ROUTE ? withoutFlowPuzzleGame(mainOf(html)) : route.routeId === CAREER_ADVENTURE_ROUTE ? withoutCareerAdventureGame(mainOf(html)) : mainOf(html);
   assert.equal(normalize(reactMain), normalize(mainOf(accepted)), `${route.pathname}: accepted main copy`);
   assert.equal(inlineCopy(reactMain), inlineCopy(mainOf(accepted)), `${route.pathname}: accepted inline whitespace`);
   for (const tag of ["section", "article", "aside", "h2", "h3", "canvas", "button", "input", "select", "a", "img"]) {
@@ -140,7 +145,7 @@ function validateStructuredData(route, html) {
 function validateRuntime(route, html) {
   const page = PAGES[route.routeId];
   const scripts = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"[^>]*>/gi)].map((match) => match[1]).filter((src) => !src.startsWith("/assets-react/") && src !== "/js/core/locale-bootstrap.js");
-  assert.deepEqual(scripts, ["/portfolio-data.js", "/script.js", "/portfolio-v2.js", ...page.scripts, ENGINE_HOST], `${route.pathname}: engine script and lifecycle host`);
+  assert.deepEqual(scripts, ["/portfolio-data.js", "/script.js", "/portfolio-v2.js", ...page.scripts, ...(route.routeId === JOYDAY_STUDIO_ROUTE ? [JOYDAY_STUDIO_SCRIPT] : route.routeId === FLOW_PUZZLE_ROUTE ? [FLOW_PUZZLE_SCRIPT] : route.routeId === CAREER_ADVENTURE_ROUTE ? [CAREER_ADVENTURE_SCRIPT] : []), ENGINE_HOST], `${route.pathname}: engine script and lifecycle host`);
   if (page.style) assert.match(html, new RegExp(`<link rel="stylesheet" href="${page.style}"/>`), `${route.pathname}: page stylesheet`);
   assert.ok(html.indexOf(ENGINE_HOST) < html.indexOf('<script id="react-main-props"'), `${route.pathname}: host precedes the hydration payload`);
   /* The host identifies the React entry as the element after this payload. */
@@ -334,7 +339,10 @@ function serverFor(directory, { instrument = false, acceptedEngines = false, acc
     /* The accepted side runs the accepted engines: the #30 reviewed edits are
      * reversed, so the comparison is against the pre-#30 runtime bytes. #33
      * edited one engine again; those later edits are reversed first. */
-    if (acceptedEngines && LABS_GAMES_REVIEWED_EDITS[file.replaceAll("\\", "/")]) return response.end(labsGamesAcceptedBase(file, beforeFinalHardening(file.replaceAll("\\", "/"), fs.readFileSync(target, "utf8"))));
+    /* V4-E06.2 reworked ai-flow-puzzle.js, so the #30 reviewed edits can no
+     * longer be reversed out of it; the accepted document is served the
+     * current engine. Its play is no longer compared (section 2). */
+    if (acceptedEngines && file.replaceAll("\\", "/") !== "ai-flow-puzzle.js" && LABS_GAMES_REVIEWED_EDITS[file.replaceAll("\\", "/")]) return response.end(labsGamesAcceptedBase(file, beforeFinalHardening(file.replaceAll("\\", "/"), fs.readFileSync(target, "utf8"))));
     fs.createReadStream(target).pipe(response);
   });
 }
@@ -768,12 +776,27 @@ async function joydayTouch(page, label) {
   return { minTarget: Math.min(...targets), controls: targets.length };
 }
 
-const aiCounts = (page) => page.evaluate(() => ({ nodes: Number(window.__t.text("[data-ai-node-count]")), links: Number(window.__t.text("[data-ai-link-count]")), rendered: document.querySelectorAll("[data-ai-board] .ai-flow-node").length, paths: document.querySelectorAll("[data-ai-lines] path").length }));
+const aiCounts = (page) => page.evaluate(() => ({ nodes: Number(window.__t.text("[data-ai-node-count]")), links: Number(window.__t.text("[data-ai-link-count]")), rendered: document.querySelectorAll("[data-ai-board] .ai-flow-node").length, paths: document.querySelectorAll("[data-ai-lines] .ai-flow-link").length }));
 const aiTone = (page) => page.$eval("[data-ai-result]", (node) => node.dataset.tone);
+
+/* V4-E06.2: the puzzle is an entered game. The board is reached through the
+ * hub (a mission card, then Start mission), and a verdict opens a result
+ * layer that is dismissed before the board is used again. */
+async function aiEnter(page) {
+  await page.click('[data-afp-open="0"]');
+  await page.click("[data-afp-start]");
+  await page.waitForFunction(() => document.documentElement.getAttribute("data-afp-state") === "building", { timeout: 8000 });
+  await page.evaluate(() => window.__t.frames(3));
+}
+async function aiDismiss(page) {
+  await page.waitForFunction(() => ["success", "failure"].includes(document.documentElement.getAttribute("data-afp-state")), { timeout: 20000 });
+  await page.click("[data-afp-result] [data-afp-resume]");
+}
+const AI_PROGRESS_KEY = "kaan-ai-flow-puzzle-progress-v3";
 
 async function aiFlowBehaviour(page, label) {
   const summary = {};
-  await page.evaluate(() => document.querySelector("#ai-flow-puzzle-game").scrollIntoView({ block: "start" }));
+  await aiEnter(page);
   assert.equal(await page.evaluate(() => window.__t.loops(20)), 0, `${label}: no animation loop while idle`);
   summary.catalog = await page.evaluate(() => ({ scenarios: document.querySelectorAll("[data-ai-scenario]").length, templates: document.querySelectorAll("[data-ai-template]").length, palette: document.querySelectorAll("[data-ai-add-node]").length, messages: document.querySelectorAll("[data-ai-test-message] option").length, objectives: document.querySelector("[data-ai-objectives]").children.length }));
   assert.ok(Object.values(summary.catalog).every((value) => value > 0), `${label}: scenario, template, palette, message and objective lists render (${JSON.stringify(summary.catalog)})`);
@@ -784,16 +807,20 @@ async function aiFlowBehaviour(page, label) {
   await page.click('[data-ai-add-node="fallback"]');
   const added = await aiCounts(page);
   assert.deepEqual([added.nodes, added.rendered], [start.nodes + 2, start.nodes + 2], `${label}: palette adds nodes`);
-  /* connect: source, then target */
+  /* connect: the source's output port, then the target (E06.2: a node's body
+   * only selects it; it no longer arms a connection) */
   const node = (type) => `[data-ai-board] .ai-flow-node[data-type="${type}"]`;
+  const out = (type) => `${node(type)} [data-ai-port="out"]`;
   await page.click(node("intent"));
-  assert.equal(await page.$eval(node("intent"), (element) => element.classList.contains("is-source")), true, `${label}: first click selects the source`);
+  assert.equal(await page.$eval(node("intent"), (element) => element.classList.contains("is-source")), false, `${label}: selecting a node does not arm a connection`);
+  await page.click(out("intent"));
+  assert.equal(await page.$eval(node("intent"), (element) => element.classList.contains("is-source")), true, `${label}: the output port arms the source`);
   await page.click(node("fallback"));
   await page.evaluate(() => window.__t.frames(3));
   const linked = await aiCounts(page);
-  assert.deepEqual([linked.links, linked.paths > 0], [start.links + 1, true], `${label}: second click connects`);
+  assert.deepEqual([linked.links, linked.paths > 0], [start.links + 1, true], `${label}: the target completes the connection`);
   /* the same connection again is refused */
-  await page.click(node("intent"));
+  await page.click(out("intent"));
   await page.click(node("fallback"));
   assert.equal((await aiCounts(page)).links, start.links + 1, `${label}: duplicate connection is refused`);
   assert.equal(await page.$eval("[data-ai-flow-status]", (element) => element.dataset.tone), "warning", `${label}: duplicate connection warns`);
@@ -819,10 +846,12 @@ async function aiFlowBehaviour(page, label) {
   await page.click("[data-ai-validate]");
   summary.blank = await aiTone(page);
   assert.notEqual(summary.blank, "success", `${label}: an incomplete flow does not validate`);
+  await aiDismiss(page);
   await page.click('[data-ai-template="happy"]');
   await page.click("[data-ai-validate]");
   summary.happy = await aiTone(page);
   assert.notEqual(summary.happy, "success", `${label}: the happy path without the safety branch fails`);
+  await aiDismiss(page);
   await page.click('[data-ai-template="solution"]');
   const solution = await aiCounts(page);
   summary.board = { start: { nodes: start.nodes, links: start.links }, solution: { nodes: solution.nodes, links: solution.links } };
@@ -830,19 +859,32 @@ async function aiFlowBehaviour(page, label) {
   await page.click("[data-ai-inspector] [data-ai-remove-node]");
   await page.click("[data-ai-validate]");
   assert.notEqual(await aiTone(page), "success", `${label}: a flow without its fallback fails`);
+  await aiDismiss(page);
   await page.click('[data-ai-template="solution"]');
   const scoreBefore = Number(await page.evaluate(() => window.__t.text("[data-ai-score]")));
   await page.click("[data-ai-validate]");
   summary.solution = await aiTone(page);
   summary.score = Number(await page.evaluate(() => window.__t.text("[data-ai-score]")));
   assert.equal(summary.solution, "success", `${label}: the full solution validates`);
-  assert.ok(summary.score > scoreBefore && await page.evaluate(() => localStorage.getItem("kaan-ai-flow-puzzle-score-v2")) === String(summary.score), `${label}: a valid flow scores and persists`);
+  /* E06.2: progress is kept per level (its best quality and the award it
+   * earned) and the score is their sum. The old running total (-score-v2),
+   * which grew on every validation of a finished level, is no longer written. */
+  const stored = await page.evaluate((key) => ({ progress: JSON.parse(localStorage.getItem(key) || "null"), legacy: localStorage.getItem("kaan-ai-flow-puzzle-score-v2") }), AI_PROGRESS_KEY);
+  assert.ok(summary.score > scoreBefore && stored.progress?.levels?.joyday?.award === summary.score - scoreBefore && stored.legacy === null, `${label}: a valid flow scores once and persists as level progress (${JSON.stringify(stored)})`);
+  await aiDismiss(page);
+  /* validating the finished level again cannot add to the score */
+  await page.click("[data-ai-validate]");
+  assert.equal(Number(await page.evaluate(() => window.__t.text("[data-ai-score]"))), summary.score, `${label}: validating a finished level again leaves the score unchanged`);
+  await aiDismiss(page);
   summary.quality = await page.evaluate(() => window.__t.text("[data-ai-score-breakdown] strong"));
   /* run */
   await page.click("[data-ai-run]");
   await page.waitForFunction((expected) => document.querySelectorAll("[data-ai-run-log] article").length > expected, { timeout: 20000 }, solution.nodes);
   summary.run = await page.$$eval("[data-ai-run-log] article", (nodes) => nodes.length);
-  /* exports */
+  await aiDismiss(page);
+  assert.equal(Number(await page.evaluate(() => window.__t.text("[data-ai-score]"))), summary.score, `${label}: running a finished level again leaves the score unchanged`);
+  /* exports live on the panel's Tools tab */
+  await page.click('[data-afp-tab="tools"]');
   await page.click("[data-ai-png]");
   const png = await page.evaluate(() => window.__m330.downloads.pop());
   const image = validatePng(png.href, `${label}: flow PNG`);
@@ -864,7 +906,12 @@ async function aiFlowBehaviour(page, label) {
 }
 
 async function aiFlowTouch(page, label) {
-  await page.evaluate(() => document.querySelector('[data-ai-add-node="llm"]').scrollIntoView({ block: "center" }));
+  /* On a phone the library is a sheet opened from the dock. */
+  await page.touchscreen.tap(...await at(page, '[data-afp-open="0"]', 0.5, 0.5));
+  await page.touchscreen.tap(...await at(page, "[data-afp-start]", 0.5, 0.5));
+  await page.waitForFunction(() => document.documentElement.getAttribute("data-afp-state") === "building", { timeout: 8000 });
+  await page.touchscreen.tap(...await at(page, '[data-afp-sheet="library"]', 0.5, 0.5));
+  await page.evaluate(() => window.__t.frames(3));
   const before = (await aiCounts(page)).nodes;
   await page.touchscreen.tap(...await at(page, '[data-ai-add-node="llm"]', 0.5, 0.5));
   assert.equal((await aiCounts(page)).nodes, before + 1, `${label}: touch adds a node`);
@@ -1071,11 +1118,12 @@ async function importFile(page, body) {
 const boardTypes = (page) => page.$$eval("[data-ai-board] .ai-flow-node", (nodes) => nodes.map((node) => node.dataset.type));
 async function aiFlowImport(page, label) {
   const summary = {};
-  await page.evaluate(() => document.querySelector("#ai-flow-puzzle-game").scrollIntoView({ block: "start" }));
+  await aiEnter(page);
   const start = await aiCounts(page);
   await page.click('[data-ai-template="solution"]');
   const solution = await aiCounts(page);
   const types = await boardTypes(page);
+  await page.click('[data-afp-tab="tools"]');
   await page.click("[data-ai-export]");
   const fixture = await page.evaluate(async () => window.__m330.downloads.pop().blob.text());
   await page.click("[data-ai-reset]");
@@ -1087,6 +1135,7 @@ async function aiFlowImport(page, label) {
   assert.ok(imported.paths > 0, `${label}: imported connections are drawn`);
   await page.click("[data-ai-validate]");
   assert.equal(await aiTone(page), "success", `${label}: the imported flow validates`);
+  await aiDismiss(page);
   summary.imported = { nodes: imported.nodes, links: imported.links };
   /* not JSON, and JSON of the wrong shape: refused, board untouched */
   for (const [name, body] of [["not JSON", "this is not a flow"], ["wrong shape", JSON.stringify({ nodes: "none", connections: [] })], ["missing connections", JSON.stringify({ nodes: [] })], ["an unknown node type without a config", JSON.stringify({ nodes: [{ id: "a", type: "trigger" }, { id: "b", type: "not-a-node" }], connections: [] })]]) {
@@ -1228,25 +1277,18 @@ async function runBrowser() {
     }
 
     /* 2. behaviour, run identically on the accepted and the React document.
-     *    AI Flow is the exception: its accepted engine cannot connect two nodes
-     *    or load a template (edgeLabel throws `tr is not defined`, reproduced
-     *    below), so its baseline is the accepted document running the repaired
-     *    engine in legacy boot — the React shell must not change that play. */
-    {
-      const broken = await open(browser, `${acceptedOrigin}/ai-flow-puzzle/`, "desktop-dark");
-      await settle(broken.page, "aiFlowPuzzle");
-      await broken.page.click('[data-ai-add-node="intent"]');
-      await broken.page.click('[data-ai-add-node="fallback"]');
-      await broken.page.click('[data-ai-board] .ai-flow-node[data-type="intent"]');
-      await broken.page.click('[data-ai-board] .ai-flow-node[data-type="fallback"]');
-      assert.deepEqual([broken.diagnostics, await broken.page.$eval("[data-ai-link-count]", (node) => node.textContent)], [["pageerror: tr is not defined"], "0"], "the accepted AI Flow engine fails to connect two nodes");
-      await broken.page.close();
-      console.log("[G-71 accepted defect] /ai-flow-puzzle/ accepted engine: connecting two nodes throws `tr is not defined`");
-    }
+     *    AI Flow Puzzle is the exception since V4-E06.2: its engine was
+     *    reworked on purpose (ports instead of click-to-arm, a run that walks
+     *    the real graph, per-level progress instead of an inflating total), so
+     *    there is no accepted play left to be equal to. It is played here on
+     *    the React document against its own contract; its full behaviour is
+     *    held by the E06.2 focused QA in scripts/capture-v4-review.mjs. The
+     *    other three engines are compared exactly as before. */
+    const playedAlone = new Set([FLOW_PUZZLE_ROUTE]);
     for (const [routeId, [desktop, touch]] of Object.entries(BEHAVIOUR)) {
       const route = targetRoutes.find((item) => item.routeId === routeId && item.locale === registry.defaultLocale);
       const results = {};
-      for (const [side, origin] of [routeId === "aiFlowPuzzle" ? ["accepted", legacyOrigin] : ["accepted", acceptedOrigin], ["react", reactOrigin]]) {
+      for (const [side, origin] of playedAlone.has(routeId) ? [["react", reactOrigin]] : [["accepted", acceptedOrigin], ["react", reactOrigin]]) {
         const wide = await open(browser, `${origin}${route.pathname}`, "desktop-dark");
         await settle(wide.page, routeId);
         await wide.page.evaluate(helpers);
@@ -1262,7 +1304,7 @@ async function runBrowser() {
         results[side] = { summary, touched };
       }
       if (EXTRA[routeId]) {
-        for (const [side, origin] of [routeId === "aiFlowPuzzle" ? ["accepted", legacyOrigin] : ["accepted", acceptedOrigin], ["react", reactOrigin]]) {
+        for (const [side, origin] of playedAlone.has(routeId) ? [["react", reactOrigin]] : [["accepted", acceptedOrigin], ["react", reactOrigin]]) {
           const opened = await open(browser, `${origin}${route.pathname}`, "desktop-dark");
           await settle(opened.page, routeId);
           await opened.page.evaluate(helpers);
@@ -1271,7 +1313,7 @@ async function runBrowser() {
           await opened.page.close();
         }
       }
-      assert.deepEqual(outcomeDifferences(results.react, results.accepted, routeId), [], `${route.pathname}: gameplay differs from the accepted engine`);
+      if (!playedAlone.has(routeId)) assert.deepEqual(outcomeDifferences(results.react, results.accepted, routeId), [], `${route.pathname}: gameplay differs from the accepted engine`);
       outcomes[routeId] = results;
       tally.behaviour += 1;
       tally.touch += 1;
@@ -1296,11 +1338,7 @@ async function runBrowser() {
       rejects("adventure", ["summary", "score"], (value) => String(Number(value) + 1), "exact");
       rejects("adventure", ["summary", "best"], (value) => String(Number(value) + 1), "exact");
       rejects("adventure", ["summary", "unlocked"], (value) => value + 1, "exact");
-      rejects("aiFlowPuzzle", ["summary", "score"], (value) => value + 1, "exact");
-      rejects("aiFlowPuzzle", ["summary", "board", "solution", "nodes"], (value) => value + 1, "exact");
-      rejects("aiFlowPuzzle", ["summary", "board", "solution", "links"], (value) => value - 1, "exact");
-      rejects("aiFlowPuzzle", ["summary", "run"], (value) => value + 1, "exact");
-      rejects("aiFlowPuzzle", ["extra", "imported", "links"], (value) => value + 1, "exact");
+      /* AI Flow Puzzle has no accepted outcome to be compared with (E06.2, above). */
       rejects("joydayPaint", ["summary", "png", "width"], (value) => value + 1, "exact");
       rejects("joydayPaint", ["summary", "mission"], (value) => `${value}!`, "exact");
       rejects("joydayPaint", ["extra", "gainsWhileOn"], (value) => value + 1, "exact");

@@ -1,0 +1,637 @@
+/* V4 About composition -----------------------------------------------------
+ *
+ * About is the human surface of the system. The human system map
+ * (src/react/v4/HumanMap.jsx) puts the person at the centre, the capability
+ * focuses the page offers around them and the work those focuses cite beyond
+ * that. The page then reads as a narrative: who, how I think, how I build,
+ * what shaped the direction, where next. Warmer than Works: the human core
+ * and what it touches carry a second, warm light. Presentation only. */
+
+body[data-page="about"] {
+  --v4-warm: #f0b683;
+  --v4-warm-glow: rgba(240, 160, 96, 0.3);
+}
+
+html[data-theme="light"] body[data-page="about"] {
+  --v4-warm: #a5561a;
+  --v4-warm-glow: rgba(165, 86, 26, 0.16);
+}
+
+body[data-page="about"] main {
+  overflow: clip;
+}
+
+/* 1. Human system map ------------------------------------------------------ */
+
+.v4-human-section {
+  padding-top: clamp(2rem, 4vw, 3rem);
+}
+
+.v4-human-section > .eyebrow {
+  margin: 0;
+  color: var(--v4-warm);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+}
+
+.v4-human-section > .eyebrow::before {
+  background: var(--v4-warm);
+}
+
+.v4-human__stage {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  margin-top: 1.25rem;
+}
+
+.v4-human :is(ul, figure),
+.v4-human__panels :is(ol, ul, p, h3) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v4-human__field,
+.v4-human__themes,
+.v4-human__projects {
+  display: none;
+}
+
+/* The person. */
+.v4-human__core {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.v4-human__core img {
+  width: min(62vw, 15rem);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 16%;
+  box-shadow:
+    0 0 0 1px var(--v4-warm),
+    0 0 0 0.5rem var(--v4-canvas),
+    0 0 0 calc(0.5rem + 1px) var(--v4-rule-strong),
+    0 0 5rem 0.25rem var(--v4-warm-glow);
+}
+
+.v4-human__core figcaption {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.v4-human__core strong {
+  color: var(--v4-ink);
+  font: 600 0.95rem / 1.3 var(--v4-display);
+}
+
+.v4-human__core span {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-status);
+  letter-spacing: var(--v4-track-status);
+  text-transform: uppercase;
+}
+
+/* Narrow screens: each theme is a small group of its own evidence. */
+.v4-human__panels {
+  display: grid;
+  gap: 0;
+}
+
+.v4-human__panel[hidden],
+.v4-human__index,
+.v4-human__skills {
+  display: none;
+}
+
+.v4-human__theme-panel,
+.v4-human__theme-panel[hidden] {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1.25rem 0 1.35rem;
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-human__kicker {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  color: var(--v4-warm);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+  text-transform: uppercase;
+}
+
+.v4-human__kicker small {
+  color: var(--v4-ink-muted);
+  font: inherit;
+}
+
+.v4-human__kicker a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.v4-human__kicker a:is(:hover, :focus-visible) {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.v4-human__panel h3 {
+  color: var(--v4-ink);
+  font: var(--v4-type-heading);
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
+  letter-spacing: var(--v4-track-heading);
+  text-wrap: balance;
+}
+
+.v4-human__cited {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.v4-human__cited .v4-node {
+  min-height: 40px;
+  padding: 0 0.85rem 0 0.7rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 999px;
+  background: var(--v4-living-surface);
+  color: var(--v4-ink);
+  font-size: 0.68rem;
+}
+
+.v4-human__cited .v4-node:is(:hover, :focus-visible) {
+  border-color: var(--v4-current);
+}
+
+@media (min-width: 700px) and (max-width: 1099px) {
+  .v4-human__panels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+}
+
+/* From 1100px: the orbit. */
+@media (min-width: 1100px) {
+  .v4-human__stage {
+    grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr);
+    align-items: center;
+    margin-top: 0;
+  }
+
+  .v4-human {
+    position: relative;
+    aspect-ratio: var(--v4-human-aspect);
+  }
+
+  /* Two lights: the system's, and the person's. */
+  .v4-human::before {
+    position: absolute;
+    z-index: -1;
+    inset: 4% 8% 4% 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(closest-side at 46% 50%, var(--v4-warm-glow), transparent 46%),
+      radial-gradient(closest-side, var(--v4-ambient-light), transparent);
+    content: "";
+    pointer-events: none;
+  }
+
+  .v4-human__field {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    fill: none;
+    pointer-events: none;
+  }
+
+  .v4-human__orbit {
+    stroke: var(--v4-rule-strong);
+    stroke-dasharray: 0.002 0.006;
+    stroke-width: 1;
+  }
+
+  .v4-human__orbit--far {
+    stroke: var(--v4-rule);
+  }
+
+  .v4-human__spoke path {
+    stroke: var(--v4-warm);
+    stroke-dasharray: 1;
+    stroke-linecap: round;
+    stroke-width: 1.3;
+    opacity: 0.55;
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out), stroke-width var(--v4-motion-ui) var(--v4-ease-out);
+    animation: v4-current-draw 900ms var(--v4-ease-in-out) calc(200ms + var(--v4-seq) * 130ms) both;
+  }
+
+  .v4-human__spoke[data-v4-state] path {
+    stroke-width: 2.4;
+    opacity: 1;
+  }
+
+  .v4-human__wire {
+    stroke: var(--v4-trace);
+    stroke-dasharray: 1;
+    stroke-linecap: round;
+    stroke-width: 1.1;
+    transition: stroke var(--v4-motion-ui) var(--v4-ease-out), stroke-width var(--v4-motion-ui) var(--v4-ease-out);
+    animation: v4-current-draw 1000ms var(--v4-ease-in-out) calc(700ms + var(--v4-seq) * 70ms) both;
+  }
+
+  .v4-human__edge,
+  .v4-human__spoke {
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-human[data-v4-eco-active] :is(.v4-human__edge, .v4-human__spoke):not([data-v4-state]) {
+    opacity: 0.12;
+  }
+
+  .v4-human__edge[data-v4-state] .v4-human__wire {
+    stroke: var(--v4-current);
+    stroke-width: 2.2;
+  }
+
+  .v4-human__edge[data-v4-state] .v4-eco__pulse {
+    animation: v4-edge-pulse 900ms var(--v4-ease-in-out);
+  }
+
+  .v4-human[data-v4-await] :is(.v4-human__spoke path, .v4-human__wire) {
+    stroke-dashoffset: 1;
+    animation: none;
+  }
+
+  .v4-human__core {
+    position: absolute;
+    z-index: 1;
+    top: var(--v4-y);
+    left: var(--v4-x);
+    display: block;
+    width: 9.4rem;
+    translate: -50% -50%;
+  }
+
+  .v4-human__core img {
+    display: block;
+    width: 100%;
+  }
+
+  .v4-human__core figcaption {
+    position: absolute;
+    top: calc(100% + 1.15rem);
+    left: 50%;
+    width: 9.6rem;
+    translate: -50% 0;
+  }
+
+  .v4-human__core strong {
+    font-size: 0.82rem;
+  }
+
+  .v4-human__themes,
+  .v4-human__projects {
+    display: block;
+  }
+
+  .v4-human__theme,
+  .v4-human__projects li {
+    position: absolute;
+    top: var(--v4-y);
+    left: var(--v4-x);
+  }
+
+  .v4-human__theme {
+    z-index: 2;
+    gap: 0.6rem;
+    min-height: 44px;
+    padding: 0 1.05rem 0 0.85rem;
+    border: 1px solid var(--v4-rule-strong);
+    border-radius: 999px;
+    background: var(--v4-canvas-raised);
+    color: var(--v4-ink);
+    font-size: 0.68rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    translate: -50% -50%;
+    transition:
+      scale var(--v4-motion-ui) var(--v4-ease-out),
+      opacity var(--v4-motion-ui) var(--v4-ease-out),
+      border-color var(--v4-motion-feedback) var(--v4-ease-out),
+      box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-human__theme .v4-node__dot {
+    border-color: var(--v4-warm);
+  }
+
+  /* A theme in hand takes the person's light. */
+  .v4-human__theme:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state="active"]) {
+    border-color: var(--v4-warm);
+    box-shadow: 0 0 3.25rem -0.5rem var(--v4-warm-glow), 0 0 0 1px var(--v4-warm);
+    scale: 1.07;
+  }
+
+  .v4-human__theme:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state="active"]) .v4-node__dot {
+    border-color: var(--v4-warm);
+    background: var(--v4-warm);
+  }
+
+  .v4-human__theme[aria-pressed="true"] {
+    outline: 1px dashed var(--v4-warm);
+    outline-offset: 5px;
+  }
+
+  .v4-human__theme[data-v4-state="related"] {
+    border-color: var(--v4-current-2);
+  }
+
+  .v4-human__projects li {
+    width: 0;
+    height: 0;
+  }
+
+  /* The node sits on its point; the label runs outward. */
+  .v4-human__project {
+    position: absolute;
+    top: 0;
+    left: 0;
+    gap: 0.6rem;
+    width: max-content;
+    max-width: 10.5rem;
+    translate: -0.31rem -50%;
+  }
+
+  .v4-human__project .v4-eco__title {
+    font-size: 0.84rem;
+  }
+
+  [data-v4-align="end"] > .v4-human__project {
+    right: 0;
+    left: auto;
+    flex-direction: row-reverse;
+    text-align: right;
+    translate: 0.31rem -50%;
+  }
+
+  [data-v4-align="center"] > .v4-human__project {
+    flex-direction: column;
+    max-width: 12rem;
+    text-align: center;
+    translate: -50% -0.31rem;
+  }
+
+  [data-v4-align="center"][data-v4-above] > .v4-human__project {
+    flex-direction: column-reverse;
+    translate: -50% calc(-100% + 0.31rem);
+  }
+
+  .v4-human__project[data-v4-state] .v4-eco__title {
+    text-shadow: 0 0 1.5rem var(--v4-current-glow);
+  }
+
+  .v4-human .v4-node[data-v4-state] .v4-node__dot::after {
+    opacity: 1;
+  }
+
+  .v4-human[data-v4-eco-active] .v4-node:not([data-v4-state], :hover, :focus-visible) {
+    opacity: 0.24;
+  }
+
+  /* Beside the map: what the lit node stands for. */
+  .v4-human__panels {
+    display: block;
+    min-height: 21rem;
+    padding-left: clamp(1.25rem, 2.5vw, 2.25rem);
+    border-left: 1px solid var(--v4-rule);
+  }
+
+  .v4-human__index {
+    display: grid;
+    gap: 0;
+  }
+
+  .v4-human__index[hidden] {
+    display: none;
+  }
+
+  .v4-human__index li {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: baseline;
+    padding: 0.95rem 0;
+    border-top: 1px solid var(--v4-rule);
+    color: var(--v4-ink);
+    font: 600 1.05rem / 1.35 var(--v4-display);
+    letter-spacing: -0.015em;
+  }
+
+  .v4-human__index li:first-child {
+    border-top: 0;
+  }
+
+  .v4-human__index small {
+    color: var(--v4-warm);
+    font: var(--v4-type-label);
+  }
+
+  .v4-human__theme-panel,
+  .v4-human__project-panel {
+    display: grid;
+    gap: 0.85rem;
+    padding: 0;
+    border: 0;
+  }
+
+  .v4-human__theme-panel[hidden] {
+    display: none;
+  }
+
+  .v4-human__skills {
+    display: grid;
+    gap: 0;
+  }
+
+  .v4-human__skills li {
+    position: relative;
+    padding: 0.5rem 0 0.5rem 1.1rem;
+    border-top: 1px solid var(--v4-rule);
+    color: var(--v4-ink-secondary);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .v4-human__skills li::before {
+    position: absolute;
+    top: 1.05rem;
+    left: 0;
+    width: 0.4rem;
+    height: 1px;
+    background: var(--v4-warm);
+    content: "";
+  }
+
+  .v4-human__project-panel p:not(.v4-human__kicker) {
+    color: var(--v4-ink-secondary);
+    font: var(--v4-type-body);
+  }
+
+  .v4-human__project-panel .v4-human__kicker {
+    color: var(--v4-accent);
+  }
+}
+
+/* 2. The narrative --------------------------------------------------------- */
+
+/* The portrait has moved into the map. */
+body[data-page="about"] [data-v4-moved] {
+  display: none;
+}
+
+body[data-page="about"] main > section[id^="v4-s-"] {
+  scroll-margin-top: 7.5rem;
+}
+
+body[data-page="about"] .about-hero {
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 0;
+  padding-top: clamp(3.5rem, 7vw, 6rem);
+}
+
+body[data-page="about"] .about-copy {
+  max-width: none;
+}
+
+body[data-page="about"] .about-copy h2 {
+  color: var(--v4-ink);
+  font: var(--v4-type-heading-lg);
+  font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.5rem);
+  letter-spacing: var(--v4-track-heading-lg);
+  text-wrap: balance;
+}
+
+@media (min-width: 1000px) {
+  body[data-page="about"] .about-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    column-gap: clamp(2.5rem, 6vw, 5.5rem);
+    align-items: start;
+  }
+
+  body[data-page="about"] .about-copy > .eyebrow {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body[data-page="about"] .about-copy > h2 {
+    grid-column: 1;
+    grid-row: 2 / span 4;
+  }
+
+  /* The account runs beside its heading, in its own order. */
+  body[data-page="about"] .about-copy > :nth-child(n + 3) {
+    grid-column: 2;
+  }
+
+  body[data-page="about"] .about-copy > :nth-child(3) {
+    grid-row: 1 / span 2;
+    margin-top: 0;
+  }
+
+  body[data-page="about"] .about-copy > :nth-child(4) { grid-row: 3; }
+  body[data-page="about"] .about-copy > :nth-child(5) { grid-row: 4; }
+  body[data-page="about"] .about-copy > :nth-child(6) { grid-row: 5; }
+}
+
+body[data-page="about"] :is(.section-heading, .about-copy) > .eyebrow {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+}
+
+body[data-page="about"] .section-heading h2 {
+  font-family: var(--v4-display);
+  letter-spacing: var(--v4-track-heading-lg);
+  text-wrap: balance;
+}
+
+body[data-page="about"] :is(.capability-card, .process-card, .toolbox-grid) h3 {
+  font-family: var(--v4-display);
+  letter-spacing: var(--v4-track-heading);
+}
+
+/* What shaped the direction: the journey on one current, run once when it
+ * is first seen, ending at the year that is still open. */
+body[data-page="about"] .journey-grid::before {
+  height: 2px;
+  background: linear-gradient(90deg, var(--v4-current), var(--v4-current-2));
+  box-shadow: 0 0 14px var(--v4-current-glow);
+  transform-origin: 0 50%;
+  animation: v4-process-run 1700ms var(--v4-ease-in-out) backwards;
+}
+
+body[data-page="about"] .journey-grid[data-v4-await]::before {
+  animation: none;
+}
+
+body[data-page="about"] .journey-grid article::before {
+  top: -1px;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-color: var(--v4-current);
+  background: var(--v4-canvas);
+}
+
+body[data-page="about"] .journey-grid article:last-child::before {
+  border-color: var(--v4-current-2);
+  background: var(--v4-current-2);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--v4-current-2) 22%, transparent),
+    0 0 1.6rem 0.3rem var(--v4-current-glow);
+}
+
+body[data-page="about"] .journey-grid span {
+  color: var(--v4-accent);
+  font: var(--v4-type-label);
+  letter-spacing: 0.09em;
+}
+
+body[data-page="about"] .journey-grid h3 {
+  font-family: var(--v4-display);
+  letter-spacing: var(--v4-track-heading);
+}
+
+body[data-page="about"] .v4-onward {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* 3. Discipline ------------------------------------------------------------ */
+
+@media (forced-colors: active) {
+  .v4-human::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-human *,
+  body[data-page="about"] .journey-grid::before {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .v4-human[data-v4-await] :is(.v4-human__spoke path, .v4-human__wire) {
+    stroke-dashoffset: 0;
+  }
+}

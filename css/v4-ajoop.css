@@ -1,0 +1,1169 @@
+/* V4 AJOOP composition -----------------------------------------------------
+ *
+ * Two surfaces of one system:
+ *
+ *   /ajoop/             the Living AJOOP Hub (src/react/v4/AjoopHub.jsx): the
+ *                       public Ajoop shell presented as a page — an identity
+ *                       and status rail, the conversation, and a context
+ *                       surface. The transcript, action row and composer are
+ *                       the shell's own; their message styles are untouched.
+ *   /ajoop-case-study/  the system diagram and the entry into the Hub
+ *                       (src/react/v4/AjoopSystem.jsx), on the V4 detail shell.
+ *
+ * Everything that looks alive is a state the engine reported
+ * ([data-v4-live] on the Hub). Transitions are bounded and settle; nothing
+ * here runs while the engine is at rest.
+ *
+ * Both surfaces carry AJOOP's approved identity (css/v4-system.css, "AJOOP
+ * brand"): the mark where the system names itself, the wordmark once, where
+ * it signs the case study's visual, and the Living Hub artwork as the
+ * system's core — always a dark surface, in a frame, never behind the
+ * conversation. */
+
+/* 1. Hub: entry ------------------------------------------------------------ */
+
+body[data-page="ajoop"] main {
+  overflow: clip;
+}
+
+body[data-page="ajoop"] .page-hero[data-v4-entry] {
+  padding-bottom: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+/* One column: the title and its account stay in the reading zone, clear of
+ * the field. */
+body[data-page="ajoop"] .page-hero[data-v4-entry] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body[data-page="ajoop"] .page-hero[data-v4-entry] h1 {
+  grid-row: auto;
+  max-width: 14ch;
+}
+
+body[data-page="ajoop"] .page-hero[data-v4-entry] > p:not(.eyebrow) {
+  grid-column: 1;
+  grid-row: auto;
+  max-width: 58ch;
+  margin-top: 1.1rem;
+}
+
+/* The Living Hub core, where the hero's currents converge (the field's own
+ * nexus is at 71.5% / 50%). Feathered into the canvas, under the lines; once
+ * a question has been asked it steps back and stays there. */
+.v4-hub-core {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 71.5%;
+  width: clamp(34rem, 62vw, 58rem);
+  aspect-ratio: 27 / 10;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0.92;
+  pointer-events: none;
+  translate: -50% -50%;
+  -webkit-mask-image: radial-gradient(ellipse closest-side, #000 34%, rgba(0, 0, 0, 0.5) 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side, #000 34%, rgba(0, 0, 0, 0.5) 62%, transparent 100%);
+  transition:
+    opacity 900ms var(--v4-ease-out),
+    scale 900ms var(--v4-ease-out);
+}
+
+/* The frame is the band of the artwork from 12% to 78% of its height: the
+ * core sits just below the middle and the lettered title stays out. */
+.v4-hub-core .ajoop-art {
+  position: absolute;
+  top: -18.2%;
+  left: 0;
+  height: 151.5%;
+}
+
+body:has(.v4-hub [data-chatbot-messages] .chatbot-message.user) .v4-hub-core {
+  opacity: 0.3;
+  scale: 0.94;
+}
+
+/* On a light page the artwork is not blended in: it is a dark panel of its
+ * own, set where the currents meet. */
+html[data-theme="light"] .v4-hub-core {
+  right: 0;
+  left: auto;
+  width: clamp(20rem, 38vw, 34rem);
+  aspect-ratio: 21 / 9;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 0.9rem;
+  background: var(--ajoop-art-ground);
+  box-shadow: 0 2rem 4rem -2rem rgba(13, 20, 32, 0.45);
+  opacity: 1;
+  translate: 0 -50%;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+html[data-theme="light"] .v4-hub-core .ajoop-art {
+  position: static;
+  height: 100%;
+}
+
+html[data-theme="light"] body:has(.v4-hub [data-chatbot-messages] .chatbot-message.user) .v4-hub-core {
+  opacity: 0.55;
+  scale: 0.96;
+}
+
+@media (max-width: 900px) {
+  .v4-hub-core {
+    top: 0;
+    right: 0;
+    left: auto;
+    width: min(100%, 26rem);
+    opacity: 0.5;
+    translate: 0 -12%;
+  }
+
+  html[data-theme="light"] .v4-hub-core {
+    position: relative;
+    z-index: 0;
+    top: auto;
+    grid-row: 5;
+    width: 100%;
+    margin-top: 1.5rem;
+    translate: none;
+  }
+}
+
+.v4-hub__noscript {
+  grid-column: 1 / -1;
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 0.75rem;
+  background: var(--v4-surface);
+  color: var(--v4-ink-secondary);
+}
+
+.v4-hub__noscript p {
+  margin: 0;
+  color: var(--v4-ink);
+}
+
+.v4-hub__noscript ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v4-hub__noscript a {
+  color: var(--v4-accent-strong);
+}
+
+/* 2. Hub: the system surface ----------------------------------------------- */
+
+.v4-hub {
+  --v4-hub-live: var(--v4-state-idle);
+  display: grid;
+  gap: 1.25rem;
+  margin-top: clamp(1rem, 2.5vw, 2rem);
+  margin-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+/* One colour for the state the engine is in; every lit part takes it. */
+.v4-hub[data-v4-live="composing"] { --v4-hub-live: var(--v4-current-2); }
+.v4-hub:is([data-v4-live="retrieving"], [data-v4-live="responding"]) { --v4-hub-live: var(--v4-current); }
+.v4-hub:is([data-v4-live="grounded"], [data-v4-live="answered"]) { --v4-hub-live: var(--v4-state-active); }
+.v4-hub[data-v4-live="fallback"] { --v4-hub-live: var(--v4-state-fallback); }
+.v4-hub[data-v4-live="error"] { --v4-hub-live: var(--v4-state-error); }
+
+.v4-hub :is(h2, h3, p, ul, ol) {
+  margin: 0;
+}
+
+.v4-hub :is(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+
+.v4-hub__rail,
+.v4-hub__context,
+.v4-hub__field {
+  min-width: 0;
+  border: 1px solid var(--v4-rule);
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, var(--v4-surface), var(--v4-canvas-raised));
+}
+
+.v4-hub__rail,
+.v4-hub__context {
+  display: grid;
+  gap: 1.1rem;
+  align-content: start;
+  padding: 1.25rem;
+}
+
+.v4-hub h3 {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+  text-transform: uppercase;
+}
+
+/* Identity. */
+.v4-hub__identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: center;
+}
+
+/* AJOOP's mark, on a tile whose edge takes the live state. */
+.v4-hub__mark {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid color-mix(in srgb, var(--v4-hub-live) 55%, var(--v4-rule-strong));
+  border-radius: 0.95rem;
+  background: var(--v4-canvas);
+  box-shadow: 0 0 2.5rem -0.6rem color-mix(in srgb, var(--v4-hub-live) 60%, transparent);
+  transition:
+    border-color var(--v4-motion-ui) var(--v4-ease-out),
+    box-shadow var(--v4-motion-emphasis) var(--v4-ease-out);
+}
+
+.v4-hub__mark .ajoop-mark {
+  width: 2.3rem;
+}
+
+.v4-hub__identity h2 {
+  color: var(--v4-ink);
+  font: 700 1.5rem / 1.1 var(--v4-display);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.v4-hub__identity p {
+  margin-top: 0.2rem;
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The live state, in words. */
+.v4-hub__state .v4-state {
+  --v4-state: var(--v4-hub-live);
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 0.85rem 0 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--v4-hub-live) 55%, var(--v4-rule-strong));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--v4-hub-live) 10%, var(--v4-canvas-raised));
+  color: var(--v4-ink);
+  font: 500 0.68rem / 1.25 var(--v4-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition:
+    border-color var(--v4-motion-ui) var(--v4-ease-out),
+    background-color var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.v4-hub__state .v4-state::before {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--v4-hub-live);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--v4-hub-live) 20%, transparent);
+  content: "";
+}
+
+.v4-hub .v4-hub__service {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  color: var(--v4-ink-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.v4-hub .v4-hub__service[hidden] {
+  display: none;
+}
+
+.v4-hub__scope {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-hub__bounds {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--v4-ink-secondary);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.v4-hub__bounds li {
+  position: relative;
+  padding-left: 1rem;
+}
+
+.v4-hub__bounds li::before {
+  position: absolute;
+  top: 0.62em;
+  left: 0;
+  width: 0.45rem;
+  height: 1px;
+  background: var(--v4-ink-muted);
+  content: "";
+}
+
+.v4-hub__how {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 44px;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--v4-rule);
+  color: var(--v4-accent-strong);
+  font: 500 0.7rem / 1.2 var(--v4-mono);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.v4-hub__how::after {
+  content: "→";
+  transition: translate var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.v4-hub__how:is(:hover, :focus-visible) {
+  color: var(--v4-ink);
+}
+
+.v4-hub__how:is(:hover, :focus-visible)::after {
+  translate: 0.3rem 0;
+}
+
+/* The conversation: the shell's own transcript, action row and composer. */
+.v4-hub__field {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  overflow: hidden;
+  outline: 0;
+}
+
+/* The empty field: the mark, in the room under the greeting. It leaves when
+ * the first question is asked. Shown only where that can be known, where
+ * there is room for it, and once the composer is live. */
+.v4-hub__idle {
+  display: none;
+}
+
+@supports selector(:has(*)) {
+  @media (min-width: 761px) {
+    .v4-hub__idle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      display: grid;
+      place-items: center;
+      height: var(--v4-hub-log);
+      padding-top: 5.5rem;
+      opacity: 0.5;
+      pointer-events: none;
+      transition: opacity var(--v4-motion-emphasis) var(--v4-ease-out);
+    }
+
+    .v4-hub__idle .ajoop-mark {
+      width: clamp(4.5rem, 7vw, 6rem);
+      filter: drop-shadow(0 0 2.5rem var(--v4-current-glow));
+    }
+
+    .v4-hub__field:has(.chatbot-message.user) .v4-hub__idle {
+      opacity: 0;
+    }
+
+    [data-react-ajoop-shell]:not([data-ajoop-interactive]) .v4-hub__idle {
+      display: none;
+    }
+  }
+}
+
+/* The current along the field's top edge takes the live state. */
+.v4-hub__field::before {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--v4-hub-live) 30%, var(--v4-hub-live) 70%, transparent);
+  content: "";
+  opacity: 0.35;
+  transition: opacity var(--v4-motion-emphasis) var(--v4-ease-out), background var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.v4-hub:not([data-v4-live="idle"]) .v4-hub__field::before {
+  opacity: 1;
+}
+
+.v4-hub__field:focus-visible {
+  outline: 2px solid var(--v4-focus);
+  outline-offset: 3px;
+}
+
+.v4-hub {
+  --v4-hub-log: clamp(20rem, 58vh, 40rem);
+}
+
+.v4-hub .chatbot-messages {
+  position: relative;
+  height: var(--v4-hub-log);
+  max-height: none;
+  padding: 1.5rem clamp(1rem, 2.5vw, 1.75rem) 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.v4-hub .chatbot-message {
+  max-width: min(100%, 46rem);
+}
+
+.v4-hub .chatbot-message.user {
+  max-width: min(84%, 34rem);
+}
+
+.v4-hub .chatbot-message-text {
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.v4-hub .chatbot-quicks {
+  max-height: none;
+  padding: 0.85rem clamp(1rem, 2.5vw, 1.75rem);
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-hub .chatbot-form {
+  padding: 0.9rem clamp(1rem, 2.5vw, 1.75rem) 1.1rem;
+  border-top: 1px solid var(--v4-rule);
+  background: transparent;
+}
+
+.v4-hub .chatbot-form input {
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+.v4-hub .chatbot-form button {
+  min-width: 52px;
+  min-height: 52px;
+}
+
+/* Until a handler owns the composer there is nothing to type into. */
+.v4-hub__static {
+  display: none;
+  padding: 1rem clamp(1rem, 2.5vw, 1.75rem) 1.25rem;
+  border-top: 1px solid var(--v4-rule);
+  color: var(--v4-ink-secondary);
+  font-size: 0.92rem;
+}
+
+[data-react-ajoop-shell]:not([data-ajoop-interactive]) .v4-hub :is(.chatbot-form, .chatbot-quicks) {
+  display: none;
+}
+
+[data-react-ajoop-shell]:not([data-ajoop-interactive]) .v4-hub__static {
+  display: block;
+}
+
+[data-react-ajoop-shell]:not([data-ajoop-interactive]) .v4-hub .chatbot-messages {
+  height: 8rem;
+}
+
+/* Context: where this turn is, and what its answer stands on. */
+.v4-hub__path ol {
+  position: relative;
+  display: grid;
+  gap: 0;
+  margin-top: 0.85rem;
+}
+
+.v4-hub__path ol::before {
+  position: absolute;
+  top: 1.1rem;
+  bottom: 1.1rem;
+  left: calc(0.31rem - 0.5px);
+  width: 1px;
+  background: var(--v4-rule-strong);
+  content: "";
+}
+
+.v4-hub__path li {
+  position: relative;
+  min-height: 2.2rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.v4-hub__path li[data-v4-state] {
+  color: var(--v4-ink);
+}
+
+.v4-hub__path li[data-v4-state] .v4-node__dot {
+  border-color: var(--v4-hub-live);
+  background: var(--v4-hub-live);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--v4-hub-live) 20%, transparent);
+}
+
+.v4-hub__path li[data-v4-state] .v4-node__dot::after {
+  opacity: 0;
+}
+
+.v4-hub__evidence {
+  display: grid;
+  gap: 0.7rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-hub__evidence ul {
+  display: grid;
+  gap: 0;
+}
+
+.v4-hub__evidence li {
+  border-top: 1px solid var(--v4-rule);
+}
+
+.v4-hub__evidence li:first-child {
+  border-top: 0;
+}
+
+.v4-hub__evidence .v4-node {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  min-height: 44px;
+  padding: 0.65rem 0;
+  color: var(--v4-ink);
+  font: 600 0.92rem / 1.35 var(--v4-display);
+  letter-spacing: -0.01em;
+}
+
+.v4-hub__evidence .v4-node__dot {
+  border-color: var(--v4-state-active);
+  border-radius: 2px;
+  background: var(--v4-state-active);
+  rotate: 45deg;
+  translate: 0 -0.1rem;
+}
+
+.v4-hub__evidence a.v4-node:is(:hover, :focus-visible) span {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* A new set of evidence arrives once; it does not keep moving. */
+.v4-hub__evidence[data-v4-evidence] li {
+  animation: v4-hub-arrive 520ms var(--v4-ease-out) backwards;
+}
+
+.v4-hub__evidence[data-v4-evidence] li:nth-child(2) { animation-delay: 90ms; }
+.v4-hub__evidence[data-v4-evidence] li:nth-child(3) { animation-delay: 180ms; }
+.v4-hub__evidence[data-v4-evidence] li:nth-child(4) { animation-delay: 270ms; }
+
+.v4-hub__provenance {
+  color: var(--v4-state-active);
+  font: var(--v4-type-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.v4-hub__empty,
+.v4-hub__note {
+  color: var(--v4-ink-secondary);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.v4-hub__note {
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--v4-hub-live);
+  color: var(--v4-ink);
+}
+
+@keyframes v4-hub-arrive {
+  from {
+    opacity: 0;
+    translate: 0 0.4rem;
+  }
+}
+
+/* Phone and tablet: the conversation first, its context stacked after it;
+ * identity stays a compact bar above. Nothing fixed sits on the composer. */
+@media (max-width: 1099px) {
+  .v4-hub__rail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+  }
+
+  .v4-hub__scope {
+    order: 5;
+  }
+
+  .v4-hub {
+    --v4-hub-log: clamp(18rem, 52vh, 30rem);
+  }
+
+  .v4-hub__context {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+
+  .v4-hub__evidence {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .v4-hub {
+    padding-bottom: var(--v4-float-clearance);
+  }
+
+  .v4-hub__rail {
+    padding: 1rem;
+  }
+
+  .v4-hub__mark {
+    width: 2.9rem;
+    height: 2.9rem;
+    border-radius: 0.8rem;
+  }
+
+  .v4-hub__mark .ajoop-mark {
+    width: 1.9rem;
+  }
+
+  .v4-hub__scope {
+    display: none;
+  }
+
+  .v4-hub__evidence {
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--v4-rule);
+  }
+}
+
+@media (min-width: 1100px) {
+  .v4-hub {
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr) minmax(0, 19rem);
+    align-items: start;
+  }
+
+  .v4-hub__rail,
+  .v4-hub__context {
+    position: sticky;
+    top: 5.75rem;
+  }
+
+  .v4-hub {
+    --v4-hub-log: clamp(22rem, calc(100vh - 25rem), 44rem);
+  }
+}
+
+/* 3. Case study: the entry into the live system ---------------------------- */
+
+body.case-study-page .case-hero-visual[data-v4-ajoop-entry] {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.v4-ajoop-entry {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+.v4-ajoop-entry :is(p, ul) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The project's visual: the Living Hub artwork in a cinema frame, signed with
+ * the approved lockup. A dark surface in both themes, so the lockup on it is
+ * always the one drawn for dark. */
+.v4-ajoop-entry__media {
+  --v4-entry-pad: clamp(1.25rem, 2.5vw, 1.75rem);
+  position: relative;
+  aspect-ratio: 21 / 9;
+  margin: calc(var(--v4-entry-pad) * -1) calc(var(--v4-entry-pad) * -1) 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--v4-rule);
+  border-radius: calc(0.75rem - 1px) calc(0.75rem - 1px) 0 0;
+  background: var(--ajoop-art-ground);
+}
+
+body.case-study-page .v4-ajoop-entry__media .ajoop-art {
+  height: 100%;
+  min-height: 0;
+  border-radius: 0;
+}
+
+/* Keeps the lockup and the state legible over the artwork's brighter edges. */
+.v4-ajoop-entry__media::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 9, 18, 0.72), transparent 42%);
+  content: "";
+  pointer-events: none;
+}
+
+.v4-ajoop-entry__lockup {
+  position: absolute;
+  z-index: 1;
+  top: clamp(0.8rem, 1.6vw, 1.15rem);
+  left: clamp(0.9rem, 1.8vw, 1.3rem);
+  width: clamp(12.5rem, 54%, 21rem);
+  aspect-ratio: 672 / 197;
+  background: var(--ajoop-wordmark) center / contain no-repeat;
+}
+
+.v4-ajoop-entry__media .v4-state {
+  --v4-state: #62adff;
+  position: absolute;
+  z-index: 1;
+  top: clamp(0.9rem, 1.8vw, 1.3rem);
+  right: clamp(0.9rem, 1.8vw, 1.3rem);
+  padding: 0.3rem 0.65rem;
+  border: 1px solid rgba(150, 180, 230, 0.27);
+  border-radius: 999px;
+  background: rgba(8, 14, 26, 0.88);
+  color: #b6c2d6;
+}
+
+.v4-ajoop-entry__ask {
+  color: var(--v4-ink-muted);
+  font: var(--v4-type-label);
+  letter-spacing: var(--v4-track-label);
+  text-transform: uppercase;
+}
+
+.v4-ajoop-entry ul {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.v4-ajoop-entry li a {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 46px;
+  padding: 0 1rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: 0.65rem;
+  background: var(--v4-living-surface);
+  color: var(--v4-ink);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    border-color var(--v4-motion-feedback) var(--v4-ease-out),
+    box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+}
+
+.v4-ajoop-entry li a::after {
+  color: var(--v4-ink-muted);
+  content: "→";
+}
+
+.v4-ajoop-entry li a:is(:hover, :focus-visible) {
+  border-color: var(--v4-current);
+  box-shadow: 0 0 2.25rem -0.6rem var(--v4-current-glow);
+}
+
+.v4-ajoop-entry__cta {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: var(--v4-radius);
+  background: var(--v4-accent-fill);
+  color: var(--v4-on-accent);
+  font: 700 0.9rem / 1 var(--v4-display);
+  text-decoration: none;
+}
+
+.v4-ajoop-entry__cta::after {
+  content: "→";
+}
+
+.v4-ajoop-entry__cta:is(:hover, :focus-visible) {
+  box-shadow: 0 0 2.5rem -0.4rem var(--v4-current-glow);
+}
+
+.v4-ajoop-note {
+  max-width: 62ch;
+  margin-top: 1.5rem;
+}
+
+/* 4. Case study: the system diagram ---------------------------------------- */
+
+.v4-ajoop-sys__stage {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.v4-ajoop-sys :is(p),
+.v4-ajoop-sys__panels :is(p, h3) {
+  margin: 0;
+}
+
+.v4-ajoop-sys__field,
+.v4-ajoop-sys__zone,
+.v4-ajoop-sys__node {
+  display: none;
+}
+
+/* Narrow screens: the path is the list of its parts, the private track set
+ * apart under its own rule. */
+.v4-ajoop-sys__panels {
+  display: grid;
+  gap: 0;
+}
+
+.v4-ajoop-sys__rest {
+  display: none;
+}
+
+.v4-ajoop-sys__panel,
+.v4-ajoop-sys__panel[hidden] {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem 0 0.95rem 1.4rem;
+  border-left: 2px solid var(--v4-current);
+}
+
+.v4-ajoop-sys__panel[data-v4-zone="private"],
+.v4-ajoop-sys__panel[data-v4-zone="private"][hidden] {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--v4-rule-strong);
+  border-left-color: var(--v4-ink-muted);
+  border-left-style: dashed;
+}
+
+.v4-ajoop-sys__panel h3 {
+  color: var(--v4-ink);
+  font: 600 1rem / 1.3 var(--v4-display);
+  letter-spacing: -0.01em;
+}
+
+.v4-ajoop-sys__panel p {
+  color: var(--v4-ink-secondary);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+@media (min-width: 1000px) {
+  .v4-ajoop-sys__stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .v4-ajoop-sys {
+    position: relative;
+    aspect-ratio: var(--v4-sys-aspect);
+    border: 1px solid var(--v4-rule);
+    border-radius: 0.9rem;
+    background:
+      linear-gradient(180deg, transparent calc(var(--v4-sys-boundary) - 0.5px), color-mix(in srgb, var(--v4-ink-muted) 7%, transparent) var(--v4-sys-boundary)),
+      radial-gradient(ellipse 60% 55% at 55% 34%, var(--v4-ambient-light), transparent 70%),
+      var(--v4-canvas-raised);
+  }
+
+  /* The path's core, where its two answer sources sit: the rings of the
+   * Living Hub drawn as rules, and AJOOP's mark at their centre. It is not a
+   * part of the path: nothing is wired to it and it cannot be selected. */
+  .v4-ajoop-sys::before,
+  .v4-ajoop-sys::after {
+    position: absolute;
+    top: 34.62%;
+    left: 58.18%;
+    aspect-ratio: 1;
+    content: "";
+    pointer-events: none;
+    translate: -50% -50%;
+  }
+
+  .v4-ajoop-sys::before {
+    width: 26rem;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, transparent 0 2.5rem, color-mix(in srgb, var(--v4-current-2) 30%, transparent) 2.5rem calc(2.5rem + 1px));
+    -webkit-mask-image: radial-gradient(circle closest-side, #000 18%, transparent 96%);
+    mask-image: radial-gradient(circle closest-side, #000 18%, transparent 96%);
+  }
+
+  .v4-ajoop-sys::after {
+    width: 2.5rem;
+    background: var(--ajoop-mark) center / contain no-repeat;
+    opacity: 0.8;
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-ajoop-sys[data-v4-eco-active]::after {
+    opacity: 0.4;
+  }
+
+  .v4-ajoop-sys__field {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: none;
+    pointer-events: none;
+  }
+
+  .v4-ajoop-sys__boundary {
+    stroke: var(--v4-ink-muted);
+    stroke-dasharray: 3 9;
+    stroke-linecap: round;
+    stroke-width: 1.4;
+  }
+
+  .v4-ajoop-sys__wire {
+    stroke: var(--v4-trace);
+    stroke-dasharray: 1;
+    stroke-linecap: round;
+    stroke-width: 1.6;
+    transition: stroke var(--v4-motion-ui) var(--v4-ease-out), stroke-width var(--v4-motion-ui) var(--v4-ease-out);
+    animation: v4-current-draw 620ms var(--v4-ease-in-out) calc(150ms + var(--v4-seq) * 190ms) both;
+  }
+
+  .v4-ajoop-sys__wire-glow {
+    stroke: var(--v4-current-glow);
+    stroke-linecap: round;
+    stroke-width: 10;
+    filter: blur(5px);
+    opacity: 0;
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-ajoop-sys__edge {
+    transition: opacity var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-ajoop-sys[data-v4-eco-active] .v4-ajoop-sys__edge:not([data-v4-state]) {
+    opacity: 0.18;
+  }
+
+  .v4-ajoop-sys__edge[data-v4-state] .v4-ajoop-sys__wire {
+    stroke: var(--v4-current);
+    stroke-width: 2.4;
+  }
+
+  .v4-ajoop-sys__edge[data-v4-state] .v4-ajoop-sys__wire-glow {
+    opacity: 0.9;
+  }
+
+  .v4-ajoop-sys__edge[data-v4-state] .v4-eco__pulse {
+    animation: v4-edge-pulse 900ms var(--v4-ease-in-out);
+  }
+
+  /* Held until the diagram is first seen; then the path draws once. */
+  .v4-ajoop-sys[data-v4-await] .v4-ajoop-sys__wire {
+    stroke-dashoffset: 1;
+    animation: none;
+  }
+
+  .v4-ajoop-sys__zone {
+    position: absolute;
+    left: 1.25rem;
+    display: block;
+    color: var(--v4-ink-muted);
+    font: var(--v4-type-status);
+    letter-spacing: var(--v4-track-status);
+    text-transform: uppercase;
+  }
+
+  .v4-ajoop-sys__zone[data-v4-zone="public"] {
+    top: 1.1rem;
+    color: var(--v4-accent);
+  }
+
+  .v4-ajoop-sys__zone[data-v4-zone="boundary"] {
+    top: var(--v4-sys-boundary);
+    right: 1.25rem;
+    left: auto;
+    padding: 0 0.6rem;
+    background: var(--v4-canvas-raised);
+    color: var(--v4-ink-secondary);
+    translate: 0 -50%;
+  }
+
+  .v4-ajoop-sys__zone[data-v4-zone="private"] {
+    bottom: 1.1rem;
+  }
+
+  .v4-ajoop-sys__node {
+    position: absolute;
+    top: var(--v4-y);
+    left: var(--v4-x);
+    z-index: 1;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: max-content;
+    max-width: 9rem;
+    min-height: 3.4rem;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--v4-rule-strong);
+    border-radius: 0.8rem;
+    background: var(--v4-canvas-raised);
+    color: var(--v4-ink);
+    font-size: 0.64rem;
+    line-height: 1.3;
+    text-align: center;
+    text-transform: uppercase;
+    cursor: pointer;
+    translate: -50% -50%;
+    transition:
+      scale var(--v4-motion-ui) var(--v4-ease-out),
+      opacity var(--v4-motion-ui) var(--v4-ease-out),
+      border-color var(--v4-motion-feedback) var(--v4-ease-out),
+      box-shadow var(--v4-motion-ui) var(--v4-ease-out);
+  }
+
+  .v4-ajoop-sys__node:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state="active"]) {
+    z-index: 2;
+    border-color: var(--v4-current);
+    box-shadow: 0 0 3rem -0.5rem var(--v4-current-glow), inset 0 0 0 1px var(--v4-current);
+    scale: 1.08;
+  }
+
+  .v4-ajoop-sys__node[aria-pressed="true"] {
+    outline: 1px dashed var(--v4-current-2);
+    outline-offset: 5px;
+  }
+
+  .v4-ajoop-sys__node[data-v4-state="related"] {
+    border-color: var(--v4-current-2);
+  }
+
+  .v4-ajoop-sys[data-v4-eco-active] .v4-ajoop-sys__node:not([data-v4-state], :hover, :focus-visible) {
+    opacity: 0.32;
+  }
+
+  /* Outside the public path: drawn apart, wired to nothing. */
+  .v4-ajoop-sys__node[data-v4-zone="private"] {
+    border-style: dashed;
+    border-color: var(--v4-ink-muted);
+    background: transparent;
+    color: var(--v4-ink-secondary);
+  }
+
+  .v4-ajoop-sys__node[data-v4-zone="private"]:is(:hover, :focus-visible, [aria-pressed="true"], [data-v4-state="active"]) {
+    border-color: var(--v4-ink-secondary);
+    box-shadow: none;
+    color: var(--v4-ink);
+  }
+
+  .v4-ajoop-sys__node[data-v4-zone="private"] .v4-node__dot {
+    border-color: var(--v4-ink-muted);
+    background: transparent;
+  }
+
+  /* Beside the diagram: the part in hand, in words. */
+  .v4-ajoop-sys__panels {
+    min-height: 6.5rem;
+    padding: 1.1rem 0 0;
+    border-top: 1px solid var(--v4-rule);
+  }
+
+  .v4-ajoop-sys__rest {
+    display: block;
+    color: var(--v4-ink-muted);
+    font: var(--v4-type-label);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .v4-ajoop-sys__rest[hidden],
+  .v4-ajoop-sys__panel[hidden],
+  .v4-ajoop-sys__panel[data-v4-zone="private"][hidden] {
+    display: none;
+  }
+
+  .v4-ajoop-sys__panel,
+  .v4-ajoop-sys__panel[data-v4-zone="private"] {
+    grid-template-columns: minmax(0, 0.34fr) minmax(0, 1fr);
+    gap: 0.5rem 2.5rem;
+    align-items: baseline;
+    margin: 0;
+    padding: 0 0 0 1.25rem;
+    border-top: 0;
+  }
+
+  .v4-ajoop-sys__panel h3 {
+    font-size: 1.15rem;
+  }
+
+  .v4-ajoop-sys__panel p {
+    max-width: 62ch;
+    font-size: 1rem;
+  }
+}
+
+/* 5. Case study: the closing handoff --------------------------------------- */
+
+body.case-study-page .v4-ajoop-live {
+  margin-top: clamp(3rem, 7vw, 5.5rem);
+}
+
+/* 6. Discipline ------------------------------------------------------------ */
+
+@media (forced-colors: active) {
+  .v4-hub__field::before,
+  .v4-ajoop-sys__wire-glow {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v4-hub *,
+  .v4-hub-core,
+  .v4-hub__field::before,
+  .v4-ajoop-sys *,
+  .v4-ajoop-entry * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .v4-ajoop-sys[data-v4-await] .v4-ajoop-sys__wire {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 7. Between the two AJOOP routes ------------------------------------------ */
+
+/* The case study and the Hub hand over to each other as one system: an
+ * ordinary link, with the site-wide cross-document transition
+ * (css/v4-system.css, 24) where the browser has one. */

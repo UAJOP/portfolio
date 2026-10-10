@@ -1,0 +1,2182 @@
+/* Joyday Action Painting — the studio's play mode (V4-E06.1) ----------------
+ *
+ * Linked only by the React production document of /joyday-paint/. The page's
+ * markup (data/site/m3-30-labs-games-structure.json) and its engine
+ * (joyday-paint.js) are unchanged; css/games/joyday-paint.css still styles
+ * them. This sheet does two things:
+ *
+ *   1. On the portfolio page the studio is not a widget in an article any
+ *      more: it is out of the page until it is entered.
+ *   2. Entered (html[data-joyday-studio], set by js/pages/joyday-studio.js),
+ *      the same markup is laid out as a full-viewport studio. The wrappers
+ *      that grouped it for the article become display: contents, so every
+ *      control is a direct item of one grid and can be docked where the hand
+ *      needs it at each size.
+ *
+ * The studio has its own look — Joyday's, not the portfolio's — and is the
+ * same in the site's dark and light themes. Nothing here animates at rest:
+ * every transition and keyframe answers something the visitor just did. */
+
+/* 1. The portfolio page ------------------------------------------------------ */
+
+#joyday-paint-game {
+  display: none;
+}
+
+.jds-noscript {
+  max-width: 46rem;
+  margin-top: 1.25rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--v4-rule-strong);
+  border-radius: var(--jds-radius);
+  background: var(--v4-surface);
+  color: var(--v4-ink-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.jds-noscript a {
+  color: var(--v4-accent-strong);
+  font-weight: 600;
+}
+
+/* 2. Entering: the portfolio steps out ---------------------------------------- */
+
+html[data-joyday-studio] {
+  overflow: hidden;
+}
+
+html[data-joyday-studio] body > :not(main, script),
+html[data-joyday-studio] main > :not(#joyday-paint-game, .joyday-finish-modal) {
+  display: none !important;
+}
+
+html[data-joyday-studio] #joyday-paint-game {
+  /* Palette and materials: section 11. */
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: grid;
+  gap: 0.85rem 1.1rem;
+  align-items: stretch;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: max(0.85rem, env(safe-area-inset-top)) max(1.1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1.1rem, env(safe-area-inset-left));
+  overflow: hidden;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+  animation: jds-enter 320ms cubic-bezier(0.2, 0, 0, 1) backwards;
+}
+
+@keyframes jds-enter {
+  from {
+    opacity: 0;
+    scale: 1.03;
+  }
+}
+
+/* The article's wrappers dissolve; their contents join the studio's grid. */
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-studio-wall, .joyday-toolbox, .joyday-toolbelt-panel) {
+  display: contents;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-wall-topbar, .joyday-toolbelt-heading, .joyday-wall-dots, .joyday-tips) {
+  display: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-studio-wall::before {
+  display: none;
+}
+
+/* 3. Studio parts ------------------------------------------------------------- */
+
+/* A sticker: paper, an ink edge, a shadow it can be pressed into. */
+html[data-joyday-studio] #joyday-paint-game :is(.jds-btn, .jds-cta, .joyday-tool-grid button, .joyday-canvas-options button, .joyday-game-actions .btn, .joyday-sound-toggle, .joyday-palette-tools .btn, .joyday-mini-actions .btn) {
+  cursor: pointer;
+  transform: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.jds-btn, .jds-cta, .joyday-tool-grid button, .joyday-canvas-options button, .joyday-game-actions .btn, .joyday-sound-toggle, .joyday-palette-tools .btn, .joyday-mini-actions .btn):hover {
+  transform: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-game-actions .btn, .jds-btn, .joyday-mini-actions .btn):disabled {
+  cursor: default;
+}
+
+/* Two of the page's icon names are not in the icon set, so they draw nothing.
+ * In the studio they take glyphs the set does carry: a palette, a lamp. */
+html[data-joyday-studio] #joyday-paint-game .bx-magic-wand::before {
+  content: "\eba9";
+}
+
+html[data-joyday-studio] #joyday-paint-game .bx-sparkles::before {
+  content: "\ea0d";
+}
+
+/* A paper panel that holds a group of controls. */
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-toolbox > .detail-panel, .joyday-control-row, .joyday-canvas-hint) {
+  margin: 0;
+  padding: 0.8rem 0.85rem 0.9rem;
+  backdrop-filter: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .eyebrow {
+  margin: 0 0 0.55rem;
+  text-transform: uppercase;
+}
+
+html[data-joyday-studio] #joyday-paint-game .eyebrow::before {
+  display: none;
+}
+
+/* Shell bar */
+html[data-joyday-studio] #joyday-paint-game .jds-bar {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  align-self: center;
+  min-width: 0;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-bar--start {
+  grid-area: bar-start;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-bar--end {
+  grid-area: bar-end;
+  justify-content: flex-end;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-btn {
+  display: inline-flex;
+  flex: none;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 0 0.9rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-btn[hidden] {
+  display: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-btn[aria-pressed="true"] {
+  background: var(--jds-acid);
+}
+
+/* Icon-only shell buttons keep their names for assistive technology. */
+html[data-joyday-studio] #joyday-paint-game [data-jds-fullscreen] {
+  padding: 0;
+}
+
+html[data-joyday-studio] #joyday-paint-game [data-jds-fullscreen] span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-btn--extras {
+  display: none;
+  padding: 0;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-title {
+  display: none;
+  white-space: nowrap;
+}
+
+/* Sound: the engine's own switch, in the bar. */
+html[data-joyday-studio] #joyday-paint-game .joyday-toolbox > .joyday-sound-panel {
+  grid-area: bar-mid;
+  align-self: center;
+  justify-self: end;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-sound-panel .eyebrow {
+  display: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-sound-toggle {
+  gap: 0.45rem;
+  width: auto;
+  min-height: 46px;
+  padding: 0 0.95rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-sound-toggle[aria-pressed="true"] {
+  border-color: var(--jds-ink);
+  background: var(--jds-acid);
+  color: var(--jds-ink);
+}
+
+/* Mission: a chip in the bar while painting. */
+html[data-joyday-studio] #joyday-paint-game .joyday-toolbox > .joyday-mission-panel {
+  grid-area: bar-mid;
+  display: grid;
+  grid-template-columns: max-content 5.5rem max-content;
+  gap: 0.7rem;
+  align-items: center;
+  align-self: center;
+  justify-self: center;
+  max-width: 100%;
+  min-height: 46px;
+  padding: 0 0.95rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-mission-panel :is(.eyebrow, p) {
+  display: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-mission-panel h3 {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-progress {
+  margin: 0;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-mission-panel small {
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* The stage: the canvas takes all the room the docks leave it. */
+html[data-joyday-studio] #joyday-paint-game .joyday-wall-scene {
+  grid-area: stage;
+  container-type: size;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame,
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-rect {
+  width: min(100cqw - 1.5rem, 100cqh - 1.5rem);
+  transform: none;
+  transition: translate 120ms ease-out, box-shadow 120ms ease-out;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-rect {
+  width: min(100cqw - 1.5rem, (100cqh - 1.5rem) * 2 / 3);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* Pressed while a mark is being made; one short ring in the colour in hand
+ * when it lands (.jds-hit, set by the controller). */
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-painting {
+  transform: none;
+}
+
+/* Tools */
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid {
+  grid-area: tools;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.7rem;
+  align-self: start;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button {
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  gap: 0.2rem 0.7rem;
+  min-height: 4.4rem;
+  padding: 0.6rem 0.7rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid i {
+  grid-row: 1 / span 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.45rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid strong {
+  align-self: end;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid small {
+  align-self: start;
+}
+
+/* The tool in hand: lifted, on yellow, loaded with the colour in hand. */
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button.is-active {
+  border-color: var(--jds-ink);
+  background: var(--jds-acid);
+}
+
+/* Colours */
+html[data-joyday-studio] #joyday-paint-game .joyday-toolbox > .detail-panel:nth-child(2) {
+  grid-area: colours;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-color-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-color-grid button {
+  min-height: 0;
+  border-radius: 50%;
+  transform: none;
+  transition: scale 120ms ease-out;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-color-grid button:hover {
+  transform: none;
+  scale: 1.08;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-color-grid button.is-active {
+  transform: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-custom-color {
+  margin-top: 0.7rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-custom-color input {
+  width: 3.2rem;
+  height: 2.5rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-palette-tools {
+  margin-top: 0.65rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-palette-tools, .joyday-mini-actions) .btn {
+  gap: 0.4rem;
+  min-height: 40px;
+  padding: 0 0.75rem;
+  font-size: 0.78rem;
+}
+
+/* Stroke thickness and paint intensity */
+html[data-joyday-studio] #joyday-paint-game .joyday-control-row {
+  grid-area: tune;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-thickness-control {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-thickness-control input[type="range"] {
+  height: 1.75rem;
+  margin: 0.2rem 0 0;
+}
+
+/* Prompt */
+html[data-joyday-studio] #joyday-paint-game .joyday-creative-panel {
+  grid-area: prompt;
+  align-self: start;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-creative-panel h3 {
+  margin: 0 0 0.3rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-creative-panel p:not(.eyebrow) {
+  font: 500 0.84rem / 1.45 Inter, sans-serif;
+}
+
+/* Actions */
+html[data-joyday-studio] #joyday-paint-game .joyday-game-actions {
+  grid-area: actions;
+  gap: 0.6rem;
+  padding: 0;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-game-actions .btn {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-game-actions .btn i {
+  font-size: 1.2rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-game-actions .btn.primary, .jds-cta) {
+  background: var(--jds-hot);
+  color: var(--jds-white);
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-game-actions .btn.primary, .jds-cta):hover {
+  background: var(--jds-hot);
+  color: var(--jds-white);
+}
+
+/* Start state parts */
+html[data-joyday-studio] #joyday-paint-game .jds-start {
+  grid-area: title;
+  margin: 0;
+  text-align: center;
+  text-wrap: balance;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-go {
+  grid-area: go;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-cta {
+  min-height: 56px;
+  padding: 0 1.9rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-toolbox > .detail-panel:nth-child(1) {
+  grid-area: formats;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-toolbox > .detail-panel:nth-child(1) .eyebrow {
+  display: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options button {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 0.35rem;
+  min-height: 0;
+  padding: 0.85rem 0.6rem 0.8rem;
+  text-align: center;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options button > span {
+  margin: 0 0 0.2rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options button.is-active {
+  background: var(--jds-acid);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-hint {
+  grid-area: hint;
+  padding: 0.75rem 0.95rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-hint span {
+  font: 500 0.84rem / 1.45 Inter, sans-serif;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-hint button {
+  display: none;
+}
+
+/* Failure */
+html[data-joyday-studio] #joyday-paint-game .jds-error {
+  grid-area: title / title / go / title;
+  display: grid;
+  gap: 0.6rem;
+  align-self: center;
+  justify-items: center;
+  padding: 1.5rem;
+    text-align: center;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-error[hidden] {
+  display: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-error p {
+  max-width: 34rem;
+  font: 500 0.95rem / 1.5 Inter, sans-serif;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-error div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.4rem;
+}
+
+html[data-jds-failed] #joyday-paint-game :is(.jds-start, .jds-go, .joyday-toolbox > .detail-panel:nth-child(1), .joyday-tool-grid, .joyday-canvas-hint, .joyday-toolbox > .joyday-sound-panel) {
+  display: none !important;
+}
+
+/* 4. Start: choose a format, see the tools, begin ----------------------------- */
+
+html[data-joyday-studio="start"] #joyday-paint-game {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto auto auto minmax(0, 1.3fr);
+  grid-template-areas:
+    "bar-start bar-mid bar-end"
+    ". . ."
+    ". title ."
+    ". formats ."
+    ". tools ."
+    ". hint ."
+    ". go ."
+    ". . .";
+  row-gap: 1rem;
+}
+
+html[data-joyday-studio="start"] #joyday-paint-game :is(.joyday-wall-scene, .joyday-control-row, .joyday-game-actions, .joyday-creative-panel, .joyday-toolbox > .joyday-mission-panel, .joyday-toolbox > .detail-panel:nth-child(2), [data-jds-new], .jds-btn--extras) {
+  display: none;
+}
+
+html[data-joyday-studio="start"] #joyday-paint-game .joyday-tool-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+html[data-joyday-studio="start"] #joyday-paint-game .joyday-tool-grid button {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  padding: 0.75rem 0.5rem 0.7rem;
+  text-align: center;
+}
+
+html[data-joyday-studio="start"] #joyday-paint-game .joyday-tool-grid i {
+  grid-row: auto;
+  margin-bottom: 0.25rem;
+}
+
+/* 5. Painting: desktop -------------------------------------------------------- */
+
+html[data-joyday-studio="paint"] #joyday-paint-game {
+  grid-template-columns: 13.5rem minmax(0, 1fr) 18.5rem;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "bar-start bar-mid bar-end"
+    "tools stage colours"
+    "tools stage tune"
+    "tools stage prompt"
+    "tools actions prompt";
+}
+
+html[data-joyday-studio="paint"] #joyday-paint-game :is(.jds-start, .jds-go, .joyday-canvas-hint, .joyday-toolbox > .detail-panel:nth-child(1)) {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  html[data-joyday-studio] #joyday-paint-game .jds-title {
+    display: block;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .jds-bar--start {
+    grid-column: 1 / 3;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 1100px) {
+  html[data-joyday-studio="paint"] #joyday-paint-game {
+    grid-template-columns: 11.5rem minmax(0, 1fr) 15.5rem;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .joyday-toolbox > .joyday-mission-panel {
+    grid-template-columns: max-content max-content;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .joyday-mission-panel .joyday-progress {
+    display: none;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .joyday-creative-panel p:not(.eyebrow) {
+    display: none;
+  }
+}
+
+/* 6. Painting: phone ---------------------------------------------------------- */
+
+/* Not the desktop stacked: the canvas on top, then a dock under the thumb —
+ * tools, colours, actions. The bar's last button turns the dock to its second
+ * page (brush settings, prompt, mission) and back. */
+@media (max-width: 900px) {
+  html[data-joyday-studio] #joyday-paint-game {
+    gap: 0.6rem;
+    padding: max(0.6rem, env(safe-area-inset-top)) max(0.7rem, env(safe-area-inset-right)) max(0.7rem, env(safe-area-inset-bottom)) max(0.7rem, env(safe-area-inset-left));
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .jds-btn {
+    padding: 0;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game :is([data-jds-exit], [data-jds-new]) span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .jds-error [data-jds-exit],
+  html[data-joyday-studio] #joyday-paint-game [data-jds-resume] {
+    padding: 0 0.9rem;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .jds-error [data-jds-exit] span {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .joyday-sound-toggle {
+    width: 46px;
+    padding: 0;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .joyday-sound-toggle span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "bar-start bar-mid bar-end"
+      ". . ."
+      "title title title"
+      "formats formats formats"
+      "tools tools tools"
+      "hint hint hint"
+      "go go go"
+      ". . .";
+    row-gap: 0.8rem;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-tool-grid small,
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-canvas-options small {
+    display: none;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-tool-grid strong {
+    font-size: 0.74rem;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-tool-grid {
+    gap: 0.5rem;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .jds-cta {
+    width: 100%;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+    grid-template-areas:
+      "bar-start bar-mid bar-end"
+      "stage stage stage"
+      "tools tools tools"
+      "colours colours colours"
+      "actions actions actions";
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .jds-btn--extras {
+    display: inline-flex;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game :is(.joyday-control-row, .joyday-creative-panel, .joyday-toolbox > .joyday-mission-panel) {
+    display: none;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame,
+  html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-rect {
+    border-width: 0.4rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid button {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 0.25rem;
+    min-height: 3.9rem;
+    padding: 0.4rem 0.2rem;
+    text-align: center;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid i {
+    grid-row: auto;
+    width: 2.1rem;
+    height: 2.1rem;
+    font-size: 1.15rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid strong {
+    font-size: 0.68rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid small {
+    display: none;
+  }
+
+  /* Colours: one swipeable row, then the custom colour and the palette shuffle. */
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-toolbox > .detail-panel:nth-child(2) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.45rem 0.5rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-toolbox > .detail-panel:nth-child(2) .eyebrow,
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-custom-color span,
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-palette-tools small {
+    display: none;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-color-grid {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.3rem 0.2rem 0.4rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-color-grid button {
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game :is(.joyday-custom-color, .joyday-palette-tools) {
+    margin: 0;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-custom-color input {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-palette-tools .btn {
+    width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-palette-tools .btn span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-game-actions {
+    flex-wrap: nowrap;
+    gap: 0.45rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-game-actions .btn {
+    flex: none;
+    width: 48px;
+    padding: 0;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-game-actions .btn:not(.primary) span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-game-actions .btn.primary {
+    flex: 1;
+    width: auto;
+  }
+
+  /* The dock's second page. */
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game {
+    grid-template-areas:
+      "bar-start bar-mid bar-end"
+      "stage stage stage"
+      "tune tune tune"
+      "prompt prompt prompt"
+      "actions actions actions";
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game :is(.joyday-tool-grid, .joyday-toolbox > .detail-panel:nth-child(2)) {
+    display: none;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-control-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    padding: 0.6rem 0.75rem 0.5rem;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-thickness-scale {
+    display: none;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-creative-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 0.75rem;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-creative-panel :is(.eyebrow, p) {
+    display: none;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-creative-panel h3 {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-mini-actions {
+    flex-wrap: nowrap;
+    margin: 0;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-mini-actions .btn {
+    width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-mini-actions .btn span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-toolbox > .joyday-mission-panel {
+    grid-area: bar-mid;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    justify-self: stretch;
+    min-height: 46px;
+    padding: 0 0.75rem;
+  }
+
+  html[data-joyday-studio="paint"][data-jds-dock="extras"] #joyday-paint-game .joyday-toolbox > .joyday-sound-panel {
+    display: none;
+  }
+}
+
+/* 7. Painting: a phone on its side --------------------------------------------- */
+
+/* Deliberate, not a squeezed portrait: tools down the left, the canvas the
+ * full height, colours and actions on the right. */
+@media (orientation: landscape) and (max-height: 520px) {
+  html[data-joyday-studio] #joyday-paint-game {
+    gap: 0.5rem 0.7rem;
+    padding: max(0.5rem, env(safe-area-inset-top)) max(0.7rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom)) max(0.7rem, env(safe-area-inset-left));
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game {
+    grid-template-columns: 3.6rem minmax(0, 1fr) 14.5rem;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "tools stage bar-end"
+      "tools stage colours"
+      "tools stage actions";
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game :is(.jds-bar--start, .joyday-toolbox > .joyday-sound-panel) {
+    grid-area: bar-end;
+    justify-self: start;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-toolbox > .joyday-sound-panel {
+    margin-left: 3.4rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game :is(.joyday-control-row, .joyday-creative-panel, .joyday-toolbox > .joyday-mission-panel, .jds-btn--extras, .jds-title) {
+    display: none;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .jds-btn {
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game :is([data-jds-exit], [data-jds-new]) span,
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-sound-toggle span,
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-game-actions .btn:not(.primary) span,
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-palette-tools .btn span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-sound-toggle {
+    width: 42px;
+    min-height: 42px;
+    padding: 0;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.45rem;
+    align-self: center;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid button {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    min-height: 3.3rem;
+    padding: 0.35rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid :is(strong, small) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid i {
+    grid-row: auto;
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-toolbox > .detail-panel:nth-child(2) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.4rem 0.5rem;
+    align-self: center;
+    padding: 0.5rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-toolbox > .detail-panel:nth-child(2) .eyebrow,
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-custom-color span,
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-palette-tools small {
+    display: none;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-color-grid {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    padding: 0;
+    overflow: visible;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-color-grid button {
+    width: auto;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game :is(.joyday-custom-color, .joyday-palette-tools) {
+    margin: 0;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-palette-tools .btn {
+    width: 2.6rem;
+    min-height: 2.5rem;
+    padding: 0;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-game-actions {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-game-actions .btn {
+    flex: 1 1 2.6rem;
+    width: auto;
+    min-height: 42px;
+    padding: 0;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-game-actions .btn.primary {
+    flex: 1 1 100%;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "bar-start bar-end"
+      "title tools"
+      "formats tools"
+      "go hint";
+    row-gap: 0.6rem;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-toolbox > .joyday-sound-panel {
+    grid-area: bar-end;
+    justify-self: start;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .jds-start {
+    text-align: left;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game :is(.joyday-tool-grid small, .joyday-canvas-options small) {
+    display: none;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game :is(.joyday-tool-grid, .jds-go, .joyday-canvas-hint) {
+    align-self: start;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-canvas-options button {
+    padding: 0.45rem 0.4rem;
+  }
+}
+
+/* 8. The finished artwork ------------------------------------------------------ */
+
+html[data-joyday-studio] .joyday-finish-modal {
+  z-index: 2100;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  backdrop-filter: none;
+}
+
+html[data-joyday-studio] .joyday-finish-card {
+  width: min(100%, 62rem);
+  max-height: 100%;
+}
+
+html[data-joyday-studio] .joyday-finish-preview {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+html[data-joyday-studio] .joyday-finish-preview img {
+  max-height: min(56vh, 30rem);
+}
+
+/* Arriving: the artwork is hung, once per opening. */
+html[data-joyday-studio] .joyday-finish-modal.jds-arrive .joyday-finish-card {
+  animation: jds-card 300ms cubic-bezier(0.2, 0, 0, 1) backwards;
+}
+
+html[data-joyday-studio] .joyday-finish-modal.jds-arrive .joyday-finish-preview img {
+  animation: jds-hang 520ms cubic-bezier(0.2, 0.9, 0.3, 1.25) 120ms backwards;
+}
+
+@keyframes jds-card {
+  from {
+    opacity: 0;
+    translate: 0 1.5rem;
+  }
+}
+
+@keyframes jds-hang {
+  from {
+    opacity: 0;
+    rotate: -7deg;
+    scale: 0.82;
+  }
+}
+
+html[data-joyday-studio] .joyday-finish-copy .eyebrow::before {
+  display: none;
+}
+
+html[data-joyday-studio] .joyday-finish-copy > p:not(.eyebrow) {
+  font: 500 0.95rem / 1.5 Inter, sans-serif;
+}
+
+html[data-joyday-studio] .joyday-art-name input,
+html[data-joyday-studio] .joyday-export-switch button,
+html[data-joyday-studio] .joyday-finish-actions .btn,
+html[data-joyday-studio] .joyday-modal-close {
+  transform: none;
+  transition: translate 90ms ease-out, box-shadow 90ms ease-out;
+}
+
+html[data-joyday-studio] .joyday-art-name input {
+  box-shadow: none;
+}
+
+html[data-joyday-studio] .joyday-check-row {
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] .joyday-finish-actions .btn {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1rem;
+}
+
+html[data-joyday-studio] .joyday-finish-actions .btn.primary {
+  flex: 1 1 100%;
+}
+
+@media (max-width: 900px) {
+  html[data-joyday-studio] .joyday-finish-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+    padding: 0.9rem;
+  }
+
+  html[data-joyday-studio] .joyday-finish-preview {
+    padding: 0.75rem;
+  }
+
+  html[data-joyday-studio] .joyday-finish-preview img {
+    max-height: 23vh;
+  }
+
+  html[data-joyday-studio] .joyday-finish-copy {
+    padding: 0;
+  }
+
+  html[data-joyday-studio] .joyday-finish-copy > p:not(.eyebrow) {
+    display: none;
+  }
+
+  html[data-joyday-studio] .joyday-finish-copy h2 {
+    font-size: 1.3rem;
+  }
+
+  html[data-joyday-studio] .joyday-art-name {
+    margin-top: 0.7rem;
+  }
+
+  html[data-joyday-studio] .joyday-export-switch {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html[data-joyday-studio] .joyday-finish-actions .btn {
+    flex: 1 1 calc(50% - 0.5rem);
+    padding: 0 0.6rem;
+  }
+}
+
+/* 9. Motion discipline --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-joyday-studio] #joyday-paint-game,
+  html[data-joyday-studio] #joyday-paint-game *,
+  html[data-joyday-studio] .joyday-finish-modal,
+  html[data-joyday-studio] .joyday-finish-modal * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  html[data-joyday-studio] #joyday-paint-game {
+    background: Canvas;
+  }
+}
+
+/* 10. Short screens ------------------------------------------------------------ */
+
+/* A laptop with little height keeps every dock on screen: the right column
+ * drops its explanatory lines before it would ask the studio to scroll. */
+@media (min-width: 901px) and (max-height: 780px) {
+  html[data-joyday-studio="paint"] #joyday-paint-game {
+    row-gap: 0.55rem;
+    padding-block: 0.6rem 0.7rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-palette-tools small {
+    display: none;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game :is(.joyday-thickness-scale, .joyday-creative-panel p:not(.eyebrow), .joyday-custom-color span) {
+    display: none;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game :is(.joyday-toolbox > .detail-panel, .joyday-control-row) {
+    padding-block: 0.6rem 0.65rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-custom-color {
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-tool-grid button {
+    min-height: 3.7rem;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 640px) {
+  html[data-joyday-studio="paint"] #joyday-paint-game .joyday-creative-panel {
+    display: none;
+  }
+}
+
+/* 11. Labels and controls ------------------------------------------------------ */
+
+/* How the studio's controls are made: workshop labels — paper, a graphite
+ * hairline, small caps in the mono — that press a pixel and never bounce.
+ * Sections 2–10 hold layout and behaviour; where a declaration here and one
+ * there disagree, this one is the look. Section 12 sets the room they sit in
+ * and its moods, and with them every colour the interface owns. */
+html[data-joyday-studio] {
+  --jds-ink: #1d1e20;
+  --jds-muted: #5a5853;
+  --jds-line: #2c2d2f;
+  --jds-radius: 3px;
+  --jds-label: 600 0.72rem / 1.2 "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+/* The engine's own sheet reads these site tokens; here they are the studio's. */
+html[data-joyday-studio] #joyday-paint-game {
+  --text: var(--jds-ink);
+  --muted: var(--jds-muted);
+  --line: var(--jds-line);
+  --brand: var(--jds-hot-ink);
+  --accent: var(--jds-ink);
+  color: var(--jds-ink);
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+/* A few dried flecks by the floor, where a wide screen leaves the wall bare. */
+@media (min-width: 1101px) {
+  html[data-joyday-studio="paint"] #joyday-paint-game::before {
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+    left: 0;
+    width: 14rem;
+    height: 9rem;
+    content: "";
+    pointer-events: none;
+  }
+}
+
+/* Controls are workshop labels: paper, a graphite hairline, small caps set in
+ * the mono. They press a pixel; nothing bounces. */
+html[data-joyday-studio] #joyday-paint-game :is(.jds-btn, .jds-cta, .joyday-tool-grid button, .joyday-canvas-options button, .joyday-game-actions .btn, .joyday-sound-toggle, .joyday-palette-tools .btn, .joyday-mini-actions .btn) {
+  border: 1px solid var(--jds-line);
+  border-radius: var(--jds-radius);
+  background: var(--jds-white);
+  box-shadow: none;
+  color: var(--jds-ink);
+  font: var(--jds-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    translate 80ms ease-out,
+    background-color 120ms ease-out,
+    color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.jds-btn, .jds-cta, .joyday-tool-grid button, .joyday-canvas-options button, .joyday-game-actions .btn, .joyday-sound-toggle, .joyday-palette-tools .btn, .joyday-mini-actions .btn):hover {
+  background: var(--jds-paper);
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.jds-btn, .jds-cta, .joyday-tool-grid button, .joyday-canvas-options button, .joyday-game-actions .btn, .joyday-sound-toggle, .joyday-palette-tools .btn, .joyday-mini-actions .btn):active {
+  box-shadow: none;
+  translate: 0 1px;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-game-actions .btn, .jds-btn, .joyday-mini-actions .btn):disabled {
+  box-shadow: none;
+  translate: none;
+}
+
+/* On the wall itself — the shell bar and the bench under the canvas — a
+ * control is drawn in the wall's own ink, not on paper. */
+html[data-joyday-studio] #joyday-paint-game :is(.jds-bar .jds-btn, .joyday-sound-toggle, .joyday-game-actions .btn:not(.primary)) {
+  border-color: var(--jds-on-wall-line);
+  background: transparent;
+  color: var(--jds-on-wall);
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.jds-bar .jds-btn, .joyday-sound-toggle, .joyday-game-actions .btn:not(.primary)):hover {
+  border-color: var(--jds-on-wall);
+  background: transparent;
+  color: var(--jds-on-wall);
+}
+
+/* The one action a state exists for. */
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-game-actions .btn.primary, .jds-cta),
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-game-actions .btn.primary, .jds-cta):hover {
+  border-color: var(--jds-hot);
+  background: var(--jds-hot);
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-cta {
+  border-radius: var(--jds-radius);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+}
+
+/* Paper panels. */
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-toolbox > .detail-panel, .joyday-control-row, .joyday-canvas-hint) {
+  border: 0;
+  border-radius: var(--jds-radius);
+  background: var(--jds-paper);
+  box-shadow: none;
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-toolbox > :is(.detail-panel:nth-child(1), .joyday-sound-panel) {
+  background: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .eyebrow {
+  color: var(--jds-muted);
+  font: var(--jds-label);
+  letter-spacing: 0.14em;
+}
+
+/* The title is a strip of tape on the wall. */
+html[data-joyday-studio] #joyday-paint-game .jds-title {
+  padding: 0.32rem 0.7rem 0.3rem;
+  background: var(--jds-paper);
+  color: var(--jds-ink);
+  font: var(--jds-label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  rotate: -1.4deg;
+}
+
+/* Mission: a job ticket. */
+html[data-joyday-studio] #joyday-paint-game .joyday-toolbox > .joyday-mission-panel {
+  border-radius: var(--jds-radius);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-mission-panel h3 {
+  color: var(--jds-ink);
+  font: var(--jds-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-progress {
+  height: 0.4rem;
+  border: 0;
+  border-radius: 0;
+  background: rgba(29, 30, 32, 0.18);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-progress span {
+  border-radius: 0;
+  background: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-mission-panel small {
+  color: var(--jds-muted);
+  font: var(--jds-label);
+}
+
+/* The canvas: stretched linen on the wall, on an oak ledge. */
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame,
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-rect {
+  border: 0;
+  border-radius: 2px;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-circle {
+  border-radius: 50%;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-painting {
+  translate: 0 2px;
+}
+
+/* A mark that lands throws a little paint, in the colour in hand, from where
+ * it landed (the controller places it). It is the only splatter the studio
+ * draws, and it is gone in under half a second. */
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.jds-hit {
+  animation: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-wall-scene::after {
+  position: absolute;
+  z-index: 3;
+  top: var(--jds-hit-y, 50%);
+  left: var(--jds-hit-x, 50%);
+  width: 11rem;
+  height: 11rem;
+  margin: -5.5rem 0 0 -5.5rem;
+  background:
+    radial-gradient(circle at 18% 30%, var(--jds-paint) 0 0.34rem, transparent 0.38rem),
+    radial-gradient(circle at 82% 22%, var(--jds-paint) 0 0.22rem, transparent 0.26rem),
+    radial-gradient(circle at 70% 78%, var(--jds-paint) 0 0.42rem, transparent 0.46rem),
+    radial-gradient(circle at 26% 84%, var(--jds-paint) 0 0.18rem, transparent 0.22rem),
+    radial-gradient(circle at 48% 8%, var(--jds-paint) 0 0.14rem, transparent 0.18rem),
+    radial-gradient(circle at 94% 54%, var(--jds-paint) 0 0.16rem, transparent 0.2rem),
+    radial-gradient(circle at 6% 58%, var(--jds-paint) 0 0.2rem, transparent 0.24rem);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-wall-scene.jds-splash::after {
+  animation: jds-splash 420ms cubic-bezier(0.15, 0.7, 0.3, 1);
+}
+
+@keyframes jds-splash {
+  0% {
+    opacity: 0.95;
+    scale: 0.25;
+    rotate: var(--jds-hit-turn, 0deg);
+  }
+
+  100% {
+    opacity: 0;
+    scale: 1.15;
+    rotate: var(--jds-hit-turn, 0deg);
+  }
+}
+
+/* Tools: labelled, on steel. The one in hand is graphite, with its tile in acid. */
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid i {
+  border-radius: 2px;
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid strong {
+  font: var(--jds-label);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid small {
+  color: var(--jds-muted);
+  font: 500 0.76rem / 1.3 Inter, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button.is-active,
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options button.is-active {
+  box-shadow: none;
+  translate: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button.is-active i {
+  background: var(--jds-acid);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button.is-used {
+  animation: jds-used 220ms ease-out;
+}
+
+@keyframes jds-used {
+  35% {
+    translate: 0 2px;
+  }
+}
+
+/* Formats */
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options button > span {
+  border: 1px solid var(--jds-line);
+  background: #fffaf1;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options strong {
+  font: var(--jds-label);
+  font-size: 0.78rem;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options small {
+  color: var(--jds-muted);
+  font: 500 0.76rem / 1.3 Inter, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Colours: pots of paint. This is the visitor's colour, not the interface's. */
+html[data-joyday-studio] #joyday-paint-game .joyday-color-grid button {
+  border: 1px solid rgba(29, 30, 32, 0.55);
+  box-shadow: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-color-grid button:hover {
+  box-shadow: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-color-grid button.is-active {
+  box-shadow:
+    0 0 0 2px var(--jds-paper),
+    0 0 0 4px var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-custom-color {
+  color: var(--jds-muted);
+  font: var(--jds-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-custom-color input {
+  border: 1px solid var(--jds-line);
+  border-radius: var(--jds-radius);
+  background: var(--jds-white);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-palette-tools small {
+  color: var(--jds-muted);
+  font: var(--jds-label);
+}
+
+/* Stroke settings */
+html[data-joyday-studio] #joyday-paint-game .joyday-thickness-head strong {
+  color: var(--jds-ink);
+  font: var(--jds-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-thickness-head span, .joyday-thickness-scale span) {
+  color: var(--jds-muted);
+  font: var(--jds-label);
+  font-weight: 500;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-thickness-control input[type="range"] {
+  accent-color: var(--jds-ink);
+}
+
+/* Prompt */
+html[data-joyday-studio] #joyday-paint-game .joyday-creative-panel h3 {
+  color: var(--jds-ink);
+  font: 700 1.15rem / 1.15 Manrope, Inter, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-creative-panel p:not(.eyebrow) {
+  color: var(--jds-muted);
+}
+
+/* Start state */
+html[data-joyday-studio] #joyday-paint-game .jds-start {
+  font: 800 clamp(1.8rem, 1.2rem + 2.4vw, 3.1rem) / 1.02 Manrope, Inter, sans-serif;
+  letter-spacing: -0.045em;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-hint strong {
+  color: var(--jds-ink);
+  font: var(--jds-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-hint span {
+  color: var(--jds-muted);
+}
+
+/* Failure */
+html[data-joyday-studio] #joyday-paint-game .jds-error {
+  border: 0;
+  border-radius: var(--jds-radius);
+  background: var(--jds-paper);
+  box-shadow: inset 3px 0 0 var(--jds-hot);
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-error strong {
+  font: 700 1.3rem / 1.15 Manrope, Inter, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-error p {
+  color: var(--jds-muted);
+}
+
+/* The finished artwork: hung, labelled, signed off. */
+html[data-joyday-studio] .joyday-finish-modal {
+  --text: var(--jds-ink);
+  --muted: var(--jds-muted);
+  --line: var(--jds-line);
+  --brand: var(--jds-hot-ink);
+  color: var(--jds-ink);
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+html[data-joyday-studio] .joyday-finish-card {
+  border: 0;
+  border-radius: var(--jds-radius);
+  background: var(--jds-paper);
+  box-shadow: 0 2.5rem 5rem -2rem rgba(0, 0, 0, 0.7);
+}
+
+html[data-joyday-studio] .joyday-finish-preview {
+  border: 0;
+  border-radius: 2px;
+}
+
+html[data-joyday-studio] .joyday-finish-preview img {
+  border: 0;
+  border-radius: 2px;
+}
+
+/* “Artwork ready”, stamped. */
+html[data-joyday-studio] .joyday-finish-copy .eyebrow {
+  display: inline-block;
+  padding: 0.28rem 0.55rem 0.24rem;
+  border: 1.5px solid var(--jds-hot-ink);
+  color: var(--jds-hot-ink);
+  font: var(--jds-label);
+  letter-spacing: 0.16em;
+  rotate: -2deg;
+}
+
+html[data-joyday-studio] .joyday-finish-copy h2 {
+  color: var(--jds-ink);
+  font: 800 clamp(1.5rem, 1.1rem + 1.6vw, 2.3rem) / 1.05 Manrope, Inter, sans-serif;
+  letter-spacing: -0.04em;
+}
+
+html[data-joyday-studio] .joyday-finish-copy > p:not(.eyebrow) {
+  color: var(--jds-muted);
+}
+
+html[data-joyday-studio] :is(.joyday-art-name, .joyday-check-row) {
+  color: var(--jds-ink);
+  font: var(--jds-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-joyday-studio] .joyday-check-row input {
+  accent-color: var(--jds-ink);
+}
+
+html[data-joyday-studio] .joyday-export-switch {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+html[data-joyday-studio] .joyday-art-name input,
+html[data-joyday-studio] .joyday-export-switch button,
+html[data-joyday-studio] .joyday-finish-actions .btn,
+html[data-joyday-studio] .joyday-modal-close {
+  border: 1px solid var(--jds-line);
+  border-radius: var(--jds-radius);
+  background: var(--jds-white);
+  box-shadow: none;
+  color: var(--jds-ink);
+  font: var(--jds-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-joyday-studio] .joyday-art-name input {
+  font: 500 0.95rem / 1.2 Inter, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+html[data-joyday-studio] :is(.joyday-export-switch button, .joyday-finish-actions .btn, .joyday-modal-close):active {
+  box-shadow: none;
+  translate: 0 1px;
+}
+
+html[data-joyday-studio] .joyday-finish-actions .btn.primary {
+  border-color: var(--jds-hot);
+  background: var(--jds-hot);
+  color: var(--jds-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-joyday-studio] #joyday-paint-game .joyday-wall-scene.jds-splash::after {
+    animation: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  html[data-joyday-studio] #joyday-paint-game .joyday-wall-scene::after {
+    display: none;
+  }
+}
+
+/* Labels at small sizes: the mono caps are set tighter where the dock is
+ * narrow, and a long tool name wraps inside its label instead of widening it. */
+@media (max-width: 900px) {
+  html[data-joyday-studio] #joyday-paint-game :is(.joyday-tool-grid, .joyday-canvas-options) button {
+    min-width: 0;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game :is(.joyday-tool-grid, .joyday-canvas-options) strong {
+    max-width: 100%;
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-joyday-studio] #joyday-paint-game .joyday-game-actions .btn.primary {
+    min-width: 0;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  html[data-joyday-studio="start"] #joyday-paint-game .jds-start {
+    font-size: 1.1rem;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-tool-grid button {
+    padding: 0.45rem 0.3rem;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-canvas-hint {
+    padding: 0.5rem 0.7rem;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .joyday-canvas-hint span {
+    font-size: 0.74rem;
+    line-height: 1.35;
+  }
+
+  html[data-joyday-studio="start"] #joyday-paint-game .jds-cta {
+    min-height: 44px;
+    font-size: 0.72rem;
+  }
+}
+
+/* 12. The daylight studio and its palette moods -------------------------------- */
+
+/* The studio is a daylight room: plaster wall, light from a window up to the
+ * left, an easel, paper labels. It is the same room in the site's dark and
+ * light themes — it is Joyday's, and Joyday is a daytime place.
+ *
+ * A palette changes the room. js/pages/joyday-studio.js sorts the palette in
+ * hand into one of six moods from its colours and sets html[data-jds-mood];
+ * each mood below only re-tunes tokens — the wall's temperature, the light,
+ * the warmth of paper and wood, the accent for what is in hand, the primary
+ * action, and the flecks by the floor. No layout, no control and no pixel of
+ * the artwork changes, and every pairing keeps graphite text on a light
+ * ground. The tokens are registered colours, so a change of mood is one
+ * short cross-fade and then the room is still again. */
+@property --jds-wall { syntax: "<color>"; inherits: true; initial-value: #efe8dc; }
+@property --jds-light { syntax: "<color>"; inherits: true; initial-value: rgba(255, 236, 196, 0.8); }
+@property --jds-paper { syntax: "<color>"; inherits: true; initial-value: #f8f3ea; }
+@property --jds-white { syntax: "<color>"; inherits: true; initial-value: #fdfaf4; }
+@property --jds-wood { syntax: "<color>"; inherits: true; initial-value: #b48d62; }
+@property --jds-acid { syntax: "<color>"; inherits: true; initial-value: #ffd23f; }
+@property --jds-hot { syntax: "<color>"; inherits: true; initial-value: #ff5a6e; }
+
+html[data-joyday-studio] {
+  /* Joyday Pop: the room as it opens. */
+  --jds-wall: #efe8dc;
+  --jds-light: rgba(255, 236, 196, 0.8);
+  --jds-paper: #f8f3ea;
+  --jds-white: #fdfaf4;
+  --jds-wood: #b48d62;
+  --jds-acid: #ffd23f;
+  --jds-hot: #ff5a6e;
+  --jds-hot-ink: #b3123f;
+  --jds-trace-1: #ff5a6e;
+  --jds-trace-2: #2cc7c0;
+  --jds-trace-3: #ffd23f;
+  --jds-on-wall: #1d1e20;
+  --jds-on-wall-muted: #6b665d;
+  --jds-on-wall-line: rgba(29, 30, 32, 0.38);
+  --jds-shade: rgba(88, 62, 36, 0.14);
+  transition:
+    --jds-wall 700ms ease,
+    --jds-light 700ms ease,
+    --jds-paper 700ms ease,
+    --jds-white 700ms ease,
+    --jds-wood 700ms ease,
+    --jds-acid 500ms ease,
+    --jds-hot 500ms ease;
+}
+
+html[data-joyday-studio][data-jds-mood="soft"] {
+  --jds-wall: #f0e6e3;
+  --jds-light: rgba(255, 228, 236, 0.85);
+  --jds-paper: #faf3f1;
+  --jds-white: #fefaf9;
+  --jds-wood: #c6a98c;
+  --jds-acid: #f7c4d6;
+  --jds-hot: #f47fa6;
+  --jds-hot-ink: #a8375f;
+  --jds-trace-1: #f8c8dc;
+  --jds-trace-2: #b8e0d2;
+  --jds-trace-3: #cdb4db;
+}
+
+html[data-joyday-studio][data-jds-mood="sunset"] {
+  --jds-wall: #efdcc6;
+  --jds-light: rgba(255, 196, 132, 0.7);
+  --jds-paper: #f9efe0;
+  --jds-white: #fdf7ec;
+  --jds-wood: #9a6a42;
+  --jds-acid: #f6b23c;
+  --jds-hot: #ee5b34;
+  --jds-hot-ink: #9c2b12;
+  --jds-trace-1: #ef4444;
+  --jds-trace-2: #f59e0b;
+  --jds-trace-3: #be123c;
+  --jds-shade: rgba(110, 58, 24, 0.2);
+}
+
+html[data-joyday-studio][data-jds-mood="blue"] {
+  --jds-wall: #e2e8eb;
+  --jds-light: rgba(214, 236, 255, 0.9);
+  --jds-paper: #f3f6f6;
+  --jds-white: #fafcfc;
+  --jds-wood: #a79a88;
+  --jds-acid: #86e1f5;
+  --jds-hot: #ff5a6e;
+  --jds-hot-ink: #1c4fb3;
+  --jds-trace-1: #0ea5e9;
+  --jds-trace-2: #14b8a6;
+  --jds-trace-3: #1d4ed8;
+  --jds-shade: rgba(36, 62, 96, 0.16);
+}
+
+/* Electric Joy is the punk one: acid, magenta, and the tape goes black. */
+html[data-joyday-studio][data-jds-mood="electric"] {
+  --jds-wall: #e7e4e6;
+  --jds-light: rgba(240, 232, 255, 0.75);
+  --jds-paper: #f6f3f1;
+  --jds-white: #fcfbf9;
+  --jds-wood: #8f8a86;
+  --jds-acid: #dcff3d;
+  --jds-hot: #ff3d9a;
+  --jds-hot-ink: #b0106a;
+  --jds-trace-1: #ff007f;
+  --jds-trace-2: #00f5d4;
+  --jds-trace-3: #7c3aed;
+  --jds-shade: rgba(40, 30, 60, 0.16);
+}
+
+html[data-joyday-studio][data-jds-mood="morning"] {
+  --jds-wall: #e8eef0;
+  --jds-light: rgba(255, 250, 224, 0.95);
+  --jds-paper: #f6f8f7;
+  --jds-white: #fcfdfc;
+  --jds-wood: #c9b49a;
+  --jds-acid: #fff1a6;
+  --jds-hot: #ff8f95;
+  --jds-hot-ink: #2b62a0;
+  --jds-trace-1: #bcdcf5;
+  --jds-trace-2: #f9cfe0;
+  --jds-trace-3: #bfe8d6;
+  --jds-shade: rgba(60, 80, 96, 0.12);
+}
+
+/* The wall. */
+html[data-joyday-studio] #joyday-paint-game {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .4 0 0 0 0 .35 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(95% 75% at 18% 4%, var(--jds-light), transparent 62%),
+    linear-gradient(180deg, transparent 74%, var(--jds-shade)),
+    var(--jds-wall);
+}
+
+/* Dried paint by the floor, in the mood's own colours. */
+@media (min-width: 1101px) {
+  html[data-joyday-studio="paint"] #joyday-paint-game::before {
+    background:
+      radial-gradient(circle at 3.2rem calc(100% - 1.5rem), var(--jds-trace-1) 0 3px, transparent 4px),
+      radial-gradient(circle at 4.9rem calc(100% - 0.8rem), var(--jds-trace-2) 0 2px, transparent 3px),
+      radial-gradient(circle at 2rem calc(100% - 0.6rem), var(--jds-trace-3) 0 2px, transparent 3px),
+      radial-gradient(circle at 7.4rem calc(100% - 1.2rem), var(--jds-trace-2) 0 1.5px, transparent 2.5px),
+      radial-gradient(circle at 9.6rem calc(100% - 0.5rem), var(--jds-trace-1) 0 1.5px, transparent 2.5px),
+      radial-gradient(circle at 6rem calc(100% - 2.4rem), var(--jds-trace-3) 0 1px, transparent 2px);
+    opacity: 0.9;
+  }
+}
+
+/* On a light wall the shell's controls are paper labels too. */
+html[data-joyday-studio] #joyday-paint-game :is(.jds-bar .jds-btn, .joyday-sound-toggle, .joyday-game-actions .btn:not(.primary)),
+html[data-joyday-studio] #joyday-paint-game :is(.jds-bar .jds-btn, .joyday-sound-toggle, .joyday-game-actions .btn:not(.primary)):hover {
+  border-color: var(--jds-line);
+  background: var(--jds-white);
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.jds-btn, .joyday-sound-toggle)[aria-pressed="true"] {
+  border-color: var(--jds-line);
+  background: var(--jds-acid);
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-game-actions .btn, .jds-btn, .joyday-mini-actions .btn):disabled {
+  border-color: var(--jds-on-wall-line);
+  background: transparent;
+  color: var(--jds-on-wall-muted);
+  opacity: 0.7;
+}
+
+html[data-joyday-studio] #joyday-paint-game :is(button, a, input):focus-visible,
+html[data-joyday-studio] .joyday-finish-modal :is(button, a, input):focus-visible {
+  outline: 2px solid var(--jds-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--jds-acid);
+}
+
+/* Paper casts a little shadow on a daylight wall. */
+html[data-joyday-studio] #joyday-paint-game :is(.joyday-toolbox > .detail-panel:nth-child(n + 2):not(.joyday-sound-panel), .joyday-control-row, .joyday-canvas-hint, .joyday-tool-grid button, .joyday-canvas-options button) {
+  box-shadow: 0 0.7rem 1.1rem -0.9rem rgba(70, 48, 26, 0.55);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-hint {
+  box-shadow:
+    inset 3px 0 0 var(--jds-ink),
+    0 0.7rem 1.1rem -0.9rem rgba(70, 48, 26, 0.55);
+}
+
+/* The easel: one oak mast behind the canvas, the ledge under it. */
+html[data-joyday-studio] #joyday-paint-game .joyday-wall-scene {
+  background: linear-gradient(90deg, transparent calc(50% - 0.6rem), rgba(60, 40, 20, 0.35) calc(50% - 0.6rem) calc(50% - 0.5rem), var(--jds-wood) calc(50% - 0.5rem) calc(50% + 0.5rem), rgba(60, 40, 20, 0.35) calc(50% + 0.5rem) calc(50% + 0.6rem), transparent calc(50% + 0.6rem));
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame,
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-rect {
+  box-shadow:
+    0 0 0 1px rgba(60, 45, 30, 0.42),
+    0 0.55rem 0 0 var(--jds-wood),
+    0 0.55rem 0 1px rgba(60, 40, 20, 0.35),
+    0 2.2rem 2.6rem -1.5rem rgba(70, 48, 26, 0.6);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-circle {
+  box-shadow:
+    0 0 0 1px rgba(60, 45, 30, 0.42),
+    0 2.2rem 2.6rem -1.5rem rgba(70, 48, 26, 0.6);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-painting {
+  box-shadow:
+    0 0 0 1px rgba(60, 45, 30, 0.6),
+    0 0.55rem 0 0 var(--jds-wood),
+    0 0.55rem 0 1px rgba(60, 40, 20, 0.35),
+    0 1.1rem 1.4rem -1rem rgba(70, 48, 26, 0.7);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-frame.is-circle.is-painting {
+  box-shadow:
+    0 0 0 1px rgba(60, 45, 30, 0.6),
+    0 1.1rem 1.4rem -1rem rgba(70, 48, 26, 0.7);
+}
+
+/* What is in hand takes the mood's accent — a card picked up, not inverted. */
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button.is-active,
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options button.is-active {
+  border-color: var(--jds-line);
+  background: var(--jds-acid);
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button.is-active {
+  box-shadow:
+    inset 4px 0 0 var(--jds-paint),
+    0 0.7rem 1.1rem -0.9rem rgba(70, 48, 26, 0.55);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button.is-active small,
+html[data-joyday-studio] #joyday-paint-game .joyday-canvas-options button.is-active small {
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button.is-active i {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+/* Tools are the objects themselves, drawn small: a squeeze bottle, a spray
+ * can, a brush, a water balloon. */
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid i {
+  border: 0;
+  background: transparent center / 100% no-repeat;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid i::before {
+  content: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button[data-joyday-tool="bottle"] i {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg transform='rotate(28 24 24)'%3E%3Crect x='16.5' y='16' width='15' height='25' rx='4' fill='%23ff5a6e'/%3E%3Crect x='16.5' y='24' width='15' height='8' fill='%23fff3d6'/%3E%3Cpath d='M19.5 16l2-7h5l2 7z' fill='%231d1e20'/%3E%3Crect x='22.3' y='4.5' width='3.4' height='5.5' rx='1' fill='%231d1e20'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button[data-joyday-tool="spray"] i {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect x='13' y='18' width='17' height='25' rx='3' fill='%23b9bcc0'/%3E%3Crect x='13' y='25' width='17' height='9' fill='%2335c6c6'/%3E%3Crect x='16.5' y='12' width='10' height='6' rx='2' fill='%231d1e20'/%3E%3Crect x='19.5' y='8' width='5' height='4' rx='1' fill='%23e6504e'/%3E%3Cg fill='%2335c6c6'%3E%3Ccircle cx='31' cy='9' r='1.5'/%3E%3Ccircle cx='36' cy='6.5' r='1.2'/%3E%3Ccircle cx='35.5' cy='12' r='1.3'/%3E%3Ccircle cx='41' cy='9.5' r='1'/%3E%3Ccircle cx='40' cy='15' r='.9'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button[data-joyday-tool="brush"] i {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg transform='rotate(38 24 24)'%3E%3Crect x='21' y='22' width='6' height='23' rx='3' fill='%23b48d62'/%3E%3Crect x='19.5' y='15.5' width='9' height='7.5' fill='%23b9bcc0'/%3E%3Cpath d='M19.500 15.500c0-6 2-9.500 4.500-12 2.500 2.500 4.500 6 4.500 12z' fill='%23f4b942'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+html[data-joyday-studio] #joyday-paint-game .joyday-tool-grid button[data-joyday-tool="balloon"] i {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 5c8 0 14 6 14 14 0 9-8 17-14 20-6-3-14-11-14-20 0-8 6-14 14-14z' fill='%2333b5d6'/%3E%3Cpath d='M22 39h4l1.200 4.500h-6.400z' fill='%231d1e20'/%3E%3Cellipse cx='18.5' cy='15' rx='3' ry='5' fill='%23ffffff' opacity='.55' transform='rotate(-25 18.500 15)'/%3E%3C/svg%3E");
+}
+
+/* Start: Joyday's own mark, pinned up as a paper tag. */
+html[data-joyday-studio] #joyday-paint-game .jds-start {
+  color: var(--jds-ink);
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-start::before {
+  display: block;
+  width: 10.5rem;
+  aspect-ratio: 1600 / 706;
+  margin: 0 auto 1.2rem;
+  border-radius: 2px;
+  background: #ffffff url("/assets/joyday-brand-logo.webp") center / 92% no-repeat;
+  box-shadow: 0 0.8rem 1.2rem -0.8rem rgba(70, 48, 26, 0.6);
+  content: "";
+  rotate: -2.5deg;
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  html[data-joyday-studio] #joyday-paint-game .jds-start::before {
+    display: none;
+  }
+}
+
+/* In Electric Joy the tape is black. */
+html[data-joyday-studio][data-jds-mood="electric"] #joyday-paint-game :is(.jds-title, .jds-mood) {
+  background: var(--jds-ink);
+  color: var(--jds-paper);
+}
+
+/* The mood, said once: a strip of tape on the wall under the bar. */
+html[data-joyday-studio] #joyday-paint-game .jds-mood {
+  position: absolute;
+  z-index: 6;
+  top: calc(max(0.85rem, env(safe-area-inset-top)) + 4rem);
+  left: 50%;
+  display: block;
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  margin: 0;
+  padding: 0.5rem 1rem 0.45rem;
+  background: var(--jds-paper);
+  box-shadow: 0 0.8rem 1.2rem -0.8rem rgba(70, 48, 26, 0.6);
+  color: var(--jds-ink);
+  pointer-events: none;
+  text-align: center;
+  translate: -50% 0;
+  rotate: -1deg;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-mood[hidden] {
+  display: none;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-mood :is(b, strong) {
+  display: inline;
+  font: var(--jds-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-mood b {
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-mood b::after {
+  content: " — ";
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-mood span {
+  display: block;
+  margin-top: 0.2rem;
+  font: 500 0.82rem / 1.3 Inter, sans-serif;
+  opacity: 0.8;
+}
+
+html[data-joyday-studio] #joyday-paint-game .jds-mood--in {
+  animation: jds-mood-in 320ms cubic-bezier(0.2, 0, 0, 1) backwards;
+}
+
+@keyframes jds-mood-in {
+  from {
+    opacity: 0;
+    translate: -50% -0.6rem;
+  }
+}
+
+/* The finished artwork hangs in the same room. */
+html[data-joyday-studio] .joyday-finish-modal {
+  background: rgba(46, 34, 22, 0.62);
+}
+
+html[data-joyday-studio] .joyday-finish-preview {
+  background:
+    radial-gradient(95% 75% at 18% 4%, var(--jds-light), transparent 62%),
+    var(--jds-wall);
+}
+
+html[data-joyday-studio] .joyday-finish-preview img {
+  box-shadow:
+    0 0 0 1px rgba(60, 45, 30, 0.42),
+    0 0.4rem 0 0 var(--jds-wood),
+    0 1.6rem 2rem -1.2rem rgba(70, 48, 26, 0.6);
+}
+
+html[data-joyday-studio] .joyday-export-switch button.is-active {
+  background: var(--jds-acid);
+  color: var(--jds-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-joyday-studio] {
+    transition: none;
+  }
+}
+
+/* On a short screen the start state keeps its controls; the paper tag goes. */
+@media (max-height: 780px) {
+  html[data-joyday-studio] #joyday-paint-game .jds-start::before {
+    display: none;
+  }
+}

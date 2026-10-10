@@ -8,12 +8,14 @@ const normalizeProductionMarkup = (markup) => markup
   .replaceAll("charSet=", "charset=")
   .replaceAll("hrefLang=", "hreflang=")
   .replaceAll("fetchPriority=", "fetchpriority=")
+  .replaceAll("srcSet=", "srcset=")
   .replaceAll("dateTime=", "datetime=")
   .replaceAll(' inert=""', " inert")
   .replaceAll(' checked=""', " checked")
   .replaceAll(" maxLength=", " maxlength=")
   .replaceAll(" autoComplete=", " autocomplete=")
-  .replaceAll(' required=""', " required");
+  .replaceAll(' required=""', " required")
+  .replaceAll(' defer=""', " defer");
 
 export function renderProductionMain(props) {
   // React 19 opportunistically hoists eager-image preload hints into the

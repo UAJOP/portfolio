@@ -29,7 +29,8 @@ There are two blocking layers, and CI runs each as a whole rather than restating
 |---|---|---|
 | Accessibility | `npm run qa:a11y` | A genuine WCAG 2 AA failure must not reach production. Covers the 11 original production pages in dark theme at 390 px, plus Privacy, a project detail route and a German route, and a light-theme matrix (Home, Works, project detail, Games, Request, Privacy, Turkish Blog, and German SINAMA at 1280 px). Light cases persist the theme through the real toggle and reload, so contrast is measured on a settled page; each URL runs in its own incognito context. |
 | React foundation build | `npm run build:react` | Also the JSX gate: `qa:js` parses root files as classic scripts and cannot represent JSX, so a broken React source has to fail here. |
-| React foundation guard | `npm run qa:react` | Proves the build really pre-renders and that no production file was touched. |
+| Emitted artifact | `npm run qa:site:artifact` | The built `dist-site/` is the bounded Pages artifact and nothing else. Also the last check before upload in the deploy job. |
+| V4 release check | `npm run qa:v4:e08` | The current release contract on the built artifact: routes and the 404 page at ten screen sizes, social previews, the asset audit, security metadata, console and hydration. |
 | React preview accessibility | `npm run qa:a11y:react` | The new architecture must not start out less accessible than the one it will replace. |
 
 ### Report-only
@@ -84,10 +85,9 @@ Use `npm ci` rather than `npm install` so the pinned toolchain in `package-lock.
 The workflow runs the React steps in this order, after the deterministic static-site checks and before the accessibility pipeline:
 
 1. `npm run build:react` — Vite client build, SSR build, and pre-render of every preview route.
-2. `npm run qa:react` — inspects `dist-react/` and the repository.
-3. `npm run qa:a11y:react` — Pa11y against the running preview server.
+2. `npm run qa:a11y:react` — Pa11y against the running preview server.
 
-All three block. None of them changes an existing gate, and no existing blocking check was converted to `continue-on-error`. Lighthouse and the external link scan remain the only report-only checks.
+Both block. `npm run qa:react` and `npm run qa:m3:artifact` (the Master 3 parity chain) are no longer run by the workflow: they compare the artifact with snapshots taken before V4 changed it on purpose. Their scripts are unchanged and remain available as diagnostics. The Master 3 foundation, `qa:m3:foundation`, still blocks as part of `npm run qa`. None of them changes an existing gate, and no existing blocking check was converted to `continue-on-error`. Lighthouse and the external link scan remain the only report-only checks.
 
 ### Why the React build is the JSX gate
 

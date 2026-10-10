@@ -107,8 +107,8 @@
     "id": "mergeRush",
     "name": "Merge Rush: Tiny Factory",
     "status": {
-      "en": "Active Development",
-      "tr": "Aktif Geliştirme"
+      "en": "Playable V1",
+      "tr": "Oynanabilir V1"
     },
     "category": {
       "en": "Game Product Systems Engineering",
@@ -137,8 +137,8 @@
         "tr": "4 dakikalık Factory Run hedefi"
       },
       {
-        "en": "5 restoration stages",
-        "tr": "5 fabrika onarım aşaması"
+        "en": "5 factory levels",
+        "tr": "5 fabrika seviyesi"
       },
       {
         "en": "25 progressively unlocked board cells",
@@ -149,12 +149,12 @@
         "tr": "Factory Run + Endless modları"
       },
       {
-        "en": "Footprint-aware placement, merge and deadlock logic",
-        "tr": "Footprint-aware placement, merge ve deadlock mantığı"
+        "en": "Pure rules engine with deadlock detection",
+        "tr": "Kilitlenme tespiti yapan saf kural motoru"
       },
       {
-        "en": "Platform lifecycle, save, audio and language abstractions",
-        "tr": "Platform lifecycle, save, audio ve language abstraction'ları"
+        "en": "Host lifecycle, saved profile, audio and a five-locale layer",
+        "tr": "Ortam yaşam döngüsü, kayıtlı profil, ses ve beş dilli katman"
       }
     ],
     "qaEvidence": [
@@ -180,17 +180,17 @@
         }
       },
       {
-        "viewport": "768×768",
+        "viewport": "820×1180",
         "state": {
-          "en": "Square / tablet",
-          "tr": "Square / tablet"
+          "en": "Tablet",
+          "tr": "Tablet"
         }
       },
       {
-        "viewport": "1262×624",
+        "viewport": "1440×900",
         "state": {
-          "en": "Combo x2 state",
-          "tr": "Combo x2 state"
+          "en": "Victory state",
+          "tr": "Zafer ekranı"
         }
       },
       {
@@ -203,11 +203,12 @@
     ],
     "links": {
       "caseStudy": "/merge-rush-case-study/",
+      "play": "/merge-rush/",
       "games": "/games/"
     },
     "currentFocus": {
-      "en": "Gameplay pacing, retention and production readiness",
-      "tr": "Gameplay pacing, retention ve production readiness"
+      "en": "Real-device verification and pacing for practised players",
+      "tr": "Gerçek cihazda doğrulama ve deneyimli oyuncular için tempo"
     }
   },
   "hospital": {

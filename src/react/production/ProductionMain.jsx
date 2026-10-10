@@ -1,11 +1,18 @@
-import { Fragment, createElement, memo, useState } from "react";
+import { Fragment, createElement, memo, useEffect, useMemo, useState } from "react";
 import homeAboutStructure from "../../../data/site/m3-25b-home-about-structure.json";
 import BuildLog from "./BuildLog.jsx";
+import { applyV4 } from "../v4/consumers.jsx";
+import EcosystemMap from "../v4/EcosystemMap.jsx";
+import { RelatedWork, SectionTracker } from "../v4/DetailShell.jsx";
+import CareerCurrent, { Onward } from "../v4/CareerCurrent.jsx";
+import Constellation from "../v4/Constellation.jsx";
+import HumanMap from "../v4/HumanMap.jsx";
 
 const PROP_NAMES = {
   class: "className",
   tabindex: "tabIndex",
   fetchpriority: "fetchPriority",
+  srcset: "srcSet",
 };
 
 const atPath = (source, dataPath) => String(dataPath).split(".").reduce((value, segment) => value?.[segment], source);
@@ -36,7 +43,7 @@ function nodeText(node, props) {
   if (node.type === "message") return props.copy[node.key] || "";
   if (node.type === "role") return props.roles[node.ref] || "";
   if (node.type === "data") return atPath(props.data, node.path) || "";
-  if (node.type === "text") return node.value;
+  if (node.type === "text") return props.notFoundRuntimeCopy?.[node.value] || node.value;
   if (node.type === "space") return " ";
   return node.children.map((child) => nodeText(child, props)).join("");
 }
@@ -70,6 +77,23 @@ function shouldIgnoreCardActivation(event) {
   return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
 }
 
+/* V4 inner pages address repeated entries by position: the nth entry of a
+ * kind in the structure is the nth record of its model. */
+const ORDINAL_CLASSES = ["experience-item", "experience-card", "training-category", "certificate-card"];
+function ordinalsOf(nodes) {
+  const ordinal = new Map();
+  const seen = {};
+  const walk = (node) => {
+    if (node.type !== "element") return;
+    const classes = String(node.attributes.find((entry) => entry.name === "class")?.value || "").split(/\s+/);
+    for (const name of ORDINAL_CLASSES) if (classes.includes(name)) { ordinal.set(node, seen[name] || 0); seen[name] = (seen[name] || 0) + 1; }
+    node.children.forEach(walk);
+  };
+  nodes.forEach(walk);
+  return ordinal;
+}
+const topLevelIndex = (nodes, name) => nodes.findIndex((node) => node.type === "element" && String(node.attributes.find((entry) => entry.name === "class")?.value || "").split(/\s+/).includes(name));
+
 const CatalogSearch = memo(function CatalogSearch({ catalog, setQuery }) {
   return (
     <div className="project-search-wrap reveal">
@@ -87,7 +111,7 @@ function renderNode(node, props, key, catalogState) {
   if (node.type === "message") return props.copy[node.key];
   if (node.type === "role") return props.roles[node.ref];
   if (node.type === "data") return atPath(props.data, node.path);
-  if (node.type === "text") return node.value;
+  if (node.type === "text") return props.notFoundRuntimeCopy?.[node.value] || node.value;
   const attributes = resolvedAttributes(node, props);
   const action = attributes["data-react-action"];
   if (action) {
@@ -125,12 +149,17 @@ function renderNode(node, props, key, catalogState) {
   if (catalogState && isSection && !descendantCards(node).some((card) => cardVisible(card, props, catalogState))) {
     classes.add("is-hidden");
   }
+  /* V4 primitives a consuming route opts into; null on every other route. A
+   * consumer returns the children it adds, or { arrange } to place them
+   * among the node's own. */
+  const v4Children = props.v4 ? applyV4(props.page, props.v4, node, classes, attributes, key) : null;
   if (classes.size) attributes.className = [...classes].join(" ");
-  const children = buildLogLimit
+  const ownChildren = buildLogLimit
     ? <BuildLog entries={props.buildLog} limit={Number(buildLogLimit)} />
     : node.children.some((child) => child.type !== "space")
       ? node.children.flatMap((child, index) => child.type === "space" ? [] : [renderNode(child, props, `${key}.${index}`, catalogState)])
       : undefined;
+  const children = !v4Children ? ownChildren : v4Children.arrange ? v4Children.arrange(ownChildren || []) : [...(ownChildren || []), ...v4Children];
   const element = createElement(node.tag, { ...attributes, key }, children);
   if (!isFilterBar) return element;
   return (
@@ -149,5 +178,81 @@ export default function ProductionMain(props) {
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
   const catalogState = catalogPage ? { category, query, setCategory, setQuery } : null;
-  return page.children.map((node, index) => renderNode(node, props, `${props.page}.${index}`, catalogState));
+  /* V4 view state (Works). `live` turns on once hydrated, so controls that
+   * need JavaScript are not offered before it can answer. */
+  const [view, setView] = useState("grid");
+  const [live, setLive] = useState(false);
+  useEffect(() => { setLive(true); }, []);
+  const [runtimeLocale, setRuntimeLocale] = useState(props.locale);
+  useEffect(() => {
+    if (props.kind !== "notFound") return;
+    const locale = document.documentElement.lang;
+    if (props.localizedCopy?.[locale]) setRuntimeLocale(locale);
+  }, [props.kind, props.localizedCopy]);
+  /* V4 Certificates: which view, which grouping, which cluster. */
+  const [sky, setSky] = useState({ view: "grid", group: "area", cluster: null });
+  const consumer = props.v4?.consumer;
+  const ordinal = useMemo(() => (consumer === "experience" || consumer === "certificates" ? ordinalsOf(props.structure) : null), [consumer, props.structure]);
+  let live4 = props;
+  if (props.kind === "notFound") live4 = { ...props, notFoundRuntimeCopy: props.localizedCopy?.[runtimeLocale] || null };
+  if (ordinal) live4 = { ...props, v4: { ...props.v4, ordinal, state: sky } };
+  if (props.v4 && catalogState) {
+    /* The projects the catalog's own filter and search currently exclude. */
+    const out = new Set(page.children.flatMap(descendantCards).filter((card) => !cardVisible(card, props, catalogState)).map((card) => {
+      const attributes = resolvedAttributes(card, props);
+      return String(attributes["data-project-link"] || attributes["data-game-link"]).split("/").filter(Boolean).pop();
+    }));
+    live4 = { ...props, v4: { ...props.v4, view, setView, live, catalog: catalogState, out } };
+  }
+  const sections = page.children.map((node, index) => renderNode(node, live4, `${props.page}.${index}`, catalogState));
+  /* V4-E05: Home is one story — who, the flagship proof, how the rest
+   * connects, how the work is done, where it comes from, what is being built
+   * now, what to do next. The ecosystem takes the place of the supporting
+   * evidence list, whose projects it carries, and the way on to Certificates
+   * and About follows the experience summary. */
+  if (props.v4?.flow && props.v4.ecosystem) {
+    const [hero, flagship, model, experience, , latest, closing] = sections;
+    return [
+      hero,
+      flagship,
+      <EcosystemMap key={`${props.page}.v4-ecosystem`} model={props.v4.ecosystem} />,
+      model,
+      experience,
+      <Onward key={`${props.page}.v4-bridge`} links={props.v4.bridge} />,
+      latest,
+      closing,
+    ];
+  }
+  /* V4: a project detail gains its tracker after the hero and its related
+   * work before the closing section. */
+  if (props.v4?.consumer === "detail") {
+    if (props.v4.related) sections.splice(sections.length - 1, 0, <RelatedWork key={`${props.page}.v4-related`} model={props.v4.related} />);
+    /* After the hero itself: a captured page's first child can be whitespace. */
+    sections.splice(Math.max(topLevelIndex(page.children, "case-hero"), 0) + 1, 0, <SectionTracker key={`${props.page}.v4-tracker`} model={props.v4.tracker} />);
+  }
+  /* V4 inner pages. Experience gains its career chart under the hero and the
+   * way on to About before its closing section. */
+  if (consumer === "experience") {
+    sections.splice(sections.length - 1, 0, <Onward key={`${props.page}.v4-onward`} model={props.v4.handoff} />);
+    sections.splice(topLevelIndex(page.children, "page-hero") + 1, 0, <CareerCurrent key={`${props.page}.v4-career`} model={props.v4.career} />);
+  }
+  /* Certificates gains its views, and the constellation, above the catalog. */
+  if (consumer === "certificates") {
+    sections.splice(topLevelIndex(page.children, "training-catalog"), 0, <Constellation key={`${props.page}.v4-sky`} sky={props.v4.sky} state={sky} setState={setSky} live={live} />);
+  }
+  /* About reads in narrative order, with the human map after the hero and
+   * the way on to Experience after the journey that summarises it. */
+  if (consumer === "about") {
+    const [hero, ...story] = props.v4.order.map((index) => sections[index]);
+    const closing = story.pop();
+    return [
+      hero,
+      <SectionTracker key={`${props.page}.v4-tracker`} model={props.v4.tracker} />,
+      <HumanMap key={`${props.page}.v4-human`} model={props.v4.human} />,
+      ...story,
+      <Onward key={`${props.page}.v4-onward`} model={props.v4.handoff} />,
+      closing,
+    ];
+  }
+  return sections;
 }
