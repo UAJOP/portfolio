@@ -899,3 +899,153 @@ html[data-theme="light"] .joyday-finish-card {
     width: 100%;
   }
 }
+
+/* J01 — wallpaper-ready export. joyday-paint.js builds this panel inside the
+ * finished-artwork dialog: size, Fit / Fill, background and focal position. */
+
+.joyday-export-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.joyday-export-panel [hidden] {
+  display: none !important;
+}
+
+.joyday-export-panel .joyday-art-name,
+.joyday-export-panel .joyday-export-switch {
+  margin-top: 0;
+}
+
+.joyday-art-name select {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.065);
+  font: inherit;
+  font-weight: 800;
+}
+
+.joyday-art-name select option,
+.joyday-art-name select optgroup {
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.joyday-art-name select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.joyday-art-name input[aria-invalid="true"] {
+  border-color: #ff8fa3;
+}
+
+.joyday-export-custom {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.joyday-export-custom .joyday-art-name input {
+  width: 100%;
+  min-width: 0;
+}
+
+.joyday-export-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #ff8fa3;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.joyday-export-frame,
+.joyday-export-focal {
+  display: grid;
+  gap: 12px;
+}
+
+.joyday-export-group,
+.joyday-export-range {
+  display: grid;
+  gap: 8px;
+}
+
+.joyday-export-label,
+.joyday-export-range {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.joyday-export-range input {
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  accent-color: var(--brand);
+}
+
+.joyday-export-range input:disabled {
+  opacity: 0.4;
+}
+
+.joyday-export-hint,
+.joyday-export-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.joyday-export-status:empty {
+  display: none;
+}
+
+.joyday-export-output {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.joyday-finish-actions .btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* In Fill the preview is the control: drag it to choose what stays in frame. */
+.joyday-finish-preview img[data-joyday-export-drag] {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.joyday-finish-preview img[data-joyday-export-drag].is-dragging {
+  cursor: grabbing;
+}
+
+html[data-theme="light"] .joyday-art-name select {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72));
+}
+
+html[data-theme="light"] .joyday-export-error {
+  color: #be123c;
+}
+
+html[data-theme="light"] .joyday-art-name input[aria-invalid="true"] {
+  border-color: #be123c;
+}
+
+/* The preview stays in view while the frame is being composed below it. */
+.joyday-finish-preview {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  align-self: start;
+}
