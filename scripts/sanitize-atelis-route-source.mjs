@@ -29,5 +29,8 @@ let html = fs.readFileSync(file, "utf8");
 for (const id of ["react-recruiter-root", "react-ajoop-root", "react-command-root"]) html = removeElementById(html, id);
 html = html.replace(/<script id="react-[^"]+-props" type="application\/json">[\s\S]*?<\/script>/g, "");
 html = html.replace(/<script type="module" src="\/assets-react\/[^"]+"><\/script>/g, "");
+// The committed JS-off fallback must not load the V4 runtime outside the page manifest.
+// The production React prerender still emits its own V4 runtime script.
+html = html.replace(/<script src="\/js\/v4\/runtime\.js" defer><\/script>/g, "");
 fs.writeFileSync(file, html);
 console.log("Sanitized the committed Atelis fallback source; production React output remains authoritative.");
