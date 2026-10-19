@@ -95,6 +95,12 @@
     "ogTitle": "Atölye Joyday Case Study | Kaan Balcı",
     "ogDescription": "A live digital product combining multi-page service discovery, reservation journeys and Google-based operational automation for a creative workshop business."
   },
+  "atelisDesignCaseStudy": {
+    "title": "Atelis Design Case Study | Kaan Balcı",
+    "description": "A multilingual, image-led interior architecture portfolio delivered with Astro, TypeScript, Cloudflare Pages and a verified inquiry workflow.",
+    "ogTitle": "Atelis Design — Multilingual Portfolio Case Study",
+    "ogDescription": "Client web delivery across seven locales, four real projects, responsive galleries, release QA and a live inquiry workflow."
+  },
   "hospitalCaseStudy": {
     "title": "Hospital System Case Study | Kaan Balcı",
     "description": "A C# and .NET Framework Windows Forms case study covering patient, doctor and secretary workflows with a SQL Server data model.",

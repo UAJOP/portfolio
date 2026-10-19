@@ -31,7 +31,9 @@ function ok(name, pass, detail = "") {
 const catalog = json("data/portfolio/catalog.json");
 const details = json("data/portfolio/project-details.json");
 const members = catalog.collections.flatMap((collection) => collection.members);
-const carded = [...catalog.identities, ...members.filter((member) => !member.incomplete)];
+const catalogIdentities = catalog.identities.filter((identity) => identity.card?.catalog !== false);
+const primaryOnlyIdentities = catalog.identities.filter((identity) => identity.card?.catalog === false);
+const carded = [...catalogIdentities, ...members.filter((member) => !member.incomplete)];
 const incomplete = members.filter((member) => member.incomplete);
 const messages = Object.fromEntries(LOCALES.map((locale) => [locale, json(`data/i18n/messages/${locale}/common.json`)]));
 
@@ -90,11 +92,11 @@ for (const locale of LOCALES) {
   const projectCards = cardBlocks(works, "data-catalog-id");
   const memberCards = cardBlocks(works, "data-catalog-member");
 
-  ok(`2. ${locale}: one card per standalone project, no duplicates`, projectCards.length === catalog.identities.length && new Set(projectCards.map((card) => card.id)).size === catalog.identities.length, `${projectCards.length} of ${catalog.identities.length}`);
+  ok(`2. ${locale}: one Complete Catalog card per catalog identity, no duplicates`, projectCards.length === catalogIdentities.length && new Set(projectCards.map((card) => card.id)).size === catalogIdentities.length, `${projectCards.length} of ${catalogIdentities.length}`);
   ok(`2. ${locale}: one card per collection member that has a page`, memberCards.length === members.length - incomplete.length && new Set(memberCards.map((card) => card.id)).size === memberCards.length, String(memberCards.length));
   ok(`2. ${locale}: no plain project list is left`, !/class="v4-catalog__list"/.test(works) && !/class="v4-catalog__tech"/.test(works));
   for (const group of catalog.groups) ok(`2. ${locale}: group ${group} is a keyboard-operable <details> revealing a card grid`, new RegExp(`<details[^>]*id="catalog-${group}"[^>]*><summary>[\\s\\S]*?</summary><ul class="v4-pcards`).test(works));
-  ok(`2. ${locale}: the curated explorer above is untouched in size`, (works.match(/data-v4-card=""/g) || []).length === 10);
+  ok(`2. ${locale}: the curated explorer adds each Primary Evidence-only identity exactly once`, (works.match(/data-v4-card=""/g) || []).length === 10 + primaryOnlyIdentities.length && primaryOnlyIdentities.every((entry) => (works.match(new RegExp(`data-project-id="${entry.id}"`, "g")) || []).length === 1));
 
   const byId = new Map([...projectCards, ...memberCards].map((card) => [card.id, card]));
   for (const entry of carded) {

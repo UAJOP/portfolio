@@ -33,7 +33,7 @@ export const GENERATED_REGISTRY = path.join(REPO_ROOT, "portfolio-data.js");
  * the guard in qa-portfolio-data.js.
  */
 /* catalog.json (V4-E06.5) is read at build time and by QA only: it names private repositories and is never composed into runtime data. */
-export const SERVER_ONLY_FILES = ["ajoop-master-knowledge.json", "catalog.json"];
+export const SERVER_ONLY_FILES = ["ajoop-master-knowledge.json", "catalog.json", "atelis-case-study.json"];
 
 /** Every canonical file, in the order a reader should encounter them. */
 export const CANONICAL_FILES = [

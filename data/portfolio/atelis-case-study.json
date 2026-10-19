@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "id": "atelis-design",
+  "routeId": "atelisDesignCaseStudy",
+  "route": "atelis-design-case-study/",
+  "year": "2026",
+  "client": "Batur Berrak / Atelis Design",
+  "live": "https://atelisdesign.com/en/",
+  "stack": ["Astro", "TypeScript", "Cloudflare Pages", "Cloudflare Functions", "Resend", "i18n"],
+  "palette": ["#E0D7CF", "#DED4CA", "#271C14", "#4B3528", "#6B574D", "#DACEC4"],
+  "facts": {
+    "locales": "7",
+    "projects": "4",
+    "indexableUrls": "63",
+    "htmlPages": "65",
+    "gridTests": "14"
+  },
+  "images": [
+    { "id": "projects", "src": "/assets/atelis/atelis-projects-desktop.webp", "width": 1440, "height": 900, "loading": "eager" },
+    { "id": "home", "src": "/assets/atelis/atelis-home-desktop.webp", "width": 1440, "height": 900 },
+    { "id": "linconnue", "src": "/assets/atelis/atelis-project-linconnue.webp", "width": 1425, "height": 891 },
+    { "id": "walden", "src": "/assets/atelis/atelis-project-walden-gallery.webp", "width": 1440, "height": 900 },
+    { "id": "about", "src": "/assets/atelis/atelis-about-desktop.webp", "width": 1440, "height": 900 },
+    { "id": "services", "src": "/assets/atelis/atelis-services-desktop.webp", "width": 1440, "height": 900 },
+    { "id": "contact", "src": "/assets/atelis/atelis-contact-desktop.webp", "width": 1440, "height": 900 },
+    { "id": "homeMobile", "src": "/assets/atelis/atelis-home-mobile.webp", "width": 390, "height": 844 },
+    { "id": "projectsMobile", "src": "/assets/atelis/atelis-projects-mobile.webp", "width": 375, "height": 812 }
+  ],
+  "locales": {
+    "en": {
+      "meta": {
+        "title": "Atelis Design Case Study | Kaan Balcı",
+        "description": "A multilingual, image-led interior architecture portfolio delivered with Astro, TypeScript, Cloudflare Pages and a verified inquiry workflow.",
+        "ogTitle": "Atelis Design — Multilingual Portfolio Case Study",
+        "ogDescription": "Client web delivery across seven locales, four real projects, responsive galleries, release QA and a live inquiry workflow."
+      },
+      "card": {
+        "title": "Atelis Design — Interior Architecture Portfolio",
+        "category": "Client Web Delivery · Web & Product",
+        "status": "Live · Client Project",
+        "role": "My role: Web Developer · UI/UX & Delivery",
+        "summary": "Delivered a premium seven-language portfolio for an interior architecture client, with four real projects, responsive galleries, a live inquiry workflow and production release QA.",
+        "alt": "Atelis Design German homepage hero presenting the L'Inconnue interior project",
+        "caseStudy": "View Case Study",
+        "live": "Live Website"
+      },
+      "hero": {
+        "eyebrow": "Client Web Delivery · Live",
+        "title": "Atelis Design — a multilingual interior architecture portfolio",
+        "lead": "A production website that keeps architectural photography central while making project discovery, seven-language navigation and professional inquiries reliable across devices.",
+        "roleLabel": "Role",
+        "role": "Web Developer · UI/UX & Delivery",
+        "clientLabel": "Client",
+        "yearLabel": "Year",
+        "typeLabel": "Delivery",
+        "type": "Static-first portfolio + inquiry function",
+        "live": "Open live website",
+        "works": "Back to Works"
+      },
+      "labels": { "stack": "Project technologies", "proof": "Verified project facts", "palette": "Atelis Design color palette", "locales": "Atelis locales", "projects": "Published projects", "urls": "Indexable URLs", "pages": "Generated HTML pages", "tests": "Reported grid tests" },
+      "sections": {
+        "need": { "eyebrow": "Client need", "title": "Make the work feel architectural, not templated.", "body": "The client needed a premium digital presence for prospective clients and collaborators. The interface had to protect the composition of project photography, support complete localized routes and guide visitors from discovery to a professional inquiry without turning the site into a generic corporate template." },
+        "role": { "eyebrow": "Role & collaboration", "title": "Product decisions, implementation, QA and release coordination.", "body": "I translated client feedback into the information architecture, responsive interaction model and production implementation; coordinated content and delivery decisions; and owned QA and release approval. ChatGPT, Claude and Codex assisted parts of the engineering workflow. The interior projects, photography and founder imagery remain the work of Atelis and their respective rights holders." },
+        "direction": { "eyebrow": "UX & art direction", "title": "An editorial frame that stays out of the photography's way.", "body": "Warm neutrals, restrained typography, controlled whitespace and subtle motion keep attention on the interiors. Desktop compositions use generous image-led grids; mobile layouts reorganize the same content without stretching narrow captures into landscape frames." },
+        "portfolio": { "eyebrow": "Portfolio system", "title": "Four real projects, honest placeholders and reusable galleries.", "body": "L'Inconnue, Maison Elan, Walden and Casa Olivia are the published projects. The data-driven grid adds two clearly labelled Coming Soon cards in the All view, supports category filters and counts, and gives real projects localized detail pages with responsive galleries and a keyboard-operable lightbox." },
+        "i18n": { "eyebrow": "Multilingual architecture", "title": "Seven complete Atelis locales with German as the default entry.", "body": "DE, EN, TR, FR, ES, IT and RU use explicit localized URLs. Route helpers keep equivalent paths aligned while canonical and hreflang metadata identify each real language page. This portfolio case study itself follows kaanbalci.com's separate five-language contract." },
+        "inquiry": { "eyebrow": "Inquiry workflow", "title": "A lightweight server-side path from form to business inbox.", "body": "The localized contact form posts to a Cloudflare Pages Function, which validates the request and uses Resend for business notifications. One controlled release test returned HTTP 200 and delivery to the business inbox and CC recipient was confirmed by the site owner; no form is submitted from this case study." },
+        "tradeoffs": { "eyebrow": "Engineering tradeoffs", "title": "Static-first delivery, typed content and an explicit CMS boundary.", "body": "Astro and typed content records keep public pages fast and predictable. Project grid rules are isolated behind 14 permanent algorithm tests. New projects currently require a rebuild and release: there is no live client-managed CMS, dashboard, quotation system or payment flow." },
+        "qa": { "eyebrow": "QA & outcome", "title": "Released with documented multi-locale and responsive evidence.", "body": "The delivered site builds 65 HTML pages, including 63 intended indexable localized URLs. Release records report 14 grid tests, 67 functional interaction checks, 16 contact-function mocks, and 588 plus 168 viewport checks. These are reported release checks, not independently re-run benchmarks, and no lead, conversion or ranking uplift is claimed." },
+        "gallery": { "eyebrow": "Production evidence", "title": "Real screens from the released website.", "body": "The captures show the live homepage, projects index, project detail and gallery, studio, services, empty inquiry form and genuine mobile layouts." },
+        "related": { "eyebrow": "Related work", "title": "Continue with customer-facing delivery.", "joyday": "Atolye Joyday case study", "contact": "Contact", "resume": "View resume" }
+      },
+      "images": {
+        "projects": { "alt": "Atelis Design multilingual projects index showing four interior projects and two coming-soon cards", "caption": "Projects index: four published projects and two explicit Coming Soon cards." },
+        "home": { "alt": "Atelis Design German homepage hero presenting the L'Inconnue interior project", "caption": "German default entry with an image-led project hero." },
+        "linconnue": { "alt": "L'Inconnue project detail with editorial interior image, project facts and gallery thumbnails", "caption": "A reusable localized project detail with facts and thumbnail navigation." },
+        "walden": { "alt": "Walden interior image displayed in the Atelis Design fullscreen gallery viewer", "caption": "The real fullscreen gallery viewer with close and previous/next controls." },
+        "about": { "alt": "Atelis Design Turkish About page showing the studio story, founder Batur Berrak and design values", "caption": "Studio story, founder profile and design values." },
+        "services": { "alt": "Atelis Design services page presenting five interior design services and the project process", "caption": "Services and the four-step client process." },
+        "contact": { "alt": "Atelis Design contact page with an empty localized project inquiry form", "caption": "The empty public inquiry form; no customer data or submission is shown." },
+        "homeMobile": { "alt": "Mobile Atelis Design homepage showing the German L'Inconnue hero composition", "caption": "A genuine 390-pixel mobile homepage capture." },
+        "projectsMobile": { "alt": "Mobile Atelis Design projects index with category filters and responsive project cards", "caption": "Responsive filters and project cards at mobile width." }
+      }
+    },
+    "tr": {
+      "meta": { "title": "Atelis Design Vaka Çalışması | Kaan Balcı", "description": "Astro, TypeScript, Cloudflare Pages ve doğrulanmış iletişim akışı ile teslim edilen, görsel odaklı çok dilli iç mimarlık portfolyosu.", "ogTitle": "Atelis Design — Çok Dilli Portfolyo Vaka Çalışması", "ogDescription": "Yedi dil, dört gerçek proje, responsive galeriler, yayın QA'sı ve canlı iletişim akışı içeren müşteri web teslimi." },
+      "card": { "title": "Atelis Design — İç Mimarlık Portfolyosu", "category": "Müşteri Web Teslimi · Web & Ürün", "status": "Canlı · Müşteri Projesi", "role": "Rolüm: Web Geliştirici · UI/UX ve Teslim", "summary": "Bir iç mimarlık müşterisi için dört gerçek proje, responsive galeriler, canlı iletişim akışı ve production yayın QA'sı içeren premium, yedi dilli portfolyo teslim edildi.", "alt": "Atelis Design Almanca ana sayfasında L'Inconnue iç mekân projesini sunan hero", "caseStudy": "Vaka Çalışmasını İncele", "live": "Canlı Site" },
+      "hero": { "eyebrow": "Müşteri Web Teslimi · Canlı", "title": "Atelis Design — çok dilli bir iç mimarlık portfolyosu", "lead": "Mimari fotoğrafları merkezde tutarken proje keşfini, yedi dilli gezinmeyi ve profesyonel iletişim taleplerini farklı cihazlarda güvenilir kılan production web sitesi.", "roleLabel": "Rol", "role": "Web Geliştirici · UI/UX ve Teslim", "clientLabel": "Müşteri", "yearLabel": "Yıl", "typeLabel": "Teslim", "type": "Static-first portfolyo + iletişim fonksiyonu", "live": "Canlı siteyi aç", "works": "Works'e dön" },
+      "labels": { "stack": "Proje teknolojileri", "proof": "Doğrulanmış proje gerçekleri", "palette": "Atelis Design renk paleti", "locales": "Atelis dili", "projects": "Yayındaki proje", "urls": "İndekslenebilir URL", "pages": "Üretilen HTML sayfası", "tests": "Raporlanan grid testi" },
+      "sections": {
+        "need": { "eyebrow": "Müşteri ihtiyacı", "title": "İşi şablon gibi değil, mimari gibi hissettirmek.", "body": "Müşterinin potansiyel müşteri ve iş ortakları için premium bir dijital varlığa ihtiyacı vardı. Arayüz proje fotoğraflarının kompozisyonunu korumalı, eksiksiz lokalize rotaları desteklemeli ve siteyi genel bir kurumsal şablona çevirmeden ziyaretçiyi keşiften profesyonel iletişime taşımalıydı." },
+        "role": { "eyebrow": "Rol ve iş birliği", "title": "Ürün kararları, uygulama, QA ve yayın koordinasyonu.", "body": "Müşteri geri bildirimini bilgi mimarisine, responsive etkileşim modeline ve production uygulamaya çevirdim; içerik ile teslim kararlarını koordine edip QA ve yayın onayını yönettim. ChatGPT, Claude ve Codex mühendislik akışını destekledi. İç mekân projeleri, fotoğraflar ve kurucu görselleri Atelis'e ve ilgili hak sahiplerine aittir." },
+        "direction": { "eyebrow": "UX ve sanat yönü", "title": "Fotoğrafın önüne geçmeyen editoryal çerçeve.", "body": "Sıcak nötr tonlar, ölçülü tipografi, kontrollü boşluk ve hafif hareket dikkati iç mekânlarda tutuyor. Masaüstü kompozisyonları geniş, görsel odaklı gridler kullanırken mobil düzen aynı içeriği dar ekran görüntülerini yataya esnetmeden yeniden kuruyor." },
+        "portfolio": { "eyebrow": "Portfolyo sistemi", "title": "Dört gerçek proje, dürüst placeholder'lar ve yeniden kullanılabilir galeriler.", "body": "L'Inconnue, Maison Elan, Walden ve Casa Olivia yayındaki projeler. Veri odaklı grid All görünümünde iki Coming Soon kartını açıkça etiketler; kategori filtreleri ve sayaçları destekler; gerçek projelere lokalize detay sayfaları, responsive galeriler ve klavyeyle kullanılabilen lightbox sunar." },
+        "i18n": { "eyebrow": "Çok dilli mimari", "title": "Varsayılan giriş Almanca olmak üzere yedi eksiksiz Atelis dili.", "body": "DE, EN, TR, FR, ES, IT ve RU açık lokalize URL'ler kullanır. Route yardımcıları eşdeğer yolları hizalarken canonical ve hreflang metadata her gerçek dil sayfasını tanımlar. Bu vaka çalışması ise kaanbalci.com'un ayrı beş dil sözleşmesini izler." },
+        "inquiry": { "eyebrow": "İletişim akışı", "title": "Formdan işletme gelen kutusuna hafif bir server-side yol.", "body": "Lokalize iletişim formu, isteği doğrulayan ve işletme bildirimleri için Resend kullanan bir Cloudflare Pages Function'a gönderir. Kontrollü bir yayın testi HTTP 200 döndü; işletme ve CC teslimi site sahibi tarafından doğrulandı. Bu vaka çalışmasından form gönderilmez." },
+        "tradeoffs": { "eyebrow": "Mühendislik ödünleşimleri", "title": "Static-first teslim, typed içerik ve açık CMS sınırı.", "body": "Astro ve typed içerik kayıtları public sayfaları hızlı ve öngörülebilir tutar. Grid kuralları 14 kalıcı algoritma testiyle korunur. Yeni proje eklemek şu an rebuild ve yayın gerektirir; canlı, müşteri yönetimli CMS, dashboard, teklif veya ödeme akışı yoktur." },
+        "qa": { "eyebrow": "QA ve sonuç", "title": "Belgelenmiş çok dilli ve responsive kanıtla yayına alındı.", "body": "Teslim edilen site, 63'ü indekslenmesi hedeflenen lokalize URL olmak üzere 65 HTML sayfası üretir. Yayın kayıtları 14 grid testi, 67 fonksiyonel etkileşim kontrolü, 16 contact function mock'u ve 588 + 168 viewport kontrolü bildiriyor. Bunlar raporlanmış yayın kontrolleridir; bağımsız olarak yeniden çalıştırılmış benchmark değildir ve lead, dönüşüm veya sıralama artışı iddia edilmez." },
+        "gallery": { "eyebrow": "Production kanıtı", "title": "Yayındaki siteden gerçek ekranlar.", "body": "Görüntüler canlı ana sayfayı, projeler indeksini, proje detayı ve galeriyi, stüdyo, hizmetler ve boş iletişim formu sayfalarını ve gerçek mobil düzenleri gösterir." },
+        "related": { "eyebrow": "İlgili çalışmalar", "title": "Müşteriye dönük teslimlerle devam edin.", "joyday": "Atolye Joyday vaka çalışması", "contact": "İletişim", "resume": "CV'yi görüntüle" }
+      },
+      "images": {
+        "projects": { "alt": "Dört iç mekân projesi ve iki Coming Soon kartı gösteren Atelis Design çok dilli projeler indeksi", "caption": "Projeler indeksi: dört yayındaki proje ve iki açık Coming Soon kartı." },
+        "home": { "alt": "L'Inconnue iç mekân projesini sunan Atelis Design Almanca ana sayfa hero'su", "caption": "Görsel odaklı proje hero'suyla Almanca varsayılan giriş." },
+        "linconnue": { "alt": "Editoryal iç mekân görseli, proje bilgileri ve galeri küçük resimleriyle L'Inconnue proje detayı", "caption": "Bilgiler ve küçük resim gezinmesi içeren yeniden kullanılabilir lokalize proje detayı." },
+        "walden": { "alt": "Atelis Design tam ekran galeri görüntüleyicisinde Walden iç mekân görseli", "caption": "Kapatma ve önceki/sonraki kontrolleriyle gerçek tam ekran galeri." },
+        "about": { "alt": "Stüdyo hikâyesi, kurucu Batur Berrak ve tasarım değerlerini gösteren Atelis Design Türkçe Hakkımızda sayfası", "caption": "Stüdyo hikâyesi, kurucu profili ve tasarım değerleri." },
+        "services": { "alt": "Beş iç mimarlık hizmeti ve proje sürecini sunan Atelis Design hizmetler sayfası", "caption": "Hizmetler ve dört adımlı müşteri süreci." },
+        "contact": { "alt": "Boş lokalize proje talep formuyla Atelis Design iletişim sayfası", "caption": "Boş public iletişim formu; müşteri verisi veya gönderim yok." },
+        "homeMobile": { "alt": "Almanca L'Inconnue hero kompozisyonunu gösteren mobil Atelis Design ana sayfası", "caption": "Gerçek 390 piksel mobil ana sayfa görüntüsü." },
+        "projectsMobile": { "alt": "Kategori filtreleri ve responsive proje kartlarıyla mobil Atelis Design projeler indeksi", "caption": "Mobil genişlikte responsive filtreler ve proje kartları." }
+      }
+    },
+    "de": {
+      "meta": { "title": "Atelis Design Fallstudie | Kaan Balcı", "description": "Ein bildorientiertes, mehrsprachiges Innenarchitektur-Portfolio, umgesetzt mit Astro, TypeScript, Cloudflare Pages und einem verifizierten Anfrageprozess.", "ogTitle": "Atelis Design — Mehrsprachige Portfolio-Fallstudie", "ogDescription": "Kundenprojekt mit sieben Sprachen, vier echten Projekten, responsiven Galerien, Release-QA und einem live geschalteten Anfrageprozess." },
+      "card": { "title": "Atelis Design — Portfolio für Innenarchitektur", "category": "Kunden-Webprojekt · Web & Product", "status": "Live · Kundenprojekt", "role": "Meine Rolle: Webentwickler · UI/UX & Delivery", "summary": "Ein hochwertiges Portfolio in sieben Sprachen mit vier echten Projekten, responsiven Galerien, live geschaltetem Anfrageprozess und Release-QA.", "alt": "Deutsche Startseite von Atelis Design mit dem Innenraumprojekt L'Inconnue im Hero", "caseStudy": "Fallstudie ansehen", "live": "Live-Website" },
+      "hero": { "eyebrow": "Kunden-Webprojekt · Live", "title": "Atelis Design — ein mehrsprachiges Portfolio für Innenarchitektur", "lead": "Eine produktive Website, die Architekturfotografie in den Mittelpunkt stellt und Projektsuche, Navigation in sieben Sprachen sowie professionelle Anfragen auf allen Geräten verlässlich macht.", "roleLabel": "Rolle", "role": "Webentwickler · UI/UX & Delivery", "clientLabel": "Kunde", "yearLabel": "Jahr", "typeLabel": "Umsetzung", "type": "Static-first Portfolio + Anfragefunktion", "live": "Live-Website öffnen", "works": "Zurück zu Works" },
+      "labels": { "stack": "Projekttechnologien", "proof": "Verifizierte Projektfakten", "palette": "Farbpalette von Atelis Design", "locales": "Atelis-Sprachen", "projects": "Veröffentlichte Projekte", "urls": "Indexierbare URLs", "pages": "Generierte HTML-Seiten", "tests": "Berichtete Rastertests" },
+      "sections": {
+        "need": { "eyebrow": "Kundenbedarf", "title": "Die Arbeit architektonisch statt nach Vorlage wirken lassen.", "body": "Der Kunde brauchte einen hochwertigen digitalen Auftritt für potenzielle Auftraggeber und Partner. Die Oberfläche musste die Komposition der Projektfotografie schützen, vollständige lokalisierte Routen bieten und Besucher von der Entdeckung zur professionellen Anfrage führen, ohne wie eine generische Unternehmensvorlage zu wirken." },
+        "role": { "eyebrow": "Rolle & Zusammenarbeit", "title": "Produktentscheidungen, Umsetzung, QA und Release-Koordination.", "body": "Ich übersetzte Kundenfeedback in Informationsarchitektur, responsives Interaktionsmodell und produktive Umsetzung, koordinierte Inhalte und Delivery-Entscheidungen und verantwortete QA sowie Release-Freigabe. ChatGPT, Claude und Codex unterstützten Teile des Engineering-Workflows. Innenraumprojekte, Fotos und Gründerbilder bleiben Eigentum von Atelis und den jeweiligen Rechteinhabern." },
+        "direction": { "eyebrow": "UX & Art Direction", "title": "Ein redaktioneller Rahmen, der der Fotografie Raum lässt.", "body": "Warme Neutraltöne, zurückhaltende Typografie, kontrollierter Weißraum und subtile Bewegung halten den Fokus auf den Innenräumen. Großzügige Desktop-Raster werden mobil neu angeordnet, ohne schmale Aufnahmen in breite Rahmen zu zwingen." },
+        "portfolio": { "eyebrow": "Portfolio-System", "title": "Vier echte Projekte, ehrliche Platzhalter und wiederverwendbare Galerien.", "body": "L'Inconnue, Maison Elan, Walden und Casa Olivia sind die veröffentlichten Projekte. Das datengetriebene Raster kennzeichnet zwei Coming-Soon-Karten klar, unterstützt Kategorien und Zähler und bietet lokalisierte Detailseiten mit responsiven Galerien und tastaturbedienbarem Lightbox-Viewer." },
+        "i18n": { "eyebrow": "Mehrsprachige Architektur", "title": "Sieben vollständige Atelis-Sprachen, Deutsch als Standardeinstieg.", "body": "DE, EN, TR, FR, ES, IT und RU nutzen explizite lokalisierte URLs. Routenhelfer halten entsprechende Pfade synchron; Canonical- und hreflang-Metadaten kennzeichnen jede echte Sprachseite. Diese Fallstudie folgt dagegen dem separaten Fünf-Sprachen-Vertrag von kaanbalci.com." },
+        "inquiry": { "eyebrow": "Anfrageprozess", "title": "Ein schlanker serverseitiger Weg vom Formular ins Geschäftspostfach.", "body": "Das lokalisierte Kontaktformular sendet an eine Cloudflare Pages Function, die die Anfrage validiert und Resend für Benachrichtigungen nutzt. Ein kontrollierter Release-Test lieferte HTTP 200; Zustellung an Geschäftspostfach und CC wurde vom Website-Inhaber bestätigt. Diese Fallstudie sendet kein Formular." },
+        "tradeoffs": { "eyebrow": "Engineering-Abwägungen", "title": "Static-first Delivery, typisierte Inhalte und eine klare CMS-Grenze.", "body": "Astro und typisierte Inhaltsdaten halten öffentliche Seiten schnell und vorhersehbar. 14 permanente Algorithmus-Tests schützen die Rasterregeln. Neue Projekte erfordern derzeit Build und Release; es gibt kein live kundengeführtes CMS, Dashboard, Angebots- oder Zahlungssystem." },
+        "qa": { "eyebrow": "QA & Ergebnis", "title": "Mit dokumentierter Mehrsprachen- und Responsive-Evidenz veröffentlicht.", "body": "Die ausgelieferte Website erzeugt 65 HTML-Seiten, davon 63 vorgesehene indexierbare lokalisierte URLs. Release-Unterlagen berichten 14 Rastertests, 67 Funktionsprüfungen, 16 Mocks der Kontaktfunktion sowie 588 plus 168 Viewport-Prüfungen. Das sind berichtete Release-Checks, keine unabhängig erneut ausgeführten Benchmarks; Lead-, Conversion- oder Ranking-Zuwächse werden nicht behauptet." },
+        "gallery": { "eyebrow": "Produktionsnachweis", "title": "Echte Ansichten der veröffentlichten Website.", "body": "Die Aufnahmen zeigen Startseite, Projektindex, Projektdetail und Galerie, Studio, Leistungen, leeres Anfrageformular und echte mobile Layouts." },
+        "related": { "eyebrow": "Verwandte Arbeiten", "title": "Weitere kundenorientierte Delivery.", "joyday": "Atolye-Joyday-Fallstudie", "contact": "Kontakt", "resume": "Lebenslauf ansehen" }
+      },
+      "images": {
+        "projects": { "alt": "Mehrsprachiger Projektindex von Atelis Design mit vier Innenraumprojekten und zwei Coming-Soon-Karten", "caption": "Projektindex mit vier veröffentlichten Projekten und zwei klaren Coming-Soon-Karten." },
+        "home": { "alt": "Deutsche Atelis-Design-Startseite mit dem Innenraumprojekt L'Inconnue", "caption": "Deutscher Standardeinstieg mit bildorientiertem Projekt-Hero." },
+        "linconnue": { "alt": "L'Inconnue-Projektdetail mit Innenraumbild, Fakten und Galerie-Miniaturen", "caption": "Wiederverwendbares lokalisiertes Projektdetail mit Fakten und Miniatur-Navigation." },
+        "walden": { "alt": "Walden-Innenraumbild im Vollbild-Galerieviewer von Atelis Design", "caption": "Echter Vollbild-Viewer mit Schließen-, Zurück- und Weiter-Steuerung." },
+        "about": { "alt": "Türkische Atelis-Design-Über-uns-Seite mit Studio, Batur Berrak und Designwerten", "caption": "Studio-Geschichte, Gründerprofil und Designwerte." },
+        "services": { "alt": "Atelis-Design-Leistungsseite mit fünf Leistungen und Projektprozess", "caption": "Leistungen und vierstufiger Kundenprozess." },
+        "contact": { "alt": "Atelis-Design-Kontaktseite mit leerem lokalisiertem Anfrageformular", "caption": "Leeres öffentliches Anfrageformular ohne Kundendaten oder Versand." },
+        "homeMobile": { "alt": "Mobile Atelis-Design-Startseite mit deutscher L'Inconnue-Komposition", "caption": "Echte mobile Startseitenaufnahme mit 390 Pixel Breite." },
+        "projectsMobile": { "alt": "Mobiler Atelis-Design-Projektindex mit Kategorien und responsiven Karten", "caption": "Responsive Filter und Projektkarten auf Mobilbreite." }
+      }
+    },
+    "es": {
+      "meta": { "title": "Caso de estudio Atelis Design | Kaan Balcı", "description": "Portfolio multilingüe de arquitectura interior, centrado en imagen y entregado con Astro, TypeScript, Cloudflare Pages y un flujo de consultas verificado.", "ogTitle": "Atelis Design — Caso de estudio de portfolio multilingüe", "ogDescription": "Entrega web para cliente con siete idiomas, cuatro proyectos reales, galerías responsive, QA de lanzamiento y consultas en producción." },
+      "card": { "title": "Atelis Design — Portfolio de arquitectura interior", "category": "Entrega web para cliente · Web y Producto", "status": "En producción · Proyecto de cliente", "role": "Mi rol: Desarrollador web · UI/UX y entrega", "summary": "Portfolio premium en siete idiomas con cuatro proyectos reales, galerías responsive, flujo de consultas activo y QA de lanzamiento.", "alt": "Página de inicio alemana de Atelis Design con el proyecto interior L'Inconnue en el hero", "caseStudy": "Ver caso de estudio", "live": "Sitio web" },
+      "hero": { "eyebrow": "Entrega web para cliente · En producción", "title": "Atelis Design — un portfolio multilingüe de arquitectura interior", "lead": "Un sitio en producción que mantiene la fotografía arquitectónica en el centro y hace fiables el descubrimiento de proyectos, la navegación en siete idiomas y las consultas profesionales en todos los dispositivos.", "roleLabel": "Rol", "role": "Desarrollador web · UI/UX y entrega", "clientLabel": "Cliente", "yearLabel": "Año", "typeLabel": "Entrega", "type": "Portfolio static-first + función de consultas", "live": "Abrir sitio web", "works": "Volver a Works" },
+      "labels": { "stack": "Tecnologías del proyecto", "proof": "Datos verificados del proyecto", "palette": "Paleta de color de Atelis Design", "locales": "Idiomas de Atelis", "projects": "Proyectos publicados", "urls": "URL indexables", "pages": "Páginas HTML generadas", "tests": "Pruebas de cuadrícula reportadas" },
+      "sections": {
+        "need": { "eyebrow": "Necesidad del cliente", "title": "Hacer que el trabajo se sienta arquitectónico, no prefabricado.", "body": "El cliente necesitaba una presencia digital premium para posibles clientes y colaboradores. La interfaz debía proteger la composición fotografica, ofrecer rutas localizadas completas y guiar del descubrimiento a una consulta profesional sin convertirse en una plantilla corporativa genérica." },
+        "role": { "eyebrow": "Rol y colaboración", "title": "Decisiones de producto, implementación, QA y coordinación del lanzamiento.", "body": "Convertí el feedback del cliente en arquitectura de información, interacciones responsive e implementación de producción; coordiné contenido y decisiones de entrega y gestioné QA y aprobación. ChatGPT, Claude y Codex asistieron partes del flujo de ingeniería. Los proyectos, fotografías e imágenes del fundador pertenecen a Atelis y a sus respectivos titulares." },
+        "direction": { "eyebrow": "UX y dirección de arte", "title": "Un marco editorial que no compite con la fotografía.", "body": "Neutros cálidos, tipografía contenida, espacio controlado y movimiento sutil mantienen el foco en los interiores. Las composiciones amplias de escritorio se reorganizan en móvil sin estirar capturas estrechas dentro de marcos apaisados." },
+        "portfolio": { "eyebrow": "Sistema de portfolio", "title": "Cuatro proyectos reales, placeholders honestos y galerías reutilizables.", "body": "L'Inconnue, Maison Elan, Walden y Casa Olivia son los proyectos publicados. La cuadrícula basada en datos identifica dos tarjetas Coming Soon, admite filtros y contadores y ofrece páginas localizadas con galerías responsive y lightbox operable por teclado." },
+        "i18n": { "eyebrow": "Arquitectura multilingüe", "title": "Siete idiomas completos de Atelis con alemán como entrada predeterminada.", "body": "DE, EN, TR, FR, ES, IT y RU usan URL localizadas explícitas. Los helpers mantienen rutas equivalentes y canonical/hreflang identifica cada página real. Este caso sigue por separado el contrato de cinco idiomas de kaanbalci.com." },
+        "inquiry": { "eyebrow": "Flujo de consultas", "title": "Un camino server-side ligero del formulario al buzón del negocio.", "body": "El formulario localizado envía a una Cloudflare Pages Function que valida la solicitud y usa Resend para notificaciones. Una prueba controlada devolvió HTTP 200 y el propietario confirmó la entrega al buzón y al CC; este caso no envía ningún formulario." },
+        "tradeoffs": { "eyebrow": "Decisiones de ingeniería", "title": "Entrega static-first, contenido tipado y límite explícito de CMS.", "body": "Astro y los registros tipados mantienen las páginas rápidas y predecibles. Catorce pruebas algorítmicas protegen las reglas de la cuadrícula. Nuevos proyectos requieren build y release; no existe CMS gestionado por cliente, dashboard, cotizaciones ni pagos." },
+        "qa": { "eyebrow": "QA y resultado", "title": "Publicado con evidencia documentada multilingüe y responsive.", "body": "El sitio genera 65 páginas HTML, incluidas 63 URL localizadas destinadas a indexación. El release reporta 14 pruebas de cuadrícula, 67 controles funcionales, 16 mocks de la función de contacto y 588 más 168 controles de viewport. Son comprobaciones reportadas, no benchmarks reejecutados de forma independiente; no se afirma mejora de leads, conversión o ranking." },
+        "gallery": { "eyebrow": "Evidencia de producción", "title": "Pantallas reales del sitio publicado.", "body": "Las capturas muestran inicio, índice de proyectos, detalle y galería, estudio, servicios, formulario vacío y layouts móviles reales." },
+        "related": { "eyebrow": "Trabajo relacionado", "title": "Continúa con entregas orientadas al cliente.", "joyday": "Caso Atolye Joyday", "contact": "Contacto", "resume": "Ver CV" }
+      },
+      "images": {
+        "projects": { "alt": "Índice multilingüe de Atelis Design con cuatro proyectos interiores y dos tarjetas Coming Soon", "caption": "Índice con cuatro proyectos publicados y dos tarjetas Coming Soon explícitas." },
+        "home": { "alt": "Inicio alemán de Atelis Design con el proyecto interior L'Inconnue", "caption": "Entrada alemana predeterminada con hero visual." },
+        "linconnue": { "alt": "Detalle de L'Inconnue con imagen interior, datos y miniaturas de galería", "caption": "Detalle localizado reutilizable con datos y navegación por miniaturas." },
+        "walden": { "alt": "Imagen interior de Walden en el visor de galería a pantalla completa", "caption": "Visor real con cerrar y controles anterior/siguiente." },
+        "about": { "alt": "Página turca Sobre Atelis Design con estudio, Batur Berrak y valores", "caption": "Historia del estudio, perfil del fundador y valores de diseño." },
+        "services": { "alt": "Página de servicios de Atelis Design con cinco servicios y proceso", "caption": "Servicios y proceso de cliente en cuatro pasos." },
+        "contact": { "alt": "Contacto de Atelis Design con formulario localizado vacío", "caption": "Formulario público vacío sin datos ni envio." },
+        "homeMobile": { "alt": "Inicio móvil de Atelis Design con composición alemana de L'Inconnue", "caption": "Captura móvil real de 390 píxeles." },
+        "projectsMobile": { "alt": "Índice móvil de Atelis Design con filtros y tarjetas responsive", "caption": "Filtros y tarjetas responsive en ancho móvil." }
+      }
+    },
+    "fr": {
+      "meta": { "title": "Étude de cas Atelis Design | Kaan Balcı", "description": "Portfolio multilingue d'architecture intérieure, centré sur l'image et livré avec Astro, TypeScript, Cloudflare Pages et un parcours de contact vérifié.", "ogTitle": "Atelis Design — Étude de cas d'un portfolio multilingue", "ogDescription": "Livraison web client en sept langues, quatre projets réels, galeries responsives, QA de mise en ligne et parcours de contact actif." },
+      "card": { "title": "Atelis Design — Portfolio d'architecture intérieure", "category": "Livraison web client · Web & Produit", "status": "En ligne · Projet client", "role": "Mon rôle : Développeur web · UI/UX et livraison", "summary": "Portfolio premium en sept langues avec quatre projets réels, galeries responsives, parcours de contact actif et QA de mise en ligne.", "alt": "Page d'accueil allemande d'Atelis Design présentant le projet intérieur L'Inconnue", "caseStudy": "Voir l'étude de cas", "live": "Site en ligne" },
+      "hero": { "eyebrow": "Livraison web client · En ligne", "title": "Atelis Design — un portfolio multilingue d'architecture intérieure", "lead": "Un site en production qui place la photographie architecturale au centre et rend fiables la découverte des projets, la navigation en sept langues et les demandes professionnelles sur tous les appareils.", "roleLabel": "Fonction", "role": "Développeur web · UI/UX et livraison", "clientLabel": "Commanditaire", "yearLabel": "Année", "typeLabel": "Livraison", "type": "Portfolio static-first + fonction de contact", "live": "Ouvrir le site", "works": "Retour aux projets" },
+      "labels": { "stack": "Technologies du projet", "proof": "Données vérifiées du projet", "palette": "Palette de couleurs Atelis Design", "locales": "Langues Atelis", "projects": "Projets publiés", "urls": "URL indexables", "pages": "Pages HTML générées", "tests": "Tests de grille rapportés" },
+      "sections": {
+        "need": { "eyebrow": "Besoin client", "title": "Faire ressentir l'architecture plutôt qu'un modèle générique.", "body": "Le client avait besoin d'une présence numérique premium pour prospects et partenaires. L'interface devait préserver la composition des photographies, proposer des routes localisées complètes et guider vers une demande professionnelle sans ressembler à un modèle d'entreprise générique." },
+        "role": { "eyebrow": "Rôle et collaboration", "title": "Décisions produit, implémentation, QA et coordination de mise en ligne.", "body": "J'ai traduit les retours client en architecture de l'information, interactions responsives et implémentation de production, coordonné contenu et décisions de livraison, puis piloté la QA et l'approbation. ChatGPT, Claude et Codex ont assisté certaines étapes d'ingénierie. Les projets, photos et portraits restent la propriété d'Atelis et de leurs ayants droit." },
+        "direction": { "eyebrow": "UX et direction artistique", "title": "Un cadre éditorial qui laisse parler la photographie.", "body": "Des tons neutres chauds, une typographie retenue, un espace contrôlé et des mouvements subtils gardent l'attention sur les intérieurs. Les grandes compositions desktop se réorganisent sur mobile sans étirer les captures étroites dans des cadres horizontaux." },
+        "portfolio": { "eyebrow": "Système de portfolio", "title": "Quatre vrais projets, des placeholders honnêtes et des galeries réutilisables.", "body": "L'Inconnue, Maison Elan, Walden et Casa Olivia sont les projets publiés. La grille basée sur les données signale deux cartes Coming Soon, gère filtres et compteurs, et fournit des pages de détail localisées avec galeries responsives et lightbox au clavier." },
+        "i18n": { "eyebrow": "Architecture multilingue", "title": "Sept langues Atelis complètes, l'allemand comme entrée par défaut.", "body": "DE, EN, TR, FR, ES, IT et RU utilisent des URL localisées explicites. Les helpers alignent les chemins équivalents, tandis que canonical et hreflang identifient chaque vraie page. Cette étude suit séparément le contrat cinq langues de kaanbalci.com." },
+        "inquiry": { "eyebrow": "Parcours de contact", "title": "Un chemin server-side léger du formulaire vers la boîte professionnelle.", "body": "Le formulaire localisé envoie vers une Cloudflare Pages Function qui valide la demande et utilise Resend pour les notifications. Un test contrôlé a renvoyé HTTP 200 et le propriétaire a confirmé les livraisons principale et CC ; cette étude n'envoie aucun formulaire." },
+        "tradeoffs": { "eyebrow": "Arbitrages d'ingénierie", "title": "Livraison static-first, contenu typé et frontière CMS explicite.", "body": "Astro et les données typées gardent les pages rapides et prévisibles. Quatorze tests algorithmiques protègent les règles de grille. Les nouveaux projets exigent actuellement un build et une release ; aucun CMS client live, dashboard, devis ou paiement n'est inclus." },
+        "qa": { "eyebrow": "QA et résultat", "title": "Publié avec des preuves documentées multilingues et responsives.", "body": "Le site génère 65 pages HTML, dont 63 URL localisées destinées a l'indexation. Le rapport de release mentionne 14 tests de grille, 67 contrôles fonctionnels, 16 mocks de la fonction contact et 588 plus 168 contrôles de viewport. Ce sont des contrôles rapportés, pas des benchmarks réexécutés indépendamment ; aucune hausse de leads, conversion ou classement n'est revendiquée." },
+        "gallery": { "eyebrow": "Preuve de production", "title": "Écrans réels du site publié.", "body": "Les captures montrent accueil, index des projets, détail et galerie, studio, services, formulaire vide et mises en page mobiles réelles." },
+        "related": { "eyebrow": "Travaux associés", "title": "Poursuivre avec des livraisons orientées client.", "joyday": "Étude de cas Atolye Joyday", "contact": "Contact", "resume": "Voir le CV" }
+      },
+      "images": {
+        "projects": { "alt": "Index multilingue Atelis Design avec quatre projets intérieurs et deux cartes Coming Soon", "caption": "Index avec quatre projets publiés et deux cartes Coming Soon explicites." },
+        "home": { "alt": "Accueil allemand Atelis Design avec le projet intérieur L'Inconnue", "caption": "Entree allemande par défaut avec hero centré sur l'image." },
+        "linconnue": { "alt": "Détail L'Inconnue avec image intérieure, données et miniatures de galerie", "caption": "Détail localisé réutilisable avec données et navigation par miniatures." },
+        "walden": { "alt": "Image intérieure Walden dans la visionneuse plein écran Atelis Design", "caption": "Visionneuse réelle avec fermeture et contrôles précédent/suivant." },
+        "about": { "alt": "Page À propos turque Atelis Design avec studio, Batur Berrak et valeurs", "caption": "Histoire du studio, profil du fondateur et valeurs de design." },
+        "services": { "alt": "Page services Atelis Design avec cinq services et processus projet", "caption": "Services et processus client en quatre étapes." },
+        "contact": { "alt": "Page contact Atelis Design avec formulaire localisé vide", "caption": "Formulaire public vide sans données ni envoi." },
+        "homeMobile": { "alt": "Accueil mobile Atelis Design avec composition allemande L'Inconnue", "caption": "Capture mobile réelle de 390 pixels." },
+        "projectsMobile": { "alt": "Index mobile Atelis Design avec filtres et cartes responsives", "caption": "Filtres et cartes responsives en largeur mobile." }
+      }
+    }
+  }
+}

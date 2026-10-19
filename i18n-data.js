@@ -143,6 +143,10 @@ window.KAAN_I18N = {
         "legacy": "atolye-joyday-case-study.html"
       },
       {
+        "id": "atelisDesignCaseStudy",
+        "route": "atelis-design-case-study/"
+      },
+      {
         "id": "hospitalCaseStudy",
         "route": "hospital-system-case-study/",
         "legacy": "hospital-system-case-study.html"
