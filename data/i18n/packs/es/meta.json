@@ -23,6 +23,12 @@
     "ogTitle": "Caso de estudio de AI Flow Puzzle | Kaan Balcı",
     "title": "Caso de estudio de AI Flow Puzzle | Kaan Balcı"
   },
+  "atelisDesignCaseStudy": {
+    "description": "Portfolio multilingüe de arquitectura interior, centrado en imagen y entregado con Astro, TypeScript, Cloudflare Pages y un flujo de consultas verificado.",
+    "ogDescription": "Entrega web para cliente con siete idiomas, cuatro proyectos reales, galerías responsive, QA de lanzamiento y consultas en producción.",
+    "ogTitle": "Atelis Design — Caso de estudio de portfolio multilingüe",
+    "title": "Caso de estudio Atelis Design | Kaan Balcı"
+  },
   "ajoop": {
     "description": "Hable con AJOOP, el asistente público integrado en el portfolio de Kaan Balcı. Responde a partir del portfolio publicado y muestra la evidencia que utilizó.",
     "ogDescription": "Hable con AJOOP, el asistente público integrado en el portfolio de Kaan Balcı. Responde a partir del portfolio publicado y muestra la evidencia que utilizó.",

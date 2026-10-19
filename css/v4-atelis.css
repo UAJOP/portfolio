@@ -1,0 +1,128 @@
+body[data-page="caseStudy"] .atelis-hero .case-hero-visual {
+  background: #271c14;
+  border-color: color-mix(in srgb, #dacdc4 34%, transparent);
+}
+
+body[data-page="caseStudy"] .atelis-hero .case-hero-visual img {
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.atelis-palette {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.atelis-palette li {
+  min-height: 5.5rem;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  border-radius: 0.8rem;
+  background: #e0d7cf;
+  color: #271c14;
+  font: 600 0.72rem/1.2 "IBM Plex Mono", monospace;
+}
+
+.atelis-palette li:nth-child(2) { background: #ded4ca; }
+.atelis-palette li:nth-child(3) { background: #271c14; color: #fff; }
+.atelis-palette li:nth-child(4) { background: #4b3528; color: #fff; }
+.atelis-palette li:nth-child(5) { background: #6b574d; color: #fff; }
+.atelis-palette li:nth-child(6) { background: #dacec4; }
+
+.atelis-gallery-lead {
+  max-width: 74ch;
+  color: var(--muted-text, var(--text-muted));
+}
+
+.atelis-gallery {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.atelis-shot {
+  grid-column: span 6;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--text) 13%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface, #0d1725) 94%, #e0d7cf 6%);
+}
+
+.atelis-shot--home,
+.atelis-shot--walden,
+.atelis-shot--services {
+  grid-column: span 8;
+}
+
+.atelis-shot--homeMobile,
+.atelis-shot--projectsMobile {
+  grid-column: span 4;
+}
+
+.atelis-shot img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  background: #ded4ca;
+}
+
+.atelis-shot--homeMobile img,
+.atelis-shot--projectsMobile img {
+  max-height: 42rem;
+  object-fit: contain;
+}
+
+.atelis-shot figcaption,
+.atelis-hero figcaption {
+  padding: 0.8rem 0.95rem;
+  color: var(--muted-text, var(--text-muted));
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .atelis-palette {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .atelis-shot,
+  .atelis-shot--home,
+  .atelis-shot--walden,
+  .atelis-shot--services {
+    grid-column: span 12;
+  }
+
+  .atelis-shot--homeMobile,
+  .atelis-shot--projectsMobile {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 560px) {
+  .atelis-palette {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .atelis-shot,
+  .atelis-shot--homeMobile,
+  .atelis-shot--projectsMobile {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="caseStudy"] .atelis-shot,
+  body[data-page="works"] [data-project-id="atelis-design"] {
+    transition: none !important;
+  }
+}

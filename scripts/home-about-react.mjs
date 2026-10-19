@@ -20,6 +20,7 @@ const isRetiredCover = (value) => RETIRED_COVERS.has(decodeURIComponent(String(v
 import { REQUEST_STYLE, withRequestSurface } from "./v4-e06-6-request.mjs";
 import { CAREER_CASE_ROUTE, V4_NATIVE_CASE_ROUTES, aiFlowV4Section, careerAdventureCaseStructure, joydayPaintSection, nativeCaseHead, portfolioCaseStructure, withAddedSection } from "./v4-e06-5-case-studies.mjs";
 import { MERGE_RUSH_CASE_ROUTE, MERGE_RUSH_ROUTE, MERGE_RUSH_SCRIPT, mergeRushCaseStudyStructure, mergeRushHead, mergeRushStructure } from "./v4-merge-rush-page.mjs";
+import { ATELIS_ROUTE_ID, ATELIS_SOCIAL_IMAGE, ATELIS_STYLE, atelisCaseStudyStructure, atelisMeta, withAtelisWorksCard } from "./atelis-case-study.mjs";
 
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
 const homeAboutStructure = readJson("data/site/m3-25b-home-about-structure.json");
@@ -29,6 +30,7 @@ for (const pageId of ["games", "works"]) worksGamesStructure.pages[pageId].child
 /* V4-E06.5: the complete catalog follows the curated Works explorer; Games gains the native archive (scripts/v4-e06-5-catalog.mjs). */
 worksGamesStructure.pages.works.children = withWorksCatalog(worksGamesStructure.pages.works.children);
 worksGamesStructure.pages.games.children = withGamesCatalog(worksGamesStructure.pages.games.children);
+const worksChildrenFor = (locale) => withAtelisWorksCard(worksGamesStructure.pages.works.children, locale);
 const caseStudyStructure = readJson("data/site/m3-29-case-studies-structure.json");
 const labsGamesStructure = readJson("data/site/m3-30-labs-games-structure.json");
 const remainingRoutesStructure = readJson("data/site/m3-30-5-remaining-routes-structure.json");
@@ -501,7 +503,7 @@ function v4EcosystemModel(locale, message) {
     }
     node.children.forEach(walk);
   };
-  worksGamesStructure.pages.works.children.forEach(walk);
+  worksChildrenFor(locale).forEach(walk);
   const known = new Set(capabilities.map((capability) => capability.id));
   for (const project of projects) {
     if (!project.title || !project.categories.length || project.categories.some((id) => !known.has(id))) {
@@ -888,6 +890,39 @@ function v4NativeCaseHead(route, localization) {
   });
 }
 
+function atelisMainProps(route, loadLocalization) {
+  const localization = loadLocalization(route.locale);
+  const message = (key) => {
+    const value = localization.message(key);
+    if (typeof value !== "string" || !value) throw new Error(`${route.locale}/${route.routeId}: missing ${key}`);
+    return value;
+  };
+  const href = (value) => routeRuntime.localizedInternalHref(value, route.locale);
+  const structure = atelisCaseStudyStructure({ locale: route.locale, href, resume: profile.resume });
+  return { kind: "caseStudy", page: route.routeId, locale: route.locale, structure, data: localizedCanonicalData(route.locale), v4: v4DetailModel(route, structure, message) };
+}
+
+function atelisHead(route, localization) {
+  const headRenderer = createSiteHeadRenderer({
+    registry,
+    indexableLocales: (registry.localizedRoutes?.indexable || []).filter((id) => id !== registry.defaultLocale),
+    absoluteFor: (routeKey, locale) => `${site.origin}/${routeRuntime.localizedRouteKey(routeKey, locale)}`,
+  });
+  const image = `${site.origin}${ATELIS_SOCIAL_IMAGE}`;
+  const head = nativeCaseHead({
+    meta: atelisMeta(route.locale),
+    canonical: `${site.origin}${route.pathname}`,
+    origin: site.origin,
+    alternates: headRenderer.alternateLinkRecords(route.route, true),
+    htmlLang: localization.definition.htmlLang || route.locale,
+    ogLocale: localization.definition.ogLocale || localization.definition.htmlLang,
+    authorName: profile.name,
+    themeBootstrap: THEME_BOOTSTRAP,
+    image,
+  });
+  return { ...head, og: { ...head.og, imageWidth: "1440", imageHeight: "900", imageAlt: atelisMeta(route.locale).ogTitle }, twitter: { ...head.twitter, imageAlt: atelisMeta(route.locale).ogTitle } };
+}
+
 const SHELL_MESSAGE_KEYS = [
   "language.selectorAria",
   "nav.open",
@@ -1029,6 +1064,7 @@ export function productionMainProps(route, {
   if (route.routeId === "notFound") return notFoundMainProps(route);
   if (AJOOP_ROUTES.has(route.routeId)) return v4AjoopMainProps(route, loadLocalization);
   if (route.routeId === MERGE_RUSH_ROUTE) return v4MergeRushMainProps(route, loadLocalization);
+  if (route.routeId === ATELIS_ROUTE_ID) return atelisMainProps(route, loadLocalization);
   if (V4_NATIVE_CASE_ROUTES.has(route.routeId)) return v4NativeCaseMainProps(route, loadLocalization);
   if (CASE_STUDY_IDS.has(route.routeId)) {
     if (caseStudyStructure.acceptedRef !== "6650aacd844cde957888d296f086c1eb21992991") throw new Error("Case-study React contract is not tied to the #29 base ref");
@@ -1086,7 +1122,8 @@ export function productionMainProps(route, {
   }
   const catalogPage = worksGamesStructure.pages[route.routeId];
   const structure = catalogPage ? worksGamesStructure : homeAboutStructure;
-  const page = structure.pages[route.routeId];
+  const basePage = structure.pages[route.routeId];
+  const page = route.routeId === "works" ? { ...basePage, children: worksChildrenFor(route.locale) } : basePage;
   if (!page) throw new Error(`no production React component for ${route.routeId}`);
   if (homeAboutStructure.acceptedRef !== "34fdfad01f63004ed10d616a7b061e3996c28150") {
     throw new Error("Home/About React structure is not tied to its accepted pre-cutover ref");
@@ -1187,6 +1224,7 @@ export function productionDocumentProps(route, clientEntry) {
   const hubRoute = route.routeId === "ajoop";
   const ajoopCaseRoute = route.routeId === "ajoopCaseStudy";
   const nativeCaseRoute = V4_NATIVE_CASE_ROUTES.has(route.routeId);
+  const atelisCaseRoute = route.routeId === ATELIS_ROUTE_ID;
   const notFoundRoute = route.routeId === "notFound";
   /* One conversation, two presentations: the Hub route renders the shell as
    * the Hub; every other route's panel links to it. */
@@ -1196,7 +1234,7 @@ export function productionDocumentProps(route, clientEntry) {
   return {
     main,
     recruiter: recruiterModel(route.locale, localization),
-    ajoop: { ...ajoopShellModel(route.locale), ...ajoopPresentation, ...((casePage || ajoopCaseRoute || nativeCaseRoute || projectRoute || (capturedShell && hasAside(capturedShell.localized.children))) ? { a: true } : {}) },
+    ajoop: { ...ajoopShellModel(route.locale), ...ajoopPresentation, ...((casePage || ajoopCaseRoute || nativeCaseRoute || atelisCaseRoute || projectRoute || (capturedShell && hasAside(capturedShell.localized.children))) ? { a: true } : {}) },
     commandPalette: commandPaletteModel(route.locale),
     document: {
       locale: route.locale,
@@ -1207,11 +1245,11 @@ export function productionDocumentProps(route, clientEntry) {
        * script.js load that page’s runtime modules. */
       /* The AJOOP case study is a case study; the Hub is its own page type. */
       hub: hubRoute,
-      v4Styles: ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : route.routeId === CAREER_ADVENTURE_ROUTE ? ["career-adventure"] : ["works", "games"].includes(route.routeId) ? [CATALOG_STYLE] : route.routeId === "request" ? [REQUEST_STYLE] : projectRoute ? ["project"] : [],
-      page: notFoundRoute ? "error" : casePage || ajoopCaseRoute || nativeCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
+      v4Styles: atelisCaseRoute ? [ATELIS_STYLE] : ajoopCaseRoute ? ["ajoop"] : route.routeId === JOYDAY_STUDIO_ROUTE ? ["joyday-studio"] : route.routeId === FLOW_PUZZLE_ROUTE ? ["flow-puzzle"] : route.routeId === CAREER_ADVENTURE_ROUTE ? ["career-adventure"] : ["works", "games"].includes(route.routeId) ? [CATALOG_STYLE] : route.routeId === "request" ? [REQUEST_STYLE] : projectRoute ? ["project"] : [],
+      page: notFoundRoute ? "error" : casePage || ajoopCaseRoute || nativeCaseRoute || atelisCaseRoute ? "caseStudy" : projectRoute ? "projectDetail" : capturedShell ? capturedShell.page.pageType : route.routeId,
       /* The playable Merge Rush page belongs to Games. */
-      navPage: casePage || projectRoute || nativeCaseRoute ? "works" : route.routeId === MERGE_RUSH_ROUTE ? "games" : route.routeId,
-      bodyClass: caseLocale?.bodyClass || (ajoopCaseRoute || nativeCaseRoute ? "case-study-page" : null),
+      navPage: casePage || projectRoute || nativeCaseRoute || atelisCaseRoute ? "works" : route.routeId === MERGE_RUSH_ROUTE ? "games" : route.routeId,
+      bodyClass: caseLocale?.bodyClass || (ajoopCaseRoute || nativeCaseRoute || atelisCaseRoute ? "case-study-page" : null),
       /* Accepted project pages declare their slug on <body>; the retained
        * runtime (project routing, AJOOP page context) reads it from there. */
       projectSlug: projectRoute ? route.slug : null,
@@ -1232,7 +1270,7 @@ export function productionDocumentProps(route, clientEntry) {
       og: {},
       twitter: {},
       themeBootstrap: `(function(){try{var t=localStorage.getItem("kaanbalci-site-theme")||"dark";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark")}catch(e){document.documentElement.setAttribute("data-theme","dark")}})();`,
-    } : caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : route.routeId === MERGE_RUSH_ROUTE ? v4MergeRushHead(route, localization) : nativeCaseRoute ? v4NativeCaseHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
+    } : caseLocale?.head || (ajoopRoute ? v4AjoopHead(route, localization) : route.routeId === MERGE_RUSH_ROUTE ? v4MergeRushHead(route, localization) : atelisCaseRoute ? atelisHead(route, localization) : nativeCaseRoute ? v4NativeCaseHead(route, localization) : capturedShell ? labsGamesHead(route, capturedShell.localized, localization) : projectRoute ? createProjectHeadModel(route, main, localization) : createHomeAboutHeadModel({
       route,
       registry,
       routeRuntime,

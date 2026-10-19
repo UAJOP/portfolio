@@ -18,6 +18,7 @@
     { "id": "labs", "route": "labs/", "renderer": "react", "legacy": "labs.html", "changefreq": "monthly", "priority": "0.7" },
     { "id": "aiFlowPuzzleCaseStudy", "route": "ai-flow-puzzle-case-study/", "renderer": "react", "legacy": "ai-flow-puzzle-case-study.html", "changefreq": "monthly", "priority": "0.7" },
     { "id": "joydayCaseStudy", "route": "atolye-joyday-case-study/", "renderer": "react", "legacy": "atolye-joyday-case-study.html", "changefreq": "monthly", "priority": "0.7" },
+    { "id": "atelisDesignCaseStudy", "route": "atelis-design-case-study/", "renderer": "react", "changefreq": "monthly", "priority": "0.7" },
     { "id": "hospitalCaseStudy", "route": "hospital-system-case-study/", "renderer": "react", "legacy": "hospital-system-case-study.html", "changefreq": "monthly", "priority": "0.7" },
     { "id": "certificates", "route": "certificates/", "renderer": "react", "legacy": "single-work.html", "changefreq": "monthly", "priority": "0.6" },
     { "id": "request", "route": "request/", "renderer": "react", "legacy": "request.html", "changefreq": "monthly", "priority": "0.6" },

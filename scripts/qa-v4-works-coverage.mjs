@@ -176,10 +176,16 @@ if (fs.existsSync(DIST)) {
   ok("7. no built page says Wheather-App", stale === 0, `${stale} file(s)`);
 
   const works = visible(html("works"));
-  const rows = (works.match(/data-catalog-id="/g) || []).length;
+  const catalogIds = [...works.matchAll(/data-catalog-id="([^"]+)"/g)].map((match) => match[1]);
+  const primaryIds = [...works.matchAll(/data-project-id="([^"]+)"/g)].map((match) => match[1]);
+  const listedIdentityIds = new Set([...catalogIds, ...primaryIds].filter((id) => identities.has(id)));
+  const primaryOnlyIdentities = catalog.identities.filter((identity) => identity.card?.catalog === false);
   const memberRows = (works.match(/data-catalog-member="/g) || []).length;
   const cards = (works.match(/class="project-card[ "]/g) || []).length;
-  ok("7. Works lists every standalone project identity", rows === catalog.identities.length, `${rows} of ${catalog.identities.length}`);
+  ok("7. Works lists every standalone project identity", listedIdentityIds.size === catalog.identities.length, `${listedIdentityIds.size} of ${catalog.identities.length}`);
+  for (const identity of primaryOnlyIdentities) {
+    ok(`7. ${identity.id}: appears once in Primary Evidence and not again in Complete Catalog`, primaryIds.filter((id) => id === identity.id).length === 1 && !catalogIds.includes(identity.id));
+  }
   ok("7. Works lists the learning collection's members as members, not projects", memberRows === members.length, `${memberRows} of ${members.length}`);
   for (const member of members.filter((entry) => entry.incomplete)) {
     const start = works.indexOf(`data-catalog-member="${member.id}"`);

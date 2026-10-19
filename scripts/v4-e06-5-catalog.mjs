@@ -94,6 +94,8 @@ export function cardEntries(catalog = loadCatalog()) {
   return [...catalog.identities, ...(catalog.collections || []).flatMap((collection) => collection.members)].filter((entry) => entry.card);
 }
 
+const catalogCards = (catalog, id) => catalog.identities.filter((identity) => identity.group === id && identity.card?.catalog !== false);
+
 function visual(entry, sizes) {
   const { image } = entry.card;
   if (!image) return plateNode(entry);
@@ -171,7 +173,7 @@ function cardGrid(catalog, id, heading) {
       unfinishedNote(collection.members.filter((member) => member.incomplete), heading),
     ]);
   }
-  const identities = catalog.identities.filter((identity) => identity.group === id);
+  const identities = catalogCards(catalog, id);
   const leadId = catalog.cards.lead[id];
   const tiers = new Set(identities.map((identity) => identity.card.tier));
   if (tiers.size !== 1) throw new Error(`catalog: group ${id} mixes card tiers`);
@@ -180,7 +182,7 @@ function cardGrid(catalog, id, heading) {
 
 function groupCount(catalog, id) {
   const collection = (catalog.collections || []).find((entry) => entry.group === id);
-  return collection ? collection.members.length : catalog.identities.filter((identity) => identity.group === id).length;
+  return collection ? collection.members.length : catalogCards(catalog, id).length;
 }
 
 function group(catalog, id) {

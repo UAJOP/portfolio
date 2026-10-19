@@ -61,6 +61,7 @@ import { findRouteOrphans, removeOwnedRouteOrphans } from "./generated-route-own
 import { SEMANTIC_PAGE_SOURCES, explicitSemanticPageMap, semanticSourceMessageMap } from "./i18n-messages.mjs";
 import { createSiteHeadRenderer, localizeJsonLd } from "./site-head.mjs";
 import { createMessageResolver, resolveCanonicalLocalizedData } from "./shared-localization.mjs";
+import { ATELIS_ROUTE_ID, atelisTranslationPairs } from "./atelis-case-study.mjs";
 
 const checkOnly = process.argv.includes("--check");
 
@@ -234,6 +235,28 @@ function buildDocument({ route, locale, translators, indexable }) {
     },
     rewriteUrl,
   });
+
+  /* The additive Atelis route is React-authored from its own five-locale data
+   * model. Its committed English document is only the deterministic fallback
+   * source consumed by this legacy route generator; replace those authored
+   * leaves here so repository-level locale-copy QA sees the same localized
+   * story that the production React prerender emits. */
+  if (route.id === ATELIS_ROUTE_ID) {
+    const shellPairs = [
+      ["Site navigation", translators.messageValue("shell.nav.aria")],
+      ["On this page", translators.messageValue("project.tracker.aria")],
+    ];
+    for (const [english, translated] of [...atelisTranslationPairs(locale), ...shellPairs]) {
+      if (!translated || english === translated) continue;
+      const variants = new Set([
+        english,
+        escapeHtml(english),
+        escapeHtml(english).replaceAll("&#39;", "&#x27;"),
+        escapeHtml(english).replaceAll("&#039;", "&#x27;"),
+      ]);
+      for (const variant of variants) html = html.replaceAll(variant, escapeHtml(translated));
+    }
+  }
 
   /* Project routes carry the project's own heading, so the page is meaningful
    * without JavaScript in the reader's language too. */

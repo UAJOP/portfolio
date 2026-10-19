@@ -238,6 +238,52 @@
       }
     },
     {
+      "id": "atelis-design",
+      "title": "Atelis Design",
+      "group": "current",
+      "tier": "featured",
+      "kind": "website",
+      "status": "live",
+      "year": "2026",
+      "tech": "Astro · TypeScript · Cloudflare Pages",
+      "tags": [
+        "live",
+        "case-study",
+        "client"
+      ],
+      "repo": null,
+      "links": {
+        "caseStudy": "/atelis-design-case-study/",
+        "live": "https://atelisdesign.com/en/"
+      },
+      "capabilities": [
+        "web-product",
+        "full-stack",
+        "qa-reliability"
+      ],
+      "evidence": "reported-release-and-live-site",
+      "card": {
+        "tier": "featured",
+        "catalog": false,
+        "stack": [
+          "Astro",
+          "TypeScript",
+          "Cloudflare Pages",
+          "i18n"
+        ],
+        "image": {
+          "source": "assets/atelis/atelis-home-desktop.webp",
+          "variants": [
+            {
+              "src": "assets/atelis/atelis-home-desktop.webp",
+              "width": 1440,
+              "height": 900
+            }
+          ]
+        }
+      }
+    },
+    {
       "id": "ai-chatbot-flow-design",
       "title": "AI Chatbot Flow Design",
       "group": "current",
