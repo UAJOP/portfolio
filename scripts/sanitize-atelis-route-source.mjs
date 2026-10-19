@@ -32,5 +32,10 @@ html = html.replace(/<script type="module" src="\/assets-react\/[^"]+"><\/script
 // The committed JS-off fallback must not load the V4 runtime outside the page manifest.
 // The production React prerender still emits its own V4 runtime script.
 html = html.replace(/<script src="\/js\/v4\/runtime\.js" defer><\/script>/g, "");
+// Keep the committed source shell within the legacy CSS contract.
+// Production prerender owns the V4 and subset stylesheets; do not strip them from dist-site.
+for (const sheet of ["css/boxicons-subset.css","css/v4-system.css","css/v4-detail.css","css/v4-atelis.css"]) {
+  html = html.replaceAll(`<link rel="stylesheet" href="/${sheet}"/>`, "");
+}
 fs.writeFileSync(file, html);
 console.log("Sanitized the committed Atelis fallback source; production React output remains authoritative.");
